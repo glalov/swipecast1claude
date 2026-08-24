@@ -22,14 +22,17 @@ MARKUP = """<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assist
 <div class="panel" id="panel" role="dialog" aria-label="Super Assistant">
   <div class="bar" id="bar">
     <button class="xreset" id="newchat" aria-label="Start a new chat" title="New chat"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.8 3.6v4.6h-4.6"/></svg></button>
-    <button class="xexpand" id="expand" aria-label="Expand the panel" title="Expand"><svg viewBox="0 0 24 24"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></svg></button>
+    <button class="xexpand" id="expand" aria-label="Make the panel smaller" title="Smaller"><svg viewBox="0 0 24 24"><g class="i-grow"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></g><g class="i-shrink"><path d="M20 9h-5V4M4 15h5v5M15 9l5-5M9 15l-5 5"/></g></svg></button>
     <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
     <div class="ava"><svg class="clap" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="var(--board)"/><rect x="7" y="16" width="18" height="2" rx="1" fill="var(--cm1)"/><rect x="7" y="20" width="12" height="2" rx="1" fill="var(--cm2)"/><g class="stick"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="var(--board)"/><g clip-path="url(#csClip)" fill="var(--stripe)"><polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/><polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g></g><defs><clipPath id="csClip"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4"/></clipPath></defs></svg></div>
     <b>Super Assistant</b>
     <i id="barsub">Acting coach</i>
   </div>
   <div class="thread" id="thread"></div>
-  <div class="sugg" id="sugg"></div>
+  <div class="suggwrap" id="suggwrap">
+    <div class="sugg" id="sugg"></div>
+    <button class="suggmore" id="suggmore" type="button" tabindex="-1">More questions <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+  </div>
   <div class="composer">
     <div class="emoji" id="emoji"></div>
     <div class="cbox">

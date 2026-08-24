@@ -103,8 +103,17 @@ h1 span{color:var(--out2);}
 .bar.sub .xexpand{display:none;}
 /* Long lessons and the help sheets are the parts that want the room. */
 .panel{transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.4,.1,.2,1),height .3s cubic-bezier(.4,.1,.2,1);}
-.panel.wide{width:560px;height:min(760px,calc(100vh - 126px));height:min(760px,calc(100dvh - 126px));}
-@media(max-width:640px){ .bar .xexpand{display:none;} .panel.wide{width:394px;} }
+/* Desktop opens at the large size. Long lessons and the 15-question opener
+   both need the room, and a panel that grows after you have started reading
+   is worse than one that was the right size to begin with. `.compact` is the
+   opt-out, not the default. */
+@media(min-width:641px){
+  .panel{width:560px;height:min(760px,calc(100vh - 126px));height:min(760px,calc(100dvh - 126px));}
+  .panel.compact{width:394px;height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));}
+}
+@media(max-width:640px){ .bar .xexpand{display:none;} }
+.panel:not(.compact) .i-grow{display:none;}
+.panel.compact .i-shrink{display:none;}
 .bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}
 .bar .xclose:hover{background:rgba(120,120,128,.24);}
 .bar .xclose:active{transform:translateY(-50%) scale(.92);}
@@ -180,6 +189,15 @@ h1 span{color:var(--out2);}
   .msg,.card,.srcs{animation:none}
 }
 
+/* The chip strip scrolls, and nothing said so — people read the clipped row as
+   the whole menu. The fade alone was too subtle, so it now carries a label. */
+.suggwrap{flex:none;position:relative;}
+.suggwrap:empty{display:none;}
+.suggmore{display:none;position:absolute;right:12px;bottom:6px;z-index:2;align-items:center;gap:4px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--page);background:var(--brand);border:0;border-radius:100px;padding:5px 9px 5px 11px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.22);}
+.suggwrap.more .suggmore{display:inline-flex;}
+.suggmore svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:nudgedown 1.8s ease-in-out infinite;}
+@keyframes nudgedown{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}
+@media(prefers-reduced-motion:reduce){.suggmore svg{animation:none}}
 .sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
 .sugg.more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);}
 @media(max-height:720px){.sugg{max-height:120px;}}
@@ -337,14 +355,17 @@ h1 span{color:var(--out2);}
 <div class="panel" id="panel">
   <div class="bar" id="bar">
     <button class="xreset" id="newchat" aria-label="Start a new chat" title="New chat"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.8 3.6v4.6h-4.6"/></svg></button>
-    <button class="xexpand" id="expand" aria-label="Expand the panel" title="Expand"><svg viewBox="0 0 24 24"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></svg></button>
+    <button class="xexpand" id="expand" aria-label="Make the panel smaller" title="Smaller"><svg viewBox="0 0 24 24"><g class="i-grow"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></g><g class="i-shrink"><path d="M20 9h-5V4M4 15h5v5M15 9l5-5M9 15l-5 5"/></g></svg></button>
     <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
     <div class="ava"><svg class="clap" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="var(--board)"/><rect x="7" y="16" width="18" height="2" rx="1" fill="var(--cm1)"/><rect x="7" y="20" width="12" height="2" rx="1" fill="var(--cm2)"/><g class="stick"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="var(--board)"/><g clip-path="url(#csClip)" fill="var(--stripe)"><polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/><polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g></g><defs><clipPath id="csClip"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4"/></clipPath></defs></svg></div>
     <b>Super Assistant</b>
     <i id="barsub">Acting coach</i>
   </div>
   <div class="thread" id="thread"></div>
-  <div class="sugg" id="sugg"></div>
+  <div class="suggwrap" id="suggwrap">
+    <div class="sugg" id="sugg"></div>
+    <button class="suggmore" id="suggmore" type="button" tabindex="-1">More questions <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+  </div>
   <div class="composer">
     <div class="emoji" id="emoji"></div>
     <div class="cbox">
@@ -3498,6 +3519,45 @@ const TOPIC_POOL=[
  'What is Manager Mode?','What is the Business Card?','How do I cancel my subscription?',
  'Is my profile private?','Talk to a human'
 ];
+/* The first screen is the only one everybody sees, so it is chosen rather than
+   filled from the pool. Craft and profile questions first — the free teaching
+   is what earns the right to sell anything — then the two questions that lead
+   to what Premium actually solves (the agency directory, unlimited video and
+   submissions), then price last. A Premium member never sees the price pair. */
+const OPENING_FREE=[
+ 'Teach me the fundamentals',
+ 'What makes casting skip a reel?',
+ 'What annoys casting directors?',
+ 'How do I improve my profile?',
+ 'Which headshot should I lead with?',
+ 'How do I build a reel with no footage?',
+ 'What should I submit to?',
+ 'Why is nobody getting back to me?',
+ 'What is my type?',
+ 'How do I get an agent?',
+ 'Who are the biggest talent agencies?',
+ 'Do I need to join SAG-AFTRA?',
+ 'Do I need to move to LA?',
+ 'What does Premium include?',
+ 'What does it cost?'
+];
+const OPENING_PREMIUM=[
+ 'Teach me the fundamentals',
+ 'What makes casting skip a reel?',
+ 'What annoys casting directors?',
+ 'How do I improve my profile?',
+ 'Which headshot should I lead with?',
+ 'How do I build a reel with no footage?',
+ 'What should I submit to?',
+ 'Why is nobody getting back to me?',
+ 'What is my type?',
+ 'How do I get an agent?',
+ 'Who are the biggest talent agencies?',
+ 'Do I need to join SAG-AFTRA?',
+ 'Do I need to move to LA?',
+ 'What is Manager Mode?',
+ 'Tell me about the agency directory'
+];
 let poolAt=0;
 /* Contextual follow-ups first, then fill out the strip from the pool. */
 function suggPlus(list,cap){
@@ -3586,12 +3646,24 @@ function srcs(ids){
   ids.forEach(id=>{const b=document.createElement('button');b.textContent=ART[id].t;b.onclick=()=>sheet(id);w.appendChild(b);});
   $('thread').appendChild(w);bottom();
 }
+/* "Is there anything below?" — not "are we at the top?". The hint used to
+   vanish on the first scroll while two more rows were still hidden. Kept out
+   of sugg() so the scroll button can re-run it without waiting for an event. */
+function refreshSuggHint(){
+  const w=$('sugg'), wrap=$('suggwrap');
+  if(!w)return;
+  const more=w.scrollHeight>w.clientHeight+4&&(w.scrollTop+w.clientHeight)<(w.scrollHeight-4);
+  w.classList.toggle('more',more);
+  if(wrap)wrap.classList.toggle('more',more);
+}
 function sugg(list){
   const w=$('sugg');w.innerHTML='';w.classList.remove('more');w.scrollTop=0;
+  const wrap0=$('suggwrap'); if(wrap0)wrap0.classList.remove('more');
   (list||[]).forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{w.innerHTML='';w.classList.remove('more');send(l);};w.appendChild(b);});
   /* Only hint at a scroll when there actually is one — checked twice because
      the first frame can measure before the chips have wrapped. */
-  const hint=()=>{w.classList.toggle('more',w.scrollHeight>w.clientHeight+4&&w.scrollTop<4);};
+  const wrap=$('suggwrap');
+  const hint=refreshSuggHint;
   w.onscroll=hint;
   requestAnimationFrame(()=>{hint();bottom();});
   setTimeout(()=>{hint();bottom();},60);
@@ -3658,9 +3730,7 @@ function hello(){
       msg('in',c.plan==='premium'
         ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. And I teach: all the fundamentals for film, stage, commercial and voice, right here. Keep a notepad next to you.`
         :`Ask me anything about CastSlate or about the acting business — and I can <b>teach you the fundamentals</b> of acting for film or stage right here, free. No need to spend money on classes to start; just grab a notepad and a pen.`);
-      suggPlus(c.plan==='premium'
-        ?['Teach me the fundamentals','How do I improve my profile?','What is Manager Mode?']
-        :['Teach me the fundamentals','How do I get started?','What makes casting skip a reel?']);
+      sugg(c.plan==='premium'?OPENING_PREMIUM:OPENING_FREE);
     },620);
   },700);
 }
@@ -4012,6 +4082,25 @@ function wireTools(){
   const tL=$('tLesson'); if(tL)tL.onclick=()=>{pop&&pop.classList.remove('on');send('Give me an acting lesson');};
   const tM=$('tMic');    if(tM)makeDictation(input,tM);
 
+  const tM2=$('suggmore');
+  if(tM2)tM2.onclick=function(){
+    /* Set it, then ask for smooth. Native smooth scrolling has a history of
+       no-oping in this codebase and a rAF tween is throttled in a background
+       tab — either can silently do nothing, so the assignment goes first and
+       the animation is only a nicety on top. */
+    const w=$('sugg');
+    const to=Math.min(w.scrollHeight-w.clientHeight, w.scrollTop+w.clientHeight-24);
+    const from=w.scrollTop;
+    w.scrollTop=to;
+    try{
+      if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)){
+        w.scrollTop=from; w.scrollTo({top:to,behavior:'smooth'});
+        setTimeout(()=>{ if(Math.abs(w.scrollTop-to)>2)w.scrollTop=to; refreshSuggHint(); },340);
+      }
+    }catch(_){ w.scrollTop=to; }
+    refreshSuggHint();
+  };
+
   const tN=$('newchat');
   if(tN)tN.onclick=function(){
     st.misses=0;st.lastOut=null;st.lesson=null;st.step=0;st.offer=null;st.paused=null;
@@ -4023,9 +4112,9 @@ function wireTools(){
 
   const tX=$('expand');
   if(tX)tX.onclick=function(){
-    const p=$('panel'), on=p.classList.toggle('wide');
-    tX.setAttribute('aria-label',on?'Shrink the panel':'Expand the panel');
-    tX.setAttribute('title',on?'Shrink':'Expand');
+    const p=$('panel'), small=p.classList.toggle('compact');
+    tX.setAttribute('aria-label',small?'Make the panel bigger':'Make the panel smaller');
+    tX.setAttribute('title',small?'Bigger':'Smaller');
     bottom();
   };
   armNudge();
