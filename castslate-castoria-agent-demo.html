@@ -3478,9 +3478,18 @@ function suggPlus(list,cap){
   const used=new Set(list.map(x=>x.toLowerCase()));
   const pool=TOPIC_POOL.filter(t=>!used.has(t.toLowerCase())&&!st.asked.has(t.toLowerCase()));
   if(!pool.length) return sugg(list);
-  const at=poolAt%pool.length;
-  poolAt+=5;
-  sugg(list.concat(pool.slice(at).concat(pool.slice(0,at)).slice(0,Math.max(0,cap-list.length))));
+  /* Stride rather than slice. A contiguous run came back as eleven craft
+     lessons in a row; stepping through the pool spreads the fill across
+     craft, auditions, materials, the industry and the platform. */
+  const need=Math.max(0,cap-list.length), fill=[], taken=new Set();
+  let at=poolAt%pool.length;
+  for(let i=0;fill.length<need&&i<pool.length*2;i++){
+    const idx=(at+i*7)%pool.length;
+    if(taken.has(idx))continue;
+    taken.add(idx); fill.push(pool[idx]);
+  }
+  poolAt+=3;
+  sugg(list.concat(fill));
 }
 const idKey=c=>(c.plan||'visitor')+'|'+(c.name||'');
 function syncIdentity(){
