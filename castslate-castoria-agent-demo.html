@@ -442,7 +442,7 @@ const SMALL=[
  {id:'greet',re:/^(hi|hey+|hello+|yo|hiya|heya|sup|howdy|hi there|hey there|good (morning|afternoon|evening))[\s!.,?]*$/i,
   a:c=>c.name?`Hey ${c.name} 👋`:`Hey there 👋`,
   b:c=>c.plan==='premium'?`What are we working on today?`:`What can I help you with?`,
-  s:['What can I ask you?','How do I improve my profile?','Is Premium worth it?']},
+  s:['What can I ask you?','How do I improve my profile?','What does Premium include?']},
  {id:'howareyou',re:/how (are|r) (you|u)|how'?s it going|how (you )?doing|how are things|you good|what'?s up|whats up|wassup|how have you been/i,
   a:c=>`Doing well, thanks for asking — I'm here all day, so no complaints.`,
   b:c=>c.name?`How's it going with you, ${c.name}? Working on anything I can help with?`:`How about you — anything you're trying to figure out?`,
@@ -456,7 +456,7 @@ const SMALL=[
   `<div class="hd">Things people ask me most</div><ul><li>Building a profile casting actually reads</li><li>Finding and applying to castings</li><li>How free and Premium differ, and what things cost</li><li>Callbacks, self-tapes, and what happens after you submit</li><li>Safety — verified casters, reporting, rules for under-18s</li><li>General industry questions: agents, unions, resumes, rates, nerves</li></ul>`+
   `<p>I can't compare CastSlate to other casting sites, and I don't have live data like weather or news. Everything else, ask away.</p>`,
   b:c=>`What are you trying to sort out?`,
-  s:['How do I get started?','Is Premium worth it?','How do I get an agent?']},
+  s:['How do I get started?','What does Premium include?','How do I get an agent?']},
  {id:'thanks',re:/^(thanks|thank you|ty|thx|cheers|appreciate it|much appreciated|great thanks|perfect thanks)[\s!.,]*$/i,
   a:c=>`Any time${c.name?', '+c.name:''} 🙌`,b:c=>`Anything else while I'm here?`,s:['No, that\'s all','What is Manager Mode?']},
  {id:'bye',re:/^(bye|goodbye|see ya|see you|later|gtg|got to go|good night|night|that'?s all|no that'?s all|nope)[\s!.,]*$/i,
@@ -565,7 +565,7 @@ const KB=[
  :`Free accounts submit to <b>${FREE.sub} casting per week</b>, and it resets weekly. Nothing's wrong with your account.`+
   `<div class="hd">Making one submission count</div><ul><li>Spend it on a role you fit by <b>type and experience level</b>, not the most exciting one on the board</li><li>Submit <b>early</b> — many casting directors start reviewing days before the deadline</li><li>Write the two-sentence cover note. Cheapest edge available to you</li></ul>`+
   `<p>Roles also cap themselves at 250–500 submissions so casting can review every one properly.</p>`,
- src:['apply','pricing'],s:['How do I apply?','Is Premium worth it?','What if I miss a deadline?'],
+ src:['apply','pricing'],s:['How do I apply?','What does Premium include?','What if I miss a deadline?'],
  sell:c=>({e:'This is the wall Premium removes',h:'Unlimited submissions',b:'The cap is the single most common reason actors upgrade — watching roles you fit close while you wait for Monday.',cta:'Remove the cap'})},
 
 {id:'apply',k:'apply applying submit submission how to apply send headshot to casting application cover note letter multiple roles',
@@ -2704,7 +2704,9 @@ function hello(){
       msg('in',c.plan==='premium'
         ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. I also run short lessons if you want to work on something.`
         :`Ask me anything about CastSlate or about the acting business — and if you want to actually <b>practise</b> something, I run short lessons you can do right now.`);
-      sugg(['Give me an acting lesson','How do I improve my profile?',c.plan==='premium'?'What is Manager Mode?':'Is Premium worth it?']);
+      sugg(c.plan==='premium'
+        ?['Give me an acting lesson','How do I improve my profile?','What is Manager Mode?']
+        :['Give me an acting lesson','How do I get started?','What does Premium include?']);
     },620);
   },700);
 }
