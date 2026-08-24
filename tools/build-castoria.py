@@ -14,12 +14,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC  = os.path.join(ROOT, "castslate-castoria-agent-demo.html")
 OUT  = os.path.join(ROOT, "castoria.js")
 
-MARKUP = """<button class="launch" id="launch" aria-label="Message Super Assistant">
+MARKUP = """<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assistant</b></div>
+<button class="launch" id="launch" aria-label="Message Super Assistant">
   <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z"/></svg>
   <span class="x">&times;</span>
 </button>
 <div class="panel" id="panel" role="dialog" aria-label="Super Assistant">
   <div class="bar" id="bar">
+    <button class="xexpand" id="expand" aria-label="Expand the panel" title="Expand"><svg viewBox="0 0 24 24"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></svg></button>
     <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
     <div class="ava">S</div>
     <b>Super Assistant</b>

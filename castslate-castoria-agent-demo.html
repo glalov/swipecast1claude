@@ -49,12 +49,42 @@ h1 span{color:var(--out2);}
 .launch.open svg{display:none;}
 .launch.open .x{display:block;}
 
+/* ── first-visit nudge ────────────────────────────────────── */
+/* A comic-book pop beside the launcher, five seconds in, gone five seconds
+   later. Once per visitor, never while the panel is open. */
+.nudge{position:fixed;right:96px;bottom:34px;z-index:61;pointer-events:none;display:none;}
+.nudge.on{display:block;}
+.nudge b{
+  position:relative;display:block;background:#fff;color:#12121C;border:2.5px solid #12121C;
+  border-radius:26px 26px 8px 26px;padding:11px 17px;
+  font-family:var(--sys);font-weight:700;font-size:15px;letter-spacing:-.2px;white-space:nowrap;
+  box-shadow:4px 5px 0 rgba(18,18,28,.92);
+  animation:nudgeIn .42s cubic-bezier(.2,1.6,.4,1) both,nudgeWobble 2.6s ease-in-out .5s infinite;
+}
+.nudge b::after{content:"";position:absolute;right:-19px;bottom:11px;border:9px solid transparent;border-left-color:#12121C;border-left-width:16px;}
+.nudge b::before{content:"";position:absolute;right:-11px;bottom:14px;z-index:1;border:6px solid transparent;border-left-color:#fff;border-left-width:11px;}
+.nudge.out b{animation:nudgeOut .3s ease-in forwards;}
+@keyframes nudgeIn{0%{opacity:0;transform:scale(.3) rotate(-9deg)}60%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(-1.5deg)}}
+@keyframes nudgeWobble{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1.025) rotate(1deg)}}
+@keyframes nudgeOut{to{opacity:0;transform:scale(.82) translateY(6px)}}
+@media(max-width:560px){.nudge{right:82px;bottom:26px;}.nudge b{font-size:14px;padding:9px 14px;}}
+@media(prefers-reduced-motion:reduce){.nudge b{animation:none}.nudge.out b{opacity:0}}
+
 /* ── thread panel ─────────────────────────────────────────── */
 .panel{position:fixed;overscroll-behavior:contain;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}
 .panel.open{opacity:1;transform:none;pointer-events:auto;}
 
 .bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}
 .bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}
+.bar .xexpand{position:absolute;right:47px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}
+.bar .xexpand:hover{background:rgba(120,120,128,.24);}
+.bar .xexpand:active{transform:translateY(-50%) scale(.92);}
+.bar .xexpand svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.bar.sub .xexpand{display:none;}
+/* Long lessons and the help sheets are the parts that want the room. */
+.panel{transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.4,.1,.2,1),height .3s cubic-bezier(.4,.1,.2,1);}
+.panel.wide{width:560px;height:min(760px,calc(100vh - 126px));height:min(760px,calc(100dvh - 126px));}
+@media(max-width:640px){ .bar .xexpand{display:none;} .panel.wide{width:394px;} }
 .bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}
 .bar .xclose:hover{background:rgba(120,120,128,.24);}
 .bar .xclose:active{transform:translateY(-50%) scale(.92);}
@@ -113,11 +143,21 @@ h1 span{color:var(--out2);}
 .srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}
 .srcs button:hover{background:#F2F2F7;}
 
-.typing{display:flex;gap:4px;align-items:center;background:var(--in);border-radius:19px;padding:12px 15px;}
-.typing i{width:8px;height:8px;border-radius:50%;background:#9E9EA4;animation:d 1.3s ease-in-out infinite;}
-.typing i:nth-child(2){animation-delay:.17s}.typing i:nth-child(3){animation-delay:.34s}
-@keyframes d{0%,62%,100%{opacity:.32;transform:translateY(0)}31%{opacity:.95;transform:translateY(-3px)}}
-@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}
+.typing{display:flex;gap:6px;align-items:center;background:var(--in);border-radius:19px;padding:13px 16px;}
+.typing i{width:9px;height:9px;border-radius:50%;background:#9E9EA4;animation:d 1.05s cubic-bezier(.4,0,.2,1) infinite;}
+.typing i:nth-child(2){animation-delay:.14s}.typing i:nth-child(3){animation-delay:.28s}
+@keyframes d{0%,55%,100%{opacity:.3;transform:translateY(0) scale(.9)}27%{opacity:1;transform:translateY(-5px) scale(1.05)}}
+
+/* Bubbles used to be inserted with no transition, which read as a hard cut.
+   They now fade while lifting, which is what a message landing looks like. */
+.msg{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}
+@keyframes msgIn{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:none}}
+.card,.srcs{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}
+
+@media(prefers-reduced-motion:reduce){
+  .typing i{animation:none;opacity:.6}
+  .msg,.card,.srcs{animation:none}
+}
 
 .sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
 .sugg::-webkit-scrollbar{display:none}
@@ -264,6 +304,8 @@ h1 span{color:var(--out2);}
   </div>
 </div>
 
+<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assistant</b></div>
+
 <button class="launch" id="launch" aria-label="Message Super Assistant">
   <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z"/></svg>
   <span class="x">&times;</span>
@@ -271,6 +313,7 @@ h1 span{color:var(--out2);}
 
 <div class="panel" id="panel">
   <div class="bar" id="bar">
+    <button class="xexpand" id="expand" aria-label="Expand the panel" title="Expand"><svg viewBox="0 0 24 24"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></svg></button>
     <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
     <div class="ava">S</div>
     <b>Super Assistant</b>
@@ -437,6 +480,21 @@ breakdown is asking for, and inside what you can actually deliver on the day.
 If you cannot say in one sentence why you are right for it, skip it. A small
 number of well-matched submissions with a specific note outperforms fifty
 scattergun ones, and it protects your reads on the roles you do fit.
+
+THE MONOLOGUE MISTAKE BEGINNERS MAKE
+Never let a beginner make their main monologue the heaviest thing they own -
+the screaming one, the sobbing one, the violent one. Explain it from the
+casting director's side of the room: they have watched thousands of auditions,
+several of today's have already been someone crying or yelling at them from
+four feet away, and nobody enjoys being screamed at in a small room. Actors
+reach for it because big emotion feels like proof of range and suffering feels
+powerful; for a first impression it backfires and they get remembered as the
+person who made the room heavy. Tell them to lead with something LIGHT, ideally
+funny - making a tired panel laugh is rarer and harder than a good dramatic
+piece, and it is genuinely memorable. Keep it inside their real age range and
+inside something they could be cast as tomorrow. The heavy piece is the SECOND
+of the contrasting pair, offered only if asked. Say plainly that this does not
+mean they cannot do drama; it means they do not open with it.
 
 ENCOURAGING PEOPLE WHO ARE NOT ACTORS YET
 Be genuinely warm about this. You do not need a degree, a conservatory or
@@ -1117,7 +1175,7 @@ const KB=[
 {id:'theater',k:'theater theatre stage acting play musical broadway equity aea open call ecc epa audition monologue',
  a:c=>`Theater has its own path, and it's usually the most accessible one to start on.`+
  `<div class="hd">How you get seen</div><ul><li><b>Open calls and general auditions</b> — many companies hold them, and you don't need representation to attend</li><li><b>Submissions</b> to specific productions, the same as screen work</li><li>Community, fringe and regional theater — real credits, real stage time, real training</li></ul>`+
- `<div class="hd">What to bring</div><ul><li>Two contrasting <b>monologues</b>, roughly a minute each, memorised cold and kept audition-ready year round</li><li>For musicals: <b>16 or 32 bars</b> in your best range, plus sheet music in your key, clearly marked, in a binder</li><li>Headshot and resume, stapled back to back, cut to headshot size</li></ul>`+
+ `<div class="hd">What to bring</div><ul><li>Two contrasting <b>monologues</b>, roughly a minute each, memorised cold and kept audition-ready year round &mdash; and lead with the <b>lighter</b> one, not the screaming one. Ask me about monologues and I will explain why</li><li>For musicals: <b>16 or 32 bars</b> in your best range, plus sheet music in your key, clearly marked, in a binder</li><li>Headshot and resume, stapled back to back, cut to headshot size</li></ul>`+
  `<div class="hd">The technique difference</div><p>Everything has to carry — voice, body, intention — without inflating into something false. Film asks you to shrink. Stage asks you to fill the room while staying truthful. Actors who can do both are rare and get work.</p>`+
  `<div class="hd">The technical side</div><p>Stage has a vocabulary and a set of rules a director will assume you already know — cheating out, upstaging, sightlines, spike marks, stage left and right from <em>your</em> point of view, half-hour calls, cue-to-cue, tech week. Ask me for the <b>theatre technicals</b> and I'll take you through all of it properly.</p>`+
  `<p>Union rules for stage work — Actors' Equity in the US — vary by contract and by house. Check the specific production's terms before you assume.</p>`,
@@ -1246,12 +1304,16 @@ const KB=[
  `<p>If you go up on set, just ask for the line. Everyone does it, nobody cares, and pretending otherwise wastes takes.</p>`,
  src:[],s:['How do I act naturally on camera?','What is a self-tape?','How do I prepare for an audition?']},
 
-{id:'monologue',k:'monologue prepare choose piece audition speech one minute contrasting',
+{id:'monologue',k:'monologue prepare choose piece audition speech one minute contrasting which monologue should i pick dramatic funny comedic first impression screaming crying',
  a:c=>`Two contrasting pieces, roughly a minute each, kept ready all year. Don't scramble for them the week you need them.`+
+ `<div class="hd">The one thing to get right first</div><p><b>Do not make your main monologue the heaviest thing you own.</b> Not the screaming one, not the sobbing one, not the violent one. I know why actors reach for those — big emotion feels like proof of range, and suffering on stage feels powerful. For a <b>first impression</b> it backfires almost every time.</p>`+
+ `<p>Think about the room from their side. A casting director has watched thousands of auditions, and a lot of today's have already been someone shouting or crying at them from four feet away. <b>Nobody enjoys being screamed at in a small room.</b> The tenth actor to break down in tears before lunch is not memorable, they are exhausting — and you get remembered as the person who made the room heavy.</p>`+
+ `<div class="hd">Lead with something light</div><ul><li><b>Pick something funny.</b> Make them laugh and you are instantly the best two minutes of their morning. That is a memorable first impression, and it is far rarer than a good dramatic piece</li><li>Comedy is also harder, and they know it. Timing, listening and control read louder than volume ever does</li><li>Keep it <b>inside your real age range</b> and inside a character you could be cast as tomorrow</li><li>Keep the heavy piece as your <b>second</b>. That is what a contrasting pair is for — they will ask if they want it</li></ul>`+
+ `<p>None of this says you cannot do drama. It says you do not open with it.</p>`+
  `<div class="hd">Choosing</div><ul><li>Pick something you could <b>plausibly be cast in right now</b>. A 22-year-old doing King Lear is a bad first impression</li><li>Choose a piece with a <b>real other person</b> in it and something to win. Reflective, poetic monologues give you nothing to do</li><li>Avoid the ten pieces every panel has heard 400 times, and avoid anything built on shock</li><li>Read the whole play. They can tell within two lines if you haven't</li></ul>`+
  `<div class="hd">Preparing</div><ul><li>Who are you talking to, where are they, and what do you need from them <b>right now</b>?</li><li>Find the turns — the moments the thought changes direction. A monologue that stays one temperature is dead</li><li>Place the person you're speaking to just off to the side, not on the panel and not on the floor</li><li>Time it. Going long reads as not listening</li></ul>`+
  `<p>Start where the scene is already moving. And when it ends, hold for a beat before dropping out — the last second is often what they remember.</p>`,
- src:[],s:['How do I become a theater actor?','What is subtext?','What should I wear to an audition?']},
+ src:[],s:['What annoys casting directors?','How do I become a theater actor?','What should I wear to an audition?']},
 
 {id:'wear',k:'what should i wear audition clothes outfit dress self tape wardrobe colors costume',
  a:c=>`Suggest the character. Don't costume it.`+
@@ -1333,6 +1395,9 @@ const KB=[
 {id:'cdpeeves',k:'annoy annoys annoying pisses off piss off irritate frustrate casting directors hate pet peeve pet peeves turn off turn offs empty profile no video one headshot incomplete lazy why do they pass what puts them off mistakes actors make',
  a:c=>`I'll be straight with you, because this is the fastest fix most actors have. Casting directors are not annoyed by inexperience. They are annoyed by <b>profiles that make their job impossible</b>.`+
  `<div class="hd">The things that get you passed in seconds</div><ul><li><b>An empty or half-built profile.</b> No stats, no bio, no credits, nothing. It reads as someone who is not really doing this yet, and they move on</li><li><b>One headshot and nothing else.</b> They cannot tell what you are right for from a single photograph</li><li><b>No footage at all.</b> This is the big one. They need to see you move and hear you speak before they will spend a callback slot on you</li><li><b>A bio that is all feeling and no information</b> — "I have loved acting since I was five" gets read past every single time</li><li><b>A headshot that no longer looks like you.</b> If the person who walks in is not the person in the photo, that is the last time they call you in</li><li><b>Special skills you cannot do today, on demand</b></li><li><b>Submitting to everything.</b> They see the pattern, and it makes your good submissions worth less</li></ul>`+
+ `<div class="hd">And in the room: the screaming monologue</div><p>This one is nearly universal and almost nobody warns beginners about it. <b>Do not lead with your heaviest piece.</b> Not the shouting one, not the sobbing one, not the violent one.</p>`+
+ `<p>They have watched thousands of auditions, and several of today's have already been someone crying or yelling at them from four feet away. <b>Nobody enjoys being screamed at in a small room.</b> Actors reach for it because big emotion feels like proof of range — for a first impression it backfires, and you get remembered as the person who made the room heavy.</p>`+
+ `<p><b>Pick something light instead. Make them laugh.</b> Comedy is harder, they know it is harder, and being the funny two minutes of a long morning is a far rarer thing to be. Keep it inside your real age range, and save the heavy piece for second — that is what a contrasting pair is for.</p>`+
  `<div class="hd">The footage part, since it stops most people</div><p><b>It does not have to be professional.</b> Nobody expects a showreel cut by an editor. A <b>60-second phone video</b> is completely legitimate:</p>`+
  `<ul><li>A short <b>dialogue scene with a friend</b> holding the phone — two people talking, real stakes, one take you like</li><li>Or a <b>monologue</b>, straight to camera or just off it</li><li>Near a window, phone horizontal, phone close enough that they can hear you, no music</li><li>Upload it. Done</li></ul>`+
  `<p>Sixty seconds of you actually acting, shot on a phone, beats an empty video slot by an enormous margin — and it beats a beautiful reel that opens with ten seconds of titles. Start there today and fix it properly later.</p>`+
@@ -2283,12 +2348,40 @@ function conceptFor(q){
   });
   return score>=0.85?best:null;
 }
+/* Words that are English before they are jargon. A key made only of these can
+   never claim a question on its own. */
+const GLOSS_WEAK=new Set(('the a an and or of to for with on in at is are was were be'+
+ ' it its this that these those my your our their you i we they he she'+
+ ' what which who how why when where do does did can could would should'+
+ ' one two three first second next last all any some more most other'+
+ ' up down out off over under back front here there now then'+
+ ' get got go going make made take taken put set see saw look'+
+ ' good bad big small long short new old real full half'+
+ ' time day week month year thing things people person'+
+ ' shot shoot show room call calls line lines part parts work working'+
+ ' pay paid cost costs price prices free').split(' '));
 function glossaryFor(q){
   const low=' '+q.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ')+' ';
-  let hit=null,len=0;
+  let hit=null,best=0;
   Object.entries(GLOSSARY).forEach(([term,g])=>{
-    g.k.split(' ').forEach(k=>{
-      if(k.length>2&&low.includes(' '+k+' ')&&k.length>len){hit={term,g};len=k.length;}
+    /* the term itself, as a phrase, is the strongest possible signal */
+    if(term.length>2&&low.includes(' '+term+' ')){
+      const w=term.length+40;
+      if(w>best){hit={term,g};best=w;}
+    }
+    g.k.split(/\s*\|\s*/).forEach(k=>{
+      k=k.trim(); if(!k)return;
+      const words=k.split(' ').filter(Boolean);
+      words.forEach(word=>{
+        if(word.length<=2||GLOSS_WEAK.has(word))return;
+        if(!low.includes(' '+word+' '))return;
+        const w=word.length;
+        if(w>best){hit={term,g};best=w;}
+      });
+      if(words.length>1&&low.includes(' '+k+' ')){
+        const w=k.length+20;
+        if(w>best){hit={term,g};best=w;}
+      }
     });
   });
   return hit;
@@ -3023,6 +3116,9 @@ const INTENT=[
  [/\bfree (vs|versus|or) premium|difference between free and (premium|paid)\b/i,'freevp'],
  [/\bwhy (can'?t|cant) i (apply|submit)|only (one|1) (submission|casting)|weekly (limit|cap)|used (up )?my submission/i,'cap'],
  [/\bhow much (is|does|are) (castslate|premium|it|this|the membership)|what does (it|castslate|premium|this) cost|what'?s the price|membership cost/i,'pricing'],
+ /* Cost gets asked a dozen ways and it always means the plans. Kept narrow
+    enough that "how much do actors get paid" still reaches the rates answer. */
+ [/\b(what'?s|whats|what is|whats)\s+(the\s+)?(cost|price|fee|damage|rate)\b|\bwhat (does|do|would) (it|this|that|castslate|premium|a membership|the membership|membership|a subscription) cost\b|\bhow much (is|are|would) (it|this|that|premium|castslate|a |the )?(membership|subscription|plan|account)?\b(?![^?.!]{0,24}\b(actor|actors|performer|extra|background|day rate|sag|union|headshot|photographer|class|classes|coach)\b)|\bhow much\b[^?.!]{0,20}\b(premium|membership|subscription|per month|a month|monthly|per year|a year|yearly|annually|to (join|upgrade|subscribe|go premium))\b|\bwhat do (you|they) charge\b|\bhow much does (it|this|castslate|premium|the membership) cost\b|^\s*(the )?(cost|costs|price|pricing|prices|fees?)\s*\??$|\bcost of (premium|membership|a subscription)\b|\bis (it|castslate|premium) (free|paid|expensive)\b|\bhow much to (join|sign up|use it|upgrade|go premium)\b/i,'pricing'],
  [/\bhow (do|can) i get (an? )?(agent|manager|represent)/i,'agent'],
  [/\bhow (do|to) (i )?(record|shoot|make) (a )?self.?tape|self.?tape tips\b/i,'selftape'],
  [/\bwhat (are|is) (the )?sides\b/i,'sides'],
@@ -3199,6 +3295,8 @@ const $=id=>document.getElementById(id);
 const NAMES={visitor:'',free:'Lena',premium:'Marcus'};
 const st={plan:'free',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,profile:{weak:[],declared:null,taught:[]},lastConcept:null};
 const ctx=()=>({plan:st.plan,name:NAMES[st.plan]});
+/* How long the dots hold before an answer lands. */
+const THINK=()=>1400+Math.random()*260;
 const CHECKS=['Is that what you were looking for?','Did that answer your question?','Was that helpful?','Does that cover it?'];
 
 const idKey=c=>(c.plan||'visitor')+'|'+(c.name||'');
@@ -3284,6 +3382,26 @@ function lockPage(on){
     else if(st._lock){ d.style.overflow=st._lock.d; b.style.overflow=st._lock.b; st._lock=null; }
   }catch(_){}
 }
+/* The nudge shows once per visitor and never competes with an open panel. */
+const NUDGE_KEY='cs_sa_nudge_seen';
+function hideNudge(){
+  const n=$('nudge'); if(!n||!n.classList.contains('on'))return;
+  n.classList.add('out');
+  setTimeout(()=>{n.classList.remove('on');n.classList.remove('out');},320);
+}
+function armNudge(){
+  const n=$('nudge'); if(!n)return;
+  let seen=false;
+  try{seen=localStorage.getItem(NUDGE_KEY)==='1';}catch(_){}
+  if(seen)return;
+  setTimeout(()=>{
+    if(st.open)return;
+    try{localStorage.setItem(NUDGE_KEY,'1');}catch(_){}
+    n.classList.add('on');
+    setTimeout(hideNudge,5000);
+  },5000);
+}
+
 function closePanel(){
   st.open=false;
   $('panel').classList.remove('open');
@@ -3292,6 +3410,7 @@ function closePanel(){
 }
 function openPanel(){
   syncIdentity();
+  hideNudge();
   st.open=true;$('panel').classList.add('open');$('launch').classList.add('open');
   if(window.innerWidth<=560)lockPage(true);
   if(!$('thread').children.length)hello();
@@ -3406,7 +3525,7 @@ function send(text){
     }
     if(YES.test(text.trim())){
       const t0=typing();
-      setTimeout(()=>{t0.remove();markRead();startLesson(id);},560);
+      setTimeout(()=>{t0.remove();markRead();startLesson(id);},THINK());
       return;
     }
     /* anything else: drop the offer and answer what they actually asked */
@@ -3415,7 +3534,7 @@ function send(text){
   /* "go deeper" on the last thing discussed */
   if(!st.lesson&&DEEPER.test(text.trim())&&st.lastConcept&&CONCEPT_BY_ID[st.lastConcept]){
     const t0=typing();
-    setTimeout(()=>{t0.remove();markRead();startLesson(dynamicLesson(CONCEPT_BY_ID[st.lastConcept],'deep','craft'));},560);
+    setTimeout(()=>{t0.remove();markRead();startLesson(dynamicLesson(CONCEPT_BY_ID[st.lastConcept],'deep','craft'));},THINK());
     return;
   }
 
@@ -3425,7 +3544,7 @@ function send(text){
     if(RESUME.test(p)||YES.test(p)){
       const saved=st.paused;st.paused=null;st.lesson=saved.id;st.step=saved.step;
       const t0=typing();
-      setTimeout(()=>{t0.remove();markRead();lessonStep();},520);
+      setTimeout(()=>{t0.remove();markRead();lessonStep();},THINK());
       return;
     }
     if(QUIT.test(p)||NO.test(p)){
@@ -3456,7 +3575,7 @@ function send(text){
         t0.remove();markRead();
         msg('in',coachThrough(CONCEPT_BY_ID[st.lastConcept]));
         sugg(['Tried it again','Give me a different angle','Stop the lesson']);
-      },640);
+      },THINK());
       return;
     }
     if(/different angle|another way|something else instead/i.test(text)){
@@ -3467,7 +3586,7 @@ function send(text){
           `<p><b>Stop working on the feeling entirely.</b> Give your character a small physical task in the scene — something with a real outcome. Play the task properly and let the scene happen around it.</p>`+
           `<p>Actors who cannot get there psychologically very often get there physically, and the other way round. Neither is the correct method.</p>`);
         sugg(['That helped','Carry on with the lesson','Stop the lesson']);
-      },660);
+      },THINK());
       return;
     }
     /* Not a continue signal and not a coaching cue — so it is a real question.
@@ -3493,17 +3612,17 @@ function send(text){
             sugg(['Carry on with the lesson','Ask something else','Stop the lesson']);
           },1600);
         }
-      },650+Math.random()*400);
+      },THINK());
       return;
     }
     const t0=typing();
-    setTimeout(()=>{t0.remove();markRead();lessonStep();},560+Math.random()*320);
+    setTimeout(()=>{t0.remove();markRead();lessonStep();},THINK());
     return;
   }
 
   const t=typing();
   const r=think(text,c);
-  setTimeout(()=>{ t.remove();markRead(); respond(r,c); },650+Math.random()*450);
+  setTimeout(()=>{ t.remove();markRead(); respond(r,c); },THINK());
 }
 
 /* Rendering a thought is separate from deciding to have one, because the same
@@ -3663,6 +3782,15 @@ function wireTools(){
   const tT=$('tTopics'); if(tT)tT.onclick=()=>{pop&&pop.classList.remove('on');send('What can I ask you?');};
   const tL=$('tLesson'); if(tL)tL.onclick=()=>{pop&&pop.classList.remove('on');send('Give me an acting lesson');};
   const tM=$('tMic');    if(tM)makeDictation(input,tM);
+
+  const tX=$('expand');
+  if(tX)tX.onclick=function(){
+    const p=$('panel'), on=p.classList.toggle('wide');
+    tX.setAttribute('aria-label',on?'Shrink the panel':'Expand the panel');
+    tX.setAttribute('title',on?'Shrink':'Expand');
+    bottom();
+  };
+  armNudge();
 }
 
 /* events */
