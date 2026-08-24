@@ -12880,6 +12880,24 @@ function publishPostedAt(casting){
   return new Date().toISOString();
 }
 
+// The date a casting DISPLAYS as posted. go_live_at is the instant it actually
+// becomes public, so it is the honest answer whenever one is set — and reading
+// it here rather than trusting a stamped created_at means a casting scheduled
+// after it was already published still shows its go-live date, with no backfill.
+// Falls back to created_at for everything older that has no schedule.
+function castingPostedAt(casting){
+  return (casting&&casting.go_live_at)||(casting&&casting.created_at)||null;
+}
+
+// Newest-first within a bucket, by the date the casting actually reached people.
+// The SQL fetch orders by created_at, which is one day stale for anything that
+// was scheduled after it was published — this re-sorts those into place without
+// needing the stored column corrected first.
+function castingRecencyCompare(a,b){
+  const ta=Date.parse(castingPostedAt(a)||0)||0, tb=Date.parse(castingPostedAt(b)||0)||0;
+  return tb-ta;
+}
+
 function castingSortBucket(casting){
   if(casting?.status==="archived")return 2;
   if(castingIsExpired(casting))return 1;
@@ -13202,7 +13220,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
-    .sort((a,b)=>castingSortBucket(a)-castingSortBucket(b));
+    .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||castingRecencyCompare(a,b));
   return(<div className="page page-wide">
     <div className="section-label">{t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
@@ -13274,7 +13292,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                             ?<span className={"cc-chip "+(cdn.urgent?"urgent":"soon")}>{cdn.label}</span>
                             :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
                         {c.location&&<span className="cc-chip">{c.location}</span>}
-                        {c.created_at&&<span className="cc-chip quiet">Posted {fmtCastingDate(c.created_at)}</span>}
+                        {castingPostedAt(c)&&<span className="cc-chip quiet">Posted {fmtCastingDate(castingPostedAt(c))}</span>}
                       </div>
                     );
                   })()}
@@ -19170,6 +19188,12 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       const patch={
         title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,
         pay:f.pay||null,union_status:f.union||null,deadline:f.deadline||null,go_live_at:goLiveISO,
+        // Publishing stamps created_at via publishPostedAt, but scheduling something
+        // that is ALREADY published happens here — and used to leave created_at at
+        // the original publish date, so the casting went live stamped days old. The
+        // digest and the upsell both order by created_at, so it was landing outside
+        // the mail queue too. Only ever moves the date FORWARD, to a future go-live.
+        ...(goLiveISO&&new Date(goLiveISO).getTime()>Date.now()?{created_at:goLiveISO}:{}),
         has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,
         tagline:f.tagline||null,synopsis:f.synopsis||null,
         casting_website_url:f.casting_website_url.trim()||null,
@@ -30420,7 +30444,7 @@ function AdminCastingGenerator({session}){
                 <span>Posted by: <strong style={{color:"var(--t2)"}}>{c.posted_by_label||c.prod||"—"}</strong></span>
                 {expDate&&<><span style={{margin:"0 5px"}}>·</span><span style={{color:isExpired?"#c0392b":"var(--t3)"}}>Expires {expDate}</span></>}
                 <span style={{margin:"0 5px"}}>·</span>
-                <span>Posted {new Date(c.created_at).toLocaleDateString()}</span>
+                <span>Posted {new Date(castingPostedAt(c)).toLocaleDateString()}</span>
                 {isScheduled&&<><span style={{margin:"0 5px"}}>·</span><span style={{color:"var(--acc)",fontWeight:600}}>Goes live {formatNYDateTime(c.go_live_at)}</span></>}
               </div>
               {c.pay&&<div style={{fontSize:12,color:"var(--t2)",marginTop:2,maxWidth:520,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}><em>{c.pay.slice(0,100)}{c.pay.length>100?"…":""}</em></div>}
