@@ -127,6 +127,13 @@ h1 span{color:var(--out2);}
 .stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}
 .stamp b{color:var(--ink2);font-weight:600;}
 
+/* ⚠️ flex:none on every thread child. .thread is a column flex container, and
+   once its content overflows, items are free to shrink — an item whose
+   `overflow` is not visible has an automatic minimum size of ZERO, so it
+   collapses entirely. That is exactly what happened to the upgrade .card
+   (overflow:hidden): on any answer long enough to overflow the thread it
+   rendered at 0px and was invisible. Do not remove these. */
+.stamp,.msg,.card,.srcs,.receipt{flex:none;}
 .msg{display:flex;margin-bottom:2px;padding:0 4px;}
 .msg.gap{margin-top:9px;}
 .msg.out{justify-content:flex-end;}
@@ -3610,7 +3617,64 @@ function stamp(){
   const el=document.createElement('div');el.className='stamp';el.innerHTML=`<b>Today</b> ${t}`;
   $('thread').appendChild(el);
 }
-function bottom(){const t=$('thread');t.scrollTop=t.scrollHeight;}
+/* ── thread scrolling ──────────────────────────────────────────
+   Every answer used to be slammed to the bottom, which on a long one dumps
+   you at the END of text you have not read yet. Three rules now:
+   1. the move is eased, never a jump;
+   2. a message TALLER than the visible thread anchors its own top instead,
+      so you start reading at the first line;
+   3. nothing moves at all if you had scrolled up to re-read something —
+      being yanked away mid-sentence is the thing that actually annoys people.
+   The tween is manual with a guaranteed final assignment, because native
+   smooth behaviour and requestAnimationFrame can both silently no-op here. */
+const NEAR_BOTTOM=140;
+let scrollRAF=null, scrollFallback=null;
+const reducedMotion=()=>{try{return window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;}catch(_){return false;}};
+function atBottom(){
+  const t=$('thread'); if(!t)return true;
+  return (t.scrollHeight-t.scrollTop-t.clientHeight)<NEAR_BOTTOM;
+}
+function stopScroll(){
+  if(scrollRAF){cancelAnimationFrame(scrollRAF);scrollRAF=null;}
+  if(scrollFallback){clearTimeout(scrollFallback);scrollFallback=null;}
+}
+function glideTo(target,dur){
+  const t=$('thread'); if(!t)return;
+  stopScroll();
+  const max=Math.max(0,t.scrollHeight-t.clientHeight);
+  const to=Math.max(0,Math.min(max,target));
+  const from=t.scrollTop;
+  const d=dur||Math.max(240,Math.min(560,Math.abs(to-from)*1.1));
+  if(reducedMotion()||Math.abs(to-from)<3||typeof requestAnimationFrame!=='function'){t.scrollTop=to;return;}
+  const t0=(window.performance&&performance.now)?performance.now():Date.now();
+  const step=now=>{
+    const k=Math.min(1,((now||Date.now())-t0)/d);
+    t.scrollTop=from+(to-from)*(1-Math.pow(1-k,3));
+    if(k<1){scrollRAF=requestAnimationFrame(step);}
+    else{t.scrollTop=to;stopScroll();}
+  };
+  scrollRAF=requestAnimationFrame(step);
+  /* If rAF never runs (throttled tab), land it anyway rather than sit still. */
+  scrollFallback=setTimeout(()=>{stopScroll();t.scrollTop=to;},d+300);
+}
+/* force: the visitor's own message and the greeting always come into view. */
+function bottom(force){
+  const t=$('thread'); if(!t)return;
+  if(!force&&!atBottom())return;
+  glideTo(t.scrollHeight);
+}
+function offsetInThread(el){
+  const t=$('thread');
+  return el.getBoundingClientRect().top-t.getBoundingClientRect().top+t.scrollTop;
+}
+/* Bring a freshly added row into view the way a reader would want it.
+   `follow` is measured BEFORE the row is appended — asking atBottom() after
+   the fact always answers "no", because the new content is what pushed you up. */
+function reveal(row,follow){
+  const t=$('thread'); if(!t||!row||!follow)return;
+  const tall=row.offsetHeight>(t.clientHeight-56);
+  glideTo(tall?offsetInThread(row)-10:t.scrollHeight);
+}
 
 function msg(dir,html){
   const th=$('thread');
@@ -3619,32 +3683,41 @@ function msg(dir,html){
   const row=document.createElement('div');
   row.className='msg '+dir+((prev&&!prev.classList.contains(dir))?' gap':'');
   const b=document.createElement('div');b.className='b tail';b.innerHTML=html;
-  row.appendChild(b);th.appendChild(row);bottom();return row;
+  const stick=atBottom();
+  row.appendChild(b);th.appendChild(row);
+  reveal(row,stick||dir==='out');
+  return row;
 }
 function outMsg(text){
   const row=msg('out',text);
   if(st.lastOut){st.lastOut.remove();}
   const r=document.createElement('div');r.className='receipt';r.innerHTML='<b>Delivered</b>';
-  row.after(r);st.lastOut=r;bottom();
+  row.after(r);st.lastOut=r;
+  bottom(true);   /* you always follow your own message down */
 }
 const markRead=()=>{if(st.lastOut)st.lastOut.innerHTML='<b>Read</b>';};
 function typing(){
   const row=document.createElement('div');row.className='msg in gap';
   row.innerHTML='<div class="typing"><i></i><i></i><i></i></div>';
-  $('thread').appendChild(row);bottom();return row;
+  const stick=atBottom();
+  $('thread').appendChild(row);
+  if(stick)bottom(true);   /* the dots are short, and they say "wait here" */
+  return row;
 }
 function card(o){
   const el=document.createElement('div');el.className='card';
   el.innerHTML=`<div class="top"><div class="eyebrow">${o.e||'Premium'}</div><div class="h">${o.h}</div><div class="b2">${o.b}</div></div>`+
    `<div class="go" data-go="1"><span>${o.cta||'See what Premium includes'}</span><i>&rsaquo;</i></div>`+
    `<div class="fine">${PRICEFINE}</div>`;
-  $('thread').appendChild(el);bottom();
+  const stick=atBottom();
+  $('thread').appendChild(el);bottom(stick);
 }
 function srcs(ids){
   if(!ids||!ids.length)return;
   const w=document.createElement('div');w.className='srcs';
   ids.forEach(id=>{const b=document.createElement('button');b.textContent=ART[id].t;b.onclick=()=>sheet(id);w.appendChild(b);});
-  $('thread').appendChild(w);bottom();
+  const stick=atBottom();
+  $('thread').appendChild(w);bottom(stick);
 }
 /* "Is there anything below?" — not "are we at the top?". The hint used to
    vanish on the first scroll while two more rows were still hidden. Kept out
