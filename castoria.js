@@ -429,7 +429,7 @@ const DECLINE=[
   `<div class="hd">What I can tell you about CastSlate</div><ul><li>Every submission is shown to the casting director <b>one at a time, full-screen</b>, and they have to decide callback or pass. Average review time is <b>over 8 seconds</b> per submission.</li><li>Profiles are <b>free</b> — 1 headshot and ${FREE.sub} submission a week, no card.</li><li>Premium is <b>$99 a year</b> (about $8.25/month) and renews at $99, for unlimited submissions, unlimited photos and video, your Slate Video, your Business Card, weekly Manager Mode check-ins, and the ${DIR}-company agency directory.</li><li>Casting posts are reviewed by admins before they go live, and every caster can be reported.</li></ul>`+
   `<p>What's the right platform for you is genuinely your call — I'd just be guessing about anyone else's.</p>`,
   b:c=>`Anything specific about how CastSlate works that would help you decide?`,
-  s:['How does the review actually work?','What does Premium include?','Are the castings real?'],src:['guarantee','pricing']},
+  s:['How does the review actually work?','What does Premium include?'],src:['guarantee','pricing']},
  {id:'live',
   re:/\b(weather|temperature|forecast|raining|snowing)\b|what time is it|today'?s date|\b(news|headlines) (today|now)\b|stock price|score (of|for) the|who won (the )?(game|match)/i,
   a:c=>`I don't have live data — no weather, news, scores or prices. A quick search will beat me on that one.`,
@@ -460,7 +460,7 @@ const KB=[
  a:c=>`CastSlate is a casting platform built for working actors, and the whole thing turns on one promise: <b>every submission you send is seen individually</b>.`+
  `<div class="hd">How it works</div><ul><li>Create a <b>free</b> profile — no card, not a trial</li><li>Browse open castings, organised by city</li><li>Apply to roles you actually fit</li><li>Casting reviews submissions <b>one at a time, full-screen</b>, and has to decide callback or pass on each</li></ul>`+
  `<p>Nobody can scroll past you. Average review time per submission is <b>over 8 seconds</b>.</p>`,
- src:['guarantee','pricing'],s:['How do I get started?','What does it cost?','Are the castings real?']},
+ src:['guarantee','pricing'],s:['How do I get started?','What does it cost?']},
 
 {id:'start',k:'get started begin sign up signup register create account first steps new actor join setup',
  a:c=>`Four steps and you're submitting today.`+
@@ -543,7 +543,7 @@ const KB=[
  `<div class="hd">What CastSlate does about it</div><ul><li>Every casting is <b>reviewed by admins before it goes live</b></li><li>Casters carry a <b>Verified</b> badge once reviewed; anyone without one shows as <b>Unverified</b></li><li>Casting directors can be put through <b>ID verification</b>, and posting rights are granted separately</li><li>Every casting and profile has a <b>Report</b> link straight to the admin queue — and the reporter is never shown to the reported party</li><li>Casters who ask talent for money are suspended, with a record kept so they can't quietly re-register</li></ul>`+
  `<div class="hd">Your own rules</div><p>Tell someone where you're going. Bring a chaperone where it's relevant. And if it feels wrong, it is — no role is worth overriding that.</p>`+
  `<p>If you're in immediate danger, contact local emergency services first, then report the posting.</p>`,
- src:['safety'],s:['How do I report something?','What does Verified mean?','Are the castings real?']},
+ src:['safety'],s:['How do I report something?','What does Verified mean?']},
 
 {id:'noresponse',k:'nobody responds response never hear back hearing rejected rejection ignored discouraged nothing happening luck wrong replies silence no callbacks callbacks not booking giving up why arent i getting',
  a:c=>`First thing, and I mean this plainly: <b>this is normal, and it is not a verdict on you.</b>`+
@@ -691,14 +691,14 @@ const KB=[
  a:c=>`<div class="hd">What the badge means</div><p>Green <b>Verified</b> means a CastSlate admin reviewed that caster — they've posted before, are tied to a recognised production, or supplied documentation. Anyone without it is marked <b>Unverified</b> until that review happens.</p>`+
  `<div class="hd">Getting verified as a caster</div><ul><li>Complete <b>ID verification</b> through our verification partner</li><li>Passing the ID check marks you verified — <b>posting rights are granted separately</b> by an admin</li></ul>`+
  `<p>As an actor: treat unverified posts with extra care. Confirm details, and where you can, ask for a phone or video conversation before sharing personal information.</p>`,
- src:['safety','cd'],s:['Are the castings real?','How do I report something?']},
+ src:['safety','cd'],s:['How do I report something?']},
 
 {id:'safety',k:'safe safety scam sketchy suspicious dangerous audition location trust worried creepy uncomfortable',
  a:c=>`Short version: <b>no legitimate casting on CastSlate will ask you for money or financial information.</b> Anyone who does gets suspended.`+
  `<div class="hd">Before you go</div><ul><li>Check for the green <b>Verified</b> badge</li><li>In-person callbacks belong at a <b>verified production office or studio</b> — not a residence, not a hotel room</li><li>Bring a chaperone where relevant, and tell someone where you're going</li><li>If the location, the timing or the request feels off, <b>don't go</b>. No role is worth it</li></ul>`+
  `<div class="hd">Reporting</div><p>Use the <b>Report</b> link on any casting or profile. It goes to the admin queue with your reason and details, and <b>the reporter is never shown to the reported party</b>.</p>`+
  `<p>If you're in immediate danger, contact local emergency services first, then report the posting.</p>`,
- src:['safety'],s:['How do I report something?','Rules for under 18?','Are the castings real?']},
+ src:['safety'],s:['How do I report something?','Rules for under 18?']},
 
 {id:'report',k:'report reporting flag abuse harassment inappropriate impersonation complaint',
  a:c=>`Every casting page and every profile carries a <b>Report</b> link.`+
@@ -739,11 +739,16 @@ const KB=[
  `<div class="hd">Choosing a class generally</div><p>One teacher who sees you weekly for six months moves your work further than three teachers in a year. Audit before you commit, and be suspicious of anything that promises access to casting directors as the selling point.</p>`,
  src:[],s:['How do I improve my profile?','How do I prepare for an audition?']},
 
-{id:'union',k:'sag aftra union aea equity non-union eligible eligibility taft hartley must join membership union status filter',
- a:c=>`<b>SAG-AFTRA, AEA and non-union castings are all supported.</b> Union status is displayed on every casting post and you can filter by it.`+
- `<div class="hd">On eligibility, generally</div><ul><li>Most people become SAG-AFTRA eligible through a <b>principal role on a union production</b> (Taft-Hartley), enough background vouchers, or membership in a sister union</li><li>Once you join, you generally <b>can't work non-union</b> under the same union's jurisdiction — so people often build credits non-union first, deliberately</li><li>Joining costs real money up front. It isn't a milestone to rush</li></ul>`+
- `<p>Rules change and vary by contract — check with the union directly before making a decision.</p>`,
- src:['apply'],s:['How do I get an agent?','What do actors get paid?']},
+{id:'union',k:'sag aftra union aea equity non-union eligible eligibility taft hartley must join membership union status filter do i need to join is it worth joining should i join what does the union do benefits',
+ a:c=>`<b>SAG-AFTRA, AEA and non-union castings are all supported.</b> Union status is on every casting post and you can filter by it.`+
+ `<div class="hd">First, what joining is NOT</div><p>This trips up almost every new actor, so let me be blunt about it. <b>A union card is not a promotion, a ranking, or a stamp of talent.</b> It does not make you a better actor, it does not put you on a list casting directors browse, and it does not give you priority for a role. Nobody gets cast because they are in the union. They get cast because they were right for it.</p>`+
+ `<div class="hd">What it actually is</div><p>SAG-AFTRA is a <b>labour union</b> — closer in spirit to an insurance policy and a contract enforcer than to a club. It exists to protect people who are already working:</p>`+
+ `<ul><li><b>Negotiated minimums</b> so a signatory production cannot pay you whatever it likes</li><li><b>Working conditions</b> — turnaround, meal breaks, overtime, safety, stunt and intimacy rules</li><li><b>Residuals</b> — you get paid again when the work is reused</li><li><b>Health and pension plans</b>, which you qualify for by <em>earning enough in a year</em>, not by joining</li><li><b>Someone to call</b> when a production breaks the agreement</li></ul>`+
+ `<div class="hd">The catch nobody mentions</div><p>Under <b>Global Rule One</b>, once you are a member you generally cannot accept non-union work under that union's jurisdiction. For a working actor that is protection. For a beginner with three credits it can mean <b>the pool of jobs you are allowed to take gets smaller</b> the day you sign — which is why plenty of people stay non-union on purpose while they build a reel and a resume.</p>`+
+ `<p>There is also a real initiation fee plus ongoing dues, and the amounts change, so check the current figures at sagaftra.org rather than trusting anyone's memory.</p>`+
+ `<div class="hd">So, honestly</div><p>Join when union work is what you are actually being offered, not to feel legitimate. Getting eligible and <b>staying "must-join" for a while</b> is a completely normal, deliberate strategy — you can usually take that first union job and delay joining until the next one — the exact window is set by the rules, so confirm it before you count on it.</p>`+
+ `<p>Rules change and vary by contract and by union. Check with the union directly before you decide anything.</p>`,
+ src:['apply'],s:['What is Taft-Hartley?','How do I get an agent?','How much do actors get paid?']},
 
 {id:'agent',k:'agent manager representation get an agent signed submit to agents query letter how do i get representation agency submission mailing approach',
  a:c=>`No agent signs you off a headshot alone. What they're deciding is one thing: <b>are you bookable right now</b> — can they send you out this month and have you hold up in the room.`+
@@ -812,11 +817,13 @@ const KB=[
  `<p>Do it for the vouchers, the money, or the education. Not as a strategy for getting seen.</p>`,
  src:[],s:['Is SAG-AFTRA supported?','How do I get an agent?']},
 
-{id:'move',k:'move moving to la new york city relocate market where should i live should i move',
- a:c=>`I can't make that call for you, but the honest version of the tradeoff:`+
- `<ul><li><b>LA and New York</b> have the most volume — and the most competition, and the highest cost of surviving a slow year</li><li><b>Atlanta, Chicago, New Orleans, Albuquerque</b> and others have real production and a much shorter queue</li><li>Moving before you have footage, a resume and some savings usually means a year of survival jobs and no auditions</li></ul>`+
- `<p>Build the materials where you are, prove you can work, then move into a market with something to show. On CastSlate, castings are organised by city so you can see what's actually shooting near you first.</p>`,
- src:[],s:['Where is CastSlate available?','How do I build a reel with no footage?']},
+{id:'move',k:'move moving to la los angeles hollywood new york city relocate market where should i live should i move do i need to move to be a film actor can i work from anywhere remote self tape',
+ a:c=>`<b>No, you do not have to move to LA to be a working film actor.</b> That was much truer twenty years ago than it is now.`+
+ `<div class="hd">Why it changed</div><ul><li><b>The first round is a self-tape almost everywhere.</b> Casting offices in Los Angeles routinely read actors who are nowhere near Los Angeles, because the first thing they watch is a file, not a person</li><li><b>New York is its own major market</b> — features, television, streaming and theatre all cast heavily out of it, and plenty of LA-based casting offices run New York sessions for their projects</li><li>If they like the tape enough to want you in the room, <b>travel for a callback, a chemistry read or a test is frequently covered by the production</b> — that is normal for higher-level roles. It is not a guarantee at every level, and on smaller projects you may be asked to be a "local hire", but the days of needing a Los Angeles address to be seen at all are gone</li></ul>`+
+ `<div class="hd">Where the work actually is</div><p>Beyond LA and New York: <b>Atlanta, New Mexico, Chicago, New Orleans, Vancouver and Toronto</b> all have real, continuous production and a much shorter queue. Being one of two hundred locals for a role beats being one of twelve thousand.</p>`+
+ `<div class="hd">The honest tradeoff</div><ul><li>LA and NY have the most volume — and the most competition, and the highest cost of surviving a slow year</li><li>Moving before you have footage, a resume and some savings usually buys you a year of survival jobs and no auditions</li><li><b>Build the materials where you are first.</b> A strong tape travels; you do not have to</li></ul>`+
+ `<p>On CastSlate, castings are organised by city so you can see what is actually shooting near you before you uproot anything.</p>`,
+ src:[],s:['How do I build a reel with no footage?','What is a self-tape?','Where is CastSlate available?']},
 
 {id:'encourage',k:'too old too late give up quit worth pursuing am i wasting my time discouraged should i keep going no talent',
  a:c=>`I'm not going to give you a motivational poster, so here's the useful version.`+
@@ -1222,6 +1229,14 @@ const KB=[
  `<div class="hd">If you have never done this before, here is the whole path</div><ul><li><b>One current photo</b> that looks like you. A phone, a window, a plain wall, someone else holding the camera</li><li><b>Sixty seconds of footage.</b> A dialogue scene with a friend or a monologue. It does not need to be professional — it needs to exist</li><li><b>Get in front of people.</b> Student films, shorts, community theatre, background work, a class if you can afford one and want one</li><li><b>Submit weekly</b> to things you are genuinely right for. A habit, not an event</li><li><b>Learn the craft as you go</b> — which is what I am here for. I'll teach you the fundamentals for free, film or stage. Get a notepad and a pen and we can start now</li></ul>`+
  `<p>The actors who make it are rarely the most gifted ones in the room at nineteen. They are the ones who kept turning up with materials in order. That part is entirely learnable and you can start it today.</p>`,
  src:['profile'],s:['Teach me the fundamentals','Do I need acting school?','How do I get my first credit?']},
+
+{id:'bookshops',k:'where can i find audition material materials monologue book books about acting plays scripts buy read library bookshop bookstore drama book shop larry edmunds samuel french sides where to get plays',
+ a:c=>`Plenty of places, and two of them are worth knowing by name.`+
+ `<div class="hd">The two specialist shops</div><ul><li><b>The Drama Book Shop</b> — New York. A theatre bookshop rather than a theatre shelf: plays, anthologies, craft books, and staff who actually know the repertoire and will help you find a piece for your type. Worth an afternoon even if you buy nothing</li><li><b>Larry Edmunds Bookshop</b> — Los Angeles, on Hollywood Boulevard, open since 1938. Film and theatre books, screenplays, biographies and archive material. The screen equivalent of the above</li></ul>`+
+ `<div class="hd">Everywhere else</div><ul><li><b>Play publishers direct</b> — Concord Theatricals (which now handles the Samuel French catalogue), Dramatists Play Service, Nick Hern, Bloomsbury/Methuen. Cheapest way to get an actual playscript</li><li><b>Libraries.</b> The New York Public Library for the Performing Arts at Lincoln Center is free and enormous. Most decent city libraries have a drama section</li><li><b>Used bookshops and secondhand sites</b> — acting texts are old, cheap and easy to find used</li><li><b>Screenplays</b> are widely available online through studio awards sites and script archives, and reading them is a craft exercise in itself</li></ul>`+
+ `<div class="hd">One piece of advice about monologue books</div><p>Use them to <b>find</b> a piece, never as the whole preparation. Panels have heard the anthology favourites hundreds of times, and they can tell within two lines whether you have read the play. <b>Read the whole play.</b> The best pieces are usually the ones nobody has extracted yet.</p>`+
+ `<p>And when you choose: light beats heavy for a first impression. Ask me about monologues and I will explain why.</p>`,
+ src:[],s:['Which monologue should I pick?','How do I prepare a monologue?','What annoys casting directors?']},
 
 {id:'human',k:'human person agent support team talk to someone real person contact speak representative customer service',
  a:c=>`Of course${c.name?', '+c.name:''} — I'll hand this thread to the CastSlate team with everything above attached, so you don't have to repeat yourself.`+
@@ -2859,6 +2874,13 @@ const KEYS=KB.map(e=>new Set(e.k.split(' ')));
 
 /* intent wins over incidental nouns */
 const INTENT=[
+ /* These three run first on purpose. Left further down, "where can I find
+    monologue books" is swallowed by /monologue/, "do I need to live in LA" by
+    the film-actor rule, and "is joining the union worth it" by the Premium
+    is-it-worth-it rule. */
+ [/\bwhere (can|do|would|should) i (find|get|buy|look for)\b[^?.!]{0,30}\b(monologue|monologues|play|plays|script|scripts|sides|audition material|audition materials|acting book|acting books|books)\b|\b(acting|drama|theatre|theater) book ?(shop|store)s?\b|\bdrama book ?shop\b|\blarry edmunds\b|\bsamuel french\b|\bwhere to (find|get|buy) (a |an )?(monologue|play|script|acting book)/i,'bookshops'],
+ [/\bdo i (need|have) to (move|relocate)\b|\b(should|do) i (need to )?move to (la|l\.a\.|los angeles|hollywood|new york|nyc)\b|\bmove to (la|l\.a\.|los angeles|hollywood|new york|nyc)\b|\bdo i (need|have) to (be in|live in|be based in)\b[^?.!]{0,20}\b(la|l\.a\.|los angeles|hollywood|new york|nyc)\b|\bcan i (work|act|book|audition) from (anywhere|home|another (city|state)|outside)\b/i,'move'],
+ [/\bdo i (need|have) to join (the )?(union|sag|sag.?aftra|equity|aea)\b|\bshould i join (the )?(union|sag|sag.?aftra|equity|aea)\b|\b(is|are)\b[^?.!]{0,14}\b(union|sag.?aftra|sag)\b[^?.!]{0,18}\bworth\b|\bworth joining (the )?(union|sag|sag.?aftra|equity)\b|\bwhat does (the )?(union|sag.?aftra)\b[^?.!]{0,18}\b(do|give|get)\b|\bbenefits of (the )?(union|sag)|\bwhy join (the )?(union|sag)/i,'union'],
  [/\b(not|never|nobody|no one|havent|haven'?t|don'?t|dont)\b.{0,30}\b(hear|heard|hearing|repl|respond|response|answer|back|callback)/i,'noresponse'],
  [/no casting.{0,20}(gets? back|repl|respond)/i,'noresponse'],
  [/\b(what|where)\s+am\s+i\s+doing\s+wrong\b/i,'noresponse'],
@@ -3068,23 +3090,53 @@ const CHECKS=['Is that what you were looking for?','Did that answer your questio
    conversation drops out, and the pool rotates so it is not the same list
    twice running. The strip scrolls vertically — never horizontally. */
 const TOPIC_POOL=[
- 'Teach me the fundamentals','Teach me the first six seconds','What annoys casting directors?',
- 'Which headshot should I lead with?','Which monologue should I pick?','What should I submit to?',
- 'How do I improve my profile?','How do I build a reel with no footage?','What is my type?',
- 'Teach me the on-set technicals','Teach me the theatre technicals','Give me a commercial acting lesson',
- 'Teach me how to listen','Teach me subtext','Teach me stakes','How do I stop overacting?',
- 'Teach me the close-up','Give me a self-tape exercise','Teach me how to slate','Teach me cold reading',
- 'Give me the audition room lesson','Teach me voice acting','Teach me stage acting',
+ /* craft and lessons */
+ 'Teach me the fundamentals','Teach me how to listen','Teach me subtext','Teach me stakes',
+ 'Teach me about objectives','Teach me the Magic If','Teach me to be present',
+ 'How do I stop overacting?','Teach me the close-up','The camera sees everything',
+ 'Teach me stage acting','Give me a commercial acting lesson','Teach me voice acting',
+ 'How do I cry on camera?','How do I play someone who is lying?','How do I stop moving my hands?',
+ 'Why does every take I do look the same?','How do I memorise lines?','What is my playing age?',
+ 'Is Stanislavsky the same as Method acting?','Film vs stage - what changes?',
+ /* auditions */
+ 'Give me a self-tape exercise','Teach me how to slate','Teach me cold reading',
+ 'Give me the audition room lesson','How do I prepare for an audition?','What should I wear to an audition?',
+ 'How do I stop being nervous?','How do I take an adjustment?','What are sides?',
+ 'How do I read a breakdown?','What happens after I submit?','What is a callback?',
+ 'What is a chemistry read?','Which monologue should I pick?','How do I prepare a monologue?',
+ 'How long do casting directors watch a reel?',
+ /* materials and profile */
+ 'Teach me the first six seconds','What annoys casting directors?','Which headshot should I lead with?',
+ 'What are the headshot requirements?','How do I improve my profile?','How do I build a reel with no footage?',
+ 'What is the Slate Video?','What should I put on my resume with no credits?','What is my type?',
+ 'What should I submit to?',
+ /* on set and on stage */
+ 'Teach me the on-set technicals','Teach me the theatre technicals','What is set etiquette?',
+ 'What is blocking?','What does back to one mean?','What is a hot set?','What is coverage?',
+ 'What is cheating out?','What is upstaging?','What is tech week?','What is a spike mark?',
+ 'What is ADR?','What is a stand-in?','What is room tone?',
+ /* the industry */
+ 'Do I need to join SAG-AFTRA?','What does the union actually do?','What is Taft-Hartley?',
+ 'What are SAG rates?','What are residuals?','What is a buyout?','What is a holding fee?',
+ 'What is a conflict in commercial work?','What should I check before signing a contract?',
+ 'What are the AI and digital replica clauses?','What is a low budget agreement?',
+ 'How much do actors get paid?','How do actors survive financially?','What is a deal memo?',
+ 'What is first refusal?','What does being on hold mean?','What is an upgrade on set?',
+ /* representation and companies */
  'How do I get an agent?','Agent vs manager?','Who are the biggest talent agencies?',
- 'Tell me about the studios','How does casting actually work?','What does a casting director do?',
- 'How do I read a breakdown?','What is Taft-Hartley?','How much do actors get paid?',
- 'What are SAG rates?','What should I wear to an audition?','How do I memorise lines?',
- 'How do I cry on camera?','Do I need acting school?','How do I get my first credit?',
- 'What is a self-tape?','How do I prepare for an audition?','How do I network?',
- 'What should I do every week?','Am I too old to start acting?','How do I stop being nervous?',
- 'What does it cost?','What does Premium include?','Is Premium worth it?',
- 'How do I apply to a casting?','Are the castings real?','How do I avoid scams?',
- 'What is Manager Mode?','Tell me about the agency directory','Talk to a human'
+ 'Tell me about the studios','What does a casting director do?','How does casting actually work?',
+ 'Am I ready for an agent?','How do I approach an agency?','Tell me about the agency directory',
+ /* career and life */
+ 'Do I need to move to LA?','Do I need acting school?','Where can I find monologue books?',
+ 'How do I get my first credit?','How do I network?','What should I do every week?',
+ 'Am I too old to start acting?','I have never acted before','Is background work worth it?',
+ 'How do I become a voice actor?','How do I become a commercial actor?','How do I become a theater actor?',
+ 'What about child actors?','I sing - how does musical theatre work?','How do I build outside LA and NY?',
+ 'Why is nobody getting back to me?','How do I avoid scams?',
+ /* the platform */
+ 'What does it cost?','What does Premium include?','Is Premium worth it?','How do I apply to a casting?',
+ 'What is Manager Mode?','What is the Business Card?','How do I cancel my subscription?',
+ 'Is my profile private?','Talk to a human'
 ];
 let poolAt=0;
 /* Contextual follow-ups first, then fill out the strip from the pool. */
