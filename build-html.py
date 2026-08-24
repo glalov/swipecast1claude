@@ -663,14 +663,26 @@ def render_page(title, desc, canonical, extra_preload=""):
       s.async=true;
       document.body.appendChild(s);
     }}
+    /* Whichever comes first: the browser goes idle, the visitor touches or
+       scrolls the page, or a short timeout. The launcher used to appear only
+       after a 4s idle callback, so on a phone it turned up somewhere around
+       the first scroll — which read as "it appears when I scroll down". */
+    ['scroll','touchstart','pointerdown','keydown'].forEach(function(ev){{
+      window.addEventListener(ev,load,{{once:true,passive:true}});
+    }});
+    /* Hard floor, not gated on React. The launcher is the only affordance the
+       assistant has, so it must be on screen by the time the intro curtain
+       lifts — waiting for the app to mount put it ~6s in on a phone. */
+    setTimeout(load,1500);
     function whenIdle(){{
-      if(window.requestIdleCallback)requestIdleCallback(load,{{timeout:4000}});
-      else setTimeout(load,2200);
+      if(window.requestIdleCallback)requestIdleCallback(load,{{timeout:1200}});
+      else setTimeout(load,900);
+      setTimeout(load,2500);
     }}
     function waitForApp(tries){{
       if(window.__CS_REACT_MOUNTED)return whenIdle();
-      if(tries>60)return whenIdle();
-      setTimeout(function(){{waitForApp(tries+1);}},250);
+      if(tries>40)return whenIdle();
+      setTimeout(function(){{waitForApp(tries+1);}},150);
     }}
     if(document.readyState==='complete')waitForApp(0);
     else window.addEventListener('load',function(){{waitForApp(0);}});

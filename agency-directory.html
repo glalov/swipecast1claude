@@ -95,7 +95,7 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260824-030910"/>
+  <link rel="preload" as="script" href="/app.js?v=20260824-034548"/>
   <link rel="preload" as="image" href="/logos/warner.svg"/>
   <link rel="preload" as="image" href="/logos/universal.svg"/>
   <link rel="preload" as="image" href="/logos/disney.svg"/>
@@ -104,15 +104,15 @@
   <link rel="preload" as="image" href="/logos/marvel.svg"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260824-030910 -->
-  <meta name="build-version" content="20260824-030910"/>
+  <!-- BUILD: 20260824-034548 -->
+  <meta name="build-version" content="20260824-034548"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260824-030910";
+        var B="20260824-034548";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -431,7 +431,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260824-030910"
+        "/app.js?v=20260824-034548"
       ];
       function step(){
         var it=STEPS.shift();
@@ -472,18 +472,30 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260824-030910';
+      s.src='/castoria.js?v=20260824-034548';
       s.async=true;
       document.body.appendChild(s);
     }
+    /* Whichever comes first: the browser goes idle, the visitor touches or
+       scrolls the page, or a short timeout. The launcher used to appear only
+       after a 4s idle callback, so on a phone it turned up somewhere around
+       the first scroll — which read as "it appears when I scroll down". */
+    ['scroll','touchstart','pointerdown','keydown'].forEach(function(ev){
+      window.addEventListener(ev,load,{once:true,passive:true});
+    });
+    /* Hard floor, not gated on React. The launcher is the only affordance the
+       assistant has, so it must be on screen by the time the intro curtain
+       lifts — waiting for the app to mount put it ~6s in on a phone. */
+    setTimeout(load,1500);
     function whenIdle(){
-      if(window.requestIdleCallback)requestIdleCallback(load,{timeout:4000});
-      else setTimeout(load,2200);
+      if(window.requestIdleCallback)requestIdleCallback(load,{timeout:1200});
+      else setTimeout(load,900);
+      setTimeout(load,2500);
     }
     function waitForApp(tries){
       if(window.__CS_REACT_MOUNTED)return whenIdle();
-      if(tries>60)return whenIdle();
-      setTimeout(function(){waitForApp(tries+1);},250);
+      if(tries>40)return whenIdle();
+      setTimeout(function(){waitForApp(tries+1);},150);
     }
     if(document.readyState==='complete')waitForApp(0);
     else window.addEventListener('load',function(){waitForApp(0);});

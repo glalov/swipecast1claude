@@ -20,7 +20,7 @@ MARKUP = """<button class="launch" id="launch" aria-label="Message Castoria">
 </button>
 <div class="panel" id="panel" role="dialog" aria-label="Castoria virtual assistant">
   <div class="bar" id="bar">
-    <button class="back" id="back">&lsaquo; Close</button>
+    <button class="xclose" id="close" aria-label="Close Castoria">&#10005;</button>
     <div class="ava">C</div>
     <b>Castoria</b>
     <i id="barsub">Virtual assistant</i>
@@ -41,9 +41,9 @@ MARKUP = """<button class="launch" id="launch" aria-label="Message Castoria">
 </div>"""
 
 TAIL = r"""
-$('launch').onclick=function(){ if(st.open){st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');} else openPanel(); };
+$('launch').onclick=function(){ if(st.open)closePanel(); else openPanel(); };
 $('sheetback').onclick=function(){$('sheet').classList.remove('on');};
-$('back').onclick=function(){st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');};
+$('close').onclick=function(){closePanel();};
 var inp=$('input');
 inp.oninput=function(){inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,86)+'px';$('send').disabled=!inp.value.trim();};
 inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('send').click();}};
@@ -52,11 +52,11 @@ ROOT.addEventListener('click',function(e){
   var t=(e.composedPath&&e.composedPath()[0])||e.target;
   if(t&&t.closest){
     var nv=t.closest('[data-nav]');
-    if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');} else {send('How do I cancel my subscription?');} return; }
+    if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));closePanel();} else {send('How do I cancel my subscription?');} return; }
     var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}
   }
   if(t&&t.closest&&t.closest('[data-go]')){
-    if(window.__CS_NAV){window.__CS_NAV('membership');st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');}
+    if(window.__CS_NAV){window.__CS_NAV('membership');closePanel();}
     else send('How do I upgrade to Premium?');
   }
 });
