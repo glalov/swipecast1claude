@@ -12898,6 +12898,14 @@ function castingRecencyCompare(a,b){
   return tb-ta;
 }
 
+// Cast Slate Picks lead their bucket. The SQL fetch already orders featured
+// first, but Browse re-sorts client-side, and a sort that ignored `featured`
+// silently dropped the pinning — the picks fell to wherever their posted date
+// put them. Keep this ahead of the recency tiebreak.
+function castingFeaturedRank(casting){
+  return casting&&casting.featured===true?0:1;
+}
+
 function castingSortBucket(casting){
   if(casting?.status==="archived")return 2;
   if(castingIsExpired(casting))return 1;
@@ -13220,7 +13228,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
-    .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||castingRecencyCompare(a,b));
+    .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
   return(<div className="page page-wide">
     <div className="section-label">{t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>

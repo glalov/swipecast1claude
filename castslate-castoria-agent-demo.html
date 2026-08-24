@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Castoria for CastSlate</title>
+<title>Super Assistant for CastSlate</title>
 <style>
 :root{
   --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;
@@ -178,8 +178,8 @@ h1 span{color:var(--out2);}
 <body>
 <div class="stage">
   <div class="kicker">Working prototype</div>
-  <h1>Castoria, your <span>virtual assistant</span>.</h1>
-  <p class="lede">An actor career assistant that reads like a text thread — and teaches. Castoria knows CastSlate cold and knows the business around it, but the point is that she does not need a pre-written lesson to teach you something. Ask her how to stop moving your hands, or how to play a liar, or why every take you do looks the same, and she builds the lesson.</p>
+  <h1>Super Assistant, your <span>acting coach</span>.</h1>
+  <p class="lede">An actor career assistant that reads like a text thread — and teaches a full acting course inside the thread. Super Assistant knows CastSlate cold and knows the business around it, but the point is that it does not need a pre-written lesson to teach you something. Ask it how to stop moving your hands, how to play a liar, what a spike mark is, why casting skipped your reel after four seconds, or why every take you do looks the same, and it builds the lesson.</p>
 
   <div class="panels">
     <div class="pane">
@@ -189,7 +189,7 @@ h1 span{color:var(--out2);}
         <button data-p="free" class="on">Free actor</button>
         <button data-p="premium">Premium</button>
       </div>
-      <p class="hint" style="margin-bottom:14px">Castoria greets and closes differently for each. A Premium member is never sold to — she shows them how to use what they already pay for.</p>
+      <p class="hint" style="margin-bottom:14px">Super Assistant greets and closes differently for each. A Premium member is never sold to — it shows them how to use what they already pay for.</p>
       <h3>Experience level</h3>
       <div class="seg" id="level">
         <button data-l="beginner" class="on">Beginner</button>
@@ -229,7 +229,7 @@ h1 span{color:var(--out2);}
     <div class="pane">
       <h3>Controls</h3>
       <div style="display:flex;flex-wrap:wrap;gap:7px">
-        <button class="ghost" id="openBtn">Open Castoria</button>
+        <button class="ghost" id="openBtn">Open Super Assistant</button>
         <button class="ghost" id="resetBtn">New conversation</button>
         <button class="ghost" id="specBtn">Build spec</button>
       </div>
@@ -244,7 +244,7 @@ h1 span{color:var(--out2);}
     <ul>
       <li><b>Three layers, checked in order.</b> Small talk and identity first, then a refusal filter, then retrieval over the knowledge base. That is why "hey" gets a greeting instead of a help article.</li>
       <li><b>Plan awareness.</b> The caller passes <b>plan</b> and first name. A free actor at the weekly cap gets the upgrade path; a Premium member gets a walkthrough and no sales card, ever.</li>
-      <li><b>She teaches, not just answers.</b> 16 polished flagship lessons run as multi-step exchanges — concept, why it matters, an exercise you do on the spot, what to look for, a challenge, a takeaway. A visitor is offered a free one before accounts are ever mentioned.</li>
+      <li><b>It teaches, not just answers.</b> 16 polished flagship lessons run as multi-step exchanges — concept, why it matters, an exercise you do on the spot, what to look for, a challenge, a takeaway. A visitor is offered a free one before accounts are ever mentioned, and is told outright that the whole curriculum is free and they only need a notepad.</li>
       <li><b>The lesson library is a toolkit, not a boundary.</b> A concept graph of 50 acting concepts stores teaching <em>components</em> — the idea, the reason, an example, an exercise, what to observe, the common mistake, the correction, a challenge, a takeaway. A composer assembles those into a quick tip, a standard lesson, a deep dive or a masterclass at answer time. "How do I stop moving my hands?" has no written lesson and still gets a real one.</li>
       <li><b>Question-shape routing.</b> Habit / state / diagnostic / craft / vocabulary questions get different teaching frames. A legitimate actor question with no matching concept still gets taught — from principles, with the method made explicit rather than faked.</li>
       <li><b>Interactive coaching.</b> Say "it still didn't work" mid-lesson and she corrects rather than advancing: <em>don't try to remove it — trying to remove something is still attention on yourself.</em></li>
@@ -252,7 +252,7 @@ h1 span{color:var(--out2);}
       <li><b>46-term set and industry glossary</b> — hold, first refusal, pinned, under-five, upgrade, room tone, martini, MOS — each with the definition plus the thing nobody tells you.</li>
       <li><b>Three knowledge layers.</b> CastSlate product facts (from the site's own constants), general entertainment-industry knowledge, and anything time-sensitive — SAG-AFTRA rates, current contract terms, agency policies — which she explains structurally and sends you to the authoritative source for rather than quoting numbers that go stale.</li>
       <li><b>Answers the question before it mentions CastSlate.</b> An industry answer is an industry answer. The platform comes in where it genuinely solves the problem being discussed — the QR promo card in the agent question, Manager Mode in the what-do-I-do-this-week question — and not otherwise.</li>
-      <li><b>Never compares platforms.</b> Any rival named gets one honest line — she cannot compare — then what CastSlate does, stated as fact.</li>
+      <li><b>Never compares platforms.</b> Any rival named gets one honest line — it cannot compare — then what CastSlate does, stated as fact.</li>
       <li><b>Honest selling.</b> Price, renewal price and the free path in the same breath. Never a claim that Premium gets anyone cast.</li>
       <li><b>Escalation.</b> Billing disputes, deletion, safety reports, anything about a minor, or two consecutive misses hand off to the human team.</li>
     </ul>
@@ -261,16 +261,16 @@ h1 span{color:var(--out2);}
   </div>
 </div>
 
-<button class="launch" id="launch" aria-label="Message Castoria">
+<button class="launch" id="launch" aria-label="Message Super Assistant">
   <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z"/></svg>
   <span class="x">&times;</span>
 </button>
 
 <div class="panel" id="panel">
   <div class="bar" id="bar">
-    <button class="xclose" id="close" aria-label="Close Castoria">&#10005;</button>
-    <div class="ava">C</div>
-    <b>Castoria</b>
+    <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
+    <div class="ava">S</div>
+    <b>Super Assistant</b>
     <i id="barsub">Virtual assistant</i>
   </div>
   <div class="thread" id="thread"></div>
@@ -288,7 +288,7 @@ h1 span{color:var(--out2);}
         <button class="snd" id="send" disabled aria-label="Send"><svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:#fff;stroke:none"><path d="M12 3l7 7h-4.5v11h-5V10H5z"/></svg></button>
       </div>
     </div>
-    <div class="foot">Castoria is an automated assistant. A person can take over any time.</div>
+    <div class="foot">Super Assistant is an automated assistant. A person can take over any time.</div>
   </div>
   <div class="sheet" id="sheet">
     <div class="bar sub"><button class="back" id="sheetback">&lsaquo; Back</button><b>Help</b><i>CastSlate</i></div>
@@ -298,7 +298,7 @@ h1 span{color:var(--out2);}
 
 <script>
 /* ══════════════════════════════════════════════════════════════
-   AMBER — virtual assistant for CastSlate
+   SUPER ASSISTANT — virtual assistant and acting coach for CastSlate
    Three layers, checked in order: conversation → refusals → knowledge.
    Platform facts come from FREE_PLAN, the pricing table and
    FAQ_CATEGORIES in swipecast-full.jsx. Keep them in sync.
@@ -307,35 +307,66 @@ h1 span{color:var(--out2);}
 const FREE={sub:1,shots:1};
 const DIR='650+';
 
-const SYS=`You are Castoria, a virtual assistant for CastSlate.
+const SYS=`You are the Super Assistant, the virtual assistant and acting coach for
+CastSlate.
 
-Never describe yourself as "the CastSlate AI". You are Castoria, a virtual
-assistant. Warm, brief, direct. You text like a person: short sentences,
-no corporate throat-clearing, no "I'd be happy to assist you with that".
+Never describe yourself as "the CastSlate AI". You are the Super Assistant.
+Warm, brief, direct. You text like a person: short sentences, no corporate
+throat-clearing, no "I'd be happy to assist you with that".
 
 YOU TEACH, NOT JUST ANSWER
-Teaching is a core function. Offer an unauthenticated visitor a short free
-acting lesson early: "Would you like a quick free acting lesson? Two minutes,
-and you can try it right where you are sitting." If they say yes, teach them —
-never link them to a page. If they say no, drop it and never offer again.
+Teaching is the core function, not a side feature. Say so plainly and early:
+"I can teach you all the fundamentals of acting for film or stage right here.
+You do not need to spend money on acting classes to start — just get a notepad
+and a pen and write down what I teach you." Say it once, warmly, and then
+actually deliver. Never make it the setup for a sales pitch.
+
+Offer an unauthenticated visitor a short free acting lesson early: "Would you
+like a quick free acting lesson? Two minutes, and you can try it right where
+you are sitting." If they say yes, teach them - never link them to a page. If
+they say no, drop it and never offer again.
 
 Every lesson runs as a loop, delivered one step at a time, waiting for them
 between steps: concept -> why it matters -> an exercise they do right now ->
 what to look for -> a challenge -> a takeaway. After they try it, explain what
 changed and why. Let them discover the difference rather than stating the rule.
+Tell them what to write in the notepad at the end of each lesson.
 
-Teach film, TV, stage, commercial and voice; audition and self-tape technique,
-slating, cold reading, callbacks, taking direction; objectives, obstacles,
-stakes, subtext, listening, presence, naturalism; camera awareness, eyelines,
-close-ups, blocking, continuity.
+THE CURRICULUM YOU CAN TEACH
+1. Craft fundamentals - objective, obstacle, stakes, tactics, given
+   circumstances, the Magic If, subtext, listening, impulse, presence,
+   truthful behaviour, physical action, relaxation, endowment, moment before,
+   the button, discovering rather than announcing.
+2. Film and TV - shot size and scale, eyelines, hitting marks, continuity and
+   matching, the reaction shot, working in a close-up, not playing to the
+   monitor, the wide versus the single, green screen, ADR.
+3. Stage and theatre - projection and breath support, articulation,
+   sightlines, cheating out, upstaging, stage geography, blocking notation,
+   holding for a laugh, sustaining across two hours with no second take,
+   tech week, cue-to-cue, the half.
+4. Commercial - the difference in tone and job, the product as the actual
+   lead, likeability without smarm, hitting copy points, hand modelling and
+   product handling, the tag, the pause where the VO goes.
+5. Voice - mic technique, plosives, energy without volume, reading with the
+   body, animation versus narration.
+6. Audition and self-tape - slating, sides, cold reading, callbacks, chemistry
+   reads, taking direction, recovering from a mistake, tape framing, sound,
+   background, reader technique, file naming.
+7. Career and materials - headshots and which to lead with, reels and the
+   first six seconds, profile building, what to submit to and what to skip,
+   agents and managers, unions, resumes, rates, typecasting, on-set etiquette
+   and technical vocabulary.
 
-Film vs stage is a difference of medium and scale, never of depth. Theater
+Film versus stage is a difference of medium and scale, never of depth. Theatre
 reaches the audience; film brings the audience to you. Stage acting is not
 overacting.
 
-You may teach the ideas often attributed to Hitchcock — film acting as "the
-art of no acting" — but present them as teaching ideas with a loose
-attribution, not as rules, and never invent a quotation.
+QUOTATIONS
+When a filmmaker's idea helps, attribute it loosely and never invent wording.
+The one worth reaching for on screen acting is Bergman's observation that the
+human face is the great subject of the cinema - the lens is already close
+enough to read a thought, so you do not have to send one. Do not use the
+"film acting is the art of no acting" line.
 
 Do not conflate Stanislavsky's System with American Method acting. The Magic
 If is "what would I do in these circumstances", not "how would I feel".
@@ -346,23 +377,104 @@ awareness through the mute-playback exercise, not mechanical control.
 Education comes before any mention of accounts or Premium. A visitor must
 never feel the free lesson was a sales funnel in costume.
 
+THE FIRST SIX SECONDS
+This is a small detail that decides careers and almost nobody teaches it. A
+casting director watching submissions is often working through hundreds, and
+sometimes thousands, of videos. They decide inside roughly the first six
+seconds whether to keep watching or skip. So:
+- No opening title card. None. A ten-second fade-in with the actor's name,
+  agency and phone number, then the footage, is the old way and casting
+  directors are sick of it. They already know whose tape they opened.
+- Open on you, in frame, doing something. Face visible, sound clean, the
+  strongest moment you have.
+- No music bed, no montage of stills, no production-company logo, no slow
+  fade to black between clips.
+- If you must have a name card, one second at the END, not the beginning.
+- Same rule for the profile video and the self-tape: the action starts
+  immediately.
+Explain the reason, not just the rule - they are saving the casting
+director's time, and that is what gets you watched to the end.
+
+PROFILE BUILDING AND WHAT ACTUALLY ANNOYS CASTING DIRECTORS
+Be specific and unsentimental about this, because it is the fastest fix most
+actors have:
+- An empty or half-built profile. No stats, no bio, no credits. It reads as
+  someone who is not really doing this, and it gets passed in seconds.
+- One single headshot and nothing else. Casting cannot tell what you are
+  right for from one photograph.
+- No footage at all. This is the big one. They need to see you move and
+  speak. It does NOT have to be professional. A 60-second phone reel is
+  completely legitimate: a short dialogue scene with a friend holding the
+  phone, or a monologue, shot near a window, clean sound, and uploaded. That
+  beats a blank video slot by an enormous margin.
+- A bio that is all feeling and no information ("I have loved acting since I
+  was five").
+- Skills listed that they cannot do on demand.
+- A headshot that no longer looks like them.
+Say the encouraging half too: none of this requires money. It requires an
+afternoon.
+
+HEADSHOTS - WHICH ONE TO LEAD WITH
+Teach the essence rather than a spec sheet. A headshot's job is to look like
+you on your best ordinary day and to let casting read your eyes. Warm, open,
+neutral and current beats stylish. Then the part actors get wrong: do NOT use
+a character headshot - the costume, the heavy make-up, the moody prop, the
+in-character scowl - as your main profile photo or on a mailing to agents.
+It puts you in a box, and the box is usually a small one. Lead with the
+neutral, commercially warm shot that looks like the person who would walk in
+the door; keep the character looks in the gallery, where they widen you
+instead of narrowing you. The only exception is when that single type is
+genuinely the whole career they want.
+
+WHAT TO SUBMIT TO, AND WHAT NOT TO
+Submitting to everything does not look hungry, it looks desperate, and casting
+notices the pattern. Teach the filter: submit where you would be a believable
+first choice - close on age range, close on type, close on the energy the
+breakdown is asking for, and inside what you can actually deliver on the day.
+If you cannot say in one sentence why you are right for it, skip it. A small
+number of well-matched submissions with a specific note outperforms fifty
+scattergun ones, and it protects your reads on the roles you do fit.
+
+ENCOURAGING PEOPLE WHO ARE NOT ACTORS YET
+Be genuinely warm about this. You do not need a degree, a conservatory or
+permission to be an actor. Plenty of superb working actors never went to
+drama school. The instinct - watching people, imagining yourself into them,
+being willing to be seen - is something you already have or you would not be
+asking. Training sharpens it; it does not grant it. What a beginner needs is
+a current photo, some footage, and a submitting habit. Say that, then teach
+them something immediately so they leave with a skill and not a pep talk.
+
 WHAT YOU TALK ABOUT
-1. CastSlate — profiles, headshots, castings, submissions, callbacks,
+1. CastSlate - profiles, headshots, castings, submissions, callbacks,
    Premium, billing, Manager Mode, Slate Video, the Actor Business Card,
    the Talent Agency & Manager Directory, TapeLink, classes, safety, account.
-2. The acting industry generally — self-tapes, sides, agents and managers,
+2. The acting industry generally - self-tapes, sides, agents and managers,
    union status, resumes, reels, rates, typecasting, audition nerves,
    background work, how long casting takes to respond.
-3. Ordinary conversation. If someone says hi, say hi back. If they ask how
+3. The business itself. If someone asks about a major studio, streamer,
+   network, production company or talent agency - who they are, what they
+   make, how they cast, how an actor realistically comes into contact with
+   them - answer it properly and enthusiastically. Explain structure rather
+   than gossip, never claim inside knowledge of a specific current project,
+   and never promise access. Point out where things change often and send
+   them to the authoritative source.
+4. Ordinary conversation. If someone says hi, say hi back. If they ask how
    you are, answer like a person would, then ask what they need.
 
 WHAT YOU DECLINE, IN ONE LINE, WITHOUT LECTURING
+- Who built CastSlate, who owns or founded it, when it launched, how it is
+  built, what it runs on, how many users it has, or anything else about the
+  company or the people behind it. Do not answer, do not speculate, do not
+  half-answer. Say lightly that you are not the right one for questions about
+  the company itself, and steer straight to something more useful - how to
+  use the site, or the acting work itself. Never sound evasive or stiff about
+  it; move the conversation on in the same breath.
 - Comparisons to other casting platforms. Say you cannot compare CastSlate
   to other sites, then state what CastSlate does. Never criticise a rival,
   never rank them, never say you have not heard of one. Characterising the
-  wider market in general terms is fine — "most platforms sell you a database
-  listing and stop there" — naming or ranking a specific rival is not.
-- Live data — weather, news, scores, prices. You do not have it.
+  wider market in general terms is fine - "most platforms sell you a database
+  listing and stop there" - naming or ranking a specific rival is not.
+- Live data - weather, news, scores, prices. You do not have it.
 - Writing code, scripts or scrapers against the platform.
 - Legal, medical, tax or investment advice. Point to a qualified professional.
 Decline once and move on. Do not apologise twice.
@@ -376,23 +488,23 @@ say so and offer the team.
 WHO YOU ARE TALKING TO
 plan = visitor | free | premium, plus a first name.
 - visitor: what it is before what it costs. Free account first.
-- free: answer fully, then — only when Premium actually solves what they
-  just asked — say what it unlocks and what it costs.
+- free: answer fully, then - only when Premium actually solves what they
+  just asked - say what it unlocks and what it costs.
 - premium: never sell. Show them how to use what they already pay for.
 
 WHEN THEY ASK WHAT PREMIUM IS WORTH
 Give the full picture, with real enthusiasm. This is the part most assistants
-undersell. Do not lead with the submission counter — lead with the things that
+undersell. Do not lead with the submission counter - lead with the things that
 are genuinely unusual in casting:
   - The Actor Business Card, mailing postcard and agent promo card, each
     carrying a QR code that opens their entire live profile in about two
     seconds. Mail one to an agency office and it opens on the desk. Physical
     promo materials wired to a live profile are not a standard casting-site
     feature and you should say so.
-  - The ${DIR}-company Agency & Manager Directory — addresses, websites,
+  - The ${DIR}-company Agency & Manager Directory - addresses, websites,
     contact details, tiers, and how each company wants to be approached. This
     is the map to representation, and most actors never get handed one.
-  - Manager Mode — a private check-in written about their actual profile,
+  - Manager Mode - a private check-in written about their actual profile,
     every week.
   - The Slate Video, unlimited photos and video, and unlimited submissions
     that are each seen individually.
@@ -402,23 +514,23 @@ on every plan.
 Stay honest while you do it. Nobody can promise a booking, and anyone who does
 is lying. What Premium gives them is everything that IS in their control.
 One upgrade card per answer, never two, never on a billing complaint or a
-safety question, and never to a Premium member.
+safety question, and never to a Premium member. Never attach one to a lesson.
 
 TWO QUESTIONS THAT LOOK ALIKE AND ARE NOT
-"Are the castings on here fake?" is about CastSlate — answer with how listings
+"Are the castings on here fake?" is about CastSlate - answer with how listings
 are reviewed and what the Verified badge means. "What about scams?" is a
-general industry question — answer with the red flags that apply everywhere,
+general industry question - answer with the red flags that apply everywhere,
 then what CastSlate does about them. Never collapse the second into the first.
 
 SHAPE
 Answer in the first sentence. Then short bolded headers with tight bullets
-if the answer has parts. Under 160 words — except a "what do I get" or "is it
-worth it" question, which earns the full walkthrough above.
+if the answer has parts. Under 160 words - except a lesson, or a "what do I
+get" or "is it worth it" question, which earn the full walkthrough above.
 Send the check-in as a separate short message, the way a person texts.
 
 ESCALATION
 Billing disputes, refunds, account deletion, safety reports, anything about
-a minor, or two consecutive misses — hand to the human team.`;
+a minor, or two consecutive misses - hand to the human team.`;
 
 /* ── help sheets ─────────────────────────────────────────────── */
 const ART={
@@ -448,15 +560,17 @@ const SMALL=[
   b:c=>c.name?`How's it going with you, ${c.name}? Working on anything I can help with?`:`How about you — anything you're trying to figure out?`,
   s:['I need help with my profile','Why is nobody getting back to me?','What does Premium include?']},
  {id:'whoareyou',re:/(who|what) (are|r) (you|u)\b|are (you|u) (a |an )?(real|human|person|bot|robot|ai|machine)|what'?s your name|your name|am i (talking|speaking) to a (human|person|bot|real)/i,
-  a:c=>`I'm Castoria — a virtual assistant here on CastSlate. Not a person, and I won't pretend otherwise.`,
-  b:c=>`I can answer questions about the platform and about the acting business generally. If you'd rather talk to someone on the team, just say so and I'll pass you over.`,
-  s:['What can I ask you?','Talk to a human','How does CastSlate work?']},
+  a:c=>`I'm the <b>Super Assistant</b> — the virtual assistant and acting coach here on CastSlate. Not a person, and I won't pretend otherwise.`,
+  b:c=>`Two things I do: answer anything about the platform and the acting business, and actually <b>teach</b> you. I can take you through the fundamentals of acting for film, stage, commercials and voice, right here, for free. Grab a notepad and a pen — the stuff I teach is worth writing down.`,
+  s:['Teach me the fundamentals','What can I ask you?','Talk to a human']},
  {id:'canask',re:/what can i (ask|say|talk about|do here)|what do you (do|know)|how can you help|what can you help|what are you for|what do you help with|^help$/i,
-  a:c=>`${c.name?c.name+', p':'P'}retty much anything to do with CastSlate — or with acting generally.`+
-  `<div class="hd">Things people ask me most</div><ul><li>Building a profile casting actually reads</li><li>Finding and applying to castings</li><li>How free and Premium differ, and what things cost</li><li>Callbacks, self-tapes, and what happens after you submit</li><li>Safety — verified casters, reporting, rules for under-18s</li><li>General industry questions: agents, unions, resumes, rates, nerves</li></ul>`+
-  `<p>I can't compare CastSlate to other casting sites, and I don't have live data like weather or news. Everything else, ask away.</p>`,
-  b:c=>`What are you trying to sort out?`,
-  s:['How do I get started?','What does Premium include?','How do I get an agent?']},
+  a:c=>`${c.name?c.name+', t':'T'}wo halves. I answer things, and I <b>teach</b>.`+
+  `<div class="hd">I can teach you the fundamentals — free</div><p>All of the fundamentals of acting for <b>film, stage, commercial and voice</b>, right here in this thread. You don't need to spend money on acting classes to start. Just get a <b>notepad and a pen</b> and write down what I teach you — every lesson ends with the one line worth keeping.</p>`+
+  `<ul><li><b>Craft</b> — objective, stakes, subtext, listening, presence, playing a state truthfully</li><li><b>Film &amp; TV</b> — the close-up, shot size, eyelines, hitting marks, continuity, what the lens catches</li><li><b>Stage</b> — projection, cheating out, sightlines, stage geography, tech week</li><li><b>Commercial</b> — a genuinely different job, and why most film actors are bad at it first time</li><li><b>Audition</b> — self-tapes, slating, cold reading, taking direction, recovering from a mistake</li><li><b>On set</b> — the technical detail nobody teaches you before your first day</li></ul>`+
+  `<div class="hd">And the career side</div><ul><li>Profile building, and what makes casting pass in seconds</li><li>Headshots — which one to lead with, and the one that quietly boxes you in</li><li>Reels — including why the first <b>six seconds</b> decide it</li><li>What to submit to and what to skip</li><li>Agents, unions, rates, studios, how casting actually runs</li><li>Using CastSlate itself — submissions, callbacks, Premium, billing, safety</li></ul>`+
+  `<p>I can't compare CastSlate to other casting sites, I don't do live data like weather or news, and I don't talk about the company behind the platform. Everything else, ask away.</p>`,
+  b:c=>`Where do you want to start?`,
+  s:['Teach me the fundamentals','How do I improve my profile?','What makes casting skip a reel?']},
  {id:'thanks',re:/^(thanks|thank you|ty|thx|cheers|appreciate it|much appreciated|great thanks|perfect thanks)[\s!.,]*$/i,
   a:c=>`Any time${c.name?', '+c.name:''} 🙌`,b:c=>`Anything else while I'm here?`,s:['No, that\'s all','What is Manager Mode?']},
  {id:'bye',re:/^(bye|goodbye|see ya|see you|later|gtg|got to go|good night|night|that'?s all|no that'?s all|nope)[\s!.,]*$/i,
@@ -473,8 +587,19 @@ const SMALL=[
   b:c=>`Curtain goes up. Boom. He says: "What the hell was that?"`,s:['Okay, back to work','How do I prepare for an audition?']}
 ];
 
-/* ── layer 2: things she declines, once, without lecturing ───── */
+/* ── layer 2: things it declines, once, without lecturing ───── */
 const DECLINE=[
+ /* The company behind the platform is not a topic. Asked who built it, when it
+    launched, who owns it or what it runs on, she does not answer, does not
+    speculate and does not half-answer — she moves to something useful in the
+    same breath. Kept first so it wins over every other layer. */
+ {id:'origin',
+  re:/\b(who|whom)\b[^?.!]{0,26}\b(created|creates|made|makes|built|builds|founded|found|owns|own|runs|run|developed|develops|designed|invented|coded|programmed|started|launched|is behind|are behind|came up with)\b[^?.!]{0,26}\b(castslate|cast ?slate|this (site|website|platform|app|thing|place)|the (site|website|platform|app)|you)\b|\b(who'?s|who is|who are)\b[^?.!]{0,20}\b(the )?(founder|founders|creator|creators|owner|owners|ceo|cto|boss|inventor|developer|developers|programmer|engineer|company|team)\b|\bwho\b[^?.!]{0,18}\bbehind\b[^?.!]{0,20}\b(castslate|this (site|website|platform|app))\b|\bwhen\b[^?.!]{0,26}\b(castslate|cast ?slate|this (site|website|platform|app))\b[^?.!]{0,20}\b(created|made|built|founded|launched|started|began|open(ed)?|go live|went live|come out|came out)\b|\b(castslate|cast ?slate)\b[^?.!]{0,16}\b(founded|launched|created|established)\b|\bhow (old|long)\b[^?.!]{0,26}\b(castslate|this (site|website|platform|app))\b|\bwhat (year|date)\b[^?.!]{0,24}\b(castslate|this (site|website|platform))\b|\b(what|which)\b[^?.!]{0,22}\b(tech ?stack|stack|framework|frameworks|programming language|codebase|code base|source code|database|backend|back.?end|frontend|front.?end|server|servers|hosting|hosted|cms|api)\b[^?.!]{0,22}\b(castslate|this (site|website|platform|app)|you)\b|\b(castslate|this (site|website|platform|app))\b[^?.!]{0,18}\b(built (with|on|in|using)|written in|made with|coded in|open.?source|tech ?stack|source code)\b|\bhow (was|is)\b[^?.!]{0,20}\b(castslate|this (site|website|platform|app))\b[^?.!]{0,14}\b(built|made|coded|developed|created)\b|\bhow many (users|members|actors|people|subscribers|employees)\b[^?.!]{0,24}\b(castslate|this (site|website|platform|app)|you)\b|\b(castslate|this (site|website|platform))\b[^?.!]{0,20}\b(revenue|profitable|funding|funded|investors?|valuation|headquarters|head office|registered|incorporated|a real company|owned by)\b|\bwhere (is|are)\b[^?.!]{0,20}\b(castslate|this (site|website|platform|company))\b[^?.!]{0,16}\b(based|located|from|registered|headquarter)/i,
+  a:c=>`${c.name?c.name+', h':'H'}onestly, I'm the wrong one to ask about the company itself — who built it, when, how it's put together, any of that. I stay out of it.`+
+  `<div class="hd">What I'm actually good for</div><ul><li><b>Teaching you to act</b> — film, stage, commercial, voice. Real exercises, free, right here</li><li><b>Your profile and materials</b> — headshots, reels, what casting passes on and why</li><li><b>Using the site</b> — finding roles, submitting, callbacks, Premium, billing</li><li><b>The business</b> — agents, unions, rates, studios, how casting actually runs</li></ul>`+
+  `<p>Pick whichever of those is closest to what you're really trying to sort out.</p>`,
+  b:c=>`Want to start with a lesson? I can teach you the fundamentals of acting for film or stage right here — no need to spend money on a class to begin. Grab a notepad and a pen.`,
+  s:['Teach me the fundamentals','How do I improve my profile?','How does CastSlate work?']},
  {id:'compare',
   re:/\b(actors ?access|backstage|casting ?networks|castingnetworks|mandy|starnow|star ?now|playbill|breakdown ?express|explore ?talent|project ?casting)\b|\b(better than|compare|comparison|vs\.?|versus) (other|another|any) (site|platform|app)/i,
   a:c=>`${c.name?c.name+', h':'H'}onestly — I can't compare CastSlate to other casting sites. I only know this one.`+
@@ -1950,11 +2075,11 @@ function coachThrough(c){
 const LESSONS=[
 
 {id:'film',title:'Film acting: the camera sees everything',mins:2,lane:'Film & TV',
- k:'film acting camera close screen restraint natural no acting hitchcock doing nothing subtle small',
+ k:'film acting camera close screen restraint natural no acting bergman hitchcock doing nothing subtle small face',
  steps:[
  {b:`<b>Lesson: the camera sees everything.</b>`+
    `<p>On stage you send the performance out to row twenty. On camera the audience is already six inches from your face — so the work is not to send anything anywhere. It is to <b>think, want something, and let the lens catch it</b>.</p>`+
-   `<p>There is a line often attributed to Hitchcock — that film acting is the art of not acting. The attribution is loose, so treat it as a teaching idea rather than gospel. The idea underneath it is real: if you keep <em>showing</em> the audience what you feel, they stop believing you.</p>`,
+   `<p>Bergman said the human face is the great subject of the cinema. That is the whole brief, and it is a relief once you hear it properly: the lens is already close enough to read a thought off you. Nothing has to be sent anywhere. If you keep <em>showing</em> the audience what you feel, you are competing with a camera that already saw it, and they stop believing you.</p>`,
   pro:`<p>Worth noting the scale question is about lens and frame, not depth. A wide two-shot asks for more physical clarity than a tight single. Good screen actors adjust performance size to coverage without changing what they are actually doing.</p>`,
   cta:`Makes sense — what now?`},
  {b:`<b>Try it. Two takes, right now.</b>`+
@@ -2696,17 +2821,20 @@ function hello(){
     msg('in',c.name?`Hi ${c.name} \u{1F44B}`:`Hi there \u{1F44B}`);
     setTimeout(()=>{
       if(c.plan==='visitor'){
-        msg('in',`I can answer questions about acting and about CastSlate — and I can teach. Would you like a quick <b>free acting lesson</b>? Two minutes, and you can do it right where you are sitting.`);
+        msg('in',`I can answer questions about acting and about CastSlate — and I can <b>teach</b>. All the fundamentals of acting for film or stage, free, right here. No need to spend money on acting classes to begin — just grab a notepad and a pen for the bits worth keeping.`);
+        setTimeout(()=>{
+          msg('in',`Want a quick <b>free lesson</b> to see how it works? Two minutes, and you can do it right where you are sitting.`);
+          sugg(['Yes, teach me','What can you teach?','No thanks']);
+        },720);
         st.offer='film';
-        sugg(['Yes, teach me','What is CastSlate?','No thanks']);
         return;
       }
       msg('in',c.plan==='premium'
-        ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. I also run short lessons if you want to work on something.`
-        :`Ask me anything about CastSlate or about the acting business — and if you want to actually <b>practise</b> something, I run short lessons you can do right now.`);
+        ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. And I teach: all the fundamentals for film, stage, commercial and voice, right here. Keep a notepad next to you.`
+        :`Ask me anything about CastSlate or about the acting business — and I can <b>teach you the fundamentals</b> of acting for film or stage right here, free. No need to spend money on classes to start; just grab a notepad and a pen.`);
       sugg(c.plan==='premium'
-        ?['Give me an acting lesson','How do I improve my profile?','What is Manager Mode?']
-        :['Give me an acting lesson','How do I get started?','What does Premium include?']);
+        ?['Teach me the fundamentals','How do I improve my profile?','What is Manager Mode?']
+        :['Teach me the fundamentals','How do I get started?','What makes casting skip a reel?']);
     },620);
   },700);
 }
