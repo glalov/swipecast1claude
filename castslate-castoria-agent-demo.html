@@ -119,15 +119,27 @@ h1 span{color:var(--out2);}
 .sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
 .sugg::-webkit-scrollbar{display:none}
 .sugg:empty{display:none}
-.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:#F2F2F7;border:0;border-radius:16px;padding:9px 14px;cursor:pointer;text-align:left;}
-.sugg button:hover{background:#E5E5EA;}
+.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;}
+.sugg button:hover{background:#F2F2F7;border-color:var(--brand);}
+.sugg button:active{background:#E8E8ED;}
 
-.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);}
-.field{display:flex;align-items:flex-end;gap:8px;}
-.field .box{flex:1;display:flex;align-items:flex-end;background:var(--field);border:1px solid var(--fieldln);border-radius:19px;padding:7px 6px 7px 14px;}
-.field textarea{flex:1;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.3;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:20px;padding:1px 0 2px;}
+.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);position:relative;}
+.cbox{background:var(--field);border:1.5px solid var(--fieldln);border-radius:20px;padding:9px 10px 7px 14px;transition:border-color .14s;}
+.cbox:focus-within{border-color:var(--brand);}
+.cbox textarea{width:100%;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:21px;padding:0;display:block;}
+.ctools{display:flex;align-items:center;gap:2px;margin-top:6px;}
+.ctools .sp{flex:1;}
+.tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}
+.tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}
+.tool[aria-pressed="true"]{background:rgba(47,194,77,.16);color:var(--out2);}
+.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.tool.on svg{stroke:var(--out2);}
+.emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}
+.emoji.on{display:grid;}
+.emoji button{border:0;background:transparent;font-size:19px;line-height:1;padding:6px 0;border-radius:8px;cursor:pointer;}
+.emoji button:hover{background:rgba(120,120,128,.14);}
 .field textarea::placeholder{color:var(--mute2);}
-.snd{flex:none;width:29px;height:29px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}
+.snd{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}
 .snd:disabled{background:#D6D6DA;cursor:default;}
 .snd svg{width:15px;height:15px;fill:#fff;}
 .foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}
@@ -264,9 +276,17 @@ h1 span{color:var(--out2);}
   <div class="thread" id="thread"></div>
   <div class="sugg" id="sugg"></div>
   <div class="composer">
-    <div class="field">
-      <div class="box"><textarea id="input" rows="1" placeholder="Message"></textarea></div>
-      <button class="snd" id="send" disabled aria-label="Send"><svg viewBox="0 0 24 24"><path d="M12 3l7 7h-4.5v11h-5V10H5z"/></svg></button>
+    <div class="emoji" id="emoji"></div>
+    <div class="cbox">
+      <textarea id="input" rows="1" placeholder="Message"></textarea>
+      <div class="ctools">
+        <button class="tool" id="tTopics" aria-label="What I can help with" title="What I can help with"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button>
+        <button class="tool" id="tEmoji" aria-label="Emoji" title="Emoji"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.6 14.2c.9 1.1 2.1 1.7 3.4 1.7s2.5-.6 3.4-1.7"/><path d="M9.2 9.4h.01M14.8 9.4h.01"/></svg></button>
+        <button class="tool" id="tLesson" aria-label="Acting lessons" title="Acting lessons"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7.6 4.5v15M16.4 4.5v15M3 9.4h4.6M3 14.6h4.6M16.4 9.4H21M16.4 14.6H21"/></svg></button>
+        <button class="tool" id="tMic" aria-label="Dictate" title="Speak instead of typing"><svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3.2"/></svg></button>
+        <span class="sp"></span>
+        <button class="snd" id="send" disabled aria-label="Send"><svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:#fff;stroke:none"><path d="M12 3l7 7h-4.5v11h-5V10H5z"/></svg></button>
+      </div>
     </div>
     <div class="foot">Castoria is an automated assistant. A person can take over any time.</div>
   </div>
@@ -2895,6 +2915,81 @@ function sheet(id){
   $('sheet').classList.add('on');$('sheetbody').scrollTop=0;
 }
 
+
+/* ── composer tools ────────────────────────────────────────────────
+   Four controls, and every one of them does something real. A button
+   that looks live and isn't is worse than no button — the same reason
+   the fake unread badge came off the launcher.                      */
+const EMOJI=('\u{1F44B} \u{1F642} \u{1F603} \u{1F602} \u{1F609} \u{1F60E} \u{1F914} \u{1F62C} '
+ +'\u{1F625} \u{1F644} \u{1F615} \u{1F621} \u{1F62D} \u{1F631} \u{1F44D} \u{1F44E} '
+ +'\u{1F64C} \u{1F64F} \u{1F4AA} \u{1F91E} \u{2764}\u{FE0F} \u{2728} \u{1F525} \u{1F389} '
+ +'\u{1F3AC} \u{1F3AD} \u{1F3A5} \u{1F3A4} \u{1F4F8} \u{1F4DD} \u{1F4C5} \u{2705}').split(' ');
+
+function insertAtCursor(el,text){
+  const s=el.selectionStart==null?el.value.length:el.selectionStart;
+  const e=el.selectionEnd==null?el.value.length:el.selectionEnd;
+  el.value=el.value.slice(0,s)+text+el.value.slice(e);
+  const pos=s+text.length;
+  try{el.setSelectionRange(pos,pos);}catch(_){}
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  el.focus();
+}
+
+/* Dictation is real, via the browser's own speech recognition. Where the
+   browser has none the button is removed rather than left as decoration. */
+function speechSupported(){
+  return !!(window.SpeechRecognition||window.webkitSpeechRecognition);
+}
+function makeDictation(input,btn){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){btn.remove();return;}
+  let rec=null,live=false,base='';
+  const stop=()=>{try{rec&&rec.stop();}catch(_){}};
+  btn.onclick=()=>{
+    if(live){stop();return;}
+    try{
+      rec=new SR();
+      rec.lang=(document.documentElement.lang||'en-US');
+      rec.interimResults=true; rec.continuous=false;
+      base=input.value?input.value.replace(/\s*$/,'')+' ':'';
+      rec.onstart=()=>{live=true;btn.classList.add('on');btn.setAttribute('aria-pressed','true');};
+      rec.onresult=ev=>{
+        let txt='';
+        for(let i=ev.resultIndex;i<ev.results.length;i++)txt+=ev.results[i][0].transcript;
+        input.value=base+txt;
+        input.dispatchEvent(new Event('input',{bubbles:true}));
+      };
+      rec.onerror=()=>{live=false;btn.classList.remove('on');btn.setAttribute('aria-pressed','false');};
+      rec.onend=()=>{live=false;btn.classList.remove('on');btn.setAttribute('aria-pressed','false');input.focus();};
+      rec.start();
+    }catch(_){btn.classList.remove('on');}
+  };
+}
+
+function wireTools(){
+  const input=$('input'), pop=$('emoji');
+  /* emoji */
+  if(pop&&!pop.childElementCount){
+    EMOJI.forEach(ch=>{
+      const b=document.createElement('button');
+      b.type='button'; b.textContent=ch; b.setAttribute('aria-label','Insert '+ch);
+      b.onclick=()=>{insertAtCursor(input,ch);};
+      pop.appendChild(b);
+    });
+  }
+  const tE=$('tEmoji');
+  if(tE)tE.onclick=()=>{
+    const on=pop.classList.toggle('on');
+    tE.setAttribute('aria-pressed',on?'true':'false');
+    if(on)input.focus();
+  };
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pop&&pop.classList.contains('on')){pop.classList.remove('on');tE&&tE.setAttribute('aria-pressed','false');}});
+  /* the other three go straight into the conversation */
+  const tT=$('tTopics'); if(tT)tT.onclick=()=>{pop&&pop.classList.remove('on');send('What can I ask you?');};
+  const tL=$('tLesson'); if(tL)tL.onclick=()=>{pop&&pop.classList.remove('on');send('Give me an acting lesson');};
+  const tM=$('tMic');    if(tM)makeDictation(input,tM);
+}
+
 /* events */
 $('launch').onclick=()=>{ if(st.open)closePanel(); else openPanel(); };
 $('openBtn').onclick=()=>{if(!st.open)openPanel();};
@@ -2914,6 +3009,7 @@ document.querySelectorAll('#level button').forEach(b=>b.onclick=()=>{
   b.classList.add('on');st.level=b.dataset.l;
 });
 document.querySelectorAll('#tries button').forEach(b=>b.onclick=()=>{if(!st.open)openPanel();setTimeout(()=>send(b.textContent),st.open?0:1500);});
+wireTools();
 const inp=$('input');
 inp.oninput=()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,86)+'px';$('send').disabled=!inp.value.trim();};
 inp.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('send').click();}};
