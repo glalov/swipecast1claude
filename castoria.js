@@ -400,20 +400,49 @@ const KB=[
  `<div class="hd">Tape basics</div><p>Landscape, eyeline just off camera, clean wall behind you, best light in your apartment. <b>Sound matters more than resolution</b> — get close to the phone.</p>`,
  src:['tape','apply'],s:['What are sides?','How do I apply?']},
 
-{id:'cancel',k:'cancel cancelling unsubscribe stop subscription end membership turn off auto renew quit downgrade',
- a:c=>`You can cancel any time, and you keep what you paid for.`+
- `<ul><li><b>Account Settings → Manage subscription</b> opens the billing portal</li><li>Cancel there. Premium <b>stays active to the end of the period you already paid for</b></li><li>Nothing is cut off early and your profile stays where it is</li></ul>`+
- `<p>Membership fees are non-refundable except where law requires — but since a cancelled membership runs out its term, you're not losing time you paid for.</p>`+
- `<p>Your profile, submissions and messages all survive it. You just drop back to the free tier.</p>`+
- `<p>If you're cancelling because something isn't working, tell me what it is — I'd rather fix it.</p>`,
- src:['billing'],s:['I have a billing problem','Talk to a human']},
+{id:'cancel',k:'cancel cancelling unsubscribe stop subscription end membership turn off auto renew quit downgrade stop charging me dont want premium anymore stop paying leave',
+ a:c=>`<p>Here is exactly how, and it takes about a minute.</p>`+
+ `<div class="hd">Cancelling</div>`+
+ `<ol><li>Sign in and open <b>Account Settings</b></li><li>Go to <b>Payment &amp; Billing</b></li><li>Under <b>Plan management</b>, click <b>Manage subscription</b></li><li>That opens your secure <b>Stripe billing page</b> — cancel there and confirm</li></ol>`+
+ `<p><button class="inl" data-nav="account-settings">Take me to Account Settings</button></p>`+
+ `<div class="hd">What happens next</div>`+
+ `<ul><li>You keep <b>full Premium access until the end of the period you already paid for</b> — cancelling does not cut you off on the day</li><li>After that the account returns to the <b>free plan automatically</b></li><li><b>Nothing is deleted.</b> Your profile, your media and your application history all stay exactly as they are</li><li>You can restart from the same billing page whenever you want</li></ul>`+
+ `<p>The same page is also where you update your card or download invoices.</p>`+
+ `<div class="hd">If you would rather not do it yourself</div>`+
+ `<p>There is a <b>"Prefer we do it? Contact us"</b> link right beside that button, and the team will handle it for you.</p>`+
+ `<p style="opacity:.75">I cannot cancel it from this chat — only you can, from your own account. I will not tell you it is done unless you have done it.</p>`,
+ src:['billing'],s:['Will I get a refund?','What happens to my profile?','I have a billing problem'],nocheck:true},
 
-{id:'refund',k:'refund charged twice double charge billing problem dispute wrong amount receipt invoice payment failed card declined money back',
- a:c=>`Anything involving an actual charge on your card goes to a person — I'm not going to guess at your billing.`+
- `<div class="hd">What you can check right now</div><ul><li><b>My Profile → Membership</b> — billing history and every receipt</li><li>Receipts are also <b>emailed automatically</b> after each transaction</li><li><b>Account Settings → Manage subscription</b> — plan, renewal date, payment method</li></ul>`+
- `<p>Cards are processed by our payment provider — <b>CastSlate never stores your card details</b>.</p>`+
- `<p>Say the word and I'll hand this thread to the team with your account attached.</p>`,
- src:['billing'],s:['Talk to a human','How do I cancel?']},
+{id:'cancelvsdelete',k:'leave castslate completely quit entirely difference between cancelling and deleting close everything remove me',
+ a:c=>`<p>Two different things, and it is worth being clear which you want.</p>`+
+ `<div class="hd">Cancel Premium</div>`+
+ `<p>Stops the payments. Your account stays, your profile stays, your submissions stay — you simply drop back to the free plan at the end of the period you have paid for.</p>`+
+ `<p><button class="inl" data-ask="How do I cancel my subscription?">Show me how to cancel</button></p>`+
+ `<div class="hd">Delete your account</div>`+
+ `<p>Removes the account itself. <b>Account Settings → Deactivation &amp; Deletion → Delete my account.</b> Deletion is immediate, and you can sign up again later with the same email if you change your mind.</p>`+
+ `<p><button class="inl" data-ask="How do I delete my account?">Show me how to delete</button></p>`+
+ `<p>If you are only trying to stop being charged, <b>cancelling is the one you want</b> — deleting is not necessary for that.</p>`,
+ src:['billing','acct'],s:['How do I cancel my subscription?','How do I delete my account?'],nocheck:true},
+
+{id:'billinginfo',k:'next billing date when am i charged how much am i paying renewal date payment method change card update card resubscribe restart premium do i still have premium why did premium disappear invoice receipt',
+ a:c=>`<p>I cannot see your account or your billing from this chat, and I am not going to guess at it — anything about <em>your</em> card, dates or charges has to come from your own account.</p>`+
+ `<div class="hd">Everything account-specific lives in one place</div>`+
+ `<p><b>Account Settings → Payment &amp; Billing → Manage subscription</b> opens your secure Stripe billing page. From there you can see your renewal date, update your card, download invoices, cancel, or restart a cancelled membership.</p>`+
+ `<p><b>Subscription Info</b> in the same settings menu shows your current plan and renewal date without leaving CastSlate.</p>`+
+ `<p><button class="inl" data-nav="account-settings">Take me to Account Settings</button></p>`+
+ `<div class="hd">What I can tell you</div>`+
+ `<p>The published prices: <b>$99 a year</b> (about $8.25/month, renewing at $99), <b>$71.70 for six months</b>, or <b>$14.95 month to month</b>. Every plan includes every feature.</p>`+
+ `<p>If Premium access has disappeared unexpectedly, or a charge looks wrong, that goes to a person rather than to me — say the word and I will hand this over.</p>`,
+ src:['billing','pricing'],s:['How do I cancel my subscription?','I have a billing problem','Talk to a human'],nocheck:true},
+
+{id:'refund',k:'refund charged twice double charge billing problem dispute wrong amount receipt invoice payment failed card declined money back overcharged',
+ a:c=>`<p>The policy first, straight: <b>membership fees are non-refundable except where the law requires it.</b> I am not going to promise you a refund I cannot authorise.</p>`+
+ `<p>What softens it is that a cancelled membership <b>runs to the end of the period you already paid for</b> — you are not losing time you have paid for, so cancelling and refunding are not the same question.</p>`+
+ `<div class="hd">If a charge looks wrong</div>`+
+ `<p>That is a person's job, not mine, and they can actually look at your account.</p>`+
+ `<ul><li><b>Account Settings → Payment &amp; Billing → Manage subscription</b> — your Stripe page has every invoice and receipt</li><li>Receipts are also emailed automatically after each transaction</li><li>Cards are processed by Stripe. <b>CastSlate never stores your card details</b></li></ul>`+
+ `<p><button class="inl" data-ask="Talk to a human">Hand this to the team</button></p>`,
+ src:['billing'],s:['How do I cancel my subscription?','Talk to a human'],nocheck:true},
 
 {id:'upgrade',k:'how do i upgrade buy premium purchase go premium subscribe checkout pay now where do i pay',
  a:c=>c.plan==='premium'?`You're on Premium already, so it's all live. Want me to walk you through a piece of it — the promo materials, the agency directory, or Manager Mode?`
@@ -2133,10 +2162,13 @@ const INTENT=[
  [/\b(castslate|this (site|platform)|your (site|platform|castings|listings))\b.{0,30}\b(fake|real|legit|scam)|\b(fake|real|legit)\b.{0,24}\b(castslate|casting|listing)s?\b|\bare (the )?(castings|listings|roles|jobs) (on here |here )?(fake|real|legit)\b/i,'fake'],
  [/\bscam|\bfraud|\bcon artist|\brip.?off|\bget scammed|\bavoid (a )?scam/i,'scams'],
  [/\bworth it|worth the money|should i (pay|upgrade|subscribe)|why (should i )?pay|convince me\b/i,'worth'],
- [/\b(cancel|stop|end) (my )?(subscription|membership|premium|plan|auto.?renew)\b/i,'cancel'],
+  [/\b(leave|quit) castslate (completely|entirely|for good)\b|\bdifference between cancel(l?ing)? and delet/i,'cancelvsdelete'],
+ [/\b(cancel|cancell?ing)\b(?![^.?!]*\bdelet)(?!.{0,20}\bmy account\b)|\bunsubscribe\b|\bstop (charging|billing|taking) me\b|\bstop (my )?(the )?(payments?|subscription|membership|billing)\b|\b(don'?t|do not|dont) want (castslate )?premium\b|\bno longer want (my )?(premium|subscription|membership)\b|\bstop paying\b|\bhow do i stop my subscription\b|\bturn off auto.?renew\b/i,'cancel'],
+  [/\b(next|my) billing date\b|\bwhen (will i be|am i) charged\b|\bhow much am i paying\b|\bchange (my )?(payment method|card)\b|\bupdate (my )?card\b|\bresubscribe\b|\brestart (my )?(premium|membership|subscription)\b|\bdo i still have premium\b|\bwhy (did|has|is) my premium\b[^.?!]{0,24}\b(disappear|gone|stopped|missing|not working)|\bwhen does (my|it) renew\b/i,'billinginfo'],
  [/\b(charged|double.?charg|billed twice|refund|money back)\b/i,'refund'],
  [/\b(talk|speak|chat|connect) (to|with) (a |an )?(human|person|someone|agent|rep|real)/i,'human'],
- [/\b(delete|close) (my )?account\b/i,'delete'],
+ [/\b(delete|close|remove) (my )?account\b/i,'delete'],
+  [/\bjust (don'?t|dont|do not) want to pay\b|\bdon'?t want to be charged\b/i,'cancel'],
  [/\b(can'?t|cannot|unable to) (log ?in|sign ?in|access my account)\b/i,'login'],
  [/\bfree (vs|versus|or) premium|difference between free and (premium|paid)\b/i,'freevp'],
  [/\bwhy (can'?t|cant) i (apply|submit)|only (one|1) (submission|casting)|weekly (limit|cap)|used (up )?my submission/i,'cap'],
@@ -2601,7 +2633,11 @@ inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$(
 $('send').onclick=function(){var v=inp.value.trim();if(!v)return;inp.value='';inp.style.height='auto';$('send').disabled=true;send(v);};
 ROOT.addEventListener('click',function(e){
   var t=(e.composedPath&&e.composedPath()[0])||e.target;
-  if(t&&t.closest){var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}}
+  if(t&&t.closest){
+    var nv=t.closest('[data-nav]');
+    if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');} else {send('How do I cancel my subscription?');} return; }
+    var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}
+  }
   if(t&&t.closest&&t.closest('[data-go]')){
     if(window.__CS_NAV){window.__CS_NAV('membership');st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');}
     else send('How do I upgrade to Premium?');
