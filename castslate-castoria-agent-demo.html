@@ -46,12 +46,11 @@ h1 span{color:var(--out2);}
 .launch:hover{transform:scale(1.06);}
 .launch svg{width:27px;height:27px;fill:#fff;}
 .launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}
-.launch .pip{position:absolute;top:2px;right:2px;min-width:20px;height:20px;border-radius:100px;background:var(--brand-2);color:#fff;font-size:11px;font-weight:600;display:grid;place-items:center;border:2px solid var(--page);}
-.launch.open svg,.launch.open .pip{display:none;}
+.launch.open svg{display:none;}
 .launch.open .x{display:block;}
 
 /* ── thread panel ─────────────────────────────────────────── */
-.panel{position:fixed;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}
+.panel{position:fixed;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}
 .panel.open{opacity:1;transform:none;pointer-events:auto;}
 
 .bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}
@@ -102,7 +101,7 @@ h1 span{color:var(--out2);}
 .card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}
 .card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}
 
-.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 4px 2px 8px;max-width:88%;}
+.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}
 .srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}
 .srcs button:hover{background:#F2F2F7;}
 
@@ -112,9 +111,10 @@ h1 span{color:var(--out2);}
 @keyframes d{0%,62%,100%{opacity:.32;transform:translateY(0)}31%{opacity:.95;transform:translateY(-3px)}}
 @media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}
 
-.sugg{flex:none;display:flex;gap:7px;padding:8px 12px 2px;overflow-x:auto;scrollbar-width:none;}
+.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;scrollbar-width:none;}
 .sugg::-webkit-scrollbar{display:none}
-.sugg button{flex:none;font-family:inherit;font-size:13.5px;font-weight:500;color:var(--ink);background:#F2F2F7;border:0;border-radius:100px;padding:8px 14px;cursor:pointer;white-space:nowrap;}
+.sugg:empty{display:none}
+.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:#F2F2F7;border:0;border-radius:16px;padding:9px 14px;cursor:pointer;text-align:left;}
 .sugg button:hover{background:#E5E5EA;}
 
 .composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);}
@@ -138,7 +138,24 @@ h1 span{color:var(--out2);}
 .sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}
 .sheetbody li{margin-bottom:4px;}
 .sheetbody b{color:var(--ink);font-weight:600;}
-@media(max-width:520px){.panel{right:7px;left:7px;bottom:84px;width:auto;height:calc(100vh - 106px);}.launch{right:13px;bottom:13px;}}
+@media(max-width:560px){
+  /* Full-height sheet. The docked-card layout left a dead 84px strip for the
+     launcher and squeezed the thread; on a short phone that cropped the reply
+     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */
+  /* No entry transform on mobile. A translate here has to be undone by
+     .panel.open, and when that override loses the panel sits below the fold
+     with the composer off-screen — which is exactly the bug this replaced.
+     A full-height sheet fading in needs no slide anyway. */
+  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}
+  .launch{right:14px;bottom:14px;}
+  .launch.open{display:none;}          /* the header carries Close */
+  .bar{padding-top:calc(9px + env(safe-area-inset-top));}
+  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}
+  .b{max-width:88%;}
+  .card{max-width:92%;}
+  .sugg{max-height:120px;}
+  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}
+}
 </style>
 </head>
 <body>
@@ -229,7 +246,7 @@ h1 span{color:var(--out2);}
 
 <button class="launch" id="launch" aria-label="Message Castoria">
   <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z"/></svg>
-  <span class="pip">1</span><span class="x">&times;</span>
+  <span class="x">&times;</span>
 </button>
 
 <div class="panel" id="panel">
