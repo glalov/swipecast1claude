@@ -14,16 +14,16 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC  = os.path.join(ROOT, "castslate-castoria-agent-demo.html")
 OUT  = os.path.join(ROOT, "castoria.js")
 
-MARKUP = """<button class="launch" id="launch" aria-label="Message Castoria">
+MARKUP = """<button class="launch" id="launch" aria-label="Message Super Assistant">
   <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z"/></svg>
   <span class="x">&times;</span>
 </button>
-<div class="panel" id="panel" role="dialog" aria-label="Castoria virtual assistant">
+<div class="panel" id="panel" role="dialog" aria-label="Super Assistant">
   <div class="bar" id="bar">
-    <button class="xclose" id="close" aria-label="Close Castoria">&#10005;</button>
-    <div class="ava">C</div>
-    <b>Castoria</b>
-    <i id="barsub">Virtual assistant</i>
+    <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
+    <div class="ava">S</div>
+    <b>Super Assistant</b>
+    <i id="barsub">Acting coach</i>
   </div>
   <div class="thread" id="thread"></div>
   <div class="sugg" id="sugg"></div>
@@ -40,7 +40,7 @@ MARKUP = """<button class="launch" id="launch" aria-label="Message Castoria">
         <button class="snd" id="send" disabled aria-label="Send"><svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:#fff;stroke:none"><path d="M12 3l7 7h-4.5v11h-5V10H5z"/></svg></button>
       </div>
     </div>
-    <div class="foot">Castoria is an automated assistant. A person can take over any time.</div>
+    <div class="foot">Super Assistant is an automated assistant. A person can take over any time.</div>
   </div>
   <div class="sheet" id="sheet">
     <div class="bar sub"><button class="back" id="sheetback">&lsaquo; Back</button><b>Help</b><i>CastSlate</i></div>
@@ -69,7 +69,10 @@ ROOT.addEventListener('click',function(e){
     else send('How do I upgrade to Premium?');
   }
 });
-window.Castoria={open:openPanel,ask:function(q){openPanel();setTimeout(function(){send(q);},700);}};
+var api={open:openPanel,ask:function(q){openPanel();setTimeout(function(){send(q);},700);}};
+window.SuperAssistant=api;
+/* Kept so anything that already calls window.Castoria keeps working. */
+window.Castoria=api;
 if(window.__CS_CASTORIA_OPEN_NOW)setTimeout(openPanel,400);
 """
 

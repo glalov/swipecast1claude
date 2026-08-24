@@ -15,12 +15,12 @@ sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2
 ROOT.appendChild(sEl);
 var wrap=document.createElement('div');
 wrap.style.cssText='pointer-events:auto;';
-wrap.innerHTML="<button class=\"launch\" id=\"launch\" aria-label=\"Message Castoria\">\n  <svg viewBox=\"0 0 24 24\"><path d=\"M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z\"/></svg>\n  <span class=\"x\">&times;</span>\n</button>\n<div class=\"panel\" id=\"panel\" role=\"dialog\" aria-label=\"Castoria virtual assistant\">\n  <div class=\"bar\" id=\"bar\">\n    <button class=\"xclose\" id=\"close\" aria-label=\"Close Castoria\">&#10005;</button>\n    <div class=\"ava\">C</div>\n    <b>Castoria</b>\n    <i id=\"barsub\">Virtual assistant</i>\n  </div>\n  <div class=\"thread\" id=\"thread\"></div>\n  <div class=\"sugg\" id=\"sugg\"></div>\n  <div class=\"composer\">\n    <div class=\"emoji\" id=\"emoji\"></div>\n    <div class=\"cbox\">\n      <textarea id=\"input\" rows=\"1\" placeholder=\"Message\"></textarea>\n      <div class=\"ctools\">\n        <button class=\"tool\" id=\"tTopics\" aria-label=\"What I can help with\" title=\"What I can help with\"><svg viewBox=\"0 0 24 24\"><rect x=\"3.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"3.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/></svg></button>\n        <button class=\"tool\" id=\"tEmoji\" aria-label=\"Emoji\" title=\"Emoji\"><svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M8.6 14.2c.9 1.1 2.1 1.7 3.4 1.7s2.5-.6 3.4-1.7\"/><path d=\"M9.2 9.4h.01M14.8 9.4h.01\"/></svg></button>\n        <button class=\"tool\" id=\"tLesson\" aria-label=\"Acting lessons\" title=\"Acting lessons\"><svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4.5\" width=\"18\" height=\"15\" rx=\"2.5\"/><path d=\"M7.6 4.5v15M16.4 4.5v15M3 9.4h4.6M3 14.6h4.6M16.4 9.4H21M16.4 14.6H21\"/></svg></button>\n        <button class=\"tool\" id=\"tMic\" aria-label=\"Dictate\" title=\"Speak instead of typing\"><svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"2.8\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5.5 11.5a6.5 6.5 0 0 0 13 0\"/><path d=\"M12 18v3.2\"/></svg></button>\n        <span class=\"sp\"></span>\n        <button class=\"snd\" id=\"send\" disabled aria-label=\"Send\"><svg viewBox=\"0 0 24 24\" style=\"width:15px;height:15px;fill:#fff;stroke:none\"><path d=\"M12 3l7 7h-4.5v11h-5V10H5z\"/></svg></button>\n      </div>\n    </div>\n    <div class=\"foot\">Castoria is an automated assistant. A person can take over any time.</div>\n  </div>\n  <div class=\"sheet\" id=\"sheet\">\n    <div class=\"bar sub\"><button class=\"back\" id=\"sheetback\">&lsaquo; Back</button><b>Help</b><i>CastSlate</i></div>\n    <div class=\"sheetbody\" id=\"sheetbody\"></div>\n  </div>\n</div>";
+wrap.innerHTML="<button class=\"launch\" id=\"launch\" aria-label=\"Message Super Assistant\">\n  <svg viewBox=\"0 0 24 24\"><path d=\"M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z\"/></svg>\n  <span class=\"x\">&times;</span>\n</button>\n<div class=\"panel\" id=\"panel\" role=\"dialog\" aria-label=\"Super Assistant\">\n  <div class=\"bar\" id=\"bar\">\n    <button class=\"xclose\" id=\"close\" aria-label=\"Close Super Assistant\">&#10005;</button>\n    <div class=\"ava\">S</div>\n    <b>Super Assistant</b>\n    <i id=\"barsub\">Acting coach</i>\n  </div>\n  <div class=\"thread\" id=\"thread\"></div>\n  <div class=\"sugg\" id=\"sugg\"></div>\n  <div class=\"composer\">\n    <div class=\"emoji\" id=\"emoji\"></div>\n    <div class=\"cbox\">\n      <textarea id=\"input\" rows=\"1\" placeholder=\"Message\"></textarea>\n      <div class=\"ctools\">\n        <button class=\"tool\" id=\"tTopics\" aria-label=\"What I can help with\" title=\"What I can help with\"><svg viewBox=\"0 0 24 24\"><rect x=\"3.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"3.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/></svg></button>\n        <button class=\"tool\" id=\"tEmoji\" aria-label=\"Emoji\" title=\"Emoji\"><svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M8.6 14.2c.9 1.1 2.1 1.7 3.4 1.7s2.5-.6 3.4-1.7\"/><path d=\"M9.2 9.4h.01M14.8 9.4h.01\"/></svg></button>\n        <button class=\"tool\" id=\"tLesson\" aria-label=\"Acting lessons\" title=\"Acting lessons\"><svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4.5\" width=\"18\" height=\"15\" rx=\"2.5\"/><path d=\"M7.6 4.5v15M16.4 4.5v15M3 9.4h4.6M3 14.6h4.6M16.4 9.4H21M16.4 14.6H21\"/></svg></button>\n        <button class=\"tool\" id=\"tMic\" aria-label=\"Dictate\" title=\"Speak instead of typing\"><svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"2.8\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5.5 11.5a6.5 6.5 0 0 0 13 0\"/><path d=\"M12 18v3.2\"/></svg></button>\n        <span class=\"sp\"></span>\n        <button class=\"snd\" id=\"send\" disabled aria-label=\"Send\"><svg viewBox=\"0 0 24 24\" style=\"width:15px;height:15px;fill:#fff;stroke:none\"><path d=\"M12 3l7 7h-4.5v11h-5V10H5z\"/></svg></button>\n      </div>\n    </div>\n    <div class=\"foot\">Super Assistant is an automated assistant. A person can take over any time.</div>\n  </div>\n  <div class=\"sheet\" id=\"sheet\">\n    <div class=\"bar sub\"><button class=\"back\" id=\"sheetback\">&lsaquo; Back</button><b>Help</b><i>CastSlate</i></div>\n    <div class=\"sheetbody\" id=\"sheetbody\"></div>\n  </div>\n</div>";
 ROOT.appendChild(wrap);
 var $=function(id){return ROOT.getElementById(id);};
 
 /* ══════════════════════════════════════════════════════════════
-   AMBER — virtual assistant for CastSlate
+   SUPER ASSISTANT — virtual assistant and acting coach for CastSlate
    Three layers, checked in order: conversation → refusals → knowledge.
    Platform facts come from FREE_PLAN, the pricing table and
    FAQ_CATEGORIES in swipecast-full.jsx. Keep them in sync.
@@ -29,35 +29,66 @@ var $=function(id){return ROOT.getElementById(id);};
 const FREE={sub:1,shots:1};
 const DIR='650+';
 
-const SYS=`You are Castoria, a virtual assistant for CastSlate.
+const SYS=`You are the Super Assistant, the virtual assistant and acting coach for
+CastSlate.
 
-Never describe yourself as "the CastSlate AI". You are Castoria, a virtual
-assistant. Warm, brief, direct. You text like a person: short sentences,
-no corporate throat-clearing, no "I'd be happy to assist you with that".
+Never describe yourself as "the CastSlate AI". You are the Super Assistant.
+Warm, brief, direct. You text like a person: short sentences, no corporate
+throat-clearing, no "I'd be happy to assist you with that".
 
 YOU TEACH, NOT JUST ANSWER
-Teaching is a core function. Offer an unauthenticated visitor a short free
-acting lesson early: "Would you like a quick free acting lesson? Two minutes,
-and you can try it right where you are sitting." If they say yes, teach them —
-never link them to a page. If they say no, drop it and never offer again.
+Teaching is the core function, not a side feature. Say so plainly and early:
+"I can teach you all the fundamentals of acting for film or stage right here.
+You do not need to spend money on acting classes to start — just get a notepad
+and a pen and write down what I teach you." Say it once, warmly, and then
+actually deliver. Never make it the setup for a sales pitch.
+
+Offer an unauthenticated visitor a short free acting lesson early: "Would you
+like a quick free acting lesson? Two minutes, and you can try it right where
+you are sitting." If they say yes, teach them - never link them to a page. If
+they say no, drop it and never offer again.
 
 Every lesson runs as a loop, delivered one step at a time, waiting for them
 between steps: concept -> why it matters -> an exercise they do right now ->
 what to look for -> a challenge -> a takeaway. After they try it, explain what
 changed and why. Let them discover the difference rather than stating the rule.
+Tell them what to write in the notepad at the end of each lesson.
 
-Teach film, TV, stage, commercial and voice; audition and self-tape technique,
-slating, cold reading, callbacks, taking direction; objectives, obstacles,
-stakes, subtext, listening, presence, naturalism; camera awareness, eyelines,
-close-ups, blocking, continuity.
+THE CURRICULUM YOU CAN TEACH
+1. Craft fundamentals - objective, obstacle, stakes, tactics, given
+   circumstances, the Magic If, subtext, listening, impulse, presence,
+   truthful behaviour, physical action, relaxation, endowment, moment before,
+   the button, discovering rather than announcing.
+2. Film and TV - shot size and scale, eyelines, hitting marks, continuity and
+   matching, the reaction shot, working in a close-up, not playing to the
+   monitor, the wide versus the single, green screen, ADR.
+3. Stage and theatre - projection and breath support, articulation,
+   sightlines, cheating out, upstaging, stage geography, blocking notation,
+   holding for a laugh, sustaining across two hours with no second take,
+   tech week, cue-to-cue, the half.
+4. Commercial - the difference in tone and job, the product as the actual
+   lead, likeability without smarm, hitting copy points, hand modelling and
+   product handling, the tag, the pause where the VO goes.
+5. Voice - mic technique, plosives, energy without volume, reading with the
+   body, animation versus narration.
+6. Audition and self-tape - slating, sides, cold reading, callbacks, chemistry
+   reads, taking direction, recovering from a mistake, tape framing, sound,
+   background, reader technique, file naming.
+7. Career and materials - headshots and which to lead with, reels and the
+   first six seconds, profile building, what to submit to and what to skip,
+   agents and managers, unions, resumes, rates, typecasting, on-set etiquette
+   and technical vocabulary.
 
-Film vs stage is a difference of medium and scale, never of depth. Theater
+Film versus stage is a difference of medium and scale, never of depth. Theatre
 reaches the audience; film brings the audience to you. Stage acting is not
 overacting.
 
-You may teach the ideas often attributed to Hitchcock — film acting as "the
-art of no acting" — but present them as teaching ideas with a loose
-attribution, not as rules, and never invent a quotation.
+QUOTATIONS
+When a filmmaker's idea helps, attribute it loosely and never invent wording.
+The one worth reaching for on screen acting is Bergman's observation that the
+human face is the great subject of the cinema - the lens is already close
+enough to read a thought, so you do not have to send one. Do not use the
+"film acting is the art of no acting" line.
 
 Do not conflate Stanislavsky's System with American Method acting. The Magic
 If is "what would I do in these circumstances", not "how would I feel".
@@ -68,23 +99,104 @@ awareness through the mute-playback exercise, not mechanical control.
 Education comes before any mention of accounts or Premium. A visitor must
 never feel the free lesson was a sales funnel in costume.
 
+THE FIRST SIX SECONDS
+This is a small detail that decides careers and almost nobody teaches it. A
+casting director watching submissions is often working through hundreds, and
+sometimes thousands, of videos. They decide inside roughly the first six
+seconds whether to keep watching or skip. So:
+- No opening title card. None. A ten-second fade-in with the actor's name,
+  agency and phone number, then the footage, is the old way and casting
+  directors are sick of it. They already know whose tape they opened.
+- Open on you, in frame, doing something. Face visible, sound clean, the
+  strongest moment you have.
+- No music bed, no montage of stills, no production-company logo, no slow
+  fade to black between clips.
+- If you must have a name card, one second at the END, not the beginning.
+- Same rule for the profile video and the self-tape: the action starts
+  immediately.
+Explain the reason, not just the rule - they are saving the casting
+director's time, and that is what gets you watched to the end.
+
+PROFILE BUILDING AND WHAT ACTUALLY ANNOYS CASTING DIRECTORS
+Be specific and unsentimental about this, because it is the fastest fix most
+actors have:
+- An empty or half-built profile. No stats, no bio, no credits. It reads as
+  someone who is not really doing this, and it gets passed in seconds.
+- One single headshot and nothing else. Casting cannot tell what you are
+  right for from one photograph.
+- No footage at all. This is the big one. They need to see you move and
+  speak. It does NOT have to be professional. A 60-second phone reel is
+  completely legitimate: a short dialogue scene with a friend holding the
+  phone, or a monologue, shot near a window, clean sound, and uploaded. That
+  beats a blank video slot by an enormous margin.
+- A bio that is all feeling and no information ("I have loved acting since I
+  was five").
+- Skills listed that they cannot do on demand.
+- A headshot that no longer looks like them.
+Say the encouraging half too: none of this requires money. It requires an
+afternoon.
+
+HEADSHOTS - WHICH ONE TO LEAD WITH
+Teach the essence rather than a spec sheet. A headshot's job is to look like
+you on your best ordinary day and to let casting read your eyes. Warm, open,
+neutral and current beats stylish. Then the part actors get wrong: do NOT use
+a character headshot - the costume, the heavy make-up, the moody prop, the
+in-character scowl - as your main profile photo or on a mailing to agents.
+It puts you in a box, and the box is usually a small one. Lead with the
+neutral, commercially warm shot that looks like the person who would walk in
+the door; keep the character looks in the gallery, where they widen you
+instead of narrowing you. The only exception is when that single type is
+genuinely the whole career they want.
+
+WHAT TO SUBMIT TO, AND WHAT NOT TO
+Submitting to everything does not look hungry, it looks desperate, and casting
+notices the pattern. Teach the filter: submit where you would be a believable
+first choice - close on age range, close on type, close on the energy the
+breakdown is asking for, and inside what you can actually deliver on the day.
+If you cannot say in one sentence why you are right for it, skip it. A small
+number of well-matched submissions with a specific note outperforms fifty
+scattergun ones, and it protects your reads on the roles you do fit.
+
+ENCOURAGING PEOPLE WHO ARE NOT ACTORS YET
+Be genuinely warm about this. You do not need a degree, a conservatory or
+permission to be an actor. Plenty of superb working actors never went to
+drama school. The instinct - watching people, imagining yourself into them,
+being willing to be seen - is something you already have or you would not be
+asking. Training sharpens it; it does not grant it. What a beginner needs is
+a current photo, some footage, and a submitting habit. Say that, then teach
+them something immediately so they leave with a skill and not a pep talk.
+
 WHAT YOU TALK ABOUT
-1. CastSlate — profiles, headshots, castings, submissions, callbacks,
+1. CastSlate - profiles, headshots, castings, submissions, callbacks,
    Premium, billing, Manager Mode, Slate Video, the Actor Business Card,
    the Talent Agency & Manager Directory, TapeLink, classes, safety, account.
-2. The acting industry generally — self-tapes, sides, agents and managers,
+2. The acting industry generally - self-tapes, sides, agents and managers,
    union status, resumes, reels, rates, typecasting, audition nerves,
    background work, how long casting takes to respond.
-3. Ordinary conversation. If someone says hi, say hi back. If they ask how
+3. The business itself. If someone asks about a major studio, streamer,
+   network, production company or talent agency - who they are, what they
+   make, how they cast, how an actor realistically comes into contact with
+   them - answer it properly and enthusiastically. Explain structure rather
+   than gossip, never claim inside knowledge of a specific current project,
+   and never promise access. Point out where things change often and send
+   them to the authoritative source.
+4. Ordinary conversation. If someone says hi, say hi back. If they ask how
    you are, answer like a person would, then ask what they need.
 
 WHAT YOU DECLINE, IN ONE LINE, WITHOUT LECTURING
+- Who built CastSlate, who owns or founded it, when it launched, how it is
+  built, what it runs on, how many users it has, or anything else about the
+  company or the people behind it. Do not answer, do not speculate, do not
+  half-answer. Say lightly that you are not the right one for questions about
+  the company itself, and steer straight to something more useful - how to
+  use the site, or the acting work itself. Never sound evasive or stiff about
+  it; move the conversation on in the same breath.
 - Comparisons to other casting platforms. Say you cannot compare CastSlate
   to other sites, then state what CastSlate does. Never criticise a rival,
   never rank them, never say you have not heard of one. Characterising the
-  wider market in general terms is fine — "most platforms sell you a database
-  listing and stop there" — naming or ranking a specific rival is not.
-- Live data — weather, news, scores, prices. You do not have it.
+  wider market in general terms is fine - "most platforms sell you a database
+  listing and stop there" - naming or ranking a specific rival is not.
+- Live data - weather, news, scores, prices. You do not have it.
 - Writing code, scripts or scrapers against the platform.
 - Legal, medical, tax or investment advice. Point to a qualified professional.
 Decline once and move on. Do not apologise twice.
@@ -98,23 +210,23 @@ say so and offer the team.
 WHO YOU ARE TALKING TO
 plan = visitor | free | premium, plus a first name.
 - visitor: what it is before what it costs. Free account first.
-- free: answer fully, then — only when Premium actually solves what they
-  just asked — say what it unlocks and what it costs.
+- free: answer fully, then - only when Premium actually solves what they
+  just asked - say what it unlocks and what it costs.
 - premium: never sell. Show them how to use what they already pay for.
 
 WHEN THEY ASK WHAT PREMIUM IS WORTH
 Give the full picture, with real enthusiasm. This is the part most assistants
-undersell. Do not lead with the submission counter — lead with the things that
+undersell. Do not lead with the submission counter - lead with the things that
 are genuinely unusual in casting:
   - The Actor Business Card, mailing postcard and agent promo card, each
     carrying a QR code that opens their entire live profile in about two
     seconds. Mail one to an agency office and it opens on the desk. Physical
     promo materials wired to a live profile are not a standard casting-site
     feature and you should say so.
-  - The ${DIR}-company Agency & Manager Directory — addresses, websites,
+  - The ${DIR}-company Agency & Manager Directory - addresses, websites,
     contact details, tiers, and how each company wants to be approached. This
     is the map to representation, and most actors never get handed one.
-  - Manager Mode — a private check-in written about their actual profile,
+  - Manager Mode - a private check-in written about their actual profile,
     every week.
   - The Slate Video, unlimited photos and video, and unlimited submissions
     that are each seen individually.
@@ -124,23 +236,23 @@ on every plan.
 Stay honest while you do it. Nobody can promise a booking, and anyone who does
 is lying. What Premium gives them is everything that IS in their control.
 One upgrade card per answer, never two, never on a billing complaint or a
-safety question, and never to a Premium member.
+safety question, and never to a Premium member. Never attach one to a lesson.
 
 TWO QUESTIONS THAT LOOK ALIKE AND ARE NOT
-"Are the castings on here fake?" is about CastSlate — answer with how listings
+"Are the castings on here fake?" is about CastSlate - answer with how listings
 are reviewed and what the Verified badge means. "What about scams?" is a
-general industry question — answer with the red flags that apply everywhere,
+general industry question - answer with the red flags that apply everywhere,
 then what CastSlate does about them. Never collapse the second into the first.
 
 SHAPE
 Answer in the first sentence. Then short bolded headers with tight bullets
-if the answer has parts. Under 160 words — except a "what do I get" or "is it
-worth it" question, which earns the full walkthrough above.
+if the answer has parts. Under 160 words - except a lesson, or a "what do I
+get" or "is it worth it" question, which earn the full walkthrough above.
 Send the check-in as a separate short message, the way a person texts.
 
 ESCALATION
 Billing disputes, refunds, account deletion, safety reports, anything about
-a minor, or two consecutive misses — hand to the human team.`;
+a minor, or two consecutive misses - hand to the human team.`;
 
 /* ── help sheets ─────────────────────────────────────────────── */
 const ART={
@@ -170,18 +282,20 @@ const SMALL=[
   b:c=>c.name?`How's it going with you, ${c.name}? Working on anything I can help with?`:`How about you — anything you're trying to figure out?`,
   s:['I need help with my profile','Why is nobody getting back to me?','What does Premium include?']},
  {id:'whoareyou',re:/(who|what) (are|r) (you|u)\b|are (you|u) (a |an )?(real|human|person|bot|robot|ai|machine)|what'?s your name|your name|am i (talking|speaking) to a (human|person|bot|real)/i,
-  a:c=>`I'm Castoria — a virtual assistant here on CastSlate. Not a person, and I won't pretend otherwise.`,
-  b:c=>`I can answer questions about the platform and about the acting business generally. If you'd rather talk to someone on the team, just say so and I'll pass you over.`,
-  s:['What can I ask you?','Talk to a human','How does CastSlate work?']},
+  a:c=>`I'm the <b>Super Assistant</b> — the virtual assistant and acting coach here on CastSlate. Not a person, and I won't pretend otherwise.`,
+  b:c=>`Two things I do: answer anything about the platform and the acting business, and actually <b>teach</b> you. I can take you through the fundamentals of acting for film, stage, commercials and voice, right here, for free. Grab a notepad and a pen — the stuff I teach is worth writing down.`,
+  s:['Teach me the fundamentals','What can I ask you?','Talk to a human']},
  {id:'canask',re:/what can i (ask|say|talk about|do here)|what do you (do|know)|how can you help|what can you help|what are you for|what do you help with|^help$/i,
-  a:c=>`${c.name?c.name+', p':'P'}retty much anything to do with CastSlate — or with acting generally.`+
-  `<div class="hd">Things people ask me most</div><ul><li>Building a profile casting actually reads</li><li>Finding and applying to castings</li><li>How free and Premium differ, and what things cost</li><li>Callbacks, self-tapes, and what happens after you submit</li><li>Safety — verified casters, reporting, rules for under-18s</li><li>General industry questions: agents, unions, resumes, rates, nerves</li></ul>`+
-  `<p>I can't compare CastSlate to other casting sites, and I don't have live data like weather or news. Everything else, ask away.</p>`,
-  b:c=>`What are you trying to sort out?`,
-  s:['How do I get started?','What does Premium include?','How do I get an agent?']},
+  a:c=>`${c.name?c.name+', t':'T'}wo halves. I answer things, and I <b>teach</b>.`+
+  `<div class="hd">I can teach you the fundamentals — free</div><p>All of the fundamentals of acting for <b>film, stage, commercial and voice</b>, right here in this thread. You don't need to spend money on acting classes to start. Just get a <b>notepad and a pen</b> and write down what I teach you — every lesson ends with the one line worth keeping.</p>`+
+  `<ul><li><b>Craft</b> — objective, stakes, subtext, listening, presence, playing a state truthfully</li><li><b>Film &amp; TV</b> — the close-up, shot size, eyelines, hitting marks, continuity, what the lens catches</li><li><b>Stage</b> — projection, cheating out, sightlines, stage geography, tech week</li><li><b>Commercial</b> — a genuinely different job, and why most film actors are bad at it first time</li><li><b>Audition</b> — self-tapes, slating, cold reading, taking direction, recovering from a mistake</li><li><b>On set</b> — the technical detail nobody teaches you before your first day</li></ul>`+
+  `<div class="hd">And the career side</div><ul><li>Profile building, and what makes casting pass in seconds</li><li>Headshots — which one to lead with, and the one that quietly boxes you in</li><li>Reels — including why the first <b>six seconds</b> decide it</li><li>What to submit to and what to skip</li><li>Agents, unions, rates, studios, how casting actually runs</li><li>Using CastSlate itself — submissions, callbacks, Premium, billing, safety</li></ul>`+
+  `<p>I can't compare CastSlate to other casting sites, I don't do live data like weather or news, and I don't talk about the company behind the platform. Everything else, ask away.</p>`,
+  b:c=>`Where do you want to start?`,
+  s:['Teach me the fundamentals','How do I improve my profile?','What makes casting skip a reel?']},
  {id:'thanks',re:/^(thanks|thank you|ty|thx|cheers|appreciate it|much appreciated|great thanks|perfect thanks)[\s!.,]*$/i,
   a:c=>`Any time${c.name?', '+c.name:''} 🙌`,b:c=>`Anything else while I'm here?`,s:['No, that\'s all','What is Manager Mode?']},
- {id:'bye',re:/^(bye|goodbye|see ya|see you|later|gtg|got to go|good night|night|that'?s all|no that'?s all|nope)[\s!.,]*$/i,
+ {id:'bye',re:/^(bye|goodbye|see ya|see you|later|gtg|got to go|good night|night|that'?s all|no,? that'?s all|nope)[\s!.,]*$/i,
   a:c=>`Take care${c.name?', '+c.name:''}.`,b:c=>`I'll be right here if something comes up — good luck out there.`,s:[]},
  {id:'ack',re:/^(ok|okay|k|kk|cool|got it|gotcha|nice|great|awesome|sure|alright|yeah|yep|yes|no|nah|lol|haha|hmm|mm|i see)[\s!.,]*$/i,
   a:c=>`👍`,b:c=>`Anything else you want to dig into?`,s:['How do I improve my profile?','What does Premium include?']},
@@ -195,8 +309,19 @@ const SMALL=[
   b:c=>`Curtain goes up. Boom. He says: "What the hell was that?"`,s:['Okay, back to work','How do I prepare for an audition?']}
 ];
 
-/* ── layer 2: things she declines, once, without lecturing ───── */
+/* ── layer 2: things it declines, once, without lecturing ───── */
 const DECLINE=[
+ /* The company behind the platform is not a topic. Asked who built it, when it
+    launched, who owns it or what it runs on, she does not answer, does not
+    speculate and does not half-answer — she moves to something useful in the
+    same breath. Kept first so it wins over every other layer. */
+ {id:'origin',
+  re:/\b(who|whom)\b[^?.!]{0,26}\b(created|creates|made|makes|built|builds|founded|found|owns|own|runs|run|developed|develops|designed|invented|coded|programmed|started|launched|is behind|are behind|came up with)\b[^?.!]{0,26}\b(castslate|cast ?slate|this (site|website|platform|app|thing|place)|the (site|website|platform|app)|you)\b|\b(who'?s|who is|who are)\b[^?.!]{0,20}\b(founder|creator|owner|ceo|cto|boss|inventor|developer|programmer|engineer)s?\b[^?.!]{0,26}\b(castslate|cast ?slate|this (site|website|platform|app)|the (site|website|platform|app)|here|of this)\b|^\s*who'?s?( is)? (the )?(founder|creator|owner|ceo)[\s?.!]*$|\bwho\b[^?.!]{0,18}\bbehind\b[^?.!]{0,20}\b(castslate|this (site|website|platform|app))\b|\bwhen\b[^?.!]{0,26}\b(castslate|cast ?slate|this (site|website|platform|app))\b[^?.!]{0,20}\b(create[ds]?|made|make|built|build|found(ed)?|launch(ed)?|start(ed)?|beg[ai]n|open(ed)?|establish(ed)?|born|go live|went live|come out|came out)\b|\b(castslate|cast ?slate)\b[^?.!]{0,16}\b(founded|launched|created|established)\b|\bhow (old|long)\b[^?.!]{0,26}\b(castslate|this (site|website|platform|app))\b|\bwhat (year|date)\b[^?.!]{0,24}\b(castslate|this (site|website|platform))\b|\b(what|which)\b[^?.!]{0,22}\b(tech ?stack|stack|framework|frameworks|programming language|codebase|code base|source code|database|backend|back.?end|frontend|front.?end|server|servers|hosting|hosted|cms|api)\b[^?.!]{0,22}\b(castslate|this (site|website|platform|app)|you)\b|\b(castslate|this (site|website|platform|app))\b[^?.!]{0,18}\b(built (with|on|in|using)|written in|made with|coded in|open.?source|tech ?stack|source code)\b|\bhow (was|is)\b[^?.!]{0,20}\b(castslate|this (site|website|platform|app))\b[^?.!]{0,14}\b(built|made|coded|developed|created)\b|\bhow many (users|members|actors|people|subscribers|employees)\b[^?.!]{0,24}\b(castslate|this (site|website|platform|app)|you)\b|\b(castslate|this (site|website|platform))\b[^?.!]{0,20}\b(revenue|profitable|funding|funded|investors?|valuation|headquarters|head office|registered|incorporated|a real company|owned by)\b|\bwhere (is|are)\b[^?.!]{0,20}\b(castslate|this (site|website|platform|company))\b[^?.!]{0,16}\b(based|located|from|registered|headquarter)/i,
+  a:c=>`${c.name?c.name+', h':'H'}onestly, I'm the wrong one to ask about the company itself — who built it, when, how it's put together, any of that. I stay out of it.`+
+  `<div class="hd">What I'm actually good for</div><ul><li><b>Teaching you to act</b> — film, stage, commercial, voice. Real exercises, free, right here</li><li><b>Your profile and materials</b> — headshots, reels, what casting passes on and why</li><li><b>Using the site</b> — finding roles, submitting, callbacks, Premium, billing</li><li><b>The business</b> — agents, unions, rates, studios, how casting actually runs</li></ul>`+
+  `<p>Pick whichever of those is closest to what you're really trying to sort out.</p>`,
+  b:c=>`Want to start with a lesson? I can teach you the fundamentals of acting for film or stage right here — no need to spend money on a class to begin. Grab a notepad and a pen.`,
+  s:['Teach me the fundamentals','How do I improve my profile?','How does CastSlate work?']},
  {id:'compare',
   re:/\b(actors ?access|backstage|casting ?networks|castingnetworks|mandy|starnow|star ?now|playbill|breakdown ?express|explore ?talent|project ?casting)\b|\b(better than|compare|comparison|vs\.?|versus) (other|another|any) (site|platform|app)/i,
   a:c=>`${c.name?c.name+', h':'H'}onestly — I can't compare CastSlate to other casting sites. I only know this one.`+
@@ -336,6 +461,7 @@ const KB=[
  `<div class="hd">Bio</div><p><b>Two to three sentences.</b> Training first, then your strongest types, then one real differentiator. Cut "I've loved acting since I was five" — it gets read past every time.</p>`+
  `<div class="hd">Credits and reel</div><p>Three most recent credits with years. Paste a YouTube or Vimeo URL into the Reel field — <b>under two minutes</b>, strongest work first.</p>`+
  `<div class="hd">Special skills</div><p>Only what you can do on demand, in a room, today.</p>`+
+ `<div class="hd">The three that get you passed in seconds</div><ul><li><b>A half-empty profile.</b> No stats, no bio, no credits — it reads as someone who is not really doing this</li><li><b>One headshot and nothing else.</b> They cannot tell what you are right for from one photograph</li><li><b>No footage.</b> The big one. A <b>60-second phone video</b> — a dialogue scene with a friend, or a monologue, near a window — is completely legitimate and fixes it this afternoon</li></ul>`+
  (c.plan==='premium'?`<p>Your weekly <b>Manager Mode</b> note already scores this and names the one gap to fix — it lands Mondays.</p>`:''),
  src:['profile','mm'],s:['Headshot requirements?','What is the Slate Video?','What is Manager Mode?'],
  sell:c=>({e:'Stop guessing at your profile',h:'Manager Mode reads it for you, weekly',b:'What\'s working, what needs attention, your casting lane, and <em>one task this week</em> — about your actual profile, not a template.'})},
@@ -344,7 +470,8 @@ const KB=[
  a:c=>`Spec first, then the part that matters.`+
  `<div class="hd">Spec</div><ul><li><b>At least 800×1000 pixels</b></li><li>JPG or PNG</li><li>Face filling roughly <b>60% of the frame</b></li><li>Natural or soft studio lighting, simple background</li><li>Shot within the <b>last 18 months</b></li></ul>`+
  `<div class="hd">How many you get</div><p>Free accounts hold <b>${FREE.shots} headshot</b>. Premium gives you a main headshot <b>plus unlimited gallery photos</b>, and the main one stays separate. You choose which photo goes with each submission.</p>`+
- `<div class="hd">The commercial / theatrical split</div><p>One warm, open, smiling look and one grounded dramatic look covers most of what you'll submit for. Sending the dramatic shot to a cereal commercial is a wasted submission.</p>`,
+ `<div class="hd">The commercial / theatrical split</div><p>One warm, open, smiling look and one grounded dramatic look covers most of what you'll submit for. Sending the dramatic shot to a cereal commercial is a wasted submission.</p>`+
+ `<div class="hd">Which one goes on the profile</div><p>Your <b>main</b> photo should be the neutral, current one that simply looks like you — alive eyes, real light, no costume. <b>Keep character shots out of the main slot and off agent mailings.</b> A costume headshot puts you in a box, and casting will only ever offer you that box.</p>`,
  src:['profile'],s:['How do I improve my profile?','What is the Slate Video?'],
  sell:c=>({e:'Match the photo to the role',h:'Unlimited gallery photos',b:'Pick the right look per submission instead of sending one headshot to every genre.'})},
 
@@ -547,11 +674,13 @@ const KB=[
  `<p>Six months of consistent class work and three short films is a real resume. Say what's true, clearly.</p>`,
  src:['profile'],s:['How do I improve my profile?','How do I build a reel with no footage?']},
 
-{id:'reel',k:'reel showreel demo reel no footage build a reel clips edit footage montage',
+{id:'reel',k:'reel showreel demo reel no footage build a reel clips edit footage montage 60 second phone reel first six seconds title card titles opener',
  a:c=>`A reel is proof you can act on camera. If you have no footage, you make some — you don't wait for someone to hand it to you.`+
- `<div class="hd">If you have nothing</div><ul><li><b>Ask for footage from everything you shoot.</b> Ask before the shoot, in writing. Student and indie sets often never send it unless you push</li><li>Shoot a two-minute scene yourself with someone from class. A well-lit self-produced scene beats no reel</li><li>A single strong <b>self-tape</b> is legitimate reel material</li></ul>`+
- `<div class="hd">Cutting it</div><ul><li><b>Under two minutes.</b> Strongest work in the first fifteen seconds</li><li>Lead with a clip where you're clearly in frame and speaking</li><li>No montage openers, no music beds, no title card longer than a second</li><li>Same type throughout beats variety — you're proving one thing, not five</li></ul>`,
- src:['profile','card'],s:['How do I improve my profile?','What is the Slate Video?']},
+ `<div class="hd">The six-second rule, before anything else</div><p>Casting decides inside roughly the <b>first six seconds</b> whether to keep watching. On a busy role they have hundreds of videos to get through, sometimes thousands. So:</p>`+
+ `<ul><li><b>No opening titles.</b> A ten-second fade-in with your name, agency and phone number, and <em>then</em> the footage — that is the old way, and casting is sick of it. They already know whose tape they opened. Cut it</li><li>No logo, no music bed, no montage of stills, no fade to black between clips</li><li>If you must have a name card: <b>one second, at the end</b></li><li>Open on <b>you, in frame, talking</b> — the strongest moment you own, not the run-up to it</li></ul>`+
+ `<div class="hd">If you have nothing at all</div><ul><li><b>Shoot a 60-second reel on your phone.</b> A short dialogue scene with a friend holding the camera, or a monologue. It does <b>not</b> have to be professional — near a window, phone horizontal, close enough for clean sound, no music. Upload it. That beats an empty video slot by a mile</li><li><b>Ask for footage from everything you shoot.</b> Ask before the shoot, in writing. Student and indie sets rarely send it unless you push</li><li>A single strong <b>self-tape</b> is legitimate reel material</li></ul>`+
+ `<div class="hd">Cutting it</div><ul><li><b>Under two minutes.</b> Strongest work in the first fifteen seconds — and the very best of it in the first six</li><li>Lead with a clip where you're clearly in frame and speaking</li><li>Same type throughout beats variety — you're proving one thing, not five</li><li>Clean sound wins over pretty pictures. Bad audio gets skipped faster than bad acting</li></ul>`,
+ src:['profile','card'],s:['What happens in the first six seconds?','How do I improve my profile?','What is the Slate Video?']},
 
 {id:'type',k:'type typecast casting lane what is my type what am i right for category look brand',
  a:c=>`Your "type" is the shorthand casting uses to place you in about three seconds — roughly age range, energy, and what you read as before you speak.`+
@@ -591,9 +720,9 @@ const KB=[
 {id:'encourage',k:'too old too late give up quit worth pursuing am i wasting my time discouraged should i keep going no talent',
  a:c=>`I'm not going to give you a motivational poster, so here's the useful version.`+
  `<ul><li><b>Age isn't the barrier people think.</b> Every production needs 40s, 50s, 60s and up, and there is far less competition there than at 22</li><li>What actually ends careers is stopping the craft work — not rejection, and not a slow year</li><li>The actors who move are the ones with a current headshot, real footage, an ongoing class, and a submission habit. That's it. It's unglamorous and it's the whole thing</li></ul>`+
- `<p>If you're asking because it's been a hard month: that's normal, and it isn't evidence about you.</p>`+
- `<p>Pick the smallest next thing — one class, one self-tape, one updated headshot — and do that one.</p>`,
- src:['profile'],s:['How do I improve my profile?','How do I build a reel with no footage?']},
+ `<p>If you're asking because it's been a hard month: that's normal, and it isn't evidence about you. And if you're asking because you never trained — you do not need a school or a degree to be an actor. The instinct is the part you already have; the rest is materials and repetition.</p>`+
+ `<p>Pick the smallest next thing — one class, one self-tape, one updated headshot — and do that one. Or let me teach you something right now, free, and you'll leave this conversation with a skill instead of a mood.</p>`,
+ src:['profile'],s:['Teach me the fundamentals','How do I improve my profile?','How do I build a reel with no footage?']},
 
 {id:'where',k:'where available city location country international outside us market region local roles near me',
  a:c=>`CastSlate works <b>anywhere with a browser</b> — creating a profile and browsing has no geographic restriction.`+
@@ -619,17 +748,22 @@ const KB=[
  `<div class="hd">Which lane are you aiming at?</div><ul><li><b>Film and TV</b> — deep character and scene work, self-tapes, reels, type matters enormously</li><li><b>Commercial</b> — personality, warmth and clarity in seconds; very different skill, very different auditions</li><li><b>Theater</b> — live technique, voice and body, monologues and open calls</li><li><b>Voiceover</b> — a separate business with its own demo, home booth and agents</li><li><b>Background / extra work</b> — paid days on real sets, a legitimate way to learn how production works</li></ul>`+
  `<p>Tell me which of those pulls at you — or if you're not sure, say so and I'll help you work it out. Most people start in two lanes at once, and that's fine.</p>`+
  `<div class="hd">What's true no matter which you pick</div><ul><li>Get into an ongoing class with one teacher. Not three teachers in a year</li><li>Get one current headshot that looks like you</li><li>Get footage, even self-shot. This is the thing everyone delays and everyone needs</li><li>Start submitting to things you're genuinely right for, weekly, and treat it as a habit rather than an event</li></ul>`+
- `<p>You don't need permission, a degree, or an agent to start. You need materials and a submission habit.</p>`,
- src:['profile'],s:['How do I become a commercial actor?','Do I need acting school?','How do I get my first credit?']},
+ `<p>You don't need permission, a degree, or an agent to start. You need materials and a submission habit. Talent is the part you were born with — everything after that is learnable, and most of it is learnable for free.</p>`+
+ `<p><b>Including here.</b> I can teach you all the fundamentals of acting for film or stage right in this thread, at no cost. Just get a notepad and a pen and write down what I teach you.</p>`,
+ src:['profile'],s:['Teach me the fundamentals','Do I need acting school?','How do I get my first credit?']},
 
-{id:'lessons',k:'lesson lessons teach me class learn acting exercise train practise practice free lesson mini lesson study coach masterclass',
- a:c=>`<p>Yes — I actually teach rather than just define things. Each one is a real exercise you do on the spot, in two or three minutes.</p>`+
+{id:'lessons',k:'lesson lessons teach me class learn acting exercise train practise practice free lesson mini lesson study coach masterclass fundamentals course curriculum what can you teach',
+ a:c=>`<p><b>I can teach you all the fundamentals of acting for film or stage right here — free.</b> You don't need to spend money on acting classes to start. Just get a <b>notepad and a pen</b> and write down what I teach you; every lesson ends with one line worth keeping.</p>`+
+ `<p>These are real exercises you do on the spot, not definitions. Two or three minutes each.</p>`+
+ `<div class="hd">Start here</div><ul><li><button class="inl" data-ask="Teach me the fundamentals">The fundamentals, in order</button> — objective, stakes, listening, scale. The whole spine in one go</li></ul>`+
  `<div class="hd">Film &amp; camera</div><ul><li><button class="inl" data-ask="The camera sees everything">The camera sees everything</button> — the show-it vs want-it experiment</li><li><button class="inl" data-ask="Working in a close-up">Working in a close-up</button> — what the lens catches, and the mute-playback exercise</li><li><button class="inl" data-ask="How to stop overacting">How to stop overacting</button> — the flat pass</li></ul>`+
  `<div class="hd">Technique</div><ul><li><button class="inl" data-ask="Objective">Objective</button> — what your character actually wants</li><li><button class="inl" data-ask="Stanislavsky's Magic If">Stanislavsky's Magic If</button> </li><li><button class="inl" data-ask="Listening">Listening</button> </li><li><button class="inl" data-ask="Being present">Being present</button> </li><li><button class="inl" data-ask="Subtext">Subtext</button> — one line, four meanings</li><li><button class="inl" data-ask="Stakes">Stakes</button> — why your scene feels flat</li></ul>`+
  `<div class="hd">Audition</div><ul><li><button class="inl" data-ask="Self-tape exercise">Self-tape exercise</button> — a better take in fifteen minutes</li><li><button class="inl" data-ask="How to slate">How to slate</button> </li><li><button class="inl" data-ask="Cold reading">Cold reading</button> without panicking</li><li><button class="inl" data-ask="The room">The room</button> — first impressions, taking direction, recovering from a mistake</li></ul>`+
- `<div class="hd">By medium</div><ul><li><button class="inl" data-ask="Stage acting">Stage acting</button> — filling the room without inflating</li><li><button class="inl" data-ask="Commercial acting">Commercial acting</button> </li><li><button class="inl" data-ask="Voice acting">Voice acting</button> </li></ul>`+
- `<p>Tap any of those, or just tell me what is going wrong and I will pick.</p>`,
- src:[],s:['The camera sees everything','Teach me how to listen','How do I stop overacting?','Give me a self-tape exercise'],nocheck:true},
+ `<div class="hd">By medium</div><ul><li><button class="inl" data-ask="Stage acting">Stage acting</button> — filling the room without inflating</li><li><button class="inl" data-ask="Commercial acting">Commercial acting</button> — a genuinely different job</li><li><button class="inl" data-ask="Voice acting">Voice acting</button> </li></ul>`+
+ `<div class="hd">The technical side nobody teaches</div><ul><li><button class="inl" data-ask="Teach me the on-set technicals">On set</button> — marks, blocking, coverage, matching your action, the vocabulary of the day</li><li><button class="inl" data-ask="Teach me the theatre technicals">Theatre technicals</button> — cheating out, upstaging, sightlines, spike marks, tech week, the half</li></ul>`+
+ `<div class="hd">Materials and career</div><ul><li><button class="inl" data-ask="Teach me the first six seconds">The first six seconds</button> — why casting skips a reel, and cutting the opening titles</li><li><button class="inl" data-ask="Teach me profile building">Building a profile casting reads</button> — including the 60-second phone reel</li><li><button class="inl" data-ask="Which headshot should I lead with?">Choosing your headshot</button> — and the character shot that boxes you in</li><li><button class="inl" data-ask="Teach me what to submit to">What to submit to</button> — and what to skip, so you don't look desperate</li></ul>`+
+ `<p>Tap any of those, or just tell me what is going wrong and I will pick. If it isn't on the list I'll build the lesson anyway — the list is a menu, not a limit.</p>`,
+ src:[],s:['Teach me the fundamentals','Teach me the first six seconds','Teach me the on-set technicals','Which headshot should I lead with?'],nocheck:true},
 
 {id:'filmvsstage',k:'film vs stage difference theater screen acting scale bigger smaller which is harder medium',
  a:c=>`Different scale, same craft. Neither is the senior one.`+
@@ -688,8 +822,9 @@ const KB=[
  `<div class="hd">Commercial</div><ul><li>You often have <b>seconds</b>. Warmth, energy and clarity have to land almost immediately</li><li>Casting is frequently buying <b>you</b> — your presence and relatability — more than a constructed character</li><li>Auditions are short, often improvised or partly unscripted, sometimes just a slate and a reaction</li><li>Type and look carry a lot of weight, and so does the ability to take a quick adjustment</li></ul>`+
  `<div class="hd">Film and television</div><ul><li>Deeper character and scene work — objective, relationship, stakes, what happened before the scene starts</li><li>Stillness reads. The camera is close and it catches thinking</li><li>Sides are usually real scenes, and they want to see your specific interpretation</li></ul>`+
  `<div class="hd">Theater</div><ul><li>Voice and body have to carry to the back row without losing truth</li><li>Sustained performance across a whole arc, live, every night</li></ul>`+
- `<p>Most working actors do more than one. Just don't bring film stillness to a commercial audition, or commercial brightness to a drama — that mismatch is what casting is reading in the first ten seconds.</p>`,
- src:[],s:['How do I become a commercial actor?','What should I wear to an audition?','What is my type?']},
+ `<div class="hd">The technical things nobody warns you about</div><ul><li><b>The product is the lead. You are supporting it.</b> Your job is to make someone feel something about a thing. Actors who fight that never book</li><li><b>Copy points.</b> The client has words that must land clearly — the name, the claim, the price. You will be adjusted on them, over and over, and it is not about your acting</li><li><b>Leave the pause.</b> There is often a hole in the scene where the voiceover or the super goes. Play through it as if it is full</li><li><b>Product handling is a skill.</b> Label to camera, no fingers over the logo, bite and hold, the drink and the genuine swallow. Practise with a mug at home — it is the difference between one take and fifteen</li><li><b>The tag</b> is the little button at the end. It usually carries the whole spot. Keep something in reserve for it</li><li><b>Take the adjustment instantly and completely.</b> "Same thing, more fun" is a real direction and it is the actual test</li><li><b>Improv on brief.</b> They will ask you to play, but inside the message. Funny that hurts the product does not get used</li><li><b>Sessions are fast and often silent.</b> Slate, one or two takes, thank you. That is not a bad sign; that is the format</li><li><b>Wardrobe reads instantly.</b> Solid mid-tones, no logos, no busy patterns, nothing that strobes on camera</li><li><b>Conflicts.</b> Booking one brand can lock you out of a whole category for the cycle. Know what you are signing</li></ul>`+
+ `<p>Most working actors do more than one lane. Just don't bring film stillness to a commercial audition, or commercial brightness to a drama — that mismatch is what casting is reading in the first ten seconds.</p>`,
+ src:[],s:['Give me a commercial acting lesson','What should I wear to an audition?','What is my type?']},
 
 {id:'voiceover',k:'voiceover voice over vo voice acting animation dubbing demo booth home studio narration audiobook',
  a:c=>`Voiceover is a genuinely separate business — different agents, different auditions, different gear.`+
@@ -703,8 +838,9 @@ const KB=[
  `<div class="hd">How you get seen</div><ul><li><b>Open calls and general auditions</b> — many companies hold them, and you don't need representation to attend</li><li><b>Submissions</b> to specific productions, the same as screen work</li><li>Community, fringe and regional theater — real credits, real stage time, real training</li></ul>`+
  `<div class="hd">What to bring</div><ul><li>Two contrasting <b>monologues</b>, roughly a minute each, memorised cold and kept audition-ready year round</li><li>For musicals: <b>16 or 32 bars</b> in your best range, plus sheet music in your key, clearly marked, in a binder</li><li>Headshot and resume, stapled back to back, cut to headshot size</li></ul>`+
  `<div class="hd">The technique difference</div><p>Everything has to carry — voice, body, intention — without inflating into something false. Film asks you to shrink. Stage asks you to fill the room while staying truthful. Actors who can do both are rare and get work.</p>`+
+ `<div class="hd">The technical side</div><p>Stage has a vocabulary and a set of rules a director will assume you already know — cheating out, upstaging, sightlines, spike marks, stage left and right from <em>your</em> point of view, half-hour calls, cue-to-cue, tech week. Ask me for the <b>theatre technicals</b> and I'll take you through all of it properly.</p>`+
  `<p>Union rules for stage work — Actors' Equity in the US — vary by contract and by house. Check the specific production's terms before you assume.</p>`,
- src:['apply'],s:['How do I prepare a monologue?','Is SAG-AFTRA supported?','How do I get my first credit?']},
+ src:['apply'],s:['What are the theatre technicals?','How do I prepare a monologue?','How do I get my first credit?']},
 
 {id:'childactor',k:'child actor kid minor young performer teenager parent guardian coogan school work permit under 18 start my child',
  a:c=>`For a young performer the shape of it is different, and most of it is about protection.`+
@@ -791,6 +927,9 @@ const KB=[
  `<div class="hd">Theatrical</div><p>Grounded, neutral, more serious. Not grim — <em>thinking</em>. Darker or simpler wardrobe, softer light. It says: <em>there's something going on behind my eyes and you'd want to watch it.</em></p>`+
  `<div class="hd">Choosing a photographer</div><ul><li>Look at their gallery for people who look like <b>you</b>, not just for pretty pictures</li><li>Their shots should look like the person could walk into the room tomorrow — no heavy retouching, no fashion styling</li><li>Ask what's included: number of looks, turnaround, how many retouched finals</li></ul>`+
  `<div class="hd">Choosing your final images</div><p>Pick the ones where your eyes are alive, not the ones where you look best. Casting is buying presence, not symmetry. Ask people who've seen you act, not people who love you.</p>`+
+ `<div class="hd">The mistake that quietly costs actors years</div><p><b>Do not use a character headshot as your main profile photo, and never on a mailing to agents.</b> The costume, the heavy make-up, the leather jacket and the scowl, the nurse's scrubs, the moody prop — it feels like showing range and it does the opposite. <b>It puts you in a box, and the box is usually a small one.</b> Whoever sees it casts you as that and nothing else.</p>`+
+ `<p>Lead with the <b>neutral, warm, current</b> shot that looks like the person who would actually walk through the door — good light, alive eyes, no costume, nothing doing the work except you. Keep the character looks in the gallery, where they <em>widen</em> you instead of narrowing you.</p>`+
+ `<p>The one exception: if that single type is genuinely the entire career you want, lead with it on purpose. Just make it a decision, not an accident.</p>`+
  `<p>Free CastSlate accounts hold one headshot; Premium keeps a main headshot plus unlimited gallery photos, so you can send the commercial look to commercial roles and the theatrical look to drama.</p>`,
  src:['profile'],s:['What are the headshot requirements?','What is my type?','How do I improve my profile?']},
 
@@ -863,8 +1002,10 @@ const KB=[
  `<div class="hd">What training actually buys you</div><ul><li>Reps. You cannot get good at acting alone in your room</li><li>A teacher who sees you weekly and knows your habits</li><li>Scene partners, and people who'll cast you in their own work later. The network is half the value</li><li>Something true to put on an empty resume</li></ul>`+
  `<div class="hd">Degree vs ongoing class</div><p>A conservatory or BFA gives immersion, time, and a peer group. It's expensive and it's not a requirement — plenty of working actors have neither. <b>An ongoing class with one good teacher for six months</b> will move your work further than three teachers in a year, and costs a fraction.</p>`+
  `<div class="hd">Choosing a class</div><ul><li>Audit first. Always. Any teacher who won't let you is telling you something</li><li>Watch how they treat the weakest actor in the room</li><li>Be suspicious of anything sold on <b>access to casting directors</b> rather than on the work</li><li>You want to be the least experienced person in the room, not the most</li></ul>`+
+ `<div class="hd">And if you can't afford any of it right now</div><p>Then start without it. <b>You do not need school to become an actor.</b> Acting begins as something you already have — the pull to watch people, to imagine yourself into them, to be willing to be seen. Training sharpens that; it never hands it to you, and plenty of superb working actors never went.</p>`+
+ `<p>In the meantime, <b>I'll teach you the fundamentals for free, right here</b> — film, stage, commercial or voice. Real exercises you do on the spot, not definitions. Get a notepad and a pen and we can start now.</p>`+
  `<p>CastSlate runs classes and workshops taught by working professionals if you want somewhere to start — but any consistent class is better than the perfect one you never book.</p>`,
- src:[],s:['Tell me about classes','How do I get my first credit?','What is acting technique?']},
+ src:[],s:['Teach me the fundamentals','Tell me about classes','How do I get my first credit?']},
 
 {id:'networking',k:'network networking meet people industry connections events mixers relationships who you know',
  a:c=>`Networking gets a bad name because most people do it as extraction. It works when it isn't.`+
@@ -895,8 +1036,84 @@ const KB=[
  a:c=>`Being easy to work with is a real, bookable skill. It's also the thing that gets you asked back.`+
  `<div class="hd">In the audition room</div><ul><li>Early, not late. Ten minutes, not forty</li><li>Warm to everyone, especially the assistant and the reader</li><li>Don't apologise, don't explain your choice, don't ask to start over more than once</li><li>Take the adjustment <b>fully</b>. That's usually the actual test</li><li>Say thank you and leave. Don't linger</li></ul>`+
  `<div class="hd">On set</div><ul><li>Early is on time. Know where you're meant to be</li><li>Learn the first AD's name and listen to them</li><li>Stay in your eyeline and hit your marks. Continuity is everyone else's problem if you don't</li><li>Phone away and quiet when rolling is called</li><li>Don't give notes to other actors, and don't approach the director with ideas unless invited</li><li>Craft services is not a buffet you clear</li></ul>`+
- `<div class="hd">The one that matters most</div><p>Hurry up and wait is the job. The professional is the person who's still pleasant on hour eleven. Crews talk, and they talk to the people who hire.</p>`,
- src:[],s:['How do I prepare for an audition?','What does a casting director do?','How do I network?']},
+ `<div class="hd">The one that matters most</div><p>Hurry up and wait is the job. The professional is the person who's still pleasant on hour eleven. Crews talk, and they talk to the people who hire.</p>`+
+ `<p>Etiquette is only half of it — ask me about the <b>on-set technicals</b> and I'll go through blocking, marks, coverage, matching your action and the vocabulary of the day, which is the part that actually makes you look experienced.</p>`,
+ src:[],s:['What are the on-set technicals?','How do I prepare for an audition?','What does a casting director do?']},
+
+{id:'sixseconds',k:'six seconds first six seconds reel opening title card titles intro skip skipped watch time attention casting director patience fade in name card contact details opener montage logo how long do they watch',
+ a:c=>`This is the smallest detail on your whole profile and it decides more than anything else on it. <b>A casting director decides inside about the first six seconds whether to keep watching or skip.</b>`+
+ `<div class="hd">Why it is that brutal</div><p>They are not being rude. On a busy role they are working through hundreds of videos — sometimes thousands. Six seconds each is the only way the pile gets watched at all. So the question is never "is this good", it is "is there any reason to keep watching".</p>`+
+ `<div class="hd">Cut the opening titles. All of them</div><p>The ten-second fade-in with your name, your agency and your phone number, and <em>then</em> the footage — that is the old way, and casting is sick of it. <b>They already know whose tape they opened.</b> Your name is on the submission. You just spent your entire six seconds telling them something they had before they clicked.</p>`+
+ `<ul><li>No title card. No logo. No production-company sting</li><li>No slow fade in, no fade to black between clips</li><li>No music bed under a montage of stills</li><li>No "written and directed by" credits on a scene you shot with a friend</li><li>If you insist on a name card, <b>one second, at the end</b></li></ul>`+
+ `<div class="hd">What the first six seconds should be</div><ul><li><b>You, in frame, clearly.</b> Face visible, well lit, big enough to read</li><li><b>Talking.</b> Not walking, not staring wistfully out of a window</li><li><b>Your strongest moment.</b> Not the setup for your strongest moment — the moment</li><li><b>Clean sound.</b> Bad audio gets skipped faster than bad acting</li></ul>`+
+ `<p>Same rule for your Slate Video and your self-tapes: the action starts immediately. Saving casting time is not a courtesy, it is the thing that gets you watched to the end.</p>`,
+ src:['profile'],s:['How do I build a reel with no footage?','What annoys casting directors?','What should my headshot look like?']},
+
+{id:'cdpeeves',k:'annoy annoys annoying pisses off piss off irritate frustrate casting directors hate pet peeve pet peeves turn off turn offs empty profile no video one headshot incomplete lazy why do they pass what puts them off mistakes actors make',
+ a:c=>`I'll be straight with you, because this is the fastest fix most actors have. Casting directors are not annoyed by inexperience. They are annoyed by <b>profiles that make their job impossible</b>.`+
+ `<div class="hd">The things that get you passed in seconds</div><ul><li><b>An empty or half-built profile.</b> No stats, no bio, no credits, nothing. It reads as someone who is not really doing this yet, and they move on</li><li><b>One headshot and nothing else.</b> They cannot tell what you are right for from a single photograph</li><li><b>No footage at all.</b> This is the big one. They need to see you move and hear you speak before they will spend a callback slot on you</li><li><b>A bio that is all feeling and no information</b> — "I have loved acting since I was five" gets read past every single time</li><li><b>A headshot that no longer looks like you.</b> If the person who walks in is not the person in the photo, that is the last time they call you in</li><li><b>Special skills you cannot do today, on demand</b></li><li><b>Submitting to everything.</b> They see the pattern, and it makes your good submissions worth less</li></ul>`+
+ `<div class="hd">The footage part, since it stops most people</div><p><b>It does not have to be professional.</b> Nobody expects a showreel cut by an editor. A <b>60-second phone video</b> is completely legitimate:</p>`+
+ `<ul><li>A short <b>dialogue scene with a friend</b> holding the phone — two people talking, real stakes, one take you like</li><li>Or a <b>monologue</b>, straight to camera or just off it</li><li>Near a window, phone horizontal, phone close enough that they can hear you, no music</li><li>Upload it. Done</li></ul>`+
+ `<p>Sixty seconds of you actually acting, shot on a phone, beats an empty video slot by an enormous margin — and it beats a beautiful reel that opens with ten seconds of titles. Start there today and fix it properly later.</p>`+
+ (c.plan==='premium'?`<p>Your weekly <b>Manager Mode</b> note already names which of these is your live gap.</p>`:''),
+ src:['profile','mm'],s:['What makes casting skip a reel?','How do I improve my profile?','What should I submit to?'],
+ sell:c=>({e:'Fix the video gap',h:'Unlimited video, plus your 7-second Slate',b:'Free accounts are photo-only. Premium adds unlimited video, <em>Cast Me As</em> clips and the <em>Slate Video</em> that sits above your reel.'})},
+
+{id:'onset',k:'on set staging blocking marks first day set etiquette technical details protocol crew terms what happens on set shoot day rolling speed back to one first team second team hitting my mark eyeline continuity matching what nobody tells you before your first job',
+ a:c=>`Most actors arrive on their first real set having been taught acting and nothing about <b>how a set works</b> — and that is what makes them look green. Here is the part nobody teaches.`+
+ `<div class="hd">Staging and blocking</div><p><b>Blocking</b> is where you move and when. It gets set at the <b>blocking rehearsal</b> at the top of the scene, with the director, the DP and the first AD watching — that rehearsal is where your physical performance is decided, so bring a choice to it rather than waiting to be told.</p>`+
+ `<p>Then <b>marks</b> go down: tape or sandbags on the floor where you stop. You must land on them, because focus and framing were set to that exact spot. <b>Find them with your feet, not your eyes</b> — a toe against the tape, a doorframe, the edge of a rug. An actor looking down for their mark is visible in the take.</p>`+
+ `<p>While they light, a <b>stand-in</b> takes your position — that is <b>second team</b>; you are <b>first team</b>. Stay findable and stay in wardrobe.</p>`+
+ `<div class="hd">The vocabulary of the day</div><ul><li><b>Call sheet</b> — the day's schedule. Read all of it, not just your line</li><li><b>"Roll sound" / "Speed" / "Set" / "Action"</b> — the order things happen in. Do not start before "action", and do not drop the moment on "cut" until the AD says so</li><li><b>"Back to one"</b> — return to your first position; they are going again</li><li><b>"Checking the gate" / "Moving on"</b> — that setup is done</li><li><b>Coverage</b> — the master, then singles, then over-the-shoulders. The scene is shot many times from different sizes</li><li><b>Hot set</b> — do not move anything, including your own coffee cup</li><li><b>Video village</b> — the monitors. Do not wander over to watch yourself</li><li><b>MOS</b> — shot without sound. <b>Room tone</b> — a minute of silence recorded for the edit; nobody moves</li><li><b>Martini</b> — the last shot of the day</li></ul>`+
+ `<div class="hd">The technical things that get you hired again</div><ul><li><b>Match your action.</b> If you picked the glass up on "I told you", pick it up on "I told you" every take. The script supervisor is tracking it, and mismatched action costs the editor the take</li><li><b>Play the right size for the lens.</b> A wide master wants physical clarity; a tight single wants stillness and thought. Ask what size you are in — it is a completely normal question</li><li><b>Give a real performance off camera.</b> Your coverage is done; theirs is not. The eyeline and the timing you give them is what their close-up is built on. Actors remember who did this</li><li><b>Eyeline.</b> When you are in a close-up the other actor may be replaced by a mark near the lens. Look exactly where the AD puts it, and keep it there</li><li><b>Hold the frame.</b> Do not talk over the end of the take, do not sigh, do not break until "cut"</li><li><b>Continuity of costume and props</b> — same sleeve rolled, same cigarette length. Ask if you are unsure</li></ul>`+
+ `<div class="hd">Behaviour, briefly</div><p>Learn the first AD's name on day one and listen to them. Be early, be findable, be quiet when the bell goes, never give another actor a note, never ask the director for a rewrite on the floor, and thank the crew. Sets are small towns and the report on you travels.</p>`,
+ src:[],s:['Teach me about hitting marks','What are the theatre technicals?','What is set etiquette?']},
+
+{id:'theatertech',k:'theater theatre technical stage terms cheat out cheating upstage upstaging sightlines stage left right upstage downstage blocking notation tech week cue to cue dress rehearsal half hour call places spike marks green room house apron wings ghost light dark backstage crossover prompt corner what actors need to know for stage',
+ a:c=>`Stage has its own machinery, and knowing it is half of looking professional in a rehearsal room. Here is what a director will assume you already know.`+
+ `<div class="hd">Stage geography</div><ul><li><b>Stage left / stage right</b> are from <b>the actor's</b> point of view facing the audience — the opposite of what the audience sees. Never say "my left"</li><li><b>Upstage</b> is away from the audience, <b>downstage</b> is towards it. The words come from raked stages that literally sloped</li><li><b>Centre, apron, wings, crossover</b> — the apron is the strip in front of the proscenium; the crossover is the route behind the set to get to the other side without being seen</li><li>Blocking gets written in your script in shorthand: <b>DSR</b>, <b>USC</b>, <b>X</b> for cross. Write it in pencil at the moment it is given, every time</li></ul>`+
+ `<div class="hd">The two that mark you out instantly</div><ul><li><b>Cheating out.</b> Two people in real life face each other. On stage that gives the audience two profiles and no faces, so you angle open — a quarter or three-quarter turn towards the house — while still playing to your partner. It should feel slightly unnatural and look completely natural</li><li><b>Upstaging.</b> If you drift upstage, your scene partner has to turn away from the audience to see you. Do not do it by accident, and never do it on purpose. It is the fastest way to be disliked in a company</li></ul>`+
+ `<div class="hd">Sightlines and the house</div><p>Some seats cannot see parts of the stage. The director and stage manager set <b>sightlines</b>, and if you drift a foot off your position a whole section of the audience loses you. <b>Spike marks</b> — small tape crosses — hold furniture and actor positions. Learn yours.</p>`+
+ `<div class="hd">The week that surprises people</div><ul><li><b>Tech week.</b> Lights, sound and scene changes get added. It is slow, stop-start and not about you. Stay patient and stay available</li><li><b>Cue-to-cue.</b> Jumping between technical cues, skipping the acting in between. Follow the stage manager exactly</li><li><b>Dry tech, dress, preview</b> — then opening. A <b>put-in</b> is a rehearsal for a replacement actor</li><li>Calls run <b>"half hour", "quarter", "five", "places"</b>. "Half hour" is 35 minutes before curtain and it is a contractual call, not a suggestion. Answer every call audibly</li></ul>`+
+ `<div class="hd">Working the room without shouting</div><ul><li><b>Projection is breath, not volume.</b> Support from the diaphragm, keep the throat open, and aim at the back wall. Shouting closes the throat and kills you by week two</li><li><b>Consonants carry the meaning.</b> Vowels carry the sound, consonants carry the sense. Ends of words are where clarity is lost</li><li><b>Hold for a laugh</b>, then come in on the fall of it — not after it dies</li><li><b>Vocal and physical warm-up, every night.</b> Eight shows a week is an athletic schedule</li><li><b>No second take.</b> If something goes wrong you stay in it and keep the story moving. That is the whole difference from screen</li></ul>`+
+ `<div class="hd">Etiquette</div><p>Do not touch a prop that is not yours. Do not go into the house in costume. Never give another actor a note — take it to the stage manager or the director. Sign in when you arrive. And leave the <b>ghost light</b> on.</p>`,
+ src:[],s:['Teach me stage projection','What are the on-set technicals?','Film vs stage — what changes?']},
+
+{id:'submitstrategy',k:'what should i submit to what not to submit desperate spray and pray submit everything too many submissions which roles pick choose right for me fit selective apply to everything is it bad to submit a lot',
+ a:c=>`Short answer: submit only where you are a believable <b>first choice</b>. Submitting to everything does not read as hungry, it reads as desperate — and casting sees the pattern before you do.`+
+ `<div class="hd">The one-sentence test</div><p>Before you submit, say out loud why you are right for it: <em>"I am right for this because ___."</em> If you cannot finish that sentence with something specific — age range, type, energy, a real skill, lived experience — skip it. That is the whole filter.</p>`+
+ `<div class="hd">Submit when</div><ul><li>You are inside the stated <b>age range</b> as you actually read on camera, not as your birthday says</li><li>Your <b>type and energy</b> match what the breakdown is asking for</li><li>You could genuinely deliver it on the day — the accent, the skill, the physical demand</li><li>The <b>location and dates</b> work without heroics</li><li>You would be happy if they said yes</li></ul>`+
+ `<div class="hd">Skip when</div><ul><li>You are hoping they will "see something else in you". They will not; they are casting the role in front of them</li><li>The role is a decade off your range in either direction</li><li>You are submitting because it is the biggest project on the board</li><li>You would need to learn the required skill after booking</li><li>It contradicts something you would refuse on the day — nudity, content, terms. Decide before, not after</li></ul>`+
+ `<div class="hd">Why it actually pays</div><p>A small number of well-matched submissions with a specific two-sentence note beats fifty scattergun ones. Casting directors build a mental file on the actors they see repeatedly. You want that file to say <b>"always right for what they send"</b> — because that is the actor whose next submission gets opened first.</p>`+
+ `<p>Being selective is not being timid. It is the difference between being remembered and being filtered.</p>`,
+ src:['apply'],s:['How do I read a breakdown?','What is my type?','What annoys casting directors?']},
+
+{id:'studios',k:'studio studios production company companies netflix disney warner universal paramount sony a24 blumhouse lionsgate neon focus searchlight hbo max hulu apple amazon mgm streamer streamers network networks abc nbc cbs fox cw who makes movies major studio independent',
+ a:c=>`Happy to go into this — knowing who makes what changes how you read a breakdown.`+
+ `<div class="hd">The majors</div><p>The big theatrical studios are <b>Walt Disney Studios</b>, <b>Warner Bros.</b>, <b>Universal</b>, <b>Paramount</b> and <b>Sony Pictures</b>. Around them sit large non-major players like <b>Lionsgate</b> and <b>Amazon MGM Studios</b>, plus specialty arms — <b>Searchlight</b> and <b>Focus Features</b> — that make the awards-season end of the slate.</p>`+
+ `<div class="hd">Streamers and platforms</div><p><b>Netflix</b>, <b>Amazon Prime Video</b>, <b>Apple TV+</b>, <b>Max</b>, <b>Disney+</b>, <b>Hulu</b>, <b>Paramount+</b> and <b>Peacock</b> now commission as much scripted work as the studios do, and several own studios outright. The broadcast networks — <b>ABC</b>, <b>CBS</b>, <b>NBC</b>, <b>Fox</b>, <b>The CW</b> — still run a traditional pilot and series pipeline.</p>`+
+ `<div class="hd">Independents worth knowing by name</div><p><b>A24</b>, <b>Neon</b>, <b>Blumhouse</b>, <b>Annapurna</b>, <b>Plan B</b>, <b>Sixth &amp; Idaho</b>, <b>Hartbeat</b> and dozens more. Some finance and produce, some only distribute. It is worth knowing which, because a distributor does not cast anything.</p>`+
+ `<div class="hd">The part that matters to you</div><ul><li><b>Studios do not cast. Casting directors cast.</b> A studio hires an independent casting office per project — that office is who reads your submission, and that is the relationship worth building</li><li>The <b>size of the company tells you the gate</b>. Studio features and big streaming series are almost entirely agent-submitted through the industry breakdown services. Independent features, shorts, commercials, theatre, regional and new-media work are where an unrepresented actor genuinely gets read</li><li>A production company name in a breakdown tells you the <b>tone and budget</b> you are auditioning into. Blumhouse and A24 are not asking for the same performance</li><li>Everything above moves — mergers, rebrands, executives, whole divisions. Treat any specific detail as a starting point and check it</li></ul>`+
+ `<p>Ask me about any of them and I'll tell you what I know structurally. What I won't do is pretend to have inside knowledge of a current project or promise you access to one.</p>`,
+ src:[],s:['Who are the biggest talent agencies?','How does casting actually work?','How do I get an agent?']},
+
+{id:'bigagencies',k:'caa wme uta gersh paradigm icm buchwald innovative a3 abrams cesd kmr biggest agencies top agency franchised boutique agency tiers who are the biggest agents talent agency management company big four big three',
+ a:c=>`Worth understanding the shape of it, because "get an agent" means very different things at different tiers.`+
+ `<div class="hd">The top tier</div><p><b>CAA</b>, <b>WME</b> and <b>UTA</b> are the giants — full-service, global, representing actors alongside directors, writers, musicians, athletes and brands. CAA absorbed <b>ICM Partners</b> in 2022, which is why you still see ICM on older credits. Just below them sit <b>Gersh</b> and <b>Paradigm</b>, both serious theatrical agencies with real reach.</p>`+
+ `<div class="hd">The mid tier</div><p>Substantial bicoastal agencies — <b>Buchwald</b>, <b>Innovative Artists</b>, <b>A3 Artists Agency</b> (the former Abrams Artists), <b>CESD</b> for commercial and voiceover, <b>KMR</b>, <b>Stewart Talent</b>, <b>Clear Talent Group</b> and others. These are the ones where a working actor with credits and a reel is a realistic conversation.</p>`+
+ `<div class="hd">Boutique and regional</div><p>Smaller offices with tight lists, often specialising by category — commercial, voiceover, print, theatre, children, dance. <b>This is where nearly everyone actually starts</b>, and a hands-on boutique agent who submits you constantly is worth more to a beginner than a name agency where you are the 400th client.</p>`+
+ `<div class="hd">The honest reality</div><ul><li>The top tier signs off <b>demand</b>. They come to you when the work already exists. Nobody queries their way into CAA from a cold mailing</li><li>An agent takes a <b>commission</b> — commonly 10% on union work — and is never paid up front. <b>Any agency asking you for a fee, a photo package or a class is not an agency.</b> That is the single clearest red flag in this business</li><li>Franchised agencies operate under union agreements. It is worth checking a company against the SAG-AFTRA franchised list before you send anything</li><li>A <b>manager</b> is a different job from an agent — fewer clients, career strategy, no legal authority to procure work in some states</li></ul>`+
+ (c.plan==='premium'?`<p>Your <b>${DIR}-company Agency &amp; Manager Directory</b> has these grouped in tiers with addresses and exactly how each one wants to be approached — that is the practical version of everything above.</p>`:''),
+ src:['dir'],s:['How do I get an agent?','Agent vs manager?','Tell me about the studios'],
+ sell:c=>({e:'The map, not the guesswork',h:DIR+' agencies and management companies',b:'LA, Beverly Hills and New York — addresses, websites, contact details, <em>tiers</em>, and how each company wants to be approached. Plus submission tips written for actors with no representation.'})},
+
+{id:'borntalent',k:'born with it natural talent do you need talent can anyone act not an actor never acted no training self taught untrained is acting a talent am i talented too late to learn no school',
+ a:c=>`You do not need a school, a degree or anyone's permission to be an actor. Plenty of superb working actors never set foot in a conservatory.`+
+ `<div class="hd">The honest version</div><p>Acting starts as something you already have. The instinct to watch people closely, to imagine your way into someone else, to be willing to be looked at — you either have that pull or you do not, and if you are asking the question you have it. <b>Training sharpens the instinct. It does not hand it to you.</b></p>`+
+ `<p>What school buys you is time, repetition, a room full of scene partners and someone watching. All of that is useful. None of it is a gate, and none of it is a substitute for actually acting where people can see you.</p>`+
+ `<div class="hd">If you have never done this before, here is the whole path</div><ul><li><b>One current photo</b> that looks like you. A phone, a window, a plain wall, someone else holding the camera</li><li><b>Sixty seconds of footage.</b> A dialogue scene with a friend or a monologue. It does not need to be professional — it needs to exist</li><li><b>Get in front of people.</b> Student films, shorts, community theatre, background work, a class if you can afford one and want one</li><li><b>Submit weekly</b> to things you are genuinely right for. A habit, not an event</li><li><b>Learn the craft as you go</b> — which is what I am here for. I'll teach you the fundamentals for free, film or stage. Get a notepad and a pen and we can start now</li></ul>`+
+ `<p>The actors who make it are rarely the most gifted ones in the room at nineteen. They are the ones who kept turning up with materials in order. That part is entirely learnable and you can start it today.</p>`,
+ src:['profile'],s:['Teach me the fundamentals','Do I need acting school?','How do I get my first credit?']},
 
 {id:'human',k:'human person agent support team talk to someone real person contact speak representative customer service',
  a:c=>`Of course${c.name?', '+c.name:''} — I'll hand this thread to the CastSlate team with everything above attached, so you don't have to repeat yourself.`+
@@ -1475,10 +1692,158 @@ C('agerange','Career','age range slightly outside submit anyway playing age too 
  miss:`submitting far outside the range and burning credibility with casting`,
  fix:`a year or two either side is fine. Five is not, unless the breakdown is loose`,
  more:`Your headshot must match the age you are submitting as. That is the actual limiting factor`,
- take:`Submit to what you read as, not what your passport says`})
+ take:`Submit to what you read as, not what your passport says`}),
+
+/* ── on set ────────────────────────────────────────────────── */
+C('marks','On set','mark marks hitting my mark floor tape stop position focus framing',{
+ what:`the taped positions on the floor you have to land on exactly, because focus and framing were built to that spot`,
+ why:`miss it and you are soft, or half out of frame, and the take is gone regardless of how well you played it`,
+ ex:`a two-step move to a doorway looks trivial until the lens is a 50mm at T2 and eight inches puts your eyes out of focus`,
+ do:`Put two pieces of tape on your floor four steps apart. Walk between them saying a line and stop dead on the second one <em>without looking down</em>. Find it with a toe, or line a doorframe up with your shoulder. Ten repetitions`,
+ look:`the moment you stopped hunting for it with your eyes, the walk stopped looking like a walk to a mark and started looking like a person crossing a room`,
+ miss:`glancing down in the last two steps, or slowing into the mark like a car parking`,
+ fix:`take the last step at full speed and let the foot find the tape. Your body is far better at this than your eyes are`,
+ more:`Add a prop. Cross, land the mark and put a mug down on the same word every time — that is marks and matching together, which is the real job`,
+ take:`Find the mark with your feet, not your eyes`,
+ pro:`Ask the operator for a soft mark or a T if you are moving to a tight single; on a long lens a quarter-inch of drift is a focus pull. Nobody minds the question and everybody minds the reshoot`}),
+
+C('blocking','On set','blocking staging rehearsal moves where do i stand director floor',{
+ what:`where you move and when, set at the blocking rehearsal with the director, the DP and the first AD watching`,
+ why:`that rehearsal is where your physical performance gets decided, and most actors treat it as an admin exercise and hand the decision away`,
+ ex:`turning away on a line before the other person answers tells the whole story physically — but only if you brought it to the blocking, because after the lighting is set it cannot be changed`,
+ do:`Take any scene and mark, on the page, the two moments where the character would genuinely need to move — to get closer, to escape, to do something. Two only. Then walk it. Everything else is stillness`,
+ look:`how much a single physical impulse in the right place does compared with general movement everywhere`,
+ miss:`drifting — moving because standing still feels exposed`,
+ fix:`stay put until the scene forces you to move. Stillness is a position, not an absence`,
+ more:`Run the same scene with the moves in the wrong places on purpose. It will feel restless immediately, and that is the sensation you are learning to catch in yourself`,
+ take:`Bring a physical choice to the blocking rehearsal, because after it the geometry is locked`,
+ pro:`Watch the DP's hands during blocking. If they are framing a wide with you at the far end, your physical clarity carries the beat; if they set up a tight single, the same idea has to move into the eyes`}),
+
+C('setprotocol','On set','set protocol vocabulary crew back to one hot set video village rolling speed first team',{
+ what:`the language and rhythm of a working set — the calls, the departments and what you are meant to do during each`,
+ why:`it is the whole difference between reading as experienced and reading as green, and it has nothing to do with your acting`,
+ ex:`"back to one" means return to your first position; a hot set must not be touched; room tone means nobody moves; the martini is the last shot of the day`,
+ do:`Learn six of them properly today: back to one, hot set, video village, room tone, coverage, checking the gate. Say what each one asks <em>you</em> to do, out loud`,
+ look:`how much calmer a set feels when you already know what is being asked, and how much attention that frees up for the actual work`,
+ miss:`breaking the moment the second the director says cut, or wandering to the monitors to watch yourself`,
+ fix:`hold until the AD releases you, and stay out of video village unless you are invited`,
+ more:`Read a call sheet end to end — not just your own line. It tells you the whole shape of the day, including how much waiting to prepare for`,
+ take:`Be easy to find, easy to direct and quiet when the bell goes`,
+ pro:`Know the difference between the first AD's authority and the director's. Schedule and floor questions go to the AD; performance questions go to the director, and going to the wrong one wastes everybody's afternoon`}),
+
+/* ── stage ─────────────────────────────────────────────────── */
+C('cheatout','Stage','cheat out cheating open angle profile audience face stage picture',{
+ what:`angling your body and face open towards the audience while still genuinely playing to your scene partner`,
+ why:`two people facing each other truthfully gives the house two profiles and no faces, and half the performance disappears`,
+ ex:`a quarter turn towards the audience reads as completely natural from row ten and feels slightly wrong from where you are standing`,
+ do:`Pick a wall and call it the audience. Put a chair beside you rather than in front of you and talk to it — full focus on the chair, chest and face opened towards the wall`,
+ look:`that nothing about your attention changed. Only the geometry did, and that gap is the entire technique`,
+ miss:`cheating out with the focus as well, so you end up talking to the audience about your partner instead of to your partner`,
+ fix:`keep the eyes and the intention on them. Only the body opens`,
+ more:`Have someone watch from the far side of the room and tell you when your partner disappears behind you. That line is the one you are learning to feel`,
+ take:`Open the body, keep the focus`,
+ pro:`In the round or on a thrust the rule inverts into constant slow adjustment — you are sharing your face across three houses, and stillness for a whole scene will bury you from one of them`}),
+
+C('stagecraft','Stage','stage left right upstage downstage sightlines spike marks geography blocking notation the half places',{
+ what:`the geography and rules of a stage — left and right from <b>your</b> point of view, upstage away from the audience, sightlines, spike marks, and the calls`,
+ why:`a director assumes you know all of it on day one, nobody teaches it, and everybody is too embarrassed to ask`,
+ ex:`"cross downstage right on the line" means towards the audience and to your right — the opposite of the house's right`,
+ do:`Take any script and write blocking into it in shorthand, in pencil, as if it had been given to you: <em>X DSR on "I never said that"</em>. Do it for one page and the notation stops being foreign`,
+ look:`how quickly the shorthand becomes faster than words, which is exactly why rehearsal rooms use it`,
+ miss:`saying "my left", and drifting off a spike so a whole section of the house loses you`,
+ fix:`speak in stage directions, and treat your spike marks as seriously as a screen actor treats a floor mark`,
+ more:`Learn the calls: half hour, quarter, five, places. The half is 35 minutes before curtain, it is a contractual call, and you answer it audibly`,
+ take:`Stage left is your left, and your position is not yours to improvise`,
+ pro:`In tech, take notes on paper rather than asking questions in the room — the stage manager is running a cue stack and every actor question costs the company ten minutes`}),
+
+C('upstaging','Stage','upstage upstaging drifting stealing focus etiquette company',{
+ what:`drifting upstage so your scene partner has to turn away from the audience to look at you`,
+ why:`it steals the picture, it wrecks their performance, and it is the fastest way to be disliked in a company`,
+ ex:`a step back on a big line pulls the other actor's face out of the house's view for the rest of the scene`,
+ do:`Run any two-hander with a strict rule: never move upstage of your partner. If you want the focus, get it by <em>doing</em> something, not by relocating`,
+ look:`that the focus went where the action was anyway, without you moving a foot`,
+ miss:`doing it unconsciously, usually while backing away from confrontation`,
+ fix:`take confrontation downstage or sideways. Retreat is a choice you can play without surrendering the picture`,
+ more:`Watch any recorded stage production for who holds focus in a group scene. It is almost never the person furthest upstage`,
+ take:`Earn the focus, do not relocate to it`,
+ pro:`The exception is a deliberate directorial pull — if the staging asks you to draw the eye upstage, say it out loud in rehearsal so your partner can angle for it rather than fight it`}),
+
+/* ── commercial ────────────────────────────────────────────── */
+C('commercialcraft','Genre','commercial advert spot copy points product tag client brand likeable',{
+ what:`playing a small, warm, clear scene in which the product — not you — is the lead`,
+ why:`actors who fight that never book, and it is a completely different job from a drama scene rather than a lesser one`,
+ ex:`"same thing, more fun" is a real adjustment, given twice, and taking it instantly and completely is the actual test`,
+ do:`Take a household object. Sell it in fifteen seconds to a friend, twice. Once trying to be funny. Once just genuinely liking it and wanting them to have one. Watch which is easier to be around`,
+ look:`the second version reads as likeable and the first reads as performing. Likeability is not a face, it is an intention aimed at a person`,
+ miss:`playing "commercial energy" — the brightness with nothing underneath it — or swallowing the product name`,
+ fix:`land the copy points cleanly and let everything else be ordinary. Clarity is the craft here`,
+ more:`Practise product handling with a mug: label to camera, no fingers over the logo, a real swallow. That skill is the difference between one take and fifteen`,
+ take:`The product is the lead. Be the person you would not mind spending thirty seconds with`,
+ pro:`Leave the pause where the voiceover or the super lands, and keep something in reserve for the tag — the tag carries the spot and it is usually the only frame the client argues about`}),
+
+/* ── materials & career ────────────────────────────────────── */
+C('firstsix','Materials','six seconds reel opening title card skip attention casting patience',{
+ what:`the roughly six seconds a casting director gives a video before deciding to keep watching or skip`,
+ why:`on a busy role they are working through hundreds of submissions, sometimes thousands, and six seconds each is the only way the pile gets watched at all`,
+ ex:`ten seconds of fade-in with your name, your agency and your phone number spends the entire window telling them something they already had`,
+ do:`Open your own reel, watch exactly six seconds and stop. Write down what a stranger just saw. Face in frame? Talking? Audible on a phone speaker? Or a logo and a fade`,
+ look:`how much of your window was spent on information rather than performance — and how easy it is to get all of it back`,
+ miss:`opening titles, music beds, montages of stills, and a slow fade into the first line`,
+ fix:`cut everything from the front and open on your strongest moment, already in progress. One second of name card at the <em>end</em> if you must`,
+ more:`Send the first six seconds alone to someone who has never seen you act and ask only "would you keep watching". Their hesitation is the note`,
+ take:`Start on the action. They already know your name`,
+ pro:`Same discipline on a self-tape: no countdown, no slate card graphic, no black. And file-name it exactly as the breakdown asks, because a mis-named file is skipped before anyone sees a frame`}),
+
+C('profilesignal','Materials','profile empty incomplete bio credits no video one headshot casting scan',{
+ what:`what a casting director is doing when they open your profile — scanning for a reason to stop, not reading`,
+ why:`the things that lose you the job are structural rather than artistic, which is very good news because they are all fixable in an afternoon`,
+ ex:`an empty stats block makes you unsearchable, and a profile with one photo and no video cannot be matched to any role with confidence`,
+ do:`Open your own profile and fix, in order: every stat field, a two-sentence bio that could only be about you, your three most recent credits with years, and skills you can do today on demand`,
+ look:`how much of it was blank, and how quickly a stranger could now say what you are right for`,
+ miss:`a bio made of feelings — "I have loved acting since I was five" — and no footage at all`,
+ fix:`information over sentiment, and sixty seconds of phone video over an empty video slot. It does not have to be professional; it has to exist`,
+ more:`Read your bio out loud and delete every sentence that could belong to any other actor`,
+ take:`An empty profile reads as a decision you made about yourself`,
+ pro:`The first pass is usually an associate working against a written breakdown with a quota. Anything that makes you hard to categorise gets deferred, and deferred means never`}),
+
+C('headshotchoice','Materials','headshot main photo character headshot costume agent mailing box typecast choose',{
+ what:`which of your photographs goes in the main slot, and which stay in the gallery`,
+ why:`the main one defines you before you speak, and the wrong choice quietly narrows a whole career`,
+ ex:`the costume, the heavy make-up, the leather jacket and the scowl feel like range and function as a label`,
+ do:`Lay every headshot you own out small, cover the mouth on each, and keep only the ones with something alive in the eyes. Then throw out any where a costume, a prop or a grade is doing the work`,
+ look:`that the survivor is almost always the plainest one — the one that simply looks like you on an ordinary good day`,
+ miss:`leading with a character headshot on your profile or on an agent mailing`,
+ fix:`lead with the neutral, warm, current shot and keep the character looks in the gallery, where they widen you instead of naming you`,
+ more:`Show your top three to five people who have seen you <em>act</em> and ask what they would cast you as. If the answers come back narrower than you expected, you are looking at a character shot`,
+ take:`Lead with the one that opens doors, not the one that names a single door`,
+ pro:`The exception is a deliberate single-lane strategy — character actors who own one specific box and want it. That is a decision worth making on purpose, never by accident`}),
+
+C('submissionfit','Career','submit submission strategy desperate selective right for me fit breakdown apply',{
+ what:`the discipline of submitting only where you would be a believable first choice`,
+ why:`submitting to everything reads as desperate rather than hungry, and it devalues the submissions you send that <em>do</em> fit`,
+ ex:`the same name on the war film, the tampon commercial and the teen drama in one week tells a casting office something you did not mean to tell them`,
+ do:`Open a breakdown you were about to submit to and finish this sentence out loud: <em>"I am right for this because ___."</em> It has to end in something specific — age as you read, type, energy, a real skill, lived experience`,
+ look:`how many of your recent submissions could not survive that sentence, and how little time the filter costs`,
+ miss:`hoping they will see something else in you. They will not — they are casting the role in front of them`,
+ fix:`three well-matched submissions with a specific note, instead of fifteen scattergun ones`,
+ more:`Use the finished sentence as the opening line of the cover note, in your own words, specific to that role`,
+ take:`Submit where you would be a believable first choice`,
+ pro:`Casting offices build a mental file on repeat submitters. You want yours to read "always right for what they send", because that is the actor whose next submission gets opened first`}),
+
+C('untrained','Psychology','no training self taught natural talent born with it never went to school beginner permission',{
+ what:`the belief that you need a school, a degree or someone's permission before you are allowed to call yourself an actor`,
+ why:`it is the single most common thing that stops people starting, and it is not true — plenty of superb working actors never trained formally`,
+ ex:`the instinct to watch people closely, to imagine your way into someone else, to be willing to be looked at, is the part you either have or you do not, and training sharpens it rather than granting it`,
+ do:`Take the smallest real step today instead of the large imaginary one: one current photo that looks like you, and sixty seconds of footage shot on your phone`,
+ look:`that nothing was actually blocking you except the size of the step you had chosen`,
+ miss:`waiting until you feel qualified, or until you can afford the right class`,
+ fix:`start where you are, learn the craft as you go — most of it is learnable free — and let the training come when you can afford it`,
+ more:`Book yourself into one thing where people will see you act this month: a student film, a short, community theatre, an open call`,
+ take:`Training sharpens the instinct. It does not hand it to you`,
+ pro:`If you do train, the useful metric is not the name of the school but reps per week in front of a teacher who knows your habits. Six months with one teacher beats three teachers in a year`}),
 ];
 const CONCEPT_BY_ID=Object.fromEntries(CONCEPTS.map(c=>[c.id,c]));
-const CNAME={objective:'Objective',stakes:'Stakes',subtext:'Subtext',listening:'Listening',presence:'Presence',indicating:'Indicating (overacting)',naturalism:'Naturalism',stillness:'Stillness and silence',impulse:'Impulse',emotionprep:'Emotional preparation',physicality:'Physical character work',habits:'Unconscious habits',chemistry:'Chemistry',deception:'Playing a liar',unaware:'Dramatic irony',shotsize:'Shot size and performance scale',camerathink:'Camera awareness',continuity:'Continuity',eyeline:'Eyeline',reaction:'The reaction shot',greenscreen:'Green screen and motion capture',multicam:'Multi-camera',projection:'Projection',inflection:'Inflection',mictechnique:'Microphone technique',accent:'Accents',comedy:'Comedy',shakespeare:'Shakespeare and heightened text',singingacting:'Acting while singing',drunk:'Playing impaired',grief:'Grief',fear:'Fear',anger:'Anger',flatcharacter:'Characters without conscience',improv:'Improvisation',nerves:'Nerves',selfjudge:'Self-consciousness',rejection:'Rejection',perfection:'Trying too hard',samesame:'Sameness and range',theroom:'The audition room',direction:'Taking direction',mistakes:'Recovering from mistakes',choices:'Making choices',chemread:'Chemistry reads and producer sessions',tapetech:'Self-tape technicals',reader:'Working with a reader',readyforagent:'Being ready for an agent',regional:'Building outside LA and NY',agerange:'Playing age'};
+const CNAME={objective:'Objective',stakes:'Stakes',subtext:'Subtext',listening:'Listening',presence:'Presence',indicating:'Indicating (overacting)',naturalism:'Naturalism',stillness:'Stillness and silence',impulse:'Impulse',emotionprep:'Emotional preparation',physicality:'Physical character work',habits:'Unconscious habits',chemistry:'Chemistry',deception:'Playing a liar',unaware:'Dramatic irony',shotsize:'Shot size and performance scale',camerathink:'Camera awareness',continuity:'Continuity',eyeline:'Eyeline',reaction:'The reaction shot',greenscreen:'Green screen and motion capture',multicam:'Multi-camera',projection:'Projection',inflection:'Inflection',mictechnique:'Microphone technique',accent:'Accents',comedy:'Comedy',shakespeare:'Shakespeare and heightened text',singingacting:'Acting while singing',drunk:'Playing impaired',grief:'Grief',fear:'Fear',anger:'Anger',flatcharacter:'Characters without conscience',improv:'Improvisation',nerves:'Nerves',selfjudge:'Self-consciousness',rejection:'Rejection',perfection:'Trying too hard',samesame:'Sameness and range',theroom:'The audition room',direction:'Taking direction',mistakes:'Recovering from mistakes',choices:'Making choices',chemread:'Chemistry reads and producer sessions',tapetech:'Self-tape technicals',reader:'Working with a reader',readyforagent:'Being ready for an agent',regional:'Building outside LA and NY',agerange:'Playing age',marks:'Hitting your marks',blocking:'Blocking and staging',setprotocol:'How a set runs',cheatout:'Cheating out',stagecraft:'Stage geography and calls',upstaging:'Upstaging',commercialcraft:'Commercial acting',firstsix:'The first six seconds',profilesignal:'What casting reads on your profile',headshotchoice:'Choosing your main headshot',submissionfit:'What to submit to',untrained:'Acting without training'};
 CONCEPTS.forEach(c=>c.name=CNAME[c.id]||c.id);
 
 
@@ -1533,7 +1898,23 @@ const GLOSSARY={
  'conflict':G('conflict conflicts exclusivity',`being blocked from working for a competing product`,`Check the category and the term before you accept — it can lock out a whole industry for a year.`,'contract'),
  'scale':G('scale union scale minimum',`the minimum rate under an applicable union agreement`,`There is no single scale — it depends on the agreement, category and budget. Current rates live at sagaftra.org.`,'sagrates'),
  'taft-hartley':G('taft hartley',`the mechanism letting a non-member work a union job`,``,'tafthartley'),
- 'epa':G('epa eca ecc equity principal audition',`open Equity auditions for stage work`,`You generally do not need representation to attend. Bring two contrasting monologues and your book if it is a musical.`,'theater')
+ 'epa':G('epa eca ecc equity principal audition',`open Equity auditions for stage work`,`You generally do not need representation to attend. Bring two contrasting monologues and your book if it is a musical.`,'theater'),
+ 'blocking':G('blocking staging moves',`where you move and when, set at the blocking rehearsal with the director and the DP watching`,`That rehearsal is where your physical performance is decided. Bring a choice to it rather than waiting to be told.`,'blocking'),
+ 'back to one':G('back to one',`return to your starting position — they are going again`,`Reset the props too. Nobody will remind you.`,'setprotocol'),
+ 'first team':G('first team second team',`first team is the actors, second team is the stand-ins who hold your positions while the crew lights`,`Stay findable during second team. Being hunted for is the fastest way to be remembered badly.`,'setprotocol'),
+ 'the gate':G('gate checking the gate',`a last check that the shot was clean before moving on`,`Do not break wardrobe or position until you hear "moving on".`,'setprotocol'),
+ 'cheat out':G('cheat out cheating out open up',`angling your body and face towards the audience while still playing to your partner`,`It feels slightly wrong from where you are standing and looks completely natural from row ten. Keep the focus on them; only the body opens.`,'cheatout'),
+ 'upstage':G('upstage upstaging',`moving further from the audience than your partner, forcing them to turn away from the house`,`Never by accident, never on purpose. It is the fastest way to be disliked in a company.`,'upstaging'),
+ 'downstage':G('downstage',`towards the audience — and stage left and right are always from the actor's point of view`,`Never say "my left" in a rehearsal room.`,'stagecraft'),
+ 'sightlines':G('sightline sightlines',`what each seat in the house can and cannot see`,`Drift a foot off your position and a whole section of the audience loses you.`,'stagecraft'),
+ 'spike mark':G('spike spike mark spiking',`tape marking exactly where furniture or an actor stands`,`Learn yours. It is the stage equivalent of a floor mark on camera.`,'stagecraft'),
+ 'the half':G('half half hour call places quarter',`the half is the call 35 minutes before curtain, followed by the quarter, the five, and places`,`It is a contractual call, not a suggestion. Answer every one audibly.`,'stagecraft'),
+ 'cue to cue':G('cue to cue q2q dry tech',`a technical rehearsal jumping between cues and skipping the acting between them`,`Slow, stop-start, and not about you. Follow the stage manager exactly.`,'stagecraft'),
+ 'tech week':G('tech week technical rehearsal',`the week lights, sound and scene changes are added to the show`,`Patience is the actual skill. Stay available and stay quiet.`,'stagecraft'),
+ 'ghost light':G('ghost light',`the single lamp left burning on an empty stage overnight`,`Leave it on. Nobody will explain why and everybody will notice if you do not.`),
+ 'copy points':G('copy point copy points',`the words in a commercial script the client needs landed clearly — the name, the claim, the price`,`You will be adjusted on them repeatedly. It is not a note about your acting.`,'commercialcraft'),
+ 'the tag':G('tag tagline',`the short button at the end of a commercial`,`It usually carries the whole spot. Keep something in reserve for it.`,'commercialcraft'),
+ 'super':G('super lower third',`text laid over the picture`,`If there is a gap in your dialogue, that is often where it goes. Play through it as if it is full.`,'commercialcraft')
 };
 
 /* ═══ COMPOSER — builds a lesson from concept components ═══════════ */
@@ -1672,11 +2053,11 @@ function coachThrough(c){
 const LESSONS=[
 
 {id:'film',title:'Film acting: the camera sees everything',mins:2,lane:'Film & TV',
- k:'film acting camera close screen restraint natural no acting hitchcock doing nothing subtle small',
+ k:'film acting camera close screen restraint natural no acting bergman hitchcock doing nothing subtle small face',
  steps:[
  {b:`<b>Lesson: the camera sees everything.</b>`+
    `<p>On stage you send the performance out to row twenty. On camera the audience is already six inches from your face — so the work is not to send anything anywhere. It is to <b>think, want something, and let the lens catch it</b>.</p>`+
-   `<p>There is a line often attributed to Hitchcock — that film acting is the art of not acting. The attribution is loose, so treat it as a teaching idea rather than gospel. The idea underneath it is real: if you keep <em>showing</em> the audience what you feel, they stop believing you.</p>`,
+   `<p>Bergman said the human face is the great subject of the cinema. That is the whole brief, and it is a relief once you hear it properly: the lens is already close enough to read a thought off you. Nothing has to be sent anywhere. If you keep <em>showing</em> the audience what you feel, you are competing with a camera that already saw it, and they stop believing you.</p>`,
   pro:`<p>Worth noting the scale question is about lens and frame, not depth. A wide two-shot asks for more physical clarity than a tight single. Good screen actors adjust performance size to coverage without changing what they are actually doing.</p>`,
   cta:`Makes sense — what now?`},
  {b:`<b>Try it. Two takes, right now.</b>`+
@@ -1693,6 +2074,185 @@ const LESSONS=[
    `<p>Take any short scene. Film it twice — once showing, once wanting. Watch both back <b>with the sound off</b>. Count how many times your face changes in each.</p>`+
    `<p>The one with fewer changes is almost always the one you would cast.</p>`+
    `<div class="hd">Takeaway</div><p><b>Play the want, not the feeling.</b> The camera is close enough to see you thinking, so give it something real to watch.</p>`,
+  end:true}]},
+
+{id:'fundamentals',title:'The fundamentals, in order',mins:4,lane:'Course',
+ k:'fundamentals basics course curriculum from scratch start teach me everything all the fundamentals acting course free course notepad first lesson where do i start',
+ steps:[
+ {b:`<b>Right — the fundamentals, and they are free.</b>`+
+   `<p>I can teach you all the fundamentals of acting for film or stage right here. You do not need to spend money on acting classes to start. <b>Get a notepad and a pen</b> — every lesson ends with one line worth writing down, and by the end of a few of these you will have a page that is worth more than most beginner workshops.</p>`+
+   `<p>Here is the spine of it, in the order it actually builds:</p>`+
+   `<ol><li><b>Objective</b> — what you want from the other person</li><li><b>Obstacle and stakes</b> — what is in the way, and what it costs you to fail</li><li><b>Tactics</b> — the different ways you go after it when the last one failed</li><li><b>Given circumstances</b> — where, when, what happened ten minutes ago</li><li><b>Listening</b> — letting them actually affect you</li><li><b>Subtext</b> — what is being done under what is being said</li><li><b>Truthful behaviour</b> — playing the effort to stay normal, not the emotion</li><li><b>Scale</b> — the same truth, sized for a lens or for row twenty</li></ol>`+
+   `<p>That is the whole craft. Everything else — camera technique, stage technique, commercial, voice — is those eight things wearing different clothes.</p>`,
+  pro:`<p>If you already work: this order matters because most performance problems are misdiagnosed one layer up. A "flat" scene is almost never a tempo problem, it is a stakes problem. A "false" moment is almost never a truth problem, it is an objective that drifted into a mood.</p>`,
+  cta:`Start me on the first one`},
+ {b:`<b>One. Objective — and the exercise, now.</b>`+
+   `<p>An objective is what your character wants <b>from the other person, in this scene</b>. Written as something you are trying to get out of somebody, never as a feeling. "To make her admit she lied" is playable. "To be angry" is not — you cannot <em>do</em> angry.</p>`+
+   `<p><b>Do this.</b> Talk to a chair. Your objective: <em>get them to stay five more minutes.</em> Run it three times — charm them into staying, guilt them into staying, make them curious enough to stay. Thirty seconds each. Say whatever words come.</p>`+
+   `<p><b>Write in the notepad:</b> <em>I want ___ to ___.</em> That sentence goes at the top of every set of sides you ever get.</p>`,
+  cta:`Done — next`},
+ {b:`<b>Two. Stakes, and why your scene felt flat.</b>`+
+   `<p>Notice one of those three versions had more life in it. That was the one where staying actually mattered to you. <b>Stakes are what it costs you if you fail</b>, and they are the single most common thing missing from a beginner's work.</p>`+
+   `<p><b>Do this.</b> Same chair, same objective. But now decide, specifically: if they walk out that door, <em>this is the last time I ever see them.</em> Run it once more.</p>`+
+   `<p>It will not be bigger. It will be more <b>urgent</b>, which is a different thing entirely, and it is what an audience reads as truth.</p>`+
+   `<p><b>Notepad:</b> <em>What does it cost me if I fail? If the answer is nothing, the scene is dead.</em></p>`,
+  cta:`Keep going`},
+ {b:`<b>Three. Listening — the one that fixes the other seven.</b>`+
+   `<p>Most bad acting is not bad feeling. It is an actor waiting for their cue with a pre-decided line in their mouth. <b>If the other person cannot change what you do next, you are not in a scene, you are performing next to one.</b></p>`+
+   `<p><b>Do this.</b> Get a friend or use a recording of anyone talking. Your only job: after each thing they say, do not speak until you can name — silently, in one word — what they just did to you. Attacked. Apologised. Dodged. Then reply.</p>`+
+   `<p>It will feel slow. On camera it reads as thinking, which is the most expensive thing in the frame.</p>`+
+   `<p><b>Notepad:</b> <em>Let them change me. Every time.</em></p>`,
+  cta:`And the last one`},
+ {b:`<b>Four. Scale — film versus stage, settled.</b>`+
+   `<p>Same truth. Different delivery distance. Bergman said the human face is the great subject of the cinema — the lens is already close enough to read a thought off you, so nothing has to be sent anywhere. Theatre is the opposite geometry: row twenty cannot see your eyes at all, so meaning travels on breath, consonants and physical clarity.</p>`+
+   `<p><b>Stage acting is not overacting, and film acting is not underfeeling.</b> A stage performance is exactly as truthful — it simply has to carry.</p>`+
+   `<p><b>Do this.</b> Say one line — <em>"I told you I was going to be late"</em> — twice. Once to a person six inches away. Once to someone forty feet away. Do not change how much you mean it. Change only how much of it has to travel.</p>`+
+   `<div class="hd">Your page so far</div><p><b>1.</b> I want ___ to ___. <b>2.</b> What does it cost me to fail? <b>3.</b> Let them change me. <b>4.</b> Same truth, sized to the distance.</p>`+
+   `<p>That is the foundation, and it cost you nothing. Ask me for any of the deeper lessons — the close-up, subtext, self-tapes, stage technicals, commercial, the first six seconds of a reel — and we go further.</p>`,
+  end:true}]},
+
+{id:'sixsec',title:'The first six seconds of your reel',mins:2,lane:'Materials',
+ k:'six seconds reel opening titles title card skip casting patience watch time first impression fade in name card montage logo',
+ steps:[
+ {b:`<b>Lesson: you get about six seconds.</b>`+
+   `<p>A casting director opening submissions is often working through hundreds of videos, sometimes thousands. They decide inside roughly <b>the first six seconds</b> whether to keep watching or skip to the next one.</p>`+
+   `<p>So here is the thing that costs actors more than bad acting does: <b>the opening title card.</b> Ten seconds of fade-in with your name, your agency and your phone number, and <em>then</em> the footage starts.</p>`+
+   `<p>Casting is sick of those. <b>They already know whose tape they opened</b> — your name is on the submission. You have just spent every second you had telling them something they already had, and they are gone before you say a word.</p>`,
+  pro:`<p>It is worth understanding why this became a convention: it is left over from VHS and DVD reels physically handed to an office with no metadata attached. The card solved a real problem in 1998. It solves nothing now, and it reads as dated the moment it appears.</p>`,
+  cta:`So what do I do instead?`},
+ {b:`<b>Do this now — audit your own opening.</b>`+
+   `<p>Open your reel or your profile video. Watch <b>six seconds</b> and stop. Write down honestly what a stranger just saw.</p>`+
+   `<ul><li>Was your face clearly in frame?</li><li>Were you <b>talking</b>?</li><li>Could you hear the words on a phone speaker?</li><li>Or was it a logo, a fade, a music bed, a montage of stills, or a card with your agent's phone number?</li></ul>`+
+   `<p>If it was any of the second list, that is the whole problem, and it is a five-minute fix.</p>`,
+  cta:`Checked it`},
+ {b:`<b>The rebuild.</b>`+
+   `<ul><li><b>Cut every title, logo and fade from the front.</b> All of it</li><li><b>Open on your strongest moment</b> — not the run-up to it, the moment. In frame, lit, talking</li><li><b>Clean sound.</b> Bad audio gets skipped faster than bad acting</li><li><b>Under two minutes total</b>, strongest work first, same type throughout</li><li>If you truly want a name card: <b>one second, at the end</b></li></ul>`+
+   `<p>Same rule everywhere. Self-tapes start on the slate or the scene, never on a countdown. Your profile video starts on you.</p>`,
+  cta:`Give me the challenge`},
+ {b:`<b>Challenge.</b>`+
+   `<p>Send your first six seconds — just those — to someone who has never seen you act, and ask one question: <em>"Would you keep watching?"</em> Do not explain the clip first. Their hesitation is your answer.</p>`+
+   `<p>And if you have no reel at all: <b>shoot 60 seconds on your phone this week.</b> A dialogue scene with a friend, or a monologue, near a window, horizontal, no music. It does not have to be professional. It has to exist.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Start on the action. They already know your name.</b> Respecting a casting director's time is not politeness — it is the thing that gets you watched to the end.</p>`,
+  end:true}]},
+
+{id:'profilecd',title:'Building a profile casting actually reads',mins:3,lane:'Materials',
+ k:'profile building empty profile no video one headshot what casting sees bio credits complete profile annoy casting directors',
+ steps:[
+ {b:`<b>Lesson: what a casting director does with your profile.</b>`+
+   `<p>They are not reading it. They are <b>scanning it for a reason to stop</b>. Roughly in this order: photo, does this person look like the role, is there video, do the stats fit, is there anything specific in the bio.</p>`+
+   `<p>Which means the things that lose you the job are not artistic. They are structural:</p>`+
+   `<ul><li>An empty or half-built profile — no stats, no bio, no credits</li><li>One headshot and nothing else</li><li><b>No footage at all</b></li><li>A bio made of feelings instead of information</li><li>A photo that no longer looks like you</li></ul>`,
+  pro:`<p>Worth knowing the casting side of it: an associate is usually doing the first pass against a written breakdown with a quota of people to bring to the CD. Anything that makes you hard to categorise gets deferred, and deferred means never.</p>`,
+  cta:`Okay — where do I start?`},
+ {b:`<b>Do this now. Fifteen minutes, no money.</b>`+
+   `<p>Open your profile and fix these in order:</p>`+
+   `<ol><li><b>Stats.</b> Every field. Blank fields make you unsearchable</li><li><b>Bio, two or three sentences.</b> Training first, then your strongest types, then one real differentiator — a language, a sport, a job you actually did. Cut "I have loved acting since I was five"</li><li><b>Credits</b>, most recent three, with years. If you have none, say what you are training in. Nothing beats an empty box</li><li><b>Skills you can do today, on demand.</b> Delete the rest</li></ol>`+
+   `<p>Then the photo: the one where your eyes are alive and you look like the person who would walk in the door.</p>`,
+  cta:`Done — what about video?`},
+ {b:`<b>The video, which is the one that actually moves you.</b>`+
+   `<p>This is where nearly everybody stalls, so let me take the excuse away. <b>It does not have to be professional.</b> Casting is not judging your camera. They need to see you move and hear you speak.</p>`+
+   `<p><b>Sixty seconds on your phone is completely legitimate:</b></p>`+
+   `<ul><li>A short <b>dialogue scene with a friend</b> holding the phone — two people, real stakes, one take you like</li><li>Or a <b>monologue</b>, straight down the lens or just off it</li><li>Near a window so the light is on your face. Phone horizontal. Close enough for clean sound. No music, no titles</li><li>Upload it</li></ul>`+
+   `<p>Sixty honest seconds beats an empty video slot by an enormous margin — and it beats a polished reel that opens with ten seconds of titles.</p>`,
+  cta:`Give me the challenge`},
+ {b:`<b>Challenge this week.</b>`+
+   `<p>Shoot the sixty seconds. Not next month, not when you can afford a proper shoot. <b>This week, with the phone you already own.</b> Then read your own bio out loud and cut every sentence that could belong to any other actor.</p>`+
+   `<div class="hd">Takeaway</div><p><b>An empty profile is a decision you made about yourself, and casting reads it that way.</b> The whole fix costs an afternoon and nothing else.</p>`,
+  end:true}]},
+
+{id:'headshotpick',title:'Choosing the headshot that does not box you in',mins:2,lane:'Materials',
+ k:'headshot choose which headshot character headshot main photo agent mailing box typecast costume makeup pick final images',
+ steps:[
+ {b:`<b>Lesson: what a headshot is actually for.</b>`+
+   `<p>Not to look attractive. Not to show range. A headshot has exactly one job: <b>to let someone read your eyes and believe that is who will walk through the door.</b></p>`+
+   `<p>Which is why the most expensive mistake in an actor's materials is the <b>character headshot in the main slot</b> — the costume, the heavy make-up, the leather jacket and the scowl, the scrubs, the moody prop.</p>`+
+   `<p>It feels like showing range. It does the exact opposite. <b>It puts you in a box, and the box is usually a small one.</b> Whoever sees it casts you as that, or does not call at all.</p>`,
+  pro:`<p>The same applies with more force on an agent mailing. An agency is assessing whether they can sell you across a market. A costume shot answers a question they did not ask and closes several they did.</p>`,
+  cta:`So which one do I lead with?`},
+ {b:`<b>Do this now. Lay them out and judge them properly.</b>`+
+   `<p>Put every headshot you own side by side, small, and go through this:</p>`+
+   `<ol><li><b>Cover the mouth.</b> Is there something alive in the eyes, or is it a pose? Casting buys presence, not symmetry</li><li><b>Ask: does this look like me on an ordinary good day?</b> Not my best day. Not a character</li><li><b>Is it current?</b> Within about eighteen months. If the person who walks in is not the person in the photo, that is the last time they call you in</li><li><b>Is anything else in the frame doing the work?</b> Costume, prop, styling, heavy grade. If yes, it is a gallery shot</li></ol>`+
+   `<p>The one that survives all four is your main.</p>`,
+  cta:`What about the other looks?`},
+ {b:`<b>The gallery is where range lives.</b>`+
+   `<p>Keep two working looks: one <b>commercial</b> — warm, open, brighter, approachable — and one <b>theatrical</b> — grounded, neutral, thinking rather than grim. Between them they cover most of what you will submit for.</p>`+
+   `<p>Character looks go behind those, in the gallery, where they <b>widen</b> you instead of narrowing you. Casting can go looking for them. They just should not be the first thing that defines you.</p>`+
+   `<p>The one exception: if that single type genuinely is the whole career you want, lead with it deliberately. Just make it a decision rather than an accident.</p>`,
+  cta:`Challenge?`},
+ {b:`<b>Challenge.</b>`+
+   `<p>Show your top three to five people who have <b>seen you act</b> — not five people who love you — and ask one question: <em>"What would you cast me as from this?"</em> Write down the answers.</p>`+
+   `<p>If the answers agree with each other and with the roles you actually want, you have your main. If they come back narrower than you expected, you are looking at a character shot and did not know it.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Lead with the neutral one that looks like you. Keep the costume in the gallery.</b> The main photo should open doors, not name one.</p>`,
+  end:true}]},
+
+{id:'onsetlesson',title:'Your first day on set: marks, coverage, matching',mins:3,lane:'On set',
+ k:'on set first day marks hitting marks blocking coverage matching continuity back to one first team stand in set vocabulary technical',
+ steps:[
+ {b:`<b>Lesson: the part of the job that is not acting.</b>`+
+   `<p>Most actors arrive on a real set having been taught acting and nothing about how a set runs — and that, not the performance, is what makes someone look green.</p>`+
+   `<div class="hd">The shape of a scene</div><ol><li><b>Blocking rehearsal.</b> You walk the scene for the director, the DP and the first AD. <b>This is where your physical performance is decided</b> — bring a choice to it, do not wait to be told</li><li><b>Marks go down.</b> Tape on the floor where you stop. Focus and framing are built to that exact spot</li><li><b>Second team</b> — your stand-in takes your position while they light. Stay findable</li><li><b>Coverage.</b> The wide master, then singles, then over-the-shoulders. The same scene, many times, from different sizes</li></ol>`,
+  pro:`<p>Ask the first AD or the operator what size you are in before a take. It is a completely normal question and it tells you how much physical performance will read. Nobody thinks less of an actor who asks; they think less of one who plays a master in a tight single.</p>`,
+  cta:`Teach me the marks`},
+ {b:`<b>Do this now — the marks drill, in your kitchen.</b>`+
+   `<p>Put two pieces of tape on the floor about four steps apart. Now walk from one to the other while saying a line, and <b>stop dead on the second mark without looking down.</b></p>`+
+   `<p>The trick: find it with your <b>feet</b>, not your eyes. A toe against the edge of the tape. Or use a landmark at eye level — the corner of a doorframe lining up with your shoulder.</p>`+
+   `<p>Do it ten times. An actor glancing down for their mark is visible in the take, and it is the single most common give-away on a first job.</p>`,
+  cta:`Got it — what else`},
+ {b:`<b>Matching, and the thing that gets you hired again.</b>`+
+   `<ul><li><b>Match your action.</b> If you picked the glass up on "I told you", pick it up on "I told you" every take. The script supervisor is tracking it, and mismatched action costs the editor your best take</li><li><b>Give a full performance off camera.</b> Your coverage is done; theirs is not. Your eyeline and your timing is what their close-up is built on. Actors remember who did this, and they are the ones who recommend you</li><li><b>Hold the frame.</b> Do not sigh, do not break, do not talk over the end of the take until "cut"</li><li><b>The vocabulary:</b> "back to one" means return to your first position; a <b>hot set</b> must not be touched; <b>video village</b> is not for you; <b>room tone</b> means nobody moves; <b>martini</b> is the last shot of the day</li></ul>`,
+  cta:`Challenge`},
+ {b:`<b>Challenge.</b>`+
+   `<p>Film yourself doing a thirty-second scene with one prop — a mug, a phone, a jacket. Do it three times. Then watch all three back and check whether the prop moved on the <b>same word</b> every time.</p>`+
+   `<p>It almost certainly did not. That is what continuity discipline feels like to build, and it is entirely a habit.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Find the mark with your feet, match your action, and act just as hard when the camera is on the other person.</b> That is the reputation that books the second job.</p>`,
+  end:true}]},
+
+{id:'stagetech',title:'Stage technicals: cheating out, sightlines, the half',mins:3,lane:'Theater',
+ k:'theatre technical stage terms cheat out cheating upstage upstaging sightlines stage left right spike marks tech week cue to cue half hour places blocking notation',
+ steps:[
+ {b:`<b>Lesson: the machinery of a stage.</b>`+
+   `<p>A director will assume you know all of this on day one of rehearsal. Nobody teaches it and everybody is embarrassed to ask.</p>`+
+   `<div class="hd">Geography</div><ul><li><b>Stage left and stage right are from your point of view facing the audience</b> — the opposite of what the house sees. Never say "my left"</li><li><b>Upstage</b> is away from the audience, <b>downstage</b> towards it — from raked stages that literally sloped</li><li>Blocking is written in shorthand in your script: <b>DSR</b>, <b>USC</b>, <b>X</b> for cross. In pencil, at the moment it is given, every single time</li></ul>`,
+  pro:`<p>Notation habit worth building: mark the blocking on the left-hand page and the intention on the right. When the director changes a move in week three you rub out one column and the thinking survives.</p>`,
+  cta:`What is cheating out?`},
+ {b:`<b>Do this now. Cheating out, in your own room.</b>`+
+   `<p>In life, two people talking face each other directly. On stage that gives the audience two profiles and no faces. So you <b>open the angle</b> — a quarter or three-quarter turn towards the house — while still genuinely playing to your partner.</p>`+
+   `<p><b>Try it.</b> Pick a wall and call it the audience. Talk to a chair placed beside you rather than in front of you. Keep your focus fully on the chair, but let your chest and face open towards the wall.</p>`+
+   `<p>It will feel slightly wrong and it looks completely natural from the front. That gap is the whole technique.</p>`+
+   `<p>Its opposite is <b>upstaging</b>: drifting upstage so your partner has to turn away from the audience to see you. Never by accident, never on purpose. It is the fastest way to be disliked in a company.</p>`,
+  cta:`And the technical week?`},
+ {b:`<b>Sightlines, spikes and tech.</b>`+
+   `<ul><li><b>Sightlines</b> — some seats cannot see parts of the stage. Drift a foot off your position and a whole section loses you</li><li><b>Spike marks</b> — small tape crosses holding furniture and actor positions. Learn yours</li><li><b>Tech week</b> — lights, sound and scene changes get added. Slow, stop-start, and not about you. Patience is the skill</li><li><b>Cue-to-cue</b> — jumping between technical cues, skipping the acting between. Follow the stage manager exactly</li><li><b>Calls</b> — "half hour", "quarter", "five", "places". The half is 35 minutes before curtain and it is a contractual call, not a suggestion. Answer audibly</li></ul>`+
+   `<div class="hd">And the voice</div><p><b>Projection is breath, not volume.</b> Support from the diaphragm, open throat, aim at the back wall. Shouting closes the throat and kills you by week two. <b>Consonants carry the meaning</b> — the ends of words are where clarity dies.</p>`,
+  cta:`Challenge`},
+ {b:`<b>Challenge.</b>`+
+   `<p>Take any speech you know. Say it to the far corner of the largest room you can find — <b>without raising the volume</b>. Only lengthen the breath and sharpen the consonants. Record it from across the room and listen back.</p>`+
+   `<p>If you can hear every final consonant, you are carrying. If you got louder, you are shouting, and eight shows a week will take your voice.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Open the angle, hold your position, and let breath do the work volume wants to do.</b> Everything else on a stage is somebody else's department — do not touch a prop that is not yours, and leave the ghost light on.</p>`,
+  end:true}]},
+
+{id:'submitfit',title:'What to submit to, and what to skip',mins:2,lane:'Career',
+ k:'submit strategy what should i submit desperate spray and pray selective which roles fit right for me apply to everything',
+ steps:[
+ {b:`<b>Lesson: submitting to everything is not hunger, it is noise.</b>`+
+   `<p>It feels productive. It reads as desperate, and casting sees the pattern before you do — the same name on the war film, the tampon commercial and the teen drama in the same week.</p>`+
+   `<p>The cost is not just that role. Casting offices build a mental file on the actors they see repeatedly. You want that file to say <b>"always right for what they send"</b>, because that is the actor whose next submission gets opened first.</p>`,
+  pro:`<p>Practically it is also a quota problem. An associate doing a first pass has a number of people to bring forward. Every mis-matched submission you send makes their pass slower, and slow is what gets an actor skimmed rather than read.</p>`,
+  cta:`So how do I choose?`},
+ {b:`<b>Do this now — the one-sentence test.</b>`+
+   `<p>Open any breakdown you were thinking of submitting to. Say this out loud and finish it:</p>`+
+   `<p style="font-size:16px"><em>"I am right for this because ___."</em></p>`+
+   `<p>The blank has to be filled with something <b>specific</b> — age range as you actually read on camera, type, energy, a real skill, lived experience. Not "I could play anything" and not "it is a great project".</p>`+
+   `<p>If you cannot finish the sentence, close the tab. That is the entire filter, and it takes four seconds.</p>`,
+  cta:`Run me through the edge cases`},
+ {b:`<b>Submit when / skip when.</b>`+
+   `<div class="hd">Submit</div><ul><li>You are inside the stated age range as you <b>read</b>, not as your birthday says</li><li>Type and energy match what is being asked for</li><li>You could deliver it on the day — the accent, the skill, the physical demand</li><li>Location and dates work without heroics</li><li>You would be glad if they said yes</li></ul>`+
+   `<div class="hd">Skip</div><ul><li>You are hoping they will "see something else in you". They will not; they are casting the role in front of them</li><li>It is a decade off your range in either direction</li><li>You are only submitting because it is the biggest name on the board</li><li>You would have to learn the required skill <em>after</em> booking</li><li>It contains something you would refuse on the day. Decide before, not after</li></ul>`,
+  cta:`Challenge`},
+ {b:`<b>Challenge this week.</b>`+
+   `<p>Submit to <b>three</b> roles instead of fifteen. For each one, write the "I am right for this because ___" sentence — and then use it as the first line of your cover note, in your own words, specific to that role.</p>`+
+   `<p>Track what comes back over a month against your last month. Almost everyone finds the smaller number performs better, and it takes a fifth of the time.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Submit where you would be a believable first choice.</b> Being selective is not being timid — it is the difference between being remembered and being filtered.</p>`,
   end:true}]},
 
 {id:'objective',title:'Objective: what your character actually wants',mins:3,lane:'Technique',
@@ -2062,7 +2622,14 @@ const LESSON_INTENT=[
  [/\bsubtext (lesson|exercise)\b|\bteach me subtext\b/i,'subtext'],
  [/\bstakes (lesson|exercise)\b|\bteach me stakes\b|\bmy scene(s)? (feel|are|is) flat\b|\braise the stakes\b/i,'stakes'],
  [/\bvoice (acting|over) (lesson|exercise|class)\b|\bteach me voice\b/i,'voice'],
- [/\b(audition|room) (lesson|exercise)\b|\bfirst impression (in|at) (an )?audition\b|\bhow (do i|to) (take|handle) (direction|an adjustment)\b|\brecover(ing)? (after|from) a mistake\b|\bstop trying to impress\b/i,'roomnerves']
+ [/\b(audition|room) (lesson|exercise)\b|\bfirst impression (in|at) (an )?audition\b|\bhow (do i|to) (take|handle) (direction|an adjustment)\b|\brecover(ing)? (after|from) a mistake\b|\bstop trying to impress\b/i,'roomnerves'],
+ [/\bteach me (all |the )?(the )?fundamentals\b|\b(the )?fundamentals(,)? in order\b|\bteach me everything\b|\bfull (acting )?course\b|\bacting course\b|\bteach me (acting )?from scratch\b|\bstart me (off|from the beginning)\b|\bbasics of acting\b|\bteach me the basics\b/i,'fundamentals'],
+ [/\b(six|6).?seconds? (lesson|exercise|rule)\b|\bteach me.{0,20}(six|6).?seconds?\b|\breel (opening|opener) (lesson|exercise)\b|\bteach me.{0,20}(reel|title card)s?\b/i,'sixsec'],
+ [/\bprofile (building )?(lesson|exercise)\b|\bteach me.{0,20}(my )?profile\b|\bwalk me through my profile\b/i,'profilecd'],
+ [/\bheadshot (lesson|exercise)\b|\bteach me.{0,20}headshots?\b|\bwhich headshot should i (use|lead|choose|pick)\b|\bcharacter headshot\b/i,'headshotpick'],
+ [/\b(on.?set|set) (lesson|exercise)\b|\b(teach|show) me\b[^?.!]{0,26}\b(on.?set technicals?|set technicals?|on set|hitting (my |your )?marks?|blocking|coverage)\b|\bmarks (lesson|exercise)\b|\bfirst day on set (lesson|exercise)\b/i,'onsetlesson'],
+ [/\b(teach|lesson|exercise|show me)\b[^?.!]{0,26}\b(theat(er|re)|stage) technical|\b(theat(er|re)|stage) technicals? (lesson|exercise)\b|\bteach me.{0,22}(cheat(ing)? out|upstaging|sightlines?|spike marks?)\b/i,'stagetech'],
+ [/\bsubmi(t|ssion) (strategy|lesson|exercise)\b|\bteach me.{0,22}what to submit\b/i,'submitfit']
 ];
 
 /* ── retrieval ───────────────────────────────────────────────── */
@@ -2221,7 +2788,16 @@ const INTENT=[
  [/\b(every|each) week\b|\bweekly routine\b|\b(30|60|90).?day plan\b|\bwhat should i (be )?do(ing)? (every|each)\b|\bcareer plan\b/i,'weekly'],
  [/\b(money|finances?|income|budget|day job|survive|afford|taxes)\b.{0,30}\bactor\b|\bhow do actors (survive|afford|live|pay rent)\b|\bactor (taxes|deductions)\b/i,'money'],
  [/\b(set|audition|room) etiquette\b|\bhow (should|do) i (behave|act) (on set|in the room)\b|\bfirst day on set\b|\bprofessional behaviou?r\b/i,'etiquette'],
- [/\bhow (do|can) i become an actor\b|\bwant to (be|become) an actor\b|\bget into acting\b|\bstart acting\b|\bno experience at all\b|\bcomplete beginner\b/i,'beginner']
+ [/\bhow (do|can) i become an actor\b|\bwant to (be|become) an actor\b|\bget into acting\b|\bstart acting\b|\bno experience at all\b|\bcomplete beginner\b/i,'beginner'],
+ [/\b(six|6) seconds?\b|\bfirst few seconds\b|\bhow long (do|does) (they|casting|a casting director) watch\b|\bskip(ped|ping)? (my |the )?(reel|tape|video)\b|\b(opening|intro) (title|titles|card|credits)\b|\btitle cards?\b|\btitles?\b[^?.!]{0,26}\b(reel|tape|video|start|beginning|front|opening)\b|\b(reel|tape|video)\b[^?.!]{0,22}\btitles?\b|\bwhat makes casting skip\b/i,'sixseconds'],
+ [/\bwhat (annoys|irritates|frustrates|puts off)\b|\bpisses? (them |casting )?off\b|\bpet peeve/i,'cdpeeves'],
+ [/\b(casting directors?)\b[^?.!]{0,20}\b(hate|dislike|annoyed|sick of|tired of)\b|\bwhy do (they|casting) pass\b|\bwhat turns casting off\b/i,'cdpeeves'],
+ [/\bon.?set technicals?\b|\bwhat (happens|goes on) on set\b|\bhitting (my |your )?marks?\b|\bwhat is (blocking|staging)\b|\bstaging on set\b|\bback to one\b|\bfirst team\b|\bcoverage\b[^?.!]{0,20}\bmean\b|\bmy first day on set\b|\bwhat should i know (before|for) (my first )?(day )?on set\b/i,'onset'],
+ [/\b(theat(er|re)|stage) technicals?\b|\bcheat(ing)? out\b|\bupstag(e|ing)\b|\bsightlines?\b|\bspike mark\b|\bcue.?to.?cue\b|\bhalf hour call\b|\btech week\b|\bstage (left|right) mean\b|\bghost light\b/i,'theatertech'],
+ [/\bwhat (should|do) i submit to\b|\bwhat not to submit\b|\bsubmit to everything\b|\bsubmitting too (much|many)\b|\blook desperate\b|\bspray and pray\b|\bbe selective\b|\bwhich roles should i (apply|submit)/i,'submitstrategy'],
+ [/\b(a24|blumhouse|lionsgate|warner|universal|paramount|sony pictures|disney|searchlight|focus features|neon|annapurna|netflix|hulu|peacock|max|apple tv|prime video|amazon mgm|mgm)\b|\b(major |big )?studios?\b|\bproduction compan(y|ies)\b|\bstreamers?\b|\bwhat (studio|network) (makes|made|produces)\b/i,'studios'],
+ [/\b(caa|wme|uta|gersh|paradigm|icm|buchwald|innovative artists|a3 artists|abrams artists|cesd|kmr)\b|\b(biggest|top|best|major) (talent )?(agenc(y|ies)|agents)\b|\bagency tiers?\b|\bbig (three|four) agenc/i,'bigagencies'],
+ [/\bborn with it\b|\b(natural|innate) talent\b|\bdo (you|i) need talent\b|\bcan anyone act\b|\bam i talented\b|\bi'?m not an actor\b|\bnever acted (before)?\b|\bno training at all\b|\bself.?taught\b|\bis acting a talent\b|\bwithout (going to )?(acting )?school\b/i,'borntalent']
 ];
 /* Ranked "did you mean" over everything teachable, by shared words. */
 function nearestTopics(q){
@@ -2244,7 +2820,10 @@ const OFFTOPICFALLBACK=['How does CastSlate work?','What does Premium include?',
 const FLAGSHIP_FOR={listening:'listen',indicating:'overacting',shotsize:'closeup',objective:'objective',
  subtext:'subtext',stakes:'stakes',presence:'present',projection:'stage',tapetech:'selftape',
  theroom:'roomnerves',direction:'roomnerves',mistakes:'roomnerves',camerathink:'film',
- mictechnique:'voice',comedy:'commercial',reader:'selftape'};
+ mictechnique:'voice',comedy:'commercial',reader:'selftape',
+ firstsix:'sixsec',profilesignal:'profilecd',headshotchoice:'headshotpick',submissionfit:'submitfit',
+ marks:'onsetlesson',blocking:'onsetlesson',setprotocol:'onsetlesson',
+ cheatout:'stagetech',stagecraft:'stagetech',upstaging:'stagetech',commercialcraft:'commercial'};
 
 function think(text,c){
   for(const s of SMALL) if(s.re.test(text.trim())) return {small:s};
@@ -2419,17 +2998,20 @@ function hello(){
     msg('in',c.name?`Hi ${c.name} \u{1F44B}`:`Hi there \u{1F44B}`);
     setTimeout(()=>{
       if(c.plan==='visitor'){
-        msg('in',`I can answer questions about acting and about CastSlate — and I can teach. Would you like a quick <b>free acting lesson</b>? Two minutes, and you can do it right where you are sitting.`);
+        msg('in',`I can answer questions about acting and about CastSlate — and I can <b>teach</b>. All the fundamentals of acting for film or stage, free, right here. No need to spend money on acting classes to begin — just grab a notepad and a pen for the bits worth keeping.`);
+        setTimeout(()=>{
+          msg('in',`Want a quick <b>free lesson</b> to see how it works? Two minutes, and you can do it right where you are sitting.`);
+          sugg(['Yes, teach me','What can you teach?','No thanks']);
+        },720);
         st.offer='film';
-        sugg(['Yes, teach me','What is CastSlate?','No thanks']);
         return;
       }
       msg('in',c.plan==='premium'
-        ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. I also run short lessons if you want to work on something.`
-        :`Ask me anything about CastSlate or about the acting business — and if you want to actually <b>practise</b> something, I run short lessons you can do right now.`);
+        ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. And I teach: all the fundamentals for film, stage, commercial and voice, right here. Keep a notepad next to you.`
+        :`Ask me anything about CastSlate or about the acting business — and I can <b>teach you the fundamentals</b> of acting for film or stage right here, free. No need to spend money on classes to start; just grab a notepad and a pen.`);
       sugg(c.plan==='premium'
-        ?['Give me an acting lesson','How do I improve my profile?','What is Manager Mode?']
-        :['Give me an acting lesson','How do I get started?','What does Premium include?']);
+        ?['Teach me the fundamentals','How do I improve my profile?','What is Manager Mode?']
+        :['Teach me the fundamentals','How do I get started?','What makes casting skip a reel?']);
     },620);
   },700);
 }
@@ -2737,7 +3319,10 @@ ROOT.addEventListener('click',function(e){
     else send('How do I upgrade to Premium?');
   }
 });
-window.Castoria={open:openPanel,ask:function(q){openPanel();setTimeout(function(){send(q);},700);}};
+var api={open:openPanel,ask:function(q){openPanel();setTimeout(function(){send(q);},700);}};
+window.SuperAssistant=api;
+/* Kept so anything that already calls window.Castoria keeps working. */
+window.Castoria=api;
 if(window.__CS_CASTORIA_OPEN_NOW)setTimeout(openPanel,400);
 
 })();
