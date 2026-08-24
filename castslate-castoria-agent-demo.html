@@ -3382,8 +3382,8 @@ function lockPage(on){
     else if(st._lock){ d.style.overflow=st._lock.d; b.style.overflow=st._lock.b; st._lock=null; }
   }catch(_){}
 }
-/* The nudge shows once per visitor and never competes with an open panel. */
-const NUDGE_KEY='cs_sa_nudge_seen';
+/* The nudge fires on every page load, five seconds in — never once-per-visitor
+   (owner's call), and never while the panel is already open. */
 function hideNudge(){
   const n=$('nudge'); if(!n||!n.classList.contains('on'))return;
   n.classList.add('out');
@@ -3391,12 +3391,9 @@ function hideNudge(){
 }
 function armNudge(){
   const n=$('nudge'); if(!n)return;
-  let seen=false;
-  try{seen=localStorage.getItem(NUDGE_KEY)==='1';}catch(_){}
-  if(seen)return;
   setTimeout(()=>{
     if(st.open)return;
-    try{localStorage.setItem(NUDGE_KEY,'1');}catch(_){}
+    n.classList.remove('out');
     n.classList.add('on');
     setTimeout(hideNudge,5000);
   },5000);
