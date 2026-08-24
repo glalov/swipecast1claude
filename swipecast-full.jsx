@@ -37466,6 +37466,7 @@ function App(){
     window.addEventListener("sc:open-cookies",handler);
     return()=>window.removeEventListener("sc:open-cookies",handler);
   },[]);
+
   // Persist language preference under per-user key when session is available
   useEffect(()=>{
     try{
@@ -37486,6 +37487,17 @@ function App(){
     }catch(_){}
   },[session?.user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const isLoggedIn=!!session;
+  // ── Castoria (virtual assistant) ───────────────────────────────────────────
+  // The widget lives in /castoria.js and renders itself into a shadow root, so
+  // it shares no CSS with the app. All it needs from us is who is asking — the
+  // answers branch on plan (visitor / free / premium) and greet by first name.
+  // A Premium member is never shown an upgrade card.
+  useEffect(()=>{
+    const plan = !isLoggedIn ? "visitor"
+      : (myProfile?.membership_status==="active" ? "premium" : "free");
+    const full = (myProfile?.display_name||"").trim();
+    window.__CS_CASTORIA_CTX = { plan, name: full ? full.split(/\s+/)[0] : "" };
+  },[isLoggedIn,myProfile?.membership_status,myProfile?.display_name]);
   // Admin derived from the PROFILE row (authoritative, server-enforced via RLS + RPCs).
   // SC_CONFIG.ADMIN_EMAIL is kept only as a *fallback* so the owner can still reach
   // the panel even if the profile row hasn't loaded yet. DB will reject any write
@@ -38054,6 +38066,9 @@ function App(){
     setPageSEO(target,opts);
     pushHist(target,opts);
   },[]);
+  // Lets Castoria's "See what Premium includes" card route in-app instead of
+  // reloading the site. Declared after navigate so the dep array is not in TDZ.
+  useEffect(()=>{ window.__CS_NAV = p => navigate(p); },[navigate]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const handleViewCasting=(c,from)=>{

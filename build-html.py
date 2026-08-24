@@ -643,6 +643,39 @@ def render_page(title, desc, canonical, extra_preload=""):
     }};
   </script>
 {app_tag}
+  <!-- Castoria — the virtual assistant. Loaded lazily: it is a large, entirely
+       optional asset, so it must never compete with the app for bandwidth on
+       first paint. We wait for React to mount, then for the browser to be idle,
+       and we skip it entirely on Save-Data or a 2g connection. The widget
+       renders itself into a shadow root, so nothing it ships can touch site CSS. -->
+  <script>
+  (function(){{
+    try{{
+      var c=navigator.connection||{{}};
+      if(c.saveData===true)return;
+      if(/^(slow-)?2g$/.test(c.effectiveType||''))return;
+    }}catch(e){{}}
+    var fired=false;
+    function load(){{
+      if(fired)return; fired=true;
+      var s=document.createElement('script');
+      s.src='/castoria.js?v={BUILD_VERSION}';
+      s.async=true;
+      document.body.appendChild(s);
+    }}
+    function whenIdle(){{
+      if(window.requestIdleCallback)requestIdleCallback(load,{{timeout:4000}});
+      else setTimeout(load,2200);
+    }}
+    function waitForApp(tries){{
+      if(window.__CS_REACT_MOUNTED)return whenIdle();
+      if(tries>60)return whenIdle();
+      setTimeout(function(){{waitForApp(tries+1);}},250);
+    }}
+    if(document.readyState==='complete')waitForApp(0);
+    else window.addEventListener('load',function(){{waitForApp(0);}});
+  }})();
+  </script>
 </body>
 </html>'''
 

@@ -95,18 +95,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260823-185910"/>
+  <link rel="preload" as="script" href="/app.js?v=20260824-010841"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260823-185910 -->
-  <meta name="build-version" content="20260823-185910"/>
+  <!-- BUILD: 20260824-010841 -->
+  <meta name="build-version" content="20260824-010841"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260823-185910";
+        var B="20260824-010841";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -425,7 +425,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260823-185910"
+        "/app.js?v=20260824-010841"
       ];
       function step(){
         var it=STEPS.shift();
@@ -449,6 +449,39 @@
       requestAnimationFrame(function(){setTimeout(once,900);});
       setTimeout(once,1600);   /* hidden tab: rAF never fires - boot anyway */
     })();
+  </script>
+  <!-- Castoria — the virtual assistant. Loaded lazily: it is a large, entirely
+       optional asset, so it must never compete with the app for bandwidth on
+       first paint. We wait for React to mount, then for the browser to be idle,
+       and we skip it entirely on Save-Data or a 2g connection. The widget
+       renders itself into a shadow root, so nothing it ships can touch site CSS. -->
+  <script>
+  (function(){
+    try{
+      var c=navigator.connection||{};
+      if(c.saveData===true)return;
+      if(/^(slow-)?2g$/.test(c.effectiveType||''))return;
+    }catch(e){}
+    var fired=false;
+    function load(){
+      if(fired)return; fired=true;
+      var s=document.createElement('script');
+      s.src='/castoria.js?v=20260824-010841';
+      s.async=true;
+      document.body.appendChild(s);
+    }
+    function whenIdle(){
+      if(window.requestIdleCallback)requestIdleCallback(load,{timeout:4000});
+      else setTimeout(load,2200);
+    }
+    function waitForApp(tries){
+      if(window.__CS_REACT_MOUNTED)return whenIdle();
+      if(tries>60)return whenIdle();
+      setTimeout(function(){waitForApp(tries+1);},250);
+    }
+    if(document.readyState==='complete')waitForApp(0);
+    else window.addEventListener('load',function(){waitForApp(0);});
+  })();
   </script>
 </body>
 </html>
