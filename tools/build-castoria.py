@@ -50,6 +50,7 @@ inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$(
 $('send').onclick=function(){var v=inp.value.trim();if(!v)return;inp.value='';inp.style.height='auto';$('send').disabled=true;send(v);};
 ROOT.addEventListener('click',function(e){
   var t=(e.composedPath&&e.composedPath()[0])||e.target;
+  if(t&&t.closest){var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}}
   if(t&&t.closest&&t.closest('[data-go]')){
     if(window.__CS_NAV){window.__CS_NAV('membership');st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');}
     else send('How do I upgrade to Premium?');

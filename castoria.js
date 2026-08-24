@@ -11,7 +11,7 @@ host.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:214748300
 document.body.appendChild(host);
 var ROOT=host.attachShadow({mode:'open'});
 var sEl=document.createElement('style');
-sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:27px;height:27px;fill:#fff;}\n.launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#2D2D44,#1A1A2E);display:grid;place-items:center;margin:0 auto 4px;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;padding:14px 12px 4px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul{list-style:none;margin:2px 0 9px;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b b{font-weight:600;}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:4px;align-items:center;background:var(--in);border-radius:19px;padding:12px 15px;}\n.typing i{width:8px;height:8px;border-radius:50%;background:#9E9EA4;animation:d 1.3s ease-in-out infinite;}\n.typing i:nth-child(2){animation-delay:.17s}.typing i:nth-child(3){animation-delay:.34s}\n@keyframes d{0%,62%,100%{opacity:.32;transform:translateY(0)}31%{opacity:.95;transform:translateY(-3px)}}\n@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}\n\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;scrollbar-width:none;}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:#F2F2F7;border:0;border-radius:16px;padding:9px 14px;cursor:pointer;text-align:left;}\n.sugg button:hover{background:#E5E5EA;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);}\n.field{display:flex;align-items:flex-end;gap:8px;}\n.field .box{flex:1;display:flex;align-items:flex-end;background:var(--field);border:1px solid var(--fieldln);border-radius:19px;padding:7px 6px 7px 14px;}\n.field textarea{flex:1;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.3;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:20px;padding:1px 0 2px;}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:29px;height:29px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sugg{max-height:120px;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n}\n";
+sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:27px;height:27px;fill:#fff;}\n.launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#2D2D44,#1A1A2E);display:grid;place-items:center;margin:0 auto 4px;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;padding:14px 12px 4px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul{list-style:none;margin:2px 0 9px;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b b{font-weight:600;}\n.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}\n.b .inl:hover{color:var(--blue);}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:4px;align-items:center;background:var(--in);border-radius:19px;padding:12px 15px;}\n.typing i{width:8px;height:8px;border-radius:50%;background:#9E9EA4;animation:d 1.3s ease-in-out infinite;}\n.typing i:nth-child(2){animation-delay:.17s}.typing i:nth-child(3){animation-delay:.34s}\n@keyframes d{0%,62%,100%{opacity:.32;transform:translateY(0)}31%{opacity:.95;transform:translateY(-3px)}}\n@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}\n\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;scrollbar-width:none;}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:#F2F2F7;border:0;border-radius:16px;padding:9px 14px;cursor:pointer;text-align:left;}\n.sugg button:hover{background:#E5E5EA;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);}\n.field{display:flex;align-items:flex-end;gap:8px;}\n.field .box{flex:1;display:flex;align-items:flex-end;background:var(--field);border:1px solid var(--fieldln);border-radius:19px;padding:7px 6px 7px 14px;}\n.field textarea{flex:1;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.3;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:20px;padding:1px 0 2px;}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:29px;height:29px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sugg{max-height:120px;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n}\n";
 ROOT.appendChild(sEl);
 var wrap=document.createElement('div');
 wrap.style.cssText='pointer-events:auto;';
@@ -595,11 +595,11 @@ const KB=[
 
 {id:'lessons',k:'lesson lessons teach me class learn acting exercise train practise practice free lesson mini lesson study coach masterclass',
  a:c=>`<p>Yes — I actually teach rather than just define things. Each one is a real exercise you do on the spot, in two or three minutes.</p>`+
- `<div class="hd">Film &amp; camera</div><ul><li><b>The camera sees everything</b> — the show-it vs want-it experiment</li><li><b>Working in a close-up</b> — what the lens catches, and the mute-playback exercise</li><li><b>How to stop overacting</b> — the flat pass</li></ul>`+
- `<div class="hd">Technique</div><ul><li><b>Objective</b> — what your character actually wants</li><li><b>Stanislavsky's Magic If</b></li><li><b>Listening</b>, and <b>being present</b></li><li><b>Subtext</b> — one line, four meanings</li><li><b>Stakes</b> — why your scene feels flat</li></ul>`+
- `<div class="hd">Audition</div><ul><li><b>Self-tape</b> — a better take in fifteen minutes</li><li><b>How to slate</b></li><li><b>Cold reading</b> without panicking</li><li><b>The room</b> — first impressions, taking direction, recovering from a mistake</li></ul>`+
- `<div class="hd">By medium</div><ul><li><b>Stage acting</b> — filling the room without inflating</li><li><b>Commercial acting</b></li><li><b>Voice acting</b></li></ul>`+
- `<p>Say the name of one, or just tell me what is going wrong and I will pick.</p>`,
+ `<div class="hd">Film &amp; camera</div><ul><li><button class="inl" data-ask="The camera sees everything">The camera sees everything</button> — the show-it vs want-it experiment</li><li><button class="inl" data-ask="Working in a close-up">Working in a close-up</button> — what the lens catches, and the mute-playback exercise</li><li><button class="inl" data-ask="How to stop overacting">How to stop overacting</button> — the flat pass</li></ul>`+
+ `<div class="hd">Technique</div><ul><li><button class="inl" data-ask="Objective">Objective</button> — what your character actually wants</li><li><button class="inl" data-ask="Stanislavsky's Magic If">Stanislavsky's Magic If</button> </li><li><button class="inl" data-ask="Listening">Listening</button> </li><li><button class="inl" data-ask="Being present">Being present</button> </li><li><button class="inl" data-ask="Subtext">Subtext</button> — one line, four meanings</li><li><button class="inl" data-ask="Stakes">Stakes</button> — why your scene feels flat</li></ul>`+
+ `<div class="hd">Audition</div><ul><li><button class="inl" data-ask="Self-tape exercise">Self-tape exercise</button> — a better take in fifteen minutes</li><li><button class="inl" data-ask="How to slate">How to slate</button> </li><li><button class="inl" data-ask="Cold reading">Cold reading</button> without panicking</li><li><button class="inl" data-ask="The room">The room</button> — first impressions, taking direction, recovering from a mistake</li></ul>`+
+ `<div class="hd">By medium</div><ul><li><button class="inl" data-ask="Stage acting">Stage acting</button> — filling the room without inflating</li><li><button class="inl" data-ask="Commercial acting">Commercial acting</button> </li><li><button class="inl" data-ask="Voice acting">Voice acting</button> </li></ul>`+
+ `<p>Tap any of those, or just tell me what is going wrong and I will pick.</p>`,
  src:[],s:['The camera sees everything','Teach me how to listen','How do I stop overacting?','Give me a self-tape exercise'],nocheck:true},
 
 {id:'filmvsstage',k:'film vs stage difference theater screen acting scale bigger smaller which is harder medium',
@@ -2059,6 +2059,67 @@ const SYN={cost:'price',costs:'price',pricing:'price',prices:'price',fee:'price'
  typecasting:'typecast',types:'type',
  resumes:'resume',cv:'resume',
  emails:'email',notification:'notifications'};
+/* ── typo tolerance ────────────────────────────────────────────────
+   Someone reading a menu of lessons will mistype one of them. "camear
+   sees everything" must not dead-end — a single transposed letter is
+   not a different question. We build a vocabulary from everything we
+   can answer and edit-distance any unrecognised word back onto it.  */
+let VOCAB=null;
+function buildVocab(){
+  const v=new Set();
+  const add=str=>String(str||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ')
+    .split(/\s+/).forEach(w=>{if(w.length>=4)v.add(w);});
+  /* Seed with ordinary English too, or a mistyped "waht" gets pulled onto
+     an acting word instead of onto "what" and the question changes meaning. */
+  STOP.forEach(w=>{if(w.length>=4)v.add(w);});
+  ('what when where which whose there their they them then than this that will would could should '
+  +'about because before after into over under again still where here your yours mine ours '
+  +'know need want help make take give show tell find best good long much many time work well '
+  +'really every other same different first last next thing things something anything nothing').split(' ').forEach(w=>v.add(w));
+  CONCEPTS.forEach(c=>{add(c.aka);add(c.name);add(c.id);});
+  KB.forEach(e=>add(e.k));
+  LESSONS.forEach(l=>{add(l.k);add(l.title);});
+  Object.entries(GLOSSARY).forEach(([t,g])=>{add(t);add(g.k);});
+  SMALL.forEach(x=>add(x.id));
+  return v;
+}
+function editDist(a,b,cap){
+  if(Math.abs(a.length-b.length)>cap)return cap+1;
+  const m=a.length,n=b.length;
+  let two=null, prev=Array.from({length:n+1},(_,i)=>i), cur;
+  for(let i=1;i<=m;i++){
+    cur=new Array(n+1); cur[0]=i; let best=i;
+    for(let j=1;j<=n;j++){
+      const cost=a[i-1]===b[j-1]?0:1;
+      let d=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost);
+      /* transposition — by far the most common human typo */
+      if(i>1&&j>1&&two&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d=Math.min(d,two[j-2]+1);
+      cur[j]=d; if(d<best)best=d;
+    }
+    if(best>cap)return cap+1;
+    two=prev; prev=cur;
+  }
+  return prev[n];
+}
+function despell(text){
+  if(!VOCAB)VOCAB=buildVocab();
+  let changed=false;
+  const out=text.split(/(\s+)/).map(tok=>{
+    const w=tok.toLowerCase().replace(/[^a-z0-9]/g,'');
+    if(w.length<4||VOCAB.has(w)||STOP.has(w))return tok;
+    const cap=w.length<=5?1:2;
+    let best=null,bd=cap+1;
+    for(const cand of VOCAB){
+      if(Math.abs(cand.length-w.length)>cap)continue;
+      const d=editDist(w,cand,cap);
+      if(d<bd){bd=d;best=cand;if(d===1)break;}
+    }
+    if(best&&bd<=cap){changed=true;return tok.replace(new RegExp(w,'i'),best);}
+    return tok;
+  }).join('');
+  return changed?out:text;
+}
+
 const norm=s=>s.toLowerCase().replace(/[^a-z0-9\s']/g,' ').split(/\s+/).filter(w=>w&&!STOP.has(w)).map(w=>SYN[w]||w);
 const KEYS=KB.map(e=>new Set(e.k.split(' ')));
 
@@ -2130,6 +2191,21 @@ const INTENT=[
  [/\b(set|audition|room) etiquette\b|\bhow (should|do) i (behave|act) (on set|in the room)\b|\bfirst day on set\b|\bprofessional behaviou?r\b/i,'etiquette'],
  [/\bhow (do|can) i become an actor\b|\bwant to (be|become) an actor\b|\bget into acting\b|\bstart acting\b|\bno experience at all\b|\bcomplete beginner\b/i,'beginner']
 ];
+/* Ranked "did you mean" over everything teachable, by shared words. */
+function nearestTopics(q){
+  const toks=new Set(norm(despell(q)));
+  if(!toks.size)return [];
+  const cand=[];
+  LESSONS.forEach(l=>cand.push({label:l.title,words:norm(l.title+' '+l.k)}));
+  CONCEPTS.forEach(c=>cand.push({label:'Teach me '+c.name.toLowerCase(),words:norm(c.name+' '+c.aka)}));
+  Object.keys(GLOSSARY).forEach(t=>cand.push({label:'What is a '+t+'?',words:norm(t+' '+GLOSSARY[t].k)}));
+  const scored=cand.map(c=>{
+    let n=0;c.words.forEach(w=>{if(toks.has(w))n+= w.length>6?2:1;});
+    return {label:c.label,n};
+  }).filter(x=>x.n>=2).sort((a,b)=>b.n-a.n);
+  const seen=new Set();
+  return scored.filter(x=>!seen.has(x.label)&&seen.add(x.label)).slice(0,3).map(x=>x.label);
+}
 const OFFTOPICFALLBACK=['How does CastSlate work?','What does Premium include?','Talk to a human'];
 
 /* where a polished flagship lesson covers the same ground as a concept */
@@ -2141,7 +2217,18 @@ const FLAGSHIP_FOR={listening:'listen',indicating:'overacting',shotsize:'closeup
 function think(text,c){
   for(const s of SMALL) if(s.re.test(text.trim())) return {small:s};
   for(const [re,id] of LESSON_INTENT) if(re.test(text)) return {lesson:id};
+  /* Refusals run on the ORIGINAL words. Spell-correcting first would drag
+     "who won the game" onto an acting term and smuggle an off-topic
+     question past the scope filter. */
   for(const d of DECLINE) if(d.re.test(text)) return {decline:d};
+  /* nothing matched literally — try again with obvious typos corrected */
+  if(!c||!c.__retry){
+    const fixed=despell(text);
+    if(fixed!==text){
+      const r=think(fixed,Object.assign({},c,{__retry:1}));
+      if(r&&!r.miss&&!r.decline)return Object.assign(r,{corrected:fixed});
+    }
+  }
 
   /* generic "teach me something" with no topic -> the menu */
   if(/\b(give|show) me (a|an|another|the)?\s*(free |quick |short |mini )?(acting )?(lesson|class)\b|\bteach me (something|acting|to act)\b|\bwhat lessons\b|\banother lesson\b|\bcan you teach me\b/i.test(text)
@@ -2477,6 +2564,12 @@ function send(text){
         setTimeout(()=>{msg('in',`I'm passing this thread to the CastSlate team with the whole conversation attached — someone will pick it up from here.`);sugg([]);},640);
         st.misses=0;return;
       }
+      const near=nearestTopics(text);
+      if(near.length){
+        msg('in',`I'm not certain which you mean — did you want one of these?`);
+        setTimeout(()=>{sugg(near.concat(['Something else']));},420);
+        return;
+      }
       msg('in',`I'm not sure I follow — try different words and I'll have another go.`);
       setTimeout(()=>{msg('in',`Or pick one of these if it's close.`);sugg(OFFTOPICFALLBACK);},600);
       return;
@@ -2508,6 +2601,7 @@ inp.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$(
 $('send').onclick=function(){var v=inp.value.trim();if(!v)return;inp.value='';inp.style.height='auto';$('send').disabled=true;send(v);};
 ROOT.addEventListener('click',function(e){
   var t=(e.composedPath&&e.composedPath()[0])||e.target;
+  if(t&&t.closest){var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}}
   if(t&&t.closest&&t.closest('[data-go]')){
     if(window.__CS_NAV){window.__CS_NAV('membership');st.open=false;$('panel').classList.remove('open');$('launch').classList.remove('open');}
     else send('How do I upgrade to Premium?');

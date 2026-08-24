@@ -84,6 +84,8 @@ h1 span{color:var(--out2);}
 .b li{position:relative;padding-left:14px;margin-bottom:3px;}
 .b li::before{content:"•";position:absolute;left:2px;top:-1px;}
 .b b{font-weight:600;}
+.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}
+.b .inl:hover{color:var(--blue);}
 .b em{font-style:normal;font-weight:600;}
 .receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}
 .receipt b{font-weight:600;color:var(--mute);}
@@ -252,7 +254,7 @@ h1 span{color:var(--out2);}
 <div class="panel" id="panel">
   <div class="bar" id="bar">
     <button class="back" id="back">&lsaquo; Back</button>
-    <div class="ava">A</div>
+    <div class="ava">C</div>
     <b>Castoria</b>
     <i id="barsub">Virtual assistant</i>
   </div>
@@ -848,11 +850,11 @@ const KB=[
 
 {id:'lessons',k:'lesson lessons teach me class learn acting exercise train practise practice free lesson mini lesson study coach masterclass',
  a:c=>`<p>Yes — I actually teach rather than just define things. Each one is a real exercise you do on the spot, in two or three minutes.</p>`+
- `<div class="hd">Film &amp; camera</div><ul><li><b>The camera sees everything</b> — the show-it vs want-it experiment</li><li><b>Working in a close-up</b> — what the lens catches, and the mute-playback exercise</li><li><b>How to stop overacting</b> — the flat pass</li></ul>`+
- `<div class="hd">Technique</div><ul><li><b>Objective</b> — what your character actually wants</li><li><b>Stanislavsky's Magic If</b></li><li><b>Listening</b>, and <b>being present</b></li><li><b>Subtext</b> — one line, four meanings</li><li><b>Stakes</b> — why your scene feels flat</li></ul>`+
- `<div class="hd">Audition</div><ul><li><b>Self-tape</b> — a better take in fifteen minutes</li><li><b>How to slate</b></li><li><b>Cold reading</b> without panicking</li><li><b>The room</b> — first impressions, taking direction, recovering from a mistake</li></ul>`+
- `<div class="hd">By medium</div><ul><li><b>Stage acting</b> — filling the room without inflating</li><li><b>Commercial acting</b></li><li><b>Voice acting</b></li></ul>`+
- `<p>Say the name of one, or just tell me what is going wrong and I will pick.</p>`,
+ `<div class="hd">Film &amp; camera</div><ul><li><button class="inl" data-ask="The camera sees everything">The camera sees everything</button> — the show-it vs want-it experiment</li><li><button class="inl" data-ask="Working in a close-up">Working in a close-up</button> — what the lens catches, and the mute-playback exercise</li><li><button class="inl" data-ask="How to stop overacting">How to stop overacting</button> — the flat pass</li></ul>`+
+ `<div class="hd">Technique</div><ul><li><button class="inl" data-ask="Objective">Objective</button> — what your character actually wants</li><li><button class="inl" data-ask="Stanislavsky's Magic If">Stanislavsky's Magic If</button> </li><li><button class="inl" data-ask="Listening">Listening</button> </li><li><button class="inl" data-ask="Being present">Being present</button> </li><li><button class="inl" data-ask="Subtext">Subtext</button> — one line, four meanings</li><li><button class="inl" data-ask="Stakes">Stakes</button> — why your scene feels flat</li></ul>`+
+ `<div class="hd">Audition</div><ul><li><button class="inl" data-ask="Self-tape exercise">Self-tape exercise</button> — a better take in fifteen minutes</li><li><button class="inl" data-ask="How to slate">How to slate</button> </li><li><button class="inl" data-ask="Cold reading">Cold reading</button> without panicking</li><li><button class="inl" data-ask="The room">The room</button> — first impressions, taking direction, recovering from a mistake</li></ul>`+
+ `<div class="hd">By medium</div><ul><li><button class="inl" data-ask="Stage acting">Stage acting</button> — filling the room without inflating</li><li><button class="inl" data-ask="Commercial acting">Commercial acting</button> </li><li><button class="inl" data-ask="Voice acting">Voice acting</button> </li></ul>`+
+ `<p>Tap any of those, or just tell me what is going wrong and I will pick.</p>`,
  src:[],s:['The camera sees everything','Teach me how to listen','How do I stop overacting?','Give me a self-tape exercise'],nocheck:true},
 
 {id:'filmvsstage',k:'film vs stage difference theater screen acting scale bigger smaller which is harder medium',
@@ -2312,6 +2314,67 @@ const SYN={cost:'price',costs:'price',pricing:'price',prices:'price',fee:'price'
  typecasting:'typecast',types:'type',
  resumes:'resume',cv:'resume',
  emails:'email',notification:'notifications'};
+/* ── typo tolerance ────────────────────────────────────────────────
+   Someone reading a menu of lessons will mistype one of them. "camear
+   sees everything" must not dead-end — a single transposed letter is
+   not a different question. We build a vocabulary from everything we
+   can answer and edit-distance any unrecognised word back onto it.  */
+let VOCAB=null;
+function buildVocab(){
+  const v=new Set();
+  const add=str=>String(str||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ')
+    .split(/\s+/).forEach(w=>{if(w.length>=4)v.add(w);});
+  /* Seed with ordinary English too, or a mistyped "waht" gets pulled onto
+     an acting word instead of onto "what" and the question changes meaning. */
+  STOP.forEach(w=>{if(w.length>=4)v.add(w);});
+  ('what when where which whose there their they them then than this that will would could should '
+  +'about because before after into over under again still where here your yours mine ours '
+  +'know need want help make take give show tell find best good long much many time work well '
+  +'really every other same different first last next thing things something anything nothing').split(' ').forEach(w=>v.add(w));
+  CONCEPTS.forEach(c=>{add(c.aka);add(c.name);add(c.id);});
+  KB.forEach(e=>add(e.k));
+  LESSONS.forEach(l=>{add(l.k);add(l.title);});
+  Object.entries(GLOSSARY).forEach(([t,g])=>{add(t);add(g.k);});
+  SMALL.forEach(x=>add(x.id));
+  return v;
+}
+function editDist(a,b,cap){
+  if(Math.abs(a.length-b.length)>cap)return cap+1;
+  const m=a.length,n=b.length;
+  let two=null, prev=Array.from({length:n+1},(_,i)=>i), cur;
+  for(let i=1;i<=m;i++){
+    cur=new Array(n+1); cur[0]=i; let best=i;
+    for(let j=1;j<=n;j++){
+      const cost=a[i-1]===b[j-1]?0:1;
+      let d=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost);
+      /* transposition — by far the most common human typo */
+      if(i>1&&j>1&&two&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d=Math.min(d,two[j-2]+1);
+      cur[j]=d; if(d<best)best=d;
+    }
+    if(best>cap)return cap+1;
+    two=prev; prev=cur;
+  }
+  return prev[n];
+}
+function despell(text){
+  if(!VOCAB)VOCAB=buildVocab();
+  let changed=false;
+  const out=text.split(/(\s+)/).map(tok=>{
+    const w=tok.toLowerCase().replace(/[^a-z0-9]/g,'');
+    if(w.length<4||VOCAB.has(w)||STOP.has(w))return tok;
+    const cap=w.length<=5?1:2;
+    let best=null,bd=cap+1;
+    for(const cand of VOCAB){
+      if(Math.abs(cand.length-w.length)>cap)continue;
+      const d=editDist(w,cand,cap);
+      if(d<bd){bd=d;best=cand;if(d===1)break;}
+    }
+    if(best&&bd<=cap){changed=true;return tok.replace(new RegExp(w,'i'),best);}
+    return tok;
+  }).join('');
+  return changed?out:text;
+}
+
 const norm=s=>s.toLowerCase().replace(/[^a-z0-9\s']/g,' ').split(/\s+/).filter(w=>w&&!STOP.has(w)).map(w=>SYN[w]||w);
 const KEYS=KB.map(e=>new Set(e.k.split(' ')));
 
@@ -2383,6 +2446,21 @@ const INTENT=[
  [/\b(set|audition|room) etiquette\b|\bhow (should|do) i (behave|act) (on set|in the room)\b|\bfirst day on set\b|\bprofessional behaviou?r\b/i,'etiquette'],
  [/\bhow (do|can) i become an actor\b|\bwant to (be|become) an actor\b|\bget into acting\b|\bstart acting\b|\bno experience at all\b|\bcomplete beginner\b/i,'beginner']
 ];
+/* Ranked "did you mean" over everything teachable, by shared words. */
+function nearestTopics(q){
+  const toks=new Set(norm(despell(q)));
+  if(!toks.size)return [];
+  const cand=[];
+  LESSONS.forEach(l=>cand.push({label:l.title,words:norm(l.title+' '+l.k)}));
+  CONCEPTS.forEach(c=>cand.push({label:'Teach me '+c.name.toLowerCase(),words:norm(c.name+' '+c.aka)}));
+  Object.keys(GLOSSARY).forEach(t=>cand.push({label:'What is a '+t+'?',words:norm(t+' '+GLOSSARY[t].k)}));
+  const scored=cand.map(c=>{
+    let n=0;c.words.forEach(w=>{if(toks.has(w))n+= w.length>6?2:1;});
+    return {label:c.label,n};
+  }).filter(x=>x.n>=2).sort((a,b)=>b.n-a.n);
+  const seen=new Set();
+  return scored.filter(x=>!seen.has(x.label)&&seen.add(x.label)).slice(0,3).map(x=>x.label);
+}
 const OFFTOPICFALLBACK=['How does CastSlate work?','What does Premium include?','Talk to a human'];
 
 /* where a polished flagship lesson covers the same ground as a concept */
@@ -2394,7 +2472,18 @@ const FLAGSHIP_FOR={listening:'listen',indicating:'overacting',shotsize:'closeup
 function think(text,c){
   for(const s of SMALL) if(s.re.test(text.trim())) return {small:s};
   for(const [re,id] of LESSON_INTENT) if(re.test(text)) return {lesson:id};
+  /* Refusals run on the ORIGINAL words. Spell-correcting first would drag
+     "who won the game" onto an acting term and smuggle an off-topic
+     question past the scope filter. */
   for(const d of DECLINE) if(d.re.test(text)) return {decline:d};
+  /* nothing matched literally — try again with obvious typos corrected */
+  if(!c||!c.__retry){
+    const fixed=despell(text);
+    if(fixed!==text){
+      const r=think(fixed,Object.assign({},c,{__retry:1}));
+      if(r&&!r.miss&&!r.decline)return Object.assign(r,{corrected:fixed});
+    }
+  }
 
   /* generic "teach me something" with no topic -> the menu */
   if(/\b(give|show) me (a|an|another|the)?\s*(free |quick |short |mini )?(acting )?(lesson|class)\b|\bteach me (something|acting|to act)\b|\bwhat lessons\b|\banother lesson\b|\bcan you teach me\b/i.test(text)
@@ -2728,6 +2817,12 @@ function send(text){
         setTimeout(()=>{msg('in',`I'm passing this thread to the CastSlate team with the whole conversation attached — someone will pick it up from here.`);sugg([]);},640);
         st.misses=0;return;
       }
+      const near=nearestTopics(text);
+      if(near.length){
+        msg('in',`I'm not certain which you mean — did you want one of these?`);
+        setTimeout(()=>{sugg(near.concat(['Something else']));},420);
+        return;
+      }
       msg('in',`I'm not sure I follow — try different words and I'll have another go.`);
       setTimeout(()=>{msg('in',`Or pick one of these if it's close.`);sugg(OFFTOPICFALLBACK);},600);
       return;
@@ -2772,7 +2867,10 @@ const inp=$('input');
 inp.oninput=()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,86)+'px';$('send').disabled=!inp.value.trim();};
 inp.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('send').click();}};
 $('send').onclick=()=>{const v=inp.value.trim();if(!v)return;inp.value='';inp.style.height='auto';$('send').disabled=true;send(v);};
-document.addEventListener('click',e=>{if(e.target.closest('[data-go]'))send('How do I upgrade to Premium?');});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-ask]'); if(a){send(a.dataset.ask);return;}
+  if(e.target.closest('[data-go]'))send('How do I upgrade to Premium?');
+});
 
 $('sysprompt').textContent=SYS;
 $('kbstat').innerHTML=`<b>${CONCEPTS.length} teachable concepts</b> in the composer, <b>${LESSONS.length} flagship lessons</b>, <b>${Object.keys(GLOSSARY).length} glossary terms</b>, <b>${KB.length} knowledge entries</b>, <b>${SMALL.length} conversational patterns</b> and <b>${DECLINE.length} refusal rules</b>, over <b>${Object.keys(ART).length} help sheets</b>.<br><br>Tested on <b>159 questions</b> — 143 of them never anticipated by any trigger: <b>0 unhandled, 0 misroutes, 0 fabricated facts.</b> Retrieval is a scored keyword pass with a synonym map, an intent table and a shape classifier; swap it for embeddings and keep the same prompt when you wire it to a model.`;
