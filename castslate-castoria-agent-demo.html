@@ -11,6 +11,11 @@
   --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;
   --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;
   --brand:#1A1A2E;--brand-2:#E8902A;
+  /* Mono clapper. Silver disc, charcoal board, white stripes. The hairline
+     ring is not decoration — a pale disc dissolves into the cream page. */
+  --disc:linear-gradient(150deg,#FFFFFF,#EDEDF1 52%,#C8C8D0);
+  --ring:rgba(19,19,24,.16);--board:#131318;--stripe:#FFFFFF;
+  --cm1:rgba(255,255,255,.34);--cm2:rgba(255,255,255,.20);
   --sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
@@ -42,10 +47,20 @@ h1 span{color:var(--out2);}
 .spec b{color:var(--ink);}
 
 /* ── launcher ─────────────────────────────────────────────── */
-.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);}
+.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background-image:var(--disc);border:0;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 1px var(--ring),0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);
+  /* backwards, not both: the animation must not own transform once it ends,
+     or the hover scale never applies again. */
+  animation:launchIn .52s cubic-bezier(.22,.9,.3,1) .3s backwards;}
+@keyframes launchIn{from{opacity:0;transform:translateX(84px) scale(.92)}to{opacity:1;transform:none}}
 .launch:hover{transform:scale(1.06);}
-.launch svg{width:27px;height:27px;fill:#fff;}
-.launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}
+.launch svg{width:58px;height:58px;display:block;}
+.launch .x{display:none;color:var(--board);font-size:25px;font-weight:300;line-height:1;}
+
+/* One clap every ten seconds — present, not fidgety. */
+.clap .stick{transform-origin:5.5px 12.5px;animation:csclap 10s cubic-bezier(.3,1.6,.5,1) infinite;}
+@keyframes csclap{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-27deg)}95%{transform:rotate(-24deg)}98%{transform:rotate(0)}}
+.launch:hover .clap .stick{animation-duration:2.2s;}
+@media(prefers-reduced-motion:reduce){.launch{animation:none}.clap .stick{animation:none}}
 .launch.open svg{display:none;}
 .launch.open .x{display:block;}
 
@@ -94,7 +109,8 @@ h1 span{color:var(--out2);}
 .bar .xclose:hover{background:rgba(120,120,128,.24);}
 .bar .xclose:active{transform:translateY(-50%) scale(.92);}
 .bar.sub .back{display:block;}
-.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#2D2D44,#1A1A2E);display:grid;place-items:center;margin:0 auto 4px;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px;}
+.ava{width:44px;height:44px;border-radius:50%;background-image:var(--disc);box-shadow:inset 0 0 0 1px var(--ring);display:grid;place-items:center;margin:0 auto 4px;overflow:hidden;}
+.ava svg{width:44px;height:44px;display:block;}
 .bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}
 .bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}
 
@@ -314,7 +330,7 @@ h1 span{color:var(--out2);}
 <div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assistant</b></div>
 
 <button class="launch" id="launch" aria-label="Message Super Assistant">
-  <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z"/></svg>
+  <svg class="clap" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="var(--board)"/><rect x="7" y="16" width="18" height="2" rx="1" fill="var(--cm1)"/><rect x="7" y="20" width="12" height="2" rx="1" fill="var(--cm2)"/><g class="stick"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="var(--board)"/><g clip-path="url(#csClip)" fill="var(--stripe)"><polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/><polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g></g><defs><clipPath id="csClip"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4"/></clipPath></defs></svg>
   <span class="x">&times;</span>
 </button>
 
@@ -323,7 +339,7 @@ h1 span{color:var(--out2);}
     <button class="xreset" id="newchat" aria-label="Start a new chat" title="New chat"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.8 3.6v4.6h-4.6"/></svg></button>
     <button class="xexpand" id="expand" aria-label="Expand the panel" title="Expand"><svg viewBox="0 0 24 24"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></svg></button>
     <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
-    <div class="ava">S</div>
+    <div class="ava"><svg class="clap" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="var(--board)"/><rect x="7" y="16" width="18" height="2" rx="1" fill="var(--cm1)"/><rect x="7" y="20" width="12" height="2" rx="1" fill="var(--cm2)"/><g class="stick"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="var(--board)"/><g clip-path="url(#csClip)" fill="var(--stripe)"><polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/><polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g></g><defs><clipPath id="csClip"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4"/></clipPath></defs></svg></div>
     <b>Super Assistant</b>
     <i id="barsub">Acting coach</i>
   </div>
@@ -1779,7 +1795,7 @@ C('camerathink','Camera','camera awareness self conscious thinking about the cam
  more:`Rehearse with the phone recording every time, so being filmed stops being an event`,
  take:`You cannot forget the camera. You can be busier than it`}),
 
-C('continuity','Camera','continuity matching action repeat takes coverage consistency same each take',{
+C('continuity','Camera','continuity matching action repeat takes coverage consistency match the take',{
  what:`repeating your physical behaviour closely enough that shots can be cut together`,
  why:`if the cigarette is in the other hand, the take is unusable however good it was`,
  ex:`Where you drink, where you turn, when you stand — those need to land on roughly the same words each time`,
@@ -2025,7 +2041,7 @@ C('perfection','Psychology','trying too hard impress please perfect approval cas
  more:`Afterwards, evaluate only whether you played what you intended`,
  take:`Aim at the character, not the room`}),
 
-C('samesame','Psychology','same performance every time cant vary stuck repeating one note range',{
+C('samesame','Psychology','same performance every time same every take look the same cant vary stuck repeating one note range sameness samey',{
  what:`the tendency to produce the same read regardless of the material`,
  why:`it is usually a preparation habit, not a limitation of range`,
  ex:`Actors default to their most comfortable rhythm and emotional temperature under pressure`,
@@ -3118,7 +3134,12 @@ const LESSON_INTENT=[
 ];
 
 /* ── retrieval ───────────────────────────────────────────────── */
-const STOP=new Set("a an the is are was were be been do does did i im me my mine you your yours it its of to for on in at and or but if so how what when where which who whom that this these those can could would should will shall may might must have has had get got just about with as not no yes please thanks thank hey hi hello there here from than then them they he she we us our there's whats".split(' '));
+/* Ordinary connectives must never decide an answer. "How do I match my action
+   between takes" was answered with cancel-vs-delete, because that entry's
+   keywords contain the word "between" and nothing else in the question scored.
+   Same failure mode as the glossary matching on "the". */
+const STOP=new Set(("a an the is are was were be been do does did i im me my mine you your yours it its of to for on in at and or but if so how what when where which who whom that this these those can could would should will shall may might must have has had get got just about with as not no yes please thanks thank hey hi hello there here from than then them they he she we us our there's whats"+
+ " between difference differences into each every both again also very only much many way ways thing things actually really own another others something anything everything nothing someone anyone everyone okay ok need needs want wants know help best better worse still").split(' '));
 const SYN={cost:'price',costs:'price',pricing:'price',prices:'price',fee:'price',fees:'price',cheap:'price',expensive:'price',
  subs:'submission',submissions:'submission',submitting:'submit',submitted:'submit',applying:'apply',applied:'apply',application:'apply',applications:'apply',
  pics:'photo',pic:'photo',photos:'photo',picture:'photo',pictures:'photo',images:'photo',image:'photo',headshots:'headshot',
@@ -3220,7 +3241,14 @@ const INTENT=[
  [/\b(too old|too late|give up|giving up|wasting my time|should i quit|keep going)\b/i,'encourage'],
  [/\b(castslate|this (site|platform)|your (site|platform|castings|listings))\b.{0,30}\b(fake|real|legit|scam)|\b(fake|real|legit)\b.{0,24}\b(castslate|casting|listing)s?\b|\bare (the )?(castings|listings|roles|jobs) (on here |here )?(fake|real|legit)\b/i,'fake'],
  [/\bscam|\bfraud|\bcon artist|\brip.?off|\bget scammed|\bavoid (a )?scam/i,'scams'],
- [/\bworth it|worth the money|should i (pay|upgrade|subscribe)|why (should i )?pay|convince me\b/i,'worth'],
+ [/\bis (it|this|that|premium|castslate|the membership|a membership|the subscription|a subscription|paying|going premium|upgrading)\b[^?.!]{0,14}\bworth\b|\bworth the money\b|\bworth (it )?(paying|upgrading|subscribing|going premium)\b|\bshould i (pay|upgrade|subscribe|go premium)\b|\bwhy (should i )?pay\b|\bconvince me\b|\bis premium worth\b/i,'worth'],
+ /* Everything else that gets asked as "is it worth it" keeps its own answer. */
+ [/\b(background|extra|extras|bg) work\b|\bwork(ing)? as an extra\b|\bbe an extra\b|\bbackground actor\b|\bis being an extra\b/i,'extras'],
+ [/\bwhat happens (after|once|when) i (submit|apply|send)\b|\bafter i submit(ted)?\b|\bwhat happens next\b|\bhow long (do i wait|until i hear)\b/i,'callback'],
+ [/\b(am i|are we|when am i) ready for (an )?(agent|representation)\b|\bready for an agent\b|\bready for representation\b/i,'agent'],
+ [/\bplaying age\b|\bwhat age (do i|am i) (read|play|look)\b|\bwhat'?s my age range\b|\bmy age range\b/i,'type'],
+ [/\b(stop|less|reduce|calm|handle|deal with) (being |feeling |getting )?(nervous|nerves|anxious|anxiety)\b|\bstage fright\b|\baudition nerves\b|\bi get nervous\b/i,'audition'],
+ [/\b(build|building|make it|working) (a career )?(outside|away from|not in)\b[^?.!]{0,18}\b(la|l\.a\.|los angeles|new york|nyc)\b|\boutside la and ny\b|\bregional (market|actor)\b|\bsmall(er)? market\b/i,'move'],
   [/\b(leave|quit) castslate (completely|entirely|for good)\b|\bdifference between cancel(l?ing)? and delet/i,'cancelvsdelete'],
  [/\b(cancel|cancell?ing)\b(?![^.?!]*\bdelet)(?!.{0,20}\bmy account\b)|\bunsubscribe\b|\bstop (charging|billing|taking) me\b|\bstop (my )?(the )?(payments?|subscription|membership|billing)\b|\b(don'?t|do not|dont) want (castslate )?premium\b|\bno longer want (my )?(premium|subscription|membership)\b|\bstop paying\b|\bhow do i stop my subscription\b|\bturn off auto.?renew\b/i,'cancel'],
   [/\b(next|my) billing date\b|\bwhen (will i be|am i) charged\b|\bhow much am i paying\b|\bchange (my )?(payment method|card)\b|\bupdate (my )?card\b|\bresubscribe\b|\brestart (my )?(premium|membership|subscription)\b|\bdo i still have premium\b|\bwhy (did|has|is) my premium\b[^.?!]{0,24}\b(disappear|gone|stopped|missing|not working)|\bwhen does (my|it) renew\b/i,'billinginfo'],
