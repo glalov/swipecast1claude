@@ -21,6 +21,7 @@ MARKUP = """<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assist
 </button>
 <div class="panel" id="panel" role="dialog" aria-label="Super Assistant">
   <div class="bar" id="bar">
+    <button class="xreset" id="newchat" aria-label="Start a new chat" title="New chat"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.8 3.6v4.6h-4.6"/></svg></button>
     <button class="xexpand" id="expand" aria-label="Expand the panel" title="Expand"><svg viewBox="0 0 24 24"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></svg></button>
     <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
     <div class="ava">S</div>

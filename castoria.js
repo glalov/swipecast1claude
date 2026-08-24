@@ -11,11 +11,11 @@ host.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:214748300
 document.body.appendChild(host);
 var ROOT=host.attachShadow({mode:'open'});
 var sEl=document.createElement('style');
-sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:27px;height:27px;fill:#fff;}\n.launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 first-visit nudge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n/* A comic-book pop beside the launcher, five seconds in, gone five seconds\n   later. Once per visitor, never while the panel is open. */\n.nudge{position:fixed;right:96px;bottom:34px;z-index:61;pointer-events:none;display:none;}\n.nudge.on{display:block;}\n.nudge b{\n  position:relative;display:block;background:#fff;color:#12121C;border:2.5px solid #12121C;\n  border-radius:26px 26px 8px 26px;padding:11px 17px;\n  font-family:var(--sys);font-weight:700;font-size:15px;letter-spacing:-.2px;white-space:nowrap;\n  box-shadow:4px 5px 0 rgba(18,18,28,.92);\n  animation:nudgeIn .42s cubic-bezier(.2,1.6,.4,1) both,nudgeWobble 2.6s ease-in-out .5s infinite;\n}\n.nudge b::after{content:\"\";position:absolute;right:-19px;bottom:11px;border:9px solid transparent;border-left-color:#12121C;border-left-width:16px;}\n.nudge b::before{content:\"\";position:absolute;right:-11px;bottom:14px;z-index:1;border:6px solid transparent;border-left-color:#fff;border-left-width:11px;}\n.nudge.out b{animation:nudgeOut .3s ease-in forwards;}\n@keyframes nudgeIn{0%{opacity:0;transform:scale(.3) rotate(-9deg)}60%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(-1.5deg)}}\n@keyframes nudgeWobble{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1.025) rotate(1deg)}}\n@keyframes nudgeOut{to{opacity:0;transform:scale(.82) translateY(6px)}}\n@media(max-width:560px){.nudge{right:82px;bottom:26px;}.nudge b{font-size:14px;padding:9px 14px;}}\n@media(prefers-reduced-motion:reduce){.nudge b{animation:none}.nudge.out b{opacity:0}}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;overscroll-behavior:contain;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar .xexpand{position:absolute;right:47px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xexpand:hover{background:rgba(120,120,128,.24);}\n.bar .xexpand:active{transform:translateY(-50%) scale(.92);}\n.bar .xexpand svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}\n.bar.sub .xexpand{display:none;}\n/* Long lessons and the help sheets are the parts that want the room. */\n.panel{transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.4,.1,.2,1),height .3s cubic-bezier(.4,.1,.2,1);}\n.panel.wide{width:560px;height:min(760px,calc(100vh - 126px));height:min(760px,calc(100dvh - 126px));}\n@media(max-width:640px){ .bar .xexpand{display:none;} .panel.wide{width:394px;} }\n.bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xclose:hover{background:rgba(120,120,128,.24);}\n.bar .xclose:active{transform:translateY(-50%) scale(.92);}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#2D2D44,#1A1A2E);display:grid;place-items:center;margin:0 auto 4px;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 4px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul,.b ol{list-style:none;margin:2px 0 9px;padding:0;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b ul>li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b ol{counter-reset:csol;}\n.b ol>li{counter-increment:csol;padding-left:21px;}\n.b ol>li::before{content:counter(csol) \".\";position:absolute;left:0;top:0;font-weight:600;font-variant-numeric:tabular-nums;}\n.b b{font-weight:600;}\n.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}\n.b .inl:hover{color:var(--blue);}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:6px;align-items:center;background:var(--in);border-radius:19px;padding:13px 16px;}\n.typing i{width:9px;height:9px;border-radius:50%;background:#9E9EA4;animation:d 1.05s cubic-bezier(.4,0,.2,1) infinite;}\n.typing i:nth-child(2){animation-delay:.14s}.typing i:nth-child(3){animation-delay:.28s}\n@keyframes d{0%,55%,100%{opacity:.3;transform:translateY(0) scale(.9)}27%{opacity:1;transform:translateY(-5px) scale(1.05)}}\n\n/* Bubbles used to be inserted with no transition, which read as a hard cut.\n   They now fade while lifting, which is what a message landing looks like. */\n.msg{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n@keyframes msgIn{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:none}}\n.card,.srcs{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n\n@media(prefers-reduced-motion:reduce){\n  .typing i{animation:none;opacity:.6}\n  .msg,.card,.srcs{animation:none}\n}\n\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:104px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;}\n.sugg button:hover{background:#F2F2F7;border-color:var(--brand);}\n.sugg button:active{background:#E8E8ED;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);position:relative;}\n.cbox{background:var(--field);border:1.5px solid var(--fieldln);border-radius:20px;padding:9px 10px 7px 14px;transition:border-color .14s;}\n.cbox:focus-within{border-color:var(--brand);}\n.cbox textarea{width:100%;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:21px;padding:0;display:block;}\n.ctools{display:flex;align-items:center;gap:2px;margin-top:6px;}\n.ctools .sp{flex:1;}\n.tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}\n.tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}\n.tool[aria-pressed=\"true\"]{background:rgba(47,194,77,.16);color:var(--out2);}\n.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}\n.tool.on svg{stroke:var(--out2);}\n.emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}\n.emoji.on{display:grid;}\n.emoji button{border:0;background:transparent;font-size:19px;line-height:1;padding:6px 0;border-radius:8px;cursor:pointer;}\n.emoji button:hover{background:rgba(120,120,128,.14);}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sugg{max-height:120px;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n}\n";
+sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);border:0;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:27px;height:27px;fill:#fff;}\n.launch .x{display:none;color:#fff;font-size:25px;font-weight:300;line-height:1;}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 first-visit nudge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n/* A comic-book pop beside the launcher, five seconds in, gone five seconds\n   later. Once per visitor, never while the panel is open. */\n.nudge{position:fixed;right:96px;bottom:34px;z-index:61;pointer-events:none;display:none;}\n.nudge.on{display:block;}\n.nudge b{\n  position:relative;display:block;background:#fff;color:#12121C;border:2.5px solid #12121C;\n  border-radius:26px 26px 8px 26px;padding:11px 17px;\n  font-family:var(--sys);font-weight:700;font-size:15px;letter-spacing:-.2px;white-space:nowrap;\n  box-shadow:4px 5px 0 rgba(18,18,28,.92);\n  animation:nudgeIn .42s cubic-bezier(.2,1.6,.4,1) both,nudgeWobble 2.6s ease-in-out .5s infinite;\n}\n.nudge b::after{content:\"\";position:absolute;right:-19px;bottom:11px;border:9px solid transparent;border-left-color:#12121C;border-left-width:16px;}\n.nudge b::before{content:\"\";position:absolute;right:-11px;bottom:14px;z-index:1;border:6px solid transparent;border-left-color:#fff;border-left-width:11px;}\n.nudge.out b{animation:nudgeOut .3s ease-in forwards;}\n@keyframes nudgeIn{0%{opacity:0;transform:scale(.3) rotate(-9deg)}60%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(-1.5deg)}}\n@keyframes nudgeWobble{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1.025) rotate(1deg)}}\n@keyframes nudgeOut{to{opacity:0;transform:scale(.82) translateY(6px)}}\n@media(max-width:560px){.nudge{right:82px;bottom:26px;}.nudge b{font-size:14px;padding:9px 14px;}}\n@media(prefers-reduced-motion:reduce){.nudge b{animation:none}.nudge.out b{opacity:0}}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;overscroll-behavior:contain;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar .xreset{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xreset:hover{background:rgba(120,120,128,.24);}\n.bar .xreset:active{transform:translateY(-50%) scale(.92);}\n.bar .xreset svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}\n.bar.sub .xreset{display:none;}\n.bar .xexpand{position:absolute;right:47px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xexpand:hover{background:rgba(120,120,128,.24);}\n.bar .xexpand:active{transform:translateY(-50%) scale(.92);}\n.bar .xexpand svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}\n.bar.sub .xexpand{display:none;}\n/* Long lessons and the help sheets are the parts that want the room. */\n.panel{transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.4,.1,.2,1),height .3s cubic-bezier(.4,.1,.2,1);}\n.panel.wide{width:560px;height:min(760px,calc(100vh - 126px));height:min(760px,calc(100dvh - 126px));}\n@media(max-width:640px){ .bar .xexpand{display:none;} .panel.wide{width:394px;} }\n.bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xclose:hover{background:rgba(120,120,128,.24);}\n.bar .xclose:active{transform:translateY(-50%) scale(.92);}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#2D2D44,#1A1A2E);display:grid;place-items:center;margin:0 auto 4px;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.3px;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 4px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul,.b ol{list-style:none;margin:2px 0 9px;padding:0;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b ul>li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b ol{counter-reset:csol;}\n.b ol>li{counter-increment:csol;padding-left:21px;}\n.b ol>li::before{content:counter(csol) \".\";position:absolute;left:0;top:0;font-weight:600;font-variant-numeric:tabular-nums;}\n.b b{font-weight:600;}\n.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}\n.b .inl:hover{color:var(--blue);}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:6px;align-items:center;background:var(--in);border-radius:19px;padding:13px 16px;}\n.typing i{width:9px;height:9px;border-radius:50%;background:#9E9EA4;animation:d 1.05s cubic-bezier(.4,0,.2,1) infinite;}\n.typing i:nth-child(2){animation-delay:.14s}.typing i:nth-child(3){animation-delay:.28s}\n@keyframes d{0%,55%,100%{opacity:.3;transform:translateY(0) scale(.9)}27%{opacity:1;transform:translateY(-5px) scale(1.05)}}\n\n/* Bubbles used to be inserted with no transition, which read as a hard cut.\n   They now fade while lifting, which is what a message landing looks like. */\n.msg{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n@keyframes msgIn{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:none}}\n.card,.srcs{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n\n@media(prefers-reduced-motion:reduce){\n  .typing i{animation:none;opacity:.6}\n  .msg,.card,.srcs{animation:none}\n}\n\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}\n.sugg.more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);}\n@media(max-height:720px){.sugg{max-height:120px;}}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;}\n.sugg button:hover{background:#F2F2F7;border-color:var(--brand);}\n.sugg button:active{background:#E8E8ED;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);position:relative;}\n.cbox{background:var(--field);border:1.5px solid var(--fieldln);border-radius:20px;padding:9px 10px 7px 14px;transition:border-color .14s;}\n.cbox:focus-within{border-color:var(--brand);}\n.cbox textarea{width:100%;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:21px;padding:0;display:block;}\n.ctools{display:flex;align-items:center;gap:2px;margin-top:6px;}\n.ctools .sp{flex:1;}\n.tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}\n.tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}\n.tool[aria-pressed=\"true\"]{background:rgba(47,194,77,.16);color:var(--out2);}\n.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}\n.tool.on svg{stroke:var(--out2);}\n.emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}\n.emoji.on{display:grid;}\n.emoji button{border:0;background:transparent;font-size:19px;line-height:1;padding:6px 0;border-radius:8px;cursor:pointer;}\n.emoji button:hover{background:rgba(120,120,128,.14);}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sugg{max-height:120px;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n}\n";
 ROOT.appendChild(sEl);
 var wrap=document.createElement('div');
 wrap.style.cssText='pointer-events:auto;';
-wrap.innerHTML="<div class=\"nudge\" id=\"nudge\" aria-hidden=\"true\"><b>Try Super Assistant</b></div>\n<button class=\"launch\" id=\"launch\" aria-label=\"Message Super Assistant\">\n  <svg viewBox=\"0 0 24 24\"><path d=\"M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z\"/></svg>\n  <span class=\"x\">&times;</span>\n</button>\n<div class=\"panel\" id=\"panel\" role=\"dialog\" aria-label=\"Super Assistant\">\n  <div class=\"bar\" id=\"bar\">\n    <button class=\"xexpand\" id=\"expand\" aria-label=\"Expand the panel\" title=\"Expand\"><svg viewBox=\"0 0 24 24\"><path d=\"M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7\"/></svg></button>\n    <button class=\"xclose\" id=\"close\" aria-label=\"Close Super Assistant\">&#10005;</button>\n    <div class=\"ava\">S</div>\n    <b>Super Assistant</b>\n    <i id=\"barsub\">Acting coach</i>\n  </div>\n  <div class=\"thread\" id=\"thread\"></div>\n  <div class=\"sugg\" id=\"sugg\"></div>\n  <div class=\"composer\">\n    <div class=\"emoji\" id=\"emoji\"></div>\n    <div class=\"cbox\">\n      <textarea id=\"input\" rows=\"1\" placeholder=\"Message\"></textarea>\n      <div class=\"ctools\">\n        <button class=\"tool\" id=\"tTopics\" aria-label=\"What I can help with\" title=\"What I can help with\"><svg viewBox=\"0 0 24 24\"><rect x=\"3.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"3.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/></svg></button>\n        <button class=\"tool\" id=\"tEmoji\" aria-label=\"Emoji\" title=\"Emoji\"><svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M8.6 14.2c.9 1.1 2.1 1.7 3.4 1.7s2.5-.6 3.4-1.7\"/><path d=\"M9.2 9.4h.01M14.8 9.4h.01\"/></svg></button>\n        <button class=\"tool\" id=\"tLesson\" aria-label=\"Acting lessons\" title=\"Acting lessons\"><svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4.5\" width=\"18\" height=\"15\" rx=\"2.5\"/><path d=\"M7.6 4.5v15M16.4 4.5v15M3 9.4h4.6M3 14.6h4.6M16.4 9.4H21M16.4 14.6H21\"/></svg></button>\n        <button class=\"tool\" id=\"tMic\" aria-label=\"Dictate\" title=\"Speak instead of typing\"><svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"2.8\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5.5 11.5a6.5 6.5 0 0 0 13 0\"/><path d=\"M12 18v3.2\"/></svg></button>\n        <span class=\"sp\"></span>\n        <button class=\"snd\" id=\"send\" disabled aria-label=\"Send\"><svg viewBox=\"0 0 24 24\" style=\"width:15px;height:15px;fill:#fff;stroke:none\"><path d=\"M12 3l7 7h-4.5v11h-5V10H5z\"/></svg></button>\n      </div>\n    </div>\n    <div class=\"foot\">Super Assistant is an automated assistant. A person can take over any time.</div>\n  </div>\n  <div class=\"sheet\" id=\"sheet\">\n    <div class=\"bar sub\"><button class=\"back\" id=\"sheetback\">&lsaquo; Back</button><b>Help</b><i>CastSlate</i></div>\n    <div class=\"sheetbody\" id=\"sheetbody\"></div>\n  </div>\n</div>";
+wrap.innerHTML="<div class=\"nudge\" id=\"nudge\" aria-hidden=\"true\"><b>Try Super Assistant</b></div>\n<button class=\"launch\" id=\"launch\" aria-label=\"Message Super Assistant\">\n  <svg viewBox=\"0 0 24 24\"><path d=\"M12 2C6.5 2 2 5.9 2 10.7c0 2.7 1.4 5.1 3.7 6.7-.2 1.5-.9 2.9-1.9 3.9 1.7-.2 3.4-.9 4.8-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.7S17.5 2 12 2z\"/></svg>\n  <span class=\"x\">&times;</span>\n</button>\n<div class=\"panel\" id=\"panel\" role=\"dialog\" aria-label=\"Super Assistant\">\n  <div class=\"bar\" id=\"bar\">\n    <button class=\"xreset\" id=\"newchat\" aria-label=\"Start a new chat\" title=\"New chat\"><svg viewBox=\"0 0 24 24\"><path d=\"M20.5 12a8.5 8.5 0 1 1-2.6-6.1\"/><path d=\"M20.8 3.6v4.6h-4.6\"/></svg></button>\n    <button class=\"xexpand\" id=\"expand\" aria-label=\"Expand the panel\" title=\"Expand\"><svg viewBox=\"0 0 24 24\"><path d=\"M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7\"/></svg></button>\n    <button class=\"xclose\" id=\"close\" aria-label=\"Close Super Assistant\">&#10005;</button>\n    <div class=\"ava\">S</div>\n    <b>Super Assistant</b>\n    <i id=\"barsub\">Acting coach</i>\n  </div>\n  <div class=\"thread\" id=\"thread\"></div>\n  <div class=\"sugg\" id=\"sugg\"></div>\n  <div class=\"composer\">\n    <div class=\"emoji\" id=\"emoji\"></div>\n    <div class=\"cbox\">\n      <textarea id=\"input\" rows=\"1\" placeholder=\"Message\"></textarea>\n      <div class=\"ctools\">\n        <button class=\"tool\" id=\"tTopics\" aria-label=\"What I can help with\" title=\"What I can help with\"><svg viewBox=\"0 0 24 24\"><rect x=\"3.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"3.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/><rect x=\"13.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"2\"/></svg></button>\n        <button class=\"tool\" id=\"tEmoji\" aria-label=\"Emoji\" title=\"Emoji\"><svg viewBox=\"0 0 24 24\"><circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M8.6 14.2c.9 1.1 2.1 1.7 3.4 1.7s2.5-.6 3.4-1.7\"/><path d=\"M9.2 9.4h.01M14.8 9.4h.01\"/></svg></button>\n        <button class=\"tool\" id=\"tLesson\" aria-label=\"Acting lessons\" title=\"Acting lessons\"><svg viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"4.5\" width=\"18\" height=\"15\" rx=\"2.5\"/><path d=\"M7.6 4.5v15M16.4 4.5v15M3 9.4h4.6M3 14.6h4.6M16.4 9.4H21M16.4 14.6H21\"/></svg></button>\n        <button class=\"tool\" id=\"tMic\" aria-label=\"Dictate\" title=\"Speak instead of typing\"><svg viewBox=\"0 0 24 24\"><rect x=\"9\" y=\"2.8\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5.5 11.5a6.5 6.5 0 0 0 13 0\"/><path d=\"M12 18v3.2\"/></svg></button>\n        <span class=\"sp\"></span>\n        <button class=\"snd\" id=\"send\" disabled aria-label=\"Send\"><svg viewBox=\"0 0 24 24\" style=\"width:15px;height:15px;fill:#fff;stroke:none\"><path d=\"M12 3l7 7h-4.5v11h-5V10H5z\"/></svg></button>\n      </div>\n    </div>\n    <div class=\"foot\">Super Assistant is an automated assistant. A person can take over any time.</div>\n  </div>\n  <div class=\"sheet\" id=\"sheet\">\n    <div class=\"bar sub\"><button class=\"back\" id=\"sheetback\">&lsaquo; Back</button><b>Help</b><i>CastSlate</i></div>\n    <div class=\"sheetbody\" id=\"sheetbody\"></div>\n  </div>\n</div>";
 ROOT.appendChild(wrap);
 var $=function(id){return ROOT.getElementById(id);};
 
@@ -323,6 +323,92 @@ const SMALL=[
   a:c=>`An actor gets cast as the lead in a play. Opening night, one line: "Hark, I hear a cannon!" He rehearses it for six weeks.`,
   b:c=>`Curtain goes up. Boom. He says: "What the hell was that?"`,s:['Okay, back to work','How do I prepare for an audition?']}
 ];
+
+/* ── layer 1b: an emoji on its own is a message ───────────────
+   Matched in order, so a sad face beats a smiley in a mixed string. */
+const EMOJI_CH=/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{FE0E}\u{FE0F}\u{200D}\u{20E3}\u{00A9}\u{00AE}\u{2122}\u{203C}\u{2049}\u{E0020}-\u{E007F}]/u;
+function onlyEmoji(t){
+  const bare=(t||'').replace(/\s/g,'');
+  if(!bare) return false;
+  let found=false;
+  for(const ch of bare){ if(!EMOJI_CH.test(ch)) return false; found=true; }
+  return found;
+}
+const EMO=[
+ {id:'sad',re:/[\u{1F622}\u{1F62D}\u{1F61E}\u{1F614}\u{1F629}\u{1F62B}\u{1F63F}\u{1F494}\u{1F972}\u{1F613}]/u,
+  a:c=>`That is a rough one${c.name?', '+c.name:''} — and it is normal. This business hands out a lot of silence and almost none of it is about your talent.`,
+  b:c=>`Tell me what is actually happening and I will give you something concrete to do about it rather than a pep talk.`,
+  s:['Why is nobody getting back to me?','How do I improve my profile?','Am I too old to start acting?']},
+ {id:'angry',re:/[\u{1F621}\u{1F620}\u{1F92C}\u{1F624}\u{1F62C}\u{1F644}]/u,
+  a:c=>`Fair enough — something is clearly not working.`,
+  b:c=>`Tell me what happened in your own words and I will either fix it or get a person on it.`,
+  s:['Talk to a human','I have a billing problem','Why is nobody getting back to me?']},
+ {id:'thumbsdown',re:/[\u{1F44E}]/u,
+  a:c=>`Noted — and thanks for saying so rather than just leaving.`,
+  b:c=>`Tell me what was wrong with that answer and I will take another run at it. Or I can pass you to the team.`,
+  s:['Talk to a human','Let me ask something else','What can I ask you?']},
+ {id:'confused',re:/[\u{1F615}\u{1F610}\u{1F914}\u{1F928}\u{1F62F}\u{1FAE4}\u{1F612}]/u,
+  a:c=>`Let me try that again — I would rather be clear than clever.`,
+  b:c=>`Tell me the bit that did not land and I will come at it from a different angle.`,
+  s:['Explain it more simply','What can I ask you?','Talk to a human']},
+ {id:'shrug',re:/[\u{1F937}\u{1F971}\u{1F644}]/u,
+  a:c=>`No idea where to start is a completely normal place to be.`,
+  b:c=>`Tell me roughly where you are — never done this, a few credits, or stuck mid-career — and I will pick the next thing for you.`,
+  s:['I have never acted before','Teach me the fundamentals','How do I improve my profile?']},
+ {id:'laugh',re:/[\u{1F602}\u{1F923}\u{1F606}\u{1F605}\u{1F604}\u{1F601}]/u,
+  a:c=>`Ha — glad that landed.`,
+  b:c=>`Right, back to it. What else do you need?`,
+  s:['Teach me the fundamentals','How do I improve my profile?','What should I submit to?']},
+ {id:'thanks',re:/[\u{1F64F}]/u,
+  a:c=>`Any time${c.name?', '+c.name:''}.`,
+  b:c=>`I am here whenever you want to work on something — a lesson, your profile, or the business side.`,
+  s:['Teach me the fundamentals','How do I improve my profile?','What does Premium include?']},
+ {id:'clap',re:/[\u{1F44F}\u{1F64C}]/u,
+  a:c=>`I will take it 🙌`,
+  b:c=>`What do you want to look at next?`,
+  s:['Teach me the first six seconds','Which headshot should I lead with?','What should I submit to?']},
+ {id:'wave',re:/[\u{1F44B}\u{1F590}\u{270B}]/u,
+  a:c=>c.name?`Hey ${c.name} 👋`:`Hey there 👋`,
+  b:c=>`What can I help you with? I answer anything about CastSlate or the acting business, and I teach the fundamentals free.`,
+  s:['Teach me the fundamentals','How do I get started?','What can I ask you?']},
+ {id:'good',re:/[\u{1F44D}\u{1F44C}\u{2705}\u{1F4AF}\u{1F525}\u{2B50}\u{1F31F}\u{1F389}\u{1F4AA}\u{1F91D}\u{270C}]/u,
+  a:c=>`Good stuff.`,
+  b:c=>`Want to keep going, or is there something else you are chewing on?`,
+  s:['Teach me the fundamentals','How do I improve my profile?','What should I submit to?']},
+ {id:'warm',re:/[\u{2764}\u{1F60D}\u{1F970}\u{1F60A}\u{1F642}\u{1F603}\u{1F600}\u{1F60B}\u{1F607}\u{1F929}\u{1F495}-\u{1F49F}]/u,
+  a:c=>`Glad that landed 🙂`,
+  b:c=>`Anything else you want to work on?`,
+  s:['Teach me the fundamentals','Which monologue should I pick?','How do I get an agent?']},
+ {id:'money',re:/[\u{1F4B0}\u{1F4B5}\u{1F4B8}\u{1F4B3}\u{1F911}]/u,
+  a:c=>`Money questions I can do — and there are two different ones people mean.`,
+  b:c=>`The cost of being on here, or what actors actually get paid?`,
+  s:['What does it cost?','How much do actors get paid?','What are SAG rates?']},
+ {id:'camera',re:/[\u{1F4F8}\u{1F4F7}\u{1F933}]/u,
+  a:c=>`Headshots, then.`,
+  b:c=>`The spec, or the part that actually decides whether you get called in?`,
+  s:['Which headshot should I lead with?','What are the headshot requirements?','What annoys casting directors?']},
+ {id:'film',re:/[\u{1F3AC}\u{1F3AD}\u{1F3A5}\u{1F4FD}\u{1F39E}\u{1F37F}\u{1F4FA}\u{1F3A4}]/u,
+  a:c=>`My favourite subject 🎬`,
+  b:c=>`Film, stage, commercial or voice — which one do you want to work on?`,
+  s:['Teach me the fundamentals','Give me a commercial acting lesson','Teach me the theatre technicals']},
+ {id:'sleepy',re:/[\u{1F634}\u{1F971}\u{1F62A}]/u,
+  a:c=>`Fair — I can be a lot shorter.`,
+  b:c=>`Give me a topic and I will keep it to the short version.`,
+  s:['What does it cost?','How do I improve my profile?','What can I ask you?']},
+ {id:'question',re:/[\u{2753}\u{2754}\u{2049}\u{FE0F}]/u,
+  a:c=>`Ask away.`,
+  b:c=>`Anything about CastSlate, anything about the acting business, or I can just teach you something.`,
+  s:['What can I ask you?','Teach me the fundamentals','What does it cost?']}
+];
+const stripEmoji=t=>(t||'').replace(new RegExp(EMOJI_CH.source,'gu'),'').replace(/\s+/g,' ').trim();
+function emojiFor(text){
+  if(!onlyEmoji(text)) return null;
+  for(const e of EMO) if(e.re.test(text)) return e;
+  return {id:'other',
+    a:c=>`😄`,
+    b:c=>`Tell me what you need in words and I will get to work — or I can teach you something instead.`,
+    s:['Teach me the fundamentals','How do I improve my profile?','What can I ask you?']};
+}
 
 /* ── layer 2: things it declines, once, without lecturing ───── */
 const DECLINE=[
@@ -2881,7 +2967,9 @@ const FLAGSHIP_FOR={listening:'listen',indicating:'overacting',shotsize:'closeup
  cheatout:'stagetech',stagecraft:'stagetech',upstaging:'stagetech',commercialcraft:'commercial'};
 
 function think(text,c){
-  for(const s of SMALL) if(s.re.test(text.trim())) return {small:s};
+  const em=emojiFor(text.trim()); if(em) return {small:em};
+  const bare=stripEmoji(text)||text.trim();
+  for(const s of SMALL) if(s.re.test(bare)) return {small:s};
   for(const [re,id] of LESSON_INTENT) if(re.test(text)) return {lesson:id};
   /* Refusals run on the ORIGINAL words. Spell-correcting first would drag
      "who won the game" onto an acting term and smuggle an off-topic
@@ -2969,12 +3057,47 @@ function principlesLesson(shape,q){
 /* ── UI ──────────────────────────────────────────────────────── */
 
 
-const st={plan:'visitor',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,profile:{weak:[],declared:null,taught:[]},lastConcept:null};
+const st={plan:'visitor',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,asked:new Set(),profile:{weak:[],declared:null,taught:[]},lastConcept:null};
 const ctx=()=>{const c=(window.__CS_CASTORIA_CTX||{});return{plan:c.plan||'visitor',name:c.name||''};};
 /* How long the dots hold before an answer lands. */
 const THINK=()=>1400+Math.random()*260;
 const CHECKS=['Is that what you were looking for?','Did that answer your question?','Was that helpful?','Does that cover it?'];
 
+/* Three chips was the whole menu, so the answer's own follow-ups are now
+   topped up from a pool covering every area. Anything already asked in this
+   conversation drops out, and the pool rotates so it is not the same list
+   twice running. The strip scrolls vertically — never horizontally. */
+const TOPIC_POOL=[
+ 'Teach me the fundamentals','Teach me the first six seconds','What annoys casting directors?',
+ 'Which headshot should I lead with?','Which monologue should I pick?','What should I submit to?',
+ 'How do I improve my profile?','How do I build a reel with no footage?','What is my type?',
+ 'Teach me the on-set technicals','Teach me the theatre technicals','Give me a commercial acting lesson',
+ 'Teach me how to listen','Teach me subtext','Teach me stakes','How do I stop overacting?',
+ 'Teach me the close-up','Give me a self-tape exercise','Teach me how to slate','Teach me cold reading',
+ 'Give me the audition room lesson','Teach me voice acting','Teach me stage acting',
+ 'How do I get an agent?','Agent vs manager?','Who are the biggest talent agencies?',
+ 'Tell me about the studios','How does casting actually work?','What does a casting director do?',
+ 'How do I read a breakdown?','What is Taft-Hartley?','How much do actors get paid?',
+ 'What are SAG rates?','What should I wear to an audition?','How do I memorise lines?',
+ 'How do I cry on camera?','Do I need acting school?','How do I get my first credit?',
+ 'What is a self-tape?','How do I prepare for an audition?','How do I network?',
+ 'What should I do every week?','Am I too old to start acting?','How do I stop being nervous?',
+ 'What does it cost?','What does Premium include?','Is Premium worth it?',
+ 'How do I apply to a casting?','Are the castings real?','How do I avoid scams?',
+ 'What is Manager Mode?','Tell me about the agency directory','Talk to a human'
+];
+let poolAt=0;
+/* Contextual follow-ups first, then fill out the strip from the pool. */
+function suggPlus(list,cap){
+  list=(list||[]).filter(Boolean);
+  cap=cap||11;
+  const used=new Set(list.map(x=>x.toLowerCase()));
+  const pool=TOPIC_POOL.filter(t=>!used.has(t.toLowerCase())&&!st.asked.has(t.toLowerCase()));
+  if(!pool.length) return sugg(list);
+  const at=poolAt%pool.length;
+  poolAt+=5;
+  sugg(list.concat(pool.slice(at).concat(pool.slice(0,at)).slice(0,Math.max(0,cap-list.length))));
+}
 const idKey=c=>(c.plan||'visitor')+'|'+(c.name||'');
 function syncIdentity(){
   const c=ctx(), k=idKey(c);
@@ -3043,9 +3166,15 @@ function srcs(ids){
   $('thread').appendChild(w);bottom();
 }
 function sugg(list){
-  const w=$('sugg');w.innerHTML='';
-  (list||[]).forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{w.innerHTML='';send(l);};w.appendChild(b);});
-  requestAnimationFrame(bottom);setTimeout(bottom,60);
+  const w=$('sugg');w.innerHTML='';w.classList.remove('more');w.scrollTop=0;
+  (list||[]).forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{w.innerHTML='';w.classList.remove('more');send(l);};w.appendChild(b);});
+  /* Only hint at a scroll when there actually is one — checked twice because
+     the first frame can measure before the chips have wrapped. */
+  const hint=()=>{w.classList.toggle('more',w.scrollHeight>w.clientHeight+4&&w.scrollTop<4);};
+  w.onscroll=hint;
+  requestAnimationFrame(()=>{hint();bottom();});
+  setTimeout(()=>{hint();bottom();},60);
+  setTimeout(hint,260);
 }
 
 /* While the full-height sheet is open on a phone the page behind it must not
@@ -3108,7 +3237,7 @@ function hello(){
       msg('in',c.plan==='premium'
         ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. And I teach: all the fundamentals for film, stage, commercial and voice, right here. Keep a notepad next to you.`
         :`Ask me anything about CastSlate or about the acting business — and I can <b>teach you the fundamentals</b> of acting for film or stage right here, free. No need to spend money on classes to start; just grab a notepad and a pen.`);
-      sugg(c.plan==='premium'
+      suggPlus(c.plan==='premium'
         ?['Teach me the fundamentals','How do I improve my profile?','What is Manager Mode?']
         :['Teach me the fundamentals','How do I get started?','What makes casting skip a reel?']);
     },620);
@@ -3125,7 +3254,10 @@ const QUIT=/\b(stop|quit|exit|cancel|end) (the )?(lesson|exercise|class)\b|^(sto
    ("What is cheating out?") and would otherwise be answered instead of
    advancing the lesson. */
 const CONTWORDS=new Set(('next continue carry on go going gone keep ok okay k kk cool sure right done both finished finish complete completed got it understood understand makes make sense see tried try trying tried it ready proceed more yep yup yeah yes ya alright allright fine good great perfect nice thanks thank you cheers please now then what whats next again and the challenge give me first second last one start me on lesson exercise all set another that this these did have has was were i im am').split(' '));
+/* A bare thumbs-up in the middle of a lesson means "go on". */
+const EMO_GO=/^[\s\u{1F44D}\u{1F44C}\u{2705}\u{1F4AF}\u{1F525}\u{1F44F}\u{1F64C}\u{1F4AA}\u{1F642}\u{1F600}\u{1F603}\u{1F604}\u{2B50}\u{FE0F}]+$/u;
 const isContinue=t=>{
+  if(EMO_GO.test(t)) return true;
   const w=t.toLowerCase().replace(/[^a-z0-9\s']/g,' ').split(/\s+/).filter(Boolean);
   return w.length>0 && w.length<=6 && w.every(x=>CONTWORDS.has(x));
 };
@@ -3154,7 +3286,7 @@ function lessonStep(){
       msg('in',st.plan==='visitor'
         ?`That is yours to keep, account or not. Want another one, or shall I tell you what CastSlate does?`
         :`Want another lesson, or shall we work on something specific in your profile?`);
-      sugg(['Another lesson','Something else',st.plan==='visitor'?'What is CastSlate?':'How do I improve my profile?']);
+      suggPlus(['Another lesson',st.plan==='visitor'?'What is CastSlate?':'How do I improve my profile?']);
     },700);
     return;
   }
@@ -3178,12 +3310,15 @@ function dynamicLesson(c,depth,shape){
 }
 function endLesson(quiet){
   st.lesson=null;st.step=0;st.paused=null;
-  if(!quiet){msg('in',`No problem — we can pick that up whenever. What else is on your mind?`);sugg(['Give me a different lesson','How do I improve my profile?']);}
+  if(!quiet){msg('in',`No problem — we can pick that up whenever. What else is on your mind?`);suggPlus(['Give me a different lesson']);}
 }
 
 function send(text){
   syncIdentity();
   const c=ctx();
+  st.asked.add(text.trim().toLowerCase());
+  /* Controls are matched on the words, so a trailing emoji cannot break them. */
+  const ctrl=onlyEmoji(text)?text.trim():(stripEmoji(text)||text.trim());
   sugg([]);
   outMsg(text.replace(/[<>]/g,''));
   readTells(text);
@@ -3191,12 +3326,12 @@ function send(text){
   /* an offered lesson is waiting on a yes/no */
   if(st.offer){
     const id=st.offer;st.offer=null;
-    if(NO.test(text.trim())){
+    if(NO.test(ctrl)){
       const t0=typing();
       setTimeout(()=>{t0.remove();markRead();msg('in',`All good. I am here if you change your mind — what would you like to know instead?`);sugg(['What is CastSlate?','How do I get an agent?','What can I ask you?']);},520);
       return;
     }
-    if(YES.test(text.trim())){
+    if(YES.test(ctrl)){
       const t0=typing();
       setTimeout(()=>{t0.remove();markRead();startLesson(id);},THINK());
       return;
@@ -3205,7 +3340,7 @@ function send(text){
   }
 
   /* "go deeper" on the last thing discussed */
-  if(!st.lesson&&DEEPER.test(text.trim())&&st.lastConcept&&CONCEPT_BY_ID[st.lastConcept]){
+  if(!st.lesson&&DEEPER.test(ctrl)&&st.lastConcept&&CONCEPT_BY_ID[st.lastConcept]){
     const t0=typing();
     setTimeout(()=>{t0.remove();markRead();startLesson(dynamicLesson(CONCEPT_BY_ID[st.lastConcept],'deep','craft'));},THINK());
     return;
@@ -3213,7 +3348,7 @@ function send(text){
 
   /* a lesson was paused so a question could be answered properly */
   if(!st.lesson&&st.paused){
-    const p=text.trim();
+    const p=ctrl;
     if(RESUME.test(p)||YES.test(p)){
       const saved=st.paused;st.paused=null;st.lesson=saved.id;st.step=saved.step;
       const t0=typing();
@@ -3237,7 +3372,7 @@ function send(text){
 
   /* mid-lesson: coach through a problem, advance, or bail out */
   if(st.lesson){
-    if(QUIT.test(text.trim())){
+    if(QUIT.test(ctrl)){
       const t0=typing();
       setTimeout(()=>{t0.remove();markRead();endLesson();},480);
       return;
@@ -3313,7 +3448,7 @@ function respond(r,c){
       st.lastConcept=cc.id;
       if(depth==='quick'){
         msg('in',compose(cc,'quick',st.level,shape)[0].b);
-        sugg(['Go deeper','Give me a different lesson','Something else']);
+        suggPlus(['Go deeper','Give me a different lesson']);
         return;
       }
       startLesson(dynamicLesson(cc,depth,shape));
@@ -3326,27 +3461,27 @@ function respond(r,c){
       const follow=g.teach?[`Teach me about that`,'Something else']:['Another term','Something else'];
       setTimeout(()=>{
         if(g.teach)st.lastConcept=g.teach;
-        sugg(follow);
+        suggPlus(follow);
       },200);
       return;
     }
     if(r.principles){
       st.misses=0;
       msg('in',principlesLesson(r.principles.shape,r.principles.q));
-      sugg(['I tried it','Give me a related lesson','Something else']);
+      suggPlus(['I tried it','Give me a related lesson']);
       return;
     }
     if(r.small){
       st.misses=0;
       msg('in',r.small.a(c));
-      setTimeout(()=>{msg('in',r.small.b(c));sugg(r.small.s);},640);
+      setTimeout(()=>{msg('in',r.small.b(c));suggPlus(r.small.s);},640);
       return;
     }
     if(r.decline){
       st.misses=0;
       msg('in',r.decline.a(c));
       srcs(r.decline.src);
-      setTimeout(()=>{msg('in',r.decline.b(c));sugg(r.decline.s);},680);
+      setTimeout(()=>{msg('in',r.decline.b(c));suggPlus(r.decline.s);},680);
       return;
     }
     if(r.miss){
@@ -3359,11 +3494,11 @@ function respond(r,c){
       const near=nearestTopics(text);
       if(near.length){
         msg('in',`I'm not certain which you mean — did you want one of these?`);
-        setTimeout(()=>{sugg(near.concat(['Something else']));},420);
+        setTimeout(()=>{suggPlus(near);},420);
         return;
       }
       msg('in',`I'm not sure I follow — try different words and I'll have another go.`);
-      setTimeout(()=>{msg('in',`Or pick one of these if it's close.`);sugg(OFFTOPICFALLBACK);},600);
+      setTimeout(()=>{msg('in',`Or pick one of these if it's close.`);suggPlus(OFFTOPICFALLBACK);},600);
       return;
     }
 
@@ -3372,8 +3507,8 @@ function respond(r,c){
     if(e.sell&&c.plan!=='premium')setTimeout(()=>card(e.sell(c)),240);
     setTimeout(()=>srcs(e.src),e.sell&&c.plan!=='premium'?300:60);
     if(!e.nocheck){
-      setTimeout(()=>{msg('in',CHECKS[checkIdx++%CHECKS.length]);sugg(e.s);},900);
-    } else sugg(e.s);
+      setTimeout(()=>{msg('in',CHECKS[checkIdx++%CHECKS.length]);suggPlus(e.s);},900);
+    } else suggPlus(e.s);
 }
 
 function sheet(id){
@@ -3455,6 +3590,15 @@ function wireTools(){
   const tT=$('tTopics'); if(tT)tT.onclick=()=>{pop&&pop.classList.remove('on');send('What can I ask you?');};
   const tL=$('tLesson'); if(tL)tL.onclick=()=>{pop&&pop.classList.remove('on');send('Give me an acting lesson');};
   const tM=$('tMic');    if(tM)makeDictation(input,tM);
+
+  const tN=$('newchat');
+  if(tN)tN.onclick=function(){
+    st.misses=0;st.lastOut=null;st.lesson=null;st.step=0;st.offer=null;st.paused=null;
+    st.lastConcept=null;st.asked=new Set();st.profile={weak:[],declared:null,taught:[]};
+    const sh=$('sheet'); if(sh)sh.classList.remove('on');
+    $('thread').innerHTML='';sugg([]);
+    hello();
+  };
 
   const tX=$('expand');
   if(tX)tX.onclick=function(){
