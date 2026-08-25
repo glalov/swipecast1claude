@@ -1238,6 +1238,98 @@ const KB=[
  `<p>And when you choose: light beats heavy for a first impression. Ask me about monologues and I will explain why.</p>`,
  src:[],s:['Which monologue should I pick?','How do I prepare a monologue?','What annoys casting directors?']},
 
+{id:'intimacy',k:'intimacy coordinator nudity rider simulated sex scene closed set consent refuse say no on the day my rights kissing scene undressing topless body double',
+ a:c=>`Take this one seriously, because it is the part of the job where actors get hurt and the rules exist for a reason.`+
+ `<div class="hd">Nothing about it should ever be a surprise</div><p>Nudity and simulated intimacy have to be <b>described in the breakdown before you audition</b> and agreed <b>in writing before you shoot</b> — what is shown, from what angle, for how long, and how it may be used. That written agreement is usually called a <b>nudity rider</b>. If a production is vague, says "we will figure it out on the day", or asks you to undress at an audition, that is not a grey area. Leave.</p>`+
+ `<div class="hd">The intimacy coordinator</div><p>Their job is to choreograph the scene like a fight, so nothing is improvised on bodies. They agree exactly what touches what before you roll, they hold the boundaries when the room gets excited, and they are there for you, not for the director. On a union set of any size you should expect one for intimate content. <b>Asking whether there will be one is a completely normal question</b> and a professional production will answer it without irritation.</p>`+
+ `<div class="hd">On the day</div><ul><li>A <b>closed set</b> means only the people strictly required. You can ask for it</li><li><b>Consent is not permanent.</b> Agreeing in the contract does not oblige you to do something that was not agreed, and you can withdraw it. Saying "that was not what we discussed" is not being difficult, it is the process working</li><li>You can ask for modesty garments, a body double, or a different angle</li><li>Nothing extra gets shot "just in case". Footage outside what you agreed should not exist</li></ul>`+
+ `<div class="hd">The honest warning</div><p>Non-union productions have <b>no one enforcing any of this</b>. There is no union rep to call and no agreement being policed. If a low-budget project involves intimacy, the written terms and the intimacy coordinator matter more, not less — and if they will not put it in writing, that is your answer.</p>`+
+ `<p>Terms and protections vary by agreement and change over time. Check the specifics with SAG-AFTRA directly, and use the <b>Report</b> link on any CastSlate casting that asks for something it should not.</p>`,
+ src:['safety'],s:['How do I avoid scams?','What should I check before signing a contract?','Talk to a human']},
+
+{id:'getpaid',k:'not paid didnt pay me production owes me chase payment invoice net 30 how do i invoice never paid late payment collect money owed small claims',
+ a:c=>`It happens, mostly on non-union work, and it is usually recoverable if you were organised before you shot.`+
+ `<div class="hd">Before you shoot, not after</div><ul><li>Get the <b>rate, the payment terms and who is paying</b> in writing. A deal memo or even an email thread counts</li><li>Ask when they pay — many productions run <b>net 30</b> from invoice or from wrap, so do not panic on day 10</li><li>Get a name and an email for whoever actually processes payment. "The producer" is not an accounts department</li></ul>`+
+ `<div class="hd">Invoicing</div><p>Keep it plain: your name and contact, an invoice number, the date, the production and role, the dates you worked, the agreed rate, the total, and how to pay you. Send it the day you wrap, to the person who handles payment, and keep a copy.</p>`+
+ `<div class="hd">When it is late</div><ol><li><b>A polite chase</b> at the terms date. Attach the invoice again. Most late payment is disorganisation, not theft</li><li><b>Escalate sideways</b> — the line producer or production manager, not the director</li><li><b>Say what happens next</b>, calmly and in writing, with a date</li><li>If it was a <b>union job</b>, this is exactly what the union is for. Contact SAG-AFTRA rather than fighting it alone</li><li>If it was non-union, small claims exists for amounts this size, and a paper trail is what wins it</li></ol>`+
+ `<p>I am not the right one for the legal detail past that point — but the honest summary is that the actors who get paid are the ones who agreed the terms in writing before a camera turned on.</p>`,
+ src:[],s:['What is a deal memo?','What should I check before signing a contract?','How much do actors get paid?']},
+
+{id:'statstruth',k:'lie about height age stats round up shave years off wrong stats dont match breakdown what playing age should i put fudge measurements weight',
+ a:c=>`Do not. Every stat on your profile is checked the moment you walk in the door, and getting caught is the fastest way to be crossed off a list quietly.`+
+ `<div class="hd">Height is the one people fudge and the one that shows</div><p>They will stand you next to the lead. If you listed 5'11" and you are 5'9", you did not gain two inches, you lost the room — and the casting director now knows your profile is unreliable, which affects every future submission, not just this one.</p>`+
+ `<div class="hd">Age is a range, not a number</div><p>The useful figure is your <b>playing age</b> — the bracket you plausibly read as on camera, which is often not your actual age. That is a legitimate range to work in, and it is not lying. What does not work is claiming a bracket you cannot hold up in person; the difference is whether the person who arrives matches the person on the profile.</p>`+
+ `<p>Ask three people who have seen your footage what bracket you read as, and use the overlap. Most actors are wrong about their own by several years, usually downward.</p>`+
+ `<div class="hd">The rest</div><ul><li><b>Special skills you cannot do today, on demand</b>, are the same lie with a delay on it. "Intermediate horse riding" gets tested</li><li>Accents, languages, driving, swimming — list what survives a request to prove it in the room</li><li>Keep the photo current. A stat sheet that matches and a headshot that does not is the same problem</li></ul>`+
+ `<p>Casting is not looking for the best numbers. They are looking for someone who is what they said they were, because that is who they can plan a shoot around.</p>`,
+ src:['profile'],s:['What is my type?','How do I improve my profile?','What annoys casting directors?']},
+
+{id:'socialmedia',k:'social media instagram tiktok online presence do casting directors look followers follower count public private profile google me',
+ a:c=>`Short version: it is rarely why you get cast, and occasionally why you do not.`+
+ `<div class="hd">Do they look?</div><p>Sometimes, and usually late — after they already like the tape, to check you are a real working person and not a liability. It is a <b>tiebreaker and a risk check</b>, not a casting tool. Nobody is scrolling for talent.</p>`+
+ `<div class="hd">What actually matters</div><ul><li><b>You are findable and you are clearly you</b> — the same name, a recognisable photo, and something that says you act</li><li>Nothing public that a production would not want attached to their project. This is the part that genuinely costs jobs</li><li>Work you are proud of, visible. A pinned reel or a scene beats a grid of selfies</li><li>You do not need to post. A quiet, tidy, real account is better than a busy fake one</li></ul>`+
+ `<div class="hd">When a breakdown asks for a follower count</div><p>Then you are not being cast as an actor, you are being cast partly as an audience — that is normal for branded and influencer work and the rate should reflect it. Take it or leave it on those terms, and do not let it distort how you feel about your acting career.</p>`+
+ `<p><b>Never buy followers.</b> It is visible, it is checked, and it reads as exactly what it is.</p>`,
+ src:['profile'],s:['How do I improve my profile?','What is my type?','How do I network?']},
+
+{id:'zoomaudition',k:'zoom audition live remote virtual audition video call casting session online where do i look camera background lighting name display',
+ a:c=>`A live remote audition is its own format, and most of what goes wrong is technical rather than acting.`+
+ `<div class="hd">Before</div><ul><li><b>Test the actual app</b> an hour before, not two minutes before. Camera, mic, and the link</li><li><b>Rename yourself</b> to your full name exactly as it is on the submission. Not "iPhone (3)"</li><li>Wired internet if you have it. Close everything else</li><li>Put your sides <b>just beside the lens</b>, not below the screen, so your eyes stay up</li></ul>`+
+ `<div class="hd">The picture</div><ul><li><b>Camera at eye level.</b> A laptop on the desk shoots up your nose; put it on books</li><li><b>Light in front of you</b>, ideally a window you are facing. Never a window behind you</li><li>Plain wall, or as close as you can get. No virtual backgrounds — they chew your edges when you move</li><li>Frame chest up, a little headroom, centred</li></ul>`+
+ `<div class="hd">Playing it</div><ul><li><b>Look at the lens, not at their faces.</b> Watching the little squares reads as looking away from everyone</li><li>Resist the urge to make it bigger to compensate for the screen. It is a close-up</li><li>Let them finish talking — lag will make you talk over each other, and it is not rude, it is physics</li><li>If the connection drops mid-read, say so plainly and offer to start again. Nobody blames you for it</li></ul>`+
+ `<p>Slate the way the breakdown asks, then wait to be invited to start. And keep the sides out of your hands if you can — holding paper on camera reads as unprepared even when you are not.</p>`,
+ src:['tape'],s:['Give me a self-tape exercise','Teach me how to slate','What should I wear to an audition?']},
+
+{id:'agentfreelance',k:'freelance freelancing with an agent non exclusive sign with an agent multiple agents should i sign or stay freelance signed vs freelance double submission',
+ a:c=>`Two different relationships, and the one that is normal depends on where you are.`+
+ `<div class="hd">Freelancing</div><p>Working with an agent <b>without an exclusive contract</b>. They can submit you, you can work with others, and either side can stop at any time. It is common in <b>New York</b>, especially in commercial and print, and it is a legitimate way to build a track record before anyone signs anything.</p>`+
+ `<div class="hd">Signing</div><p>An exclusive agreement — that agency represents you in the areas covered, and nobody else submits you there. Standard in <b>Los Angeles</b>, and usually what serious theatrical representation looks like. In exchange you should expect real attention rather than being one of four hundred names.</p>`+
+ `<div class="hd">The rule that matters if you freelance</div><p><b>Never let two agents submit you for the same role.</b> Casting sees the duplicate immediately, it looks disorganised, and it can cost you the audition and both relationships. Tell each agent what you have been submitted for, every time. If that feels like too much admin, that is a sign you are ready to sign with one.</p>`+
+ `<p>Neither is a promotion. A hands-on freelance agent who submits you constantly is worth more than a signed contract at a place that forgets you exist.</p>`,
+ src:['dir'],s:['How do I get an agent?','Agent vs manager?','How do I leave my agent?']},
+
+{id:'bookout',k:'book out booking out unavailable tell my agent im away holiday vacation day job cant audition dates blocked',
+ a:c=>`Booking out is telling your representation you are unavailable for a specific stretch of dates, so they do not submit you for something you cannot do.`+
+ `<div class="hd">Why it matters more than it sounds</div><p>The damage is not to your holiday, it is to them. An agent who submits you, gets you an audition and then has to withdraw you looks unreliable to a casting office — and that is a relationship they spent years building. Do it twice and you become the client they stop pushing.</p>`+
+ `<div class="hd">How</div><ul><li><b>Email, not a passing remark.</b> One line, exact dates, and whether you are reachable at all</li><li>As early as you know. A month ahead is a courtesy, the night before is an apology</li><li>Say what you can still do — plenty of actors book out for in-person work but can still self-tape from wherever they are</li><li><b>Book back in</b> when you return. Do not assume they remembered</li></ul>`+
+ `<p>Day jobs, weddings, surgery, a run of a play, a fortnight abroad — all normal, all fine. Nobody expects you to be available every day for years. They expect to know.</p>`,
+ src:[],s:['How do I get an agent?','What does freelancing with an agent mean?','What should I do every week?']},
+
+{id:'leaveagent',k:'leave my agent quit fire my agent change agents end representation notice period still owe commission switch agency break up',
+ a:c=>`Sometimes it is the right call. Do it cleanly, because this business is far smaller than it looks.`+
+ `<div class="hd">Check the paperwork first</div><p>If you signed, there is a term and a way out of it — often a notice period, and sometimes a clause that lets either side leave if you have not worked a certain amount in a given stretch. Read what you actually signed before you decide anything.</p>`+
+ `<div class="hd">Commission does not stop at the door</div><p>Work <b>they procured</b> generally stays commissionable, including jobs that shoot after you leave and residuals from things they got you. That is normal and it is not them being difficult. Assume it, budget for it, and confirm what applies to you.</p>`+
+ `<div class="hd">Doing it well</div><ul><li><b>Have the conversation before you have the new agent</b>, if you can. Being dropped by email after they hear from someone else is how people become a story</li><li>Say it directly, in writing, short and without a list of grievances</li><li>Thank them for the work they did get you, and mean it</li><li>Hand over cleanly — outstanding auditions, pending bookings, anything in play</li></ul>`+
+ `<div class="hd">Before you go</div><p>A quiet year is not automatically the agent's fault. If your materials are out of date or you have no new footage, a new agent inherits the same problem. Worth being honest with yourself about which one it is.</p>`+
+ `<p>The specifics of any agreement are a matter for you and a qualified professional — I can tell you how it usually works, not what your contract says.</p>`,
+ src:['dir'],s:['How do I get an agent?','Am I ready for an agent?','What should I check before signing a contract?']},
+
+{id:'booked',k:'i booked it what happens now booked the job first day on set paperwork before a shoot start paperwork wardrobe fitting call sheet what to expect after booking',
+ a:c=>`Congratulations. Here is the bit nobody walks you through — the days between yes and action.`+
+ `<div class="hd">Straight away</div><ul><li><b>Confirm the deal in writing</b> — rate, dates, role, usage, and anything specific that was discussed. A deal memo or an email chain</li><li>Put every date in your calendar, including holds, and <b>book out</b> for them</li><li>Ask who your contact is on production, and how they prefer to reach you</li></ul>`+
+ `<div class="hd">Paperwork</div><p>Expect employment forms before you can be paid — in the US typically <b>I-9 and W-4</b> as an employee, or a <b>W-9</b> if you are engaged as a contractor. The I-9 needs original ID, so bring your passport or the right combination of documents to set. Read anything you sign, especially usage and any AI or digital replica terms.</p>`+
+ `<div class="hd">Fitting</div><p>A costume session before the shoot. It is usually paid and it is <b>scheduled work, not optional</b>. Bring the underwear and shoes you would actually wear, be easy about trying things, and say early if something restricts how you need to move.</p>`+
+ `<div class="hd">The call sheet</div><p>Arrives the night before. Read <b>all</b> of it, not just your line: your call time, the location and parking, the scenes being shot, the weather, and who to phone if you are stuck in traffic. Your call time is when you are on set ready, not when you leave the house.</p>`+
+ `<div class="hd">The day</div><ul><li>Lines cold, so you are free to take direction</li><li>Early is on time. Learn the first AD's name</li><li>Ask what shot size you are in — a normal question</li><li>Be pleasant on hour eleven. That is the part they remember</li></ul>`+
+ `<p>Ask me for the <b>on-set technicals</b> if you want marks, coverage and matching before your first day.</p>`,
+ src:['apply'],s:['Teach me the on-set technicals','What is set etiquette?','What is a deal memo?']},
+
+{id:'intlactors',k:'foreign actor international work in the us visa o1 work authorisation authorization green card not a citizen can i audition from abroad sponsor',
+ a:c=>`I can give you the shape of it, but not advice — this is genuinely a specialist area and getting it wrong has consequences.`+
+ `<div class="hd">The distinction that matters</div><p><b>Auditioning and being paid to work are not the same thing.</b> Self-taping from your own country is generally unproblematic. Being employed on a US production requires the right authorisation, and a visitor entry or visa waiver does not provide it.</p>`+
+ `<div class="hd">The route people mean</div><p>For performers the usual category is the <b>O-1B</b>, for individuals with extraordinary ability or achievement in the arts. In practice it needs <b>a petitioner in the US</b> — an employer or an agent acting as one — plus evidence: reviews, credits, billing, press, letters from people in the field. There are other routes, including union-related ones, and none of them are quick.</p>`+
+ `<div class="hd">What this means practically</div><ul><li>You usually need <b>the work or the representation first</b>, and the status second. That order frustrates everyone and it is how it works</li><li>Build a body of credits and press at home that a petition can actually be made from</li><li>Plenty of actors work internationally without ever relocating — a strong tape travels</li></ul>`+
+ `<p><b>Talk to an immigration attorney who works with performers</b> before you spend money or make plans. Rules change, categories have specific evidence requirements, and this is not a thing to do from a forum post — or from me.</p>`,
+ src:[],s:['Do I need to move to LA?','How do I get an agent?','How do I build a reel with no footage?']},
+
+{id:'didntbook',k:'why didnt i book after the callback didnt get it never heard back after callback did i do something wrong what went wrong lost the role close but no',
+ a:c=>`Almost always: nothing you did. That is not comfort, it is how the last round actually works.`+
+ `<div class="hd">What decides it once you are in the room</div><ul><li><b>Somebody was already attached.</b> A lead, a name, a piece of casting agreed before you were seen</li><li><b>You were the wrong height, age or look next to the person cast opposite you.</b> This is the most common reason and it is pure arithmetic</li><li><b>Chemistry.</b> Two good actors who do not spark, or one who makes the other better</li><li><b>Money and scheduling.</b> A local hire, a quote they could not meet, a conflicting date</li><li>Someone in the room had a different picture in their head and nobody could talk them out of it</li></ul>`+
+ `<div class="hd">The part that is genuinely yours</div><p>You control the tape, the preparation, the choices and how you were to work with. If those were good, you did your job — and the decision was made in a room you were not in, for reasons that were never going to be about your talent.</p>`+
+ `<div class="hd">The thing worth knowing</div><p>Getting to a callback means <b>they liked you</b>. Casting offices keep lists of actors they nearly cast, and being on one is how the next job arrives. A great many bookings are somebody who lost a role six months earlier.</p>`+
+ `<p>You will usually never be told why, and asking rarely gets an answer. Send nothing more than a short thank you, and put the work back into the next one.</p>`,
+ src:[],s:['Why is nobody getting back to me?','What should I submit to?','Am I too old to start acting?']},
+
 {id:'human',k:'human person agent support team talk to someone real person contact speak representative customer service',
  a:c=>`Of course${c.name?', '+c.name:''} — I'll hand this thread to the CastSlate team with everything above attached, so you don't have to repeat yourself.`+
  `<p>They always take these directly: billing disputes and refunds, account deletion, safety reports, and anything involving a minor.</p>`+
@@ -2879,6 +2971,21 @@ const KEYS=KB.map(e=>new Set(e.k.split(' ')));
 
 /* intent wins over incidental nouns */
 const INTENT=[
+ /* Same reason as the three below: left further down, "how do I leave my agent"
+    is taken by the get-an-agent rule, "what playing age should I put" by the
+    type rule, and "why didn't I book after the callback" by the callback and
+    nobody-gets-back-to-me rules. */
+ [/\bintimacy coordinator\b|\bnudity rider\b|\b(nudity|intimate|intimacy|sex) scene\b|\bsay no to (nudity|an intimacy|intimacy)\b|\bclosed set\b|\bmy rights\b[^?.!]{0,26}\b(intimacy|nudity|scene|set)\b|\b(refuse|decline)\b[^?.!]{0,20}\b(nudity|intimacy|scene)\b|\bbody double\b/i,'intimacy'],
+ [/\b(didn'?t|did not|doesn'?t|does not|don'?t|do not|won'?t|will not|never|hasn'?t|has not|haven'?t)\b[^?.!]{0,24}\bpays?(ing|ment)?( me)?\b|\bproduction (owes|has not paid|hasn'?t paid)\b|\bowes? me (money|payment)\b|\bhow do i invoice\b|\bchase (a |the )?(payment|invoice)\b|\bstill (not|haven'?t been) paid\b|\bnet 30\b|\bunpaid invoice\b|\bhow long should i wait to get paid\b/i,'getpaid'],
+ [/\b(lie|lying|fib|fudge|round up|exaggerate)\b[^?.!]{0,26}\b(height|age|stats|weight|measurements|skills)\b|\bshould i lie\b|\bwhat playing age should i (put|use|list|say)\b|\bstats (don'?t|do not) match\b|\bshave (a few )?years off\b/i,'statstruth'],
+ [/\bsocial media\b|\binstagram\b|\btiktok\b|\bonline presence\b|\bfollower count\b|\bfollowers\b|\bshould my (acting )?(instagram|account|profile) be public\b|\bdo (casting directors|they) (look at|check) my\b/i,'socialmedia'],
+ [/\bzoom audition\b|\bzoom call\b|\blive (remote|virtual|online) audition\b|\bvirtual audition\b|\bremote audition\b|\bwhere do i look\b[^?.!]{0,26}\b(zoom|camera|remote|call)\b|\bzoom background\b/i,'zoomaudition'],
+ [/\bfreelanc\w*\b[^?.!]{0,26}\bagent\b|\bagent\b[^?.!]{0,20}\bfreelanc\w*\b|\b(more than one|multiple|two) agents?\b|\bsign(ed)? (or|vs\.?|versus) (stay )?freelance\b|\bnon.?exclusive\b[^?.!]{0,20}\bagent\b|\bshould i sign (with an agent|or stay)\b/i,'agentfreelance'],
+ [/\bbook(ing)? out\b|\bbook out\b|\btell my agent i'?m (unavailable|away)\b|\bunavailable for (a|those|these) dates\b/i,'bookout'],
+ [/\b(leave|leaving|quit|quitting|fire|firing|drop|dropping|change|changing|switch|switching)\b[^?.!]{0,20}\b(my |an |the )?(agent|agency|manager|representation)\b|\bstill owe commission\b|\bend (my )?representation\b/i,'leaveagent'],
+ [/\bi booked (it|the (job|role|part))\b|\bbooked (it|the job)\b[^?.!]{0,20}\bwhat (happens|now|next)\b|\bwhat happens (now|next) (after|once) (i|you) book\b|\bwhat paperwork\b|\bwardrobe fitting\b|\bhow do i read a call sheet\b|\bstart paperwork\b|\bi.?9\b|\bw.?4\b/i,'booked'],
+ [/\bo.?1 visa\b|\bwork (authorisation|authorization|permit)\b|\b(foreign|international|non.?us|overseas) actor\b|\bwork (in the us|in america) as a (foreigner|foreign actor)\b|\bcan i (work|act) in the us\b|\bimmigration\b[^?.!]{0,20}\bactor\b|\bvisa\b[^?.!]{0,24}\bact(or|ing)?\b/i,'intlactors'],
+ [/\bwhy (didn'?t|did not) i (book|get) (it|the (job|role|part))\b|\bdidn'?t book (it|the (job|role|part))\b|\bafter (the |a )?callback\b[^?.!]{0,30}\b(nothing|never|silence|no news)\b|\bwas it something i did\b|\bdid i do something wrong\b|\b(never|not|didn'?t)\b[^?.!]{0,16}\b(call|called|calling|hear|heard)\b[^?.!]{0,12}\bback\b[^?.!]{0,16}\bcallback\b|\bafter (the |a )?callback\b/i,'didntbook'],
  /* These three run first on purpose. Left further down, "where can I find
     monologue books" is swallowed by /monologue/, "do I need to live in LA" by
     the film-actor rule, and "is joining the union worth it" by the Premium
@@ -3145,6 +3252,13 @@ const TOPIC_POOL=[
  'How do I become a voice actor?','How do I become a commercial actor?','How do I become a theater actor?',
  'What about child actors?','I sing - how does musical theatre work?','How do I build outside LA and NY?',
  'Why is nobody getting back to me?','How do I avoid scams?',
+ /* added 2026-08-25 */
+ 'What are my rights on an intimacy scene?','What does an intimacy coordinator do?',
+ 'What if a production does not pay me?','Should I lie about my height or age?',
+ 'Do casting directors look at my social media?','How do I do a Zoom audition?',
+ 'What does freelancing with an agent mean?','What does booking out mean?',
+ 'How do I leave my agent?','I booked the job, what happens now?',
+ 'Can I work as an actor in the US as a foreigner?','Why did I not book after the callback?',
  /* the platform */
  'What does it cost?','What does Premium include?','Is Premium worth it?','How do I apply to a casting?',
  'What is Manager Mode?','What is the Business Card?','How do I cancel my subscription?',
