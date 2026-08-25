@@ -3316,14 +3316,25 @@ function suggPlus(list,cap){
      craft, auditions, materials, the industry and the platform.
      The WHOLE remaining pool is ordered here — the first `cap` are shown and
      the rest wait in st.moreQueue, so "More questions" keeps handing out new
-     ones instead of just scrolling the same eleven. */
+     ones instead of just scrolling the same eleven.
+     ⚠️ A fixed stride of 7 only reaches pool.length/gcd(7,pool.length) of the
+     questions: any pool that is a multiple of 7 silently lost six sevenths of
+     itself (a 119-question pool handed out 17, so the strip stopped at 21 and
+     looked like the end of the list). The stride is stepped up until it is
+     coprime with the pool, and a final sweep adds anything a stride could
+     still miss — the queue is the whole pool, always. */
   const fill=[], taken=new Set();
-  const at=poolAt%pool.length;
-  for(let i=0;fill.length<pool.length&&i<pool.length*2;i++){
-    const idx=(at+i*7)%pool.length;
+  const n=pool.length;
+  const at=poolAt%n;
+  const gcd=(a,b)=>b?gcd(b,a%b):a;
+  let stride=7%n||1;
+  while(n>1&&gcd(stride,n)!==1)stride++;
+  for(let i=0;i<n;i++){
+    const idx=(at+i*stride)%n;
     if(taken.has(idx))continue;
     taken.add(idx); fill.push(pool[idx]);
   }
+  for(let i=0;i<n;i++){ if(!taken.has(i)){taken.add(i); fill.push(pool[i]);} }
   poolAt+=3;
   const all=list.concat(fill);
   sugg(all.slice(0,cap));
