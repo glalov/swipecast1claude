@@ -3977,7 +3977,12 @@ function hello(){
       msg('in',c.plan==='premium'
         ?`Everything's unlocked on your account — the Business Card and promo materials, the agency directory, Manager Mode, your Slate Video. Ask me how to use any of it, or anything about the acting side. And I teach: all the fundamentals for film, stage, commercial and voice, right here. Keep a notepad next to you.`
         :`Ask me anything about CastSlate or about the acting business — and I can <b>teach you the fundamentals</b> of acting for film or stage right here, free. No need to spend money on classes to start; just grab a notepad and a pen.`);
-      sugg(c.plan==='premium'?OPENING_PREMIUM:OPENING_FREE);
+      /* The curated fifteen are shown in full, and the rest of the pool is
+         queued behind them — otherwise "More questions" on the opening screen
+         scrolls those fifteen and stops, which is the one screen everybody
+         sees. cap = the list length, so nothing curated is cut. */
+      const opening=c.plan==='premium'?OPENING_PREMIUM:OPENING_FREE;
+      suggPlus(opening,opening.length);
     },620);
   },700);
 }
