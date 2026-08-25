@@ -1616,17 +1616,7 @@ const KB=[
  `<div class="hd">Independents worth knowing by name</div><p><b>A24</b>, <b>Neon</b>, <b>Blumhouse</b>, <b>Annapurna</b>, <b>Plan B</b>, <b>Sixth &amp; Idaho</b>, <b>Hartbeat</b> and dozens more. Some finance and produce, some only distribute. It is worth knowing which, because a distributor does not cast anything.</p>`+
  `<div class="hd">The part that matters to you</div><ul><li><b>Studios do not cast. Casting directors cast.</b> A studio hires an independent casting office per project — that office is who reads your submission, and that is the relationship worth building</li><li>The <b>size of the company tells you the gate</b>. Studio features and big streaming series are almost entirely agent-submitted through the industry breakdown services. Independent features, shorts, commercials, theatre, regional and new-media work are where an unrepresented actor genuinely gets read</li><li>A production company name in a breakdown tells you the <b>tone and budget</b> you are auditioning into. Blumhouse and A24 are not asking for the same performance</li><li>Everything above moves — mergers, rebrands, executives, whole divisions. Treat any specific detail as a starting point and check it</li></ul>`+
  `<p>Ask me about any of them and I'll tell you what I know structurally. What I won't do is pretend to have inside knowledge of a current project or promise you access to one.</p>`,
- src:[],s:['Who are the biggest talent agencies?','How does casting actually work?','How do I get an agent?']},
-
-{id:'bigagencies',k:'caa wme uta gersh paradigm icm buchwald innovative a3 abrams cesd kmr biggest agencies top agency franchised boutique agency tiers who are the biggest agents talent agency management company big four big three',
- a:c=>`Worth understanding the shape of it, because "get an agent" means very different things at different tiers.`+
- `<div class="hd">The top tier</div><p><b>CAA</b>, <b>WME</b> and <b>UTA</b> are the giants — full-service, global, representing actors alongside directors, writers, musicians, athletes and brands. CAA absorbed <b>ICM Partners</b> in 2022, which is why you still see ICM on older credits. Just below them sit <b>Gersh</b> and <b>Paradigm</b>, both serious theatrical agencies with real reach.</p>`+
- `<div class="hd">The mid tier</div><p>Substantial bicoastal agencies — <b>Buchwald</b>, <b>Innovative Artists</b>, <b>A3 Artists Agency</b> (the former Abrams Artists), <b>CESD</b> for commercial and voiceover, <b>KMR</b>, <b>Stewart Talent</b>, <b>Clear Talent Group</b> and others. These are the ones where a working actor with credits and a reel is a realistic conversation.</p>`+
- `<div class="hd">Boutique and regional</div><p>Smaller offices with tight lists, often specialising by category — commercial, voiceover, print, theatre, children, dance. <b>This is where nearly everyone actually starts</b>, and a hands-on boutique agent who submits you constantly is worth more to a beginner than a name agency where you are the 400th client.</p>`+
- `<div class="hd">The honest reality</div><ul><li>The top tier signs off <b>demand</b>. They come to you when the work already exists. Nobody queries their way into CAA from a cold mailing</li><li>An agent takes a <b>commission</b> — commonly 10% on union work — and is never paid up front. <b>Any agency asking you for a fee, a photo package or a class is not an agency.</b> That is the single clearest red flag in this business</li><li>Franchised agencies operate under union agreements. It is worth checking a company against the SAG-AFTRA franchised list before you send anything</li><li>A <b>manager</b> is a different job from an agent — fewer clients, career strategy, no legal authority to procure work in some states</li></ul>`+
- (c.plan==='premium'?`<p>Your <b>${DIR}-company Agency &amp; Manager Directory</b> has these grouped in tiers with addresses and exactly how each one wants to be approached — that is the practical version of everything above.</p>`:''),
- src:['dir'],s:['How do I get an agent?','Agent vs manager?','Tell me about the studios'],
- sell:c=>({e:'The map, not the guesswork',h:DIR+' agencies and management companies',b:'LA, Beverly Hills and New York — addresses, websites, contact details, <em>tiers</em>, and how each company wants to be approached. Plus submission tips written for actors with no representation.'})},
+ src:[],s:['How does casting actually work?','How do I get an agent?']},
 
 {id:'borntalent',k:'born with it natural talent do you need talent can anyone act not an actor never acted no training self taught untrained is acting a talent am i talented too late to learn no school',
  a:c=>`You do not need a school, a degree or anyone's permission to be an actor. Plenty of superb working actors never set foot in a conservatory.`+
@@ -3484,7 +3474,9 @@ const INTENT=[
  [/\b(theat(er|re)|stage) technicals?\b|\bcheat(ing)? out\b|\bupstag(e|ing)\b|\bsightlines?\b|\bspike mark\b|\bcue.?to.?cue\b|\bhalf hour call\b|\btech week\b|\bstage (left|right) mean\b|\bghost light\b/i,'theatertech'],
  [/\bwhat (should|do) i submit to\b|\bwhat not to submit\b|\bsubmit to everything\b|\bsubmitting too (much|many)\b|\blook desperate\b|\bspray and pray\b|\bbe selective\b|\bwhich roles should i (apply|submit)/i,'submitstrategy'],
  [/\b(a24|blumhouse|lionsgate|warner|universal|paramount|sony pictures|disney|searchlight|focus features|neon|annapurna|netflix|hulu|peacock|max|apple tv|prime video|amazon mgm|mgm)\b|\b(major |big )?studios?\b|\bproduction compan(y|ies)\b|\bstreamers?\b|\bwhat (studio|network) (makes|made|produces)\b/i,'studios'],
- [/\b(caa|wme|uta|gersh|paradigm|icm|buchwald|innovative artists|a3 artists|abrams artists|cesd|kmr)\b|\b(biggest|top|best|major) (talent )?(agenc(y|ies)|agents)\b|\bagency tiers?\b|\bbig (three|four) agenc/i,'bigagencies'],
+ /* ⚠️ No agency is ever named, big or small (owner, 2026-08-25). Questions that
+    fish for names get the tiers-and-how-to-approach answer instead. */
+ [/\b(caa|wme|uta|gersh|paradigm|icm|buchwald|innovative artists|a3 artists|abrams artists|cesd|kmr)\b|\b(biggest|top|best|major|which|what) (talent )?(agenc(y|ies)|agents)\b|\bagency tiers?\b|\bbig (three|four) agenc|\bname (some |a few |me )?agenc(y|ies)\b|\blist of agenc/i,'dir'],
  [/\bborn with it\b|\b(natural|innate) talent\b|\bdo (you|i) need talent\b|\bcan anyone act\b|\bam i talented\b|\bi'?m not an actor\b|\bnever acted (before)?\b|\bno training at all\b|\bself.?taught\b|\bis acting a talent\b|\bwithout (going to )?(acting )?school\b/i,'borntalent']
 ];
 /* Ranked "did you mean" over everything teachable, by shared words. */
@@ -3522,19 +3514,6 @@ function think(text,c){
      "who won the game" onto an acting term and smuggle an off-topic
      question past the scope filter. */
   for(const d of DECLINE) if(d.re.test(text)) return {decline:d};
-  /* nothing matched literally — try again with obvious typos corrected */
-  if(!c||!c.__retry){
-    const fixed=despell(text);
-    if(fixed!==text){
-      const r=think(fixed,Object.assign({},c,{__retry:1}));
-      if(r&&!r.miss&&!r.decline)return Object.assign(r,{corrected:fixed});
-    }
-  }
-
-  /* generic "teach me something" with no topic -> the menu */
-  if(/\b(give|show) me (a|an|another|the)?\s*(free |quick |short |mini )?(acting )?(lesson|class)\b|\bteach me (something|acting|to act)\b|\bwhat lessons\b|\banother lesson\b|\bcan you teach me\b/i.test(text)
-     && !conceptFor(text)) { const m=KB.find(e=>e.id==='lessons'); if(m) return {entry:m}; }
-
   /* an explicit request to be taught, at an explicit depth, beats a canned answer */
   const explicit=DEPTHWORDS.find(([re])=>re.test(text));
   if(explicit){
@@ -3548,6 +3527,28 @@ function think(text,c){
     }
   }
   for(const [re,id] of INTENT) if(re.test(text)){ const e=KB.find(x=>x.id===id); if(e) return {entry:e}; }
+
+  /* ⚠️ Spell-correction sits HERE: after the exact layers, before the fuzzy
+     ones. It used to run straight after DECLINE, which gave it first refusal
+     over everything — and because its vocabulary is built from acting jargon,
+     any ordinary word missing from it was rewritten into a similar-looking
+     term. "Who are the biggest talent agencies?" became "the DIGEST talent
+     agencies" and got a different answer entirely, even though the original
+     matched an intent rule exactly. Moving it to the very end was worse the
+     other way: a typo would lose to a weak keyword score and never get
+     corrected at all. Exact matches beat it; fuzzy scoring does not. */
+  if(!c||!c.__retry){
+    const fixed=despell(text);
+    if(fixed!==text){
+      const r=think(fixed,Object.assign({},c,{__retry:1}));
+      if(r&&!r.miss&&!r.decline)return Object.assign(r,{corrected:fixed});
+    }
+  }
+
+  /* generic "teach me something" with no topic -> the menu */
+  if(/\b(give|show) me (a|an|another|the)?\s*(free |quick |short |mini )?(acting )?(lesson|class)\b|\bteach me (something|acting|to act)\b|\bwhat lessons\b|\banother lesson\b|\bcan you teach me\b/i.test(text)
+     && !conceptFor(text)) { const m=KB.find(e=>e.id==='lessons'); if(m) return {entry:m}; }
+
   const toks=norm(text); if(!toks.length) return {miss:true};
   const shape=shapeOf(text), depth=depthOf(text,shape);
 
@@ -3604,7 +3605,7 @@ function principlesLesson(shape,q){
 /* ── UI ──────────────────────────────────────────────────────── */
 const $=id=>document.getElementById(id);
 const NAMES={visitor:'',free:'Lena',premium:'Marcus'};
-const st={plan:'free',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,asked:new Set(),profile:{weak:[],declared:null,taught:[]},lastConcept:null};
+const st={plan:'free',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,asked:new Set(),moreQueue:[],profile:{weak:[],declared:null,taught:[]},lastConcept:null};
 const ctx=()=>({plan:st.plan,name:NAMES[st.plan]});
 /* How long the dots hold before an answer lands. */
 const THINK=()=>1400+Math.random()*260;
@@ -3648,7 +3649,7 @@ const TOPIC_POOL=[
  'How much do actors get paid?','How do actors survive financially?','What is a deal memo?',
  'What is first refusal?','What does being on hold mean?','What is an upgrade on set?',
  /* representation and companies */
- 'How do I get an agent?','Agent vs manager?','Who are the biggest talent agencies?',
+ 'How do I get an agent?','Agent vs manager?',
  'Tell me about the studios','What does a casting director do?','How does casting actually work?',
  'Am I ready for an agent?','How do I approach an agency?','Tell me about the agency directory',
  /* career and life */
@@ -3686,7 +3687,7 @@ const OPENING_FREE=[
  'Why is nobody getting back to me?',
  'What is my type?',
  'How do I get an agent?',
- 'Who are the biggest talent agencies?',
+ 'What are my rights on an intimacy scene?',
  'Do I need to join SAG-AFTRA?',
  'Do I need to move to LA?',
  'What does Premium include?',
@@ -3703,7 +3704,7 @@ const OPENING_PREMIUM=[
  'Why is nobody getting back to me?',
  'What is my type?',
  'How do I get an agent?',
- 'Who are the biggest talent agencies?',
+ 'What are my rights on an intimacy scene?',
  'Do I need to join SAG-AFTRA?',
  'Do I need to move to LA?',
  'What is Manager Mode?',
@@ -3718,17 +3719,23 @@ function suggPlus(list,cap){
   const pool=TOPIC_POOL.filter(t=>!used.has(t.toLowerCase())&&!st.asked.has(t.toLowerCase()));
   if(!pool.length) return sugg(list);
   /* Stride rather than slice. A contiguous run came back as eleven craft
-     lessons in a row; stepping through the pool spreads the fill across
-     craft, auditions, materials, the industry and the platform. */
-  const need=Math.max(0,cap-list.length), fill=[], taken=new Set();
-  let at=poolAt%pool.length;
-  for(let i=0;fill.length<need&&i<pool.length*2;i++){
+     lessons in a row; stepping through the pool spreads the order across
+     craft, auditions, materials, the industry and the platform.
+     The WHOLE remaining pool is ordered here — the first `cap` are shown and
+     the rest wait in st.moreQueue, so "More questions" keeps handing out new
+     ones instead of just scrolling the same eleven. */
+  const fill=[], taken=new Set();
+  const at=poolAt%pool.length;
+  for(let i=0;fill.length<pool.length&&i<pool.length*2;i++){
     const idx=(at+i*7)%pool.length;
     if(taken.has(idx))continue;
     taken.add(idx); fill.push(pool[idx]);
   }
   poolAt+=3;
-  sugg(list.concat(fill));
+  const all=list.concat(fill);
+  sugg(all.slice(0,cap));
+  st.moreQueue=all.slice(cap);
+  refreshSuggHint();
 }
 const idKey=c=>(c.plan||'visitor')+'|'+(c.name||'');
 function syncIdentity(){
@@ -3876,17 +3883,30 @@ function refreshSuggHint(){
   const w=$('sugg'), wrap=$('suggwrap');
   if(!w||!wrap)return;
   refreshThreadEdge();
-  const scrolls=w.scrollHeight>w.clientHeight+4;
-  const atEnd=(w.scrollTop+w.clientHeight)>=(w.scrollHeight-4);
+  const queued=!!(st.moreQueue&&st.moreQueue.length);
+  const scrolls=queued||w.scrollHeight>w.clientHeight+4;
+  const atEnd=!queued&&(w.scrollTop+w.clientHeight)>=(w.scrollHeight-4);
   wrap.classList.toggle('scrolls',scrolls);
   wrap.classList.toggle('atend',atEnd);
 }
+function suggBtn(label){
+  const b=document.createElement('button');
+  b.type='button'; b.textContent=label;
+  b.onclick=()=>{$('sugg').innerHTML='';st.moreQueue=[];send(label);};
+  return b;
+}
+/* Adds more chips without disturbing the ones already on screen. */
+function suggAppend(list){
+  const w=$('sugg');
+  (list||[]).forEach(l=>w.appendChild(suggBtn(l)));
+  refreshSuggHint();
+}
 function sugg(list){
-  const w=$('sugg');w.innerHTML='';w.scrollTop=0;
+  const w=$('sugg');w.innerHTML='';w.scrollTop=0;st.moreQueue=[];
   const wrap0=$('suggwrap');
   if(wrap0)wrap0.classList.toggle('has',!!(list&&list.length));
   if(wrap0)wrap0.classList.remove('scrolls','atend');
-  (list||[]).forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{w.innerHTML='';send(l);};w.appendChild(b);});
+  (list||[]).forEach(l=>w.appendChild(suggBtn(l)));
   /* Only hint at a scroll when there actually is one — checked twice because
      the first frame can measure before the chips have wrapped. */
   const wrap=$('suggwrap');
@@ -4314,6 +4334,10 @@ function wireTools(){
 
   const tM2=$('suggmore');
   if(tM2)tM2.onclick=function(){
+    /* Hand out the next batch before scrolling, so the button keeps revealing
+       new questions all the way to the end of the pool instead of stopping
+       at whatever happened to be rendered. */
+    if(st.moreQueue&&st.moreQueue.length)suggAppend(st.moreQueue.splice(0,8));
     /* Set it, then ask for smooth. Native smooth scrolling has a history of
        no-oping in this codebase and a rAF tween is throttled in a background
        tab — either can silently do nothing, so the assignment goes first and
