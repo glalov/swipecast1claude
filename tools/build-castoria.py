@@ -67,7 +67,7 @@ ROOT.addEventListener('click',function(e){
   var t=(e.composedPath&&e.composedPath()[0])||e.target;
   if(t&&t.closest){
     var nv=t.closest('[data-nav]');
-    if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));closePanel();} else {send('How do I cancel my subscription?');} return; }
+    if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));closePanel();} else {send('Where are my account settings?');} return; }
     var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}
   }
   if(t&&t.closest&&t.closest('[data-go]')){

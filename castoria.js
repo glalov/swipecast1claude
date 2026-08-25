@@ -346,7 +346,7 @@ const EMO=[
  {id:'thumbsdown',re:/[\u{1F44E}]/u,
   a:c=>`Noted — and thanks for saying so rather than just leaving.`,
   b:c=>`Tell me what was wrong with that answer and I will take another run at it. Or I can pass you to the team.`,
-  s:['Talk to a human','Let me ask something else','What can I ask you?']},
+  s:['Talk to a human','What can I ask you?','How do I improve my profile?']},
  {id:'confused',re:/[\u{1F615}\u{1F610}\u{1F914}\u{1F928}\u{1F62F}\u{1FAE4}\u{1F612}]/u,
   a:c=>`Let me try that again — I would rather be clear than clever.`,
   b:c=>`Tell me the bit that did not land and I will come at it from a different angle.`,
@@ -476,7 +476,7 @@ const KB=[
  `<div class="hd">Premium</div><ul><li><b>$99 a year</b> — about <b>$8.25 a month</b>, and it renews at $99. No first-year discount that climbs later.</li><li><b>$71.70 for six months</b> — $11.95 a month</li><li><b>$14.95 month to month</b></li></ul>`+
  `<p><b>Every plan includes the same features.</b> No higher tier, no per-submission fees.</p>`+
  (c.plan==='premium'?`<p>You're on Premium, so all of that is already switched on.</p>`:''),
- src:['pricing','billing'],s:['Is it worth it?','Free vs Premium?','How do I cancel?'],
+ src:['pricing','billing'],s:['Is it worth it?','Free vs Premium?','What does Premium include?'],
  sell:c=>({e:'What the $8.25 buys',h:'Everything, on every plan',b:'Unlimited submissions · unlimited photos, video and Cast Me As clips · <em>Slate Video</em> · <em>Business Card</em> with QR code · mailing postcard and agent promo card · weekly <em>Manager Mode</em> · the <em>'+DIR+'-company agency directory</em>.'})},
 
 {id:'worth',k:'worth it should i upgrade why pay convince me value bother benefit benefits point premium advantage advantages',
@@ -645,12 +645,11 @@ const KB=[
  a:c=>`<p>Two different things, and it is worth being clear which you want.</p>`+
  `<div class="hd">Cancel Premium</div>`+
  `<p>Stops the payments. Your account stays, your profile stays, your submissions stay — you simply drop back to the free plan at the end of the period you have paid for.</p>`+
- `<p><button class="inl" data-ask="How do I cancel my subscription?">Show me how to cancel</button></p>`+
  `<div class="hd">Delete your account</div>`+
  `<p>Removes the account itself. <b>Account Settings → Deactivation &amp; Deletion → Delete my account.</b> Deletion is immediate, and you can sign up again later with the same email if you change your mind.</p>`+
  `<p><button class="inl" data-ask="How do I delete my account?">Show me how to delete</button></p>`+
  `<p>If you are only trying to stop being charged, <b>cancelling is the one you want</b> — deleting is not necessary for that.</p>`,
- src:['billing','acct'],s:['How do I cancel my subscription?','How do I delete my account?'],nocheck:true},
+ src:['billing','acct'],s:['Talk to a human'],nocheck:true},
 
 {id:'billinginfo',k:'next billing date when am i charged how much am i paying renewal date payment method change card update card resubscribe restart premium do i still have premium why did premium disappear invoice receipt',
  a:c=>`<p>I cannot see your account or your billing from this chat, and I am not going to guess at it — anything about <em>your</em> card, dates or charges has to come from your own account.</p>`+
@@ -661,7 +660,7 @@ const KB=[
  `<div class="hd">What I can tell you</div>`+
  `<p>The published prices: <b>$99 a year</b> (about $8.25/month, renewing at $99), <b>$71.70 for six months</b>, or <b>$14.95 month to month</b>. Every plan includes every feature.</p>`+
  `<p>If Premium access has disappeared unexpectedly, or a charge looks wrong, that goes to a person rather than to me — say the word and I will hand this over.</p>`,
- src:['billing','pricing'],s:['How do I cancel my subscription?','I have a billing problem','Talk to a human'],nocheck:true},
+ src:['billing','pricing'],s:['I have a billing problem','Talk to a human'],nocheck:true},
 
 {id:'refund',k:'refund charged twice double charge billing problem dispute wrong amount receipt invoice payment failed card declined money back overcharged',
  a:c=>`<p>The policy first, straight: <b>membership fees are non-refundable except where the law requires it.</b> I am not going to promise you a refund I cannot authorise.</p>`+
@@ -670,14 +669,14 @@ const KB=[
  `<p>That is a person's job, not mine, and they can actually look at your account.</p>`+
  `<ul><li><b>Account Settings → Payment &amp; Billing → Manage subscription</b> — your Stripe page has every invoice and receipt</li><li>Receipts are also emailed automatically after each transaction</li><li>Cards are processed by Stripe. <b>CastSlate never stores your card details</b></li></ul>`+
  `<p><button class="inl" data-ask="Talk to a human">Hand this to the team</button></p>`,
- src:['billing'],s:['How do I cancel my subscription?','Talk to a human'],nocheck:true},
+ src:['billing'],s:['Talk to a human'],nocheck:true},
 
 {id:'upgrade',k:'how do i upgrade buy premium purchase go premium subscribe checkout pay now where do i pay',
  a:c=>c.plan==='premium'?`You're on Premium already, so it's all live. Want me to walk you through a piece of it — the promo materials, the agency directory, or Manager Mode?`
  :`Two taps.`+
  `<ul><li>Open <b>Membership</b> from the nav, or any "Go Premium" button</li><li>Pick your term — <b>$99/year</b>, <b>$71.70/6 months</b>, or <b>$14.95/month</b></li><li>Pay by card. Live immediately, no waiting on approval</li></ul>`+
  `<p>Every plan carries the same features, so the only real question is how long you want to commit for.</p>`,
- src:['pricing','billing'],s:['What does Premium include?','How do I cancel?'],
+ src:['pricing','billing'],s:['What does Premium include?','Is Premium worth it?'],
  sell:c=>({e:'Live the moment you pay',h:'Unlimited submissions from today',b:'Plus your <em>Slate Video</em>, <em>Business Card</em>, weekly <em>Manager Mode</em> note and the <em>'+DIR+'-company agency directory</em>.',cta:'Go to Membership'})},
 
 {id:'cdpost',k:'post a casting posting project breakdown casting director producer hire talent free to post approval',
@@ -713,18 +712,18 @@ const KB=[
  `<p>Any concern at all about a casting involving a minor — use the Report link and say so in the details. Those go to the top of the queue, and I can put you with a person right now.</p>`,
  src:['safety','acct'],s:['Talk to a human','How do I report something?']},
 
-{id:'privacy',k:'privacy data who can see my profile visible public hidden search sell data tracking cookies gdpr export download',
+{id:'privacy',k:'privacy private data who can see my profile visible public hidden search sell data tracking cookies gdpr export download',
  a:c=>`<div class="hd">Who sees your profile</div><ul><li>Verified casting directors and producers see profiles of talent who <b>submitted to their castings</b></li><li>Public-facing profiles are <b>opt-in only</b></li><li>You can hide your profile from search entirely</li></ul>`+
  `<div class="hd">What we do and don't do</div><p>We collect what you put in your profile plus basic account data. <b>We do not sell, license or share your data with third parties for advertising.</b> Necessary cookies are always on; analytics and marketing cookies are <b>off by default</b>.</p>`+
  `<div class="hd">Getting a copy</div><p><b>My Profile → Account → Export Data</b> — profile and full submission history as one file.</p>`,
- src:['acct'],s:['How do I delete my account?','Is CastSlate safe?']},
+ src:['acct'],s:['Is CastSlate safe?','Who can see my profile?']},
 
 {id:'delete',k:'delete account deactivate remove close my account erase leave permanently',
  a:c=>`<b>Account Settings → Deactivation & Deletion → Delete my account.</b>`+
  `<ul><li>Deletion is <b>immediate</b></li><li>You can sign up again later with the same email</li><li>Some transactional records — receipts, support tickets — are kept where law requires</li></ul>`+
  (c.plan==='premium'?`<p>You're on Premium: deleting isn't the same as cancelling. Cancel first from Account Settings → Manage subscription so billing stops cleanly, then delete.</p>`:'')+
  `<p>If something specific pushed you here, tell me what it was. I'd rather fix it, and if I can't, I'll get you a person.</p>`,
- src:['acct','billing'],s:['Talk to a human','How do I cancel?']},
+ src:['acct','billing'],s:['Talk to a human']},
 
 {id:'login',k:'login log in password reset forgot password cant sign in email change locked out access confirmation link expired',
  a:c=>`<div class="hd">Password</div><p>Use <b>Forgot password</b> on the login page. If nothing arrives in a couple of minutes, check spam before requesting another — repeated requests trip a rate limit and you'll wait longer.</p>`+
@@ -1254,7 +1253,7 @@ const KB=[
  `<p>Casting is not looking for the best numbers. They are looking for someone who is what they said they were, because that is who they can plan a shoot around.</p>`,
  src:['profile'],s:['What is my type?','How do I improve my profile?','What annoys casting directors?']},
 
-{id:'socialmedia',k:'social media instagram tiktok online presence do casting directors look followers follower count public private profile google me',
+{id:'socialmedia',k:'social media instagram tiktok online presence do casting directors look followers follower count public account google me',
  a:c=>`Short version: it is rarely why you get cast, and occasionally why you do not.`+
  `<div class="hd">Do they look?</div><p>Sometimes, and usually late — after they already like the tape, to check you are a real working person and not a liability. It is a <b>tiebreaker and a risk check</b>, not a casting tool. Nobody is scrolling for talent.</p>`+
  `<div class="hd">What actually matters</div><ul><li><b>You are findable and you are clearly you</b> — the same name, a recognisable photo, and something that says you act</li><li>Nothing public that a production would not want attached to their project. This is the part that genuinely costs jobs</li><li>Work you are proud of, visible. A pinned reel or a scene beats a grid of selfies</li><li>You do not need to post. A quiet, tidy, real account is better than a busy fake one</li></ul>`+
@@ -2999,7 +2998,7 @@ const INTENT=[
  [/\b(stop|less|reduce|calm|handle|deal with) (being |feeling |getting )?(nervous|nerves|anxious|anxiety)\b|\bstage fright\b|\baudition nerves\b|\bi get nervous\b/i,'audition'],
  [/\b(build|building|make it|working) (a career )?(outside|away from|not in)\b[^?.!]{0,18}\b(la|l\.a\.|los angeles|new york|nyc)\b|\boutside la and ny\b|\bregional (market|actor)\b|\bsmall(er)? market\b/i,'move'],
   [/\b(leave|quit) castslate (completely|entirely|for good)\b|\bdifference between cancel(l?ing)? and delet/i,'cancelvsdelete'],
- [/\b(cancel|cancell?ing)\b(?![^.?!]*\bdelet)(?!.{0,20}\bmy account\b)|\bunsubscribe\b|\bstop (charging|billing|taking) me\b|\bstop (my )?(the )?(payments?|subscription|membership|billing)\b|\b(don'?t|do not|dont) want (castslate )?premium\b|\bno longer want (my )?(premium|subscription|membership)\b|\bstop paying\b|\bhow do i stop my subscription\b|\bturn off auto.?renew\b/i,'cancel'],
+ [/\b(cancel|cancell?ing)\b(?![^.?!]*\bdelet)(?!.{0,20}\bmy account\b)|\bunsubscribe\b|\bstop (charging|billing|taking) me\b|\bstop being charged\b|\bstop (my )?(the )?(payments?|subscription|membership|billing)\b|\b(don'?t|do not|dont) want (castslate )?premium\b|\bno longer want (my )?(premium|subscription|membership)\b|\bstop paying\b|\bhow do i stop my subscription\b|\bturn off auto.?renew\b/i,'cancel'],
   [/\b(next|my) billing date\b|\bwhen (will i be|am i) charged\b|\bhow much am i paying\b|\bchange (my )?(payment method|card)\b|\bupdate (my )?card\b|\bresubscribe\b|\brestart (my )?(premium|membership|subscription)\b|\bdo i still have premium\b|\bwhy (did|has|is) my premium\b[^.?!]{0,24}\b(disappear|gone|stopped|missing|not working)|\bwhen does (my|it) renew\b/i,'billinginfo'],
  [/\b(charged|double.?charg|billed twice|refund|money back)\b/i,'refund'],
  [/\b(talk|speak|chat|connect) (to|with) (a |an )?(human|person|someone|agent|rep|real)/i,'human'],
@@ -3262,7 +3261,7 @@ const TOPIC_POOL=[
  'Can I work as an actor in the US as a foreigner?','Why did I not book after the callback?',
  /* the platform */
  'What does it cost?','What does Premium include?','Is Premium worth it?','How do I apply to a casting?',
- 'What is Manager Mode?','What is the Business Card?','How do I cancel my subscription?',
+ 'What is Manager Mode?','What is the Business Card?',
  'Is my profile private?','Talk to a human'
 ];
 /* The first screen is the only one everybody sees, so it is chosen rather than
@@ -3986,7 +3985,7 @@ ROOT.addEventListener('click',function(e){
   var t=(e.composedPath&&e.composedPath()[0])||e.target;
   if(t&&t.closest){
     var nv=t.closest('[data-nav]');
-    if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));closePanel();} else {send('How do I cancel my subscription?');} return; }
+    if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));closePanel();} else {send('Where are my account settings?');} return; }
     var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}
   }
   if(t&&t.closest&&t.closest('[data-go]')){
