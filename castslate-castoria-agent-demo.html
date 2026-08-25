@@ -124,7 +124,7 @@ h1 span{color:var(--out2);}
 .bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}
 .bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}
 
-.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 4px;background:var(--page);display:flex;flex-direction:column;}
+.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 10px;background:var(--page);display:flex;flex-direction:column;}
 .stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}
 .stamp b{color:var(--ink2);font-weight:600;}
 
@@ -213,13 +213,23 @@ h1 span{color:var(--out2);}
    so nothing re-lays-out while a finger is moving. */
 .suggwrap{flex:none;position:relative;}
 .suggwrap:empty{display:none;}
+/* The thread and the chips used to butt together with no separation at all, so
+   a long answer was guillotined mid-sentence flush against the first chip. A
+   hairline marks the boundary as deliberate, and a short fade dissolves the
+   text into it whenever there is more to scroll.
+   ⚠️ The fade is an overlay on .suggwrap — which never scrolls — and NOT a mask
+   on the thread. Masking a scrolling element and repainting it mid-scroll is
+   exactly what was eating taps on mobile; do not move this onto .thread. */
+.suggwrap.has{border-top:.5px solid var(--hair);}
+.suggwrap::before{content:"";position:absolute;left:0;right:0;top:-30px;height:30px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}
+.suggwrap.has.spill::before{opacity:1;}
 .suggmore{display:none;width:100%;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:2px 0 6px;cursor:pointer;touch-action:manipulation;transition:opacity .2s;}
 .suggwrap.scrolls .suggmore{display:flex;}
 .suggwrap.atend .suggmore{opacity:0;pointer-events:none;}
 .suggmore svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:nudgedown 1.8s ease-in-out infinite;}
 @keyframes nudgedown{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}
 @media(prefers-reduced-motion:reduce){.suggmore svg{animation:none}}
-.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
+.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:11px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
 @media(min-width:561px) and (max-height:720px){.sugg{max-height:120px;}}
 .sugg::-webkit-scrollbar{display:none}
 .sugg:empty{display:none}
@@ -3660,17 +3670,17 @@ function glideTo(target,dur){
   const to=Math.max(0,Math.min(max,target));
   const from=t.scrollTop;
   const d=dur||Math.max(240,Math.min(560,Math.abs(to-from)*1.1));
-  if(reducedMotion()||Math.abs(to-from)<3||typeof requestAnimationFrame!=='function'){t.scrollTop=to;return;}
+  if(reducedMotion()||Math.abs(to-from)<3||typeof requestAnimationFrame!=='function'){t.scrollTop=to;refreshThreadEdge();return;}
   const t0=(window.performance&&performance.now)?performance.now():Date.now();
   const step=now=>{
     const k=Math.min(1,((now||Date.now())-t0)/d);
     t.scrollTop=from+(to-from)*(1-Math.pow(1-k,3));
     if(k<1){scrollRAF=requestAnimationFrame(step);}
-    else{t.scrollTop=to;stopScroll();}
+    else{t.scrollTop=to;stopScroll();refreshThreadEdge();}
   };
   scrollRAF=requestAnimationFrame(step);
   /* If rAF never runs (throttled tab), land it anyway rather than sit still. */
-  scrollFallback=setTimeout(()=>{stopScroll();t.scrollTop=to;},d+300);
+  scrollFallback=setTimeout(()=>{stopScroll();t.scrollTop=to;refreshThreadEdge();},d+300);
 }
 /* force: the visitor's own message and the greeting always come into view. */
 function bottom(force){
@@ -3737,9 +3747,16 @@ function srcs(ids){
 /* "Is there anything below?" — not "are we at the top?". The hint used to
    vanish on the first scroll while two more rows were still hidden. Kept out
    of sugg() so the scroll button can re-run it without waiting for an event. */
+/* Softens the thread's bottom edge only while content is hidden below it. */
+function refreshThreadEdge(){
+  const t=$('thread'), wrap=$('suggwrap');
+  if(!t||!wrap)return;
+  wrap.classList.toggle('spill',(t.scrollTop+t.clientHeight)<(t.scrollHeight-6));
+}
 function refreshSuggHint(){
   const w=$('sugg'), wrap=$('suggwrap');
   if(!w||!wrap)return;
+  refreshThreadEdge();
   const scrolls=w.scrollHeight>w.clientHeight+4;
   const atEnd=(w.scrollTop+w.clientHeight)>=(w.scrollHeight-4);
   wrap.classList.toggle('scrolls',scrolls);
@@ -3747,7 +3764,9 @@ function refreshSuggHint(){
 }
 function sugg(list){
   const w=$('sugg');w.innerHTML='';w.scrollTop=0;
-  const wrap0=$('suggwrap'); if(wrap0)wrap0.classList.remove('scrolls','atend');
+  const wrap0=$('suggwrap');
+  if(wrap0)wrap0.classList.toggle('has',!!(list&&list.length));
+  if(wrap0)wrap0.classList.remove('scrolls','atend');
   (list||[]).forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{w.innerHTML='';send(l);};w.appendChild(b);});
   /* Only hint at a scroll when there actually is one — checked twice because
      the first frame can measure before the chips have wrapped. */
@@ -4170,6 +4189,9 @@ function wireTools(){
   const tT=$('tTopics'); if(tT)tT.onclick=()=>{pop&&pop.classList.remove('on');send('What can I ask you?');};
   const tL=$('tLesson'); if(tL)tL.onclick=()=>{pop&&pop.classList.remove('on');send('Give me an acting lesson');};
   const tM=$('tMic');    if(tM)makeDictation(input,tM);
+
+  const th=$('thread');
+  if(th)th.onscroll=refreshThreadEdge;
 
   const tM2=$('suggmore');
   if(tM2)tM2.onclick=function(){
