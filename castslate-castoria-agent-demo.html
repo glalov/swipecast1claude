@@ -223,7 +223,12 @@ h1 span{color:var(--out2);}
 .suggwrap.has{border-top:.5px solid var(--hair);}
 .suggwrap::before{content:"";position:absolute;left:0;right:0;top:-30px;height:30px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}
 .suggwrap.has.spill::before{opacity:1;}
-.suggmore{display:none;width:100%;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:2px 0 6px;cursor:pointer;touch-action:manipulation;transition:opacity .2s;}
+.suggmore{display:none;width:100%;height:24px;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:0;cursor:pointer;touch-action:manipulation;transition:opacity .2s;}
+/* The chip strip gets the same treatment as the thread: its clipped last row
+   dissolves into the "More questions" line instead of being sliced. Sits above
+   the row (which is a fixed 24px), and only while there is more to scroll. */
+.suggwrap::after{content:"";position:absolute;left:0;right:0;bottom:24px;height:22px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}
+.suggwrap.scrolls:not(.atend)::after{opacity:1;}
 .suggwrap.scrolls .suggmore{display:flex;}
 .suggwrap.atend .suggmore{opacity:0;pointer-events:none;}
 .suggmore svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:nudgedown 1.8s ease-in-out infinite;}
