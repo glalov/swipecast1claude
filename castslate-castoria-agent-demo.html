@@ -47,6 +47,7 @@ h1 span{color:var(--out2);}
 .spec b{color:var(--ink);}
 
 /* ── launcher ─────────────────────────────────────────────── */
+.launch,.tool,.snd,.srcs button,.b .inl,.bar button,.card .go{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background-image:var(--disc);border:0;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 1px var(--ring),0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);
   /* backwards, not both: the animation must not own transform once it ends,
      or the hover scale never applies again. */
@@ -197,20 +198,32 @@ h1 span{color:var(--out2);}
 }
 
 /* The chip strip scrolls, and nothing said so — people read the clipped row as
-   the whole menu. The fade alone was too subtle, so it now carries a label. */
+   the whole menu. It now carries a labelled row underneath.
+
+   ⚠️ Three things here are why a tap used to need three attempts on a phone:
+   1. the hint was an ABSOLUTE pill sitting on top of the chips, so a tap on the
+      right-hand side of a chip hit the pill instead — it is a row now and
+      cannot overlap anything;
+   2. the fade was a mask ON THE SCROLLING ELEMENT, toggled from its own scroll
+      handler. Repainting a mask mid-scroll swallows the tap that follows.
+      The mask is gone; the labelled row is the affordance;
+   3. only ~3 of 15 chips fitted on a phone, so every choice needed a scroll
+      first — and a tap straight after a flick is eaten cancelling the momentum.
+   `.scrolls` toggles layout and changes rarely; `.atend` only changes opacity,
+   so nothing re-lays-out while a finger is moving. */
 .suggwrap{flex:none;position:relative;}
 .suggwrap:empty{display:none;}
-.suggmore{display:none;position:absolute;right:12px;bottom:6px;z-index:2;align-items:center;gap:4px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--page);background:var(--brand);border:0;border-radius:100px;padding:5px 9px 5px 11px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.22);}
-.suggwrap.more .suggmore{display:inline-flex;}
+.suggmore{display:none;width:100%;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:2px 0 6px;cursor:pointer;touch-action:manipulation;transition:opacity .2s;}
+.suggwrap.scrolls .suggmore{display:flex;}
+.suggwrap.atend .suggmore{opacity:0;pointer-events:none;}
 .suggmore svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:nudgedown 1.8s ease-in-out infinite;}
 @keyframes nudgedown{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}
 @media(prefers-reduced-motion:reduce){.suggmore svg{animation:none}}
 .sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
-.sugg.more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 20px),transparent);}
-@media(max-height:720px){.sugg{max-height:120px;}}
+@media(min-width:561px) and (max-height:720px){.sugg{max-height:120px;}}
 .sugg::-webkit-scrollbar{display:none}
 .sugg:empty{display:none}
-.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;}
+.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .sugg button:hover{background:#F2F2F7;border-color:var(--brand);}
 .sugg button:active{background:#E8E8ED;}
 
@@ -259,6 +272,9 @@ h1 span{color:var(--out2);}
   .launch.open{display:none;}          /* the header carries Close */
   .bar{padding-top:calc(9px + env(safe-area-inset-top));}
   .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}
+  /* Room for five or six chips instead of three, so choosing rarely needs a
+     scroll at all — the scroll was where taps were being lost. */
+  .sugg{max-height:min(38vh,300px);}
   .b{max-width:88%;}
   .card{max-width:92%;}
   .sugg{max-height:120px;}
@@ -3724,15 +3740,16 @@ function srcs(ids){
    of sugg() so the scroll button can re-run it without waiting for an event. */
 function refreshSuggHint(){
   const w=$('sugg'), wrap=$('suggwrap');
-  if(!w)return;
-  const more=w.scrollHeight>w.clientHeight+4&&(w.scrollTop+w.clientHeight)<(w.scrollHeight-4);
-  w.classList.toggle('more',more);
-  if(wrap)wrap.classList.toggle('more',more);
+  if(!w||!wrap)return;
+  const scrolls=w.scrollHeight>w.clientHeight+4;
+  const atEnd=(w.scrollTop+w.clientHeight)>=(w.scrollHeight-4);
+  wrap.classList.toggle('scrolls',scrolls);
+  wrap.classList.toggle('atend',atEnd);
 }
 function sugg(list){
-  const w=$('sugg');w.innerHTML='';w.classList.remove('more');w.scrollTop=0;
-  const wrap0=$('suggwrap'); if(wrap0)wrap0.classList.remove('more');
-  (list||[]).forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{w.innerHTML='';w.classList.remove('more');send(l);};w.appendChild(b);});
+  const w=$('sugg');w.innerHTML='';w.scrollTop=0;
+  const wrap0=$('suggwrap'); if(wrap0)wrap0.classList.remove('scrolls','atend');
+  (list||[]).forEach(l=>{const b=document.createElement('button');b.textContent=l;b.onclick=()=>{w.innerHTML='';send(l);};w.appendChild(b);});
   /* Only hint at a scroll when there actually is one — checked twice because
      the first frame can measure before the chips have wrapped. */
   const wrap=$('suggwrap');
