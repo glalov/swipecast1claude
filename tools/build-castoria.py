@@ -31,7 +31,10 @@ MARKUP = """<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assist
   <div class="thread" id="thread"></div>
   <div class="suggwrap" id="suggwrap">
     <div class="sugg" id="sugg"></div>
-    <button class="suggmore" id="suggmore" type="button" tabindex="-1">More questions <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="suggbar" id="suggbar">
+      <button class="suggmore" id="suggmore" type="button" tabindex="-1">More questions <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="suggfold" id="suggfold" type="button" aria-expanded="true" aria-controls="sugg" aria-label="Hide suggested questions"><span class="lbl" id="suggfoldlbl">Hide</span><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+    </div>
   </div>
   <div class="composer">
     <div class="emoji" id="emoji"></div>

@@ -223,18 +223,33 @@ h1 span{color:var(--out2);}
 .suggwrap.has{border-top:.5px solid var(--hair);}
 .suggwrap::before{content:"";position:absolute;left:0;right:0;top:-30px;height:30px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}
 .suggwrap.has.spill::before{opacity:1;}
-.suggmore{display:none;width:100%;height:24px;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:0;cursor:pointer;touch-action:manipulation;transition:opacity .2s;}
+/* The bottom row is a control strip, not just a hint: "More questions" hands
+   out the next batch, and the fold button collapses the whole chip block so the
+   answer gets the screen back. On a phone the strip is a third of the panel —
+   folding it is the difference between reading an answer and squinting at it
+   through a four-line window. */
+.suggbar{display:none;align-items:center;gap:8px;height:26px;padding:0 10px;}
+.suggwrap.has .suggbar{display:flex;}
+.suggmore{display:none;flex:1;min-width:0;height:26px;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity .2s;}
+.suggfold{margin-left:auto;display:flex;align-items:center;gap:4px;height:26px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--mute);background:transparent;border:0;padding:0 2px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.suggfold svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;}
+/* Folded: the chips are gone, the bar is the whole control and reads as the way
+   back to them. */
+.suggwrap.folded .sugg{display:none;}
+.suggwrap.folded .suggfold{flex:1;margin-left:0;justify-content:center;color:var(--brand);}
+.suggwrap.folded .suggfold svg{transform:rotate(180deg);}
+.suggwrap.folded::after{opacity:0;}
 /* The chip strip gets the same treatment as the thread: its clipped last row
    dissolves into the "More questions" line instead of being sliced. Sits above
-   the row (which is a fixed 24px), and only while there is more to scroll. */
-.suggwrap::after{content:"";position:absolute;left:0;right:0;bottom:24px;height:22px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}
-.suggwrap.scrolls:not(.atend)::after{opacity:1;}
-.suggwrap.scrolls .suggmore{display:flex;}
+   the row (which is a fixed 26px), and only while there is more to scroll. */
+.suggwrap::after{content:"";position:absolute;left:0;right:0;bottom:26px;height:22px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}
+.suggwrap.scrolls:not(.atend):not(.folded)::after{opacity:1;}
+.suggwrap.scrolls:not(.folded) .suggmore{display:flex;}
 .suggwrap.atend .suggmore{opacity:0;pointer-events:none;}
 .suggmore svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:nudgedown 1.8s ease-in-out infinite;}
 @keyframes nudgedown{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}
 @media(prefers-reduced-motion:reduce){.suggmore svg{animation:none}}
-.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:11px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
+.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:11px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;}
 @media(min-width:561px) and (max-height:720px){.sugg{max-height:120px;}}
 .sugg::-webkit-scrollbar{display:none}
 .sugg:empty{display:none}
@@ -401,7 +416,10 @@ h1 span{color:var(--out2);}
   <div class="thread" id="thread"></div>
   <div class="suggwrap" id="suggwrap">
     <div class="sugg" id="sugg"></div>
-    <button class="suggmore" id="suggmore" type="button" tabindex="-1">More questions <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="suggbar" id="suggbar">
+      <button class="suggmore" id="suggmore" type="button" tabindex="-1">More questions <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button class="suggfold" id="suggfold" type="button" aria-expanded="true" aria-controls="sugg" aria-label="Hide suggested questions"><span class="lbl" id="suggfoldlbl">Hide</span><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+    </div>
   </div>
   <div class="composer">
     <div class="emoji" id="emoji"></div>
@@ -3604,7 +3622,7 @@ function principlesLesson(shape,q){
 /* ── UI ──────────────────────────────────────────────────────── */
 const $=id=>document.getElementById(id);
 const NAMES={visitor:'',free:'Lena',premium:'Marcus'};
-const st={plan:'free',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,asked:new Set(),moreQueue:[],profile:{weak:[],declared:null,taught:[]},lastConcept:null};
+const st={plan:'free',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,asked:new Set(),moreQueue:[],suggFolded:false,profile:{weak:[],declared:null,taught:[]},lastConcept:null};
 const ctx=()=>({plan:st.plan,name:NAMES[st.plan]});
 /* How long the dots hold before an answer lands. */
 const THINK=()=>1400+Math.random()*260;
@@ -3887,12 +3905,65 @@ function refreshSuggHint(){
   const atEnd=!queued&&(w.scrollTop+w.clientHeight)>=(w.scrollHeight-4);
   wrap.classList.toggle('scrolls',scrolls);
   wrap.classList.toggle('atend',atEnd);
+  wrap.classList.toggle('folded',!!st.suggFolded);
+  const fold=$('suggfold'), lbl=$('suggfoldlbl');
+  if(fold&&lbl){
+    const n=w.children.length+(st.moreQueue?st.moreQueue.length:0);
+    lbl.textContent=st.suggFolded?('Show questions'+(n?' ('+n+')':'')):'Hide';
+    fold.setAttribute('aria-expanded',st.suggFolded?'false':'true');
+    fold.setAttribute('aria-label',st.suggFolded?'Show suggested questions':'Hide suggested questions');
+  }
+}
+/* Fold the chip block away so the answer has the panel to itself, and put it
+   back on the next press. The choice sticks for the rest of the conversation —
+   somebody who folded it once wants to read, not re-fold after every reply. */
+function toggleSuggFold(){
+  st.suggFolded=!st.suggFolded;
+  refreshSuggHint();
+  if(!st.suggFolded){const w=$('sugg');if(w)w.scrollTop=0;}
+  bottom();
+}
+/* ⚠️ iOS swallows the CLICK that follows a scroll, a flick's momentum, or any
+   repaint underneath the finger — which is why a chip used to need two or three
+   presses. Activation moved onto pointerup/touchend, which fires on the first
+   press every time; the synthesised click that arrives afterwards is ignored
+   for 700ms so nothing fires twice. Movement over 10px means the finger was
+   scrolling, not pressing, and nothing fires at all. */
+function tapBind(el,fn){
+  if(!el)return;
+  let sx=0,sy=0,t0=0,moved=false,fired=0;
+  const down=e=>{sx=e.clientX||0;sy=e.clientY||0;t0=Date.now();moved=false;};
+  const move=e=>{if(Math.abs((e.clientX||0)-sx)>10||Math.abs((e.clientY||0)-sy)>10)moved=true;};
+  const up=e=>{
+    if(moved||!t0||Date.now()-t0>900)return;
+    t0=0; fired=Date.now(); fn(e);
+  };
+  try{
+    el.addEventListener('pointerdown',down,{passive:true});
+    el.addEventListener('pointermove',move,{passive:true});
+    el.addEventListener('pointercancel',()=>{moved=true;},{passive:true});
+    el.addEventListener('pointerup',up);
+  }catch(_){}
+  /* Mouse, keyboard (Enter/Space on a focused button) and any browser without
+     pointer events still come through here. */
+  el.addEventListener('click',e=>{ if(Date.now()-fired<700)return; fn(e); });
 }
 function suggBtn(label){
   const b=document.createElement('button');
   b.type='button'; b.textContent=label;
-  b.onclick=()=>{$('sugg').innerHTML='';st.moreQueue=[];send(label);};
+  b.setAttribute('data-q',label);
   return b;
+}
+/* One listener on the strip instead of one per chip, so chips appended by
+   "More questions" are live the moment they render. */
+function askChip(e){
+  const t=(e.composedPath&&e.composedPath()[0])||e.target;
+  const b=t&&t.closest?t.closest('button[data-q]'):null;
+  if(!b)return;
+  const label=b.getAttribute('data-q');
+  $('sugg').innerHTML='';st.moreQueue=[];
+  refreshSuggHint();
+  send(label);
 }
 /* Adds more chips without disturbing the ones already on screen. */
 function suggAppend(list){
@@ -3905,6 +3976,7 @@ function sugg(list){
   const wrap0=$('suggwrap');
   if(wrap0)wrap0.classList.toggle('has',!!(list&&list.length));
   if(wrap0)wrap0.classList.remove('scrolls','atend');
+  if(wrap0)wrap0.classList.toggle('folded',!!st.suggFolded);
   (list||[]).forEach(l=>w.appendChild(suggBtn(l)));
   /* Only hint at a scroll when there actually is one — checked twice because
      the first frame can measure before the chips have wrapped. */
@@ -4336,12 +4408,19 @@ function wireTools(){
   const th=$('thread');
   if(th)th.onscroll=refreshThreadEdge;
 
+  tapBind($('sugg'),askChip);
+  tapBind($('suggfold'),toggleSuggFold);
+
   const tM2=$('suggmore');
-  if(tM2)tM2.onclick=function(){
+  if(tM2)tapBind(tM2,function(){
     /* Hand out the next batch before scrolling, so the button keeps revealing
        new questions all the way to the end of the pool instead of stopping
-       at whatever happened to be rendered. */
-    if(st.moreQueue&&st.moreQueue.length)suggAppend(st.moreQueue.splice(0,8));
+       at whatever happened to be rendered. A phone shows the strip at ~38vh,
+       roughly twice the desktop height, so a desktop-sized batch of 8 ran the
+       queue down in a handful of presses and looked like the list had ended —
+       the batch is measured against what the strip can actually show. */
+    const per=(typeof window!=='undefined'&&window.innerWidth<=560)?14:8;
+    if(st.moreQueue&&st.moreQueue.length)suggAppend(st.moreQueue.splice(0,per));
     /* Set it, then ask for smooth. Native smooth scrolling has a history of
        no-oping in this codebase and a rAF tween is throttled in a background
        tab — either can silently do nothing, so the assignment goes first and
@@ -4357,7 +4436,7 @@ function wireTools(){
       }
     }catch(_){ w.scrollTop=to; }
     refreshSuggHint();
-  };
+  });
 
   const tN=$('newchat');
   if(tN)tN.onclick=function(){
