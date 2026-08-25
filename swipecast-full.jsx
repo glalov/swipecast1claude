@@ -37428,6 +37428,23 @@ function App(){
   const myProfileRef=useRef(null);
   useEffect(()=>{myProfileRef.current=myProfile;},[myProfile]);
   const [authReady,setAuthReady]=useState(false);
+  // ── OAuth return: don't flash the landing page ───────────────────────────
+  // Google/Apple sign-in redirects back to the site ROOT, so the app boots on
+  // "home" and only moves to the member's dashboard once the session has been
+  // exchanged and the profile fetched. That read as: entry curtain falls →
+  // landing page for a beat → dashboard. While a login WE started is still
+  // resolving on a bare "/", hold the landing page back and show the loader,
+  // so the curtain lifts straight onto the destination.
+  const [oauthPending,setOauthPending]=useState(()=>{
+    try{return !!sessionStorage.getItem("sc_oauth_login")&&urlToPage()==="home";}catch(_){return false;}
+  });
+  // Safety net: if the sign-in never resolves (user backed out of the provider,
+  // network died), release the hold rather than sitting on a loader forever.
+  useEffect(()=>{
+    if(!oauthPending)return;
+    const t=setTimeout(()=>setOauthPending(false),6000);
+    return()=>clearTimeout(t);
+  },[oauthPending]);
   const [pendingApply,setPendingApply]=useState(null);
   const [openClassId,setOpenClassId]=useState(null);
   // Subject to pre-select when deep-linking into the contact form
@@ -37967,7 +37984,10 @@ function App(){
                 if(wasOAuth){
                   sessionStorage.removeItem("sc_oauth_login");
                   if(!routed&&s?.user){
-                    const {data:prof}=await window.sb.from("profiles").select("user_type,membership_status,headshot_url,created_at").eq("id",s.user.id).maybeSingle();
+                    // prof0 is the full row we just loaded — refetching it here
+                    // cost another round trip, and every extra millisecond is a
+                    // millisecond of landing page before the dashboard appears.
+                    const prof=prof0||(await window.sb.from("profiles").select("user_type,membership_status,headshot_url,created_at").eq("id",s.user.id).maybeSingle()).data;
                     const isAd2=prof?.user_type==="admin"||prof?.user_type==="super_admin";
                     let dest=null;
                     if(isAd2)dest="admin";
@@ -37980,11 +38000,12 @@ function App(){
                   }
                 }
               }catch(_){}
+              setOauthPending(false);
             }
           }
           else{setMyProfile(null);}
         }else if(e==="SIGNED_OUT"){
-          setMyProfile(null);
+          setMyProfile(null);setOauthPending(false);
         }
         // TOKEN_REFRESHED intentionally ignored — no profile re-fetch on hourly refresh.
       }catch(authErr){console.warn("[auth] onAuthStateChange error:",authErr?.message||authErr);}
@@ -38743,7 +38764,8 @@ function App(){
       {/* Stable route content wrapper — always holds at least viewport height so the
           footer never jumps upward during route transitions or while data loads. */}
       <main style={{flex:"1 1 auto",display:"flex",flexDirection:"column",minHeight:"100vh",overflowX:"clip"}}>
-        {page==="home"&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"home")}/>}
+        {page==="home"&&oauthPending&&<PageLoader/>}
+        {page==="home"&&!oauthPending&&<Landing onNavigate={navigate} castingsVersion={castingsVersion} isLoggedIn={isLoggedIn} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"home")}/>}
         {/* SearchPage is pre-mounted on home page too so it's already loaded when the
             user clicks Browse Castings — prevents the fresh-mount loading flash. */}
         {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
