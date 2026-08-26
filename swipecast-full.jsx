@@ -2283,6 +2283,7 @@ body.sheet-push .b2t-cube{display:none;}
   .footer-grid{grid-template-columns:1fr 1fr !important;}
   .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
   .casting-card-row{grid-template-columns:1fr !important;gap:16px !important;padding:18px !important;}
+  .cc-feat .casting-card-row{padding-left:28px !important;}   /* clear the slate rail */
   .casting-card-row-side{align-items:stretch !important;width:100%;flex-direction:row !important;flex-wrap:wrap;justify-content:space-between;}
   .casting-card-row-side button{flex:1 1 100%;}
   .landing-hero{grid-template-columns:1fr !important;gap:32px !important;padding:48px 20px 28px !important;text-align:center;}
@@ -2438,6 +2439,19 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-pill .p1{font-size:13.5px;font-weight:800;}
 .cc-pill .p2{font-size:13px;color:var(--t2);}
 .cc-pill-rest{font-size:13.5px;color:var(--t2);font-weight:600;}
+/* ── Cast Slate Pick: the slate rail ──────────────────────────────────────
+   A picked casting used to be marked with a 3px teal line along the TOP of
+   the card, which is what every other board does (Backstage's is coral) and
+   which reads as a divider between two cards rather than a mark on one — it
+   also scrolls out of view while the card it belongs to is still on screen.
+   The mark is a clapperboard stripe down the LEFT edge instead: vertical, so
+   it is there for as long as the card is, black-and-white so it is a shape
+   rather than a colour (it survives colour-blindness, sunlight and a phone),
+   and it is our own logo rather than an accent anybody can copy.
+   The white bands are the card's own white, so the rail reads as bars floating
+   at the edge. The "Cast Slate Pick" badge is deliberately unchanged. */
+.cc-rail{position:absolute;left:0;top:0;bottom:0;width:10px;pointer-events:none;
+         background:repeating-linear-gradient(147deg,#111111 0 9px,#FFFFFF 9px 18px);}
 .btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
 @media(max-width:768px){
   .cc-title{font-size:23px;}
@@ -13267,21 +13281,24 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;return(
-            <div key={c.id} style={{
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+            /* A picked card sits a touch further forward. Kept in a variable
+               because the hover handlers reset the shadow on the way out. */
+            const featShadow=isFeat?"0 2px 10px rgba(26,26,46,.08)":"0 1px 4px rgba(26,26,46,0.05)";return(
+            <div key={c.id} className={isFeat?"cc-feat":undefined} style={{
               padding:0,overflow:"hidden",cursor:isClosedCard?"default":"pointer",borderRadius:14,position:"relative",
               background:"var(--s1)",
-              border:"1px solid var(--bdr)",
-              borderTop:isFeat?"3px solid var(--teal)":"1px solid var(--bdr)",
-              boxShadow:"0 1px 4px rgba(26,26,46,0.05)",
+              border:isFeat?"1px solid #D9D2C2":"1px solid var(--bdr)",
+              boxShadow:featShadow,
               transition:"box-shadow .2s,transform .15s",
             }}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
-              onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=featShadow;e.currentTarget.style.transform="";}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
+              {isFeat&&<i className="cc-rail" aria-hidden="true"/>}
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={isArchived?"cs-archived-dim":undefined}>
-              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
+              <div className="casting-card-row" style={{padding:isFeat?"24px 28px 24px 40px":"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
                     {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"5px 12px",borderRadius:100,background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",fontSize:11,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
