@@ -832,12 +832,18 @@ body.sheet-push .b2t-cube{display:none;}
    on i would collapse the star itself — which is exactly what the old rubric
    CSS did to it (height:1px, and the hairline's gradient painted over it).
    ⚠️ This whole stylesheet is a JS template literal: no backticks in here. */
-/* ⚠️ The wash is measured in PIXELS, never in percent. A percentage stop makes
-   the gold band scale with the card, so a taller picked casting (one extra
-   chip, a wrapped title) carried visibly more gold than a short one and the
-   two stopped reading as the same treatment. A fixed stop gives every picked
-   card an identical band no matter how much content sits under it. */
-.cc-picked{background:linear-gradient(180deg,#FFFCF4 0,#FFFFFF 220px);}
+/* The gold wash, and the two rules that keep it identical on every pick:
+   ⚠️ 1. PIXELS, never percent. A percentage stop makes the band scale with the
+      card, so a taller casting (an extra chip, a wrapped title) carried
+      visibly more gold than a short one.
+   ⚠️ 2. It must END ABOVE THE CHIP STRIP (~193px). Every picked card is
+      pixel-identical down to the title — pill 19-45, badges 56-83, title
+      95-126 — and only diverges at the strip, where one casting shows a
+      deadline chip and another two long beige ones. Beige chips (--s2) are
+      close enough to the wash to merge with it, so a strip sitting ON the
+      gold read as far more gold, even though the gradient was identical.
+      Washing only the constant region makes that impossible. */
+.cc-picked{background:linear-gradient(180deg,#FFFCF4 0,#FFFFFF 165px);}
 .cc-pickrow{margin-bottom:11px;}
 .cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
           background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
