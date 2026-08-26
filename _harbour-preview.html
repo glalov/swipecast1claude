@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Resources</title>
-  <meta name="description" content="Guides and resources for actors and casting directors on the CastSlate platform."/>
+  <title>CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater</title>
+  <meta name="description" content="CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."/>
   <meta name="robots" content="index, follow"/>
   <meta name="theme-color" content="#6366f1"/>
   <meta name="google-site-verification" content="yMDmFzYmFlDLSIqxjBMRSD-Lzmsk57k9rr2UZUdjBbM"/>
@@ -42,21 +42,21 @@
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=771635836224410&amp;ev=PageView&amp;noscript=1"/></noscript>
   <!-- End Meta Pixel Code -->
-  <link rel="canonical" href="https://www.castslate.com/resources"/>
+  <link rel="canonical" href="https://www.castslate.com/"/>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>
   <meta property="og:type" content="website"/>
-  <meta property="og:title" content="Resources"/>
-  <meta property="og:description" content="Guides and resources for actors and casting directors on the CastSlate platform."/>
-  <meta property="og:url" content="https://www.castslate.com/resources"/>
+  <meta property="og:title" content="CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater"/>
+  <meta property="og:description" content="CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."/>
+  <meta property="og:url" content="https://www.castslate.com/"/>
   <meta property="og:image" content="https://www.castslate.com/og-image.png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
   <meta property="og:image:alt" content="CastSlate — Casting, finally built for actors"/>
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="Resources"/>
-  <meta name="twitter:description" content="Guides and resources for actors and casting directors on the CastSlate platform."/>
+  <meta name="twitter:title" content="CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater"/>
+  <meta name="twitter:description" content="CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."/>
   <meta name="twitter:image" content="https://www.castslate.com/og-image.png"/>
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico?v=6" sizes="any"/>
@@ -95,18 +95,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260826-233938"/>
+  <link rel="preload" as="script" href="/app.js?v=20260826-183502"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260826-233938 -->
-  <meta name="build-version" content="20260826-233938"/>
+  <!-- BUILD: 20260826-183502 -->
+  <meta name="build-version" content="20260826-183502"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260826-233938";
+        var B="20260826-183502";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -205,6 +205,19 @@
     @keyframes cs-spin{from{-webkit-transform:rotate(0);transform:rotate(0);}to{-webkit-transform:rotate(360deg);transform:rotate(360deg);}}
     @media (prefers-reduced-motion: reduce){#cs-intro{display:none;}}
   </style>
+<style id="harbour-preview">
+/* LOCAL PREVIEW ONLY — every teal surface on the site mapped to a Harbour ramp.
+   teal ramp   #5C9FA0 / #4F8A8B / #3B6E6F / #37696A
+   harbour ramp #3E6A9B / #2C4F78 / #1E3A5F / #23405F */
+:root{--teal:#2C4F78 !important;--teal-dk:#23405F !important;}
+.home-cta-inner{background:linear-gradient(135deg,#3E6A9B 0%,#2C4F78 45%,#1E3A5F 100%) !important;}
+.cd-panel{background:linear-gradient(160deg,#3E6A9B 0%,#2C4F78 48%,#1E3A5F 100%) !important;}
+.login-hero{background:#1E3A5F !important;}
+.footer-cookie-card{background:linear-gradient(135deg,#2C4F78,#1E3A5F) !important;}
+.rl-more{color:#23405F !important;}
+.rl-more:hover{color:#2C4F78 !important;}
+.rb-navbtn{color:#23405F !important;border-color:#cfd8e2 !important;}
+</style>
 </head>
 <body>
   <!-- Intro reveal — logo fades in & the cube spins, then the black curtain (#cs-intro-bg)
@@ -425,7 +438,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260826-233938"
+        "/app.js?v=20260826-183502"
       ];
       function step(){
         var it=STEPS.shift();
@@ -466,7 +479,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260826-233938';
+      s.src='/castoria.js?v=20260826-183502';
       s.async=true;
       document.body.appendChild(s);
     }

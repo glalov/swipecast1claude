@@ -1633,7 +1633,7 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#4F8A8B;--teal-dk:#37696A;--amber:#E8902A;--amber-dk:#C8761B;}
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
 *{box-sizing:border-box;}
 html{width:100%;max-width:100%;}
@@ -2461,18 +2461,19 @@ body.sheet-push .b2t-cube{display:none;}
    on i would collapse the star itself — which is exactly what the old rubric
    CSS did to it (height:1px, and the hairline's gradient painted over it).
    ⚠️ This whole stylesheet is a JS template literal: no backticks in here. */
-/* The gold wash, and the two rules that keep it identical on every pick:
-   ⚠️ 1. PIXELS, never percent. A percentage stop makes the band scale with the
-      card, so a taller casting (an extra chip, a wrapped title) carried
-      visibly more gold than a short one.
-   ⚠️ 2. It must END ABOVE THE CHIP STRIP (~193px). Every picked card is
-      pixel-identical down to the title — pill 19-45, badges 56-83, title
-      95-126 — and only diverges at the strip, where one casting shows a
-      deadline chip and another two long beige ones. Beige chips (--s2) are
-      close enough to the wash to merge with it, so a strip sitting ON the
-      gold read as far more gold, even though the gradient was identical.
-      Washing only the constant region makes that impossible. */
-.cc-picked{background:linear-gradient(180deg,#FFFCF4 0,#FFFFFF 165px);}
+/* ⚠️ A picked card has NO tint, and that is a decision — do not add one back.
+   It carried a warm wash through three revisions and never read as equal
+   between two picks, because a tint is only half of what the eye sees: the
+   other half is the content sitting on it, and that varies per casting. One
+   casting shows two long beige chips (--s2, close enough to a warm ground to
+   merge with it) plus a red deadline chip; another shows one beige chip and a
+   COOL green ID-Verified badge that cancels the warmth. Same gradient, two
+   different amounts of perceived gold — measured, not guessed: the warmer-
+   looking card actually exposed LESS background (81% vs 87%).
+   Fixing the stop in pixels and then ending it above the chip strip both
+   helped and neither was enough. What is left is a 1px gold hairline and the
+   gold pill: identical on every pick, incapable of interacting with content. */
+.cc-picked{background:var(--s1);}
 .cc-pickrow{margin-bottom:11px;}
 .cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
           background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
