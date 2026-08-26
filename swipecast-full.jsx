@@ -2438,22 +2438,34 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-pill .p1{font-size:13.5px;font-weight:800;}
 .cc-pill .p2{font-size:13px;color:var(--t2);}
 .cc-pill-rest{font-size:13.5px;color:var(--t2);font-weight:600;}
-/* ── Cast Slate Pick: the rubric ──────────────────────────────────────────
-   A picked casting was marked with a 3px teal rule along the top of the card,
-   which is what every other board does (Backstage's is coral); it reads as a
-   divider BETWEEN two cards rather than a mark on one, and it scrolls away
-   while the card it belongs to is still on screen. A full-height clapper rail
-   down the left edge replaced it and was too literal — the logo said out loud.
-   The mark now sits OUTSIDE the card entirely: a letterspaced line on the page
-   above it with a hairline running off to the right, the way a magazine names
-   a section before the article starts. The card itself is left completely
-   alone — same border, same shadow, same everything as its neighbours — so
-   the pick is labelled rather than decorated, and there is room in the line
-   for a REASON ("8 roles, casting this week") if we ever want one. */
-.cc-rubric{display:flex;align-items:center;gap:12px;padding:0 4px 9px;}
-.cc-rubric b{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;
-             letter-spacing:.15em;text-transform:uppercase;color:#5C5545;white-space:nowrap;}
-.cc-rubric i{flex:1;height:1px;background:linear-gradient(to right,#D9D2C2,rgba(217,210,194,0));}
+/* ── Cast Slate Pick: the gold frame ──────────────────────────────────────
+   Four treatments preceded this one and each failed differently: a 3px teal
+   rule on top (what every other board does — it reads as a DIVIDER between
+   two cards, and scrolls away while its own card is still on screen); a
+   full-height clapper rail down the left edge (too literal — the logo said
+   out loud); a letterspaced rubric on the page above the card (fine, but the
+   card also carried a "Cast Slate Pick" badge, so the same words appeared
+   twice on one listing).
+   Now: ONE label inside the card, and the card itself drawn in gold.
+   Two things carry the effect and both are deliberate —
+     • the border is a 1px HAIRLINE. At 1.5px gold reads as a highlight; at
+       1px it reads as foil. Never thicken this rule to make the card louder.
+     • the paper is warmed a single shade, which is what the eye actually
+       catches from across a page. If the mark ever reads too quiet, warm the
+       paper further — do not thicken the rule.
+   The pill is the only FILLED gold on the card; everything else is one line
+   and a warm sheet. The teal View Roles button stays the only saturated
+   element, as everywhere else on this card.
+   ⚠️ Scope these selectors with a child combinator and never with a bare i:
+   Ico renders an <i class="ti ti-…"> icon-font element, so a descendant rule
+   on i would collapse the star itself — which is exactly what the old rubric
+   CSS did to it (height:1px, and the hairline's gradient painted over it).
+   ⚠️ This whole stylesheet is a JS template literal: no backticks in here. */
+.cc-pickrow{margin-bottom:11px;}
+.cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
+          background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
+          font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;}
+.cc-gpill > .ti{color:#B08327;}
 .btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
 @media(max-width:768px){
   .cc-title{font-size:23px;}
@@ -13283,27 +13295,30 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;return(
-            <div key={c.id}>
-            {/* The pick is named above the card, on the page itself. The card
-                below stays identical to every other card — that is the point. */}
-            {isFeat&&<div className="cc-rubric"><b><Ico n="star" s={13}/> Cast Slate Pick</b><i/></div>}
-            <div style={{
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+            /* A picked card rests on a gold-tinted lift. Kept in a variable
+               because the hover handlers restore the shadow on the way out. */
+            const restShadow=isFeat
+              ?"0 1px 4px rgba(26,26,46,.05),0 6px 18px rgba(176,131,39,.07)"
+              :"0 1px 4px rgba(26,26,46,0.05)";return(
+            <div key={c.id} style={{
               padding:0,overflow:"hidden",cursor:isClosedCard?"default":"pointer",borderRadius:14,position:"relative",
-              background:"var(--s1)",
-              border:"1px solid var(--bdr)",
-              boxShadow:"0 1px 4px rgba(26,26,46,0.05)",
+              background:isFeat?"linear-gradient(180deg,#FFFCF4 0%,#FFFFFF 62%)":"var(--s1)",
+              border:isFeat?"1px solid #D2A24A":"1px solid var(--bdr)",
+              boxShadow:restShadow,
               transition:"box-shadow .2s,transform .15s",
             }}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
-              onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 1px 4px rgba(26,26,46,0.05)";e.currentTarget.style.transform="";}}
+              onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={isArchived?"cs-archived-dim":undefined}>
               <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
                 <div>
+                  {/* The pick gets its own line above the type badges — sharing
+                      that row made the top of the card a wall of pills. */}
+                  {isFeat&&<div className="cc-pickrow"><span className="cc-gpill"><Ico n="star" s={12}/> Cast Slate Pick</span></div>}
                   <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-                    {isFeat&&<span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"5px 12px",borderRadius:100,background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",fontSize:11,fontWeight:800,letterSpacing:"0.06em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
                     <span className="cc-badge">{translateCastingType(c.type,lang)}</span>
                     <span className="cc-badge">{c.union}</span>
                     {isExpiredCasting&&!isArchived&&<span className="cc-badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
@@ -13374,7 +13389,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 </div>
               </div>
               </div>
-            </div>
             </div>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
             <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:32,flexWrap:"wrap"}}>
