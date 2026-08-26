@@ -2409,8 +2409,13 @@ body.sheet-push .b2t-cube{display:none;}
    The old card printed the deciding facts (pay, deadline, roles) at 11–12px in
    the same grey as everything else, while decorative badges shared their
    weight. This scale lifts the type to a readable size and gives the facts
-   their own colour: money green, deadline warm red, roles blue, and the
-   type/union badges pushed down to neutral so they stop competing.
+   their own colour: roles blue, deadline warm red, and the type/union badges
+   pushed down to neutral so they stop competing.
+   Money is deliberately the quiet one. It was a filled dark-green badge, which
+   put a second saturated element next to the teal button and got the number
+   judged before the project was — the pay is a tint now, readable at a glance
+   and nothing more. The View Roles button is the only saturated thing on the
+   card, and it should stay that way.
    Do NOT write a rule inside this comment — CSS comments do not nest and the
    next rule gets swallowed (see the .fcs-section note elsewhere in this file). */
 .cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:6px;color:var(--t1);}
@@ -2420,20 +2425,18 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
 .cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
          background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
-.cc-chip.pay{background:#0b6b47;border-color:#0b6b47;color:#fff;}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52;}   /* a tint, not a badge — see the note above .cc-title */
 .cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
 .cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff;}
 .cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
 .cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px;}
 .cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;
-         background:var(--s1);padding:7px 6px 7px 13px;cursor:pointer;font:inherit;color:var(--t1);
+         background:var(--s1);padding:7px 14px;cursor:pointer;font:inherit;color:var(--t1);
          transition:border-color .15s,box-shadow .15s;}
 .cc-pill:hover{border-color:var(--teal);box-shadow:0 1px 5px rgba(26,26,46,.08);}
 .cc-pill .p1{font-size:13.5px;font-weight:800;}
 .cc-pill .p2{font-size:13px;color:var(--t2);}
-.cc-pill .p3{font-size:13px;font-weight:800;color:#fff;background:#0b6b47;border-radius:999px;padding:3px 10px;}
-.cc-pill .p3.tbd{background:var(--s3);color:var(--t2);}
 .cc-pill-rest{font-size:13.5px;color:var(--t2);font-weight:600;}
 .btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
 @media(max-width:768px){
@@ -12761,12 +12764,6 @@ function roleCardSpec(role){
   if(a)bits.push(a.replace(/-/g,"–"));
   return bits.join(" · ");
 }
-function roleCardRate(role){
-  const n=Number(role&&role.rate_amount);
-  if(!isFinite(n)||n<=0)return null;
-  return "$"+n.toLocaleString();
-}
-
 function castingIsExpired(casting){
   if(!casting)return false;
   try{
@@ -13300,8 +13297,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {c.prod&&<p className="cc-prod">{c.prod}{c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}</p>}
                   {/* The facts an actor decides on, in the order they decide in:
                       how many parts, what it pays, how long it is open, where,
-                      how fresh. Colour marks importance — money and deadline are
-                      never the same weight as the type badge again. */}
+                      how fresh. The deadline is the only loud one — it is a real
+                      signal, not decoration. */}
                   {(()=>{
                     const rateLine=castingTopRate(c);
                     const roleCount=c.roles?.length||0;
@@ -13324,7 +13321,14 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {/* Role pills. Each one opens THIS casting on THAT role, so a
                       talent goes from recognising themselves to the application
                       in one tap. Closed listings show them flat (no click), so a
-                      filled casting can never start an application. */}
+                      filled casting can never start an application.
+                      ⚠️ No rate here, on purpose. The pay belongs to the casting,
+                      and it is already in the strip above as a top line ("up to
+                      $300/day"); repeating it per role added nothing, anchored
+                      the reader on the SMALLEST number on the card, and turned
+                      theatre listings into a row of "Rate on request" shrugs.
+                      Rank, gender and age range only — the rate is on the
+                      casting page, one tap away. */}
                   {(()=>{
                     const pick=castingCardRoles(c,3);
                     if(!pick.shown.length)return null;
@@ -13332,9 +13336,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                       <div className="cc-pills">
                         {pick.shown.map((r,i)=>{
                           const spec=roleCardSpec(r);
-                          const rate=roleCardRate(r);
                           const label=r.type||r.role_type||"Role";
-                          const inner=<><span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}<span className={"p3"+(rate?"":" tbd")}>{rate||"Rate on request"}</span></>;
+                          const inner=<><span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}</>;
                           return isClosedCard
                             ?<span key={r.id||i} className="cc-pill" style={{cursor:"default",opacity:.65}}>{inner}</span>
                             :<button key={r.id||i} type="button" className="cc-pill" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{inner}</button>;
