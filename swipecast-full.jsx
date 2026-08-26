@@ -2461,6 +2461,12 @@ body.sheet-push .b2t-cube{display:none;}
    on i would collapse the star itself — which is exactly what the old rubric
    CSS did to it (height:1px, and the hairline's gradient painted over it).
    ⚠️ This whole stylesheet is a JS template literal: no backticks in here. */
+/* ⚠️ The wash is measured in PIXELS, never in percent. A percentage stop makes
+   the gold band scale with the card, so a taller picked casting (one extra
+   chip, a wrapped title) carried visibly more gold than a short one and the
+   two stopped reading as the same treatment. A fixed stop gives every picked
+   card an identical band no matter how much content sits under it. */
+.cc-picked{background:linear-gradient(180deg,#FFFCF4 0,#FFFFFF 220px);}
 .cc-pickrow{margin-bottom:11px;}
 .cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
           background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
@@ -13301,9 +13307,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             const restShadow=isFeat
               ?"0 1px 4px rgba(26,26,46,.05),0 6px 18px rgba(176,131,39,.07)"
               :"0 1px 4px rgba(26,26,46,0.05)";return(
-            <div key={c.id} style={{
+            <div key={c.id} className={isFeat?"cc-picked":undefined} style={{
               padding:0,overflow:"hidden",cursor:isClosedCard?"default":"pointer",borderRadius:14,position:"relative",
-              background:isFeat?"linear-gradient(180deg,#FFFCF4 0%,#FFFFFF 62%)":"var(--s1)",
+              background:isFeat?undefined:"var(--s1)",   /* picked: the wash lives in .cc-picked */
               border:isFeat?"1px solid #D2A24A":"1px solid var(--bdr)",
               boxShadow:restShadow,
               transition:"box-shadow .2s,transform .15s",
