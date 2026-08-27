@@ -804,6 +804,287 @@ function DirectorChairAvatar({size=52}){
 // Project / production types offered in the CD post form and the admin generator.
 const PROJECT_TYPE_OPTIONS=["Feature Film","Short Film","Student Film","Independent Film","Documentary","TV Series","TV Pilot","Web Series","Streaming Series","Commercial","Social Media Ad","Branded Content","Corporate Video","Industrial / Training Video","Promo Video","Product Demo","Music Video","Voiceover","Podcast / Audio Drama","Animation","Video Game","Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Live Event","Hosting / Presenter","Reality / Docu-Series","Lifestyle / Unscripted","Modeling","Print Campaign","Photo Shoot","Influencer / UGC Content","Educational Video","Public Service Announcement","Spec Commercial","Proof of Concept","Sizzle Reel","Pitch Trailer","Table Read","Experimental Film","Dance Project","Performance Art","Background / Extras","Stand-In","Body Double","Stunts","Motion Capture","Limited Series","Miniseries","Vertical Series","Pilot Presentation","Ad Campaign","Other"];
 
+
+/* ── Project-type icons ───────────────────────────────────────────────────
+   One solid glyph per entry in PROJECT_TYPE_OPTIONS, shown as a tinted tile
+   in the left column of the browse card. Two rules keep this honest:
+     1. The tile is driven by the RAW english type. c.type is translated for
+        display (getTranslatedCasting swaps it for Spanish), so passing the
+        translated string here would drop the icon on /es — always pass the
+        untranslated casting.
+     2. Colour comes from the group, never from the individual type. Eleven
+        hues, learnable; fifty-five would be noise.
+   The DB holds ~30 legacy/generator type strings that were never in the
+   dropdown ("Horror Short Talent Pool", "Hand Model", "VR / AR Project").
+   PROJECT_TYPE_ALIASES points each at the canonical type whose glyph
+   actually describes the work, so nothing falls through to the dot cluster
+   unless it genuinely is miscellaneous. */
+const PROJECT_TYPE_GLYPHS={
+  "Feature Film":'<path d="M2.6 9.4h18.8v9.2a2.6 2.6 0 0 1-2.6 2.6H5.2a2.6 2.6 0 0 1-2.6-2.6z"/><path d="M2.6 4.5a1.3 1.3 0 0 1 1.3-1.3h16.2a1.3 1.3 0 0 1 1.3 1.3v3.6H2.6z"/><g fill="var(--k)"><path d="M7.4 3.2h1.9L7.6 8.1H5.7z"/><path d="M12.4 3.2h1.9l-1.7 4.9h-1.9z"/><path d="M17.4 3.2h1.9l-1.7 4.9h-1.9z"/></g>',
+  "Short Film":'<rect x="2.6" y="4.4" width="18.8" height="15.2" rx="2.2"/><g fill="var(--k)"><rect x="4.6" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="8.6" y="6.4" width="6.8" height="11.2" rx="1"/></g>',
+  "Student Film":'<path d="M12 2.4 22.6 7.2 12 12 1.4 7.2z"/><path d="M5.9 10.2v4.6c0 2 2.7 3.6 6.1 3.6s6.1-1.6 6.1-3.6v-4.6L12 13.5z"/><path d="M20.8 8.8v5.4a1 1 0 0 1-2 0V8.8z"/>',
+  "Independent Film":'<circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g>',
+  "Documentary":'<path d="M2.4 7.6a1.9 1.9 0 0 1 1.9-1.9h9.4a1.9 1.9 0 0 1 1.9 1.9v1.9l4.6-2.7a1 1 0 0 1 1.5.9v8.6a1 1 0 0 1-1.5.9L15.6 14.5v1.9a1.9 1.9 0 0 1-1.9 1.9H4.3a1.9 1.9 0 0 1-1.9-1.9z"/><circle cx="8" cy="12" r="2.7" fill="var(--k)"/>',
+  "Experimental Film":'<circle cx="7.8" cy="8.2" r="5.6"/><path d="M16.6 3.4 22.2 13H11z"/><rect x="9.4" y="14.6" width="9.8" height="7.2" rx="1.4"/>',
+  "TV Series":'<path d="M5.6 2.4 8.9 5.7h6.2l3.3-3.3 1.5 1.5-1.8 1.8h1.4a1.9 1.9 0 0 1 1.9 1.9v10.6a1.9 1.9 0 0 1-1.9 1.9H3.5a1.9 1.9 0 0 1-1.9-1.9V7.6a1.9 1.9 0 0 1 1.9-1.9h1.4L3.1 3.9z"/><rect x="3.9" y="9.3" width="10.9" height="8.4" rx="1.1" fill="var(--k)"/><rect x="16.9" y="9.5" width="3.1" height="2.5" rx=".8" fill="var(--k)"/><rect x="16.9" y="13.4" width="3.1" height="2.5" rx=".8" fill="var(--k)"/>',
+  "TV Pilot":'<rect x="2.4" y="8.4" width="19.2" height="12.4" rx="2.4"/><rect x="4.6" y="10.6" width="14.8" height="8" rx="1.1" fill="var(--k)"/><path d="M22.2 1.6 11.8 5.8l3.7 1.2 1.2 3.7z"/>',
+  "Web Series":'<rect x="1.9" y="3.9" width="20.2" height="16.2" rx="2.4"/><rect x="1.9" y="8.4" width="20.2" height="1.5" fill="var(--k)"/><g fill="var(--k)"><circle cx="5.2" cy="6.2" r="1"/><circle cx="8.1" cy="6.2" r="1"/><circle cx="11" cy="6.2" r="1"/><path d="M10.1 11.6 15.9 14.9l-5.8 3.3z"/></g>',
+  "Streaming Series":'<rect x="2.2" y="4.2" width="19.6" height="12.8" rx="2.2"/><path d="M8.8 19.4h6.4a1.1 1.1 0 0 1 0 2.2H8.8a1.1 1.1 0 0 1 0-2.2z"/><g fill="var(--k)"><circle cx="8.2" cy="13.8" r="1.6"/><path d="M8.2 10.2a3.6 3.6 0 0 1 3.6 3.6H9.9a1.7 1.7 0 0 0-1.7-1.7z"/><path d="M8.2 6.8A7 7 0 0 1 15.2 13.8h-1.9a5.1 5.1 0 0 0-5.1-5.1z"/></g>',
+  "Limited Series":'<rect x="5.4" y="2.4" width="13.2" height="3.2" rx="1.4"/><rect x="3.6" y="7" width="16.8" height="3.6" rx="1.5"/><rect x="2.2" y="12.1" width="19.6" height="7.3" rx="2"/><rect x="2.2" y="20.8" width="19.6" height="1.9" rx=".95"/>',
+  "Miniseries":'<rect x="2.4" y="4.2" width="19.2" height="4.6" rx="1.6"/><rect x="2.4" y="9.7" width="19.2" height="4.6" rx="1.6"/><rect x="2.4" y="15.2" width="19.2" height="4.6" rx="1.6"/>',
+  "Vertical Series":'<rect x="6.6" y="1.8" width="10.8" height="20.4" rx="2.8"/><path d="M10.4 8.5 15.7 12l-5.3 3.5z" fill="var(--k)"/>',
+  "Pilot Presentation":'<rect x="2.6" y="2.6" width="18.8" height="12.6" rx="2"/><path d="M11.1 15.4h1.8l4.4 6.1a1.05 1.05 0 0 1-1.7 1.2L12 17.7l-3.6 5a1.05 1.05 0 0 1-1.7-1.2z"/><path d="M9.9 6.4 15.1 8.9l-5.2 2.5z" fill="var(--k)"/>',
+  "Commercial":'<path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/>',
+  "Social Media Ad":'<rect x="5.6" y="1.8" width="12.8" height="20.4" rx="2.8"/><path d="M12 17.6c-3.2-2.1-4.9-3.8-4.9-5.9a2.75 2.75 0 0 1 4.9-1.75 2.75 2.75 0 0 1 4.9 1.75c0 2.1-1.7 3.8-4.9 5.9z" fill="var(--k)"/>',
+  "Branded Content":'<path d="M11.4 2.4H19a2.6 2.6 0 0 1 2.6 2.6v7.6a2.6 2.6 0 0 1-.76 1.84l-6.8 6.8a2.6 2.6 0 0 1-3.68 0l-7.6-7.6a2.6 2.6 0 0 1 0-3.68l6.8-6.8a2.6 2.6 0 0 1 1.84-.76z"/><circle cx="16.9" cy="7.1" r="1.95" fill="var(--k)"/>',
+  "Spec Commercial":'<path d="M12.6 3.4a1.1 1.1 0 0 1 1.8.85v14.5a1.1 1.1 0 0 1-1.8.85L7.8 15.6H5a2.2 2.2 0 0 1-2.2-2.2v-3.4A2.2 2.2 0 0 1 5 7.8h2.8z"/><path d="M18.9 2.2 19.7 4.1l1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/><path d="M18.9 16.4l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7z"/>',
+  "Ad Campaign":'<rect x="2.2" y="3.4" width="19.6" height="11.6" rx="2"/><path d="M10.9 15.6h2.2v6.6a1.1 1.1 0 0 1-2.2 0z"/><path d="M6.4 20.9h11.2a1 1 0 0 1 0 2H6.4a1 1 0 0 1 0-2z"/><g fill="var(--k)"><rect x="4.8" y="6" width="9.4" height="1.9" rx=".95"/><rect x="4.8" y="9.6" width="6.4" height="1.9" rx=".95"/></g>',
+  "Promo Video":'<path d="M12 1.8 14.5 8l6.6.3-5.2 4.1 1.8 6.4L12 15.2l-5.7 3.6 1.8-6.4L2.9 8.3 9.5 8z"/><path d="M10.2 8.7 14.5 11.1l-4.3 2.5z" fill="var(--k)"/>',
+  "Product Demo":'<path d="M12 1.8 21.6 6.6v10.8L12 22.2 2.4 17.4V6.6z"/><path d="M12 4.4 6.2 7.3 12 10.2l5.8-2.9z" fill="var(--k)"/><path d="M5 8.9v7.3l6 3v-7.3z" fill="var(--k)"/>',
+  "Corporate Video":'<path d="M3.4 3.4h11.2a1.4 1.4 0 0 1 1.4 1.4v15.8H3.4A1.4 1.4 0 0 1 2 19.2V4.8a1.4 1.4 0 0 1 1.4-1.4z"/><path d="M17.4 9.4h3.2a1.4 1.4 0 0 1 1.4 1.4v9.8h-4.6z"/><g fill="var(--k)"><rect x="4.9" y="6" width="2.4" height="2.4" rx=".6"/><rect x="9.3" y="6" width="2.4" height="2.4" rx=".6"/><rect x="4.9" y="10.4" width="2.4" height="2.4" rx=".6"/><rect x="9.3" y="10.4" width="2.4" height="2.4" rx=".6"/><rect x="4.9" y="14.8" width="2.4" height="2.4" rx=".6"/><rect x="9.3" y="14.8" width="2.4" height="2.4" rx=".6"/></g>',
+  "Industrial / Training Video":'<path d="M2.8 16.4a9.2 9.2 0 0 1 4.6-7.96V6.2A1.6 1.6 0 0 1 9 4.6h6a1.6 1.6 0 0 1 1.6 1.6v2.24a9.2 9.2 0 0 1 4.6 7.96z"/><path d="M2 17.7h20a1.15 1.15 0 0 1 0 2.7H2a1.15 1.15 0 0 1 0-2.7z"/>',
+  "Educational Video":'<path d="M3 4.4A2 2 0 0 1 5 2.4h13.4A1.6 1.6 0 0 1 20 4v13.2H5a2 2 0 0 0-2 2z"/><path d="M5 19.2h15v2.4H5a1.2 1.2 0 0 1 0-2.4z"/><path d="M9.6 7.1 14.9 9.8l-5.3 2.7z" fill="var(--k)"/>',
+  "Public Service Announcement":'<path d="M11 9.4h2l2.7 12a1 1 0 0 1-1 1.2h-.8l-.85-3.8h-3.1L9.1 22.6h-.8a1 1 0 0 1-1-1.2z"/><circle cx="12" cy="6.2" r="2.3"/><path d="M6.7 1.4a1.1 1.1 0 0 1 1.5 1.6 4.7 4.7 0 0 0 0 6.6 1.1 1.1 0 0 1-1.5 1.6 6.9 6.9 0 0 1 0-9.8z"/><path d="M17.3 1.4a6.9 6.9 0 0 1 0 9.8 1.1 1.1 0 0 1-1.5-1.6 4.7 4.7 0 0 0 0-6.6 1.1 1.1 0 0 1 1.5-1.6z"/>',
+  "Music Video":'<path d="M20.4 2.2a1.2 1.2 0 0 1 1.4 1.2v11.5a4 4 0 1 1-2.4-3.66V6.9l-7.6 1.9v9a4 4 0 1 1-2.4-3.66V6.6a1.2 1.2 0 0 1 .9-1.16z"/>',
+  "Voiceover":'<rect x="8.6" y="1.8" width="6.8" height="12.4" rx="3.4"/><path d="M4.6 10.6a1.2 1.2 0 0 1 2.4 0 5 5 0 0 0 10 0 1.2 1.2 0 0 1 2.4 0 7.4 7.4 0 0 1-6.2 7.3v2.5h2.4a1.2 1.2 0 0 1 0 2.4H8.4a1.2 1.2 0 0 1 0-2.4h2.4v-2.5a7.4 7.4 0 0 1-6.2-7.3"/>',
+  "Podcast / Audio Drama":'<path d="M2.9 14.3v-1.4a9.1 9.1 0 0 1 18.2 0v1.4h-2.5v-1.4a6.6 6.6 0 0 0-13.2 0v1.4z"/><rect x="1.7" y="13.5" width="4.7" height="8.1" rx="2.35"/><rect x="17.6" y="13.5" width="4.7" height="8.1" rx="2.35"/>',
+  "Animation":'<circle cx="16.8" cy="15.8" r="5.4"/><circle cx="4.4" cy="5.6" r="2.5"/><path d="M3.1 20.6a1.2 1.2 0 0 1-.6-2.3C7.7 15.6 10.6 10.9 11.6 4.4a1.2 1.2 0 0 1 2.4.36c-1.1 7.3-4.7 12.8-10.9 15.8z"/>',
+  "Video Game":'<path d="M7.4 6.4h9.2a6.4 6.4 0 0 1 6.3 7.5l-.7 4a3 3 0 0 1-5.4 1.2l-2-2.6H9.2l-2 2.6a3 3 0 0 1-5.4-1.2l-.7-4A6.4 6.4 0 0 1 7.4 6.4z"/><g fill="var(--k)"><rect x="5.3" y="10.6" width="4.6" height="1.8" rx=".9"/><rect x="6.7" y="9.2" width="1.8" height="4.6" rx=".9"/><circle cx="16.4" cy="10.7" r="1.35"/><circle cx="18.8" cy="13.1" r="1.35"/></g>',
+  "Theater":'<rect x="2.2" y="2.8" width="19.6" height="2.5" rx="1.25"/><path d="M2.4 5.3h4.5c0 7.7-1 12.8-3.3 16.9H2.4z"/><path d="M21.6 5.3h-4.5c0 7.7 1 12.8 3.3 16.9h1.2z"/><path d="M9.5 5.3h5c0 5.1-1 8.8-2.5 10.9-1.5-2.1-2.5-5.8-2.5-10.9z"/>',
+  "Off-Broadway Theater":'<path d="M2.4 8.6 5.6 3.4h12.8l3.2 5.2z"/><path d="M3.4 10.4h17.2v8.2a2 2 0 0 1-2 2H5.4a2 2 0 0 1-2-2z"/><g fill="var(--k)"><rect x="6" y="13" width="12" height="1.7" rx=".85"/><rect x="7.6" y="16.1" width="8.8" height="1.7" rx=".85"/></g>',
+  "Off-Off-Broadway Theater":'<rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/>',
+  "Musical Theater":'<rect x="2.2" y="2.4" width="19.6" height="2.4" rx="1.2"/><path d="M2.4 4.8h3.4c0 7.6-.9 12.6-2.6 16.6H2.4z"/><path d="M21.6 4.8h-3.4c0 7.6.9 12.6 2.6 16.6h.8z"/><path d="M16.1 7.2a1.05 1.05 0 0 1 1.3 1.02v6.28a3 3 0 1 1-1.9-2.79V10.1l-5.1 1.28v5.72a3 3 0 1 1-1.9-2.79V9.4a1.05 1.05 0 0 1 .8-1.02z"/>',
+  "Workshop / Staged Reading":'<path d="M5.6 3.4h12.8a1 1 0 0 1 1 1.2l-1.4 6.6a1 1 0 0 1-1 .8H7a1 1 0 0 1-1-.8L4.6 4.6a1 1 0 0 1 1-1.2z"/><path d="M11 12.6h2v3.4l4.85 4.25a1.1 1.1 0 0 1-1.45 1.66L12 18.1l-4.4 3.81a1.1 1.1 0 0 1-1.45-1.66L11 16z"/>',
+  "Table Read":'<ellipse cx="12" cy="14.4" rx="8.8" ry="5.4"/><circle cx="12" cy="4.4" r="2.3"/><circle cx="3.6" cy="8.4" r="2.1"/><circle cx="20.4" cy="8.4" r="2.1"/><rect x="9.3" y="12.5" width="5.4" height="3.8" rx=".7" fill="var(--k)"/>',
+  "Dance Project":'<circle cx="14.6" cy="3.9" r="2.5"/><path d="M13.4 7.4c1.6-.5 3 .3 3.6 1.7l1.5 3.6 2.6 1.5a1.1 1.1 0 0 1-1.1 1.9l-3-1.7a1.1 1.1 0 0 1-.45-.5l-.55-1.3-1.1 3.4 2.5 3.4a1.15 1.15 0 0 1-1.85 1.36l-2.7-3.7-3.2 3.9a1.15 1.15 0 0 1-1.78-1.46l3.6-4.4 1.2-3.7-2.1 1.4-1.5 2.6a1.1 1.1 0 0 1-1.9-1.1l1.6-2.8a1.1 1.1 0 0 1 .35-.38z"/>',
+  "Performance Art":'<circle cx="12" cy="4.2" r="2.6"/><path d="M12 7.8c1 0 1.8.5 2.2 1.4l1 2.2 3.4-1.9a1.1 1.1 0 0 1 1.1 1.9l-4 2.3 2.4 5.7a1.15 1.15 0 0 1-2.1.9L14 15.2h-4l-2 5.1a1.15 1.15 0 0 1-2.1-.9l2.4-5.7-4-2.3a1.1 1.1 0 0 1 1.1-1.9l3.4 1.9 1-2.2c.4-.9 1.2-1.4 2.2-1.4z"/>',
+  "Live Event":'<circle cx="12" cy="12" r="3.4"/><path d="M7.4 6.2a1.2 1.2 0 0 1 1.7 1.7 5.8 5.8 0 0 0 0 8.2 1.2 1.2 0 0 1-1.7 1.7 8.2 8.2 0 0 1 0-11.6z"/><path d="M16.6 6.2a8.2 8.2 0 0 1 0 11.6 1.2 1.2 0 0 1-1.7-1.7 5.8 5.8 0 0 0 0-8.2 1.2 1.2 0 0 1 1.7-1.7z"/><path d="M3.9 2.7a1.2 1.2 0 0 1 1.7 1.7 10.7 10.7 0 0 0 0 15.2 1.2 1.2 0 0 1-1.7 1.7 13.1 13.1 0 0 1 0-18.6z"/><path d="M20.1 2.7a13.1 13.1 0 0 1 0 18.6 1.2 1.2 0 0 1-1.7-1.7 10.7 10.7 0 0 0 0-15.2 1.2 1.2 0 0 1 1.7-1.7z"/>',
+  "Hosting / Presenter":'<circle cx="9.2" cy="6.2" r="3.5"/><path d="M2.4 21.3a6.8 6.8 0 0 1 13.6 0 .9.9 0 0 1-.9.9H3.3a.9.9 0 0 1-.9-.9z"/><rect x="17.6" y="2.6" width="3.6" height="8.2" rx="1.8"/><path d="M15.9 9.6a1 1 0 0 1 2 0 1.5 1.5 0 0 0 3 0 1 1 0 0 1 2 0 3.5 3.5 0 0 1-2.5 3.36V15h-2v-2.04a3.5 3.5 0 0 1-2.5-3.36z"/>',
+  "Reality / Docu-Series":'<rect x="2.2" y="3.9" width="19.6" height="14" rx="2.2"/><path d="M8.6 20.3h6.8a1 1 0 0 1 0 2H8.6a1 1 0 0 1 0-2z"/><g fill="var(--k)"><circle cx="9.3" cy="9.5" r="2.1"/><circle cx="15.1" cy="10.3" r="1.7"/><path d="M5.4 15.6a4 4 0 0 1 7.8 0z"/><path d="M12.3 15.6a3.3 3.3 0 0 1 6.2 0z"/></g>',
+  "Lifestyle / Unscripted":'<circle cx="12" cy="8.4" r="4.3"/><g><rect x="10.9" y="0.8" width="2.2" height="3.2" rx="1.1"/><rect x="10.9" y="12.8" width="2.2" height="3.2" rx="1.1"/><rect x="3.2" y="7.3" width="3.2" height="2.2" rx="1.1"/><rect x="17.6" y="7.3" width="3.2" height="2.2" rx="1.1"/><rect x="5.2" y="2.6" width="2.2" height="3.2" rx="1.1" transform="rotate(-45 6.3 4.2)"/><rect x="16.6" y="2.6" width="2.2" height="3.2" rx="1.1" transform="rotate(45 17.7 4.2)"/></g><path d="M2.6 17.4h18.8a1.2 1.2 0 0 1 0 2.4H2.6a1.2 1.2 0 0 1 0-2.4z"/><path d="M6.2 21.2h11.6a1.2 1.2 0 0 1 0 2.4H6.2a1.2 1.2 0 0 1 0-2.4z"/>',
+  "Modeling":'<circle cx="12" cy="4.1" r="2.7"/><path d="M12 7.6c2.2 0 3.6 1.3 4.2 3.4l1.4 4.8a1.1 1.1 0 0 1-2.1.6l-1-3.4-.5 3.2 1.6 5.6a1.15 1.15 0 0 1-2.2.66L12 17l-1.4 5.46a1.15 1.15 0 0 1-2.2-.66l1.6-5.6-.5-3.2-1 3.4a1.1 1.1 0 0 1-2.1-.6l1.4-4.8C8.4 8.9 9.8 7.6 12 7.6z"/>',
+  "Print Campaign":'<path d="M2.4 5.2A1.6 1.6 0 0 1 4 3.6h6.4A1.6 1.6 0 0 1 12 5.2v14.6a1.6 1.6 0 0 0-1.6-1.6H4a1.6 1.6 0 0 1-1.6-1.6z"/><path d="M12.4 5.2A1.6 1.6 0 0 1 14 3.6h6a1.6 1.6 0 0 1 1.6 1.6v11.4a1.6 1.6 0 0 1-1.6 1.6h-6a1.6 1.6 0 0 0-1.6 1.6z"/><g fill="var(--k)"><rect x="14.6" y="6.6" width="5" height="1.5" rx=".75"/><rect x="14.6" y="9.7" width="5" height="1.5" rx=".75"/><rect x="14.6" y="12.8" width="3.4" height="1.5" rx=".75"/></g>',
+  "Photo Shoot":'<path d="M7.6 5.1h6.8l1.5 2.4h3.5a2.2 2.2 0 0 1 2.2 2.2V19a2.2 2.2 0 0 1-2.2 2.2H4.6A2.2 2.2 0 0 1 2.4 19V9.7a2.2 2.2 0 0 1 2.2-2.2h1.5z"/><circle cx="12" cy="14.2" r="4.1" fill="var(--k)"/><circle cx="12" cy="14.2" r="1.9"/><path d="M18.6 1.2 19.5 3.4l2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9z"/>',
+  "Influencer / UGC Content":'<circle cx="12" cy="12" r="9.6"/><circle cx="12" cy="12" r="6.5" fill="var(--k)"/><rect x="9.2" y="6.5" width="5.6" height="11" rx="1.7"/>',
+  "Proof of Concept":'<path d="M12 1.8a7.4 7.4 0 0 1 4.4 13.35 1.6 1.6 0 0 0-.65 1.28v.37a1.4 1.4 0 0 1-1.4 1.4h-4.7a1.4 1.4 0 0 1-1.4-1.4v-.37a1.6 1.6 0 0 0-.65-1.28A7.4 7.4 0 0 1 12 1.8z"/><path d="M9.6 19.7h4.8a1.15 1.15 0 0 1 0 2.3H9.6a1.15 1.15 0 0 1 0-2.3z"/>',
+  "Sizzle Reel":'<path d="M12 1.8c.4 3.4 2.2 4.6 3.9 6.3a8.7 8.7 0 0 1 2.7 5.9 6.6 6.6 0 0 1-13.2 0c0-2.2 1-3.8 2.1-5.1.3 1 .9 1.8 1.8 2.2C8.7 8 9.8 4.6 12 1.8z"/><path d="M12 21a3.4 3.4 0 0 1-1.9-6.2c.2 1 .8 1.7 1.6 2 .5-1.5 1-2.9 2.2-4a5 5 0 0 1 1.5 3.5A3.4 3.4 0 0 1 12 21z" fill="var(--k)"/>',
+  "Pitch Trailer":'<path d="M20.9 3.1a1.2 1.2 0 0 0-1-1C15.4 1.4 11.6 3 9.2 5.4L7.7 6.9l-3.4-.7a1.2 1.2 0 0 0-1.1.33L1.3 8.5a1.2 1.2 0 0 0 .5 2l2.9.9 7.9 7.9.9 2.9a1.2 1.2 0 0 0 2 .5l1.97-1.9a1.2 1.2 0 0 0 .33-1.1l-.7-3.4 1.5-1.5c2.4-2.4 4-6.2 3.3-10.7z"/><circle cx="15.2" cy="8.8" r="2.1" fill="var(--k)"/>',
+  "Background / Extras":'<circle cx="5.4" cy="8.6" r="2.6"/><circle cx="18.6" cy="8.6" r="2.6"/><circle cx="12" cy="6.6" r="3.2"/><path d="M.9 18.4a4.8 4.8 0 0 1 8.9-2.5 1 1 0 0 1 .1.4v2.6a1 1 0 0 1-1 1H1.9a1 1 0 0 1-1-1z"/><path d="M14.1 15.9a4.8 4.8 0 0 1 9 2.5 1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-2.6a1 1 0 0 1 .1-.4z"/><path d="M6.3 20.6a5.7 5.7 0 0 1 11.4 0 1 1 0 0 1-1 1.1H7.3a1 1 0 0 1-1-1.1z"/>',
+  "Stand-In":'<circle cx="12" cy="5.4" r="3.4"/><path d="M6.2 15.9a5.8 5.8 0 0 1 11.6 0 .9.9 0 0 1-.9.9H7.1a.9.9 0 0 1-.9-.9z"/><path d="M4.4 18.9h15.2v2.3H13v2.1h-2v-2.1H4.4z"/>',
+  "Body Double":'<circle cx="8" cy="6.6" r="3.3"/><path d="M2.2 17.6a5.8 5.8 0 0 1 11.6 0 .9.9 0 0 1-.9.9H3.1a.9.9 0 0 1-.9-.9z"/><circle cx="17.2" cy="6.6" r="3.3"/><path d="M11.4 17.6a5.8 5.8 0 0 1 11.6 0 .9.9 0 0 1-.9.9h-9.8a.9.9 0 0 1-.9-.9z"/><path d="M12.6 3.4h.9v17.4h-.9z" fill="var(--k)"/>',
+  "Stunts":'<circle cx="8.2" cy="4.6" r="2.5"/><path d="M11.4 8.2a2 2 0 0 1 1.5 1l1.6 2.8 3 1a1.1 1.1 0 0 1-.7 2.1l-3.4-1.1a1.1 1.1 0 0 1-.6-.5l-.5-.9-1.2 3 2.6 2.6a1.1 1.1 0 0 1 .3 1l-.8 3.5a1.15 1.15 0 0 1-2.25-.5l.65-2.9-3.4-3.4a1.1 1.1 0 0 1-.25-1.2l1.3-3.3-2.6 1.1-1.5 2.4a1.1 1.1 0 0 1-1.9-1.15l1.7-2.8a1.1 1.1 0 0 1 .5-.42l4.4-1.9a2 2 0 0 1 .85-.2z"/>',
+  "Motion Capture":'<path d="M12 9.4 6.6 11.6M12 9.4l5.4 2.2M12 9.4v3.6M9.4 16.4 8.6 21.2M14.6 16.4l.8 4.8M12 13 9.4 16.4M12 13l2.6 3.4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="12" cy="4" r="2.4"/><circle cx="12" cy="9.4" r="1.75"/><circle cx="6.6" cy="11.6" r="1.75"/><circle cx="17.4" cy="11.6" r="1.75"/><circle cx="12" cy="13" r="1.6"/><circle cx="9.4" cy="16.4" r="1.75"/><circle cx="14.6" cy="16.4" r="1.75"/><circle cx="8.6" cy="21.2" r="1.75"/><circle cx="15.4" cy="21.2" r="1.75"/>',
+  "Other":'<circle cx="12" cy="4.4" r="2.35"/><circle cx="19.2" cy="8.6" r="2.35"/><circle cx="19.2" cy="15.4" r="2.35"/><circle cx="12" cy="19.6" r="2.35"/><circle cx="4.8" cy="15.4" r="2.35"/><circle cx="4.8" cy="8.6" r="2.35"/>',
+};
+const PROJECT_TYPE_GROUP={
+  "Feature Film":"film",
+  "Short Film":"film",
+  "Student Film":"film",
+  "Independent Film":"film",
+  "Documentary":"film",
+  "Experimental Film":"film",
+  "TV Series":"series",
+  "TV Pilot":"series",
+  "Web Series":"series",
+  "Streaming Series":"series",
+  "Limited Series":"series",
+  "Miniseries":"series",
+  "Vertical Series":"series",
+  "Pilot Presentation":"series",
+  "Commercial":"comm",
+  "Social Media Ad":"comm",
+  "Branded Content":"comm",
+  "Spec Commercial":"comm",
+  "Ad Campaign":"comm",
+  "Promo Video":"comm",
+  "Product Demo":"comm",
+  "Corporate Video":"corp",
+  "Industrial / Training Video":"corp",
+  "Educational Video":"corp",
+  "Public Service Announcement":"corp",
+  "Music Video":"audio",
+  "Voiceover":"audio",
+  "Podcast / Audio Drama":"audio",
+  "Animation":"audio",
+  "Video Game":"audio",
+  "Theater":"stage",
+  "Off-Broadway Theater":"stage",
+  "Off-Off-Broadway Theater":"stage",
+  "Musical Theater":"stage",
+  "Workshop / Staged Reading":"stage",
+  "Table Read":"stage",
+  "Dance Project":"stage",
+  "Performance Art":"stage",
+  "Live Event":"stage",
+  "Hosting / Presenter":"host",
+  "Reality / Docu-Series":"host",
+  "Lifestyle / Unscripted":"host",
+  "Modeling":"print",
+  "Print Campaign":"print",
+  "Photo Shoot":"print",
+  "Influencer / UGC Content":"print",
+  "Proof of Concept":"dev",
+  "Sizzle Reel":"dev",
+  "Pitch Trailer":"dev",
+  "Background / Extras":"phys",
+  "Stand-In":"phys",
+  "Body Double":"phys",
+  "Stunts":"phys",
+  "Motion Capture":"phys",
+  "Other":"other",
+};
+const PROJECT_TYPE_TINTS={
+  film:["#E7EBF7","#2B3D80"],
+  series:["#E6F1F1","#1F6668"],
+  comm:["#FBEEDC","#9A5B10"],
+  corp:["#EBEDF0","#3D4658"],
+  audio:["#EAE7F5","#4B3A8C"],
+  stage:["#F6E7EC","#8C2F4C"],
+  host:["#E3F0F4","#1C5A70"],
+  print:["#F3ECE1","#7A5A2E"],
+  dev:["#E4F1EA","#1F6B47"],
+  phys:["#FAEBE6","#9A3B22"],
+  other:["#EDEAE3","#5A5A72"],
+};
+const PROJECT_TYPE_ALIASES={
+  "film":"Feature Film",
+  "film & tv":"Feature Film",
+  "low-budget indie film":"Independent Film",
+  "indie film":"Independent Film",
+  "tv":"TV Series",
+  "pilot":"TV Pilot",
+  "internet":"Web Series",
+  "digital & new media":"Web Series",
+  "commercials & branded content":"Branded Content",
+  "brand ambassador":"Branded Content",
+  "influencer campaign":"Influencer / UGC Content",
+  "ugc ad":"Influencer / UGC Content",
+  "creator collaboration pool":"Influencer / UGC Content",
+  "industrial":"Industrial / Training Video",
+  "industrial video":"Industrial / Training Video",
+  "explainer video":"Educational Video",
+  "hand model":"Modeling",
+  "beauty shoot":"Photo Shoot",
+  "e-commerce shoot":"Photo Shoot",
+  "lifestyle print":"Print Campaign",
+  "animation voiceover":"Voiceover",
+  "voiceover roster":"Voiceover",
+  "video game voiceover":"Video Game",
+  "vr / ar project":"Video Game",
+  "performance capture":"Motion Capture",
+  "theater & musicals":"Theater",
+  "broadway":"Musical Theater",
+  "theater workshop submissions":"Workshop / Staged Reading",
+  "trade show":"Live Event",
+  "comedy sketch talent pool":"Web Series",
+  "commercial talent pool":"Commercial",
+  "horror short talent pool":"Short Film",
+  "indie short film talent pool":"Short Film",
+  "music video talent pool":"Music Video",
+  "experimental film roster":"Experimental Film",
+  "podcast guest / on-camera segment pool":"Podcast / Audio Drama",
+  "open talent pool":"Other",
+  "self-tape showcase":"Other",
+  "actor profile review opportunity":"Other",
+  "película":"Feature Film",
+  "película independiente":"Independent Film",
+  "cortometraje":"Short Film",
+  "serie de tv":"TV Series",
+  "comercial":"Commercial",
+  "teatro":"Theater",
+  "modelaje":"Modeling",
+  "video musical":"Music Video",
+  "locución":"Voiceover",
+};
+
+// Any type string -> one of the 55 canonical types. Exact match, then the
+// alias table, then a loose keyword pass so a brand-new string still lands
+// somewhere sensible instead of on "Other".
+function canonicalProjectType(raw){
+  if(!raw) return "Other";
+  const t=String(raw).trim();
+  if(PROJECT_TYPE_GLYPHS[t]) return t;
+  const k=t.toLowerCase();
+  if(PROJECT_TYPE_ALIASES[k]) return PROJECT_TYPE_ALIASES[k];
+  const has=s=>k.includes(s);
+  if(has("talent pool")||has("roster")||has("showcase")||has("submissions")){
+    if(has("voice")) return "Voiceover";
+    if(has("commercial")) return "Commercial";
+    if(has("music")) return "Music Video";
+    if(has("theater")||has("theatre")) return "Workshop / Staged Reading";
+    if(has("short")) return "Short Film";
+    if(has("film")) return "Independent Film";
+    return "Other";
+  }
+  if(has("voiceover")||has("voice over")) return "Voiceover";
+  if(has("podcast")||has("audio")) return "Podcast / Audio Drama";
+  if(has("music video")) return "Music Video";
+  if(has("animation")) return "Animation";
+  if(has("game")) return "Video Game";
+  if(has("capture")||has("mocap")) return "Motion Capture";
+  if(has("stunt")) return "Stunts";
+  if(has("background")||has("extra")) return "Background / Extras";
+  if(has("stand-in")||has("stand in")) return "Stand-In";
+  if(has("double")) return "Body Double";
+  if(has("model")||has("beauty")) return "Modeling";
+  if(has("print")||has("editorial")) return "Print Campaign";
+  if(has("photo")||has("shoot")) return "Photo Shoot";
+  if(has("ugc")||has("influencer")||has("creator")) return "Influencer / UGC Content";
+  if(has("musical")) return "Musical Theater";
+  if(has("off-off")) return "Off-Off-Broadway Theater";
+  if(has("off-broadway")) return "Off-Broadway Theater";
+  if(has("staged reading")||has("workshop")) return "Workshop / Staged Reading";
+  if(has("table read")) return "Table Read";
+  if(has("dance")) return "Dance Project";
+  if(has("theater")||has("theatre")||has("broadway")) return "Theater";
+  if(has("live event")||has("trade show")) return "Live Event";
+  if(has("host")||has("presenter")) return "Hosting / Presenter";
+  if(has("reality")||has("docu-series")) return "Reality / Docu-Series";
+  if(has("lifestyle")||has("unscripted")) return "Lifestyle / Unscripted";
+  if(has("documentary")) return "Documentary";
+  if(has("industrial")||has("training")) return "Industrial / Training Video";
+  if(has("corporate")) return "Corporate Video";
+  if(has("educational")||has("explainer")) return "Educational Video";
+  if(has("announcement")||has("psa")) return "Public Service Announcement";
+  if(has("branded")) return "Branded Content";
+  if(has("social")) return "Social Media Ad";
+  if(has("spec commercial")) return "Spec Commercial";
+  if(has("campaign")) return "Ad Campaign";
+  if(has("promo")) return "Promo Video";
+  if(has("product")) return "Product Demo";
+  if(has("commercial")||has("advert")) return "Commercial";
+  if(has("sizzle")) return "Sizzle Reel";
+  if(has("pitch")) return "Pitch Trailer";
+  if(has("proof of concept")) return "Proof of Concept";
+  if(has("vertical")) return "Vertical Series";
+  if(has("miniseries")) return "Miniseries";
+  if(has("limited")) return "Limited Series";
+  if(has("streaming")) return "Streaming Series";
+  if(has("web series")) return "Web Series";
+  if(has("presentation")) return "Pilot Presentation";
+  if(has("pilot")) return "TV Pilot";
+  if(has("series")||has("tv")||has("television")) return "TV Series";
+  if(has("student")) return "Student Film";
+  if(has("experimental")) return "Experimental Film";
+  if(has("short")) return "Short Film";
+  if(has("independent")||has("indie")) return "Independent Film";
+  if(has("feature")||has("film")) return "Feature Film";
+  return "Other";
+}
+
+/* The tile itself. `type` must be the RAW casting type — see the note above. */
+function ProjectTypeTile({type,size=52}){
+  const t=canonicalProjectType(type);
+  const [tint,ink]=PROJECT_TYPE_TINTS[PROJECT_TYPE_GROUP[t]||"other"]||PROJECT_TYPE_TINTS.other;
+  const g=Math.round(size*0.54);
+  return(
+    <div className="pt-tile" title={t}
+         style={{width:size,height:size,borderRadius:Math.round(size*0.29),background:tint,color:ink,"--k":tint}}>
+      <svg width={g} height={g} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+           dangerouslySetInnerHTML={{__html:PROJECT_TYPE_GLYPHS[t]}}/>
+    </div>);
+}
+
 // ─── Spanish Casting Translations ────────────────────────────────────────────
 // Seeded/demo castings fully translated. User-generated castings from the DB
 // would need a server-side translation API (e.g. DeepL, Google Translate) or
@@ -2435,6 +2716,9 @@ body.sheet-push .b2t-cube{display:none;}
    card, and it should stay that way.
    Do NOT write a rule inside this comment — CSS comments do not nest and the
    next rule gets swallowed (see the .fcs-section note elsewhere in this file). */
+.pt-tile{display:grid;place-items:center;flex:none;align-self:start;
+         box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 14%,transparent);}
+@supports not (color:color-mix(in srgb,#000 1%,transparent)){.pt-tile{box-shadow:inset 0 0 0 1px rgba(26,26,46,.10);}}
 .cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:6px;color:var(--t1);}
 .cc-tagline{color:#4a4f58;font-size:16px;line-height:1.45;margin-bottom:6px;}
 .cc-prod{color:var(--t3);font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
@@ -13345,7 +13629,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={isArchived?"cs-archived-dim":undefined}>
-              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
+              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:20,alignItems:"start"}}>
+                {/* Raw casting on purpose — c.type is the translated label. */}
+                <ProjectTypeTile type={rawC.type}/>
                 <div>
                   {/* The pick gets its own line above the type badges — sharing
                       that row made the top of the card a wall of pills. */}
