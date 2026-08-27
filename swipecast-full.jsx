@@ -2338,8 +2338,25 @@ body.sheet-push .b2t-cube{display:none;}
 /* Browse Castings slide-in detail sheet (left -> right), dimming the list behind. */
 /* Fades on OPACITY, not background-color. Animating a colour repaints the whole
    overlay every frame; opacity is composited. */
-.cs-sheet-dim{position:fixed;left:0;right:0;bottom:0;top:var(--site-top-h,56px);background:rgba(18,18,28,.42);z-index:114;animation:csDimIn .45s ease;}
-.cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;}
+.cs-sheet-dim{position:fixed;left:0;right:0;bottom:0;top:var(--site-top-h,56px);background:rgba(18,18,28,.22);z-index:114;
+              animation:csDimIn .45s ease,csBlurIn .3s ease .2s both;}
+/* Dimming lowers CONTRAST; blurring destroys LEGIBILITY — and only the second
+   one actually empties the page behind a sheet. At rgba(.42) with no blur the
+   list stayed readable through the scrim, so attention had somewhere else to
+   go. The scrim is lighter now and the page is blurred out instead.
+   ⚠️ The blur is DELAYED 200ms, not applied on frame one: backdrop-filter is
+   full-viewport GPU work and running it while the sheet is still translating
+   drops frames on older machines. Let the sheet land, then blur.
+   ⚠️ Phones skip the blur entirely (see the media query below) — the sheet is
+   near full-width there, so there is almost nothing behind it to blur, and it
+   is the hardware least able to afford it. */
+@keyframes csBlurIn{from{-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}
+                    to{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}}
+@media(max-width:768px){.cs-sheet-dim{animation:csDimIn .45s ease;background:rgba(18,18,28,.42);}}
+@media(prefers-reduced-motion:reduce){
+  .cs-sheet-dim{animation:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
+}
+.cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}
 /* Enters from the RIGHT and pushes the page left, same gesture as the agency directory
    sheet — see the body.sheet-push block and the caa.com note above .tad-sheet. */
 .cs-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:-18px 0 48px rgba(26,26,46,.34);will-change:transform;animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
@@ -2671,7 +2688,9 @@ body.sheet-push .b2t-cube{display:none;}
    nothing on a consent dialog competes with the copy. Storage is unchanged:
    sc_cookie_prefs_v1, necessary always true, nothing leaves the device. */
 .csp-ov{position:fixed;inset:0;z-index:200;}
-.csp-scrim{position:absolute;inset:0;background:rgba(10,12,14,.5);will-change:opacity;animation:cspFade .45s ease both;}
+.csp-scrim{position:absolute;inset:0;background:rgba(10,12,14,.26);will-change:opacity;animation:cspFade .45s ease both;
+           -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
+@media(max-width:768px){.csp-scrim{background:rgba(10,12,14,.5);-webkit-backdrop-filter:none;backdrop-filter:none;}}
 .csp-ov.csp-closing .csp-scrim{animation:cspFadeOut .42s ease both;}
 .csp-panel{position:absolute;top:0;right:0;height:100%;width:min(462px,100vw);display:flex;flex-direction:column;
   will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(0);
