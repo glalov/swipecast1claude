@@ -89,11 +89,17 @@ function resolvePlanKey(sub: Stripe.Subscription): string | null {
 }
 
 // ── Non-payment grace period ────────────────────────────────────────────────
-// A failed charge does NOT revoke premium on its own — Stripe retries for days
+// A failed charge does NOT revoke premium on its own — Stripe retries for weeks
 // and an out-of-order event must never knock a paying member down to free. What
 // it does is start the clock: past_due_since is stamped once, and the hourly
 // enforce_past_due_downgrades() sweep flips the member to free (and hides their
-// gallery photos/videos via premium_locked_at) on day 4 if it is still unpaid.
+// gallery photos/videos via premium_locked_at) on day 31 if it is still unpaid.
+//
+// 31, not 4: Stripe is configured to retry a failed card 8 times over 2 months
+// and to LEAVE THE SUBSCRIPTION PAST-DUE rather than cancel it, so an empty card
+// keeps getting charged until the member cancels. Cutting access on day 4 while
+// we are still trying to collect for another 8 weeks just churns the person we
+// are recovering. The grace window lives in the SQL function, not here.
 //
 // Stamp ONCE per streak: `.is("past_due_since", null)` means Stripe's repeated
 // retry failures can't keep pushing the deadline out.

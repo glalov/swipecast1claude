@@ -23592,7 +23592,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           </div>
           <p style={{color:"var(--t2)",fontSize:13,marginBottom:12}}>
             {profile?.subscription_status==="past_due"
-              ?"Your last payment failed. Your account has been downgraded to Free. Contact support to resolve the billing issue."
+              ?"Your last payment failed. We'll keep retrying your card automatically for the next two months — your subscription stays open until you cancel it. Update your card to restore Premium right away."
               :"Your subscription has been canceled. Your account is back on the Free Plan."}
           </p>
           <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Re-subscribe to Premium →</button>

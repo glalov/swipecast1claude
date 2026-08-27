@@ -1,0 +1,112 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The upgrade moment</title>
+<style>
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#2D8587;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;background:#EDE9E1;color:var(--t1);padding:26px 18px 70px;}
+.wrap{max-width:1100px;margin:0 auto;}
+h1{font-size:25px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.lede{font-size:15px;color:var(--t2);max-width:880px;line-height:1.5;margin-bottom:6px}
+.hd{margin:36px 0 12px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+.hd h2{font-size:19px;font-weight:800;letter-spacing:-.2px;}
+.hd .tag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:100px;background:#1A1A2E;color:#fff;}
+.hd p{font-size:13.5px;color:var(--t2);flex:1 1 400px;line-height:1.55}
+.stage{background:rgba(18,18,28,.22);backdrop-filter:blur(2px);border-radius:14px;padding:34px 18px;display:flex;justify-content:center;}
+.capm{position:relative;width:100%;max-width:436px;background:var(--bg);border:1px solid var(--bdr);border-radius:18px;padding:26px 24px 20px;box-shadow:0 30px 70px -30px rgba(26,26,46,.6);}
+.x{position:absolute;top:14px;right:16px;color:var(--t3);font-size:19px;line-height:1}
+.used{display:inline-flex;align-items:center;gap:8px;background:rgba(229,83,60,.1);border:1px solid rgba(229,83,60,.32);color:#C0392B;font-size:11.5px;font-weight:800;letter-spacing:.4px;padding:6px 12px;border-radius:999px;margin-bottom:15px}
+.bars i{display:block;width:16px;height:6px;border-radius:3px;background:#E5533C}
+.capm h2{font-size:21px;font-weight:800;letter-spacing:-.5px;line-height:1.18;margin-bottom:8px}
+.sub{color:var(--t2);font-size:13.5px;line-height:1.55;margin-bottom:16px}
+.jobrow{display:flex;gap:13px;align-items:center;background:var(--s2);border:1px solid var(--bdr);border-radius:13px;padding:13px;margin-bottom:15px}
+.tile{width:46px;height:46px;border-radius:10px;flex:none;background:linear-gradient(135deg,#3E9799,#226365);color:#fff;display:grid;place-items:center;font-size:18px}
+.jt{font-size:13.5px;font-weight:800}
+.js{color:var(--t3);font-size:11.5px;margin-top:2px}
+.jw{color:#98630F;font-size:11.5px;margin-top:3px;font-weight:700}
+.lock{margin-left:auto;color:#E29A3A}
+.resetline{display:flex;gap:8px;color:#98630F;background:rgba(236,148,42,.09);font-size:12.5px;font-weight:600;padding:9px 11px;border-radius:9px;margin-bottom:15px}
+.cta{width:100%;border:none;cursor:pointer;font-weight:800;font-size:13.5px;color:#1A1A2E;background:linear-gradient(180deg,#F8B65E,#EC942A);padding:14px 16px;border-radius:11px;margin-bottom:9px;font-family:inherit;box-shadow:0 10px 24px -10px rgba(240,160,60,.85)}
+.ghost{width:100%;background:transparent;border:1px solid var(--bdr);color:var(--t2);cursor:pointer;font-weight:700;font-size:12.5px;padding:12px 14px;border-radius:11px;font-family:inherit}
+.foot{text-align:center;color:var(--t3);font-size:10.5px;margin-top:12px}
+/* evidence block */
+.ev{background:#fff;border:1px solid var(--bdr);border-radius:13px;padding:14px 16px 11px;margin-bottom:15px}
+.evrow{display:flex;align-items:baseline;gap:10px;padding:5px 0}
+.evrow b{font-size:20px;font-weight:800;min-width:26px;color:#1A1A2E}
+.evrow span{font-size:13px;color:var(--t2)}
+.evnote{font-size:10.5px;color:var(--t3);margin-top:6px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+/* plans */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.plan{border:1px solid var(--bdr);background:#fff;border-radius:12px;padding:11px 12px;display:block}
+.plan.sel{border-color:var(--teal);box-shadow:0 0 0 2px rgba(45,133,135,.16)}
+.pn{display:block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.pp{display:block;font-size:19px;font-weight:800;margin-top:3px}
+.pp small{font-size:11.5px;font-weight:700;color:var(--t3)}
+.pb{display:block;font-size:11px;color:var(--t2);margin-top:3px}
+/* missed roles */
+.missed{background:#fff;border:1px solid var(--bdr);border-radius:13px;padding:6px 14px 11px;margin-bottom:15px}
+.mrow{display:flex;align-items:baseline;gap:8px;padding:9px 0;border-bottom:1px solid #F1ECE2;font-size:12.5px}
+.mrow:last-of-type{border-bottom:0}
+.mrow b{font-weight:800;flex:0 0 auto}
+.mrow span{color:var(--t2);flex:1}
+.mrow em{font-style:normal;font-weight:700;color:#98630F;font-size:11.5px}
+.mrow.dim{opacity:.5}
+.mrow.dim em{color:var(--t3)}
+.mnote{font-size:11.5px;color:var(--t3);padding-top:9px}
+</style></head><body><div class="wrap">
+<h1>The upgrade moment</h1>
+<p class="lede">The out-of-submissions modal — the highest-intent screen on the site, because the actor is already reaching for something and you are the obstacle.</p>
+<section id="m_now"><div class="hd"><span class="tag">Now</span><h2>What ships today</h2><p>Names the casting, shows the deadline, sells the specific submission. Solid — it just never tells the actor anything about <i>themselves</i>.</p></div><div class="stage">
+<div class="capm">
+  <span class="x">×</span>
+  <div class="used"><span class="bars"><i></i></span> 1 / 1 submissions used this week</div>
+  <h2>Don't let this one get away.</h2>
+  <p class="sub">You're out of submissions for this week. The role you were about to apply to is still open:</p>
+  <div class="jobrow"><span class="tile">★</span><div><div class="jt">The Seventh Landing</div>
+    <div class="js">Lead · Independent Film · New York, NY · 6 days left</div></div><span class="lock">🔒</span></div>
+  <div class="resetline">Your free submissions reset Monday at 6 AM ET. Premium is unlimited — starting now.</div>
+  <button class="cta">Unlock &amp; submit to "The Seventh Landing" →</button>
+  <button class="ghost">No thanks, I'll wait until Monday</button>
+  <div class="foot">Premium · $14.95/mo · unlimited submissions · cancel anytime</div>
+</div></div></section><section id="m_best"><div class="hd"><span class="tag">Best</span><h2>Evidence first, price second</h2><p>Opens with proof the platform is working for them, then the cost of the cap, then the role, then the price. Every number here is one you already store: profile views and reel watches live in system_notifications, the match count comes from the role matcher, the submission count is on the casting.</p></div><div class="stage">
+<div class="capm">
+  <span class="x">×</span>
+  <div class="used"><span class="bars"><i></i></span> 1 / 1 submissions used this week</div>
+  <h2>Three casting directors opened your profile this month.</h2>
+  <p class="sub">You have one submission a week. This is the third week you've hit it.</p>
+
+  <div class="ev">
+    <div class="evrow"><b>3</b><span>casting directors viewed your profile</span></div>
+    <div class="evrow"><b>1</b><span>watched your audition reel</span></div>
+    <div class="evrow"><b>7</b><span>roles you matched but couldn't submit to</span></div>
+    <div class="evnote">Your numbers, last 30 days.</div>
+  </div>
+
+  <div class="jobrow"><span class="tile">★</span><div><div class="jt">The Seventh Landing</div>
+    <div class="js">Lead · Male 24–35 · $300/day · New York, NY</div>
+    <div class="jw">Closes in 6 days · 41 of 250 submissions</div></div></div>
+
+  <div class="plans">
+    <label class="plan sel"><span class="pn">Yearly</span><span class="pp">$8.25<small>/mo</small></span><span class="pb">$99 billed yearly · save 45%</span></label>
+    <label class="plan"><span class="pn">Monthly</span><span class="pp">$14.95<small>/mo</small></span><span class="pb">cancel anytime</span></label>
+  </div>
+
+  <button class="cta">Submit to “The Seventh Landing” now →</button>
+  <button class="ghost">Not now — remind me Monday</button>
+  <div class="foot">Cancel anytime from Account Settings · takes 30 seconds · no email required</div>
+</div></div></section><section id="m_lean"><div class="hd"><span class="tag">Alternative</span><h2>The missed-roles version</h2><p>Same idea, one signal: what the cap cost them this month. Blunter, less warm, and the easiest to build — it needs only the matcher and the deadlines.</p></div><div class="stage">
+<div class="capm">
+  <span class="x">×</span>
+  <div class="used"><span class="bars"><i></i></span> 1 / 1 submissions used this week</div>
+  <h2>You matched 7 roles this week. You could submit to one.</h2>
+  <p class="sub">Free is one submission a week. The other six close while you wait.</p>
+  <div class="missed">
+    <div class="mrow"><b>The Seventh Landing</b><span>Lead · Male 24–35 · $300/day</span><em>6 days left</em></div>
+    <div class="mrow dim"><b>Two Languages</b><span>Supporting · Male 23–32 · $250/day</span><em>closed</em></div>
+    <div class="mrow dim"><b>Floor Forty</b><span>Lead · Male 25–35 · $400/day</span><em>closed</em></div>
+    <div class="mnote">+ 4 more you matched in the last 30 days</div>
+  </div>
+  <button class="cta">Go unlimited — $8.25/mo →</button>
+  <button class="ghost">No thanks, I'll wait until Monday</button>
+  <div class="foot">Or $14.95 monthly · cancel anytime · your submission resets in 4 days</div>
+</div></div></section>
+</div></body></html>

@@ -1,0 +1,82 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Less colour — three levels</title>
+<style>
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#2D8587;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;background:#EDE9E1;color:var(--t1);padding:26px 18px 70px;}
+.wrap{max-width:1100px;margin:0 auto;}
+h1{font-size:25px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.lede{font-size:15px;color:var(--t2);max-width:860px;line-height:1.5;margin-bottom:6px}
+.hd{margin:36px 0 12px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+.hd h2{font-size:19px;font-weight:800;letter-spacing:-.2px;}
+.hd .tag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:100px;background:#1A1A2E;color:#fff;}
+.hd p{font-size:13.5px;color:var(--t2);flex:1 1 380px;line-height:1.55}
+.page{background:var(--bg);border:1px solid #DDD6C8;border-radius:14px;padding:20px 24px;}
+/* shared card bits */
+.card{border-radius:13px;background:#fff;border:1px solid var(--bdr);box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:13px;}
+.crow{padding:18px 22px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;}
+.cc-title{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:4px;}
+.cc-tag{color:#4a4f58;font-size:14.5px;margin-bottom:4px;}
+.cc-prod{color:var(--t3);font-size:13px;margin-bottom:11px;}
+.cc-badge{background:#eef1f5;color:#3a4150;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:100px;}
+.badges{display:flex;gap:7px;margin-bottom:10px;align-items:center;flex-wrap:wrap;}
+.livec{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#15795c;}
+.livec i{width:7px;height:7px;border-radius:50%;background:#15a87f;display:block}
+.cc-strip{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px;}
+.cc-chip{font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:7px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52;}
+.cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;}
+.cc-pills{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.cc-pill{border:1px solid var(--bdr);border-radius:999px;background:#fff;padding:6px 12px;font-size:12.5px;}
+.cc-pill b{font-weight:800}.cc-pill i{font-style:normal;color:var(--t2)}
+.rest{font-size:12.5px;color:var(--t2);font-weight:600;}
+.cc-pickrow{margin-bottom:10px}
+.cc-gpill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:100px;background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;}
+.cc-picked{background:linear-gradient(180deg,#FFFCF4 0,#FFF 165px);border:1px solid #D2A24A;}
+.side{min-width:130px;display:flex;justify-content:flex-end}
+.btn-teal{background:var(--teal);color:#fff;border:none;padding:11px 19px;border-radius:9px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}
+/* A — craigslist plain */
+#s_plain .page{background:#fff}
+.prow{padding:14px 0;border-bottom:1px solid #ECE7DC;}
+.prow:last-child{border-bottom:0}
+.pk{font-size:11px;font-weight:700;color:#6E4E12;margin-right:6px}
+.ttl{font-size:17px;font-weight:600;color:#2b3a67;text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+.meta{font-size:13px;color:#3f4450;margin-top:4px}
+.meta .g,.rl .g{color:#8b8f99}
+.meta .dl{color:#a8341c}
+.rl{font-size:13px;color:#3f4450;margin-top:5px}
+.tlink{display:inline-block;margin-top:7px;font-size:13px;color:#2b3a67;text-decoration:underline;cursor:pointer}
+/* B — monochrome chips */
+#s_quiet .cc-chip{background:#F4F2ED;border-color:#E4DFD4;color:#33333f;}
+#s_quiet .cc-chip.pay{background:#F4F2ED;border-color:#E4DFD4;color:#33333f;}
+#s_quiet .cc-chip.roles{background:#F4F2ED;border-color:#E4DFD4;color:#33333f;}
+#s_quiet .cc-chip.quiet{background:transparent;border-color:transparent;color:#9a9aa6;}
+#s_quiet .cc-badge{background:#F4F2ED;color:#4a4a57;}
+#s_quiet .livec{color:#4a4a57}
+#s_quiet .livec i{background:#8e8e9a}
+#s_quiet .cc-gpill.mono{background:transparent;border-color:#D9CFB4;color:#6E4E12;}
+#s_quiet .cc-picked{background:#fff;border:1px solid #D2A24A;}
+/* C — type-led */
+.tcard{background:#fff;border:1px solid var(--bdr);border-radius:0;padding:22px 24px;margin-bottom:0;border-bottom:0}
+.tcard:last-child{border-bottom:1px solid var(--bdr)}
+.tcard.picked{border-left:2px solid #C9A24C}
+.tcard h3{font-size:25px;font-weight:800;letter-spacing:-.5px;margin:2px 0 4px}
+.tcard .tag{font-size:14.5px;color:#4a4f58;margin-bottom:9px}
+.kick{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7b7f8b;margin-bottom:8px}
+.kick.gold{color:#8A6A22}
+.tmeta{font-size:14px;color:#33333f;margin-bottom:12px}
+.tmeta b{font-weight:800}
+.tmeta .g{color:#8b8f99}
+.tmeta .dl{color:#a8341c}
+.trow{display:flex;gap:10px;font-size:13.5px;padding:6px 0;border-top:1px solid #F0EBE0;}
+.trow b{min-width:96px;font-weight:800}
+.trow span{color:var(--t2)}
+.trow.more{color:var(--t2);font-weight:600}
+.tbtn{margin-top:14px;background:var(--teal);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;font-size:13.5px;font-family:inherit;cursor:pointer}
+</style></head><body><div class="wrap">
+<h1>Less colour — three levels of restraint</h1>
+<p class="lede">Same three castings in every section. What changes is how much colour is doing the talking.</p>
+<section id="s_now"><div class="hd"><span class="tag">Now</span><h2>Full colour</h2><p>Gold pick, green pay, blue roles, red deadline, teal button — five colour systems on one card.</p></div><div class="page"><div class="card cc-picked"><div class="crow"><div><div class="cc-pickrow"><span class="cc-gpill">★ Cast Slate Pick</span></div><div class="badges"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span><span class="livec"><i></i>Casting now — apply today</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-tag">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><b>Lead</b> <i>Male · 24–35</i></span><span class="cc-pill"><b>Lead</b> <i>Female · 22–32</i></span><span class="cc-pill"><b>Supporting</b> <i>Female · 30–45</i></span><span class="rest">+ 5 more roles</span></div></div><div class="side"><button class="btn-teal">View Roles →</button></div></div></div><div class="card"><div class="crow"><div><div class="badges"><span class="cc-badge">Experimental Film</span><span class="cc-badge">SAG-AFTRA Modified Low Budget</span><span class="livec"><i></i>Casting now — apply today</span></div><h3 class="cc-title">Two Languages</h3><p class="cc-tag">A Psychological Horror Short</p><p class="cc-prod">Prod. Diego Valdez</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 24, 2026</span></div><div class="cc-pills"><span class="cc-pill"><b>Lead</b> <i>Female · 25–35</i></span><span class="cc-pill"><b>Supporting</b> <i>Male · 23–32</i></span><span class="cc-pill"><b>Supporting</b> <i>Male · 25–35</i></span><span class="rest">+ 3 more roles</span></div></div><div class="side"><button class="btn-teal">View Roles →</button></div></div></div><div class="card"><div class="crow"><div><div class="badges"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span><span class="livec"><i></i>Casting now — apply today</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-tag">One bed. Six actors. No one remembers what play they’re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip soon">6 days left</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><b>Lead</b> <i>Female · 25–35</i></span><span class="cc-pill"><b>Lead</b> <i>Female · 60+</i></span><span class="cc-pill"><b>Supporting</b> <i>Female · 25–35</i></span><span class="rest">+ 3 more roles</span></div></div><div class="side"><button class="btn-teal">View Roles →</button></div></div></div></div></section><section id="s_plain"><div class="hd"><span class="tag">Option A</span><h2>Craigslist plain</h2><p>No cards, no chips, no colour except the link. One grey meta line carries every fact, exactly like a CL listing row.</p></div><div class="page"><div class="prow"><span class="pk">★ pick</span> <a class="ttl">The Seventh Landing</a><div class="meta">Independent Film · Non-Union · 8 roles · Up to $300/day · New York, NY · <span class="g">posted Aug 1</span></div><div class="rl">Lead <span class="g">Male · 24–35</span> &nbsp;·&nbsp; Lead <span class="g">Female · 22–32</span> &nbsp;·&nbsp; Supporting <span class="g">Female · 30–45</span> &nbsp;·&nbsp; <span class="g">+5 more</span></div><a class="tlink">view roles →</a></div><div class="prow"><a class="ttl">Two Languages</a><div class="meta">Experimental Film · SAG-AFTRA Modified Low Budget · 6 roles · Up to $300/day · New York, NY · <span class="g">posted Aug 24</span></div><div class="rl">Lead <span class="g">Female · 25–35</span> &nbsp;·&nbsp; Supporting <span class="g">Male · 23–32</span> &nbsp;·&nbsp; Supporting <span class="g">Male · 25–35</span> &nbsp;·&nbsp; <span class="g">+3 more</span></div><a class="tlink">view roles →</a></div><div class="prow"><a class="ttl">The Bed Was Not In the Script</a><div class="meta">Off-Off-Broadway Theater · AEA · 6 roles · Paid stipend · Manhattan · <span class="dl">6 days left</span> · <span class="g">posted May 21</span></div><div class="rl">Lead <span class="g">Female · 25–35</span> &nbsp;·&nbsp; Lead <span class="g">Female · 60+</span> &nbsp;·&nbsp; Supporting <span class="g">Female · 25–35</span> &nbsp;·&nbsp; <span class="g">+3 more</span></div><a class="tlink">view roles →</a></div></div></section><section id="s_quiet"><div class="hd"><span class="tag">Option B</span><h2>Colour only where it means something</h2><p>Cards stay, but the chips go monochrome. Colour survives in exactly two places: the red deadline (a real warning) and the teal button (the action). The pick keeps a hairline, not a gold pill.</p></div><div class="page"><div class="card cc-picked"><div class="crow"><div><div class="cc-pickrow"><span class="cc-gpill mono">★ Cast Slate Pick</span></div><div class="badges"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span><span class="livec"><i></i>Casting now</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-tag">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><b>Lead</b> <i>Male · 24–35</i></span><span class="cc-pill"><b>Lead</b> <i>Female · 22–32</i></span><span class="cc-pill"><b>Supporting</b> <i>Female · 30–45</i></span><span class="rest">+ 5 more roles</span></div></div><div class="side"><button class="btn-teal">View Roles →</button></div></div></div><div class="card"><div class="crow"><div><div class="badges"><span class="cc-badge">Experimental Film</span><span class="cc-badge">SAG-AFTRA Modified Low Budget</span><span class="livec"><i></i>Casting now</span></div><h3 class="cc-title">Two Languages</h3><p class="cc-tag">A Psychological Horror Short</p><p class="cc-prod">Prod. Diego Valdez</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 24, 2026</span></div><div class="cc-pills"><span class="cc-pill"><b>Lead</b> <i>Female · 25–35</i></span><span class="cc-pill"><b>Supporting</b> <i>Male · 23–32</i></span><span class="cc-pill"><b>Supporting</b> <i>Male · 25–35</i></span><span class="rest">+ 3 more roles</span></div></div><div class="side"><button class="btn-teal">View Roles →</button></div></div></div><div class="card"><div class="crow"><div><div class="badges"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span><span class="livec"><i></i>Casting now</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-tag">One bed. Six actors. No one remembers what play they’re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip soon">6 days left</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><b>Lead</b> <i>Female · 25–35</i></span><span class="cc-pill"><b>Lead</b> <i>Female · 60+</i></span><span class="cc-pill"><b>Supporting</b> <i>Female · 25–35</i></span><span class="rest">+ 3 more roles</span></div></div><div class="side"><button class="btn-teal">View Roles →</button></div></div></div></div></section><section id="s_type"><div class="hd"><span class="tag">Option C</span><h2>Type does the work</h2><p>No chips at all. Hierarchy is carried by size, weight and small-caps kickers — the way a printed casting sheet or a trade paper does it. One gold line for a pick, one button.</p></div><div class="page"><div class="tcard picked"><div class="kick gold">★ Cast Slate Pick</div><h3>The Seventh Landing</h3><p class="tag">Every coincidence has a witness.</p><div class="kick">Independent Film · Non-Union · North Bridge Pictures</div><div class="tmeta">8 roles &nbsp;&nbsp;<b>Up to $300/day</b>&nbsp;&nbsp;New York, NY&nbsp;&nbsp;<span class="g">posted Aug 1, 2026</span></div><div class="trow"><b>Lead</b><span>Male · 24–35</span></div><div class="trow"><b>Lead</b><span>Female · 22–32</span></div><div class="trow"><b>Supporting</b><span>Female · 30–45</span></div><div class="trow more">+5 more roles</div><button class="tbtn">View roles →</button></div><div class="tcard"><h3>Two Languages</h3><p class="tag">A Psychological Horror Short</p><div class="kick">Experimental Film · SAG-AFTRA Modified Low Budget · Prod. Diego Valdez</div><div class="tmeta">6 roles &nbsp;&nbsp;<b>Up to $300/day</b>&nbsp;&nbsp;New York, NY&nbsp;&nbsp;<span class="g">posted Aug 24, 2026</span></div><div class="trow"><b>Lead</b><span>Female · 25–35</span></div><div class="trow"><b>Supporting</b><span>Male · 23–32</span></div><div class="trow"><b>Supporting</b><span>Male · 25–35</span></div><div class="trow more">+3 more roles</div><button class="tbtn">View roles →</button></div><div class="tcard"><h3>The Bed Was Not In the Script</h3><p class="tag">One bed. Six actors. No one remembers what play they’re in.</p><div class="kick">Off-Off-Broadway Theater · AEA · Black Box Workshop<span class="dl"> · 6 days left</span></div><div class="tmeta">6 roles &nbsp;&nbsp;<b>Paid stipend</b>&nbsp;&nbsp;Manhattan&nbsp;&nbsp;<span class="g">posted May 21, 2026</span></div><div class="trow"><b>Lead</b><span>Female · 25–35</span></div><div class="trow"><b>Lead</b><span>Female · 60+</span></div><div class="trow"><b>Supporting</b><span>Female · 25–35</span></div><div class="trow more">+3 more roles</div><button class="tbtn">View roles →</button></div></div></section>
+</div></body></html>
