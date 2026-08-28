@@ -89,27 +89,28 @@ const T = { solid:"#B4711A", soft:"#FCF2E3", gold:"#F0B860", ink:"#1A1A2E", body
 // the directory cannot show.
 const DIR = { total:663, agencies:354, mgmt:309, la:528, bh:125, ny:197, both:62 };
 
-interface CityFacts { label:string; line:string }
+interface CityFacts { near:boolean; line:string }
 // profiles.location is free text from the shared signup/profile list, so match on
-// substrings — and always fall back to a line that is true for everyone.
+// substrings. Most members live in neither city, so the fallback has to land
+// welcoming — a count they cannot walk to is worth nothing to them.
 function cityFacts(loc: string | null): CityFacts {
   const l = String(loc ?? "").toLowerCase();
   if (/beverly hills/.test(l))
-    return { label:"Beverly Hills", line:`<strong style="color:${T.ink}">${DIR.bh} of them are in Beverly Hills alone</strong>, and ${DIR.la} across greater Los Angeles. You could walk to a good number of these offices.` };
+    return { near:true, line:`<strong style="color:${T.ink}">${DIR.bh} of them are in Beverly Hills alone</strong> &mdash; ${DIR.la} across greater Los Angeles. You could walk to a good number of these.` };
   if (/los angeles|\bla\b|burbank|hollywood|studio city|pasadena|santa monica|glendale|long beach|california|, ca/.test(l))
-    return { label:"Los Angeles", line:`<strong style="color:${T.ink}">${DIR.la} of them keep a Los Angeles-area office</strong> &mdash; ${DIR.bh} in Beverly Hills alone. That is a mailing list you can work through in an afternoon.` };
+    return { near:true, line:`<strong style="color:${T.ink}">${DIR.la} of them keep a Los Angeles-area office</strong> &mdash; ${DIR.bh} in Beverly Hills alone.` };
   if (/new york|nyc|brooklyn|queens|bronx|manhattan|newark|jersey|, ny/.test(l))
-    return { label:"New York", line:`<strong style="color:${T.ink}">${DIR.ny} of them keep a New York office</strong>, and ${DIR.both} work both coasts &mdash; so a New York letter can still reach a Los Angeles desk.` };
-  return { label:"", line:`<strong style="color:${T.ink}">Where you live does not decide who you can approach.</strong> ${DIR.both} of these companies work both coasts, and the rest read mail from out of state every week of the year.` };
+    return { near:true, line:`<strong style="color:${T.ink}">${DIR.ny} of them keep a New York office</strong>, and ${DIR.both} work both coasts.` };
+  return { near:false, line:`You are not in LA or New York &mdash; <strong style="color:${T.ink}">and none of these ${DIR.total} need you to be.</strong> They read mail from all fifty states. That is ordinary, not an exception.` };
 }
 
-// Masthead. This is the part that read as broken on a phone: a two-column table
-// put the wordmark and the tag side by side, so at 390px the tag wrapped onto two
-// lines beside a cramped logo tile. One centred column now — and the wordmark is
-// set as "CastSlate", never CASTSLATE.
+// Masthead. Two fixes live here. The wordmark used to sit in a two-column table
+// beside the tag, so on a phone the tag wrapped against a cramped tile — it is one
+// centred column now, and set as "CastSlate", never CASTSLATE. And the tile is the
+// white one: the navy tile was a dark square on a black bar, so it disappeared.
 function masthead(tag: string): string {
   return `<tr><td class="cs-mast" style="background:#000000;padding:26px 24px 20px;text-align:center">
-    <img src="${APP_URL}/logo-email-tile.png" alt="" width="46" height="46" style="display:inline-block;width:46px;height:46px;border-radius:11px;border:1px solid rgba(255,255,255,.14)"/>
+    <img src="${APP_URL}/logo-email-tile-white.png" alt="" width="46" height="46" style="display:inline-block;width:46px;height:46px;border-radius:11px"/>
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:${T.cream};letter-spacing:.2px;margin:11px 0 0;line-height:1.1">CastSlate</div>
     <div style="margin:13px 0 0"><span style="display:inline-block;border:1px solid rgba(240,184,96,.5);border-radius:999px;padding:5px 13px;font-size:9.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${T.gold}">${tag}</span></div>
   </td></tr>`;
@@ -122,39 +123,13 @@ function kickerBar(kicker: string): string {
   </td></tr>`;
 }
 
-// The "this is yours specifically" card. Every line in it is a real fact about the
-// person reading it — their own city, their own submission count — so the email can
-// say it was picked for them without the claim being decoration.
-function youCard(first: string, facts: CityFacts, subs: number, hasReel: boolean): string {
-  const effort = subs >= 8
-    ? `You have put yourself forward <strong style="color:${T.ink}">${subs} times</strong> on CastSlate. People who submit like that are not testing the water, and this is the next lever you have not pulled yet.`
-    : subs >= 1
-      ? `You have submitted <strong style="color:${T.ink}">${subs} time${subs === 1 ? "" : "s"}</strong> so far. Submitting is one half of the job; the other half is that somebody with a phone full of casting directors already knows your name.`
-      : `Your profile is up, which is more than most people manage. The step after the profile is not another audition site &mdash; it is representation.`;
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 22px"><tr>
-    <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
-      <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 9px">Why this one is for you, ${esc(first)}</div>
-      <div style="font-size:14.5px;line-height:1.75;color:${T.body};margin:0 0 10px">${effort}</div>
-      <div style="font-size:14.5px;line-height:1.75;color:${T.body}">${facts.line}</div>
-      ${hasReel ? `<div style="font-size:13px;line-height:1.7;color:${T.body};margin-top:10px;padding-top:10px;border-top:1px solid rgba(180,113,26,.22)">You already have video on your profile. That is the thing an agent actually wants to see &mdash; and the QR code below is how they see it without downloading anything.</div>` : ""}
-    </td></tr></table>`;
-}
-
-// The decades line the whole email hangs on.
-const KNOWLEDGE = `<p style="margin:0 0 22px;font-size:15.5px;line-height:1.8;color:${T.body}">Most of what separates a working actor from a talented one is not talent. It is knowing which door opens. Which offices are real and still trading. Which will read an envelope from somebody they have never heard of, and which will hand it straight back unopened. Which are agents and which are managers, and why that changes what you write. <strong style="color:${T.ink}">That knowledge normally takes twenty or thirty years to collect, one closed door at a time.</strong> We collected it and put it in one place.</p>
-<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px"><tr><td style="border-left:3px solid ${T.gold};padding:2px 0 2px 16px">
-  <div style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:19px;line-height:1.45;color:${T.ink}">A little knowledge takes you a lot further than a lot of hope.</div>
-</td></tr></table>`;
-
-const GATE = `<p style="margin:0 0 22px;font-size:15px;line-height:1.75;color:${T.body}">Worth saying plainly: the Marvel films, the DC films, the hundred-million-dollar features &mdash; <strong style="color:${T.ink}">those roles are never posted publicly, anywhere.</strong> They are submitted by agents and managers only. Whatever stage you are at, that is the door this list is about.</p>`;
-
 function block(kicker: string, title: string, sub: string, stats?: [string,string][]): string {
   const statRow = stats
     ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;border-top:1px solid rgba(180,113,26,.22)"><tr>${
         stats.map(([n,l]) => `<td style="padding-top:13px" align="center" width="33%"><div style="font-size:21px;font-weight:800;color:${T.ink};line-height:1;font-family:Georgia,serif">${n}</div><div style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#8a8271;margin-top:5px;line-height:1.4">${l}</div></td>`).join("")
       }</tr></table>`
     : "";
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 22px"><tr>
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 20px"><tr>
       <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
         <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 8px">${kicker}</div>
         <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25">${title}</div>
@@ -163,35 +138,135 @@ function block(kicker: string, title: string, sub: string, stats?: [string,strin
       </td></tr></table>`;
 }
 
+// Why this is theirs. Their city, their submission count, nothing else.
+function youCard(first: string, facts: CityFacts, subs: number, hasReel: boolean): string {
+  const effort = subs >= 8
+    ? `You have put yourself forward <strong style="color:${T.ink}">${subs} times</strong>. That is not testing the water. This is the lever you have not pulled yet.`
+    : subs >= 1
+      ? `You have submitted <strong style="color:${T.ink}">${subs} time${subs === 1 ? "" : "s"}</strong>. Submitting is half the job. The other half is somebody with a phone full of casting directors knowing your name.`
+      : `Your profile is up &mdash; more than most manage. The step after the profile is representation.`;
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 20px"><tr>
+    <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 9px">Why this one is for you, ${esc(first)}</div>
+      <div style="font-size:14.5px;line-height:1.7;color:${T.body};margin:0 0 9px">${effort}</div>
+      <div style="font-size:14.5px;line-height:1.7;color:${T.body}">${facts.line}</div>
+      ${hasReel ? `<div style="font-size:13px;line-height:1.65;color:${T.body};margin-top:9px;padding-top:9px;border-top:1px solid rgba(180,113,26,.22)">You already have video up. That is what an agent wants to see &mdash; and the QR code below is how they see it.</div>` : ""}
+    </td></tr></table>`;
+}
+
+// The 50-states block. Everybody sees it, not only out-of-state members: an actor
+// in LA writing to a New York desk is the same question. It mirrors the .agd-coasts
+// copy on the Agency Directory page — video meeting first, and they pay for the trip.
+function nationwide(): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px"><tr>
+    <td style="background:${T.ink};border-radius:12px;padding:19px 21px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:${T.gold};margin:0 0 9px">Wherever you live</div>
+      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.cream};line-height:1.3;margin:0 0 9px">You can write to every one of them from any of the 50 states.</div>
+      <div style="font-size:14px;line-height:1.7;color:rgba(251,248,241,.78)">You do not need an LA address. Agencies take mail from all over the country every week &mdash; that is normal business, not a long shot.</div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:13px;border-top:1px solid rgba(240,184,96,.28)"><tr><td style="padding-top:13px">
+        <div style="font-size:14px;line-height:1.75;color:rgba(251,248,241,.78)">
+          <strong style="color:${T.cream}">If they are interested, they come to you first.</strong> A video audition over Zoom is the normal first step &mdash; from your own room, in your own state. If they want you in the office after that, they arrange the trip and they pay for the flight. Actors get signed this way from Ohio, Texas, Georgia and Illinois every year.
+        </div>
+      </td></tr></table>
+    </td></tr></table>`;
+}
+
+// The line the email hangs on.
+const KNOWLEDGE = `<p style="margin:0 0 20px;font-size:15.5px;line-height:1.75;color:${T.body}">What separates a working actor from a talented one is usually not talent &mdash; it is knowing which door opens. Which offices are real. Which read mail from a stranger, and which hand it back unopened. Which are agents, which are managers, and why that changes what you write. <strong style="color:${T.ink}">That normally takes twenty or thirty years to learn, one closed door at a time.</strong></p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr><td style="border-left:3px solid ${T.gold};padding:2px 0 2px 16px">
+  <div style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:19px;line-height:1.45;color:${T.ink}">A little knowledge takes you a lot further than a lot of hope.</div>
+</td></tr></table>`;
+
+const GATE = `<p style="margin:0 0 20px;font-size:15px;line-height:1.7;color:${T.body}">The Marvel films, the DC films, the hundred-million-dollar features &mdash; <strong style="color:${T.ink}">those roles are never posted publicly, anywhere.</strong> Agents and managers submit them. That is the door this list is about.</p>`;
+
 // The six studio marks exactly as AGD_STUDIOS shows them on the Agency Directory
 // page, baked to one raster because no mail client renders SVG. Regenerate the PNG
 // from the same /logos/*.svg files if a mark is ever replaced.
 function studioStrip(): string {
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px"><tr><td style="background:${T.cream};border:1px solid #EFE7D6;border-radius:10px;padding:18px 12px 14px;text-align:center">
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr><td style="background:${T.cream};border:1px solid #EFE7D6;border-radius:10px;padding:18px 12px 14px;text-align:center">
       <div style="font-size:9.5px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:#9a9382;margin:0 0 14px">The films their clients get cast in</div>
       <img src="${APP_URL}/email-agd-studios.png" width="400" alt="Warner Bros. Pictures, Universal Pictures, Walt Disney Studios, Sony Pictures, Paramount Pictures, Marvel Studios" style="display:block;width:100%;max-width:400px;height:auto;margin:0 auto;border:0"/>
     </td></tr></table>`;
 }
 
-// The real Actor Business Cards, QR codes and all — the same raster the weekly note
-// uses, so the card shown here is the card they actually get.
+// The card, and the four moves it removes. Naming the four is the whole argument —
+// "four actions" on its own asked the reader to take our word for it.
 function cardStrip(locked: boolean): string {
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr><td style="background:#ffffff;border:1px solid #E7E7EF;border-radius:12px;padding:0;overflow:hidden">
+  const step = (n: number, txt: string) =>
+    `<tr><td width="26" valign="top" style="padding:3px 0"><span style="display:inline-block;width:18px;height:18px;border-radius:9px;background:rgba(180,113,26,.13);color:${T.solid};font-size:10px;font-weight:800;text-align:center;line-height:18px">${n}</span></td><td style="padding:3px 0;font-size:13.5px;line-height:1.55;color:${T.body}">${txt}</td></tr>`;
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px"><tr><td style="background:#ffffff;border:1px solid #E7E7EF;border-radius:12px;padding:0;overflow:hidden">
       <img src="${APP_URL}/email-actor-cards.jpg" width="488" alt="Two Actor Business Cards, each with a headshot and a QR code" style="display:block;width:100%;max-width:488px;height:auto;border:0"/>
-      <div style="padding:15px 18px 17px">
+      <div style="padding:16px 18px 18px">
         <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 7px">${locked ? "Also included with Premium" : "Already in your dashboard"}</div>
-        <div style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:${T.ink};line-height:1.3">Your whole reel, in an agent&rsquo;s hand, on a card.</div>
-        <div style="font-size:14px;color:${T.body};margin-top:6px;line-height:1.65">A mailed envelope takes four actions before anyone sees your face. Your card takes none. They scan the code and your headshots, self-tapes, credits and contact open on their phone &mdash; and when you update your profile tomorrow, the same card shows the new version.</div>
+        <div style="font-family:Georgia,serif;font-size:19px;font-weight:700;color:${T.ink};line-height:1.3;margin:0 0 10px">Your whole reel in an agent&rsquo;s hand, on one card.</div>
+        <div style="font-size:14px;color:${T.body};line-height:1.65;margin:0 0 10px">An envelope costs them four moves before they ever see you move:</div>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${step(1,"Slit the envelope open.")}
+          ${step(2,"Pull the headshot and r&eacute;sum&eacute; out and unfold them.")}
+          ${step(3,"Read down far enough to find your name.")}
+          ${step(4,"Type that name into a search bar to hunt for your reel &mdash; if they still care by then.")}
+        </table>
+        <div style="font-size:14px;color:${T.body};line-height:1.65;margin-top:11px"><strong style="color:${T.ink}">Most stop at two.</strong> Your card costs one move: they scan the code, and your headshots, self-tapes, credits and contact open on their phone. Update your profile tomorrow and the same card shows the new version.</div>
       </div>
     </td></tr></table>`;
 }
 
 function noteCard(first: string): string {
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px"><tr>
-    <td style="background:${T.ink};border-radius:12px;padding:19px 21px">
-      <div style="font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:${T.gold};margin:0 0 9px">One of the seven tips &mdash; the handwritten note</div>
-      <div style="font-family:Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.7;color:${T.cream}">&ldquo;Hi, my name is ${esc(first)} and I&rsquo;m seeking representation in the TV and film industry. May I request an audition so you can see my abilities?&rdquo;</div>
-      <div style="font-size:12.5px;color:rgba(251,248,241,.62);margin-top:11px;line-height:1.65">Write it by hand on the back of your card. One or two sentences. No biography, no how-you-found-them. Short reads as confident &mdash; and that is one tip out of seven, which is the smallest part of what is in there.</div>
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
+    <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-radius:12px;padding:18px 20px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:${T.solid};margin:0 0 9px">One of the seven tips &mdash; the handwritten note</div>
+      <div style="font-family:Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.65;color:${T.ink}">&ldquo;Hi, my name is ${esc(first)} and I&rsquo;m seeking representation in the TV and film industry. May I request an audition so you can see my abilities?&rdquo;</div>
+      <div style="font-size:12.5px;color:#8a8271;margin-top:10px;line-height:1.6">By hand, on the back of your card. Two sentences. No biography. Short reads as confident &mdash; and that is one tip of seven.</div>
+    </td></tr></table>`;
+}
+
+// What Premium is, and what it costs. Prices are the live ones in PREMIUM_PLANS:
+// $99/yr (and it stays $99), $71.70 per 6-month term, $14.95 month-to-month.
+const PERKS = [
+  `The Talent Agency &amp; Manager Directory &mdash; all ${DIR.total}, both coasts`,
+  "Unlimited submissions (free accounts get one a week)",
+  "Actor Business Card with QR code",
+  "Mailing postcard &amp; agent promo card",
+  "Actor Slate Video &mdash; your 7-second intro",
+  "Manager Mode &mdash; a weekly career check-in written for you",
+  "Unlimited photos, videos and Cast Me As clips",
+];
+function perkList(): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0">${
+    PERKS.map((p) => `<tr><td width="22" valign="top" style="padding:4px 0;color:${T.solid};font-size:14px;font-weight:800">&#10003;</td><td style="padding:4px 0;font-size:14px;line-height:1.5;color:${T.body}">${p}</td></tr>`).join("")
+  }</table>`;
+}
+function priceBlock(): string {
+  const cell = (t: string, p: string, s: string, best?: boolean) =>
+    `<td width="33%" align="center" valign="top" style="padding:12px 6px;${best ? "background:rgba(180,113,26,.09);border-radius:9px" : ""}">
+      <div style="font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#8a8271">${t}</div>
+      <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:${T.ink};margin:5px 0 2px;line-height:1">${p}</div>
+      <div style="font-size:11px;color:#8a8271;line-height:1.4">${s}</div>
+    </td>`;
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
+    <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 8px">What it costs</div>
+      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25">$99 a year. It is still $99 the year after.</div>
+      <div style="font-size:14px;color:${T.body};margin-top:6px;line-height:1.6">That is $8.25 a month &mdash; less than most sites charge for a month. No introductory rate that climbs once you stop watching.</div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:13px"><tr>
+        ${cell("1 year","$99","$8.25/mo &middot; best value",true)}
+        ${cell("6 months","$71.70","$11.95/mo")}
+        ${cell("Monthly","$14.95","cancel any time")}
+      </tr></table>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(180,113,26,.22)">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:${T.solid};margin:0 0 9px">Every plan includes all of it</div>
+        ${perkList()}
+      </div>
+      <div style="font-size:12px;color:#8a8271;margin-top:12px;line-height:1.6">Cancel any time. Your free account stays free either way &mdash; no card needed to keep it.</div>
+    </td></tr></table>`;
+}
+function includedBlock(): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
+    <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 8px">Already yours</div>
+      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25;margin:0 0 12px">Everything your $99 is buying, in one place.</div>
+      ${perkList()}
+      <div style="font-size:12px;color:#8a8271;margin-top:12px;line-height:1.6">Your rate stays $99 a year for as long as you keep it. It does not rise on renewal.</div>
     </td></tr></table>`;
 }
 
@@ -221,8 +296,8 @@ function shell(a: ShellArgs): string {
       </td></tr>
       ${kickerBar(a.kicker)}
       <tr><td class="cs-pad" style="padding:34px 36px 8px">
-        <h1 class="cs-h1" style="margin:0 0 18px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:700;color:${T.ink};letter-spacing:-0.4px;line-height:1.18">${a.heading}</h1>
-        <p style="margin:0 0 18px;font-size:15.5px;line-height:1.7;color:${T.body}">${a.greeting}</p>
+        <h1 class="cs-h1" style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:700;color:${T.ink};letter-spacing:-0.4px;line-height:1.18">${a.heading}</h1>
+        <p style="margin:0 0 18px;font-size:15.5px;line-height:1.65;color:${T.body}">${a.greeting}</p>
         ${a.mid}
         ${cta}
       </td></tr>
@@ -235,9 +310,8 @@ function shell(a: ShellArgs): string {
 }
 
 const STATS: [string,string][] = [[String(DIR.total),"Companies"],[String(DIR.agencies),"Talent agencies"],[String(DIR.mgmt),"Management cos."]];
-const PREHEADER = `${DIR.total} agencies and management companies, and how each one wants to be approached.`;
-const GREETING = (first: string) =>
-  `Hi ${esc(first)}, this did not go out because you are on a list. It went out because of what your profile says about how you are going about this.`;
+const PREHEADER = `${DIR.total} agencies and managers, mailable from any state — and how each one wants to be approached.`;
+const DIRECTORY_SUB = "Sorted small, mid-size, major and management &mdash; so you can see who is open to new clients, who wants credits first, and who signs only through referral. Office address, website, SAG-AFTRA status and the submission route on every one.";
 
 // Everything the two variants need to know about one recipient.
 interface Person { first:string; location:string|null; subs:number; hasReel:boolean; unsub?:string }
@@ -250,15 +324,16 @@ function premiumHtml(p: Person): string {
     tag:"Selected for you",
     kicker:"The gatekeepers, in one list",
     heading:`${DIR.total} doors &mdash; and which of them actually opens.`,
-    greeting:GREETING(p.first),
+    greeting:`Hi ${esc(p.first)} &mdash; short version: every talent agency and management company we could verify is now in your dashboard, with the address, the website and how each one takes submissions.`,
     mid: youCard(p.first, facts, p.subs, p.hasReel)
+      + nationwide()
       + KNOWLEDGE
-      + block("Now in your dashboard","Talent Agency &amp; Management Directory",
-          "Every talent agency and management company we could verify across Los Angeles, Beverly Hills and New York &mdash; sorted by size, so you can see at a glance which are open to new clients, which expect credits behind you, and which sign only through referral. For each one: the office address, the website, whether they are SAG-AFTRA franchised, and exactly how they want to be approached.", STATS)
+      + block("Now in your dashboard","Talent Agency &amp; Management Directory", DIRECTORY_SUB, STATS)
       + studioStrip()
       + GATE
       + cardStrip(false)
-      + noteCard(p.first),
+      + noteCard(p.first)
+      + includedBlock(),
     cta:"Open my directory", href:"/talent-dashboard",
     foot:"You&rsquo;re receiving this because you&rsquo;re a CastSlate Premium member.",
   });
@@ -272,16 +347,17 @@ function freeHtml(p: Person): string {
     tag:"Selected for you",
     kicker:"The gatekeepers, in one list",
     heading:"The roles you cannot find online are behind these doors.",
-    greeting:GREETING(p.first),
+    greeting:`Hi ${esc(p.first)} &mdash; short version: we put every talent agency and management company we could verify into one list, with the address, the website and how each one takes submissions. It unlocks with Premium.`,
     mid: youCard(p.first, facts, p.subs, p.hasReel)
+      + nationwide()
       + KNOWLEDGE
-      + block("New &mdash; included with Premium","Talent Agency &amp; Management Directory",
-          "Every talent agency and management company we could verify across Los Angeles, Beverly Hills and New York &mdash; sorted small, mid-size, major and management, so you can tell who is open to new clients and who will send an unsolicited envelope straight back. Members see the office address, the website, the SAG-AFTRA status and how each one takes submissions.", STATS)
+      + block("New &mdash; included with Premium","Talent Agency &amp; Management Directory", DIRECTORY_SUB, STATS)
       + studioStrip()
       + GATE
       + cardStrip(true)
-      + noteCard(p.first),
-    cta:"See what&rsquo;s inside", href:"/membership",
+      + noteCard(p.first)
+      + priceBlock(),
+    cta:"Unlock it &mdash; $99 a year", href:"/membership",
     foot:"You&rsquo;re receiving this because you have a CastSlate account.",
   });
 }
