@@ -1,0 +1,201 @@
+<title>Ink and Amber, Two Stripes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..500;1,6..96,400..500&family=DM+Sans:opsz,wght@9..40,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{
+  --paper:#F8F6F2; --ink:#191922; --muted:#6E6C78; --rule:#E6E2D9;
+  --raise:#FFFFFF; --accent:#B07E14;
+  --stage:#FAF7F1; --stage-line:#E5DFD2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131318; --ink:#EFEDE8; --muted:#9B98A4; --rule:#2B2A33;
+    --raise:#1C1C24; --accent:#FFBF00;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131318; --ink:#EFEDE8; --muted:#9B98A4; --rule:#2B2A33;
+  --raise:#1C1C24; --accent:#FFBF00;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+     -webkit-font-smoothing:antialiased;overflow-x:clip;line-height:1.62}
+.doc{max-width:1120px;margin:0 auto;padding:clamp(44px,6vw,84px) clamp(16px,4vw,32px) 130px}
+.col{max-width:64ch}
+.eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;
+         letter-spacing:.17em;text-transform:uppercase;color:var(--accent);margin:0 0 20px}
+h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:clamp(40px,7vw,76px);
+   line-height:1.02;letter-spacing:-.02em;margin:0 0 22px;text-wrap:balance}
+h1 em{font-style:italic}
+.standfirst{font-size:clamp(17px,2vw,19.5px);line-height:1.64;color:var(--muted);margin:0}
+.standfirst em{color:var(--ink);font-style:italic}
+.diag{margin:clamp(40px,5vw,62px) 0 0;padding:clamp(24px,3vw,34px);background:var(--raise);
+      border:1px solid var(--rule);border-radius:5px}
+.diag h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:27px;line-height:1.22;
+         margin:0 0 16px;letter-spacing:-.012em}
+.diag p{margin:0 0 15px;color:var(--muted);font-size:15.5px;max-width:63ch}
+.diag p:last-child{margin:0}
+.diag b{color:var(--ink);font-weight:700}
+.diag em{color:var(--ink);font-style:italic}
+code{font-family:'IBM Plex Mono',monospace;font-size:.92em}
+.profiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:24px 0 6px}
+.prof{border:1px solid var(--rule);border-radius:5px;overflow:hidden;background:var(--raise)}
+.prof-art{height:104px;display:flex;background:#fff}
+.prof-art i{display:block;height:100%}
+.prof-art .pg{flex:1}
+.prof-cap{padding:9px 12px 11px;border-top:1px solid var(--rule);
+          font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+.prof-cap b{display:block;color:var(--ink);font-size:12px;letter-spacing:.02em;margin-bottom:3px;
+            font-family:'DM Sans',sans-serif;font-weight:700}
+.cap{font-size:13.5px!important;font-style:italic;margin:0!important}
+.cut{margin-top:clamp(62px,7.5vw,96px);padding-top:clamp(30px,3vw,38px);border-top:1px solid var(--rule)}
+.cut-hd{display:flex;align-items:baseline;gap:18px;margin-bottom:16px}
+.cut-l{font-family:'Bodoni Moda',Georgia,serif;font-size:40px;line-height:1;color:var(--accent);
+       font-weight:400;flex:none;font-style:italic}
+.cut-hd h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:clamp(29px,3.8vw,40px);
+           line-height:1.1;margin:0;letter-spacing:-.018em}
+.cut-body{max-width:64ch}
+.cut-body p{margin:0 0 11px;font-size:16px;color:var(--muted)}
+.cut-body em{color:var(--ink);font-style:italic}
+.cut-body b{color:var(--ink)}
+.ref{font-family:'IBM Plex Mono',monospace;font-size:12.5px!important;letter-spacing:.02em;
+     color:var(--accent)!important}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:0;margin:26px 0 0;
+      border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.spec .sp{padding:14px 16px 15px;border-right:1px solid var(--rule)}
+.spec .sp:last-child{border-right:0}
+.spec dt{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+         color:var(--muted);margin-bottom:5px}
+.spec dd{margin:0;font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.stage{margin-top:28px;background:var(--stage);border:1px solid var(--stage-line);border-radius:7px;
+       padding:clamp(18px,2.6vw,30px);overflow-x:auto}
+.stage-tag{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+           text-transform:uppercase;color:#9C9587;margin-bottom:18px}
+.stack{display:flex;flex-direction:column;gap:15px;min-width:660px}
+
+/* ── CastSlate card, reproduced exactly (light only, by design) ── */
+.card{background:#fff;border:1px solid #E5DFD2;border-radius:14px;position:relative;color:#1A1A2E;
+      box-shadow:0 1px 4px rgba(26,26,46,.05);transition:box-shadow .2s,transform .15s;overflow:hidden}
+.card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px)}
+.card-in{padding:24px 28px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start}
+.pick .card-in{padding-left:36px}
+.pt-tile{display:grid;place-items:center;flex:none;align-self:start;box-shadow:inset 0 0 0 1px rgba(26,26,46,.10)}
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0 0 6px;
+          font-family:'DM Sans',sans-serif}
+.cc-log{color:#4a4f58;font-size:16px;line-height:1.45;margin:0 0 6px}
+.cc-prod{color:#8E8EA0;font-size:14px;margin:0 0 14px}
+.badgerow{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+         background:#F1ECE2;color:#1A1A2E;border:1px solid #E5DFD2}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92}
+.cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c}
+.cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:#8E8EA0;font-weight:600;padding-left:2px}
+.cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid #E5DFD2;border-radius:999px;
+         background:#fff;padding:7px 14px;font-size:13.5px}
+.cc-pill .p1{font-weight:800}.cc-pill .p2{font-size:13px;color:#5A5A72}
+.cc-rest{font-size:13.5px;color:#5A5A72;font-weight:600}
+.side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px}
+.btn{background:#2D8587;color:#fff;border:none;padding:13px 22px;border-radius:10px;font-weight:700;
+     font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#226365}
+.btn:focus-visible{outline:2px solid #B07E14;outline-offset:3px}
+.cc-pickrow{margin-bottom:11px}
+.cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
+          background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
+          font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.cc-gpill svg{color:#B08327;flex:none}
+
+/* ══ TWO stripes only — ink and amber, nothing else ══════════════════════
+   The ::after is the second stripe and it always runs to the end of the
+   band. Nothing closes it, so there is no third stripe. */
+.cc-band{position:absolute;left:0;top:0;bottom:0;background:#1A1A2E;pointer-events:none}
+.cc-band::after{content:"";position:absolute;top:0;bottom:0;right:0;background:#FFBF00}
+
+/* Y1 · ink 4.5 + amber 2.5 = 7px */
+.pick-y1 .cc-band{width:7px}
+.pick-y1 .cc-band::after{left:4.5px}
+
+/* Y2 · ink 4 + amber 3.5 = 7.5px, same total as the version you approved */
+.pick-y2 .cc-band{width:7.5px}
+.pick-y2 .cc-band::after{left:4px}
+
+/* Y3 · swapped — amber outermost, ink inside against the card */
+.pick-y3 .cc-band{width:7px;background:#FFBF00}
+.pick-y3 .cc-band::after{left:3px;background:#1A1A2E}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:720px){
+  .cut-hd{gap:13px}.cut-l{font-size:31px}
+  .spec .sp{border-right:0;border-bottom:1px solid var(--rule)}
+  .spec .sp:last-child{border-bottom:0}
+}
+</style>
+
+<div class="doc">
+  <p class="eyebrow">CastSlate &middot; browse card &middot; two stripes</p>
+  <div class="col">
+    <h1>Ink and amber. <em>Two.</em></h1>
+    <p class="standfirst">The closing sliver did fix the amber, but it turned the mark into navy&ndash;amber&ndash;navy,
+    and three stripes is a ribbon. These are two stripes only, and the amber is made visible the honest way &mdash;
+    by giving it width.</p>
+  </div>
+
+  <div class="diag">
+    <h2>The trade, stated plainly</h2>
+    <p>With only two stripes, <b>one of the amber&rsquo;s edges will always be soft</b> &mdash; that is a property of
+    the colour, not a flaw in the design. Amber is 10.32&times; against navy and about 1.6&times; against both the
+    white card and the cream page, so wherever the amber touches paper, that boundary is weak. Nothing except a
+    third stripe can close both sides, and you have ruled that out, correctly.</p>
+    <p>So the only real lever left is <b>width</b>, and the only real choice is <b>which side is soft</b>. Y1 and Y2
+    put the soft edge on the inside against the card. Y3 swaps the order so the soft edge faces the page instead.
+    All three are two stripes and nothing else.</p>
+    <div class="profiles"><div class="prof"><div class="prof-art"><i style="width:48px;background:#1A1A2E"></i><i style="width:12px;background:#FFBF00"></i><i class="pg"></i></div><div class="prof-cap"><b>U &middot; what you saw</b>ink 6 + amber 1.5px</div></div><div class="prof"><div class="prof-art"><i style="width:36px;background:#1A1A2E"></i><i style="width:20px;background:#FFBF00"></i><i class="pg"></i></div><div class="prof-cap"><b>Y1 &middot; Fine</b>ink 4.5 + amber 2.5px</div></div><div class="prof"><div class="prof-art"><i style="width:32px;background:#1A1A2E"></i><i style="width:28px;background:#FFBF00"></i><i class="pg"></i></div><div class="prof-cap"><b>Y2 &middot; Even</b>ink 4 + amber 3.5px</div></div><div class="prof"><div class="prof-art"><i style="width:24px;background:#FFBF00"></i><i style="width:32px;background:#1A1A2E"></i><i class="pg"></i></div><div class="prof-cap"><b>Y3 &middot; Reversed</b>amber 3 + ink 4px</div></div></div>
+    <p class="cap">Edge profiles at &times;8. Two colours in every one &mdash; no third stripe anywhere.</p>
+  </div>
+
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">Y1</span><h2>Fine</h2></header>
+  <div class="cut-body"><p>Ink 4.5px, amber 2.5px. The amber is <b>two thirds wider</b> than the 1.5px you found invisible, and the whole edge is still narrower than before at 7px total. The most restrained of the three &mdash; the amber is clearly a line rather than a band, but now a line you can actually see.</p><p class="ref">Ink 4.5 &middot; amber 2.5 &middot; total 7px</p></div>
+  <dl class="spec"><div class="sp"><dt>Stripes</dt><dd>2</dd></div><div class="sp"><dt>Amber</dt><dd>2.5px</dd></div><div class="sp"><dt>Soft edge</dt><dd>right, vs card</dd></div><div class="sp"><dt>Total</dt><dd>7px</dd></div></dl>
+  <div class="stage">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders</span>
+    <div class="stack"><div class="card pick pick-y1"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.6 9.4h18.8v9.2a2.6 2.6 0 0 1-2.6 2.6H5.2a2.6 2.6 0 0 1-2.6-2.6z"/><path d="M2.6 4.5a1.3 1.3 0 0 1 1.3-1.3h16.2a1.3 1.3 0 0 1 1.3 1.3v3.6H2.6z"/><g fill="var(--k)"><path d="M7.4 3.2h1.9L7.6 8.1H5.7z"/><path d="M12.4 3.2h1.9l-1.7 4.9h-1.9z"/><path d="M17.4 3.2h1.9l-1.7 4.9h-1.9z"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Feature Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Totality</h3><p class="cc-log">A comedy feature film.</p><p class="cc-prod">Wael Hassan</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 62&ndash;80</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 32&ndash;45</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-y1"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">Y2</span><h2>Even</h2></header>
+  <div class="cut-body"><p>Ink 4px, amber 3.5px &mdash; near enough to an even split. At this width the amber stops being an accent on a navy band and the mark becomes genuinely two-tone, which is the most cinematic of the three: warm and dark in equal measure, the way a title card is. Total 7.5px, identical to the version you approved.</p><p class="ref">Ink 4 &middot; amber 3.5 &middot; total 7.5px</p></div>
+  <dl class="spec"><div class="sp"><dt>Stripes</dt><dd>2</dd></div><div class="sp"><dt>Amber</dt><dd>3.5px</dd></div><div class="sp"><dt>Soft edge</dt><dd>right, vs card</dd></div><div class="sp"><dt>Total</dt><dd>7.5px</dd></div></dl>
+  <div class="stage">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders</span>
+    <div class="stack"><div class="card pick pick-y2"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.6" y="4.4" width="18.8" height="15.2" rx="2.2"/><g fill="var(--k)"><rect x="4.6" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="8.6" y="6.4" width="6.8" height="11.2" rx="1"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Short Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Qualifying Round</h3><p class="cc-log">A sports drama short &mdash; New York, NY.</p><p class="cc-prod">Dir. Sefo Laulu</p><div class="cc-strip"><span class="cc-chip roles">7 roles</span><span class="cc-chip pay">Up to $250/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 18&ndash;25</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 44&ndash;60</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-y2"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">Y3</span><h2>Reversed</h2></header>
+  <div class="cut-body"><p>The same two stripes, swapped: amber on the outside, ink between it and the card. This gives the amber the full outer edge of the card, so it is the most amber-forward of the three by feel even though it is only 3px. The trade is that the soft boundary moves to the outside, where the amber meets the cream page &mdash; watch its left edge against the background and see whether that bothers you.</p><p class="ref">Amber 3 &middot; ink 4 &middot; total 7px</p></div>
+  <dl class="spec"><div class="sp"><dt>Stripes</dt><dd>2</dd></div><div class="sp"><dt>Amber</dt><dd>3px, outermost</dd></div><div class="sp"><dt>Soft edge</dt><dd>left, vs page</dd></div><div class="sp"><dt>Total</dt><dd>7px</dd></div></dl>
+  <div class="stage">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders</span>
+    <div class="stack"><div class="card pick pick-y3"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E6F1F1;color:#1F6668;--k:#E6F1F1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.4" y="8.4" width="19.2" height="12.4" rx="2.4"/><rect x="4.6" y="10.6" width="14.8" height="8" rx="1.1" fill="var(--k)"/><path d="M22.2 1.6 11.8 5.8l3.7 1.2 1.2 3.7z"/></svg></div><div><div class="badgerow"><span class="cc-badge">TV Pilot</span><span class="cc-badge">SAG-AFTRA</span></div><h3 class="cc-title">Midnight Echoes</h3><p class="cc-log">Some secrets were never meant to air.</p><p class="cc-prod">Echo Lane Productions</p><div class="cc-strip"><span class="cc-chip roles">5 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">Los Angeles, CA</span><span class="cc-chip quiet">Posted Jul 28, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 28&ndash;40</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 25&ndash;35</span></span><span class="cc-rest">+ 3 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-y3"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+
+  <section class="cut">
+    <header class="cut-hd"><span class="cut-l">&#8214;</span><h2>Where this lands</h2></header>
+    <div class="cut-body">
+      <p><b>Y2.</b> Same 7.5px total you already approved, and at 3.5px the amber is wide enough that losing one
+      edge costs it little &mdash; a 3.5px line with one hard edge still reads as a line, where a 1.5px one did not.
+      It is also the only version that looks deliberately <em>two-tone</em> rather than like a navy band with
+      something small next to it.</p>
+      <p>Y3 is worth a look before you decide. It is the boldest by feel, and if the amber meeting the cream page
+      does not bother you on screen, it is the most amber the mark can be at only 3px.</p>
+    </div>
+  </section>
+</div>

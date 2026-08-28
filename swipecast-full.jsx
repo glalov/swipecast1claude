@@ -2564,7 +2564,7 @@ body.sheet-push .b2t-cube{display:none;}
   .footer-grid{grid-template-columns:1fr 1fr !important;}
   .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
   .casting-card-row{grid-template-columns:1fr !important;gap:16px !important;padding:18px !important;}
-  .cc-picked .casting-card-row{padding-left:28px !important;}   /* clear the 8px band */
+  .cc-picked .casting-card-row{padding-left:26px !important;}   /* clear the 7.5px band */
   .casting-card-row-side{align-items:stretch !important;width:100%;flex-direction:row !important;flex-wrap:wrap;justify-content:space-between;}
   .casting-card-row-side button{flex:1 1 100%;}
   .landing-hero{grid-template-columns:1fr !important;gap:32px !important;padding:48px 20px 28px !important;text-align:center;}
@@ -2784,22 +2784,33 @@ body.sheet-push .b2t-cube{display:none;}
    avoid. Widening it was never available: at 1.5px gold stops reading as
    foil and starts reading as a highlight.
    The band solves that by moving the weight off the outline and onto ONE
-   edge, where 8px is unremarkable. Two things carry it:
-     • the card border goes back to NEUTRAL. The band is the mark; a gold
-       outline as well made two marks competing to be the signal.
-     • there are TWO weights, not one. An 8px bar on its own is a block of
-       colour; an 8px bar with a hairline beside it is a binding. Delete the
-       ::after and this becomes a plain coloured stripe — that hairline is
-       doing more work than its size suggests.
+   edge, where 7.5px is unremarkable. Two things carry it:
+     • the card border stays NEUTRAL. The band is the mark; an outline as
+       well made two marks competing to be the signal.
+     • there are exactly TWO stripes — ink then amber. Three was tried and
+       rejected: closing the amber's right side with a second sliver of ink
+       fixed its contrast but turned the mark into ink-amber-ink, which
+       reads as a ribbon.
+   ⚠️ Why the amber is the SECOND stripe and not the field. #FFBF00 measures
+   only 1.55x against the cream page — it is bright in chroma and almost
+   identical in lightness, so a card marked in amber alone stops registering
+   in a scrolling list. Ink is 15.95x and does the finding; the amber is the
+   warm note. Do not swap their widths so the amber becomes the wider one.
+   ⚠️ Why the amber is 3.5px and not a hairline. Against ink it is 10.32x,
+   against the white card 1.65x — so its right edge always dissolves and only
+   one of its two edges reads. At 1.5px that left too little; 3.5px is wide
+   enough to survive losing an edge. Anything under ~2.5px disappears again.
+   ⚠️ The ::after uses right:0, not a width. That is what guarantees the
+   amber runs to the band's end and no third stripe can appear.
    ⚠️ The band needs the card's overflow:hidden to clip to the border radius.
    That is set inline on the card div. Remove it and the band squares off the
    two left corners.
    ⚠️ No gradient. A gradient across the band's width simulates a cylinder
    catching light, which reads as plated plastic — that failure is the reason
-   this went through six rounds. Flat colour only, both weights. */
+   this went through six rounds. Flat colour only, both stripes. */
 .cc-picked{background:var(--s1);}
-.cc-band{position:absolute;left:0;top:0;bottom:0;width:8px;background:#8A6524;pointer-events:none;}
-.cc-band::after{content:"";position:absolute;left:8px;top:0;bottom:0;width:1.5px;background:#E2CB94;}
+.cc-band{position:absolute;left:0;top:0;bottom:0;width:7.5px;background:#1A1A2E;pointer-events:none;}
+.cc-band::after{content:"";position:absolute;left:4px;right:0;top:0;bottom:0;background:#FFBF00;}
 .cc-pickrow{margin-bottom:11px;}
 .cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
           background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
@@ -13656,7 +13667,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className={isArchived?"cs-archived-dim":undefined}>
               {/* Picked rows carry the band's width in their left padding. It is
                   inline because the base padding is inline and would win. */}
-              <div className="casting-card-row" style={{padding:isFeat?"24px 28px 24px 38px":"24px 28px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:20,alignItems:"start"}}>
+              <div className="casting-card-row" style={{padding:isFeat?"24px 28px 24px 36px":"24px 28px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:20,alignItems:"start"}}>
                 {/* Raw casting on purpose — c.type is the translated label. */}
                 <ProjectTypeTile type={rawC.type}/>
                 <div>

@@ -1,0 +1,208 @@
+<title>Marquee, Ink, Signal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..500;1,6..96,400..500&family=DM+Sans:opsz,wght@9..40,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{
+  --paper:#F8F6F2; --ink:#191922; --muted:#6E6C78; --rule:#E6E2D9;
+  --raise:#FFFFFF; --accent:#C8761B;
+  --stage:#FAF7F1; --stage-line:#E5DFD2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131318; --ink:#EFEDE8; --muted:#9B98A4; --rule:#2B2A33;
+    --raise:#1C1C24; --accent:#E8902A;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131318; --ink:#EFEDE8; --muted:#9B98A4; --rule:#2B2A33;
+  --raise:#1C1C24; --accent:#E8902A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+     -webkit-font-smoothing:antialiased;overflow-x:clip;line-height:1.62}
+.doc{max-width:1120px;margin:0 auto;padding:clamp(44px,6vw,84px) clamp(16px,4vw,32px) 130px}
+.col{max-width:64ch}
+.eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;
+         letter-spacing:.17em;text-transform:uppercase;color:var(--accent);margin:0 0 20px}
+h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:clamp(40px,7vw,76px);
+   line-height:1.02;letter-spacing:-.02em;margin:0 0 22px;text-wrap:balance}
+h1 em{font-style:italic}
+.standfirst{font-size:clamp(17px,2vw,19.5px);line-height:1.64;color:var(--muted);margin:0}
+.standfirst em{color:var(--ink);font-style:italic}
+.diag{margin:clamp(40px,5vw,62px) 0 0;padding:clamp(24px,3vw,34px);background:var(--raise);
+      border:1px solid var(--rule);border-radius:5px}
+.diag h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:27px;line-height:1.22;
+         margin:0 0 16px;letter-spacing:-.012em}
+.diag h2 code{font-family:'IBM Plex Mono',monospace;font-size:22px}
+.diag p{margin:0 0 15px;color:var(--muted);font-size:15.5px;max-width:63ch}
+.diag b{color:var(--ink);font-weight:700}
+.diag em{color:var(--ink);font-style:italic}
+code{font-family:'IBM Plex Mono',monospace;font-size:.92em}
+.swatchbar{display:flex;margin:22px 0 8px;border-radius:5px;overflow:hidden;border:1px solid var(--rule);
+           flex-wrap:wrap}
+.swatchbar div{flex:1 1 120px;height:62px;display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;
+               font-size:11px;font-weight:500;color:#4A3A12;letter-spacing:.02em}
+.cap{font-size:13.5px!important;font-style:italic;margin:0!important}
+.cut{margin-top:clamp(62px,7.5vw,96px);padding-top:clamp(30px,3vw,38px);border-top:1px solid var(--rule)}
+.cut-hd{display:flex;align-items:baseline;gap:18px;margin-bottom:16px}
+.cut-l{font-family:'Bodoni Moda',Georgia,serif;font-size:40px;line-height:1;color:var(--accent);
+       font-weight:400;flex:none;font-style:italic}
+.cut-hd h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:clamp(29px,3.8vw,40px);
+           line-height:1.1;margin:0;letter-spacing:-.018em}
+.cut-body{max-width:64ch}
+.cut-body p{margin:0 0 11px;font-size:16px;color:var(--muted)}
+.cut-body em{color:var(--ink);font-style:italic}
+.cut-body b{color:var(--ink)}
+.ref{font-family:'IBM Plex Mono',monospace;font-size:12.5px!important;letter-spacing:.02em;
+     color:var(--accent)!important}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:0;margin:26px 0 0;
+      border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.spec .sp{padding:14px 16px 15px;border-right:1px solid var(--rule)}
+.spec .sp:last-child{border-right:0}
+.spec dt{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+         color:var(--muted);margin-bottom:5px}
+.spec dd{margin:0;font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.stage{margin-top:28px;background:var(--stage);border:1px solid var(--stage-line);border-radius:7px;
+       padding:clamp(18px,2.6vw,30px);overflow-x:auto}
+.stage-tag{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+           text-transform:uppercase;color:#9C9587;margin-bottom:18px}
+.stack{display:flex;flex-direction:column;gap:15px;min-width:660px}
+.meas{margin-top:28px;width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.meas caption{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.13em;
+              text-transform:uppercase;color:var(--muted);padding-bottom:13px}
+.meas th,.meas td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--rule);font-size:14.5px}
+.meas th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+         color:var(--muted);font-weight:500;border-bottom-color:var(--ink)}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px;margin-right:9px;vertical-align:-2px;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+.meas .warn{color:#B4433A;font-weight:700}
+.meas .ok{color:var(--ink)}
+.meas .good{color:#1F6B47;font-weight:700}
+
+/* ── CastSlate card, reproduced exactly (light only, by design) ── */
+.card{background:#fff;border:1px solid #E5DFD2;border-radius:14px;position:relative;color:#1A1A2E;
+      box-shadow:0 1px 4px rgba(26,26,46,.05);transition:box-shadow .2s,transform .15s;overflow:hidden}
+.card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px)}
+.card-in{padding:24px 28px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start}
+.pick .card-in{padding-left:36px}
+.pt-tile{display:grid;place-items:center;flex:none;align-self:start;box-shadow:inset 0 0 0 1px rgba(26,26,46,.10)}
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0 0 6px;
+          font-family:'DM Sans',sans-serif}
+.cc-log{color:#4a4f58;font-size:16px;line-height:1.45;margin:0 0 6px}
+.cc-prod{color:#8E8EA0;font-size:14px;margin:0 0 14px}
+.badgerow{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+         background:#F1ECE2;color:#1A1A2E;border:1px solid #E5DFD2}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92}
+.cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c}
+.cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:#8E8EA0;font-weight:600;padding-left:2px}
+.cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid #E5DFD2;border-radius:999px;
+         background:#fff;padding:7px 14px;font-size:13.5px}
+.cc-pill .p1{font-weight:800}.cc-pill .p2{font-size:13px;color:#5A5A72}
+.cc-rest{font-size:13.5px;color:#5A5A72;font-weight:600}
+.side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px}
+.btn{background:#2D8587;color:#fff;border:none;padding:13px 22px;border-radius:10px;font-weight:700;
+     font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#226365}
+.btn:focus-visible{outline:2px solid #C8761B;outline-offset:3px}
+.cc-pickrow{margin-bottom:11px}
+.cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
+          background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
+          font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.cc-gpill svg{color:#B08327;flex:none}
+
+/* ── the shipped band, thinned 8px → 6px. Only the two colours vary. ──
+   Note the hairline is DARKER than the band in T and lighter in U/V. A bright
+   band needs something to sit against or it floats off the paper. */
+.cc-band{position:absolute;left:0;top:0;bottom:0;width:6px;pointer-events:none}
+.cc-band::after{content:"";position:absolute;left:6px;top:0;bottom:0;width:1.5px}
+.pick-marquee .cc-band{background:#FFBF00}
+.pick-marquee .cc-band::after{background:#8A6524}
+.pick-ink .cc-band{background:#1A1A2E}
+.pick-ink .cc-band::after{background:#FFBF00}
+.pick-signal .cc-band{background:#C8761B}
+.pick-signal .cc-band::after{background:#FFBF00}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:720px){
+  .cut-hd{gap:13px}.cut-l{font-size:31px}
+  .spec .sp{border-right:0;border-bottom:1px solid var(--rule)}
+  .spec .sp:last-child{border-bottom:0}
+}
+</style>
+
+<div class="doc">
+  <p class="eyebrow">CastSlate &middot; browse card &middot; band colour, 6px</p>
+  <div class="col">
+    <h1>Bright is not the same as <em>visible</em></h1>
+    <p class="standfirst">All three are the shipped banded edge, thinned from 8px to 6px, with only the two colours
+    changed. Amber is in all of them &mdash; the question is whether it carries the band or the hairline.</p>
+  </div>
+
+  <div class="diag">
+    <h2>On <code>#FFBF00</code>, honestly</h2>
+    <p>You asked for it, so it is Demo T and I have built it to its best. But it has a real problem worth knowing
+    before you choose: <b>pure amber is almost exactly as light as the cream page it sits on</b>. Against
+    <code>#FAF7F1</code> it measures <b>1.55&times;</b>. The shipped brass measures 4.95&times; &mdash; more than
+    three times the separation.</p>
+    <p>Saturation and lightness are different things, and only one of them helps you find a card. Amber looks vivid
+    on a swatch because its <em>chroma</em> is at maximum, but a band is found by its <em>value</em> &mdash; how
+    dark it is against the paper behind it. Two colours can be equally light and wildly different in hue, and when
+    they are, the eye scanning a long page does not stop.</p>
+    <p>This is not an argument against amber. It is an argument about which part of the mark amber should be. Demo U
+    keeps your exact colour and moves it to the hairline, where a 1.5px line of pure amber against navy is the
+    brightest thing on the card &mdash; and the band behind it does the finding.</p>
+    <div class="swatchbar">
+      <div style="background:#FFBF00">#FFBF00 &middot; 1.55&times;</div>
+      <div style="background:#C8761B">#C8761B &middot; 3.24&times;</div>
+      <div style="background:#8A6524;color:#F6EFDF">#8A6524 &middot; 4.95&times;</div>
+      <div style="background:#1A1A2E;color:#F6EFDF">#1A1A2E &middot; 15.95&times;</div>
+    </div>
+    <p class="cap">The first two sit almost on top of the cream. Squint at this bar and watch which survive.</p>
+  </div>
+
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">T</span><h2>Marquee</h2></header>
+  <div class="cut-body"><p>Your colour, built as strongly as it can be. Pure amber at 6px, anchored by a deep-brass hairline instead of a light one &mdash; a bright band with a light line beside it has nothing to sit against and floats off the paper. This is amber at its best on this card. It is also, at <b>1.55&times;</b> against the page, the least findable band of the three by a wide margin. Scroll the page and judge it in motion rather than in close-up, because that is the gap between how it looks stopped and how it works in a list.</p><p class="ref">Closest reference &mdash; a marquee bulb</p></div>
+  <dl class="spec"><div class="sp"><dt>Band</dt><dd>6px &middot; <code>#FFBF00</code></dd></div><div class="sp"><dt>Hairline</dt><dd>1.5px &middot; <code>#8A6524</code></dd></div><div class="sp"><dt>Vs page</dt><dd>1.55&times;</dd></div><div class="sp"><dt>Pill</dt><dd>kept</dd></div></dl>
+  <div class="stage">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders &middot; 6px band</span>
+    <div class="stack"><div class="card pick pick-marquee"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.6 9.4h18.8v9.2a2.6 2.6 0 0 1-2.6 2.6H5.2a2.6 2.6 0 0 1-2.6-2.6z"/><path d="M2.6 4.5a1.3 1.3 0 0 1 1.3-1.3h16.2a1.3 1.3 0 0 1 1.3 1.3v3.6H2.6z"/><g fill="var(--k)"><path d="M7.4 3.2h1.9L7.6 8.1H5.7z"/><path d="M12.4 3.2h1.9l-1.7 4.9h-1.9z"/><path d="M17.4 3.2h1.9l-1.7 4.9h-1.9z"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Feature Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Totality</h3><p class="cc-log">A comedy feature film.</p><p class="cc-prod">Wael Hassan</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 62&ndash;80</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 32&ndash;45</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-marquee"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">U</span><h2>Amber on Ink</h2></header>
+  <div class="cut-body"><p>The same two colours, swapped. Navy carries the band and amber becomes the hairline &mdash; so the amber is still there, still the warm note, but the finding is done by the colour that can actually do it at <b>15.95&times;</b>. This is also the most literally cinematic of the three: warm foil on black is a film leader, a title card, an end credit. Brightness by contrast rather than by chroma.</p><p class="ref">Closest reference &mdash; gold foil on a black title card</p></div>
+  <dl class="spec"><div class="sp"><dt>Band</dt><dd>6px &middot; <code>#1A1A2E</code></dd></div><div class="sp"><dt>Hairline</dt><dd>1.5px &middot; <code>#FFBF00</code></dd></div><div class="sp"><dt>Vs page</dt><dd>15.95&times;</dd></div><div class="sp"><dt>Pill</dt><dd>kept</dd></div></dl>
+  <div class="stage">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders &middot; 6px band</span>
+    <div class="stack"><div class="card pick pick-ink"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.6" y="4.4" width="18.8" height="15.2" rx="2.2"/><g fill="var(--k)"><rect x="4.6" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="8.6" y="6.4" width="6.8" height="11.2" rx="1"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Short Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Qualifying Round</h3><p class="cc-log">A sports drama short &mdash; New York, NY.</p><p class="cc-prod">Dir. Sefo Laulu</p><div class="cc-strip"><span class="cc-chip roles">7 roles</span><span class="cc-chip pay">Up to $250/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 18&ndash;25</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 44&ndash;60</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-ink"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">V</span><h2>Signal</h2></header>
+  <div class="cut-body"><p>The middle path, and the one I would ship if you want the band to stay amber. It uses the site&rsquo;s own <code>--amber-dk</code> for the band, which is dark enough to register at <b>3.24&times;</b>, and keeps pure amber as the hairline so the bright note survives at the edge. Warm, unmistakably amber, and roughly twice as findable as T.</p><p class="ref">Closest reference &mdash; a sodium lamp, or a safety light</p></div>
+  <dl class="spec"><div class="sp"><dt>Band</dt><dd>6px &middot; <code>#C8761B</code></dd></div><div class="sp"><dt>Hairline</dt><dd>1.5px &middot; <code>#FFBF00</code></dd></div><div class="sp"><dt>Vs page</dt><dd>3.24&times;</dd></div><div class="sp"><dt>Pill</dt><dd>kept</dd></div></dl>
+  <div class="stage">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders &middot; 6px band</span>
+    <div class="stack"><div class="card pick pick-signal"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E6F1F1;color:#1F6668;--k:#E6F1F1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.4" y="8.4" width="19.2" height="12.4" rx="2.4"/><rect x="4.6" y="10.6" width="14.8" height="8" rx="1.1" fill="var(--k)"/><path d="M22.2 1.6 11.8 5.8l3.7 1.2 1.2 3.7z"/></svg></div><div><div class="badgerow"><span class="cc-badge">TV Pilot</span><span class="cc-badge">SAG-AFTRA</span></div><h3 class="cc-title">Midnight Echoes</h3><p class="cc-log">Some secrets were never meant to air.</p><p class="cc-prod">Echo Lane Productions</p><div class="cc-strip"><span class="cc-chip roles">5 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">Los Angeles, CA</span><span class="cc-chip quiet">Posted Jul 28, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 28&ndash;40</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 25&ndash;35</span></span><span class="cc-rest">+ 3 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-signal"><span class="cc-band" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+
+  <section class="cut">
+    <header class="cut-hd"><span class="cut-l">&#8214;</span><h2>Every candidate, measured</h2></header>
+    <div class="cut-body"><p>Sorted by how far each sits from the page. Anything under 2.5&times; is close enough to
+    the paper that a 6px band stops registering when you scroll.</p></div>
+    <table class="meas"><caption>Contrast against the cream page (#FAF7F1) &mdash; computed, not eyeballed</caption><thead><tr><th>Colour</th><th>Name</th><th>Ratio</th><th>Verdict</th><th>Used in</th></tr></thead><tbody><tr><td><span class="sw" style="background:#FFBF00"></span><code>#FFBF00</code></td><td>Pure amber</td><td class="warn">1.55&times;</td><td class="warn">Too close to the paper</td><td>T</td></tr><tr><td><span class="sw" style="background:#D2A24A"></span><code>#D2A24A</code></td><td>Legacy pick gold</td><td class="warn">2.18&times;</td><td class="warn">Too close to the paper</td><td>&mdash;</td></tr><tr><td><span class="sw" style="background:#E8902A"></span><code>#E8902A</code></td><td>Site --amber</td><td class="warn">2.32&times;</td><td class="warn">Too close to the paper</td><td>&mdash;</td></tr><tr><td><span class="sw" style="background:#C8761B"></span><code>#C8761B</code></td><td>Site --amber-dk</td><td class="ok">3.24&times;</td><td class="ok">Workable</td><td>V</td></tr><tr><td><span class="sw" style="background:#8A6524"></span><code>#8A6524</code></td><td>Shipped brass</td><td class="good">4.95&times;</td><td class="good">Reads instantly</td><td>&mdash;</td></tr><tr><td><span class="sw" style="background:#1A1A2E"></span><code>#1A1A2E</code></td><td>Site --acc navy</td><td class="good">15.95&times;</td><td class="good">Reads instantly</td><td>U</td></tr></tbody></table>
+    <div class="cut-body" style="margin-top:24px">
+      <p class="ref">Verdict &mdash; U if you want it cinematic and findable. V if the band itself must be amber.
+      T only if you have looked at it in a scrolling list and are happy.</p>
+    </div>
+  </section>
+</div>
