@@ -33255,6 +33255,37 @@ function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
   const [busy,setBusy]=useState(false);
   const [decErr,setDecErr]=useState("");
   const [copied,setCopied]=useState(false); // "Copied" flash on the account-email chip
+  // ── One-off Agency Directory announcement, to this actor only ──
+  // Same email the bulk "Announce to members" panel sends, personalised from this
+  // actor's own profile. member-announce runs the suppression and opt-out checks
+  // server-side and writes the same log row, so somebody mailed from here is
+  // skipped by the next bulk run. "Already sent" is the one check an admin who
+  // picked a specific person can override, and only after a second confirm.
+  const [annBusy,setAnnBusy]=useState(false);
+  const [annMsg,setAnnMsg]=useState(null); // {tone:"ok"|"err", text}
+  const sendAnnounce=useCallback(async(force)=>{
+    if(!u?.id||annBusy)return;
+    if(!force&&!window.confirm("Send the Talent Agency Directory announcement to "+(u.email||"this member")+" now?\n\nThis sends a real email immediately."))return;
+    setAnnBusy(true);setAnnMsg(null);
+    try{
+      const SUPA=(window.SC_CONFIG?.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co");
+      const {data:{session:s}}=await window.sb.auth.getSession();
+      const r=await fetch(SUPA+"/functions/v1/member-announce",{method:"POST",
+        headers:{"Content-Type":"application/json",Authorization:"Bearer "+(s?.access_token||"")},
+        body:JSON.stringify({action:"send_one",user_id:u.id,force:force===true})});
+      const d=await r.json().catch(()=>({error:"bad response"}));
+      if(!r.ok)throw new Error(d.error||("HTTP "+r.status));
+      if(d.already_sent){
+        const when=d.sent_at?new Date(d.sent_at).toLocaleDateString():"earlier";
+        setAnnBusy(false);
+        if(window.confirm("They were already sent this announcement on "+when+".\n\nSend it again anyway?"))return sendAnnounce(true);
+        setAnnMsg({tone:"err",text:"Not sent — they already received it on "+when+"."});
+        return;
+      }
+      setAnnMsg({tone:"ok",text:"Sent"+(d.resent?" again":"")+" — "+(d.variant==="premium"?"Premium":"Free")+" version to "+d.email+"."});
+    }catch(e){ setAnnMsg({tone:"err",text:e.message==="Failed to fetch"?"Could not reach member-announce — has the function been deployed?":e.message}); }
+    finally{ setAnnBusy(false); }
+  },[u?.id,u?.email,annBusy]);
   const load=useCallback(async()=>{
     if(!u?.id)return;
     const {data}=await window.sb.from("applications")
@@ -33319,6 +33350,13 @@ function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
             <span style={{fontSize:11,fontWeight:700,color:copied?"#1d7b44":"var(--t3)",flexShrink:0}}>{copied?"Copied":"Copy"}</span>
           </button>
           :<div style={{fontSize:14,color:"var(--t3)"}}>—</div>}
+        {u.email&&<div style={{marginTop:9,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+          <button className="btn-s btn-sm" disabled={annBusy} onClick={()=>sendAnnounce(false)}
+            style={{display:"inline-flex",alignItems:"center",gap:7}}>
+            <Ico n="mail" s={14}/>{annBusy?"Sending…":"Send Agency Directory email"}
+          </button>
+          {annMsg&&<span style={{fontSize:12,fontWeight:600,color:annMsg.tone==="ok"?"#1d7b44":"#c0392b"}}>{annMsg.text}</span>}
+        </div>}
       </div>
       <div style={{fontSize:12,color:"var(--t3)",textAlign:"right",flexShrink:0}}>
         <div style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>{u.display_name||"Unknown"}</div>
