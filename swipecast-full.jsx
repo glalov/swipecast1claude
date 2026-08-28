@@ -10539,8 +10539,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
 
           <div className="form-row">
-            <div className="form-group"><label className="label">First Name</label><input className="input" placeholder="Jordan" value={firstName} onChange={e=>setFirstName(e.target.value)}/></div>
-            <div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Alvarez" value={lastName} onChange={e=>setLastName(e.target.value)}/></div>
+            <div className="form-group"><label className="label">First Name</label><input className="input" placeholder="Your first name" value={firstName} onChange={e=>setFirstName(e.target.value)}/></div>
+            <div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Your last name" value={lastName} onChange={e=>setLastName(e.target.value)}/></div>
           </div>
           <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>

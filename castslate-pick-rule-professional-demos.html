@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CastSlate &mdash; the Pick rule, three professional cuts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..900;1,9..40,400..700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;
+      --teal:#2D8587;--teal-dk:#226365;--gold:#D2A24A;--gold-dk:#B08327;--gold-ink:#6E4E12;
+      /* Flat, low-chroma metals. No gradients anywhere in this file — see the note. */
+      --brass:#A0782C;--brass-deep:#8A6524;--brass-ink:#6B4E17}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:'DM Sans',system-ui,sans-serif;
+     -webkit-font-smoothing:antialiased;overflow-x:clip}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 24px 120px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin:0}
+h1{font-size:clamp(30px,4.4vw,46px);font-weight:800;letter-spacing:-1.1px;line-height:1.08;margin:10px 0 14px}
+.lede{font-size:17px;line-height:1.6;color:var(--t2);max-width:68ch;margin:0}
+.note-box{background:var(--s1);border:1px solid var(--bdr);border-left:3px solid var(--brass);
+      border-radius:12px;padding:18px 22px;margin:28px 0 0;max-width:80ch}
+.note-box p{margin:0 0 10px;font-size:14.5px;line-height:1.65;color:var(--t2)}
+.note-box p:last-child{margin:0}
+.note-box b{color:var(--t1)}
+.swatch{display:flex;gap:0;margin:14px 0 4px;border-radius:8px;overflow:hidden;border:1px solid var(--bdr);max-width:520px}
+.swatch div{flex:1;height:38px;display:grid;place-items:end center;font-size:9px;font-weight:800;
+            letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.85);padding-bottom:4px}
+.demo{margin-top:78px;padding-top:38px;border-top:1px solid var(--bdr)}
+.demo-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.demo-num{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--t3);text-transform:uppercase}
+h2{font-size:29px;font-weight:800;letter-spacing:-.7px;margin:0}
+.demo-sub{font-size:15.5px;line-height:1.6;color:var(--t2);max-width:74ch;margin:8px 0 0}
+.spec{display:inline-flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--bdr);
+      border-radius:100px;padding:5px 13px;font-size:12.5px;font-weight:700;color:#3a4150;margin:16px 0 26px}
+.spec .dot{width:6px;height:6px;border-radius:50%;background:var(--brass)}
+.stack{display:flex;flex-direction:column;gap:16px}
+
+/* ── base card, matching production ── */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;position:relative;
+      box-shadow:0 1px 4px rgba(26,26,46,.05);transition:box-shadow .2s,transform .15s}
+.card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px)}
+.card-in{padding:24px 28px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start}
+.pt-tile{display:grid;place-items:center;flex:none;align-self:start;box-shadow:inset 0 0 0 1px rgba(26,26,46,.10)}
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0 0 6px}
+.cc-log{color:#4a4f58;font-size:16px;line-height:1.45;margin:0 0 6px}
+.cc-prod{color:var(--t3);font-size:14px;margin:0 0 14px}
+.badgerow{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+         background:var(--s2);color:var(--t1);border:1px solid var(--bdr)}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92}
+.cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c}
+.cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px}
+.cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;
+         background:var(--s1);padding:7px 14px;font-size:13.5px}
+.cc-pill .p1{font-weight:800}.cc-pill .p2{font-size:13px;color:var(--t2)}
+.cc-rest{font-size:13.5px;color:var(--t2);font-weight:600}
+.side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px}
+.btn{background:var(--teal);color:#fff;border:none;padding:13px 22px;border-radius:10px;font-weight:700;
+     font-size:15px;font-family:inherit;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--teal-dk)}
+.cc-pickrow{margin-bottom:11px}
+.cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
+          background:#FBF4E4;border:1px solid #E7D3A6;color:var(--gold-ink);
+          font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.cc-gpill svg{color:var(--gold-dk);flex:none}
+.pick{border-color:var(--bdr)}
+
+/* ── H · Ledger Rule ──────────────────────────────────────────────────────
+   Flat colour, and CLIPPED to the card radius so the rule is the card's own
+   edge rather than a bar laid on top of it. That distinction is the whole
+   difference between a printed rule and a sticker. */
+.pick-ledger{overflow:hidden}
+.pick-ledger .pk-rule{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brass)}
+.pick-ledger .card-in{padding-left:32px}
+
+/* ── I · Brass Inlay ──────────────────────────────────────────────────────
+   Inset, flat, square-ended, and measured to the height of the type tile —
+   an inlaid strip sitting in a reveal, not a highlight running off the edge. */
+.pick-inlay{border-color:#E0D3B4}
+.pick-inlay .pk-rule{position:absolute;left:11px;top:24px;height:52px;width:3px;background:var(--brass-deep)}
+.pick-inlay .card-in{padding-left:34px}
+
+/* ── J · Playbill Spine ───────────────────────────────────────────────────
+   The rule widens into a spine and does a typographic job. Because the words
+   live in the spine, the body pill is removed — the old page-rubric attempt
+   failed for exactly that reason: the same words twice on one listing. */
+.pick-spine{overflow:hidden}
+.pk-spine{position:absolute;left:0;top:0;bottom:0;width:26px;background:var(--brass-deep);
+          display:grid;place-items:center}
+.pk-spine span{writing-mode:vertical-rl;font-size:8.5px;font-weight:800;letter-spacing:.22em;
+               text-transform:uppercase;color:#F6EFDF;white-space:nowrap}
+.pick-spine .card-in{padding-left:44px}
+
+@media(max-width:760px){
+  .wrap{padding:32px 16px 80px}
+  .card-in{grid-template-columns:1fr;gap:16px;padding:20px}
+  .pick-ledger .card-in{padding-left:24px}
+  .pick-inlay .card-in{padding-left:26px}
+  .pick-inlay .pk-rule{left:9px;top:20px}
+  .pick-spine .card-in{padding-left:38px}
+  .pk-spine{width:22px}
+  .side{align-items:stretch}.btn{width:100%}
+  .cc-title{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">CastSlate &middot; browse card &middot; Cast Slate Pick</p>
+  <h1>The vertical rule, three professional cuts</h1>
+  <p class="lede">All three keep Demo F&rsquo;s idea &mdash; a mark on the left edge instead of a frame around the
+  card &mdash; and fix the thing that made it read cheap. Each pick sits next to an ordinary card, because that is
+  the only honest way to judge one.</p>
+
+  <div class="note-box">
+    <p><b>What actually made Demo F look like a carnival.</b> It was not the stripe, it was the
+    <em>gradient</em>. Demo F used three stops &mdash; pale gold at the top, full gold in the middle, dark bronze at
+    the bottom &mdash; which is the exact recipe for simulated shine. A surface that appears to catch light is
+    reading as plated plastic, and plated plastic is prize-ribbon, raffle-booth, employee-of-the-month. Real brass
+    and real foil in print are <b>flat</b>; they get their richness from being dark and low-chroma, not from
+    glinting.</p>
+    <p>So every rule below is a single flat colour, and every colour has been pulled down out of the yellows into
+    the browns. Left is the old gradient, right is what replaced it:</p>
+    <div class="swatch">
+      <div style="background:linear-gradient(180deg,#E8C87A,#D2A24A 45%,#A8791F)">Demo F gradient</div>
+      <div style="background:#A0782C">Brass #A0782C</div>
+      <div style="background:#8A6524">Deep #8A6524</div>
+    </div>
+    <p>The second rule is <b>containment</b>. A stripe that runs off the top and bottom of a card looks stuck on;
+    the same stripe clipped to the card&rsquo;s corner radius, or inset and cut to a measured height, looks built
+    in. Both moves are below.</p>
+    <p>Unchanged from the existing card, deliberately: the teal <em>View Roles</em> button stays the only saturated
+    element, there is no wash on the paper, and no rule is thickened past the point where it stops reading as a
+    rule.</p>
+  </div>
+
+  <section class="demo">
+    <div class="demo-head"><span class="demo-num">Demo H</span><h2>Ledger Rule</h2></div>
+    <p class="demo-sub">One flat 4px rule in deep brass, running the full height and <b>clipped to the card&rsquo;s corner radius</b>, so it curves with the card instead of sitting on top of it. That clip is the entire difference between a printed rule and a sticker &mdash; it makes the mark a property of the card rather than something attached to it, which is exactly how the rejected clapper rail failed. Nothing else changes. Closest reference: a masthead rule in a trade daily.</p>
+    <div class="spec"><span class="dot"></span>4px &middot; flat &middot; full height, radius-clipped &middot; pill kept</div>
+    <div class="stack"><div class="card pick pick-ledger"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg class="ti" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.6 9.4h18.8v9.2a2.6 2.6 0 0 1-2.6 2.6H5.2a2.6 2.6 0 0 1-2.6-2.6z"/><path d="M2.6 4.5a1.3 1.3 0 0 1 1.3-1.3h16.2a1.3 1.3 0 0 1 1.3 1.3v3.6H2.6z"/><g fill="var(--k)"><path d="M7.4 3.2h1.9L7.6 8.1H5.7z"/><path d="M12.4 3.2h1.9l-1.7 4.9h-1.9z"/><path d="M17.4 3.2h1.9l-1.7 4.9h-1.9z"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Feature Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Totality</h3><p class="cc-log">A comedy feature film.</p><p class="cc-prod">Wael Hassan</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 62&ndash;80</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 32&ndash;45</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div><div class="card pick pick-ledger"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg class="ti" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div></div>
+  </section>
+  <section class="demo">
+    <div class="demo-head"><span class="demo-num">Demo I</span><h2>Brass Inlay</h2></div>
+    <p class="demo-sub">The rule pulls <em>inside</em> the card &mdash; 3px, inset 11px from the edge, square-ended, and cut to exactly the height of the project-type tile beside it. Nothing runs off an edge, so it reads as an inlaid strip set into a surface rather than a highlight passing through. The card border also warms by one step to tie the two together. Closest reference: brass inlay in a lobby wall.</p>
+    <div class="spec"><span class="dot"></span>3px &middot; flat &middot; inset, height-matched to the tile &middot; pill kept</div>
+    <div class="stack"><div class="card pick pick-inlay"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg class="ti" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.6" y="4.4" width="18.8" height="15.2" rx="2.2"/><g fill="var(--k)"><rect x="4.6" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="8.6" y="6.4" width="6.8" height="11.2" rx="1"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Short Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Qualifying Round</h3><p class="cc-log">A sports drama short &mdash; New York, NY.</p><p class="cc-prod">Dir. Sefo Laulu</p><div class="cc-strip"><span class="cc-chip roles">7 roles</span><span class="cc-chip pay">Up to $250/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 18&ndash;25</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 44&ndash;60</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div><div class="card pick pick-inlay"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg class="ti" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div></div>
+  </section>
+  <section class="demo">
+    <div class="demo-head"><span class="demo-num">Demo J</span><h2>Playbill Spine</h2></div>
+    <p class="demo-sub">The rule widens to 26px and takes a job: the words <em>Cast Slate Pick</em> set vertically in the spine, foil-stamped cream on brass, reading top-to-bottom the way a book spine does on an American shelf. The body pill comes off, because the spine already says it. This is the only one of the three a reader could describe without pointing. Closest reference: a theatre programme, or a Criterion spine.</p>
+    <div class="spec"><span class="dot"></span>26px &middot; flat &middot; carries the label &middot; pill removed</div>
+    <div class="stack"><div class="card pick pick-spine"><div class="pk-spine"><span>Cast Slate Pick</span></div><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E6F1F1;color:#1F6668;--k:#E6F1F1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.4" y="8.4" width="19.2" height="12.4" rx="2.4"/><rect x="4.6" y="10.6" width="14.8" height="8" rx="1.1" fill="var(--k)"/><path d="M22.2 1.6 11.8 5.8l3.7 1.2 1.2 3.7z"/></svg></div><div><div class="badgerow"><span class="cc-badge">TV Pilot</span><span class="cc-badge">SAG-AFTRA</span></div><h3 class="cc-title">Midnight Echoes</h3><p class="cc-log">Some secrets were never meant to air.</p><p class="cc-prod">Echo Lane Productions</p><div class="cc-strip"><span class="cc-chip roles">5 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">Los Angeles, CA</span><span class="cc-chip quiet">Posted Jul 28, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 28&ndash;40</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 25&ndash;35</span></span><span class="cc-rest">+ 3 more roles</span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div><div class="card pick pick-spine"><div class="pk-spine"><span>Cast Slate Pick</span></div><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn">View Roles &rarr;</button></div></div></div></div>
+  </section>
+</div>
+</body>
+</html>
