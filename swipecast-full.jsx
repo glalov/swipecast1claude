@@ -2564,6 +2564,7 @@ body.sheet-push .b2t-cube{display:none;}
   .footer-grid{grid-template-columns:1fr 1fr !important;}
   .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
   .casting-card-row{grid-template-columns:1fr !important;gap:16px !important;padding:18px !important;}
+  .cc-picked .casting-card-row{padding-left:28px !important;}   /* clear the 8px band */
   .casting-card-row-side{align-items:stretch !important;width:100%;flex-direction:row !important;flex-wrap:wrap;justify-content:space-between;}
   .casting-card-row-side button{flex:1 1 100%;}
   .landing-hero{grid-template-columns:1fr !important;gap:32px !important;padding:48px 20px 28px !important;text-align:center;}
@@ -2774,7 +2775,31 @@ body.sheet-push .b2t-cube{display:none;}
    Fixing the stop in pixels and then ending it above the chip strip both
    helped and neither was enough. What is left is a 1px gold hairline and the
    gold pill: identical on every pick, incapable of interacting with content. */
+/* ── Cast Slate Pick, Aug 2026: the banded edge ───────────────────────────
+   The gold HAIRLINE FRAME above is history now — read it for the four
+   treatments it rules out, then this for what replaced it and why.
+   The frame was correct and inert. Drawn at 1px it was so quiet that on a
+   ten-card page you had to go looking for it, and every attempt to make it
+   findable pulled it back toward the luxury-product read it was designed to
+   avoid. Widening it was never available: at 1.5px gold stops reading as
+   foil and starts reading as a highlight.
+   The band solves that by moving the weight off the outline and onto ONE
+   edge, where 8px is unremarkable. Two things carry it:
+     • the card border goes back to NEUTRAL. The band is the mark; a gold
+       outline as well made two marks competing to be the signal.
+     • there are TWO weights, not one. An 8px bar on its own is a block of
+       colour; an 8px bar with a hairline beside it is a binding. Delete the
+       ::after and this becomes a plain coloured stripe — that hairline is
+       doing more work than its size suggests.
+   ⚠️ The band needs the card's overflow:hidden to clip to the border radius.
+   That is set inline on the card div. Remove it and the band squares off the
+   two left corners.
+   ⚠️ No gradient. A gradient across the band's width simulates a cylinder
+   catching light, which reads as plated plastic — that failure is the reason
+   this went through six rounds. Flat colour only, both weights. */
 .cc-picked{background:var(--s1);}
+.cc-band{position:absolute;left:0;top:0;bottom:0;width:8px;background:#8A6524;pointer-events:none;}
+.cc-band::after{content:"";position:absolute;left:8px;top:0;bottom:0;width:1.5px;background:#E2CB94;}
 .cc-pickrow{margin-bottom:11px;}
 .cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
           background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
@@ -13612,15 +13637,14 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
-            /* A picked card rests on a gold-tinted lift. Kept in a variable
-               because the hover handlers restore the shadow on the way out. */
-            const restShadow=isFeat
-              ?"0 1px 4px rgba(26,26,46,.05),0 6px 18px rgba(176,131,39,.07)"
-              :"0 1px 4px rgba(26,26,46,0.05)";return(
+            /* Kept in a variable because the hover handlers restore it on the
+               way out. A pick no longer gets its own shadow: the band is the
+               whole mark, and a gold lift underneath it was a second one. */
+            const restShadow="0 1px 4px rgba(26,26,46,0.05)";return(
             <div key={c.id} className={isFeat?"cc-picked":undefined} style={{
               padding:0,overflow:"hidden",cursor:isClosedCard?"default":"pointer",borderRadius:14,position:"relative",
-              background:isFeat?undefined:"var(--s1)",   /* picked: the wash lives in .cc-picked */
-              border:isFeat?"1px solid #D2A24A":"1px solid var(--bdr)",
+              background:isFeat?undefined:"var(--s1)",   /* picked: .cc-picked keeps it white */
+              border:"1px solid var(--bdr)",   /* neutral on a pick too — the band is the mark */
               boxShadow:restShadow,
               transition:"box-shadow .2s,transform .15s",
             }}
@@ -13628,8 +13652,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
+              {isFeat&&<span className="cc-band" aria-hidden="true"/>}
               <div className={isArchived?"cs-archived-dim":undefined}>
-              <div className="casting-card-row" style={{padding:"24px 28px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:20,alignItems:"start"}}>
+              {/* Picked rows carry the band's width in their left padding. It is
+                  inline because the base padding is inline and would win. */}
+              <div className="casting-card-row" style={{padding:isFeat?"24px 28px 24px 38px":"24px 28px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:20,alignItems:"start"}}>
                 {/* Raw casting on purpose — c.type is the translated label. */}
                 <ProjectTypeTile type={rawC.type}/>
                 <div>

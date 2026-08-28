@@ -1,0 +1,226 @@
+<title>Cut Edge, Board, Band</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..500;1,6..96,400..500&family=DM+Sans:opsz,wght@9..40,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>:root{
+  --paper:#F8F6F2; --ink:#191922; --muted:#6E6C78; --rule:#E6E2D9;
+  --raise:#FFFFFF; --accent:#8A6524;
+  --stage:#FAF7F1; --stage-line:#E5DFD2;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131318; --ink:#EFEDE8; --muted:#9B98A4; --rule:#2B2A33;
+    --raise:#1C1C24; --accent:#C9A353;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131318; --ink:#EFEDE8; --muted:#9B98A4; --rule:#2B2A33;
+  --raise:#1C1C24; --accent:#C9A353;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+     -webkit-font-smoothing:antialiased;overflow-x:clip;line-height:1.62}
+.doc{max-width:1120px;margin:0 auto;padding:clamp(44px,6vw,84px) clamp(16px,4vw,32px) 130px}
+.col{max-width:64ch}
+.eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11.5px;font-weight:500;
+         letter-spacing:.17em;text-transform:uppercase;color:var(--accent);margin:0 0 20px}
+h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:clamp(40px,7vw,76px);
+   line-height:1.02;letter-spacing:-.02em;margin:0 0 22px;text-wrap:balance}
+h1 em{font-style:italic}
+.standfirst{font-size:clamp(17px,2vw,19.5px);line-height:1.64;color:var(--muted);margin:0}
+.standfirst em{color:var(--ink);font-style:italic}
+.diag{margin:clamp(40px,5vw,62px) 0 0;padding:clamp(24px,3vw,34px);background:var(--raise);
+      border:1px solid var(--rule);border-radius:5px}
+.diag h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:27px;line-height:1.22;
+         margin:0 0 16px;letter-spacing:-.012em}
+.diag p{margin:0 0 15px;color:var(--muted);font-size:15.5px;max-width:63ch}
+.diag p:last-child{margin:0}
+.diag b{color:var(--ink);font-weight:700}
+.diag em{color:var(--ink);font-style:italic}
+.arc{display:flex;gap:0;margin:20px 0 4px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.arc span{padding:7px 14px;border:1px solid var(--rule);border-right:0;color:var(--muted)}
+.arc span:last-child{border-right:1px solid var(--rule);color:var(--ink);font-weight:500}
+.arc span:first-child{border-radius:4px 0 0 4px}
+.arc span:last-child{border-radius:0 4px 4px 0}
+.cut{margin-top:clamp(62px,7.5vw,96px);padding-top:clamp(30px,3vw,38px);border-top:1px solid var(--rule)}
+.cut-hd{display:flex;align-items:baseline;gap:18px;margin-bottom:16px}
+.cut-l{font-family:'Bodoni Moda',Georgia,serif;font-size:40px;line-height:1;color:var(--accent);
+       font-weight:400;flex:none;font-style:italic}
+.cut-hd h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:400;font-size:clamp(29px,3.8vw,40px);
+           line-height:1.1;margin:0;letter-spacing:-.018em}
+.cut-body{max-width:64ch}
+.cut-body p{margin:0 0 11px;font-size:16px;color:var(--muted)}
+.cut-body em{color:var(--ink);font-style:italic}
+.cut-body b{color:var(--ink)}
+.ref{font-family:'IBM Plex Mono',monospace;font-size:12.5px!important;letter-spacing:.02em;
+     color:var(--accent)!important}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:0;margin:26px 0 0;
+      border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.spec .sp{padding:14px 16px 15px;border-right:1px solid var(--rule)}
+.spec .sp:last-child{border-right:0}
+.spec dt{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+         color:var(--muted);margin-bottom:5px}
+.spec dd{margin:0;font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.stage{margin-top:28px;background:var(--stage);border:1px solid var(--stage-line);border-radius:7px;
+       padding:clamp(18px,2.6vw,30px);overflow-x:auto}
+.stage-tag{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
+           text-transform:uppercase;color:#9C9587;margin-bottom:18px}
+.stack{display:flex;flex-direction:column;gap:15px;min-width:660px}
+.meas{margin-top:28px;width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.meas caption{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.13em;
+              text-transform:uppercase;color:var(--muted);padding-bottom:13px}
+.meas th,.meas td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--rule);font-size:14.5px}
+.meas th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+         color:var(--muted);font-weight:500;border-bottom-color:var(--ink)}
+.meas td:first-child{font-weight:700}
+.meas .warn{color:#B4433A;font-weight:700}
+.meas .ok{color:var(--muted)}
+
+/* ── CastSlate card, reproduced exactly (light only, by design) ── */
+.card{background:#fff;border:1px solid #E5DFD2;border-radius:14px;position:relative;color:#1A1A2E;
+      box-shadow:0 1px 4px rgba(26,26,46,.05);transition:box-shadow .2s,transform .15s}
+.card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px)}
+.card-in{padding:24px 28px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:start}
+.pt-tile{display:grid;place-items:center;flex:none;align-self:start;box-shadow:inset 0 0 0 1px rgba(26,26,46,.10)}
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0 0 6px;
+          font-family:'DM Sans',sans-serif}
+.cc-log{color:#4a4f58;font-size:16px;line-height:1.45;margin:0 0 6px}
+.cc-prod{color:#8E8EA0;font-size:14px;margin:0 0 14px}
+.badgerow{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+         background:#F1ECE2;color:#1A1A2E;border:1px solid #E5DFD2}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92}
+.cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c}
+.cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:#8E8EA0;font-weight:600;padding-left:2px}
+.cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid #E5DFD2;border-radius:999px;
+         background:#fff;padding:7px 14px;font-size:13.5px}
+.cc-pill .p1{font-weight:800}.cc-pill .p2{font-size:13px;color:#5A5A72}
+.cc-rest{font-size:13.5px;color:#5A5A72;font-weight:600}
+.side{display:flex;flex-direction:column;gap:10px;align-items:flex-end;min-width:150px}
+.btn{background:#2D8587;color:#fff;border:none;padding:13px 22px;border-radius:10px;font-weight:700;
+     font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#226365}
+.btn:focus-visible{outline:2px solid #8A6524;outline-offset:3px}
+.cc-pickrow{margin-bottom:11px}
+.cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;
+          background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
+          font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.cc-gpill svg{color:#B08327;flex:none}
+.pick{border-color:#E5DFD2}
+
+/* ════════════════════════════════════════════════════════════════════════
+   All three below are FLAT and FULL — no taper, no fade, no gradient, no
+   motion. The last set dissolved so far it stopped being visible; these
+   commit to the edge instead.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Q · Cut Edge ─────────────────────────────────────────────────────────
+   The card's own silhouette changes: the two left corners go square while
+   the right stays rounded. This is the only cut where a pick is identifiable
+   from the SHAPE alone, with the colour removed. */
+.pick-cut{border-top-left-radius:0;border-bottom-left-radius:0;overflow:hidden;border-left-color:#8A6524}
+.pick-cut .pk-rule{position:absolute;left:0;top:0;bottom:0;width:6px;background:#8A6524}
+.pick-cut .card-in{padding-left:34px}
+
+/* ── R · The Board ────────────────────────────────────────────────────────
+   Sits OUTSIDE the card, so it costs the text column nothing at all. The
+   card reads as mounted against a spine rather than painted on. */
+/* The board must NOT use margin-left on the card — that shrinks the card and
+   silently costs the text column 10px, which is the one thing this cut is
+   supposed to avoid. Instead the STACK carries the padding, so every card
+   (picked or not) is exactly the same width, and the board hangs into it. */
+.stack{padding-left:10px}
+.pick-board .pk-rule{position:absolute;left:-10px;top:0;bottom:0;width:10px;background:#8A6524;
+                     border-radius:5px 0 0 5px}
+
+/* ── S · Banded Edge ──────────────────────────────────────────────────────
+   Two weights, not one: a solid band and a light inner line. The second
+   weight is what stops a wide bar reading as a plain block of colour. */
+.pick-band{overflow:hidden}
+.pick-band .pk-rule{position:absolute;left:0;top:0;bottom:0;width:8px;background:#8A6524}
+.pick-band .pk-rule::after{content:"";position:absolute;left:8px;top:0;bottom:0;width:1.5px;background:#E2CB94}
+.pick-band .card-in{padding-left:38px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:720px){
+  .cut-hd{gap:13px}.cut-l{font-size:31px}
+  .spec .sp{border-right:0;border-bottom:1px solid var(--rule)}
+  .spec .sp:last-child{border-bottom:0}
+}
+</style>
+
+<div class="doc">
+  <p class="eyebrow">CastSlate &middot; browse card &middot; cuts Q&ndash;S</p>
+  <div class="col">
+    <h1>Marks that <em>own</em> the edge</h1>
+    <p class="standfirst">You said vague, and vague is fair &mdash; I took the ends off the rule until there was
+    almost nothing left to see. These three do the opposite. No fade, no taper, nothing dissolving: each one
+    <em>is</em> the left side of the card.</p>
+  </div>
+
+  <div class="diag">
+    <h2>I over-corrected, twice</h2>
+    <p>Worth saying plainly, because the path here has been a pendulum and you have been the one absorbing it:</p>
+    <div class="arc">
+      <span>gradient bar &rarr; carnival</span>
+      <span>flat hairlines &rarr; stiff</span>
+      <span>tapered &rarr; vague</span>
+      <span>this set &rarr; committed</span>
+    </div>
+    <p>Each fix answered the last complaint and overshot it. Taking the shine off made the marks correct and dead;
+    dissolving the ends fixed dead and made them invisible. <b>A mark that defines an edge has to be present the
+    whole way down it</b> &mdash; that is what an edge is. So nothing below fades, and nothing below is under 6px.</p>
+    <p>Colour is deliberately held constant at <code>#8A6524</code> across all three so you are judging form only. It
+    swaps to any of the three trial colours in one line, so treat hue as a separate dial and ignore it here.</p>
+    <p>Still unchanged: no motion, no gradient, and the teal <em>View Roles</em> button remains the only saturated
+    element.</p>
+  </div>
+
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">Q</span><h2>Cut Edge</h2></header>
+  <div class="cut-body"><p>The card&rsquo;s own outline changes. Its two left corners go square while the right stays rounded, and the flat side carries a solid 6px band. This is the only version where a pick is still identifiable with the colour removed entirely &mdash; take the brass out and the silhouette alone still tells you. That is as far from vague as this can go without shouting: nothing is added <em>to</em> the card, the card is simply <b>cut differently</b>.</p><p class="ref">Closest reference &mdash; a tabbed index card</p></div>
+  <dl class="spec"><div class="sp"><dt>Width</dt><dd>6px</dd></div><div class="sp"><dt>Finish</dt><dd>flat, no fade</dd></div><div class="sp"><dt>Change</dt><dd>left corners squared</dd></div><div class="sp"><dt>Pill</dt><dd>kept</dd></div></dl>
+  <div class="stage" data-cut="cut">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders</span>
+    <div class="stack"><div class="card pick pick-cut"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.6 9.4h18.8v9.2a2.6 2.6 0 0 1-2.6 2.6H5.2a2.6 2.6 0 0 1-2.6-2.6z"/><path d="M2.6 4.5a1.3 1.3 0 0 1 1.3-1.3h16.2a1.3 1.3 0 0 1 1.3 1.3v3.6H2.6z"/><g fill="var(--k)"><path d="M7.4 3.2h1.9L7.6 8.1H5.7z"/><path d="M12.4 3.2h1.9l-1.7 4.9h-1.9z"/><path d="M17.4 3.2h1.9l-1.7 4.9h-1.9z"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Feature Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Totality</h3><p class="cc-log">A comedy feature film.</p><p class="cc-prod">Wael Hassan</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 62&ndash;80</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 32&ndash;45</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-cut"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">R</span><h2>The Board</h2></header>
+  <div class="cut-body"><p>A 10px board sitting <em>outside</em> the card&rsquo;s left edge, full height, with its own rounded corners. The card reads as mounted against a spine rather than painted on &mdash; and because the board lives outside the card, it is the only version in this entire exercise that <b>costs the text column nothing at all</b>. Not one pixel of title width. Every other mark so far has taken something.</p><p class="ref">Closest reference &mdash; a hardback board, or a mounted print</p></div>
+  <dl class="spec"><div class="sp"><dt>Width</dt><dd>10px, outside</dd></div><div class="sp"><dt>Finish</dt><dd>flat, no fade</dd></div><div class="sp"><dt>Change</dt><dd>none to the card</dd></div><div class="sp"><dt>Pill</dt><dd>kept</dd></div></dl>
+  <div class="stage" data-cut="board">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders</span>
+    <div class="stack"><div class="card pick pick-board"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><g fill="var(--k)"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="6.5" r="2.1"/><circle cx="12" cy="17.5" r="2.1"/><circle cx="6.5" cy="12" r="2.1"/><circle cx="17.5" cy="12" r="2.1"/></g></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Independent Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">The Seventh Landing</h3><p class="cc-log">Every coincidence has a witness.</p><p class="cc-prod">North Bridge Pictures</p><div class="cc-strip"><span class="cc-chip roles">8 roles</span><span class="cc-chip pay">Up to $300/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 1, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 24&ndash;35</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 22&ndash;32</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Female &middot; 30&ndash;45</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.6" y="4.4" width="18.8" height="15.2" rx="2.2"/><g fill="var(--k)"><rect x="4.6" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="4.6" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="6.4" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="10.8" width="2.5" height="2.5" rx=".8"/><rect x="16.9" y="15.1" width="2.5" height="2.5" rx=".8"/><rect x="8.6" y="6.4" width="6.8" height="11.2" rx="1"/></g></svg></div><div><div class="badgerow"><span class="cc-badge">Short Film</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Qualifying Round</h3><p class="cc-log">A sports drama short &mdash; New York, NY.</p><p class="cc-prod">Dir. Sefo Laulu</p><div class="cc-strip"><span class="cc-chip roles">7 roles</span><span class="cc-chip pay">Up to $250/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 26, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 18&ndash;25</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 44&ndash;60</span></span><span class="cc-rest">+ 5 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-board"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+<section class="cut">
+  <header class="cut-hd"><span class="cut-l">S</span><h2>Banded Edge</h2></header>
+  <div class="cut-body"><p>The widest of the three at 8px, with a light inner line beside it. The second weight is doing real work: a wide bar on its own is a block of colour, but a wide bar with a hairline against it is a <em>binding</em>. That one extra line is the difference between the card looking coloured-in and the card looking bound.</p><p class="ref">Closest reference &mdash; a cloth spine with a foil line</p></div>
+  <dl class="spec"><div class="sp"><dt>Width</dt><dd>8px + 1.5px</dd></div><div class="sp"><dt>Finish</dt><dd>flat, no fade</dd></div><div class="sp"><dt>Change</dt><dd>two weights</dd></div><div class="sp"><dt>Pill</dt><dd>kept</dd></div></dl>
+  <div class="stage" data-cut="band">
+    <span class="stage-tag">CastSlate light theme &middot; as production renders</span>
+    <div class="stack"><div class="card pick pick-band"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#F6E7EC;color:#8C2F4C;--k:#F6E7EC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.8" y="2.8" width="18.4" height="18.4" rx="2.6"/><rect x="7.2" y="7.2" width="9.6" height="9.6" rx="1.3" fill="var(--k)"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Off-Off-Broadway Theater</span><span class="cc-badge">AEA</span></div><h3 class="cc-title">The Bed Was Not In the Script</h3><p class="cc-log">One bed. Six actors. No one remembers what play they&rsquo;re in.</p><p class="cc-prod">Black Box Workshop</p><div class="cc-strip"><span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Paid stipend</span><span class="cc-chip urgent">5 days left to apply</span><span class="cc-chip">Manhattan</span><span class="cc-chip quiet">Posted May 21, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Any &middot; 24&ndash;40</span></span><span class="cc-pill"><span class="p1">Supporting</span><span class="p2">Any &middot; 30&ndash;55</span></span><span class="cc-rest">+ 4 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card"><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#E6F1F1;color:#1F6668;--k:#E6F1F1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="2.4" y="8.4" width="19.2" height="12.4" rx="2.4"/><rect x="4.6" y="10.6" width="14.8" height="8" rx="1.1" fill="var(--k)"/><path d="M22.2 1.6 11.8 5.8l3.7 1.2 1.2 3.7z"/></svg></div><div><div class="badgerow"><span class="cc-badge">TV Pilot</span><span class="cc-badge">SAG-AFTRA</span></div><h3 class="cc-title">Midnight Echoes</h3><p class="cc-log">Some secrets were never meant to air.</p><p class="cc-prod">Echo Lane Productions</p><div class="cc-strip"><span class="cc-chip roles">5 roles</span><span class="cc-chip pay">Up to $500/day</span><span class="cc-chip">Los Angeles, CA</span><span class="cc-chip quiet">Posted Jul 28, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Male &middot; 28&ndash;40</span></span><span class="cc-pill"><span class="p1">Lead</span><span class="p2">Female &middot; 25&ndash;35</span></span><span class="cc-rest">+ 3 more roles</span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div><div class="card pick pick-band"><span class="pk-rule" aria-hidden="true"></span><div class="card-in"><div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"/><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"/><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"/></svg></div><div><div class="cc-pickrow"><span class="cc-gpill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17.75 5.83 21l1.18-6.88-5-4.87 6.91-1L12 2l3.08 6.26 6.91 1-5 4.87L18.17 21z"/></svg> Cast Slate Pick</span></div><div class="badgerow"><span class="cc-badge">Commercial</span><span class="cc-badge">Non-Union</span></div><h3 class="cc-title">Hydrating Lip Balm Product Campaign</h3><p class="cc-log">Commercial</p><p class="cc-prod">Micah Sato, Commercial Casting Director</p><div class="cc-strip"><span class="cc-chip roles">3 roles</span><span class="cc-chip pay">$1,000</span><span class="cc-chip soon">6 days left to apply</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted Aug 6, 2026</span></div><div class="cc-pills"><span class="cc-pill"><span class="p1">Principal</span><span class="p2">18&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">25&ndash;35</span></span><span class="cc-pill"><span class="p1">Principal</span><span class="p2">21&ndash;35</span></span></div></div><div class="side"><button class="btn" type="button">View Roles &rarr;</button></div></div></div></div>
+  </div>
+</section>
+
+  <section class="cut">
+    <header class="cut-hd"><span class="cut-l">&#8214;</span><h2>What each cut costs</h2></header>
+    <div class="cut-body">
+      <p>One result here is worth pausing on. <b>R costs nothing</b> &mdash; the board sits outside the card, so the
+      text column is untouched and a picked title has exactly as much room as an ordinary one. Across every version
+      I have shown you, from the first gold frame to the spine to the taper, this is the first mark that takes
+      nothing from the card to announce itself.</p>
+    </div>
+    <table class="meas"><caption>Title width, picked card vs ordinary card &mdash; measured at 900px</caption><thead><tr><th>Cut</th><th>Picked</th><th>Ordinary</th><th>Cost</th><th>Read</th></tr></thead><tbody><tr><td>Q &middot; Cut Edge</td><td>471px</td><td>477px</td><td class="ok">&minus;6px</td><td class="ok">Inside noise</td></tr><tr><td>R &middot; The Board</td><td>477px</td><td>477px</td><td class="ok">&mdash;</td><td class="ok">Costs nothing</td></tr><tr><td>S &middot; Banded Edge</td><td>467px</td><td>477px</td><td class="ok">&minus;10px</td><td class="ok">Inside noise</td></tr></tbody></table>
+    <div class="cut-body" style="margin-top:24px">
+      <p class="ref">Verdict &mdash; R. It is the most present of the three and the only one that is free.</p>
+    </div>
+  </section>
+</div>
