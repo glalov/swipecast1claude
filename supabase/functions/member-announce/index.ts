@@ -100,7 +100,7 @@ function cityFacts(loc: string | null): CityFacts {
     return { near:true, line:`<strong style="color:${T.ink}">${DIR.la} of them keep a Los Angeles-area office</strong> &mdash; ${DIR.bh} in Beverly Hills alone.` };
   if (/new york|nyc|brooklyn|queens|bronx|manhattan|newark|jersey|, ny/.test(l))
     return { near:true, line:`<strong style="color:${T.ink}">${DIR.ny} of them keep a New York office</strong>, and ${DIR.both} work both coasts.` };
-  return { near:false, line:`You are not in LA or New York &mdash; <strong style="color:${T.ink}">and none of these ${DIR.total} need you to be.</strong> They read mail from all fifty states. That is ordinary, not an exception.` };
+  return { near:false, line:`<strong style="color:${T.ink}">You do not have to live in LA or New York.</strong> None of these ${DIR.total} need you to. They read mail from all fifty states &mdash; that is ordinary, not an exception.` };
 }
 
 // Masthead. Two fixes live here. The wordmark used to sit in a two-column table
@@ -161,7 +161,7 @@ function nationwide(): string {
     <td style="background:${T.ink};border-radius:12px;padding:19px 21px">
       <div style="font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:${T.gold};margin:0 0 9px">Wherever you live</div>
       <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.cream};line-height:1.3;margin:0 0 9px">You can write to every one of them from any of the 50 states.</div>
-      <div style="font-size:14px;line-height:1.7;color:rgba(251,248,241,.78)">You do not need an LA address. Agencies take mail from all over the country every week &mdash; that is normal business, not a long shot.</div>
+      <div style="font-size:14px;line-height:1.7;color:rgba(251,248,241,.78)">You do not need a Los Angeles or New York address. Agencies take mail from all over the country every week &mdash; that is normal business, not a long shot.</div>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:13px;border-top:1px solid rgba(240,184,96,.28)"><tr><td style="padding-top:13px">
         <div style="font-size:14px;line-height:1.75;color:rgba(251,248,241,.78)">
           <strong style="color:${T.cream}">If they are interested, they come to you first.</strong> A video audition over Zoom is the normal first step &mdash; from your own room, in your own state. If they want you in the office after that, they arrange the trip and they pay for the flight. Actors get signed this way from Ohio, Texas, Georgia and Illinois every year.
@@ -210,19 +210,10 @@ function cardStrip(locked: boolean): string {
     </td></tr></table>`;
 }
 
-function noteCard(first: string): string {
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
-    <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-radius:12px;padding:18px 20px">
-      <div style="font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:${T.solid};margin:0 0 9px">One of the seven tips &mdash; the handwritten note</div>
-      <div style="font-family:Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.65;color:${T.ink}">&ldquo;Hi, my name is ${esc(first)} and I&rsquo;m seeking representation in the TV and film industry. May I request an audition so you can see my abilities?&rdquo;</div>
-      <div style="font-size:12.5px;color:#8a8271;margin-top:10px;line-height:1.6">By hand, on the back of your card. Two sentences. No biography. Short reads as confident &mdash; and that is one tip of seven.</div>
-    </td></tr></table>`;
-}
-
-// What Premium is, and what it costs. Prices are the live ones in PREMIUM_PLANS:
-// $99/yr (and it stays $99), $71.70 per 6-month term, $14.95 month-to-month.
+// What Premium includes. Deliberately no prices anywhere in this email — the
+// button goes to /membership, which is where the plans live and stay correct.
 const PERKS = [
-  `The Talent Agency &amp; Manager Directory &mdash; all ${DIR.total}, both coasts`,
+  `The Talent Agency &amp; Manager Directory &mdash; all ${DIR.total} across Los Angeles and New York`,
   "Unlimited submissions (free accounts get one a week)",
   "Actor Business Card with QR code",
   "Mailing postcard &amp; agent promo card",
@@ -235,37 +226,13 @@ function perkList(): string {
     PERKS.map((p) => `<tr><td width="22" valign="top" style="padding:4px 0;color:${T.solid};font-size:14px;font-weight:800">&#10003;</td><td style="padding:4px 0;font-size:14px;line-height:1.5;color:${T.body}">${p}</td></tr>`).join("")
   }</table>`;
 }
-function priceBlock(): string {
-  const cell = (t: string, p: string, s: string, best?: boolean) =>
-    `<td width="33%" align="center" valign="top" style="padding:12px 6px;${best ? "background:rgba(180,113,26,.09);border-radius:9px" : ""}">
-      <div style="font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#8a8271">${t}</div>
-      <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:${T.ink};margin:5px 0 2px;line-height:1">${p}</div>
-      <div style="font-size:11px;color:#8a8271;line-height:1.4">${s}</div>
-    </td>`;
+function perksBlock(locked: boolean): string {
   return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
     <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
-      <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 8px">What it costs</div>
-      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25">$99 a year. It is still $99 the year after.</div>
-      <div style="font-size:14px;color:${T.body};margin-top:6px;line-height:1.6">That is $8.25 a month &mdash; less than most sites charge for a month. No introductory rate that climbs once you stop watching.</div>
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:13px"><tr>
-        ${cell("1 year","$99","$8.25/mo &middot; best value",true)}
-        ${cell("6 months","$71.70","$11.95/mo")}
-        ${cell("Monthly","$14.95","cancel any time")}
-      </tr></table>
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(180,113,26,.22)">
-        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:${T.solid};margin:0 0 9px">Every plan includes all of it</div>
-        ${perkList()}
-      </div>
-      <div style="font-size:12px;color:#8a8271;margin-top:12px;line-height:1.6">Cancel any time. Your free account stays free either way &mdash; no card needed to keep it.</div>
-    </td></tr></table>`;
-}
-function includedBlock(): string {
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
-    <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
-      <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 8px">Already yours</div>
-      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25;margin:0 0 12px">Everything your $99 is buying, in one place.</div>
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 8px">${locked ? "What Premium adds" : "Already yours"}</div>
+      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25;margin:0 0 12px">${locked ? "The directory is one of seven things that unlock." : "Everything your membership includes, in one place."}</div>
       ${perkList()}
-      <div style="font-size:12px;color:#8a8271;margin-top:12px;line-height:1.6">Your rate stays $99 a year for as long as you keep it. It does not rise on renewal.</div>
+      <div style="font-size:12px;color:#8a8271;margin-top:12px;line-height:1.6">${locked ? "Cancel any time. Your free account stays free either way &mdash; no card needed to keep it." : "Cancel any time, from Account Settings."}</div>
     </td></tr></table>`;
 }
 
@@ -308,9 +275,9 @@ function shell(a: ShellArgs): string {
 </body></html>`;
 }
 
-const STATS: [string,string][] = [[String(DIR.total),"Companies"],[String(DIR.agencies),"Talent agencies"],[String(DIR.mgmt),"Management cos."]];
+const STATS: [string,string][] = [[String(DIR.total),"Companies"],[String(DIR.la),"Los Angeles offices"],[String(DIR.ny),"New York offices"]];
 const PREHEADER = `${DIR.total} agencies and managers, mailable from any state — and how each one wants to be approached.`;
-const DIRECTORY_SUB = "Sorted small, mid-size, major and management &mdash; so you can see who is open to new clients, who wants credits first, and who signs only through referral. Office address, website, SAG-AFTRA status and the submission route on every one.";
+const DIRECTORY_SUB = "Every talent agency and management company we could verify across <strong style=\"color:#1A1A2E\">Los Angeles, Beverly Hills and New York</strong> &mdash; sorted small, mid-size, major and management, so you can see who is open to new clients, who wants credits first, and who signs only through referral. Office address, website, SAG-AFTRA status and the submission route on every one, and 62 of them keep offices on both coasts.";
 
 // Everything the two variants need to know about one recipient.
 interface Person { first:string; location:string|null; subs:number; hasReel:boolean; unsub?:string }
@@ -331,8 +298,7 @@ function premiumHtml(p: Person): string {
       + studioStrip()
       + GATE
       + cardStrip(false)
-      + noteCard(p.first)
-      + includedBlock(),
+      + perksBlock(false),
     cta:"Open my directory", href:"/talent-dashboard",
     foot:"You&rsquo;re receiving this because you&rsquo;re a CastSlate Premium member.",
   });
@@ -354,9 +320,8 @@ function freeHtml(p: Person): string {
       + studioStrip()
       + GATE
       + cardStrip(true)
-      + noteCard(p.first)
-      + priceBlock(),
-    cta:"Unlock it &mdash; $99 a year", href:"/membership",
+      + perksBlock(true),
+    cta:"See what&rsquo;s inside", href:"/membership",
     foot:"You&rsquo;re receiving this because you have a CastSlate account.",
   });
 }
