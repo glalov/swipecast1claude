@@ -33,7 +33,6 @@
 //
 // Auth: service-role key OR the shared admin campaign secret (mirrors send-campaign).
 
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
@@ -406,7 +405,7 @@ async function sendBatch(items: Outbox[]): Promise<{ ok:boolean; ids:(string|nul
   return { ok:true, ids, err:null };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   // ── GET unsubscribe: public, no auth (the link lives in the email footer) ──
