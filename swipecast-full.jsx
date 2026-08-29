@@ -11797,7 +11797,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             <option value="">Select a role…</option>
             {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
           </select>
-          <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{!isLoggedIn?"Create a free account to apply":"Apply for this role"}</button>
+          <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply"}</button>
         </div>}
       </div>);})()}
 
@@ -11888,7 +11888,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           ? <span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>
           : applied.has(i)
             ? <span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>
-            : <button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{!isLoggedIn?"Create a free account to apply":(hasInstructions?"Audition for This Role":"Apply for This Role")}</button>;
+            : <button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition":"Apply"}</button>;
         const submitChips=(r,hasInstructions)=>{
           const media=Array.isArray(r.required_media)?r.required_media.filter(Boolean):[];
           const pre=prescreenLabel(r.prescreen);
