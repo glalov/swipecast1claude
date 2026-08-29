@@ -88,19 +88,22 @@ const T = { solid:"#B4711A", soft:"#FCF2E3", gold:"#F0B860", ink:"#1A1A2E", body
 // the directory cannot show.
 const DIR = { total:663, agencies:354, mgmt:309, la:528, bh:125, ny:197, both:62 };
 
-interface CityFacts { near:boolean; line:string }
-// profiles.location is free text from the shared signup/profile list, so match on
-// substrings. Most members live in neither city, so the fallback has to land
-// welcoming — a count they cannot walk to is worth nothing to them.
-function cityFacts(loc: string | null): CityFacts {
+// The city line. It has to stand on its own: it is the first number a free member
+// meets, so "197 of them" with no antecedent reads as 197 of what. Every branch
+// names the list first, then the local count. profiles.location is free text from
+// the shared signup/profile list, so match on substrings — and the fallback also
+// fires for a blank or unrecognised location, so it must never assert where the
+// reader does or does not live.
+const LIST_LEAD = `The list runs to <strong style="color:${T.ink}">${DIR.total} agencies and management companies</strong>`;
+function cityFacts(loc: string | null): string {
   const l = String(loc ?? "").toLowerCase();
   if (/beverly hills/.test(l))
-    return { near:true, line:`<strong style="color:${T.ink}">${DIR.bh} of them are in Beverly Hills alone</strong> &mdash; ${DIR.la} across greater Los Angeles. You could walk to a good number of these.` };
+    return `${LIST_LEAD} &mdash; ${DIR.bh} of them are in Beverly Hills alone, and ${DIR.la} across greater Los Angeles. You could walk to a good number of them.`;
   if (/los angeles|\bla\b|burbank|hollywood|studio city|pasadena|santa monica|glendale|long beach|california|, ca/.test(l))
-    return { near:true, line:`<strong style="color:${T.ink}">${DIR.la} of them keep a Los Angeles-area office</strong> &mdash; ${DIR.bh} in Beverly Hills alone.` };
+    return `${LIST_LEAD} &mdash; ${DIR.la} of them keep a Los Angeles-area office, ${DIR.bh} of those in Beverly Hills alone.`;
   if (/new york|nyc|brooklyn|queens|bronx|manhattan|newark|jersey|, ny/.test(l))
-    return { near:true, line:`<strong style="color:${T.ink}">${DIR.ny} of them keep a New York office</strong>, and ${DIR.both} work both coasts.` };
-  return { near:false, line:`<strong style="color:${T.ink}">You do not have to live in LA or New York.</strong> None of these ${DIR.total} need you to. They read mail from all fifty states &mdash; that is ordinary, not an exception.` };
+    return `${LIST_LEAD} &mdash; ${DIR.ny} of them keep a New York office, and ${DIR.both} work both coasts.`;
+  return `${LIST_LEAD}, and <strong style="color:${T.ink}">you do not have to live in LA or New York</strong> to write to any of them. They read mail from all fifty states &mdash; that is ordinary, not an exception.`;
 }
 
 // Masthead. Two fixes live here. The wordmark used to sit in a two-column table
@@ -138,7 +141,7 @@ function block(kicker: string, title: string, sub: string, stats?: [string,strin
 }
 
 // Why this is theirs. Their city, their submission count, nothing else.
-function youCard(first: string, facts: CityFacts, subs: number, hasReel: boolean): string {
+function youCard(first: string, facts: string, subs: number, hasReel: boolean): string {
   const effort = subs >= 8
     ? `You have put yourself forward <strong style="color:${T.ink}">${subs} times</strong>. That is not testing the water. This is the lever you have not pulled yet.`
     : subs >= 1
@@ -148,7 +151,7 @@ function youCard(first: string, facts: CityFacts, subs: number, hasReel: boolean
     <td style="background:${T.soft};border:1px solid rgba(180,113,26,.28);border-left:3px solid ${T.solid};border-radius:10px;padding:18px 20px">
       <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 9px">Why this one is for you, ${esc(first)}</div>
       <div style="font-size:14.5px;line-height:1.7;color:${T.body};margin:0 0 9px">${effort}</div>
-      <div style="font-size:14.5px;line-height:1.7;color:${T.body}">${facts.line}</div>
+      <div style="font-size:14.5px;line-height:1.7;color:${T.body}">${facts}</div>
       ${hasReel ? `<div style="font-size:13px;line-height:1.65;color:${T.body};margin-top:9px;padding-top:9px;border-top:1px solid rgba(180,113,26,.22)">You already have video up. That is what an agent wants to see &mdash; and the QR code below is how they see it.</div>` : ""}
     </td></tr></table>`;
 }
