@@ -743,6 +743,14 @@ const SMALL=[
  {id:'rude',re:/(you'?re |ur |you )?(useless|stupid|dumb|garbage|trash|terrible|awful|suck|the worst|hate you|shut up)/i,
   a:c=>`Fair enough — I'd rather be useful than defend myself.`,
   b:c=>`Tell me the actual problem in your own words and I'll either fix it or get a person on it.`,s:['Talk to a human','I have a billing problem']},
+ /* Swearing on its own is a mood, not a question. Kept AFTER 'rude' so an
+    insult aimed at the assistant still gets the rude reply, and length-capped
+    so "how the fuck do I get an agent" still routes to the agent answer. */
+ {id:'vent',
+  re:/^(?=[\s\S]{0,44}$)\W*(?:(?:oh|omg|god|man|dude|well|just|so|ok|okay|ffs)\W+)*(?:f+u+c+k+|sh+i+t+|shite|damn|goddamn|crap|bollocks|bugger|wank|arse|bullshit|wtf|omfg|fml|ffs|ugh+|argh+|aargh+)\w*(?:\W+(?:this|that|it|off|sake|hell|man|dude|god|omg|seriously|again|everything|all|me|my|life|thing|things))*\W*$/i,
+  a:c=>`Yeah — something's clearly gone wrong.`,
+  b:c=>`Tell me what happened in your own words. Swear all you like, it doesn't bother me — I'll either sort it or put a person on it.`,
+  s:['Talk to a human','Why is nobody getting back to me?','I have a billing problem']},
  {id:'joke',re:/tell me a joke|make me laugh|say something funny|got any jokes/i,
   a:c=>`An actor gets cast as the lead in a play. Opening night, one line: "Hark, I hear a cannon!" He rehearses it for six weeks.`,
   b:c=>`Curtain goes up. Boom. He says: "What the hell was that?"`,s:['Okay, back to work','How do I prepare for an audition?']}
@@ -3408,12 +3416,29 @@ function editDist(a,b,cap){
   }
   return prev[n];
 }
+/* Words the corrector must never touch. Its vocabulary is acting jargon, so
+   any real word missing from it gets dragged onto the nearest term — and at
+   edit-distance 1 that rewrites the whole message. Two live examples:
+   "fuck" became "luck" and returned the did-not-hear-back answer, "shit"
+   became "shot" and opened the shot-size lesson. These are real words, not
+   typos. They are excluded from correction, and are never targets either
+   (they are not in VOCAB), so "fick" cannot be corrected onto them. */
+const NOSPELL=new Set(('fuck fucks fucking fucked fuckin fuk fuckoff shit shite shitty shits crap crappy '
+ +'damn damned dammit goddamn hell heck bloody bollocks bugger buggered wank wanker arse arsehole '
+ +'ass asshole jerk bitch bastard piss pissed prick twat cunt bullshit horseshit dogshit '
+ +'wtf omfg fml ffs ugh argh aargh ouch oops yikes meh nope nah yeah yep yup okay '
+ +'hate hates hated love loves loved like likes liked want wants wanted tired sick done '
+ +'quit quits quitting sorry thanks thank please cool nice great awful awesome stupid dumb '
+ +'sucks suck sucked worst worse better best fine good bad sad mad angry upset broke broken '
+ +'money rent food sleep sleeping eat eating drunk high weed drugs sex porn kill dead die dying'
+).split(/\s+/).filter(Boolean));
+
 function despell(text){
   if(!VOCAB)VOCAB=buildVocab();
   let changed=false;
   const out=text.split(/(\s+)/).map(tok=>{
     const w=tok.toLowerCase().replace(/[^a-z0-9]/g,'');
-    if(w.length<4||VOCAB.has(w)||STOP.has(w))return tok;
+    if(w.length<4||VOCAB.has(w)||STOP.has(w)||NOSPELL.has(w))return tok;
     const cap=w.length<=5?1:2;
     let best=null,bd=cap+1;
     for(const cand of VOCAB){
@@ -3594,7 +3619,21 @@ const FLAGSHIP_FOR={listening:'listen',indicating:'overacting',shotsize:'closeup
  marks:'onsetlesson',blocking:'onsetlesson',setprotocol:'onsetlesson',
  cheatout:'stagetech',stagecraft:'stagetech',upstaging:'stagetech',commercialcraft:'commercial'};
 
+/* ── layer 0: distress. Runs before EVERYTHING — before spell-correction,
+   small talk and keyword scoring — because those will happily answer a
+   sentence like "I can't do this anymore" with the subscription-cancellation
+   entry, and "I want to kill myself" with the one about money. They did.
+   Nothing below this line is allowed to answer these messages. */
+const CRISIS=/\b(kill(ing)? myself|end(ing)? my life|take my own life|want(ing)? to die|wanna die|better off dead|suicidal|suicide|hurt(ing)? myself|self[ -]?harm|cut(ting)? myself|no reason to live|don'?t want to be here|can'?t go on|cant go on)\b/i;
+/* First-person framing, tightly bound: an early looser version caught "how do
+   I play a hopeless character", which is a craft question and must still reach
+   the concept graph. The feeling word has to attach to the speaker or to the
+   situation, not merely appear in the same sentence. */
+const DISTRESS=/\b(i'?m|im|i am|i feel|i'?m feeling|feeling)\W+(so |really |very |completely |totally |just |kinda |kind of )*(hopeless|worthless|depressed|miserable|broken|crushed|defeated|useless|a failure|failing|lost|burnt out|burned out|crying|breaking down|falling apart)\b|\b(this|it|everything|all of this)\W+(is|feels)\W+(so |really |just )?(hopeless|pointless|useless|impossible|too much|not worth it)\b|^\W*(i give up|i quit|i'?m done|im done|i can'?t do this( anymore)?|i cant do this( anymore)?|i cannot do this( anymore)?|nobody wants me|i hate (this|it|myself|my life|everything)|i want to give up|whats the point|what'?s the point)\W*$/i;
+
 function think(text,c){
+  if(CRISIS.test(text)) return {crisis:true};
+  if(DISTRESS.test(text)) return {distress:true};
   const em=emojiFor(text.trim()); if(em) return {small:em};
   const bare=stripEmoji(text)||text.trim();
   for(const s of SMALL) if(s.re.test(bare)) return {small:s};
@@ -4351,6 +4390,28 @@ function send(text){
 /* Rendering a thought is separate from deciding to have one, because the same
    renderer has to run for a question asked in the middle of a lesson. */
 function respond(r,c){
+    /* No lesson, no upsell, no suggestion chips steering back to acting. */
+    if(r.crisis){
+      st.misses=0;st.lesson=null;st.paused=null;
+      msg('in',`I'm glad you told me, and I'm not going to answer that with an acting lesson.`);
+      setTimeout(()=>{
+        msg('in',`If you're in immediate danger, please call your local emergency number. In the US you can call or text <b>988</b> (Suicide &amp; Crisis Lifeline) any time, day or night. Anywhere else, <b>findahelpline.com</b> lists free, confidential services by country.`);
+        setTimeout(()=>{
+          msg('in',`I'm an automated assistant, so I'm not the right thing to lean on here — but I can pass you to a person on the CastSlate team if that would help.`);
+          sugg(['Talk to a human']);
+        },700);
+      },700);
+      return;
+    }
+    if(r.distress){
+      st.misses=0;
+      msg('in',`That sounds genuinely hard — and it is not a stupid thing to feel. This business hands out a lot of silence and almost no explanation, and it wears people down.`);
+      setTimeout(()=>{
+        msg('in',`Tell me what is actually going on and I will give you something concrete rather than a pep talk. Or I can put you through to a person.`);
+        suggPlus(['Talk to a human','Why is nobody getting back to me?','How do I improve my profile?']);
+      },700);
+      return;
+    }
     if(r.lesson){
       st.misses=0;
       st.lastConcept=null;
