@@ -95,7 +95,7 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260830-214111"/>
+  <link rel="preload" as="script" href="/app.js?v=20260830-215649"/>
   <link rel="preload" as="image" href="/logos/warner.svg"/>
   <link rel="preload" as="image" href="/logos/universal.svg"/>
   <link rel="preload" as="image" href="/logos/disney.svg"/>
@@ -104,15 +104,15 @@
   <link rel="preload" as="image" href="/logos/marvel.svg"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260830-214111 -->
-  <meta name="build-version" content="20260830-214111"/>
+  <!-- BUILD: 20260830-215649 -->
+  <meta name="build-version" content="20260830-215649"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260830-214111";
+        var B="20260830-215649";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -444,7 +444,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260830-214111"
+        "/app.js?v=20260830-215649"
       ];
       function step(){
         var it=STEPS.shift();
@@ -485,10 +485,75 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260830-214111';
+      s.src='/castoria.js?v=20260830-215649';
       s.async=true;
       document.body.appendChild(s);
     }
+    window.__CS_LOAD_CASTORIA=load;
+
+    /* ── Launcher stub ───────────────────────────────────────────────────
+       castoria.js is 161KB br and loads lazily behind app.js (744KB br), so
+       on a slow connection it can arrive 10s+ in — and the launcher's drop
+       was inheriting that, which is why it sometimes appeared on time and
+       sometimes long after the page. This is a few hundred bytes of inline
+       button that drops on schedule no matter what the network is doing.
+       The real widget removes it the moment it mounts. */
+    (function(){
+      var b=document.createElement('button');
+      b.id='cs-stub-launch';
+      b.type='button';
+      b.setAttribute('aria-label','Message Super Assistant');
+      b.style.cssText='position:fixed;right:22px;bottom:22px;width:58px;height:58px;border:0;'
+        +'border-radius:50%;cursor:pointer;overflow:hidden;display:grid;place-items:center;padding:0;'
+        +'z-index:2147482999;visibility:hidden;opacity:0;'
+        +'background-image:linear-gradient(150deg,#FFFFFF,#EDEDF1 52%,#C8C8D0);'
+        +'box-shadow:inset 0 0 0 1px rgba(19,19,24,.16),0 8px 26px rgba(0,0,0,.24);';
+      b.innerHTML='<svg viewBox="0 0 32 32" width="58" height="58" aria-hidden="true" style="display:block">'
+        +'<rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="#131318"/>'
+        +'<rect x="7" y="16" width="18" height="2" rx="1" fill="rgba(255,255,255,.34)"/>'
+        +'<rect x="7" y="20" width="12" height="2" rx="1" fill="rgba(255,255,255,.20)"/>'
+        +'<rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="#131318"/>'
+        +'<g clip-path="url(#csStubClip)" fill="#FFFFFF">'
+        +'<polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/>'
+        +'<polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g>'
+        +'<defs><clipPath id="csStubClip"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4"/></clipPath></defs>'
+        +'</svg>';
+      var st=document.createElement('style');
+      st.textContent='#cs-stub-launch.drop{visibility:visible;opacity:1;'
+        +'animation:csStubDrop 1.05s backwards}'
+        +'#cs-stub-launch.drop svg{animation:csStubSquash 1.05s backwards}'
+        +'@keyframes csStubDrop{'
+        +'0%{transform:translateY(calc(-100vh - 80px));animation-timing-function:cubic-bezier(.55,0,.85,.6)}'
+        +'46%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}'
+        +'62%{transform:translateY(-32px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}'
+        +'76%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}'
+        +'87%{transform:translateY(-11px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}'
+        +'95%{transform:translateY(0)}98%{transform:translateY(-2px)}100%{transform:translateY(0)}}'
+        +'@keyframes csStubSquash{0%,40%{transform:scale(1,1)}47%{transform:scale(1.2,.8)}'
+        +'54%{transform:scale(.95,1.05)}62%,74%{transform:scale(1,1)}78%{transform:scale(1.1,.9)}'
+        +'84%,100%{transform:scale(1,1)}}'
+        +'@media(prefers-reduced-motion:reduce){#cs-stub-launch.drop,#cs-stub-launch.drop svg{animation:none}}';
+      document.head.appendChild(st);
+      document.body.appendChild(b);
+
+      var dropped=false;
+      function drop(){ if(dropped)return; dropped=true; b.classList.add('drop'); }
+      function schedule(){
+        var at=window.__CS_INTRO_DONE_AT||Date.now();
+        setTimeout(drop,Math.max(0,1500-(Date.now()-at)));
+      }
+      if(window.__CS_INTRO_DONE)schedule();
+      else window.addEventListener('cs:intro-done',schedule,{once:true});
+      setTimeout(drop,8000);
+      /* Tapping before the real widget exists must still open it: flag the
+         intent - castoria honours __CS_CASTORIA_OPEN_NOW on mount - and stop
+         waiting for idle. */
+      b.addEventListener('click',function(){
+        window.__CS_CASTORIA_OPEN_NOW=true;
+        b.style.pointerEvents='none';
+        load();
+      });
+    })();
     /* Whichever comes first: the browser goes idle, the visitor touches or
        scrolls the page, or a short timeout. The launcher used to appear only
        after a 4s idle callback, so on a phone it turned up somewhere around

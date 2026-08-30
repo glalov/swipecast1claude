@@ -84,27 +84,39 @@ window.SuperAssistant=api;
 window.Castoria=api;
 if(window.__CS_CASTORIA_OPEN_NOW)setTimeout(openPanel,400);
 
-/* ── The launcher drops in a second and a half AFTER the intro curtain has
+/* ── The launcher drops a second and a half AFTER the intro curtain has
    finished falling, so it reads as its own beat rather than one more thing
-   moving while the page is still revealing itself. The wait is measured from
-   the real cs:intro-done signal that build-html.py emits, not a fixed timer,
-   so on a slow connection — where the curtain holds until the app has
-   painted — it still lands the same interval after the reveal instead of
-   drifting into it. Mirrors armLaunchDrop() in the prototype. */
+   moving while the page is still revealing itself.
+
+   The inline stub in build-html.py normally does the dropping: this script
+   is 161KB behind a 744KB bundle, so on a slow connection it can arrive long
+   after the moment has passed. If the stub already played, we adopt its
+   resting state and skip the animation; the swap is invisible because both
+   are the same disc at the same 22/22 position. */
 (function(){
   var WAIT=1500, el=$('launch'), fired=false;
-  function fire(){ if(fired||!el)return; fired=true; el.classList.add('drop'); }
+  function fire(instant){
+    if(fired||!el)return; fired=true;
+    if(instant)el.classList.add('instant');
+    el.classList.add('drop');
+  }
+  var stub=document.getElementById('cs-stub-launch');
+  if(stub){
+    var already=stub.classList.contains('drop');
+    if(stub.parentNode)stub.parentNode.removeChild(stub);
+    if(already){ fire(true); return; }
+  }
   function schedule(){
     var at=window.__CS_INTRO_DONE_AT||Date.now();
-    setTimeout(fire, Math.max(0, WAIT-(Date.now()-at)));
+    setTimeout(function(){fire(false);}, Math.max(0, WAIT-(Date.now()-at)));
   }
   if(window.__CS_INTRO_DONE){ schedule(); return; }
   /* No intro on this page: nothing to wait for, so show it straight away. */
-  if(!document.getElementById('cs-intro')){ fire(); return; }
+  if(!document.getElementById('cs-intro')){ fire(false); return; }
   window.addEventListener('cs:intro-done', schedule, {once:true});
   /* A stuck or missing signal must never strand the only affordance the
      assistant has. */
-  setTimeout(fire, 8000);
+  setTimeout(function(){fire(false);}, 8000);
 })();
 """
 

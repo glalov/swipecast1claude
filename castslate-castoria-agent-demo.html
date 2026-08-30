@@ -53,6 +53,9 @@ h1 span{color:var(--out2);}
      starts a full viewport above the fold, so it is genuinely off-screen
      rather than fading in on the spot. */
   opacity:0;visibility:hidden;}
+/* Adopted from the inline stub, which already played the drop — showing it
+   again would be a second entrance for the same button. */
+.launch.drop.instant,.launch.drop.instant svg{animation:none;}
 .launch.drop{opacity:1;visibility:visible;
   /* backwards, not both: the animation must not own transform once it ends,
      or the hover scale never applies again. */
