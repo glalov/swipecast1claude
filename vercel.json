@@ -98,7 +98,7 @@
       ]
     },
     {
-      "source": "/(app\\.js|app\\.jsx)",
+      "source": "/(app\\.js|app\\.jsx|castoria\\.js)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
         { "key": "X-Content-Type-Options", "value": "nosniff" }
@@ -133,7 +133,7 @@
       ]
     },
     {
-      "source": "/((?!video-formats/|vendor/|assets/|logos/|app\\.js|app\\.jsx|og-image\\.png|favicon|apple-touch-icon\\.png|robots\\.txt|sitemap\\.xml).*)",
+      "source": "/((?!video-formats/|vendor/|assets/|logos/|app\\.js|app\\.jsx|castoria\\.js|og-image\\.png|favicon|apple-touch-icon\\.png|robots\\.txt|sitemap\\.xml).*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },

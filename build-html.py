@@ -297,10 +297,10 @@ def render_page(title, desc, canonical, extra_preload=""):
        app CSS @imports these same URLs, which are already cached by then. -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
+  <!-- One request, not four. Google Fonts serves every family from a single
+       css2 call, and on a phone hotspot each separate stylesheet was its own
+       round trip before any text could paint. -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;family=Poppins:wght@500;600;700;800&amp;family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
   <!-- Tabler line-icon webfont (replaces emoji UI icons). Loaded async so a
        slow CDN can never block the first paint — the intro must start
        instantly; icons are only consumed after React mounts anyway. -->
