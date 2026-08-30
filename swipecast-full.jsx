@@ -2004,6 +2004,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* Kill the mobile tap delay / double-tap-zoom wait so buttons fire on the first tap. */
 button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .page-wide{max-width:1400px;}
+/* Browse Castings runs narrower than page-wide: the cards were capped at 1080
+   to kill the dead zone, and everything above them has to share that edge or
+   the column reads misaligned. Beats .page-wide on specificity, not order. */
+.page.page-browse{max-width:1160px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
 .landing-hero-desc{color:var(--t1);font-size:17.5px;line-height:1.6;font-weight:500;max-width:520px;margin-bottom:26px;}
@@ -13633,7 +13637,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
-  return(<div className="page page-wide">
+  return(<div className="page page-wide page-browse">
     <div className="section-label">{t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
     <>
@@ -13659,7 +13663,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16,maxWidth:1080}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick no longer gets its own shadow: the band is the
                whole mark, and a gold lift underneath it was a second one. */
