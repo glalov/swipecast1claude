@@ -2567,6 +2567,9 @@ body.sheet-push .b2t-cube{display:none;}
   .cc-picked .casting-card-row{padding-left:26px !important;}   /* clear the 7.5px band */
   .casting-card-row-side{align-items:stretch !important;width:100%;flex-direction:row !important;flex-wrap:wrap;justify-content:space-between;}
   .casting-card-row-side button{flex:1 1 100%;}
+  /* The desktop foot is one nowrap row; on a phone it has to stack or the
+     button gets crushed against the pills. */
+  .cc-foot{flex-direction:column;align-items:stretch !important;gap:14px !important;}
   .landing-hero{grid-template-columns:1fr !important;gap:32px !important;padding:48px 20px 28px !important;text-align:center;}
   .landing-hero-title{font-size:33px !important;letter-spacing:-1px !important;line-height:1.07 !important;}
   .landing-hero-desc{color:var(--t2) !important;font-weight:400 !important;font-size:15.5px !important;max-width:100% !important;}
@@ -2720,7 +2723,16 @@ body.sheet-push .b2t-cube{display:none;}
 .pt-tile{display:grid;place-items:center;flex:none;align-self:start;
          box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 14%,transparent);}
 @supports not (color:color-mix(in srgb,#000 1%,transparent)){.pt-tile{box-shadow:inset 0 0 0 1px rgba(26,26,46,.10);}}
-.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:6px;color:var(--t1);}
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:0;color:var(--t1);}
+/* The type badges sit on the title's baseline instead of owning a band above
+   it. That single move is what shortened the card - NOT shrinking the title,
+   which was measured at 4px and is why the title stayed at 27px. */
+.cc-titlewrap{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.cc-badgerow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+/* View Roles lives on the role-pill row now, so the card is two columns and
+   the button sits beside the content instead of across a dead gap. */
+.cc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:nowrap;}
+.cc-foot .cc-pills{flex:1;min-width:0;}
 .cc-tagline{color:#4a4f58;font-size:16px;line-height:1.45;margin-bottom:6px;}
 .cc-prod{color:var(--t3);font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
@@ -2734,7 +2746,7 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px;}
 .cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;
-         background:var(--s1);padding:7px 14px;cursor:pointer;font:inherit;color:var(--t1);
+         background:var(--s1);padding:8.5px 14px;cursor:pointer;font:inherit;color:var(--t1);
          transition:border-color .15s,box-shadow .15s;}
 .cc-pill:hover{border-color:var(--teal);box-shadow:0 1px 5px rgba(26,26,46,.08);}
 .cc-pill .p1{font-size:13.5px;font-weight:800;}
@@ -13647,7 +13659,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div style={{display:"flex",flexDirection:"column",gap:16,maxWidth:1080}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick no longer gets its own shadow: the band is the
                whole mark, and a gold lift underneath it was a second one. */
@@ -13667,20 +13679,22 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className={isArchived?"cs-archived-dim":undefined}>
               {/* Picked rows carry the band's width in their left padding. It is
                   inline because the base padding is inline and would win. */}
-              <div className="casting-card-row" style={{padding:isFeat?"24px 28px 24px 36px":"24px 28px",display:"grid",gridTemplateColumns:"auto 1fr auto",gap:20,alignItems:"start"}}>
+              <div className="casting-card-row" style={{padding:isFeat?"28px 28px 28px 36px":"28px",display:"grid",gridTemplateColumns:"auto 1fr",gap:20,alignItems:"start"}}>
                 {/* Raw casting on purpose — c.type is the translated label. */}
                 <ProjectTypeTile type={rawC.type}/>
                 <div>
                   {/* The pick gets its own line above the type badges — sharing
                       that row made the top of the card a wall of pills. */}
                   {isFeat&&<div className="cc-pickrow"><span className="cc-gpill"><Ico n="star" s={12}/> Cast Slate Pick</span></div>}
-                  <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
-                    <span className="cc-badge">{translateCastingType(c.type,lang)}</span>
-                    <span className="cc-badge">{c.union}</span>
-                    {isExpiredCasting&&!isArchived&&<span className="cc-badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
-                    {isLive&&<LiveCastingBadge/>}
+                  <div className="cc-titlewrap">
+                    <h3 className="cc-title">{c.title}</h3>
+                    <div className="cc-badgerow">
+                      <span className="cc-badge">{translateCastingType(c.type,lang)}</span>
+                      <span className="cc-badge">{c.union}</span>
+                      {isExpiredCasting&&!isArchived&&<span className="cc-badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
+                      {isLive&&<LiveCastingBadge/>}
+                    </div>
                   </div>
-                  <h3 className="cc-title">{c.title}</h3>
                   {(c.tagline&&c.tagline!==c.prod)
                     ?<p className="cc-tagline">{c.tagline}</p>
                     :c.type?<p className="cc-tagline">{translateCastingType(c.type,lang)}</p>:null}
@@ -13719,29 +13733,34 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                       theatre listings into a row of "Rate on request" shrugs.
                       Rank, gender and age range only — the rate is on the
                       casting page, one tap away. */}
-                  {(()=>{
-                    const pick=castingCardRoles(c,3);
-                    if(!pick.shown.length)return null;
-                    return(
-                      <div className="cc-pills">
-                        {pick.shown.map((r,i)=>{
-                          const spec=roleCardSpec(r);
-                          const label=r.type||r.role_type||"Role";
-                          const inner=<><span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}</>;
-                          return isClosedCard
-                            ?<span key={r.id||i} className="cc-pill" style={{cursor:"default",opacity:.65}}>{inner}</span>
-                            :<button key={r.id||i} type="button" className="cc-pill" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{inner}</button>;
-                        })}
-                        {pick.rest>0&&<span className="cc-pill-rest">+ {pick.rest} more {pick.rest===1?"role":"roles"}</span>}
-                      </div>
-                    );
-                  })()}
-                </div>
-                <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",minWidth:140}}>
-                  {isArchived||isExpiredCasting
-                    ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
-                    :<button className="btn-teal cc-cta" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{t('search.viewRoles')}</button>}
-                  {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
+                  {/* Pills and the CTA share one row. The .cc-pills div renders
+                      even when a casting has no roles to show: it is the flex:1
+                      spacer that keeps the button hard right, and dropping it
+                      would slide the CTA over to the left edge. */}
+                  <div className="cc-foot">
+                    {(()=>{
+                      const pick=castingCardRoles(c,3);
+                      return(
+                        <div className="cc-pills">
+                          {pick.shown.map((r,i)=>{
+                            const spec=roleCardSpec(r);
+                            const label=r.type||r.role_type||"Role";
+                            const inner=<><span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}</>;
+                            return isClosedCard
+                              ?<span key={r.id||i} className="cc-pill" style={{cursor:"default",opacity:.65}}>{inner}</span>
+                              :<button key={r.id||i} type="button" className="cc-pill" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{inner}</button>;
+                          })}
+                          {pick.rest>0&&<span className="cc-pill-rest">+ {pick.rest} more {pick.rest===1?"role":"roles"}</span>}
+                        </div>
+                      );
+                    })()}
+                    <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",flexShrink:0}}>
+                      {isArchived||isExpiredCasting
+                        ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
+                        :<button className="btn-teal cc-cta" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{t('search.viewRoles')}</button>}
+                      {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
+                    </div>
+                  </div>
                 </div>
               </div>
               </div>
