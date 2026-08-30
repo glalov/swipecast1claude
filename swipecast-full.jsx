@@ -3880,7 +3880,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    the same feature in a different place. Motion is all ongoing (no scroll
    reveals) — a section that hides itself until an observer fires is a section
    that renders blank when the observer does not. */
-.agd-wrap{max-width:1120px;margin:0 auto;padding:0 clamp(16px,5vw,26px);}
+.agd-wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 clamp(16px,5vw,26px);}
 /* The tint lives on a full-bleed parent, NOT on the section inside .agd-wrap.
    On a wide screen a background painted inside the 1120px wrap ends at the wrap
    edge and draws a visible vertical seam down the right of the page. */
@@ -39155,8 +39155,8 @@ function App(){
             <button className="mm-link" onClick={()=>navThen("home")}>{navT('nav.home')}</button>
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
-            <button className="mm-link" onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
-            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
+            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
+            <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
           </div>
