@@ -2833,6 +2833,46 @@ body.sheet-push .b2t-cube{display:none;}
           font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;}
 .cc-gpill > .ti{color:#B08327;}
 .btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
+
+/* ── Casting detail: ONE card for status, every supplied fact, and apply ──
+   Replaced a five-block stack (apply card / facts grid / At a Glance /
+   Where & When) that carried four borders, three heading styles, and stated
+   the deadline twice - once as a countdown, once as a date. */
+.cd-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:24px;}
+.cd-grid{display:grid;grid-template-columns:1fr 288px;}
+.cd-grid.solo{grid-template-columns:1fr;}   /* no role picker: closed castings */
+.cd-main{padding:20px 24px 22px;min-width:0;}
+.cd-top{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--bdr);}
+.cd-stat{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--t1);}
+.cd-stat .sub{color:var(--t2);font-weight:600;}
+/* The pay roll-up is a tinted stat, deliberately NOT a headline - at display
+   size it read as a day rate, and roleTotalPay() returns a role TOTAL. */
+.cd-money{display:inline-flex;align-items:center;gap:7px;background:#F2F7F4;border:1px solid #D7E6DD;
+  border-radius:8px;padding:6px 12px;color:#2F6A52;}
+.cd-money .lb{font-size:13px;font-weight:600;color:#4E7D68;}
+.cd-money .vl{font-size:15px;font-weight:800;letter-spacing:-.2px;font-variant-numeric:tabular-nums;}
+.cd-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 26px;padding-top:16px;}
+.cd-row{display:flex;gap:11px;align-items:flex-start;min-width:0;}
+.cd-row.full{grid-column:1 / -1;}
+.cd-ico{color:var(--t3);display:flex;flex:none;}
+.cd-ico.good{color:#1d7b44;}
+.cd-ico.warn{color:#c0392b;}
+.cd-lab{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:3px;}
+.cd-val{font-size:14px;color:var(--t1);font-weight:600;}
+.cd-trust{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--t2);
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--bdr);}
+.cd-side{background:var(--s2);border-left:1px solid var(--bdr);padding:20px 22px;display:flex;
+  flex-direction:column;justify-content:center;gap:10px;}
+.cd-side h3{font-size:15px;font-weight:800;}
+.cd-side .hint{font-size:12px;color:var(--t2);line-height:1.5;}
+@media(max-width:768px){
+  .cd-grid{grid-template-columns:1fr;}
+  .cd-side{border-left:none;border-top:1px solid var(--bdr);}
+  .cd-rows{grid-template-columns:1fr;}
+  .cd-main{padding:18px 18px 20px;}
+  .cd-side{padding:18px;}
+}
 @media(max-width:768px){
   .cc-title{font-size:23px;}
   .cc-tagline{font-size:15px;}
@@ -11782,106 +11822,98 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>{castingArchived?"This role has been filled and is no longer accepting submissions.":"This casting has expired and is no longer accepting applications."}</div>
     </div>}
 
-    {/* ── Unified apply card: status + key facts + real trust signals on the left,
-           role picker + Apply on the right. One card so heights never mismatch. ── */}
-    {(()=>{const payText=c.rate||c.pay;const payShort=payText&&payText.length<=42;
+    {/* The still leads now: it sells the project before the paperwork. It used
+        to sit between the apply box and the facts grid, and those became one
+        card below, so there is no longer a middle for it to occupy. */}
+    <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
+
+    {/* ── ONE card: live status, every fact the CD supplied, and the picker.
+           Replaces the old apply-card + facts grid + At a Glance + Where &
+           When stack. Pay always takes a row here: the previous layout only
+           showed a rate in the status strip when it was <=42 characters, so a
+           long rate was absent from the top of the page entirely. ── */}
+    {(()=>{
+      const payText=c.rate||c.pay;
       const sortedRoles=(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
-      const cdn=castingCountdown(c.deadline);
       const live=!applicationsClosed;
       const canApply=!applicationsClosed&&sortedRoles.length>0;
       const verified=c.is_admin_created?(c.admin_verified===true):(cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified");
       const bgChecked=!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed";
       const showTrust=!applicationsClosed&&(verified||bgChecked);
-      return(
-      <div style={{display:"flex",alignItems:"stretch",flexWrap:"wrap",marginBottom:24,marginTop:live?-4:0,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden"}}>
-        <div style={{flex:"1 1 320px",display:"flex",flexDirection:"column",justifyContent:"center",gap:13,padding:"18px 22px"}}>
-          {live&&<div><LiveCastingBadge/></div>}
-          <div style={{display:"flex",alignItems:"center",gap:"8px 18px",flexWrap:"wrap"}}>
-            {payShort&&<span style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:16}}><Ico n="coin" s={22}/></span><span style={{fontSize:15,fontWeight:800,color:"var(--t1)",letterSpacing:-0.2}}>{payText}</span></span>}
-            <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--t2)",fontSize:14,fontWeight:600}}><span style={{fontSize:15}}><Ico n="masks-theater" s={22}/></span>{c.roles?.length||0} {(c.roles?.length||0)===1?"role":"roles"} {applicationsClosed?"listed":"open"}</span>
-            {applicationsClosed?<span style={{display:"flex",alignItems:"center",gap:7,color:"#c0392b",fontSize:14,fontWeight:700}}><span style={{fontSize:15}}><Ico n="calendar-event" s={22}/></span>Applications closed</span>:<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+      const roll=castingPayRollup(c.roles);
+      const wwLine=whereWhenLine(c);
+      const wwNote=(c.schedule_note||"").trim();
+      const ww=[wwLine,wwNote].filter(Boolean).join(" ");
+      const roleCount=c.roles?.length||0;
+      // One row builder, so a field the CD never filled in simply does not
+      // render - legacy castings have NULL for most of these.
+      const fact=(key,icon,label,value,full,tone)=>value?(
+        <div key={key} className={"cd-row"+(full?" full":"")}>
+          <span className={"cd-ico"+(tone?" "+tone:"")}><Ico n={icon} s={20}/></span>
+          <div style={{minWidth:0}}>
+            <div className="cd-lab">{label}</div>
+            <div className="cd-val">{value}</div>
           </div>
-          {showTrust&&<div style={{display:"flex",alignItems:"center",gap:"6px 16px",flexWrap:"wrap",fontSize:12.5,color:"var(--t2)",paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
-            {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="shield-check" s={22}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Verified casting director</span></span>}
-            <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"var(--t3)"}}><Ico n="eye" s={22}/></span>Reviews every submission personally</span>
-            {bgChecked&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="check" s={24}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Background-checked</span></span>}
+        </div>):null;
+      return(
+      <div className="cd-card">
+        <div className={"cd-grid"+(canApply?"":" solo")}>
+          <div className="cd-main">
+            <div className="cd-top">
+              {live&&<LiveCastingBadge/>}
+              {roll.top!=null&&<span className="cd-money">
+                <Ico n="coin" s={20}/><span className="lb">Paid roles up to</span><span className="vl">{fmtMoney(roll.top)}</span>
+              </span>}
+              <span className="cd-stat"><Ico n="masks-theater" s={20}/><span className="sub">{roleCount} {roleCount===1?"role":"roles"} {applicationsClosed?"listed":"open"}</span></span>
+              {applicationsClosed
+                ?<span className="cd-stat" style={{color:"#c0392b"}}><Ico n="calendar-event" s={20}/>Applications closed</span>
+                :<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+            </div>
+            <div className="cd-rows">
+              {fact("union","file-text",t('casting.union'),c.union)}
+              {fact("loc","map-pin",t('casting.location'),c.location)}
+              {fact("dl","calendar-event",t('casting.deadline'),fmtCastingDate(c.deadline)||"—")}
+              {fact("nud",c.has_nudity?"alert-triangle":"circle-check","Nudity / Intimate content",
+                    c.has_nudity?"Yes — this project involves nudity or intimate content":"None",
+                    false,c.has_nudity?"warn":"good")}
+              {fact("pay","coin",t('casting.pay'),payText,true)}
+              {fact("shoots","movie",t('casting.shoots'),c.shoots)}
+              {fact("reh","clock",t('casting.rehearsal'),c.rehearsal)}
+              {fact("af","video",t('casting.auditionFormat'),c.auditionFormat,true)}
+              {fact("ww","calendar","Where & When",ww,true)}
+              {fact("scope","map-pin","Open to talent from",c.talent_scope,true)}
+            </div>
+            {c.casting_website_url&&<div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
+              <a href={c.casting_website_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,textDecoration:"none"}}>
+                <Ico n="link" s={22}/> Visit Project Website
+              </a>
+            </div>}
+            {showTrust&&<div className="cd-trust">
+              {verified&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="shield-check" s={22}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Verified casting director</span></span>}
+              <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"var(--t3)"}}><Ico n="eye" s={22}/></span>Reviews every submission personally</span>
+              {bgChecked&&<span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{color:"#1d7b44"}}><Ico n="check" s={24}/></span><span style={{color:"var(--t1)",fontWeight:600}}>Background-checked</span></span>}
+            </div>}
+          </div>
+          {canApply&&<div className="cd-side">
+            <h3>Ready to apply?</h3>
+            <select className="select" value={applyPickIdx} onChange={e=>setApplyPickIdx(e.target.value)} style={{width:"100%"}}>
+              <option value="">Select a role…</option>
+              {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
+            </select>
+            <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply"}</button>
+            {fmtCastingDate(c.deadline)&&<div className="hint">closes {fmtCastingDate(c.deadline)}</div>}
           </div>}
         </div>
-        {canApply&&<div style={{flex:"0 0 auto",width:262,minWidth:220,display:"flex",flexDirection:"column",justifyContent:"center",gap:9,padding:"18px 22px",borderLeft:"1px solid var(--bdr)"}}>
-          <div style={{fontSize:15,fontWeight:800,color:"var(--t1)"}}>Ready to apply?</div>
-          <select className="select" value={applyPickIdx} onChange={e=>setApplyPickIdx(e.target.value)} style={{width:"100%"}}>
-            <option value="">Select a role…</option>
-            {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
-          </select>
-          <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply"}</button>
-        </div>}
       </div>);})()}
-
-    <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
-
-    <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:"20px 24px",marginBottom:32,display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"14px 28px"}}>
-      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.union')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.union}</div></div>
-      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.location')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.location}</div></div>
-      {(()=>{const p=c.rate||c.pay;return p&&p.length>42?<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.pay')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{p}</div></div>:null;})()}
-      <div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.deadline')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{fmtCastingDate(c.deadline)||"—"}</div></div>
-      {c.shoots&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.shoots')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.shoots}</div></div>}
-      {c.rehearsal&&<div><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.rehearsal')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.rehearsal}</div></div>}
-      {c.auditionFormat&&<div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>{t('casting.auditionFormat')}</div><div style={{fontSize:14,color:"var(--t1)",fontWeight:600}}>{c.auditionFormat}</div></div>}
-      <div style={{gridColumn:"1 / -1"}}><div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,marginBottom:4,fontWeight:700}}>Nudity / Intimate content</div><div style={{fontSize:14,color:c.has_nudity?"#c0392b":"var(--t1)",fontWeight:600}}>{c.has_nudity?"Yes — this project involves nudity or intimate content":"None"}</div></div>
-      {c.casting_website_url&&<div style={{gridColumn:"1 / -1",marginTop:6,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
-        <a href={c.casting_website_url} target="_blank" rel="noopener noreferrer" className="btn-s btn-sm" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,textDecoration:"none"}}>
-          <Ico n="link" s={22}/> Visit Project Website
-        </a>
-      </div>}
-    </div>
 
     {c.has_nudity&&<div style={{display:"flex",gap:12,padding:"14px 18px",marginBottom:24,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12,alignItems:"flex-start"}}>
       <span style={{fontSize:18,lineHeight:1.2}}><Ico n="alert-triangle" s={22}/></span>
       <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}><strong style={{color:"#c0392b"}}>Contains nudity / intimate content.</strong>{c.nudity_details?<> {c.nudity_details}</>:<> This project involves nudity or intimate scenes. Please make sure you're comfortable with this before applying.</>}</div>
     </div>}
 
-    {/* At a Glance — only the facts the CD actually supplied. Legacy castings
-        have no talent_scope and no structured role rates, so this renders just
-        the union/deadline rows they always had, or nothing at all. */}
-    {(()=>{
-      const roll=castingPayRollup(c.roles);
-      const rows=[];
-      if(c.talent_scope)rows.push(["map-pin",<>Open to talent from <strong>{c.talent_scope}</strong></>]);
-      if(roll.top!=null)rows.push(["coin",<>Paid roles up to <strong>{fmtMoney(roll.top)}</strong></>]);
-      if(!rows.length)return null;
-      return(
-      <section style={{marginBottom:32}}>
-        <div className="section-label" style={{marginBottom:12}}>At a Glance</div>
-        <div style={{border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden",maxWidth:720}}>
-          {rows.map(([ico,body],i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",background:"var(--s1)",borderTop:i?"1px solid var(--bdr)":"none",fontSize:14,color:"var(--t1)"}}>
-              <span style={{color:"var(--teal,#4F8A8B)",display:"flex",flex:"none"}}><Ico n={ico} s={20}/></span>
-              <span>{body}</span>
-            </div>
-          ))}
-        </div>
-      </section>);
-    })()}
-
-    {/* Where & When — one sentence, plus the CD's optional schedule note. */}
-    {hasWhereWhen(c)&&(()=>{
-      const line=whereWhenLine(c);
-      const note=(c.schedule_note||"").trim();
-      if(!line&&!note)return null;
-      return(
-      <section style={{marginBottom:32}}>
-        <div className="section-label" style={{marginBottom:12}}>Where &amp; When</div>
-        <div style={{maxWidth:720,fontSize:15,lineHeight:1.75,color:"var(--t2)"}}>
-          {line&&<span style={{color:"var(--t1)",fontWeight:600}}>{line}</span>}
-          {line&&note?" ":""}
-          {note}
-        </div>
-      </section>);
-    })()}
-
     <section style={{marginBottom:40}}>
       <div className="section-label" style={{marginBottom:12}}>{t('casting.synopsis')}</div>
-      <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
+      <p style={{color:"#3C4A52",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
     </section>
 
     <section id="roles-section" style={{marginBottom:40,scrollMarginTop:90}}>
