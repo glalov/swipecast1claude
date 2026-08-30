@@ -49,10 +49,35 @@ h1 span{color:var(--out2);}
 /* ── launcher ─────────────────────────────────────────────── */
 .launch,.tool,.snd,.srcs button,.b .inl,.bar button,.card .go{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background-image:var(--disc);border:0;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 1px var(--ring),0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);
+  /* Hidden until the curtain has finished falling — see armLaunchDrop(). It
+     starts a full viewport above the fold, so it is genuinely off-screen
+     rather than fading in on the spot. */
+  opacity:0;visibility:hidden;}
+.launch.drop{opacity:1;visibility:visible;
   /* backwards, not both: the animation must not own transform once it ends,
      or the hover scale never applies again. */
-  animation:launchIn .52s cubic-bezier(.22,.9,.3,1) .3s backwards;}
-@keyframes launchIn{from{opacity:0;transform:translateX(84px) scale(.92)}to{opacity:1;transform:none}}
+  animation:launchDrop 1.05s backwards;}
+/* Per-keyframe easing, because a falling object accelerates — a single
+   ease-out would have it at its fastest the instant it leaves the sky. */
+@keyframes launchDrop{
+  0%{transform:translateY(calc(-100vh - 80px));animation-timing-function:cubic-bezier(.55,0,.85,.6)}
+  46%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}
+  62%{transform:translateY(-32px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}
+  76%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}
+  87%{transform:translateY(-11px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}
+  95%{transform:translateY(0)}
+  98%{transform:translateY(-2px)}
+  100%{transform:translateY(0)}}
+/* Squash on each landing sells the weight. It sits on the inner svg so it
+   never fights the translate on the button itself. */
+.launch.drop svg{animation:launchSquash 1.05s backwards;}
+@keyframes launchSquash{
+  0%,40%{transform:scale(1,1)}
+  47%{transform:scale(1.2,.8)}
+  54%{transform:scale(.95,1.05)}
+  62%,74%{transform:scale(1,1)}
+  78%{transform:scale(1.1,.9)}
+  84%,100%{transform:scale(1,1)}}
 .launch:hover{transform:scale(1.06);}
 .launch svg{width:58px;height:58px;display:block;}
 .launch .x{display:none;color:var(--board);font-size:25px;font-weight:300;line-height:1;}
@@ -61,7 +86,7 @@ h1 span{color:var(--out2);}
 .clap .stick{transform-origin:5.5px 12.5px;animation:csclap 10s cubic-bezier(.3,1.6,.5,1) infinite;}
 @keyframes csclap{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-27deg)}95%{transform:rotate(-24deg)}98%{transform:rotate(0)}}
 .launch:hover .clap .stick{animation-duration:2.2s;}
-@media(prefers-reduced-motion:reduce){.launch{animation:none}.clap .stick{animation:none}}
+@media(prefers-reduced-motion:reduce){.launch.drop,.launch.drop svg{animation:none}.clap .stick{animation:none}}
 .launch.open svg{display:none;}
 .launch.open .x{display:block;}
 
@@ -4621,6 +4646,29 @@ function wireTools(){
 
 /* events */
 $('launch').onclick=()=>{ if(st.open)closePanel(); else openPanel(); };
+
+/* ── The launcher drops in a second and a half AFTER the intro curtain has
+   finished falling, so it reads as its own beat rather than one more thing
+   moving while the page is still revealing itself. The wait is measured from
+   the real cs:intro-done signal, not a fixed timer, so on a slow connection
+   — where the curtain holds until the app has painted — it still lands the
+   same interval after the reveal instead of drifting into it. */
+(function armLaunchDrop(){
+  var WAIT=1500, el=$('launch'), fired=false;
+  function fire(){ if(fired||!el)return; fired=true; el.classList.add('drop'); }
+  function schedule(){
+    var at=window.__CS_INTRO_DONE_AT||Date.now();
+    setTimeout(fire, Math.max(0, WAIT-(Date.now()-at)));
+  }
+  if(window.__CS_INTRO_DONE){ schedule(); return; }
+  /* No intro on this page (the standalone prototype, or a build without it):
+     nothing to wait for, so show it straight away. */
+  if(!document.getElementById('cs-intro')){ fire(); return; }
+  window.addEventListener('cs:intro-done', schedule, {once:true});
+  /* A stuck or missing signal must never strand the only affordance the
+     assistant has. */
+  setTimeout(fire, 8000);
+})();
 $('openBtn').onclick=()=>{if(!st.open)openPanel();};
 $('sheetback').onclick=()=>$('sheet').classList.remove('on');
 $('close').onclick=()=>closePanel();

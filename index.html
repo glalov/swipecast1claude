@@ -95,18 +95,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260830-211759"/>
+  <link rel="preload" as="script" href="/app.js?v=20260830-214111"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260830-211759 -->
-  <meta name="build-version" content="20260830-211759"/>
+  <!-- BUILD: 20260830-214111 -->
+  <meta name="build-version" content="20260830-214111"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260830-211759";
+        var B="20260830-214111";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -223,12 +223,22 @@
     </div>
   </div>
   <script>
+    /* Fired the moment the curtain has FINISHED falling, so anything that
+       wants its own beat after the reveal can wait on a real signal instead
+       of guessing a timeout. Castoria's launcher uses it to drop in. */
+    window.__CS_INTRO_DONE=false;
+    function csIntroDone(){
+      if(window.__CS_INTRO_DONE)return;
+      window.__CS_INTRO_DONE=true;
+      window.__CS_INTRO_DONE_AT=Date.now();
+      try{window.dispatchEvent(new Event('cs:intro-done'));}catch(e){}
+    }
     (function(){
       var el=document.getElementById('cs-intro');
-      if(!el)return;
+      if(!el){csIntroDone();return;}
       var skip=false;
       try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}catch(e){}
-      if(skip){if(el.parentNode)el.parentNode.removeChild(el);return;}
+      if(skip){if(el.parentNode)el.parentNode.removeChild(el);csIntroDone();return;}
       /* Start the logo animations from the second painted frame so the fade
          is always visible; fallback covers hidden tabs where rAF never fires. */
       var raf=window.requestAnimationFrame||function(f){setTimeout(f,16);};
@@ -250,6 +260,9 @@
         if(gone)return;
         gone=true;
         el.classList.add('cs-go');
+        /* 550ms is the curtain's own fall duration (cs-bg-down), so this is
+           the frame it is actually clear - not when the node is removed. */
+        setTimeout(csIntroDone,550);
         setTimeout(function(){if(el&&el.parentNode)el.parentNode.removeChild(el);},700);
       }
       (function poll(){
@@ -425,7 +438,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260830-211759"
+        "/app.js?v=20260830-214111"
       ];
       function step(){
         var it=STEPS.shift();
@@ -466,7 +479,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260830-211759';
+      s.src='/castoria.js?v=20260830-214111';
       s.async=true;
       document.body.appendChild(s);
     }

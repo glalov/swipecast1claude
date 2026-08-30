@@ -83,6 +83,29 @@ window.SuperAssistant=api;
 /* Kept so anything that already calls window.Castoria keeps working. */
 window.Castoria=api;
 if(window.__CS_CASTORIA_OPEN_NOW)setTimeout(openPanel,400);
+
+/* ── The launcher drops in a second and a half AFTER the intro curtain has
+   finished falling, so it reads as its own beat rather than one more thing
+   moving while the page is still revealing itself. The wait is measured from
+   the real cs:intro-done signal that build-html.py emits, not a fixed timer,
+   so on a slow connection — where the curtain holds until the app has
+   painted — it still lands the same interval after the reveal instead of
+   drifting into it. Mirrors armLaunchDrop() in the prototype. */
+(function(){
+  var WAIT=1500, el=$('launch'), fired=false;
+  function fire(){ if(fired||!el)return; fired=true; el.classList.add('drop'); }
+  function schedule(){
+    var at=window.__CS_INTRO_DONE_AT||Date.now();
+    setTimeout(fire, Math.max(0, WAIT-(Date.now()-at)));
+  }
+  if(window.__CS_INTRO_DONE){ schedule(); return; }
+  /* No intro on this page: nothing to wait for, so show it straight away. */
+  if(!document.getElementById('cs-intro')){ fire(); return; }
+  window.addEventListener('cs:intro-done', schedule, {once:true});
+  /* A stuck or missing signal must never strand the only affordance the
+     assistant has. */
+  setTimeout(fire, 8000);
+})();
 """
 
 def main():

@@ -447,12 +447,22 @@ def render_page(title, desc, canonical, extra_preload=""):
     </div>
   </div>
   <script>
+    /* Fired the moment the curtain has FINISHED falling, so anything that
+       wants its own beat after the reveal can wait on a real signal instead
+       of guessing a timeout. Castoria's launcher uses it to drop in. */
+    window.__CS_INTRO_DONE=false;
+    function csIntroDone(){{
+      if(window.__CS_INTRO_DONE)return;
+      window.__CS_INTRO_DONE=true;
+      window.__CS_INTRO_DONE_AT=Date.now();
+      try{{window.dispatchEvent(new Event('cs:intro-done'));}}catch(e){{}}
+    }}
     (function(){{
       var el=document.getElementById('cs-intro');
-      if(!el)return;
+      if(!el){{csIntroDone();return;}}
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
-      if(skip){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
+      if(skip){{if(el.parentNode)el.parentNode.removeChild(el);csIntroDone();return;}}
       /* Start the logo animations from the second painted frame so the fade
          is always visible; fallback covers hidden tabs where rAF never fires. */
       var raf=window.requestAnimationFrame||function(f){{setTimeout(f,16);}};
@@ -474,6 +484,9 @@ def render_page(title, desc, canonical, extra_preload=""):
         if(gone)return;
         gone=true;
         el.classList.add('cs-go');
+        /* 550ms is the curtain's own fall duration (cs-bg-down), so this is
+           the frame it is actually clear - not when the node is removed. */
+        setTimeout(csIntroDone,550);
         setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},700);
       }}
       (function poll(){{
