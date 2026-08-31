@@ -474,21 +474,50 @@ def render_page(title, desc, canonical, extra_preload=""):
          breathing until the site is ready, so the reveal always lands on
          a live page — never on a loading spinner or a half-built layout.
          Hard 15s cap so a failed boot can never trap the curtain. */
-      var t0=Date.now(),MIN=1450,CAP=15000,gone=false;
+      var t0=Date.now(),MIN=1450,CAP=15000,gone=false,goAt=0;
       function appReady(){{
         if(window.__CS_REACT_MOUNTED)return true;
         var r=document.getElementById('root');
         return !!(r&&r.childElementCount>0);
       }}
+      /* Unconditional removal. Nothing about it depends on an animation
+         having run, an event having fired, or an earlier timer having
+         survived - it is the floor under every path below. */
+      var watch=0;
+      function kill(){{
+        gone=true;
+        if(watch){{clearInterval(watch);watch=0;}}
+        if(el&&el.parentNode)el.parentNode.removeChild(el);
+        csIntroDone();
+      }}
       function go(){{
         if(gone)return;
-        gone=true;
+        gone=true;goAt=Date.now();
         el.classList.add('cs-go');
         /* 550ms is the curtain's own fall duration (cs-bg-down), so this is
            the frame it is actually clear - not when the node is removed. */
         setTimeout(csIntroDone,550);
-        setTimeout(function(){{if(el&&el.parentNode)el.parentNode.removeChild(el);}},700);
+        setTimeout(kill,700);
+        /* The fall is a CSS animation, and CSS animations do not advance
+           while the tab is hidden - so a curtain that started dropping in a
+           background tab would still be solid black on return. Wall-clock
+           belt and braces: the node is gone by then either way. */
+        setTimeout(kill,1600);
       }}
+      /* Wall-clock watchdogs. The poll below re-arms itself with setTimeout;
+         if any single timer is dropped or clamped (hidden tab, throttled
+         mobile Safari) the chain would stop and the black curtain would stay
+         on screen forever. These two do not re-arm and cannot be starved. */
+      watch=setInterval(function(){{ if(Date.now()-t0<CAP)return; if(gone)kill(); else go(); }},500);
+      setTimeout(kill,CAP+2000);
+      document.addEventListener('visibilitychange',function(){{
+        if(document.visibilityState!=='visible')return;
+        var e=Date.now()-t0;
+        /* Fall already begun but frozen while hidden - if its 550ms is long
+           past in wall-clock terms, take the node out rather than resume. */
+        if(gone){{ if(Date.now()-goAt>=700)kill(); }}
+        else if(e>=MIN&&appReady())go();
+      }});
       (function poll(){{
         if(gone)return;
         var e=Date.now()-t0;

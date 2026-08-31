@@ -4959,52 +4959,100 @@ function FeaturedClassBanner({onNavigate}){
   const [inspireGo,setInspireGo]=useState(false);
   useEffect(()=>{
     if(typeof window==="undefined"||!inspireOn)return;
-    let dead=false,timer=null,poll=null;
+    // ── Guaranteed teardown ────────────────────────────────────────────────
+    // The veil is SOLID BLACK over the whole banner, and the banner lives in
+    // the position:fixed .site-top — so a veil that overstays IS the "dark
+    // band under the header" bug. It used to come down through a chain of
+    // relative timers (tick-counted poll -> lead timeout -> 2450ms timeout)
+    // whose *visual* exit was a CSS animation. Every link in that chain can
+    // stall: setInterval/setTimeout are clamped to ~1s in a hidden or
+    // throttled tab (so the tick-counted 6000 "waited" budget could stretch
+    // to minutes of wall clock), and CSS animations do not advance at all
+    // while the tab is hidden, so the curtain halves simply never part.
+    // Everything below is therefore driven by WALL-CLOCK time from mount and
+    // ends in one idempotent finish(), so no single event can trap the veil.
+    let dead=false;
+    const timers=[],intervals=[];
+    const T=(fn,ms)=>{const id=window.setTimeout(fn,ms);timers.push(id);return id;};
+    const I=(fn,ms)=>{const id=window.setInterval(fn,ms);intervals.push(id);return id;};
+    const clearAll=()=>{timers.forEach(window.clearTimeout);intervals.forEach(window.clearInterval);timers.length=0;intervals.length=0;};
+    const t0=Date.now(),since=()=>Date.now()-t0;
+    // START_CAP — if the entry curtain has not cleared by now the flourish has
+    // missed its beat, so we drop the veil without ever playing it rather than
+    // starting a fresh 2.45s of black on a page the visitor is already reading.
+    // HARD_CAP  — the veil is gone by this moment no matter what fired.
+    const START_CAP=4000,HARD_CAP=8000,VEIL_MS=2450;
+    const finish=()=>{ if(dead)return; dead=true; clearAll(); setInspireGo(false); setInspireOn(false); };
     // Pre-decode Anton so the first frame is never the Impact fallback.
     try{ if(document.fonts&&document.fonts.load)document.fonts.load("400 1em Anton"); }catch(e){}
     const play=()=>{
       if(dead)return;
+      if(since()>=START_CAP){finish();return;}
       setInspireGo(true);
-      timer=window.setTimeout(()=>{ if(!dead){setInspireGo(false);setInspireOn(false);} },2450);
+      T(finish,VEIL_MS);
     };
+    // Watchdog. Independent of the curtain, of animationend, and of whether
+    // play() ever ran: past HARD_CAP the veil comes off, full stop.
+    I(()=>{ if(since()>=HARD_CAP)finish(); },250);
+    // A tab backgrounded during the intro comes back with its timers behind
+    // and its animations never started; settle up the instant it is visible.
+    const onVis=()=>{ if(document.visibilityState==="visible"&&since()>=HARD_CAP)finish(); };
+    document.addEventListener("visibilitychange",onVis);
     // Fire as the curtain STARTS its fall (cs-go), not when it is finally
     // removed from the DOM. Removal happens 700ms after the drop begins and
     // 150ms after it has visually cleared, which is where the dead beat came
     // from. The banner sits at the very top of the page, so it is uncovered
     // roughly 150ms into the 550ms fall — a 200ms lead means the words are
     // already in motion by the time the curtain gets out of the way.
-    let leadT=null;
     if(!document.getElementById("cs-intro")){ play(); }
     else{
-      let waited=0;
-      poll=window.setInterval(()=>{
+      const poll=I(()=>{
         if(dead)return;
-        waited+=40;
         const el=document.getElementById("cs-intro");
         const dropping=!!(el&&el.classList&&el.classList.contains("cs-go"));
-        if(!el||dropping||waited>6000){
-          window.clearInterval(poll); poll=null;
-          leadT=window.setTimeout(play,dropping?200:0);
+        if(!el||dropping||since()>=START_CAP){
+          window.clearInterval(poll);
+          T(play,dropping?200:0);
         }
       },40);
     }
-    return()=>{ dead=true; if(timer)window.clearTimeout(timer); if(leadT)window.clearTimeout(leadT); if(poll)window.clearInterval(poll); };
+    return()=>{ dead=true; clearAll(); document.removeEventListener("visibilitychange",onVis); };
   },[]);
   // Desktop: measure the banner's natural (full) height from the image's
   // intrinsic aspect ratio so we can animate height -> 60px on scroll and
   // back. Mobile keeps its existing fixed 148px/54px CSS heights instead.
   useLayoutEffect(()=>{
-    const img=ref.current&&ref.current.querySelector(".fcs-img");
+    const el=ref.current;
+    if(!el)return;
+    const img=el.querySelector(".fcs-img");
     const measure=()=>{
       if(window.innerWidth<=768){setFullH(null);return;}
-      if(img&&img.clientWidth&&img.naturalWidth){
-        setFullH(Math.round(img.clientWidth*img.naturalHeight/img.naturalWidth));
-      }
+      const w=el.clientWidth;
+      if(!w)return;
+      // Ratio from the decoded image once we have it, otherwise from the img's
+      // own width/height attributes. A slow, cached-cold or outright failed
+      // artwork therefore still yields the right band height instead of
+      // leaving the black #0c0a08 background to size itself.
+      const nw=(img&&img.naturalWidth)||3360,nh=(img&&img.naturalHeight)||430;
+      setFullH(Math.round(w*nh/nw));
     };
     measure();
+    // ResizeObserver, not just window.resize: the banner is full-bleed inside
+    // the fixed header, and its width also changes on iPad rotation, Split
+    // View / Stage Manager resizes and scrollbar appearance — cases where a
+    // window resize event is unreliable and a stale height would leave a
+    // mismatched black band under the ticker.
+    let ro;
+    if(typeof ResizeObserver!=="undefined"){ro=new ResizeObserver(measure);ro.observe(el);}
     window.addEventListener("resize",measure);
-    if(img&&!img.complete)img.addEventListener("load",measure);
-    return()=>{window.removeEventListener("resize",measure);if(img)img.removeEventListener("load",measure);};
+    window.addEventListener("orientationchange",measure);
+    if(img){img.addEventListener("load",measure);img.addEventListener("error",measure);}
+    return()=>{
+      if(ro)ro.disconnect();
+      window.removeEventListener("resize",measure);
+      window.removeEventListener("orientationchange",measure);
+      if(img){img.removeEventListener("load",measure);img.removeEventListener("error",measure);}
+    };
   },[]);
   useEffect(()=>{
     const onScroll=()=>setCollapsed(window.scrollY>40);
