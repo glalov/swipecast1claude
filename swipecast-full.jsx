@@ -1952,8 +1952,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
 .nav-join-mobile{display:none;}
 @media (prefers-reduced-motion:reduce){.nav .logo-i{animation:none;}}
-.nav-links{display:flex;gap:3px;align-items:center;}
-.nav-links span{color:#111114;font-size:14px;font-weight:600;letter-spacing:-.1px;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
+.nav-links{display:flex;gap:14px;align-items:center;}
+.nav-links span{color:#111114;font-size:14px;font-weight:600;letter-spacing:-.1px;cursor:pointer;padding:8px 10px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
 .nav-links span.act{background:#F1F1F3;color:#000;font-weight:700;}
 /* Nav attention sweep — a faint amber highlight that breathes. Sits on ONE nav
@@ -40280,7 +40280,7 @@ function App(){
           <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
-        <div className="nav-actions" style={{display:"flex",gap:10,alignItems:"center"}}>
+        <div className="nav-actions" style={{display:"flex",gap:12,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>{navT('nav.dashboard')}</button>:null}
