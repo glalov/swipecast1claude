@@ -1,0 +1,286 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Featured Castings slider — Browse card design</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);font-family:'DM Sans',system-ui,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;}
+.demo-bar{position:sticky;top:0;z-index:20;background:#1A1A2E;color:#fff;padding:12px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.demo-bar b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#FFD79A;}
+.demo-bar p{margin:0;font-size:12.5px;color:#C9C9D8;flex:1;min-width:200px;}
+.tgl{display:flex;background:rgba(255,255,255,.1);border-radius:9px;padding:3px;gap:3px;}
+.tgl button{background:none;border:none;color:#C9C9D8;font:inherit;font-size:12.5px;font-weight:700;padding:7px 15px;border-radius:7px;cursor:pointer;}
+.tgl button.on{background:#fff;color:#1A1A2E;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--t3);margin-bottom:8px;}
+.btn-teal{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-teal:hover{background:var(--teal-dk);transform:translateY(-1px);}
+.badge{font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;display:inline-flex;align-items:center;}
+
+/* ── slider shell (unchanged from live) ── */
+.fcs-section{position:relative;width:100%;max-width:1480px;margin:0 auto;padding:48px 24px 16px;}
+.fcs-stage{position:relative;overflow:hidden;padding:18px 0;}
+.fcs-track{display:flex;align-items:stretch;will-change:transform;transition:transform .55s cubic-bezier(.4,0,.2,1);}
+.fcs-card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;padding:38px 42px;cursor:pointer;box-sizing:border-box;flex-shrink:0;min-height:300px;transition:opacity .45s ease,transform .45s ease,box-shadow .25s ease;display:flex;flex-direction:column;}
+.fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 1px 10px rgba(26,26,46,0.05);}
+.fcs-card-side{opacity:.42;filter:grayscale(.12);transform:scale(.92);}
+.fcs-card-far{opacity:.18;}
+.fcs-arrow{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:var(--s1);border:1px solid var(--bdr);color:var(--t1);cursor:pointer;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.12);transition:transform .18s,background .18s,color .18s;line-height:1;}
+.fcs-arrow:hover{background:var(--teal);color:#fff;transform:translateY(-50%) scale(1.08);border-color:var(--teal);}
+.fcs-arrow.prev{left:14px;} .fcs-arrow.next{right:14px;}
+.fcs-dots{display:flex;justify-content:center;gap:7px;margin-top:22px;flex-wrap:wrap;}
+.fcs-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);border:none;padding:0;cursor:pointer;transition:width .25s,background .25s;}
+.fcs-dot.active{width:32px;border-radius:5px;background:var(--acc);}
+
+/* ── NEW: browse-card design inside the slider ── */
+.fcs-card.v2{padding:0;overflow:hidden;border-radius:14px;justify-content:center;}
+.fcs-card.v2 .casting-card-row{padding:30px 32px;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;width:100%;}
+.pt-tile{display:grid;place-items:center;flex:none;align-self:start;box-shadow:inset 0 0 0 1px rgba(26,26,46,.10);}
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0;color:var(--t1);}
+.cc-titlewrap{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.cc-badgerow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
+.cc-tagline{color:#4a4f58;font-size:16px;line-height:1.45;margin:0 0 6px;}
+.cc-prod{color:var(--t3);font-size:14px;margin:0 0 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52;}
+.cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
+.cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff;}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px;}
+.cc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:nowrap;}
+.cc-foot .cc-pills{flex:1;min-width:0;}
+.cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;background:var(--s1);padding:8.5px 14px;cursor:pointer;font:inherit;color:var(--t1);transition:border-color .15s,box-shadow .15s;}
+.cc-pill:hover{border-color:var(--teal);box-shadow:0 1px 5px rgba(26,26,46,.08);}
+.cc-pill .p1{font-size:13.5px;font-weight:800;} .cc-pill .p2{font-size:13px;color:var(--t2);}
+.cc-pill-rest{font-size:13.5px;color:var(--t2);font-weight:600;}
+.btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
+.cc-picked{background:var(--s1);}
+.cc-band{position:absolute;left:0;top:0;bottom:0;width:7.5px;background:#1A1A2E;pointer-events:none;z-index:3;}
+.cc-band::after{content:"";position:absolute;left:4px;right:0;top:0;bottom:0;background:#FFBF00;}
+.cc-pickrow{margin-bottom:11px;}
+.cc-gpill{display:inline-flex;align-items:center;gap:7px;padding:5px 13px 5px 11px;border-radius:100px;background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;}
+.cc-picked .casting-card-row{padding-left:40px;}
+.fcs-count{font-size:11px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;font-weight:700;white-space:nowrap;}
+.cc-ctawrap{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;}
+
+/* live badge */
+@keyframes scLiveDot{0%,100%{transform:scale(.74);opacity:.6}50%{transform:scale(1);opacity:1}}
+@keyframes scLiveRing{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.1);opacity:0}}
+.cs-live-badge{display:inline-flex;align-items:center;gap:8px;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:700;padding:5px 12px;border-radius:99px;white-space:nowrap;line-height:1;}
+.cs-live-dot{position:relative;width:10px;height:10px;border-radius:50%;flex:none;display:inline-block;}
+.cs-live-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:#15a87f;animation:scLiveRing 1.8s ease-out infinite;}
+.cs-live-dot .core{position:absolute;inset:0;border-radius:50%;background:#15a87f;animation:scLiveDot 1.5s ease-in-out infinite;}
+
+/* ── OLD design (for the A/B toggle) ── */
+.fcs-card.v1 h3{font-size:32px;font-weight:800;letter-spacing:-1px;margin:0 0 6px;line-height:1.15;min-height:74px;}
+.fcs-card.v1.fcs-card-side h3{font-size:24px;}
+.v1-badges{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.v1-badges .badge{background:var(--s2);color:var(--t1);}
+.v1-tag{color:var(--t2);font-size:15px;margin:0 0 6px;font-weight:500;}
+.v1-prod{color:var(--t3);font-size:13px;margin:0 0 14px;font-weight:500;}
+.v1-desc{color:var(--t2);font-size:14px;line-height:1.65;margin:0 0 18px;max-width:680px;}
+.v1-facts{display:flex;gap:24px;flex-wrap:wrap;font-size:13px;color:var(--t2);margin-bottom:22px;}
+.v1-facts strong{color:var(--t1);letter-spacing:.3px;}
+.v1-cta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.fcs-card-side .v1-cta,.fcs-card-side .cc-ctawrap{visibility:hidden;pointer-events:none;}
+.v1-countdown{color:#0F6E56;font-weight:700;}
+
+@media(max-width:1024px){
+  .fcs-section{padding:40px 20px 14px;max-width:none;}
+  .fcs-stage{contain:inline-size;}
+  .fcs-card{padding:30px 32px;min-height:260px;}
+  .fcs-card.v2{padding:0;}
+  .fcs-card.v2 .casting-card-row{padding:24px 24px;}
+  .fcs-arrow{width:44px;height:44px;font-size:18px;}
+}
+@media(max-width:768px){
+  .fcs-section{padding:32px 16px 12px;}
+  .fcs-stage{padding:6px 0;}
+  .fcs-card{padding:24px 22px;min-height:auto;}
+  .fcs-card.v2{padding:0;}
+  .fcs-card.v2 .casting-card-row{grid-template-columns:1fr;gap:16px;padding:18px;}
+  .cc-picked .casting-card-row{padding-left:26px;}
+  .cc-title{font-size:21px;}
+  .cc-foot{flex-direction:column;align-items:stretch;gap:14px;}
+  .cc-ctawrap{align-items:stretch;}
+  .cc-ctawrap .cc-cta{width:100%;}
+  .fcs-arrow{width:38px;height:38px;font-size:16px;}
+  .fcs-arrow.prev{left:4px;} .fcs-arrow.next{right:4px;}
+}
+</style></head><body>
+
+<div class="demo-bar">
+  <b>Demo</b>
+  <p>Same slider, same behaviour (auto-advance 5s, arrows, dots, swipe, coverflow side cards) — only the card design changes.</p>
+  <div class="tgl">
+    <button id="btnNew" class="on">New (Browse design)</button>
+    <button id="btnOld">Current (live)</button>
+  </div>
+</div>
+
+<section class="fcs-section">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+    <div style="flex:1;min-width:0">
+      <div class="section-label">Featured Castings</div>
+      <h2 style="font-weight:800;font-size:30px;letter-spacing:-1px;margin:0;line-height:1.2">Roles that are actually casting right now.</h2>
+      <p style="color:var(--t2);font-size:13px;margin-top:6px">Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>
+    </div>
+    <button class="btn-teal" style="flex-shrink:0;padding:11px 22px;font-size:14px">Browse all →</button>
+  </div>
+
+  <div class="fcs-stage" id="stage">
+    <button class="fcs-arrow prev" id="prev" aria-label="Previous casting">‹</button>
+    <div class="fcs-track" id="track"></div>
+    <button class="fcs-arrow next" id="next" aria-label="Next casting">›</button>
+  </div>
+  <div class="fcs-dots" id="dots"></div>
+</section>
+
+<script>
+const GLYPH={
+ film:'<path d="M2.6 9.4h18.8v9.2a2.6 2.6 0 0 1-2.6 2.6H5.2a2.6 2.6 0 0 1-2.6-2.6z"/><path d="M2.6 4.5a1.3 1.3 0 0 1 1.3-1.3h16.2a1.3 1.3 0 0 1 1.3 1.3v3.6H2.6z"/><g fill="var(--k)"><path d="M7.4 3.2h1.9L7.6 8.1H5.7z"/><path d="M12.4 3.2h1.9l-1.7 4.9h-1.9z"/><path d="M17.4 3.2h1.9l-1.7 4.9h-1.9z"/></g>',
+ stage:'<path d="M12 2.2c5.4 0 9.8 3.1 9.8 6.9v1.3H2.2V9.1C2.2 5.3 6.6 2.2 12 2.2z"/><path d="M2.2 12h19.6v2.1a4 4 0 0 1-4 4H6.2a4 4 0 0 1-4-4z"/><path d="M6.4 19.4h11.2a1.1 1.1 0 0 1 0 2.2H6.4a1.1 1.1 0 0 1 0-2.2z"/>',
+ student:'<path d="M12 2.4 22.6 7.2 12 12 1.4 7.2z"/><path d="M5.9 10.2v4.6c0 2 2.7 3.6 6.1 3.6s6.1-1.6 6.1-3.6v-4.6L12 13.5z"/><path d="M20.8 8.8v5.4a1 1 0 0 1-2 0V8.8z"/>',
+ series:'<path d="M5.6 2.4 8.9 5.7h6.2l3.3-3.3 1.5 1.5-1.8 1.8h1.4a1.9 1.9 0 0 1 1.9 1.9v10.6a1.9 1.9 0 0 1-1.9 1.9H3.5a1.9 1.9 0 0 1-1.9-1.9V7.6a1.9 1.9 0 0 1 1.9-1.9h1.4L3.1 3.9z"/><rect x="3.9" y="9.3" width="10.9" height="8.4" rx="1.1" fill="var(--k)"/><rect x="16.9" y="9.5" width="3.1" height="2.5" rx=".8" fill="var(--k)"/><rect x="16.9" y="13.4" width="3.1" height="2.5" rx=".8" fill="var(--k)"/>'
+};
+const TINT={film:["#E7EBF7","#2B3D80"],stage:["#F6E7EC","#8C2F4C"],series:["#E6F1F1","#1F6668"],other:["#EDEAE3","#5A5A72"]};
+
+const DATA=[
+ {tile:"film",type:"Independent Film",union:"Non-Union",title:"The Seventh Landing",tagline:"Every coincidence has a witness.",prod:"North Bridge Pictures",verified:true,pick:true,
+  desc:"After discovering a forgotten photograph that shouldn't exist, a young photographer becomes obsessed with uncovering its origin.",
+  roles:8,pay:"Lead: up to $300/day",deadline:"13 days left · closes Sep 12, 2026",dl:"soon",location:"New York, NY",posted:"Aug 18",
+  pills:[["Lead","Female · 20s"],["Supporting","Male · 30s"],["Day Player","Any · 40s"]],rest:5},
+ {tile:"stage",type:"Off-Broadway Theater",union:"AEA",title:"No Show Tonight",tagline:"A sold out crowd has to be told the show is off.",prod:"Sana Verma",verified:true,
+  desc:"A box office has to tell a full house that tonight's show is cancelled. One person in the line has traveled a very long way to be there.",
+  roles:5,pay:"up to $900/week",deadline:"20 days left · closes Sep 19, 2026",dl:null,location:"New York, NY",posted:"Aug 11",
+  pills:[["Lead","Female · 30s"],["Supporting","Any · 20s"]],rest:3},
+ {tile:"student",type:"Student Film",union:"Non-Union",title:"Untitled Horror Project",tagline:"The night shift keeps its own records.",prod:"Prod. Lamar McKinney",verified:false,
+  desc:"A new night attendant at a county morgue is told never to open the drawer at the end of the row. Everything changes when a body arrives with no paperwork.",
+  roles:5,pay:"up to $175/day",deadline:"25 days left · closes Sep 24, 2026",dl:null,location:"New York, NY",posted:"Aug 20",
+  pills:[["Lead","Male · 20s"],["Supporting","Female · 50s"]],rest:3},
+ {tile:"series",type:"Off-Off-Broadway Theater",union:"AEA",title:"The Bed Was Not In the Script",tagline:"One bed. Six actors. No one remembers what play they're in.",prod:"Black Box Workshop",verified:true,
+  desc:"A backstage farce about panic, pride, and the terrible miracle of keeping a show upright when nobody agrees on what it is.",
+  roles:6,pay:"Paid stipend + travel",deadline:"8h 51m left to apply · closes Aug 31, 2026",dl:"urgent",location:"Manhattan rehearsal studio",posted:"Jul 29",
+  pills:[["Lead","Any · 30s"],["Featured","Any · 20s"],["Ensemble","Any · 18+"]],rest:3},
+ {tile:"film",type:"Feature Film",union:"SAG-AFTRA",title:"Harbor Light",tagline:"He came back for the boat. Not for her.",prod:"Slate & Ash Films",verified:true,
+  desc:"A fisherman returns to the town he left twenty years ago to sell his father's boat, and finds the person he abandoned still working the same dock.",
+  roles:4,pay:"up to $450/day",deadline:"4 days left · closes Sep 3, 2026",dl:"soon",location:"Brooklyn, NY",posted:"Aug 24",
+  pills:[["Lead","Male · 40s"],["Lead","Female · 40s"]],rest:2}
+];
+
+let idx=0, mode="v2", paused=false;
+const track=document.getElementById("track"), dots=document.getElementById("dots");
+
+function tile(kind){
+ const [bg,ink]=TINT[kind]||TINT.other, g=Math.round(52*.54);
+ return `<div class="pt-tile" style="width:52px;height:52px;border-radius:15px;background:${bg};color:${ink};--k:${bg}">
+   <svg width="${g}" height="${g}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${GLYPH[kind]||GLYPH.film}</svg></div>`;
+}
+const live=`<span class="cs-live-badge"><span class="cs-live-dot"><span class="core"></span></span>Casting now — apply today</span>`;
+const idv=`<span style="display:inline-flex;align-items:center;gap:4px;color:#1B873E;font-size:12px;font-weight:700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>ID Verified</span>`;
+
+function cardV2(c,i){
+ const dlClass=c.dl==="urgent"?"urgent":c.dl==="soon"?"soon":null;
+ return `${c.pick?'<span class="cc-band" aria-hidden="true"></span>':''}
+ <div class="casting-card-row">
+   ${tile(c.tile)}
+   <div>
+     ${c.pick?`<div class="cc-pickrow"><span class="cc-gpill">★ Cast Slate Pick</span></div>`:''}
+     <div class="cc-titlewrap">
+       <h3 class="cc-title">${c.title}</h3>
+       <div class="cc-badgerow">
+         <span class="cc-badge">${c.type}</span>
+         <span class="cc-badge">${c.union}</span>
+         ${live}
+       </div>
+     </div>
+     <p class="cc-tagline">${c.tagline}</p>
+     <p class="cc-prod">${c.prod}${c.verified?idv:''}</p>
+     <div class="cc-strip">
+       <span class="cc-chip roles">${c.roles} Roles</span>
+       <span class="cc-chip pay">${c.pay}</span>
+       ${dlClass?`<span class="cc-chip ${dlClass}">${c.deadline}</span>`:''}
+       <span class="cc-chip">${c.location}</span>
+       <span class="cc-chip quiet">Posted ${c.posted}</span>
+     </div>
+     <div class="cc-foot">
+       <div class="cc-pills">
+         ${c.pills.map(p=>`<button type="button" class="cc-pill"><span class="p1">${p[0]}</span><span class="p2">${p[1]}</span></button>`).join("")}
+         ${c.rest?`<span class="cc-pill-rest">+ ${c.rest} more roles</span>`:''}
+       </div>
+       <div class="cc-ctawrap">
+         <button class="btn-teal cc-cta">View Roles &amp; Apply →</button>
+         <span class="fcs-count">· Casting ${i+1} of ${DATA.length}</span>
+       </div>
+     </div>
+   </div>
+ </div>`;
+}
+
+function cardV1(c,i){
+ return `<div class="v1-badges">
+   <span class="badge">${c.type}</span><span class="badge">${c.union}</span>
+   <span class="badge">${c.roles} Roles</span><span class="badge">${c.pills[0][0]}</span>${live}
+ </div>
+ <h3>${c.title}</h3>
+ <p class="v1-tag">${c.tagline}</p>
+ <p class="v1-prod">${c.prod}</p>
+ <p class="v1-desc">${c.desc}</p>
+ <div class="v1-facts">
+   <span><strong>Location</strong> · ${c.location}</span>
+   <span><strong>Pay</strong> · ${c.pay}</span>
+   <span class="v1-countdown" style="${c.dl==='urgent'?'color:#c0392b':''}">${c.deadline}</span>
+ </div>
+ <div class="v1-cta">
+   <button class="btn-teal">View Roles &amp; Apply →</button>
+   <span class="fcs-count">· Casting ${i+1} of ${DATA.length}</span>
+ </div>`;
+}
+
+function layout(){
+ const secW=document.querySelector(".fcs-section").offsetWidth;
+ const vw=window.innerWidth, mob=vw<768;
+ const pad=mob?16:(secW>=1024?24:20);
+ const stageW=mob?vw-32:secW-2*pad;
+ const wide=!mob&&secW>=1024, mid=!mob&&secW>=720&&secW<1024;
+ const cardW=wide?720:mid?540:stageW;
+ const gap=wide?28:mid?20:14;
+ return {cardW,gap,stageW,mob,wide};
+}
+
+function render(){
+ const {cardW,gap,stageW,mob,wide}=layout();
+ track.style.gap=gap+"px";
+ track.innerHTML=DATA.map((c,i)=>{
+   const center=i===idx, dist=Math.abs(i-idx);
+   const cls=["fcs-card",mode,center?"fcs-card-center":"fcs-card-side",dist>=2?"fcs-card-far":""].join(" ");
+   const hidden=(!wide&&!center)?"hidden":"visible";
+   return `<div class="${cls} ${c.pick&&mode==='v2'?'cc-picked':''}" data-i="${i}" style="flex:0 0 ${cardW}px;visibility:${hidden}">${mode==="v2"?cardV2(c,i):cardV1(c,i)}</div>`;
+ }).join("");
+ const off=mob?-(idx*(cardW+gap)):((stageW/2)-(cardW/2)-(idx*(cardW+gap)));
+ track.style.transform=`translate3d(${off}px,0,0)`;
+ dots.innerHTML=DATA.map((_,i)=>`<button class="fcs-dot ${i===idx?'active':''}" data-i="${i}"></button>`).join("");
+}
+
+track.addEventListener("click",e=>{const el=e.target.closest(".fcs-card");if(!el)return;const i=+el.dataset.i;if(i!==idx){idx=i;render();}});
+dots.addEventListener("click",e=>{const b=e.target.closest(".fcs-dot");if(!b)return;idx=+b.dataset.i;render();});
+document.getElementById("next").onclick=e=>{e.stopPropagation();idx=(idx+1)%DATA.length;render();};
+document.getElementById("prev").onclick=e=>{e.stopPropagation();idx=(idx-1+DATA.length)%DATA.length;render();};
+["prev","next"].forEach(id=>{const b=document.getElementById(id);b.onmouseenter=()=>paused=true;b.onmouseleave=()=>paused=false;});
+setInterval(()=>{if(!paused){idx=(idx+1)%DATA.length;render();}},5000);
+window.addEventListener("resize",render);
+
+let sx=0,act=false;
+const stage=document.getElementById("stage");
+stage.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;act=true;paused=true;},{passive:true});
+stage.addEventListener("touchend",e=>{if(!act)return;const dx=e.changedTouches[0].clientX-sx;if(dx>50){idx=(idx-1+DATA.length)%DATA.length;render();}else if(dx<-50){idx=(idx+1)%DATA.length;render();}act=false;setTimeout(()=>paused=false,3000);});
+
+const bN=document.getElementById("btnNew"),bO=document.getElementById("btnOld");
+bN.onclick=()=>{mode="v2";bN.classList.add("on");bO.classList.remove("on");render();};
+bO.onclick=()=>{mode="v1";bO.classList.add("on");bN.classList.remove("on");render();};
+render();
+</script>
+</body></html>

@@ -3549,9 +3549,25 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    to one or two depending on the casting AND on the centre card's larger font),
    and the action row is reserved on every card by .fcs-cta-row. Scoped to
    .fcs-track so the loading and empty-state cards are untouched. */
-.fcs-track .fcs-card h3{min-height:74px;}
+.fcs-track .fcs-card .cc-title{min-height:63px;}
 .fcs-cta-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.fcs-card-side .fcs-cta-row{visibility:hidden;pointer-events:none;}
+.fcs-card-side .fcs-cta-row,.fcs-card-side .cc-foot{visibility:hidden;pointer-events:none;}
+
+/* ─── The slider's card IS the Browse Castings card ──────────────────────────
+   Everything visual comes from the shared .cc-* rules further up this file
+   (.cc-title, .cc-badgerow, .cc-strip, .cc-chip, .cc-pills, .cc-foot). Edit the
+   design THERE and both surfaces move together — that shared-source property is
+   the whole point of this section, so do not fork a .fcs- copy of a .cc- rule.
+   Only geometry the coverflow needs lives here: the card is a padding-free shell
+   because .casting-card-row carries Browse's own padding, and the body column
+   is a flex column so the foot row can be pushed to the bottom edge and stay
+   aligned across cards of different content lengths. */
+.fcs-card-v2{padding:0;border-radius:14px;overflow:hidden;min-height:250px;justify-content:center;display:flex;flex-direction:column;}
+.fcs-card-v2 .casting-card-row{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;padding:30px 32px;width:100%;}
+.fcs-card-v2 .fcs-card-body{display:flex;flex-direction:column;min-width:0;}
+.fcs-card-v2 .cc-foot{margin-top:auto;}
+.fcs-ctawrap{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;}
+.fcs-count{font-size:11px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;font-weight:700;white-space:nowrap;}
 .fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 1px 10px rgba(26,26,46,0.05);}
 .fcs-card-center:hover{transform:scale(1.004) translateY(-1px);box-shadow:-12px 10px 30px -16px rgba(26,26,46,0.09),12px 10px 30px -16px rgba(26,26,46,0.09),0 14px 32px -18px rgba(26,26,46,0.08);border-color:var(--bdr);}
 .fcs-card-side{opacity:0.42;filter:grayscale(.12);transform:scale(.92);}
@@ -3578,18 +3594,24 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
      width:100% above, which keeps the section full-width and the card centred. */
   .fcs-stage{contain:inline-size;}
   .fcs-card{padding:30px 32px;min-height:260px;}
-  .fcs-card-center h3{font-size:26px !important;}
-  /* Two lines at this breakpoint's largest title size (26px x 1.15 x 2). */
-  .fcs-track .fcs-card h3{min-height:60px;}
+  .fcs-card-v2{padding:0;min-height:230px;}
+  .fcs-card-v2 .casting-card-row{padding:24px 24px;gap:16px;}
+  .fcs-track .fcs-card .cc-title{font-size:24px;min-height:56px;}
   .fcs-arrow{width:44px;height:44px;font-size:18px;}
 }
 @media (max-width:768px){
   .fcs-section{padding:32px 16px 12px;}
   .fcs-stage{padding:6px 0;}
   .fcs-card{padding:24px 22px;min-height:auto;}
-  .fcs-card-center h3{font-size:22px !important;}
-  /* Sides run 24px here and the centre 22px, so reserve two lines of the larger. */
-  .fcs-track .fcs-card h3{min-height:56px;}
+  /* The 900px block above already stacks .casting-card-row and .cc-foot for
+     every Browse card; the slider card only needs its own padding back and a
+     full-width CTA, because on a phone the card IS the whole viewport width. */
+  .fcs-card-v2{padding:0;min-height:auto;}
+  .fcs-card-v2 .casting-card-row{padding:20px 18px !important;}
+  .fcs-track .fcs-card .cc-title{font-size:21px;min-height:49px;}
+  .fcs-ctawrap{align-items:stretch;width:100%;}
+  .fcs-ctawrap .cc-cta{width:100%;}
+  .fcs-count{text-align:center;}
   .fcs-arrow{width:38px;height:38px;font-size:16px;}
   .fcs-arrow.prev{left:4px;}
   .fcs-arrow.next{right:4px;}
@@ -20583,53 +20605,81 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           // featured slider — show only the production company name (sc.prod).
           const sCdName=/office\s*casting/i.test(sCdNameRaw)?"":sCdNameRaw;
           const sRoles=sc.roles||[];
-          const sFirstRole=sRoles[0];
-          const sRaw=(sc.synopsis||sc.tagline||"").replace(/\*/g,"").trim();
-          const sDesc=sRaw.length>200?sRaw.slice(0,200).trim()+"…":sRaw;
+          const sCdn=castingCountdown(sc.deadline);
+          const sRate=castingTopRate(sc);
+          const sPick=castingCardRoles(sc,3);
+          const sPosted=castingPostedAt(sc);
           const onSlotClick=(e)=>{
             if(isCenter){onViewCasting&&onViewCasting(sc);}
             else{e.stopPropagation();setIdx(i);}
           };
           return(<div key={sc.id||i}
-            className={`fcs-card ${isCenter?"fcs-card-center":"fcs-card-side"} ${dist>=2?"fcs-card-far":""}`}
+            className={`fcs-card fcs-card-v2 ${isCenter?"fcs-card-center":"fcs-card-side"} ${dist>=2?"fcs-card-far":""}`}
             style={{flex:`0 0 ${cardWidth}px`,visibility:visuallyHidden?"hidden":"visible"}}
             onClick={onSlotClick}
             aria-hidden={!isCenter}
             tabIndex={isCenter?0:-1}>
-            <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
-              <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{castingTypeLabel(sc.type||"Film")}</span>
-              {sc.union&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sc.union}</span>}
-              <span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sRoles.length===1?"1 Role":`${sRoles.length||1} Roles`}</span>
-              {sFirstRole?.name&&<span className="badge" style={{background:"var(--s2)",color:"var(--t1)"}}>{sFirstRole.name}</span>}
-              {(()=>{const cdn=castingCountdown(sc.deadline);return(!cdn||!cdn.expired)?<LiveCastingBadge/>:null;})()}
-            </div>
-            <h3 style={{fontSize:isCenter?32:24,fontWeight:800,letterSpacing:-1,marginBottom:6,color:"var(--t1)",lineHeight:1.15}}>{sc.title}</h3>
-            {sc.tagline&&sc.tagline!==sc.synopsis&&<p style={{color:"var(--t2)",fontSize:15,marginBottom:6,fontWeight:500}}>{sc.tagline}</p>}
-            {(sCdName||sc.prod)&&<p style={{color:"var(--t3)",fontSize:13,marginBottom:14,fontWeight:500,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-              <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
-              {sc.is_admin_created
-                ? (adminBadgeState(sc.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(sc.admin_verified)===false?<UnverifiedBadge size="xs"/>:null)
-                : <>
-                    {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
-                    {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
-                    {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<UnverifiedBadge size="xs"/>}
-                  </>}
-            </p>}
-            {sDesc&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,marginBottom:18,maxWidth:680}}>{sDesc}</p>}
-            <div style={{display:"flex",gap:24,flexWrap:"wrap",fontSize:13,color:"var(--t2)",marginBottom:22}}>
-              {sc.location&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Location</strong> · {sc.location}</span>}
-              {sc.pay&&<span><strong style={{color:"var(--t1)",letterSpacing:0.3}}>Pay</strong> · {sc.pay}</span>}
-              <CastingCountdown deadline={sc.deadline}/>
-            </div>
-            {/* Rendered on EVERY card, not just the centred one. Only the centre
-                card shows it, but a row that appears and disappears as the
-                carousel advances changes the card height on a 5s timer, and
-                because the cards stretch to the tallest one that resized the
-                whole section — everything below it slid up and down on its own.
-                Hidden, not unmounted, so the space is always reserved. */}
-            <div className="fcs-cta-row" aria-hidden={!isCenter}>
-              <button className="btn-teal" tabIndex={isCenter?0:-1} onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
-              <span style={{fontSize:11,color:"var(--t3)",letterSpacing:1,textTransform:"uppercase",fontWeight:700}}>· Casting {idx+1} of {castings.length}</span>
+            {/* Same card design as Browse Castings — .cc-* classes are shared, not
+                copied. Only the slider chrome (coverflow scale/opacity, the pinned
+                height, the "Casting N of M" counter) is specific to this component. */}
+            <div className="casting-card-row">
+              {/* Raw type on purpose — ProjectTypeTile canonicalises it itself. */}
+              <ProjectTypeTile type={sc.type}/>
+              <div className="fcs-card-body">
+                <div className="cc-titlewrap">
+                  <h3 className="cc-title">{sc.title}</h3>
+                  <div className="cc-badgerow">
+                    <span className="cc-badge">{castingTypeLabel(sc.type||"Film")}</span>
+                    {sc.union&&<span className="cc-badge">{sc.union}</span>}
+                    {(!sCdn||!sCdn.expired)&&<LiveCastingBadge/>}
+                  </div>
+                </div>
+                {sc.tagline&&<p className="cc-tagline">{sc.tagline}</p>}
+                {(sCdName||sc.prod)&&<p className="cc-prod">
+                  <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
+                  {sc.is_admin_created
+                    ? (adminBadgeState(sc.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(sc.admin_verified)===false?<UnverifiedBadge size="xs"/>:null)
+                    : <>
+                        {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
+                        {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
+                        {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<UnverifiedBadge size="xs"/>}
+                      </>}
+                </p>}
+                {/* Same fact strip as Browse: parts, pay, deadline, place, freshness.
+                    The countdown chip stays hidden above CARD_COUNTDOWN_MAX_DAYS —
+                    see the card-countdown note on the Browse card. */}
+                <div className="cc-strip">
+                  {sRoles.length>0&&<span className="cc-chip roles">{sRoles.length===1?"1 Role":`${sRoles.length} Roles`}</span>}
+                  {sRate&&<span className={"cc-chip"+(sRate.money?" pay":"")}>{sRate.text}</span>}
+                  {sCdn&&!sCdn.expired
+                    ?(sCdn.days>CARD_COUNTDOWN_MAX_DAYS?null:<span className={"cc-chip "+(sCdn.urgent?"urgent":"soon")}>{sCdn.label}</span>)
+                    :sCdn?<span className="cc-chip soon">Applications closed</span>:null}
+                  {sc.location&&<span className="cc-chip">{sc.location}</span>}
+                  {sPosted&&<span className="cc-chip quiet">Posted {fmtCastingDate(sPosted)}</span>}
+                </div>
+                {/* Role pills + CTA share the foot row, exactly as on Browse. The
+                    pills open this casting on that role. Rendered on EVERY card,
+                    not just the centred one — a row that appears and disappears
+                    on the 5s timer resized the whole section. Hidden, not
+                    unmounted, so the space is always reserved (.fcs-cta-row). */}
+                <div className="cc-foot" aria-hidden={!isCenter}>
+                  <div className="cc-pills">
+                    {sPick.shown.map((r,ri)=>{
+                      const spec=roleCardSpec(r);
+                      const label=r.type||r.role_type||"Role";
+                      return(<button key={r.id||ri} type="button" className="cc-pill" tabIndex={isCenter?0:-1}
+                        onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>
+                        <span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}
+                      </button>);
+                    })}
+                    {sPick.rest>0&&<span className="cc-pill-rest">+ {sPick.rest} more {sPick.rest===1?"role":"roles"}</span>}
+                  </div>
+                  <div className="fcs-ctawrap">
+                    <button className="btn-teal cc-cta" tabIndex={isCenter?0:-1} onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
+                    <span className="fcs-count">· Casting {idx+1} of {castings.length}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>);
         })}
