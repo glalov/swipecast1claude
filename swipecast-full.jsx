@@ -3617,9 +3617,13 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
   .fcs-ctawrap{align-items:stretch;width:100%;}
   .fcs-ctawrap .cc-cta{width:100%;}
   .fcs-count{text-align:center;}
-  .fcs-arrow{width:38px;height:38px;font-size:16px;}
-  .fcs-arrow.prev{left:4px;}
-  .fcs-arrow.next{right:4px;}
+  /* Arrows are hidden on phones. The card runs the FULL stage width here, so
+     there is no gutter to sit in — a centred arrow lands on top of the card's
+     own content, and with the Browse layout that is the fact-chip strip, so the
+     arrow reads as a broken chip. Every path they served is still there: swipe
+     (onTouchStart/onTouchEnd), the dots, and tapping a card. Bring them back
+     only with somewhere for them to go. */
+  .fcs-arrow{display:none;}
 }
 /* ─── Casting-format marquee — cinematic Playfair serif words, infinite horizontal scroll ─── */
 .partners-marquee{position:relative;overflow:hidden;width:100%;padding:16px 0;-webkit-mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,0.15) 6%,#000 16%,#000 84%,rgba(0,0,0,0.15) 94%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,rgba(0,0,0,0.15) 6%,#000 16%,#000 84%,rgba(0,0,0,0.15) 94%,transparent 100%);}
