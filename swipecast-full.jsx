@@ -3549,7 +3549,12 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    to one or two depending on the casting AND on the centre card's larger font),
    and the action row is reserved on every card by .fcs-cta-row. Scoped to
    .fcs-track so the loading and empty-state cards are untouched. */
-.fcs-track .fcs-card .cc-title{min-height:63px;}
+/* No min-height on the title any more. The old design sized it differently on
+   the centre vs side cards, so two lines had to be reserved or the section
+   resized every 5s; the Browse card runs ONE title size, and the JS height pin
+   (pinRef in FeaturedCastingsSlider) already holds the track at the tallest
+   card it has seen. Reserving here just parked 32px of dead space under every
+   single-line title, between it and the badge row. */
 .fcs-cta-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .fcs-card-side .fcs-cta-row,.fcs-card-side .cc-foot{visibility:hidden;pointer-events:none;}
 
@@ -3596,7 +3601,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
   .fcs-card{padding:30px 32px;min-height:260px;}
   .fcs-card-v2{padding:0;min-height:230px;}
   .fcs-card-v2 .casting-card-row{padding:24px 24px;gap:16px;}
-  .fcs-track .fcs-card .cc-title{font-size:24px;min-height:56px;}
+  .fcs-track .fcs-card .cc-title{font-size:24px;}
   .fcs-arrow{width:44px;height:44px;font-size:18px;}
 }
 @media (max-width:768px){
@@ -3608,7 +3613,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
      full-width CTA, because on a phone the card IS the whole viewport width. */
   .fcs-card-v2{padding:0;min-height:auto;}
   .fcs-card-v2 .casting-card-row{padding:20px 18px !important;}
-  .fcs-track .fcs-card .cc-title{font-size:21px;min-height:49px;}
+  .fcs-track .fcs-card .cc-title{font-size:21px;}
   .fcs-ctawrap{align-items:stretch;width:100%;}
   .fcs-ctawrap .cc-cta{width:100%;}
   .fcs-count{text-align:center;}
