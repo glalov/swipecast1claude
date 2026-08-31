@@ -28755,64 +28755,197 @@ const ACG = (()=>{
   // project before the story ("Casting a short film: …"); BARE lines are pure
   // story. A premise that already names its own medium can only take a bare
   // line, or the listing says "an audio drama" twice in one sentence.
-  const STORY_LEAD=[
-    x=>`Casting ${aArt(x.genreLabel)} ${x.genreLabel}: ${x.premise}. ${x.capTurn}.`,
-    x=>`Now casting ${aArt(x.label)} ${x.label} — ${x.premise}. ${x.capTurn}.`,
-    x=>`Seeking actors for ${aArt(x.genreLabel)} ${x.genreLabel}: ${x.premise}. ${x.capTurn}.`,
-    x=>`Casting ${aArt(x.genreLabel)} ${x.genreLabel}. ${x.capPremise}, and ${x.turn}.`,
-    x=>`Casting ${aArt(x.label)} ${x.label}: ${x.premise}. Trouble starts when ${x.turn}.`,
-    x=>`Seeking actors for ${aArt(x.label)} ${x.label}. ${x.capPremise}. ${x.capTurn}.`,
-    x=>`${x.capLabel} set in ${x.city}. ${x.capPremise}. Then ${x.turn}.`,
-    x=>`We are making ${aArt(x.label)} ${x.label} in ${x.city}. ${x.capPremise}. ${x.capTurn}.`
+  // ── How a summary enters its story ───────────────────────────────────────
+  // The problem this replaces: every summary came in through the same door.
+  // "A box office has to tell a full house the show is cancelled. One person in
+  // the line has traveled a very long way." — "A new night attendant is told
+  // never to open the doors before six. Everything changes when a body arrives
+  // with no paperwork." Different stories, one shape: introduce someone or
+  // somewhere, state their situation, then the unusual event. Swapping the
+  // connector for a synonym does not fix that. The ENTRY POINT has to move.
+  //
+  // A seed gives five raw materials, and each is grammatically predictable:
+  //   premise (p)   a clause      "a small robbery at a check-cashing shop
+  //                                goes wrong before it even starts"
+  //   turn (h/h2)   a clause      "a crowd gathers on the sidewalk and the
+  //                                robbery turns into a show nobody can end"
+  //   place (w)     a noun phrase "a check-cashing storefront on a strip"
+  //   role label    a noun phrase "the counter manager"
+  //   era           a decade, absent on format briefs
+  // Every builder below composes those in a different grammatical ORDER —
+  // event first, character first, place first, decade first, a question, a
+  // condition, a contrast, an aftermath, telegraphic — rather than reordering
+  // words inside one shape. Each carries a `p` (pattern) tag, and the picker
+  // refuses a pattern the last few listings used, refuses to open two listings
+  // on the same word, and breaks up runs of article-first openings.
+  //
+  // `t` marks which seeds a builder suits: "n" narrative, "f" format brief
+  // (ads, catalogs, training), "b" both. A line about nobody coming out the
+  // same does not belong on a coffee commercial.
+
+  // A turn that opens on a pronoun has nothing to refer back to when it leads,
+  // so those seeds simply never take an event-first opening.
+  const TURN_ANAPHORA=/^(?:\S+\s+){0,6}\b(they|he|she|him|her|them|their|his|its|it)\b/i;
+  function turnCanLead(t){return !!t&&!TURN_ANAPHORA.test(String(t));}
+  function dropArticle(v){return String(v||"").replace(/^(a|an|the)\s+/i,"");}
+
+  const SYN_OPENINGS=[
+    // ── Event first ────────────────────────────────────────────────────────
+    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}.`},
+    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. It starts because ${x.premise}.`},
+    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. How it got there: ${x.premise}.`},
+    {p:"event",t:"n",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Which would be survivable, except that ${x.premise}.`},
+    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Everything worth knowing before that: ${x.premise}.`},
+    {p:"event",t:"f",need:x=>x.turnLeads,f:x=>`${x.capTurn}. The brief behind it: ${x.premise}.`},
+
+    // ── A person first ─────────────────────────────────────────────────────
+    {p:"person",t:"n",need:x=>x.hero&&x.heroRole,f:x=>`${x.hero} is ${x.heroRole}. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.hero&&x.heroRole&&x.turnLeads,f:x=>`It happens to ${x.hero}, ${x.heroRole}: ${x.turn}.`},
+    {p:"person",t:"n",need:x=>x.hero&&x.heroRole,f:x=>`${x.hero}, ${x.heroRole}, is the one this lands on. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.hero,f:x=>`${pick([`Meet ${x.hero}.`,`Start with ${x.hero}.`,`${x.hero} first.`,`This one belongs to ${x.hero}.`])} ${x.capPremise}. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.heroSketch&&x.hero&&x.heroRole,f:x=>`${x.heroSketch} That is ${x.hero}, ${x.heroRole}. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.hero&&x.second,f:x=>`${x.hero} and the ${x.second} end up on opposite sides of this. ${x.capTurn}.`},
+
+    // ── A place first ──────────────────────────────────────────────────────
+    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho,f:x=>`${capFirst(x.place)}. ${x.capTurn}.`},
+    {p:"place",t:"b",need:x=>x.place,f:x=>`${pick(["Everything happens in","All of it takes place in","It never leaves","The whole thing lives in"])} ${x.place}. ${x.capTurn}.`},
+    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho,f:x=>`Set in ${x.place}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"place",t:"n",need:x=>x.place&&!x.placeEcho,f:x=>`${capFirst(x.place)} — and one day in it that does not go to plan. ${x.capTurn}.`},
+
+    // ── A decade first ─────────────────────────────────────────────────────
+    {p:"era",t:"n",need:x=>x.era,f:x=>`${x.era}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"era",t:"n",need:x=>x.era,f:x=>`${x.era}, ${x.city}. ${x.capTurn}.`},
+    {p:"era",t:"n",need:x=>x.era,f:x=>`Set in the ${x.era}: ${x.premise}. ${x.capTurn}.`},
+
+    // ── A question ─────────────────────────────────────────────────────────
+    {p:"question",t:"n",f:x=>`What happens when ${x.premise}? ${x.capTurn}.`},
+    {p:"question",t:"n",f:x=>`Here is the question underneath it: what do you do when ${x.premise}? ${x.capTurn}.`},
+    {p:"question",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Whose fault is it, in the end?","Who is actually responsible here?","Who gets the blame for this one?","Where does the blame land?"])} ${x.capTurn}. It began because ${x.premise}.`},
+
+    // ── A condition or a rule ──────────────────────────────────────────────
+    {p:"rule",t:"b",need:x=>x.turnLeads,f:x=>`${pick(["One thing holds the whole piece together","Everything turns on a single fact","The hinge of it is this","It all rests on one thing","One detail carries the rest"])}: ${x.turn}.`},
+    {p:"rule",t:"f",need:x=>x.turnLeads,f:x=>`${pick(["One rule, and we are not bending it","One constraint, and it shapes everything","We gave ourselves one rule","There is exactly one rule here"])}: ${x.turn}.`},
+    {p:"rule",t:"b",need:x=>x.turnLeads,f:x=>`${pick(["Everything after this follows from one thing","The whole piece hangs on one moment","Take one thing away and there is no story"])}: ${x.turn}. ${capFirst(pick(["Before it,","Up to then,","Until that,"]))} ${x.premise}.`},
+
+    // ── Contrast ───────────────────────────────────────────────────────────
+    {p:"contrast",t:"b",f:x=>`${pick(["On paper it is simple","On paper this is nothing","Described out loud it sounds manageable","Written down it looks straightforward"])}: ${x.premise}. ${pick(["In practice","In the room","On the day","In reality"])}, ${x.turn}.`},
+    {p:"contrast",t:"n",f:x=>`${x.capPremise}. ${pick(["That part is fine","None of that is the problem","So far, so ordinary","That is not what the story is about"])}. ${x.capTurn}.`},
+    {p:"contrast",t:"b",f:x=>`${pick(["The easy half","The simple part","What you can say in one line","The half anybody could guess"])}: ${x.premise}. ${pick(["The other half","The harder part","The half that is actually the story","The part nobody guesses"])}: ${x.turn}.`},
+
+    // ── Aftermath ──────────────────────────────────────────────────────────
+    {p:"after",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["It all comes back to one afternoon","All of it traces to a single day","Everything points back to one hour"])}: ${x.turn}.`},
+    {p:"after",t:"n",need:x=>x.turnLeads,f:x=>`${x.capTurn}. ${pick(["Nobody in it walks away quite the same.","Everyone involved tells it differently afterwards.","It gets talked about for years and never accurately.","Nobody agrees later on what actually happened."])}`},
+    {p:"after",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Long afterwards, one thing is still being argued about","Years later they are still arguing about one thing","One detail from this is never settled"])}: ${x.turn}.`},
+
+    // ── Telegraphic ────────────────────────────────────────────────────────
+    {p:"terse",t:"b",f:x=>`${pick(["Short version","The one-line version","Quickly","In brief"])}: ${x.turn}. ${pick(["Longer version","The rest of it","How that happened","Slightly longer"])}: ${x.premise}.`},
+    {p:"terse",t:"b",f:x=>`${pick(["Two sentences.","The whole thing in two lines.","No summary needed.","Here it is, plainly."])} ${x.capPremise}. ${x.capTurn}.`},
+    {p:"terse",t:"n",need:x=>x.heroRoleBare&&x.second&&x.place,f:x=>`${capFirst(dropArticle(x.place))}. ${capFirst(x.heroRoleBare)}. ${capFirst(x.second)}. ${x.capTurn}.`},
+
+    // ── Genre or medium forward ────────────────────────────────────────────
+    {p:"genre",t:"n",f:x=>`${capFirst(x.genre)}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"genre",t:"n",need:x=>!x.mediumEcho,f:x=>`${capFirst(articleFor(x.genre).toLowerCase())} ${x.genre}, and a small one: ${x.premise}. ${x.capTurn}.`},
+    {p:"genre",t:"b",need:x=>x.turnLeads&&!x.mediumEcho,f:x=>`We are making ${aArt(x.genreLabel)} ${x.genreLabel} about one thing: ${x.turn}.`},
+    {p:"genre",t:"f",f:x=>`${capFirst(x.genre)}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"genre",t:"f",need:x=>x.turnLeads,f:x=>`The whole idea is this: ${x.turn}. It is built around ${x.premise}.`},
+
+    // ── Mid-action ─────────────────────────────────────────────────────────
+    {p:"mid",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["We come in after the worst of it","The story picks up mid-fall","We join it late, on purpose","It opens with the damage already done"])}: ${x.turn}.`},
+    {p:"mid",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Open on the middle of the trouble","Start in the wrong place, deliberately","Drop in halfway"])}: ${x.turn}. ${pick(["Rewind a little and","Wind back and","Behind it,"])} ${x.premise}.`},
+
+    // ── Premise first — kept, but now one shape among fifteen ──────────────
+    {p:"premise",t:"b",f:x=>`${x.capPremise}. ${x.capTurn}.`},
+    {p:"premise",t:"b",f:x=>`${x.capPremise}, and ${x.turn}.`},
+    {p:"premise",t:"n",f:x=>`${x.capPremise} — until ${x.turn}.`},
+    {p:"premise",t:"f",f:x=>`${x.capPremise}. The idea: ${x.turn}.`}
   ];
-  const STORY_BARE=[
-    x=>`${x.capPremise}. ${x.capTurn}.`,
-    x=>`${x.capPremise}. Then ${x.turn}.`,
-    x=>`${x.capPremise}. But ${x.turn}.`,
-    x=>`${x.capPremise} — until ${x.turn}.`,
-    x=>`${x.capPremise}, and then ${x.turn}.`,
-    x=>`${x.capPremise}. The problem: ${x.turn}.`,
-    x=>`${x.capPremise}. Everything changes when ${x.turn}.`,
-    x=>`${x.capPremise}. Then one day ${x.turn}.`,
-    x=>`${x.capPremise}. Trouble starts when ${x.turn}.`,
-    x=>`${x.capPremise}. Things go wrong when ${x.turn}.`,
-    x=>`${x.capPremise}. What they do not expect: ${x.turn}.`,
-    x=>`${x.capPremise}. The real story starts when ${x.turn}.`,
-    x=>`${x.capPremise}. And then ${x.turn}.`,
-    x=>`${x.capPremise}. That is the easy part. ${x.capTurn}.`,
-    x=>`${x.capPremise}. It stays simple for about a day. ${x.capTurn}.`
-  ];
-  const FORMAT_LEAD=[
-    x=>`Casting ${aArt(x.label)} ${x.label}: ${x.premise}. ${x.capTurn}.`,
-    x=>`Seeking talent for ${aArt(x.label)} ${x.label} — ${x.premise}. ${x.capTurn}.`,
-    x=>`Casting ${aArt(x.label)} ${x.label}. ${x.capPremise}, and ${x.turn}.`,
-    x=>`We are shooting ${aArt(x.label)} ${x.label} in ${x.city}. ${x.capPremise}. ${x.capTurn}.`
-  ];
-  const FORMAT_BARE=[
-    x=>`Now casting ${x.premise}. ${x.capTurn}.`,
-    x=>`${x.capPremise}. ${x.capTurn}.`,
-    x=>`${x.capPremise} — ${x.turn}.`,
-    x=>`${x.capPremise}. The idea: ${x.turn}.`,
-    x=>`${x.capPremise}. How we are making it: ${x.turn}.`,
-    x=>`${x.capPremise}. One rule: ${x.turn}.`,
-    x=>`${x.capPremise}. The plan: ${x.turn}.`,
-    x=>`${x.capPremise}. What makes it different: ${x.turn}.`,
-    x=>`${x.capPremise}. We are shooting it so that ${x.turn}.`,
-    x=>`${x.capPremise}. Simple idea, done properly: ${x.turn}.`
-  ];
-  // The premise alone, for the shortest listings. Some jobs do not need more
-  // than a line, and a board where every summary is the same two sentences long
-  // reads as one machine no matter how good the sentences are.
-  const STORY_MICRO=[
-    x=>`${x.capPremise}.`,
-    x=>`${x.capPremise}. That is the whole story.`,
-    x=>`${x.capPremise}. We are keeping it that simple.`,
-    x=>`${x.capPremise}. One place, a few people, one bad afternoon.`,
-    x=>`${x.capPremise}. Everything else happens because of that.`
-  ];
-  // One extra plain sentence, for the listings that run longer. Nothing here
-  // repeats a field the listing already has — no dates, no rates, no location
-  // logistics. It is texture: how it is being made, or how it should feel.
+
+  // A durable ring of the patterns and opening words the last dozen listings
+  // used. Without persistence the anti-repeat rule would reset at every batch,
+  // which is exactly when a reader is comparing five listings side by side.
+  const LS_SYN_PAT="cs_acg_syn_pattern_v1";
+  function synRing(res){
+    if(res&&res._synRing)return res._synRing;
+    let ring=[];
+    try{const v=JSON.parse(localStorage.getItem(LS_SYN_PAT)||"[]");if(Array.isArray(v))ring=v;}catch(_){}
+    if(res)res._synRing=ring;
+    return ring;
+  }
+  function pushSynRing(res,entry){
+    const ring=synRing(res);
+    ring.unshift(entry);
+    while(ring.length>14)ring.pop();
+    try{localStorage.setItem(LS_SYN_PAT,JSON.stringify(ring));}catch(_){}
+  }
+  function openWords(text){return clean(text).split(" ").slice(0,2).join(" ");}
+  function opensOnArticle(text){return /^(a|an|the)\b/i.test(String(text||"").trim());}
+
+  // Order of preference, each tier consulted only when the one above it comes
+  // back empty:
+  //   1. a pattern none of the last four listings used, that does not open on
+  //      the same first word as the last listing, and that does not extend a
+  //      run of article-first openings;
+  //   2. the same, without the article rule;
+  //   3. any pattern the previous listing did not use;
+  //   4. anything at all.
+  function pickOpening(x,seed,h,res,revived){
+    const fmt=isFormatSeed(seed);
+    let pool=SYN_OPENINGS.filter(b=>(b.t==="b"||b.t===(fmt?"f":"n"))&&(!b.need||b.need(x)));
+    // A premise on its second outing must never lead with itself again.
+    if(revived)pool=pool.filter(b=>b.p!=="premise"&&b.p!=="terse");
+    if(!pool.length)pool=SYN_OPENINGS.filter(b=>!b.need||b.need(x));
+    if(!pool.length)pool=[{p:"premise",f:y=>`${y.capPremise}. ${y.capTurn}.`}];
+
+    const ring=synRing(res);
+    const recentPats=new Set(ring.slice(0,4).map(e=>e&&e.pat).filter(Boolean));
+    const lastPat=ring[0]&&ring[0].pat;
+    const lastOpen=ring[0]&&ring[0].open;
+    const lastWord=String(lastOpen||"").split(" ")[0];
+    const articleRun=ring.slice(0,2).filter(e=>e&&e.art).length;
+    if(res&&!res._synCounts){
+      const m={};ring.forEach(e=>{if(e&&e.pat)m[e.pat]=(m[e.pat]||0)+1;});
+      res._synCounts=m;
+    }
+    const counts=(res&&res._synCounts)||{};
+
+    const tiers=[
+      pool.filter(b=>!recentPats.has(b.p)),
+      pool.filter(b=>b.p!==lastPat),
+      pool
+    ];
+    for(let ti=0;ti<tiers.length;ti++){
+      const tier=tiers[ti];
+      if(!tier.length)continue;
+      // Inside a tier, least-used pattern first, so the rotation stays even
+      // over a long board instead of favouring whatever came up first.
+      const pats=leastUsed(tier.map(b=>b.p).filter((v,i,a)=>a.indexOf(v)===i),v=>counts[v]||0,new Set());
+      for(const pat of pats){
+        const cands=cgShuffle(tier.filter(b=>b.p===pat));
+        for(const b of cands){
+          let out="";
+          try{out=String(b.f(x)||"").trim();}catch(_){continue;}
+          if(!out)continue;
+          const ow=openWords(out);
+          const art=opensOnArticle(out);
+          // Never a third article-first opening in a row, and never two
+          // listings running that open on the same word.
+          if(ti===0&&art&&articleRun>=2)continue;
+          if(ti<2&&lastWord&&ow.split(" ")[0]===lastWord)continue;
+          if(ti<2&&lastOpen&&ow===lastOpen)continue;
+          const k=clean(out);
+          if(h&&res&&(h.lines.has(k)||res.lines.has(k)))continue;
+          if(res)res.lines.add(k);
+          counts[pat]=(counts[pat]||0)+1;
+          pushSynRing(res,{pat,open:ow,art});
+          return out;
+        }
+      }
+    }
+    const fb=`${x.capPremise}. ${x.capTurn}.`;
+    pushSynRing(res,{pat:"premise",open:openWords(fb),art:opensOnArticle(fb)});
+    return fb;
+  }
+
   const STORY_EXTRA=[
     x=>`Most of it happens in one place, with a small group of people.`,
     x=>`The whole thing plays out over one day.`,
@@ -28883,62 +29016,20 @@ const ACG = (()=>{
   // "Then the meeting was set up by a third person" — the Then/But/until family
   // only reads right when the turn opens in the present tense, which most do
   // and a few do not. Those few get a connector that works either way.
-  const PAST_OPENER=/^(\S+\s+){0,4}(was|were|had|got|turned out)\b/i;
-  function tenseSafe(bank,turn){
-    if(!PAST_OPENER.test(String(turn||"")))return bank;
-    const safe=bank.filter(f=>{
-      const src=String(f);
-      return !/\$\{x\.turn\}`?$/.test(src)||!/(Then |But |until |and then )/.test(src);
-    });
-    return safe.length?safe:bank;
-  }
-  // A premise only comes back once every premise in its track has been used,
-  // and when it does it carries a turn it has never carried before. Told the
-  // usual way round it still OPENS on the same sentence, which is all a reader
-  // notices. So a revived story is told from its turn instead, and the premise
-  // becomes the short setup behind it.
-  // Mostly turn-ONLY. Restating the premise is what makes a second outing read
-  // as the same listing again, so only a few of these carry it, and those are
-  // there for the turns that are too thin to stand alone.
-  const STORY_REVIVED=[
-    x=>`${x.capTurn}.`,
-    x=>`${x.capTurn}. That is where we come in.`,
-    x=>`${x.capTurn}. The rest of it you can work out from there.`,
-    x=>`${x.capTurn}. We pick the story up on that day and stay there.`,
-    x=>`Casting ${aArt(x.label)} ${x.label}. ${x.capTurn}.`,
-    x=>`${x.capLabel}. ${x.capTurn}.`,
-    x=>`${x.capTurn}. One place, a few people, and no easy way out.`,
-    x=>`${x.capTurn}. Everything in the ${x.label} happens after that.`,
-    x=>`Seeking actors for ${aArt(x.genreLabel)} ${x.genreLabel}. ${x.capTurn}.`,
-    x=>`${x.capTurn}. That is the story, and there is not a great deal more to it.`,
-    x=>`${x.capTurn}. We start there and we do not go back.`,
-    x=>`${x.capTurn}. Nothing before that matters much.`,
-    x=>`${x.capTurn}. Small cast, one main location, and nowhere to hide.`,
-    x=>`${x.capTurn}. It is told from the middle, and it does not double back.`,
-    x=>`${x.capTurn}. One decision, and then everything that follows from it.`
-  ];
-  const SYN_SHAPES=[["micro",12],["short",28],["medium",30],["long",20],["extended",10]];
+  const SYN_SHAPES=[["short",34],["medium",38],["long",20],["extended",8]];
   function pickSynShape(){
     const total=SYN_SHAPES.reduce((a,b)=>a+b[1],0);
     let r=Math.random()*total;
     for(const [k,w] of SYN_SHAPES){r-=w;if(r<=0)return k;}
     return "medium";
   }
-  // Summary length is chosen per listing, not fixed. Some jobs are one line;
-  // some want three sentences of texture. That variation is most of what makes
-  // a board read as many people rather than one template.
+  // Length is chosen per listing on top of the opening, so two listings that
+  // happen to share an entry point still do not share a rhythm.
   function buildSynopsis(x,seed,h,res,revived){
-    const format=isFormatSeed(seed);
-    const bare=premiseNamesMedium(x.premise,x.label,x.genre);
-    const lead=format?FORMAT_LEAD:STORY_LEAD;
-    const plainBank=revived?STORY_REVIVED:(format?FORMAT_BARE:STORY_BARE);
+    const core=pickOpening(x,seed,h,res,revived);
     const shape=pickSynShape();
-    if(shape==="micro")return freshLine(revived?STORY_REVIVED:STORY_MICRO,x,h,res);
-    // Short listings never take a lead-in; the story IS the summary.
-    const core=freshLine(tenseSafe(revived||shape==="short"||bare?plainBank:(Math.random()<0.55?lead:plainBank),x.turn),x,h,res);
-    if(shape==="short")return core;
-    if(shape==="medium")return core;
-    const extra=freshLine(format?FORMAT_EXTRA:STORY_EXTRA,x,h,res);
+    if(shape==="short"||shape==="medium")return core;
+    const extra=freshLine(isFormatSeed(seed)?FORMAT_EXTRA:STORY_EXTRA,x,h,res);
     if(shape==="long")return `${core} ${extra}`;
     return `${core} ${extra} ${freshLine(STORY_WELCOME,x,h,res)}`;
   }
@@ -30057,6 +30148,7 @@ const ACG = (()=>{
       // pass below is ever relaxed.
       if(h.traits.has(clean(rootKey))||res.traits.has(clean(rootKey))||h.traits.has(seedKey)||res.traits.has(seedKey))continue;
 
+      const seedPlace=pick(seed.w||[areaName]);
       const plan=shootPlan(type,track);
       const tier=budgetTier(type,track);
       const areaName=(city.areas&&city.areas.length)?pick(city.areas):city.name;
@@ -30084,10 +30176,20 @@ const ACG = (()=>{
         genreLabel:genreLabelPhrase(seed.genre,seedLabel(type)),
         capLabel:capFirst(articleFor(seedLabel(type)).toLowerCase()+" "+seedLabel(type)),
         turn,capTurn:capFirst(turn),
-        place:pick(seed.w||[areaName]),
+        place:seedPlace,
         roleCount:roles.length,
         dayLine:`${plan.line} between ${fmtShootDay(start.toISOString())} and ${fmtShootDay(end.toISOString())}`,
         dayCap:plan.cap,window,deadline:fmtShootDay(expires),
+        // Raw materials for the summary's entry point. `turnLeads` is false
+        // when the turn opens on a pronoun with nothing to refer back to;
+        // `era` is dropped on format briefs, which carry "n/a"; `placeEcho`
+        // stops "A check-cashing storefront… a small robbery at a
+        // check-cashing shop…" landing in one sentence.
+        turnLeads:turnCanLead(turn),
+        era:(seed.era&&!/^n\/a$/i.test(seed.era))?seed.era:"",
+        placeEcho:stemsOverlap(seedPlace,seed.p),
+        mediumEcho:premiseNamesMedium(seed.p,seedLabel(type),seed.genre),
+        hero:"",heroRole:"",heroRoleBare:"",heroSketch:"",second:"",
         union:projectUnion(type,track,tier),
         Company:"",
         mediaSentence:mediaSentence(roles)
@@ -30102,6 +30204,22 @@ const ACG = (()=>{
       const posted=seedCompany(city,track,h,res,type);
       const company=posted.label;
       x.Company=company;
+
+      // The lead's name is minted HERE, before the copy is written, so that a
+      // summary can genuinely open on a person ("Marcus is the counter
+      // manager…") and have that be the same person the breakdown casts.
+      // roleName reserves it and hands the same name back to uniqueRoles.
+      const heroIdx=roles.findIndex(r=>!r._group&&!r._pad&&/lead|principal/i.test(r.role_type||""));
+      if(heroIdx>-1){
+        const full=roleName(roles[heroIdx],h,res);
+        roles[heroIdx]._forceName=full;
+        x.hero=firstNameOf(full);
+        x.heroRole=roles[heroIdx]._slot||"";
+        x.heroRoleBare=stripArticle(x.heroRole);
+        x.heroSketch=sent(String(roles[heroIdx].description||""),1)||"";
+      }
+      const otherIdx=roles.findIndex((r,i)=>i!==heroIdx&&!r._group&&!r._pad&&r._slot);
+      if(otherIdx>-1)x.second=stripArticle(roles[otherIdx]._slot||"");
 
       const synopsis=plainify(mediumSwap(buildSynopsis(x,seed,h,res,revived),track,type));
       // Roughly half the board leads with facts rather than story, and a voice
@@ -30489,6 +30607,11 @@ const ACG = (()=>{
     return{first:take(one),last:one.l};
   }
   function roleName(r,h,res){
+    // A name the summary already used. It was minted through this same
+    // function (so it is unique and matches the role's gender and ethnicity)
+    // before the copy was written, because a summary that opens on a character
+    // has to open on the character the breakdown actually casts.
+    if(r._forceName)return r._forceName;
     // Group/atmosphere slots describe a crowd, not a person — they keep their
     // descriptive label ("Block Party Crowd") rather than being handed a
     // character name, and are still deduped so two listings never share one.
