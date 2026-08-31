@@ -42,15 +42,15 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
 .nav-join-mobile{display:none;}
 @media (prefers-reduced-motion:reduce){.nav .logo-i{animation:none;}}
-.nav-links{display:flex;gap:4px;align-items:center;}
-.nav-links span{color:#0A0A0A;font-size:13px;font-weight:500;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
+.nav-links{display:flex;gap:3px;align-items:center;}
+.nav-links span{color:#111114;font-size:14px;font-weight:600;letter-spacing:-.1px;cursor:pointer;padding:8px 12px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
-.nav-links span.act{background:#F3F4F6;color:#0A0A0A;font-weight:600;}
+.nav-links span.act{background:#F1F1F3;color:#000;font-weight:700;}
 /* Nav attention sweep — a faint amber highlight that breathes. Sits on ONE nav
    link at a time; currently Agencies Directory (it was Manager Mode). */
-.nav-links span.nav-attn{position:relative;color:var(--amber-dk);font-weight:600;background:rgba(232,144,42,.10);animation:mm-breathe 2.6s ease-in-out infinite;}
+.nav-links span.nav-attn{position:relative;color:#A25E10;font-weight:700;background:rgba(232,144,42,.12);animation:mm-breathe 2.6s ease-in-out infinite;}
 .nav-links span.nav-attn:hover{background:rgba(232,144,42,.16);animation:none;}
-.nav-links span.nav-attn.act{background:rgba(232,144,42,.16);color:var(--amber-dk);}
+.nav-links span.nav-attn.act{background:rgba(232,144,42,.16);color:#A25E10;}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
 @media(prefers-reduced-motion:reduce){.nav-links span.nav-attn{animation:none;}.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
 
