@@ -472,7 +472,11 @@ def render_page(title, desc, canonical, extra_preload=""):
       -webkit-mask-image:linear-gradient(100deg,transparent 44%,#000 49%,#000 51%,transparent 56%);mask-image:linear-gradient(100deg,transparent 44%,#000 49%,#000 51%,transparent 56%);
       -webkit-mask-size:300% 100%;mask-size:300% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
       -webkit-mask-position:132% 0;mask-position:132% 0;}}
-    #cs-intro.cs-flash .cs-intro-name::after{{-webkit-animation:cs-hair .4s cubic-bezier(.3,0,.2,1) .22s forwards;animation:cs-hair .4s cubic-bezier(.3,0,.2,1) .22s forwards;}}
+    /* linear, NOT an ease curve. cubic-bezier(.3,0,.2,1) accelerated through the
+       middle of the sweep, so the band was moving fastest exactly as it crossed
+       the letters and the eye lost it. Constant travel is what makes it legible;
+       the extra 150ms alone did not. */
+    #cs-intro.cs-flash .cs-intro-name::after{{-webkit-animation:cs-hair .55s linear .22s forwards;animation:cs-hair .55s linear .22s forwards;}}
     @-webkit-keyframes cs-hair{{0%{{opacity:0;-webkit-mask-position:132% 0;mask-position:132% 0;}}12%{{opacity:1;}}88%{{opacity:1;}}100%{{opacity:0;-webkit-mask-position:-32% 0;mask-position:-32% 0;}}}}
     @keyframes cs-hair{{0%{{opacity:0;-webkit-mask-position:132% 0;mask-position:132% 0;}}12%{{opacity:1;}}88%{{opacity:1;}}100%{{opacity:0;-webkit-mask-position:-32% 0;mask-position:-32% 0;}}}}
     @media (prefers-reduced-motion: reduce){{#cs-intro{{display:none;}}}}
@@ -542,9 +546,12 @@ def render_page(title, desc, canonical, extra_preload=""):
          runs .38s, so its latest possible finish is 1440ms; 1940 puts a clean
          500ms beat after it on every path. Raising or lowering this is the ONLY
          thing that changes that pause - the effect's own timing is independent.
-         2260 = 1060 (latest start) + 700 (cs-turn) + 500. Was 1940 when the
-         effect was a 380ms flash, and 1450 before that with no beat at all. */
-      var t0=Date.now(),MIN=2260,CAP=15000,gone=false,goAt=0;
+         2330 = 1060 (latest start) + 770 + 500, where 770 is whichever of the
+         two finishes last: the cube's 700ms turn, or the hairline, which starts
+         220ms in and runs 550ms. Was 2260 with a 400ms hairline (it ended inside
+         the turn and cost nothing), 1940 when the effect was a 380ms flash, and
+         1450 before that with no beat at all. */
+      var t0=Date.now(),MIN=2330,CAP=15000,gone=false,goAt=0;
       function appReady(){{
         if(window.__CS_REACT_MOUNTED)return true;
         var r=document.getElementById('root');
