@@ -1,0 +1,174 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tumble And Shimmer</title>
+<style>
+:root{--paper:#F7F5F1;--ink:#15161A;--ink2:#5A5A6B;--ink3:#8C8C9C;--line:#E3DFD7;--card:#FFF;--accent:#2D8587;--gold:#C8963C;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;}}
+:root[data-theme="dark"]{--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 22px 70px;}
+h1{font-size:26px;font-weight:800;letter-spacing:-.7px;margin:0 0 8px;text-wrap:balance;}
+.sub{margin:0;color:var(--ink2);font-size:14px;line-height:1.62;max-width:70ch;}
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);margin:20px -22px 20px;padding:11px 22px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.grp{display:flex;gap:3px;background:color-mix(in srgb,var(--ink) 7%,transparent);border-radius:9px;padding:3px;}
+.bar button{background:none;border:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);padding:7px 13px;border-radius:7px;cursor:pointer;}
+.bar button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+.bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.lab{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);}
+.play{background:var(--accent) !important;color:#fff !important;padding:9px 18px !important;border-radius:8px !important;}
+.card{border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;background:var(--card);padding:13px 16px;margin-bottom:14px;}
+.card h2{font-size:16px;font-weight:800;margin:0 0 5px;}
+.card p{margin:0;font-size:13px;color:var(--ink2);line-height:1.55;}
+.card .m{margin-top:7px;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums;}
+.frame{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 22px 60px -34px rgba(0,0,0,.5);}
+.stage{position:relative;aspect-ratio:16/9;background:#0A0A0A;overflow:hidden;}
+
+/* production geometry */
+.cs-intro{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cs-intro-bg{position:absolute;inset:0;background:#0A0A0A;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-bg{animation:cs-bg-down calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-hold{animation:cs-mark-up calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-mark{display:flex;align-items:center;gap:16px;opacity:0;transform:translateY(28px) scale(.965);will-change:transform,opacity;perspective:700px;}
+.cs-intro.cs-ready .cs-intro-mark{animation:cs-in calc(.3s * var(--sp)) cubic-bezier(.2,.7,.2,1) calc(.05s * var(--sp)) forwards,cs-breathe calc(1.3s * var(--sp)) ease-in-out calc(1.05s * var(--sp)) infinite alternate;}
+.cs-intro-box{position:relative;width:74px;height:74px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);overflow:hidden;}
+.cs-intro.cs-ready .cs-intro-box{animation:cs-spin calc(.3s * var(--sp)) cubic-bezier(.5,.05,.2,1) calc(.6s * var(--sp)) both;}
+.cs-intro-box svg{display:block;width:100%;height:100%;position:relative;z-index:2;}
+.cs-intro-name{position:relative;color:#fff;font-size:52px;font-weight:800;letter-spacing:-1.2px;white-space:nowrap;}
+@keyframes cs-in{to{opacity:1;transform:none;}}
+@keyframes cs-breathe{from{transform:scale(1);}to{transform:scale(1.016);}}
+@keyframes cs-bg-down{to{transform:translateY(101%);}}
+@keyframes cs-mark-up{to{transform:translateY(-101%);}}
+@keyframes cs-spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+
+/* ── the cube: identical in all three ─────────────────────────────────────
+   TWO spins, deliberately. cs-spin at 600ms is the existing FLAT 2D rotate;
+   t-turn at 1060ms is the 3D perspective turn. The escalation is the point:
+   it spins as a graphic, then turns as an object.
+   ⚠️ The t-turn selector must carry #cs-intro/.cs-intro as well as .cs-flash.
+   `.cs-flash .cs-intro-box` is only two classes and LOSES to
+   `.cs-intro.cs-ready .cs-intro-box`, which is three - cs-ready is never
+   removed, so cs-spin kept winning and the 3D turn never played at all.
+   The glyph is symmetric on BOTH axes, so rotateY(180deg) never mirrors it. */
+.cs-intro-box::after{content:"";position:absolute;inset:-40%;pointer-events:none;z-index:3;opacity:0;
+  background:linear-gradient(108deg,transparent 34%,rgba(255,255,255,.25) 44%,#fff 50%,rgba(255,255,255,.25) 56%,transparent 66%);transform:translateX(-140%);}
+.cs-intro-box::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(145deg,rgba(255,255,255,0) 40%,rgba(120,130,150,.18) 100%);opacity:0;}
+.cs-intro.cs-flash .cs-intro-box{animation:t-turn calc(.7s * var(--sp)) cubic-bezier(.42,0,.2,1) forwards;}
+.cs-intro.cs-flash .cs-intro-box::after{animation:t-rake calc(.7s * var(--sp)) cubic-bezier(.42,0,.3,1) forwards;}
+.cs-intro.cs-flash .cs-intro-box::before{animation:t-shade calc(.7s * var(--sp)) ease-in-out forwards;}
+@keyframes t-turn{0%{transform:rotateY(0) scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}
+  50%{transform:rotateY(180deg) scale(1.05);box-shadow:0 14px 54px rgba(255,255,255,.22);}
+  100%{transform:rotateY(360deg) scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+@keyframes t-rake{0%{opacity:0;transform:translateX(-140%);}20%{opacity:1;}70%{opacity:1;}100%{opacity:0;transform:translateX(140%);}}
+@keyframes t-shade{0%,100%{opacity:0;}50%{opacity:1;}}
+
+/* ── the shimmer overlay ───────────────────────────────────────────────────
+   A glowing duplicate of the word, revealed through a moving mask. The base
+   text is never touched, so the wordmark's resting colour stays pure #fff —
+   which a background-clip gradient could not do, because a band brighter than
+   white does not exist. Light is ADDED, not swapped in. */
+.v-liquid .cs-intro-name::after,.v-hairline .cs-intro-name::after{
+  content:"CastSlate";position:absolute;left:0;top:0;color:#fff;pointer-events:none;opacity:0;
+  -webkit-mask-size:300% 100%;mask-size:300% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-position:132% 0;mask-position:132% 0;}
+
+/* ①  LIQUID — a wide, soft band. Silky; you read it as a sheen, not an edge. */
+.v-liquid .cs-intro-name::after{
+  text-shadow:0 0 20px rgba(255,255,255,.95),0 0 48px rgba(255,240,214,.55);
+  -webkit-mask-image:linear-gradient(100deg,transparent 30%,rgba(0,0,0,.55) 42%,#000 50%,rgba(0,0,0,.55) 58%,transparent 70%);
+  mask-image:linear-gradient(100deg,transparent 30%,rgba(0,0,0,.55) 42%,#000 50%,rgba(0,0,0,.55) 58%,transparent 70%);}
+.v-liquid.cs-flash .cs-intro-name::after{animation:sh-move calc(.52s * var(--sp)) cubic-bezier(.35,0,.25,1) calc(.18s * var(--sp)) forwards;}
+
+/* ②  HAIRLINE — one narrow hard line, same light that rakes the cube,
+      continuing straight into the letters. Sharpest of the three. */
+.v-hairline .cs-intro-name::after{
+  text-shadow:0 0 14px rgba(255,255,255,1),0 0 34px rgba(190,222,255,.7);
+  -webkit-mask-image:linear-gradient(100deg,transparent 44%,#000 49%,#000 51%,transparent 56%);
+  mask-image:linear-gradient(100deg,transparent 44%,#000 49%,#000 51%,transparent 56%);}
+.v-hairline.cs-flash .cs-intro-name::after{animation:sh-move calc(.4s * var(--sp)) cubic-bezier(.3,0,.2,1) calc(.22s * var(--sp)) forwards;}
+@keyframes sh-move{0%{opacity:0;-webkit-mask-position:132% 0;mask-position:132% 0;}
+  12%{opacity:1;}88%{opacity:1;}
+  100%{opacity:0;-webkit-mask-position:-32% 0;mask-position:-32% 0;}}
+
+/* ③  CASCADE — the letters light one after another. Mechanical rather than
+      liquid; the wordmark reads as being switched on. */
+.v-cascade .cs-intro-name .ch{display:inline-block;}
+.v-cascade.cs-flash .cs-intro-name .ch{animation:sh-letter calc(.34s * var(--sp)) ease-out forwards;
+  animation-delay:calc((.2s + var(--i) * .035s) * var(--sp));}
+@keyframes sh-letter{0%{text-shadow:none;transform:translateY(0);}
+  45%{text-shadow:0 0 22px rgba(255,255,255,.95),0 0 50px rgba(255,240,214,.5);transform:translateY(-2px);}
+  100%{text-shadow:none;transform:translateY(0);}}
+
+.fake{position:absolute;inset:0;background:#FAF7F1;display:flex;flex-direction:column;}
+.fake .nav{height:15%;border-bottom:1px solid #E5DFD2;display:flex;align-items:center;padding:0 24px;gap:11px;}
+.fake .dot{width:24px;height:24px;border-radius:6px;background:#1A1A2E;}
+.fake .nm{font-size:15px;font-weight:800;color:#1A1A2E;letter-spacing:-.3px;}
+.fake .body{flex:1;padding:24px;}
+.fake .l{height:11px;border-radius:5px;background:#E9E3D6;margin-bottom:12px;}
+.fake .l.w1{width:55%;height:21px;background:#DCD5C5;}.fake .l.w2{width:83%;}.fake .l.w3{width:41%;}
+.fake .row{display:flex;gap:12px;margin-top:18px;}.fake .c{flex:1;height:60px;border-radius:10px;background:#fff;border:1px solid #E5DFD2;}
+@media (prefers-reduced-motion:reduce){.cs-intro,.cs-intro *{animation:none !important;}.cs-intro{display:none;}}
+</style></head><body>
+<div class="wrap">
+  <h1>3D tumble, with the light carrying into the word</h1>
+  <p class="sub">The cube is identical in all three — a real perspective turn with a highlight raking the face. What changes is the wordmark: the old text-shadow flicker is gone, replaced by a shimmer that travels through the letters while the cube is turning, so one light source appears to cross the whole lockup. Production geometry throughout.</p>
+
+  <div class="bar">
+    <button class="play" id="play">▶ Replay</button>
+    <div class="grp" id="variant">
+      <button data-v="liquid" class="on">① Liquid</button>
+      <button data-v="hairline">② Hairline</button>
+      <button data-v="cascade">③ Cascade</button>
+    </div>
+    <span class="lab">Speed</span>
+    <div class="grp" id="speed"><button data-s="1" class="on">1×</button><button data-s="4">¼×</button></div>
+  </div>
+
+  <div class="card" id="card"></div>
+  <div class="frame"><div class="stage">
+    <div class="fake"><div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+      <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div>
+      <div class="row"><div class="c"></div><div class="c"></div><div class="c"></div></div></div></div>
+    <div class="cs-intro v-liquid" id="intro"><div class="cs-intro-bg"><div class="cs-intro-hold"><div class="cs-intro-mark">
+      <div class="cs-intro-box" id="cube"></div><span class="cs-intro-name" id="name">CastSlate</span>
+    </div></div></div></div>
+  </div></div>
+</div>
+<script>
+document.getElementById('cube').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg>';
+const nameEl=document.getElementById('name'), WORD='CastSlate';
+const V={
+ liquid:{h:'① Liquid',p:'A wide, soft band of light slides through the letters while the cube turns. You read it as a sheen across a surface rather than as a moving edge — the smoothest of the three, and the one that feels most like a material.'},
+ hairline:{h:'② Hairline',p:'One narrow, hard-edged line — the same light that rakes the cube face, continuing straight into the word. Sharpest and most precise. This is the one that reads as a single light source crossing the whole lockup.'},
+ cascade:{h:'③ Cascade',p:'The letters light one after another, each lifting a couple of pixels as it does. Mechanical rather than liquid: the wordmark reads as being switched on, letter by letter, instead of lit by a passing source.'}
+};
+const el=document.getElementById('intro'), FLASH=1060, DUR=700, BEAT=500;
+let v='liquid', sp=1, timers=[];
+function setName(){
+  if(v==='cascade'){
+    nameEl.innerHTML=[...WORD].map((c,i)=>`<span class="ch" style="--i:${i}">${c}</span>`).join('');
+  } else { nameEl.textContent=WORD; }
+}
+function run(){
+  timers.forEach(clearTimeout);
+  const go=FLASH+DUR+BEAT;
+  document.getElementById('card').innerHTML=
+    `<h2>${V[v].h}</h2><p>${V[v].p}</p><div class="m">tumble ${FLASH}–${FLASH+DUR}ms · shimmer inside it · hold ${BEAT}ms · curtain ${go}ms · total ${go+550}ms</div>`;
+  setName();
+  el.className='cs-intro v-'+v; el.style.setProperty('--sp',sp);
+  void el.offsetWidth;
+  timers=[setTimeout(()=>el.classList.add('cs-ready'),60*sp),
+          setTimeout(()=>el.classList.add('cs-flash'),FLASH*sp),
+          setTimeout(()=>el.classList.add('cs-go'),go*sp),
+          setTimeout(run,(go+550)*sp+1400)];
+}
+document.getElementById('play').onclick=run;
+document.getElementById('variant').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;
+  v=b.dataset.v;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));run();});
+document.getElementById('speed').addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(!b)return;
+  sp=+b.dataset.s;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));run();});
+run();
+</script>
+</body></html>

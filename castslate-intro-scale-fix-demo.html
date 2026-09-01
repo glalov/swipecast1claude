@@ -1,0 +1,133 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Intro At Production Scale</title>
+<style>
+:root{--paper:#F7F5F1;--ink:#15161A;--ink2:#5A5A6B;--ink3:#8C8C9C;--line:#E3DFD7;--card:#FFF;--accent:#2D8587;--gold:#C8963C;--warn:#B4552F;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;--warn:#E08A5F;}}
+:root[data-theme="dark"]{--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;--warn:#E08A5F;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 22px 70px;}
+h1{font-size:26px;font-weight:800;letter-spacing:-.7px;margin:0 0 8px;text-wrap:balance;}
+.sub{margin:0;color:var(--ink2);font-size:14px;line-height:1.62;max-width:68ch;}
+.sub code{background:color-mix(in srgb,var(--ink) 8%,transparent);padding:1px 5px;border-radius:4px;font-size:12.5px;}
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);margin:20px -22px 22px;padding:11px 22px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.grp{display:flex;gap:3px;background:color-mix(in srgb,var(--ink) 7%,transparent);border-radius:9px;padding:3px;}
+.bar button{background:none;border:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);padding:7px 13px;border-radius:7px;cursor:pointer;}
+.bar button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+.bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.lab{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);}
+.play{background:var(--accent) !important;color:#fff !important;padding:9px 18px !important;border-radius:8px !important;}
+.info{margin:0 0 14px;font-size:12.5px;color:var(--ink2);line-height:1.55;padding:11px 14px;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 9px 9px 0;background:var(--card);}
+.info b{color:var(--ink);}
+.frame{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 22px 60px -34px rgba(0,0,0,.5);}
+.stage{position:relative;aspect-ratio:16/9;background:#0A0A0A;overflow:hidden;}
+
+/* EXACT production geometry: 74px cube, 16px radius, 16px gap, 52px name. */
+.cs-intro{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cs-intro-bg{position:absolute;inset:0;background:#0A0A0A;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-bg{animation:cs-bg-down calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-hold{animation:cs-mark-up calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-mark{display:flex;align-items:center;gap:16px;opacity:0;transform:translateY(28px) scale(.965);will-change:transform,opacity;backface-visibility:hidden;}
+.cs-intro.cs-ready .cs-intro-mark{animation:cs-in calc(.3s * var(--sp)) cubic-bezier(.2,.7,.2,1) calc(.05s * var(--sp)) forwards,cs-breathe calc(1.3s * var(--sp)) ease-in-out calc(1.05s * var(--sp)) infinite alternate;}
+.cs-intro-box{position:relative;width:74px;height:74px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
+.cs-intro.cs-ready .cs-intro-box{animation:cs-spin calc(.3s * var(--sp)) cubic-bezier(.5,.05,.2,1) calc(.6s * var(--sp)) both;}
+.cs-intro-box svg{display:block;width:100%;height:100%;}
+.cs-intro-name{color:#fff;font-size:52px;font-weight:800;letter-spacing:-1.2px;}
+@keyframes cs-in{to{opacity:1;transform:none;}}
+@keyframes cs-breathe{from{transform:scale(1);}to{transform:scale(1.016);}}
+@keyframes cs-bg-down{to{transform:translateY(101%);}}
+@keyframes cs-mark-up{to{transform:translateY(-101%);}}
+@keyframes cs-spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+.cs-intro-box::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,0.9);}
+
+/* ── A: exactly what is live. Bloom distances were tuned on a 62px cube. ── */
+.v-live.cs-flash .cs-intro-box{animation:live-charge calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+.v-live.cs-flash .cs-intro-box::before{animation:live-ring calc(.38s * var(--sp)) cubic-bezier(.15,.75,.3,1) forwards;}
+.v-live.cs-flash .cs-intro-name{animation:live-glow calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+@keyframes live-charge{0%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}45%{transform:scale(.945);box-shadow:0 4px 20px rgba(255,255,255,.06);}62%{transform:scale(1.10);box-shadow:0 0 60px 16px rgba(255,255,255,.75);}100%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+@keyframes live-ring{0%,44%{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,.9);}58%{opacity:1;box-shadow:0 0 0 4px rgba(255,255,255,.75);}100%{opacity:0;box-shadow:0 0 0 30px rgba(255,255,255,0);}}
+@keyframes live-glow{0%,42%{text-shadow:none;}62%{text-shadow:0 0 30px rgba(255,255,255,.9),0 0 60px rgba(255,255,255,.4);}100%{text-shadow:none;}}
+
+/* ── B: same animation, bloom distances scaled by 74/62 = 1.19 ── */
+.v-scaled.cs-flash .cs-intro-box{animation:sc-charge calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+.v-scaled.cs-flash .cs-intro-box::before{animation:sc-ring calc(.38s * var(--sp)) cubic-bezier(.15,.75,.3,1) forwards;}
+.v-scaled.cs-flash .cs-intro-name{animation:sc-glow calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+@keyframes sc-charge{0%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}45%{transform:scale(.945);box-shadow:0 4px 24px rgba(255,255,255,.06);}62%{transform:scale(1.10);box-shadow:0 0 72px 19px rgba(255,255,255,.75);}100%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+@keyframes sc-ring{0%,44%{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,.9);}58%{opacity:1;box-shadow:0 0 0 5px rgba(255,255,255,.75);}100%{opacity:0;box-shadow:0 0 0 36px rgba(255,255,255,0);}}
+@keyframes sc-glow{0%,42%{text-shadow:none;}62%{text-shadow:0 0 35px rgba(255,255,255,.9),0 0 71px rgba(255,255,255,.4);}100%{text-shadow:none;}}
+
+.fake{position:absolute;inset:0;background:#FAF7F1;display:flex;flex-direction:column;}
+.fake .nav{height:15%;border-bottom:1px solid #E5DFD2;display:flex;align-items:center;padding:0 24px;gap:11px;}
+.fake .dot{width:24px;height:24px;border-radius:6px;background:#1A1A2E;}
+.fake .nm{font-size:15px;font-weight:800;color:#1A1A2E;letter-spacing:-.3px;}
+.fake .body{flex:1;padding:24px;}
+.fake .l{height:11px;border-radius:5px;background:#E9E3D6;margin-bottom:12px;}
+.fake .l.w1{width:55%;height:21px;background:#DCD5C5;}.fake .l.w2{width:83%;}.fake .l.w3{width:41%;}
+.fake .row{display:flex;gap:12px;margin-top:18px;}.fake .c{flex:1;height:60px;border-radius:10px;background:#fff;border:1px solid #E5DFD2;}
+@media (prefers-reduced-motion:reduce){.cs-intro,.cs-intro *{animation:none !important;}.cs-intro{display:none;}}
+</style></head><body>
+<div class="wrap">
+  <h1>Same animation, rendered at production scale</h1>
+  <p class="sub">The three keyframes on the live site are byte-identical to the ones you approved — I checked. What differs is everything around them: I built that demo with a <b>62px</b> cube in a small stage, and production runs a <b>74px</b> cube on a full screen. Every bloom distance is an absolute pixel value, so on the bigger cube the flare is about a fifth smaller relative to the logo. Both stages below use production geometry: 74px cube, 52px name, 16px gap.</p>
+
+  <div class="bar">
+    <button class="play" id="play">▶ Replay</button>
+    <span class="lab">Bloom</span>
+    <div class="grp" id="variant">
+      <button data-v="live" class="on">As live now</button>
+      <button data-v="scaled">Scaled to 74px</button>
+    </div>
+    <span class="lab">Pause after flare</span>
+    <div class="grp" id="beat">
+      <button data-b="500" class="on">500ms (live)</button>
+      <button data-b="10">Flows into curtain (demo)</button>
+    </div>
+    <span class="lab">Speed</span>
+    <div class="grp" id="speed"><button data-s="1" class="on">1×</button><button data-s="4">¼×</button></div>
+  </div>
+
+  <p class="info" id="info"></p>
+  <div class="frame"><div class="stage">
+    <div class="fake"><div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+      <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div>
+      <div class="row"><div class="c"></div><div class="c"></div><div class="c"></div></div></div></div>
+    <div class="cs-intro v-live" id="intro"><div class="cs-intro-bg"><div class="cs-intro-hold"><div class="cs-intro-mark">
+      <div class="cs-intro-box" id="cube"></div><span class="cs-intro-name">CastSlate</span>
+    </div></div></div></div>
+  </div></div>
+</div>
+<script>
+document.getElementById('cube').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg>';
+const el=document.getElementById('intro');
+const FLASH=1060, DUR=380;
+let variant='live', beat=500, sp=1, timers=[];
+const NOTE={
+  live:{500:'Live right now: bloom tuned for a 62px cube, held 500ms before the curtain.',
+        10:'Live bloom, but flowing straight into the curtain the way the demo did.'},
+  scaled:{500:'Bloom scaled 1.19× to match the 74px cube — the proportions you actually saw in the demo — held 500ms.',
+          10:'Scaled bloom flowing straight into the curtain. This is the closest match to the demo you approved.'}
+};
+function run(){
+  timers.forEach(clearTimeout);
+  const go=FLASH+DUR+beat;
+  document.getElementById('info').innerHTML=
+    `<b>${NOTE[variant][beat]}</b><br>flash ${FLASH}–${FLASH+DUR}ms · curtain ${go}ms · total ${go+550}ms`;
+  el.className='cs-intro v-'+variant; el.style.setProperty('--sp',sp);
+  void el.offsetWidth;
+  timers=[setTimeout(()=>el.classList.add('cs-ready'),60*sp),
+          setTimeout(()=>el.classList.add('cs-flash'),FLASH*sp),
+          setTimeout(()=>el.classList.add('cs-go'),go*sp),
+          setTimeout(run,(go+550)*sp+1300)];
+}
+document.getElementById('play').onclick=run;
+const wire=(id,fn)=>document.getElementById(id).addEventListener('click',e=>{
+  const b=e.target.closest('button[data-v],button[data-b],button[data-s]'); if(!b)return;
+  fn(b); [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b)); run();});
+wire('variant',b=>variant=b.dataset.v);
+wire('beat',b=>beat=+b.dataset.b);
+wire('speed',b=>sp=+b.dataset.s);
+run();
+</script>
+</body></html>

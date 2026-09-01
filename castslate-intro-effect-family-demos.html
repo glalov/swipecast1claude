@@ -1,0 +1,183 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Four Ways In</title>
+<style>
+:root{--paper:#F7F5F1;--ink:#15161A;--ink2:#5A5A6B;--ink3:#8C8C9C;--line:#E3DFD7;--card:#FFF;--accent:#2D8587;--gold:#C8963C;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;}}
+:root[data-theme="dark"]{--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 22px 70px;}
+h1{font-size:26px;font-weight:800;letter-spacing:-.7px;margin:0 0 8px;text-wrap:balance;}
+.sub{margin:0;color:var(--ink2);font-size:14px;line-height:1.62;max-width:68ch;}
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);margin:20px -22px 20px;padding:11px 22px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.grp{display:flex;gap:3px;background:color-mix(in srgb,var(--ink) 7%,transparent);border-radius:9px;padding:3px;}
+.bar button{background:none;border:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);padding:7px 13px;border-radius:7px;cursor:pointer;}
+.bar button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+.bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.lab{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);}
+.play{background:var(--accent) !important;color:#fff !important;padding:9px 18px !important;border-radius:8px !important;}
+.card{border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;background:var(--card);padding:13px 16px;margin-bottom:14px;}
+.card h2{font-size:16px;font-weight:800;margin:0 0 5px;}
+.card p{margin:0;font-size:13px;color:var(--ink2);line-height:1.55;}
+.card .m{margin-top:7px;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums;}
+.frame{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 22px 60px -34px rgba(0,0,0,.5);}
+.stage{position:relative;aspect-ratio:16/9;background:#0A0A0A;overflow:hidden;}
+
+/* production geometry: 74px cube, 16px radius, 16px gap, 52px name */
+.cs-intro{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cs-intro-bg{position:absolute;inset:0;background:#0A0A0A;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-bg{animation:cs-bg-down calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-hold{animation:cs-mark-up calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-mark{display:flex;align-items:center;gap:16px;opacity:0;transform:translateY(28px) scale(.965);will-change:transform,opacity;backface-visibility:hidden;perspective:700px;}
+.cs-intro.cs-ready .cs-intro-mark{animation:cs-in calc(.3s * var(--sp)) cubic-bezier(.2,.7,.2,1) calc(.05s * var(--sp)) forwards,cs-breathe calc(1.3s * var(--sp)) ease-in-out calc(1.05s * var(--sp)) infinite alternate;}
+.cs-intro-box{position:relative;width:74px;height:74px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
+.cs-intro.cs-ready .cs-intro-box{animation:cs-spin calc(.3s * var(--sp)) cubic-bezier(.5,.05,.2,1) calc(.6s * var(--sp)) both;}
+.cs-intro-box svg{display:block;width:100%;height:100%;position:relative;z-index:2;}
+.cs-intro-name{color:#fff;font-size:52px;font-weight:800;letter-spacing:-1.2px;}
+@keyframes cs-in{to{opacity:1;transform:none;}}
+@keyframes cs-breathe{from{transform:scale(1);}to{transform:scale(1.016);}}
+@keyframes cs-bg-down{to{transform:translateY(101%);}}
+@keyframes cs-mark-up{to{transform:translateY(-101%);}}
+@keyframes cs-spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+
+/* ══════ A · BLOOM — what is live now ══════ */
+.v-bloom .cs-intro-box::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,.9);}
+.v-bloom.cs-flash .cs-intro-box{animation:b-charge calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+.v-bloom.cs-flash .cs-intro-box::before{animation:b-ring calc(.38s * var(--sp)) cubic-bezier(.15,.75,.3,1) forwards;}
+.v-bloom.cs-flash .cs-intro-name{animation:b-glow calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+@keyframes b-charge{0%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}45%{transform:scale(.945);box-shadow:0 4px 24px rgba(255,255,255,.06);}62%{transform:scale(1.10);box-shadow:0 0 72px 19px rgba(255,255,255,.75);}100%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+@keyframes b-ring{0%,44%{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,.9);}58%{opacity:1;box-shadow:0 0 0 5px rgba(255,255,255,.75);}100%{opacity:0;box-shadow:0 0 0 36px rgba(255,255,255,0);}}
+@keyframes b-glow{0%,42%{text-shadow:none;}62%{text-shadow:0 0 35px rgba(255,255,255,.9),0 0 71px rgba(255,255,255,.4);}100%{text-shadow:none;}}
+
+/* ══════ B · ANAMORPHIC FLARE — the streak a cinema lens throws ══════
+   Drawn on .cs-intro-mark::before/::after, BEHIND the lockup (z-index:-1) and
+   centred on the cube (left:37px = half of 74px, the first flex item).
+   Behind, not on top: light spills AROUND an object, and the first attempt
+   painted the streak over the white face, which only greys it. Going behind
+   also sidesteps mix-blend-mode, which would be trapped inside the cube's own
+   stacking context and never reach the black it needs to add light to.
+   The extreme width-to-height ratio is the whole signature of the effect. */
+.v-flare .cs-intro-mark{position:relative;}
+.v-flare .cs-intro-mark::before{content:"";position:absolute;top:50%;left:37px;z-index:-1;pointer-events:none;
+  width:900px;height:3px;margin:-1.5px 0 0 -450px;opacity:0;transform:scaleX(.08);border-radius:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(120,175,255,.30) 20%,rgba(190,222,255,.88) 40%,#EAF4FF 50%,rgba(190,222,255,.88) 60%,rgba(120,175,255,.30) 80%,transparent 100%);
+  box-shadow:0 0 22px 2px rgba(150,200,255,.5),0 0 62px 9px rgba(90,150,255,.26);}
+.v-flare .cs-intro-mark::after{content:"";position:absolute;top:50%;left:37px;z-index:-1;pointer-events:none;
+  width:360px;height:130px;margin:-65px 0 0 -180px;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(180,215,255,.55) 0%,rgba(120,175,255,.20) 40%,rgba(120,175,255,0) 72%);}
+.v-flare.cs-flash .cs-intro-mark::before{animation:f-streak calc(.55s * var(--sp)) cubic-bezier(.16,.9,.3,1) forwards;}
+.v-flare.cs-flash .cs-intro-mark::after{animation:f-halo calc(.55s * var(--sp)) cubic-bezier(.16,.9,.3,1) forwards;}
+.v-flare.cs-flash .cs-intro-box{animation:f-lit calc(.55s * var(--sp)) cubic-bezier(.3,.8,.3,1) forwards;}
+.v-flare.cs-flash .cs-intro-name{animation:f-name calc(.55s * var(--sp)) ease-out forwards;}
+@keyframes f-streak{0%{opacity:0;transform:scaleX(.08);}14%{opacity:1;transform:scaleX(1.06);}40%{opacity:.95;transform:scaleX(1);}100%{opacity:0;transform:scaleX(.9);}}
+@keyframes f-halo{0%{opacity:0;}16%{opacity:1;}100%{opacity:0;}}
+@keyframes f-lit{0%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}16%{transform:scale(1.055);box-shadow:0 0 46px 8px rgba(190,222,255,.62);}100%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+@keyframes f-name{0%{text-shadow:none;}20%{text-shadow:0 0 28px rgba(190,222,255,.8);}100%{text-shadow:none;}}
+
+/* ══════ C · 3D TUMBLE — the footer cube's language, brought to the intro ══════
+   A real perspective turn, with a hard highlight raking the face as it goes
+   oblique. The glyph is symmetric on both axes, so a full flip never mirrors. */
+.v-tumble .cs-intro-box{transform-style:preserve-3d;overflow:hidden;}
+.v-tumble .cs-intro-box::after{content:"";position:absolute;inset:-40%;pointer-events:none;z-index:3;opacity:0;
+  background:linear-gradient(108deg,transparent 34%,rgba(255,255,255,.25) 44%,#fff 50%,rgba(255,255,255,.25) 56%,transparent 66%);transform:translateX(-140%);}
+.v-tumble .cs-intro-box::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(145deg,rgba(255,255,255,0) 40%,rgba(120,130,150,.18) 100%);opacity:0;}
+.v-tumble.cs-flash .cs-intro-box{animation:t-turn calc(.7s * var(--sp)) cubic-bezier(.42,0,.2,1) forwards;}
+.v-tumble.cs-flash .cs-intro-box::after{animation:t-rake calc(.7s * var(--sp)) cubic-bezier(.42,0,.3,1) forwards;}
+.v-tumble.cs-flash .cs-intro-box::before{animation:t-shade calc(.7s * var(--sp)) ease-in-out forwards;}
+.v-tumble.cs-flash .cs-intro-name{animation:t-name calc(.7s * var(--sp)) ease-out forwards;}
+@keyframes t-turn{0%{transform:rotateY(0) scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}
+  50%{transform:rotateY(180deg) scale(1.05);box-shadow:0 14px 54px rgba(255,255,255,.22);}
+  100%{transform:rotateY(360deg) scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+@keyframes t-rake{0%{opacity:0;transform:translateX(-140%);}20%{opacity:1;}70%{opacity:1;}100%{opacity:0;transform:translateX(140%);}}
+@keyframes t-shade{0%,100%{opacity:0;}50%{opacity:1;}}
+@keyframes t-name{0%,30%{text-shadow:none;}55%{text-shadow:0 0 24px rgba(255,255,255,.5);}100%{text-shadow:none;}}
+
+/* ══════ D · RAKE — light falling on a real surface ══════
+   The cube stops being flat white: a shaded tile with a bevel, and one hard
+   specular bar travels across it. Quietest. Most "expensive object". */
+.v-rake .cs-intro-box{overflow:hidden;background:linear-gradient(152deg,#FFFFFF 0%,#F4F6F9 52%,#E7EBF1 100%);
+  box-shadow:0 8px 40px rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(120,130,150,.16);}
+.v-rake .cs-intro-box::after{content:"";position:absolute;inset:-45%;pointer-events:none;z-index:3;opacity:0;
+  background:linear-gradient(104deg,transparent 40%,rgba(255,255,255,.5) 47%,#fff 50%,rgba(255,255,255,.5) 53%,transparent 60%);transform:translateX(-135%);}
+.v-rake.cs-flash .cs-intro-box::after{animation:r-rake calc(.6s * var(--sp)) cubic-bezier(.3,0,.25,1) forwards;}
+.v-rake.cs-flash .cs-intro-box{animation:r-lift calc(.6s * var(--sp)) cubic-bezier(.3,0,.25,1) forwards;}
+.v-rake.cs-flash .cs-intro-name{animation:r-name calc(.6s * var(--sp)) ease-out forwards;}
+@keyframes r-rake{0%{opacity:0;transform:translateX(-135%);}14%{opacity:1;}86%{opacity:1;}100%{opacity:0;transform:translateX(135%);}}
+@keyframes r-lift{0%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(120,130,150,.16);}
+  50%{transform:scale(1.025);box-shadow:0 10px 52px rgba(255,255,255,.28),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(120,130,150,.16);}
+  100%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.9),inset 0 -1px 0 rgba(120,130,150,.16);}}
+@keyframes r-name{0%,35%{text-shadow:none;}58%{text-shadow:0 0 20px rgba(255,255,255,.42);}100%{text-shadow:none;}}
+
+.fake{position:absolute;inset:0;background:#FAF7F1;display:flex;flex-direction:column;}
+.fake .nav{height:15%;border-bottom:1px solid #E5DFD2;display:flex;align-items:center;padding:0 24px;gap:11px;}
+.fake .dot{width:24px;height:24px;border-radius:6px;background:#1A1A2E;}
+.fake .nm{font-size:15px;font-weight:800;color:#1A1A2E;letter-spacing:-.3px;}
+.fake .body{flex:1;padding:24px;}
+.fake .l{height:11px;border-radius:5px;background:#E9E3D6;margin-bottom:12px;}
+.fake .l.w1{width:55%;height:21px;background:#DCD5C5;}.fake .l.w2{width:83%;}.fake .l.w3{width:41%;}
+.fake .row{display:flex;gap:12px;margin-top:18px;}.fake .c{flex:1;height:60px;border-radius:10px;background:#fff;border:1px solid #E5DFD2;}
+@media (prefers-reduced-motion:reduce){.cs-intro,.cs-intro *{animation:none !important;}.cs-intro{display:none;}}
+</style></head><body>
+<div class="wrap">
+  <h1>Four ways in</h1>
+  <p class="sub">All at production geometry — 74px cube, 52px name, 16px gap — so this time what you see is what ships. Same sequence in every case: logo rises, cube spins at 600ms, the effect fires at 1060ms, then a 500ms hold before the curtain.</p>
+
+  <div class="bar">
+    <button class="play" id="play">▶ Replay</button>
+    <div class="grp" id="variant">
+      <button data-v="bloom" class="on">A · Bloom (live)</button>
+      <button data-v="flare">B · Anamorphic flare</button>
+      <button data-v="tumble">C · 3D tumble</button>
+      <button data-v="rake">D · Rake</button>
+    </div>
+    <span class="lab">Speed</span>
+    <div class="grp" id="speed"><button data-s="1" class="on">1×</button><button data-s="4">¼×</button></div>
+  </div>
+
+  <div class="card" id="card"></div>
+  <div class="frame"><div class="stage">
+    <div class="fake"><div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+      <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div>
+      <div class="row"><div class="c"></div><div class="c"></div><div class="c"></div></div></div></div>
+    <div class="cs-intro v-bloom" id="intro"><div class="cs-intro-bg"><div class="cs-intro-hold"><div class="cs-intro-mark">
+      <div class="cs-intro-box" id="cube"></div><span class="cs-intro-name">CastSlate</span>
+    </div></div></div></div>
+  </div></div>
+</div>
+<script>
+document.getElementById('cube').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg>';
+const V={
+ bloom:{d:380,h:'Bloom — what is live',
+   p:'The cube contracts, then flares white into the black. Reads as energy and excitement. Its vocabulary is notifications and game UI, not cinema — it is the loudest of the four, and the least "expensive".'},
+ flare:{d:550,h:'Anamorphic flare',
+   p:'A wide blue-white streak throws off the cube, the way a cinema lens does when it catches a hard light. That extreme horizontal aspect is the whole signature — nothing else in interface design looks like it. As loud as the bloom, but it says film rather than app.'},
+ tumble:{d:700,h:'3D tumble',
+   p:'A real perspective turn with a hard highlight raking the face as it goes oblique, and a shading gradient so the surface has form. The same language as the back-to-top cube in your footer. Reads as a crafted object rather than a graphic.'},
+ rake:{d:600,h:'Rake',
+   p:'The cube stops being flat white — a shaded tile with a bevel and a lit top edge — and one hard specular bar travels across it. The quietest by far. Lowest "whoa", highest "this was made by someone who cared".'}
+};
+const el=document.getElementById('intro'), FLASH=1060, BEAT=500;
+let v='bloom', sp=1, timers=[];
+function run(){
+  timers.forEach(clearTimeout);
+  const {d,h,p}=V[v], go=FLASH+d+BEAT;
+  document.getElementById('card').innerHTML=
+    `<h2>${h}</h2><p>${p}</p><div class="m">effect ${FLASH}–${FLASH+d}ms · hold ${BEAT}ms · curtain ${go}ms · total ${go+550}ms</div>`;
+  el.className='cs-intro v-'+v; el.style.setProperty('--sp',sp);
+  void el.offsetWidth;
+  timers=[setTimeout(()=>el.classList.add('cs-ready'),60*sp),
+          setTimeout(()=>el.classList.add('cs-flash'),FLASH*sp),
+          setTimeout(()=>el.classList.add('cs-go'),go*sp),
+          setTimeout(run,(go+550)*sp+1400)];
+}
+document.getElementById('play').onclick=run;
+document.getElementById('variant').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;
+  v=b.dataset.v;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));run();});
+document.getElementById('speed').addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(!b)return;
+  sp=+b.dataset.s;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));run();});
+run();
+</script>
+</body></html>

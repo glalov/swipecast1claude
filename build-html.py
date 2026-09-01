@@ -402,6 +402,9 @@ def render_page(title, desc, canonical, extra_preload=""):
          bundle executes on cold loads; without this the text re-rasters
          between frames under load and visibly flickers ("blinks"). */
       will-change:transform,opacity;-webkit-backface-visibility:hidden;backface-visibility:hidden;
+      /* The viewpoint for the cube's 3D turn. Without it rotateY renders flat
+         and the turn reads as a squash rather than a rotation. */
+      -webkit-perspective:700px;perspective:700px;
     }}
     /* Animations begin only on .cs-ready — added on the second painted frame,
        so the fade always starts from a frame the user actually saw and can
@@ -409,12 +412,12 @@ def render_page(title, desc, canonical, extra_preload=""):
     #cs-intro.cs-ready .cs-intro-mark{{
       -webkit-animation:cs-intro-in .3s cubic-bezier(.2,.7,.2,1) .05s forwards,cs-breathe 1.3s ease-in-out 1.05s infinite alternate;animation:cs-intro-in .3s cubic-bezier(.2,.7,.2,1) .05s forwards,cs-breathe 1.3s ease-in-out 1.05s infinite alternate;
     }}
-    #cs-intro .cs-intro-box{{position:relative;width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
+    #cs-intro .cs-intro-box{{position:relative;overflow:hidden;width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
     #cs-intro.cs-ready .cs-intro-box{{-webkit-animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;}}
     /* System fonts ONLY — never a webfont. DM Sans used to be in this stack and
        finished downloading MID-INTRO on cold first loads, re-rendering the name
        ("blink"). System fonts are always instantly available on every OS. */
-    #cs-intro .cs-intro-name{{color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:-1.2px;}}
+    #cs-intro .cs-intro-name{{position:relative;white-space:nowrap;color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:-1.2px;}}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @-webkit-keyframes cs-breathe{{from{{-webkit-transform:scale(1);transform:scale(1);}}to{{-webkit-transform:scale(1.016);transform:scale(1.016);}}}}
@@ -427,29 +430,51 @@ def render_page(title, desc, canonical, extra_preload=""):
     @keyframes cs-mark-up{{to{{-webkit-transform:translateY(-101%);transform:translateY(-101%);}}}}
     @-webkit-keyframes cs-spin{{from{{-webkit-transform:rotate(0);transform:rotate(0);}}to{{-webkit-transform:rotate(360deg);transform:rotate(360deg);}}}}
     @keyframes cs-spin{{from{{-webkit-transform:rotate(0);transform:rotate(0);}}to{{-webkit-transform:rotate(360deg);transform:rotate(360deg);}}}}
-    /* ── The opening moment: the cube charges, then flares ──────────────────
-       The wind-up is the whole trick. A flash with no contraction before it
-       reads as a brightness change; the pull-back is what makes the release
-       land as an event. Fires at ready+1000ms and is fully finished by
-       ~1440ms, BEFORE the curtain moves at MIN (1450ms) - the causality comes
-       from the ordering, not from overlapping the two, and nothing is ever
-       clipped by the wipe. Reduced-motion users never reach this: the script
-       below removes #cs-intro outright.
-       ⚠️ cs-charge REPLACES cs-spin on the box. That is safe only because the
-       spin has finished by then and ends on rotate(360deg), which is visually
-       identical to the untransformed state - do not move the flash earlier. */
-    #cs-intro.cs-flash .cs-intro-box{{-webkit-animation:cs-charge .38s cubic-bezier(.4,0,.3,1) forwards;animation:cs-charge .38s cubic-bezier(.4,0,.3,1) forwards;}}
-    @-webkit-keyframes cs-charge{{0%{{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}45%{{-webkit-transform:scale(.945);transform:scale(.945);box-shadow:0 4px 20px rgba(255,255,255,0.06);}}62%{{-webkit-transform:scale(1.10);transform:scale(1.10);box-shadow:0 0 60px 16px rgba(255,255,255,0.75);}}100%{{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}}}
-    @keyframes cs-charge{{0%{{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}45%{{-webkit-transform:scale(.945);transform:scale(.945);box-shadow:0 4px 20px rgba(255,255,255,0.06);}}62%{{-webkit-transform:scale(1.10);transform:scale(1.10);box-shadow:0 0 60px 16px rgba(255,255,255,0.75);}}100%{{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}}}
-    /* The bloom ring. It must escape the cube, so .cs-intro-box carries no
-       overflow - do not add one. */
-    #cs-intro .cs-intro-box::before{{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,0.9);}}
-    #cs-intro.cs-flash .cs-intro-box::before{{-webkit-animation:cs-ring .38s cubic-bezier(.15,.75,.3,1) forwards;animation:cs-ring .38s cubic-bezier(.15,.75,.3,1) forwards;}}
-    @-webkit-keyframes cs-ring{{0%,44%{{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,0.9);}}58%{{opacity:1;box-shadow:0 0 0 4px rgba(255,255,255,0.75);}}100%{{opacity:0;box-shadow:0 0 0 30px rgba(255,255,255,0);}}}}
-    @keyframes cs-ring{{0%,44%{{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,0.9);}}58%{{opacity:1;box-shadow:0 0 0 4px rgba(255,255,255,0.75);}}100%{{opacity:0;box-shadow:0 0 0 30px rgba(255,255,255,0);}}}}
-    #cs-intro.cs-flash .cs-intro-name{{-webkit-animation:cs-glow .38s cubic-bezier(.4,0,.3,1) forwards;animation:cs-glow .38s cubic-bezier(.4,0,.3,1) forwards;}}
-    @-webkit-keyframes cs-glow{{0%,42%{{text-shadow:none;}}62%{{text-shadow:0 0 30px rgba(255,255,255,0.9),0 0 60px rgba(255,255,255,0.4);}}100%{{text-shadow:none;}}}}
-    @keyframes cs-glow{{0%,42%{{text-shadow:none;}}62%{{text-shadow:0 0 30px rgba(255,255,255,0.9),0 0 60px rgba(255,255,255,0.4);}}100%{{text-shadow:none;}}}}
+    /* ── The opening: a flat spin, then a real turn ────────────────────────
+       TWO stages, deliberately. cs-spin at 600ms is the flat 2D rotate that was
+       always here; cs-turn at ready+1000ms is a 3D perspective turn, with a hard
+       highlight raking the face and a hairline of that same light carried on
+       through the wordmark. It spins as a graphic, then turns as an object.
+       ⚠️ SPECIFICITY. cs-turn's selector MUST carry #cs-intro, exactly as
+       cs-spin's does. A weaker `.cs-flash .cs-intro-box` loses to
+       `#cs-intro.cs-ready .cs-intro-box`, and because cs-ready is never removed
+       the flat spin would keep winning and the 3D turn would silently never
+       play - only its pseudo-element highlights would, which looks like light
+       moving across a cube that is not turning. That exact bug cost a round.
+       The glyph is symmetric on BOTH axes, so rotateY(180deg) never mirrors it.
+       Finishes by ~1760ms and the curtain cannot move before MIN (2260ms), so
+       the 500ms beat after it is guaranteed and the wipe never clips it.
+       Reduced-motion users never reach any of this - #cs-intro is removed. */
+    #cs-intro .cs-intro-box svg{{position:relative;z-index:2;}}
+    #cs-intro .cs-intro-box::after{{content:"";position:absolute;top:-40%;right:-40%;bottom:-40%;left:-40%;pointer-events:none;z-index:3;opacity:0;
+      background:linear-gradient(108deg,transparent 34%,rgba(255,255,255,0.25) 44%,#fff 50%,rgba(255,255,255,0.25) 56%,transparent 66%);
+      -webkit-transform:translateX(-140%);transform:translateX(-140%);}}
+    #cs-intro .cs-intro-box::before{{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;z-index:1;
+      background:linear-gradient(145deg,rgba(255,255,255,0) 40%,rgba(120,130,150,0.18) 100%);opacity:0;}}
+    #cs-intro.cs-flash .cs-intro-box{{-webkit-animation:cs-turn .7s cubic-bezier(.42,0,.2,1) forwards;animation:cs-turn .7s cubic-bezier(.42,0,.2,1) forwards;}}
+    #cs-intro.cs-flash .cs-intro-box::after{{-webkit-animation:cs-rake .7s cubic-bezier(.42,0,.3,1) forwards;animation:cs-rake .7s cubic-bezier(.42,0,.3,1) forwards;}}
+    #cs-intro.cs-flash .cs-intro-box::before{{-webkit-animation:cs-shade .7s ease-in-out forwards;animation:cs-shade .7s ease-in-out forwards;}}
+    @-webkit-keyframes cs-turn{{0%{{-webkit-transform:rotateY(0) scale(1);transform:rotateY(0) scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}50%{{-webkit-transform:rotateY(180deg) scale(1.05);transform:rotateY(180deg) scale(1.05);box-shadow:0 14px 54px rgba(255,255,255,0.22);}}100%{{-webkit-transform:rotateY(360deg) scale(1);transform:rotateY(360deg) scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}}}
+    @keyframes cs-turn{{0%{{-webkit-transform:rotateY(0) scale(1);transform:rotateY(0) scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}50%{{-webkit-transform:rotateY(180deg) scale(1.05);transform:rotateY(180deg) scale(1.05);box-shadow:0 14px 54px rgba(255,255,255,0.22);}}100%{{-webkit-transform:rotateY(360deg) scale(1);transform:rotateY(360deg) scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}}}
+    @-webkit-keyframes cs-rake{{0%{{opacity:0;-webkit-transform:translateX(-140%);transform:translateX(-140%);}}20%{{opacity:1;}}70%{{opacity:1;}}100%{{opacity:0;-webkit-transform:translateX(140%);transform:translateX(140%);}}}}
+    @keyframes cs-rake{{0%{{opacity:0;-webkit-transform:translateX(-140%);transform:translateX(-140%);}}20%{{opacity:1;}}70%{{opacity:1;}}100%{{opacity:0;-webkit-transform:translateX(140%);transform:translateX(140%);}}}}
+    @-webkit-keyframes cs-shade{{0%,100%{{opacity:0;}}50%{{opacity:1;}}}}
+    @keyframes cs-shade{{0%,100%{{opacity:0;}}50%{{opacity:1;}}}}
+    /* The hairline through the wordmark: a glowing DUPLICATE of the word,
+       revealed through a moving mask and layered over the untouched base text.
+       A background-clip:text gradient cannot do this - it would need a band
+       brighter than white, so the resting wordmark would have to be dimmed off
+       #fff permanently. This only ever ADDS light, so the logo's rest state is
+       untouched. Same reason the very first attempt at a glint on the white
+       cube face was invisible. */
+    #cs-intro .cs-intro-name::after{{content:"CastSlate";position:absolute;left:0;top:0;color:#fff;pointer-events:none;opacity:0;
+      text-shadow:0 0 14px rgba(255,255,255,1),0 0 34px rgba(190,222,255,0.7);
+      -webkit-mask-image:linear-gradient(100deg,transparent 44%,#000 49%,#000 51%,transparent 56%);mask-image:linear-gradient(100deg,transparent 44%,#000 49%,#000 51%,transparent 56%);
+      -webkit-mask-size:300% 100%;mask-size:300% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+      -webkit-mask-position:132% 0;mask-position:132% 0;}}
+    #cs-intro.cs-flash .cs-intro-name::after{{-webkit-animation:cs-hair .4s cubic-bezier(.3,0,.2,1) .22s forwards;animation:cs-hair .4s cubic-bezier(.3,0,.2,1) .22s forwards;}}
+    @-webkit-keyframes cs-hair{{0%{{opacity:0;-webkit-mask-position:132% 0;mask-position:132% 0;}}12%{{opacity:1;}}88%{{opacity:1;}}100%{{opacity:0;-webkit-mask-position:-32% 0;mask-position:-32% 0;}}}}
+    @keyframes cs-hair{{0%{{opacity:0;-webkit-mask-position:132% 0;mask-position:132% 0;}}12%{{opacity:1;}}88%{{opacity:1;}}100%{{opacity:0;-webkit-mask-position:-32% 0;mask-position:-32% 0;}}}}
     @media (prefers-reduced-motion: reduce){{#cs-intro{{display:none;}}}}
   </style>
 </head>
@@ -516,9 +541,10 @@ def render_page(title, desc, canonical, extra_preload=""):
          moves. The flash is armed at ready+1000ms (t0 backstop 1060ms) and
          runs .38s, so its latest possible finish is 1440ms; 1940 puts a clean
          500ms beat after it on every path. Raising or lowering this is the ONLY
-         thing that changes that pause - the flash timing is independent of it.
-         Was 1450 (a ~10ms gap, flare running straight into the wipe). */
-      var t0=Date.now(),MIN=1940,CAP=15000,gone=false,goAt=0;
+         thing that changes that pause - the effect's own timing is independent.
+         2260 = 1060 (latest start) + 700 (cs-turn) + 500. Was 1940 when the
+         effect was a 380ms flash, and 1450 before that with no beat at all. */
+      var t0=Date.now(),MIN=2260,CAP=15000,gone=false,goAt=0;
       function appReady(){{
         if(window.__CS_REACT_MOUNTED)return true;
         var r=document.getElementById('root');
