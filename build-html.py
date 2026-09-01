@@ -505,13 +505,20 @@ def render_page(title, desc, canonical, extra_preload=""):
       setTimeout(csReady,400);
       setTimeout(csFlash,1060);
       /* The curtain falls only when BOTH are true: the minimum beat has
-         played (logo rise, cube spin, flash - MIN below, 1450ms since the
-         July halving; the comment used to say 2.9s) AND the app behind it has
+         played (logo rise, cube spin, flash, then a 500ms beat on the flare -
+         MIN below, 1940ms; this comment used to say 2.9s, from before the
+         July halving) AND the app behind it has
          actually painted. On a slow connection the logo simply keeps
          breathing until the site is ready, so the reveal always lands on
          a live page — never on a loading spinner or a half-built layout.
          Hard 15s cap so a failed boot can never trap the curtain. */
-      var t0=Date.now(),MIN=1450,CAP=15000,gone=false,goAt=0;
+      /* MIN holds the flare on screen for half a second before the curtain
+         moves. The flash is armed at ready+1000ms (t0 backstop 1060ms) and
+         runs .38s, so its latest possible finish is 1440ms; 1940 puts a clean
+         500ms beat after it on every path. Raising or lowering this is the ONLY
+         thing that changes that pause - the flash timing is independent of it.
+         Was 1450 (a ~10ms gap, flare running straight into the wipe). */
+      var t0=Date.now(),MIN=1940,CAP=15000,gone=false,goAt=0;
       function appReady(){{
         if(window.__CS_REACT_MOUNTED)return true;
         var r=document.getElementById('root');
