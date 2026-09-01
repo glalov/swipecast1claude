@@ -126,37 +126,70 @@ const PAYMENT_CLEARED = {
 // Authorization header at all, so every welcome was rejected with 401 while the
 // webhook still stamped premium_welcome_sent_at, permanently marking the member
 // as "welcomed" without a single email going out. Two rules keep that from
-// recurring: send the service-role credential, and only stamp the guard when the
-// email function confirms it actually sent (or deliberately skipped).
+// recurring: send the service-role credential, and release the guard again if
+// the email function did NOT confirm the send.
+//
+// CLAIM BEFORE SENDING — not read, send, then stamp. Stripe fires
+// checkout.session.completed and customer.subscription.created for the same
+// payment at the same instant, and both land in SEPARATE webhook invocations
+// that run concurrently. A read-then-write guard let both read null and both
+// send: that is exactly how one member got two welcome emails 135ms apart.
+// The conditional update below is a single atomic statement — only the
+// invocation whose UPDATE ... WHERE premium_welcome_sent_at IS NULL actually
+// matches a row gets to send; the loser sees zero rows and returns.
 async function sendPremiumWelcome(userId: string): Promise<void> {
-  const { data: prof } = await supabase
-    .from("profiles").select("premium_welcome_sent_at").eq("id", userId).maybeSingle();
-  if (prof?.premium_welcome_sent_at) return;
+  const { data: claimed, error: claimErr } = await supabase
+    .from("profiles")
+    .update({ premium_welcome_sent_at: new Date().toISOString() })
+    .eq("id", userId)
+    .is("premium_welcome_sent_at", null)
+    .select("id");
 
-  const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification-email`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-    },
-    body: JSON.stringify({ to_user_id: userId, type: "premium_welcome" }),
-  });
+  if (claimErr) {
+    console.error(`[stripe-webhook] premium welcome claim failed for ${userId}:`, claimErr);
+    return;
+  }
+  // Already welcomed, or a concurrent invocation won the claim. Either way this
+  // one must not send.
+  if (!claimed || claimed.length === 0) return;
+
+  // From here the guard is HELD. Any path that does not result in a confirmed
+  // send has to hand it back, or the member is marked welcomed with no email.
+  const release = async () => {
+    await supabase.from("profiles")
+      .update({ premium_welcome_sent_at: null })
+      .eq("id", userId);
+  };
+
+  let res: Response;
+  try {
+    res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+      },
+      body: JSON.stringify({ to_user_id: userId, type: "premium_welcome" }),
+    });
+  } catch (e) {
+    console.error(`[stripe-webhook] premium welcome request threw for ${userId}:`, e);
+    await release();
+    return;
+  }
 
   const payload = await res.json().catch(() => ({} as any));
   const outcome = String((payload as any)?.results?.email ?? "");
 
   // A hard failure (401/500) or a provider error must NOT burn the guard —
-  // leaving it null means the next paid event can still deliver the welcome.
+  // releasing it means the next paid event can still deliver the welcome.
   if (!res.ok || outcome.startsWith("error:")) {
     console.error(
-      `[stripe-webhook] premium welcome NOT sent for ${userId} — status ${res.status}, outcome "${outcome || JSON.stringify(payload)}"; guard left unset for retry`
+      `[stripe-webhook] premium welcome NOT sent for ${userId} — status ${res.status}, outcome "${outcome || JSON.stringify(payload)}"; guard released for retry`
     );
+    await release();
     return;
   }
 
-  await supabase.from("profiles")
-    .update({ premium_welcome_sent_at: new Date().toISOString() })
-    .eq("id", userId);
   console.log(`[stripe-webhook] premium welcome ${outcome || "sent"} for user: ${userId}`);
 }
 
@@ -314,7 +347,7 @@ Deno.serve(async (req: Request) => {
         //   - active / trialing            -> grant premium (and clear any lock)
         //   - canceled / unpaid            -> revoke premium
         //   - incomplete / past_due / etc. -> leave membership untouched; the
-        //     3-day grace sweep decides, not this event
+        //     grace sweep decides, not this event
         if (sub.status === "active" || sub.status === "trialing") {
           updates.membership_status = "active";
           Object.assign(updates, PAYMENT_CLEARED);
@@ -327,18 +360,32 @@ Deno.serve(async (req: Request) => {
           }
         }
 
-        const { error } = await supabase.from("profiles").update(updates).eq("id", userId);
+        // The `held` read above is a READ-THEN-WRITE, and Stripe delivers
+        // customer.subscription.created / checkout.session.completed /
+        // customer.subscription.updated as CONCURRENT invocations. The
+        // "incomplete" event can therefore read the row before checkout marks
+        // it paid, pass the staleIncomplete check, and still land its write
+        // last — which is exactly how a member who paid $99 for the year ended
+        // up stamped subscription_status "incomplete". Re-assert the same rule
+        // inside the UPDATE itself, where it is atomic: a transient
+        // pre-payment status may never touch a row that is already premium.
+        let q = supabase.from("profiles").update(updates).eq("id", userId);
+        if (sub.status === "incomplete" || sub.status === "incomplete_expired") {
+          q = q.or("membership_status.is.null,membership_status.neq.active");
+        }
+        const { error } = await q;
         if (error) console.error("Failed to update subscription:", error);
         else console.log(`Subscription ${sub.status} for user: ${userId}, plan: ${planKey}`);
 
-        // Start the 3-day clock the first time this streak goes unpaid.
+        // Start the clock the first time this streak goes unpaid.
         if (sub.status === "past_due" || sub.status === "unpaid") {
           await stampPastDue(userId);
         }
 
         // Safety net for the welcome email: if checkout.session.completed was
         // missed, or its send failed, an active subscription still triggers it
-        // exactly once (the guard inside sendPremiumWelcome keeps it one-time).
+        // exactly once (the atomic claim inside sendPremiumWelcome makes this
+        // safe even when both events arrive at the same instant).
         if (updates.membership_status === "active") {
           try {
             await sendPremiumWelcome(userId);
@@ -389,10 +436,12 @@ Deno.serve(async (req: Request) => {
         });
         if (!userId) break;
         const periodEnd = resolvePeriodEnd(sub);
-        // Same rule as the subscription handler: no "monthly" fallback. This is
-        // the renewal path, so a default here would flip a yearly member to
+        // Same rule as the subscription handler: read the plan off the live
+        // price. A renewal invoice for someone who switched term in the portal
+        // must not re-stamp the plan they originally signed up on. Still no
+        // "monthly" fallback — a default here would flip a yearly member to
         // monthly on the very invoice that proves they paid for a year.
-        const planKey = sub.metadata?.plan_key || null;
+        const planKey = resolvePlanKey(sub);
         await supabase
           .from("profiles")
           .update({
@@ -431,8 +480,9 @@ Deno.serve(async (req: Request) => {
             updated_at: new Date().toISOString(),
           })
           .eq("id", userId);
-        // Premium is NOT revoked here — the member gets 3 full days. Stamping
-        // the start of the streak is what hands that decision to the sweep.
+        // Premium is NOT revoked here — the member keeps access while Stripe
+        // retries. Stamping the start of the streak hands that decision to the
+        // hourly sweep.
         await stampPastDue(userId);
         console.log(`Invoice payment failed for user: ${userId} — grace period started`);
         break;
