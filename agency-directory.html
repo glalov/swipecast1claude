@@ -95,7 +95,7 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260901-013848"/>
+  <link rel="preload" as="script" href="/app.js?v=20260901-022753"/>
   <link rel="preload" as="image" href="/logos/warner.svg"/>
   <link rel="preload" as="image" href="/logos/universal.svg"/>
   <link rel="preload" as="image" href="/logos/disney.svg"/>
@@ -104,15 +104,15 @@
   <link rel="preload" as="image" href="/logos/marvel.svg"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260901-013848 -->
-  <meta name="build-version" content="20260901-013848"/>
+  <!-- BUILD: 20260901-022753 -->
+  <meta name="build-version" content="20260901-022753"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260901-013848";
+        var B="20260901-022753";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -191,7 +191,7 @@
     #cs-intro.cs-ready .cs-intro-mark{
       -webkit-animation:cs-intro-in .3s cubic-bezier(.2,.7,.2,1) .05s forwards,cs-breathe 1.3s ease-in-out 1.05s infinite alternate;animation:cs-intro-in .3s cubic-bezier(.2,.7,.2,1) .05s forwards,cs-breathe 1.3s ease-in-out 1.05s infinite alternate;
     }
-    #cs-intro .cs-intro-box{width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
+    #cs-intro .cs-intro-box{position:relative;width:74px;height:74px;background:#fff;border-radius:16px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
     #cs-intro.cs-ready .cs-intro-box{-webkit-animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;animation:cs-spin .3s cubic-bezier(.5,.05,.2,1) .6s both;}
     /* System fonts ONLY — never a webfont. DM Sans used to be in this stack and
        finished downloading MID-INTRO on cold first loads, re-rendering the name
@@ -209,6 +209,29 @@
     @keyframes cs-mark-up{to{-webkit-transform:translateY(-101%);transform:translateY(-101%);}}
     @-webkit-keyframes cs-spin{from{-webkit-transform:rotate(0);transform:rotate(0);}to{-webkit-transform:rotate(360deg);transform:rotate(360deg);}}
     @keyframes cs-spin{from{-webkit-transform:rotate(0);transform:rotate(0);}to{-webkit-transform:rotate(360deg);transform:rotate(360deg);}}
+    /* ── The opening moment: the cube charges, then flares ──────────────────
+       The wind-up is the whole trick. A flash with no contraction before it
+       reads as a brightness change; the pull-back is what makes the release
+       land as an event. Fires at ready+1000ms and is fully finished by
+       ~1440ms, BEFORE the curtain moves at MIN (1450ms) - the causality comes
+       from the ordering, not from overlapping the two, and nothing is ever
+       clipped by the wipe. Reduced-motion users never reach this: the script
+       below removes #cs-intro outright.
+       ⚠️ cs-charge REPLACES cs-spin on the box. That is safe only because the
+       spin has finished by then and ends on rotate(360deg), which is visually
+       identical to the untransformed state - do not move the flash earlier. */
+    #cs-intro.cs-flash .cs-intro-box{-webkit-animation:cs-charge .38s cubic-bezier(.4,0,.3,1) forwards;animation:cs-charge .38s cubic-bezier(.4,0,.3,1) forwards;}
+    @-webkit-keyframes cs-charge{0%{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}45%{-webkit-transform:scale(.945);transform:scale(.945);box-shadow:0 4px 20px rgba(255,255,255,0.06);}62%{-webkit-transform:scale(1.10);transform:scale(1.10);box-shadow:0 0 60px 16px rgba(255,255,255,0.75);}100%{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
+    @keyframes cs-charge{0%{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}45%{-webkit-transform:scale(.945);transform:scale(.945);box-shadow:0 4px 20px rgba(255,255,255,0.06);}62%{-webkit-transform:scale(1.10);transform:scale(1.10);box-shadow:0 0 60px 16px rgba(255,255,255,0.75);}100%{-webkit-transform:scale(1);transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,0.10);}}
+    /* The bloom ring. It must escape the cube, so .cs-intro-box carries no
+       overflow - do not add one. */
+    #cs-intro .cs-intro-box::before{content:"";position:absolute;top:0;right:0;bottom:0;left:0;border-radius:inherit;pointer-events:none;opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,0.9);}
+    #cs-intro.cs-flash .cs-intro-box::before{-webkit-animation:cs-ring .38s cubic-bezier(.15,.75,.3,1) forwards;animation:cs-ring .38s cubic-bezier(.15,.75,.3,1) forwards;}
+    @-webkit-keyframes cs-ring{0%,44%{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,0.9);}58%{opacity:1;box-shadow:0 0 0 4px rgba(255,255,255,0.75);}100%{opacity:0;box-shadow:0 0 0 30px rgba(255,255,255,0);}}
+    @keyframes cs-ring{0%,44%{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,0.9);}58%{opacity:1;box-shadow:0 0 0 4px rgba(255,255,255,0.75);}100%{opacity:0;box-shadow:0 0 0 30px rgba(255,255,255,0);}}
+    #cs-intro.cs-flash .cs-intro-name{-webkit-animation:cs-glow .38s cubic-bezier(.4,0,.3,1) forwards;animation:cs-glow .38s cubic-bezier(.4,0,.3,1) forwards;}
+    @-webkit-keyframes cs-glow{0%,42%{text-shadow:none;}62%{text-shadow:0 0 30px rgba(255,255,255,0.9),0 0 60px rgba(255,255,255,0.4);}100%{text-shadow:none;}}
+    @keyframes cs-glow{0%,42%{text-shadow:none;}62%{text-shadow:0 0 30px rgba(255,255,255,0.9),0 0 60px rgba(255,255,255,0.4);}100%{text-shadow:none;}}
     @media (prefers-reduced-motion: reduce){#cs-intro{display:none;}}
   </style>
 </head>
@@ -248,10 +271,24 @@
       /* Start the logo animations from the second painted frame so the fade
          is always visible; fallback covers hidden tabs where rAF never fires. */
       var raf=window.requestAnimationFrame||function(f){setTimeout(f,16);};
-      raf(function(){raf(function(){el.classList.add('cs-ready');});});
-      setTimeout(function(){el.classList.add('cs-ready');},400);
+      /* The flash is armed off cs-ready, not off t0, so it always sits the same
+         distance after the logo appears no matter when the first frame landed.
+         The t0 backstop covers the 400ms fallback path below, and the `flashed`
+         guard means whichever fires first wins. It is a no-op once the curtain
+         has gone, so a fast boot can never flash into an empty screen. */
+      var flashed=false;
+      function csFlash(){ if(flashed||gone)return; flashed=true; el.classList.add('cs-flash'); }
+      function csReady(){
+        if(el.classList.contains('cs-ready'))return;
+        el.classList.add('cs-ready');
+        setTimeout(csFlash,1000);
+      }
+      raf(function(){raf(csReady);});
+      setTimeout(csReady,400);
+      setTimeout(csFlash,1060);
       /* The curtain falls only when BOTH are true: the minimum beat has
-         played (logo rise + cube spin, 2.9s) AND the app behind it has
+         played (logo rise, cube spin, flash - MIN below, 1450ms since the
+         July halving; the comment used to say 2.9s) AND the app behind it has
          actually painted. On a slow connection the logo simply keeps
          breathing until the site is ready, so the reveal always lands on
          a live page — never on a loading spinner or a half-built layout.
@@ -473,7 +510,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260901-013848"
+        "/app.js?v=20260901-022753"
       ];
       function step(){
         var it=STEPS.shift();
@@ -514,7 +551,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260901-013848';
+      s.src='/castoria.js?v=20260901-022753';
       s.async=true;
       document.body.appendChild(s);
     }

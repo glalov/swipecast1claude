@@ -1,0 +1,148 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Opening</title>
+<style>
+:root{--paper:#F7F5F1;--ink:#15161A;--ink2:#5A5A6B;--ink3:#8C8C9C;--line:#E3DFD7;--card:#FFF;--accent:#2D8587;--gold:#C8963C;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;}}
+:root[data-theme="dark"]{--paper:#0F0F12;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#28282F;--card:#18181D;--accent:#48A5A7;--gold:#D9AC5A;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1060px;margin:0 auto;padding:36px 22px 72px;}
+.eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+h1{font-size:29px;font-weight:800;letter-spacing:-.8px;margin:0 0 9px;text-wrap:balance;}
+.sub{margin:0 0 22px;color:var(--ink2);font-size:14.5px;line-height:1.62;max-width:64ch;}
+.ctl{display:flex;gap:11px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+.ctl button{background:none;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);padding:8px 14px;cursor:pointer;}
+.ctl button.on{background:var(--card);color:var(--ink);border-color:var(--ink3);}
+.ctl button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.ctl .play{background:var(--accent);border-color:var(--accent);color:#fff;padding:9px 20px;}
+.ctl .lab{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin-left:6px;}
+
+.frame{border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 22px 60px -34px rgba(0,0,0,.5);}
+.stage{position:relative;aspect-ratio:16/9;background:#080809;overflow:hidden;}
+
+/* ── intro ── */
+.cs-intro{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cs-intro-bg{position:absolute;inset:0;background:#080809;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-bg{animation:bg-down calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+/* The blade: the flash's light becomes the curtain's leading edge and drives it
+   down the screen. It rides ON the curtain, so it needs no timing of its own. */
+.cs-intro-bg::before{content:"";position:absolute;left:-10%;right:-10%;top:-3px;height:3px;opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.25) 18%,#fff 50%,rgba(255,255,255,.25) 82%,transparent);
+  box-shadow:0 0 26px 5px rgba(255,255,255,.5);}
+.cs-intro.cs-go .cs-intro-bg::before{animation:blade calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+@keyframes blade{0%{opacity:0;}9%{opacity:1;}72%{opacity:1;}100%{opacity:0;}}
+
+.cs-intro-hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-hold{animation:mark-up calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-mark{display:flex;align-items:center;gap:14px;opacity:0;transform:translateY(20px) scale(.965);will-change:transform,opacity;backface-visibility:hidden;}
+.cs-intro.cs-ready .cs-intro-mark{animation:in calc(.3s * var(--sp)) cubic-bezier(.2,.7,.2,1) calc(.05s * var(--sp)) forwards,breathe calc(1.3s * var(--sp)) ease-in-out calc(1.05s * var(--sp)) infinite alternate;}
+.cs-intro-box{position:relative;width:62px;height:62px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,.10);}
+.cs-intro.cs-ready .cs-intro-box{animation:spin calc(.3s * var(--sp)) cubic-bezier(.5,.05,.2,1) calc(.6s * var(--sp)) both;}
+.cs-intro-box svg{display:block;width:100%;height:100%;}
+.cs-intro-name{color:#fff;font-size:44px;font-weight:800;letter-spacing:-1.1px;}
+
+@keyframes in{to{opacity:1;transform:none;}}
+@keyframes breathe{from{transform:scale(1);}to{transform:scale(1.016);}}
+@keyframes bg-down{to{transform:translateY(101%);}}
+@keyframes mark-up{to{transform:translateY(-101%);}}
+@keyframes spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+
+/* ── the moment: charge, then flash. The wind-up is what sells the release —
+   without it a flash is just a brightness change. ── */
+.cs-intro.flash .cs-intro-box{animation:charge calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+@keyframes charge{
+  0%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}
+  45%{transform:scale(.945);box-shadow:0 4px 20px rgba(255,255,255,.06);}      /* wind-up */
+  62%{transform:scale(1.10);box-shadow:0 0 60px 16px rgba(255,255,255,.75);}   /* peak   */
+  100%{transform:scale(1);box-shadow:0 8px 40px rgba(255,255,255,.10);}
+}
+.cs-intro-box::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,.9);}
+.cs-intro.flash .cs-intro-box::before{animation:ring calc(.38s * var(--sp)) cubic-bezier(.15,.75,.3,1) forwards;}
+@keyframes ring{
+  0%,44%{opacity:0;box-shadow:0 0 0 0 rgba(255,255,255,.9);}
+  58%{opacity:1;box-shadow:0 0 0 4px rgba(255,255,255,.75);}
+  100%{opacity:0;box-shadow:0 0 0 30px rgba(255,255,255,0);}
+}
+.cs-intro.flash .cs-intro-name{animation:glow calc(.38s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+@keyframes glow{0%,42%{text-shadow:none;}62%{text-shadow:0 0 30px rgba(255,255,255,.9),0 0 60px rgba(255,255,255,.4);}100%{text-shadow:none;}}
+
+/* revealed page */
+.fake{position:absolute;inset:0;background:#FAF7F1;display:flex;flex-direction:column;}
+.fake .nav{height:16%;border-bottom:1px solid #E5DFD2;display:flex;align-items:center;padding:0 22px;gap:11px;}
+.fake .dot{width:22px;height:22px;border-radius:6px;background:#1A1A2E;}
+.fake .nm{font-size:14px;font-weight:800;color:#1A1A2E;letter-spacing:-.3px;}
+.fake .body{flex:1;padding:22px;}
+.fake .l{height:10px;border-radius:5px;background:#E9E3D6;margin-bottom:11px;}
+.fake .l.w1{width:56%;height:19px;background:#DCD5C5;}.fake .l.w2{width:84%;}.fake .l.w3{width:42%;}
+.fake .row{display:flex;gap:11px;margin-top:16px;}
+.fake .c{flex:1;height:52px;border-radius:9px;background:#fff;border:1px solid #E5DFD2;}
+
+.beats{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:11px;overflow:hidden;}
+.beat{background:var(--card);padding:13px 15px;}
+.beat .t{font-size:10.5px;font-weight:800;color:var(--gold);letter-spacing:.1em;font-variant-numeric:tabular-nums;margin-bottom:4px;}
+.beat .d{font-size:12.5px;color:var(--ink2);line-height:1.45;}
+.beat strong{color:var(--ink);font-weight:700;}
+.foot{margin-top:22px;font-size:13px;color:var(--ink2);line-height:1.62;max-width:64ch;}
+.foot strong{color:var(--ink);}
+@media (prefers-reduced-motion:reduce){.cs-intro,.cs-intro *{animation:none !important;}.cs-intro{display:none;}}
+</style></head><body>
+<div class="wrap">
+  <div class="eyebrow">Recommended opening</div>
+  <h1>Charge, flash, and the light throws the curtain down</h1>
+  <p class="sub">One move, not three. The cube winds up, releases a flash that blooms into the black, and the curtain drops carrying that light along its leading edge — so the flash reads as the thing that <em>caused</em> the reveal. Real speed by default; total length 2000ms, unchanged from today.</p>
+
+  <div class="ctl">
+    <button class="play" id="play">▶ Replay</button>
+    <span class="lab">Inspect</span>
+    <button data-s="1" class="on">1× real</button>
+    <button data-s="3">⅓×</button>
+    <button data-s="6">⅙×</button>
+  </div>
+
+  <div class="frame"><div class="stage">
+    <div class="fake">
+      <div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+      <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div>
+        <div class="row"><div class="c"></div><div class="c"></div><div class="c"></div></div></div>
+    </div>
+    <div class="cs-intro" id="intro"><div class="cs-intro-bg"><div class="cs-intro-hold"><div class="cs-intro-mark">
+      <div class="cs-intro-box" id="cube"></div><span class="cs-intro-name">CastSlate</span>
+    </div></div></div></div>
+  </div></div>
+
+  <div class="beats">
+    <div class="beat"><div class="t">0 – 360ms</div><div class="d">Logo rises out of black</div></div>
+    <div class="beat"><div class="t">600 – 900ms</div><div class="d">Cube spins, lands</div></div>
+    <div class="beat"><div class="t">1060 – 1230ms</div><div class="d"><strong>Wind-up</strong> — cube contracts, light pulls in</div></div>
+    <div class="beat"><div class="t">1230 – 1300ms</div><div class="d"><strong>Flash</strong> — bloom into the black, name glows</div></div>
+    <div class="beat"><div class="t">1450 – 2000ms</div><div class="d"><strong>Curtain</strong> falls, light riding its edge</div></div>
+  </div>
+
+  <p class="foot">The wind-up is doing most of the work. A flash with no contraction before it is just a brightness change; the eye needs the pull-back to read the release as an event. And the blade of light on the curtain's edge is what ties the two halves together — without it you have a flash, then a transition. With it you have one gesture.<br><br><strong>Ship it once per session, not every load.</strong> This is built to be the thing someone tells a friend about, and that only survives if it is rare. Full sequence on first arrival; on later loads inside the same session, skip straight to the page.</p>
+</div>
+
+<script>
+document.getElementById('cube').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg>';
+const el=document.getElementById('intro');
+let sp=1,timers=[];
+function run(){
+  timers.forEach(clearTimeout);
+  el.className='cs-intro'; el.style.setProperty('--sp',sp);
+  void el.offsetWidth;
+  timers=[
+    setTimeout(()=>el.classList.add('cs-ready'), 60*sp),
+    setTimeout(()=>el.classList.add('flash'),  1060*sp),
+    setTimeout(()=>el.classList.add('cs-go'),  1450*sp),
+    setTimeout(run, 2000*sp + 1400)
+  ];
+}
+document.getElementById('play').onclick=run;
+document.querySelectorAll('button[data-s]').forEach(b=>b.onclick=()=>{
+  sp=+b.dataset.s;
+  document.querySelectorAll('button[data-s]').forEach(x=>x.classList.toggle('on',x===b));
+  run();
+});
+run();
+</script>
+</body></html>

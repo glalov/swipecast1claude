@@ -1,0 +1,237 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Intro Cube Shine</title>
+<style>
+:root{
+  --paper:#F7F5F1; --ink:#15161A; --ink2:#5A5A6B; --ink3:#8C8C9C;
+  --line:#E3DFD7; --card:#FFFFFF; --accent:#2D8587; --gold:#C8963C;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111114; --ink:#F2F1EE; --ink2:#A8A8B8; --ink3:#75758A;
+    --line:#2A2A31; --card:#1A1A1F; --accent:#48A5A7; --gold:#D9AC5A;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111114; --ink:#F2F1EE; --ink2:#A8A8B8; --ink3:#75758A;
+  --line:#2A2A31; --card:#1A1A1F; --accent:#48A5A7; --gold:#D9AC5A;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;}
+
+.wrap{max-width:1220px;margin:0 auto;padding:34px 22px 70px;}
+header h1{font-size:26px;font-weight:800;letter-spacing:-.6px;margin:0 0 6px;text-wrap:balance;}
+header p{margin:0;color:var(--ink2);font-size:14px;line-height:1.6;max-width:66ch;}
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);
+  margin:22px -22px 26px;padding:12px 22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.bar .grp{display:flex;gap:3px;background:color-mix(in srgb,var(--ink) 7%,transparent);border-radius:9px;padding:3px;}
+.bar button{background:none;border:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);
+  padding:7px 13px;border-radius:7px;cursor:pointer;}
+.bar button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+.bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.bar .lab{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);}
+.play{background:var(--accent) !important;color:#fff !important;padding:9px 18px !important;border-radius:8px !important;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;}
+.demo{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;display:flex;flex-direction:column;}
+.demo-head{padding:16px 18px 13px;border-bottom:1px solid var(--line);}
+.demo-head .n{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
+.demo-head h2{font-size:17px;font-weight:800;margin:0 0 5px;letter-spacing:-.2px;}
+.demo-head p{margin:0;font-size:12.5px;color:var(--ink2);line-height:1.5;}
+.demo-foot{padding:10px 18px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.demo-foot .t{font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums;}
+.demo-foot button{background:none;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:12px;
+  font-weight:700;color:var(--ink);padding:6px 13px;cursor:pointer;}
+.demo-foot button:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── stage: a faithful replica of the real intro ───────────────────────────── */
+.stage{position:relative;aspect-ratio:16/10;background:#0A0A0A;overflow:hidden;}
+.cs-intro{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cs-intro-bg{position:absolute;inset:0;background:#0A0A0A;z-index:1;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-bg{animation:cs-bg-down calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-hold{animation:cs-mark-up calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-mark{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(18px) scale(.965);
+  will-change:transform,opacity;backface-visibility:hidden;}
+.cs-intro.cs-ready .cs-intro-mark{
+  animation:cs-intro-in calc(.3s * var(--sp)) cubic-bezier(.2,.7,.2,1) calc(.05s * var(--sp)) forwards,
+            cs-breathe calc(1.3s * var(--sp)) ease-in-out calc(1.05s * var(--sp)) infinite alternate;}
+.cs-intro-box{position:relative;width:48px;height:48px;background:#fff;border-radius:11px;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
+.cs-intro.cs-ready .cs-intro-box{animation:cs-spin calc(.3s * var(--sp)) cubic-bezier(.5,.05,.2,1) calc(.6s * var(--sp)) both;}
+.cs-intro-box svg{display:block;width:100%;height:100%;}
+.cs-intro-name{color:#fff;font-size:33px;font-weight:800;letter-spacing:-.8px;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+
+@keyframes cs-intro-in{to{opacity:1;transform:none;}}
+@keyframes cs-breathe{from{transform:scale(1);}to{transform:scale(1.016);}}
+@keyframes cs-bg-down{to{transform:translateY(101%);}}
+@keyframes cs-mark-up{to{transform:translateY(-101%);}}
+@keyframes cs-spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+
+/* the revealed "site" behind the curtain — just enough to read as a page */
+.fake{position:absolute;inset:0;background:#FAF7F1;display:flex;flex-direction:column;}
+.fake .nav{height:15%;border-bottom:1px solid #E5DFD2;display:flex;align-items:center;padding:0 18px;gap:9px;}
+.fake .dot{width:19px;height:19px;border-radius:5px;background:#1A1A2E;}
+.fake .nm{font-size:12px;font-weight:800;color:#1A1A2E;letter-spacing:-.3px;}
+.fake .body{flex:1;padding:16px 18px;}
+.fake .l{height:9px;border-radius:5px;background:#E9E3D6;margin-bottom:9px;}
+.fake .l.w1{width:62%;height:15px;background:#DED7C8;} .fake .l.w2{width:88%;} .fake .l.w3{width:47%;}
+
+/* ══ A — GLINT ══ a specular bar crosses the face. The bar reads because the
+   glyph beneath it is dark; a white bar on white would be invisible. */
+.v-glint .cs-intro-box{overflow:hidden;}
+.v-glint .cs-intro-box::after{content:"";position:absolute;inset:-40%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.30) 46%,#fff 50%,rgba(255,255,255,.30) 54%,transparent 62%);
+  transform:translateX(-150%);opacity:0;}
+.v-glint.shine .cs-intro-box::after{animation:glint-sweep calc(.46s * var(--sp)) cubic-bezier(.35,0,.2,1) forwards;}
+.v-glint.shine .cs-intro-box{animation:glint-lift calc(.46s * var(--sp)) ease-out forwards;}
+@keyframes glint-sweep{0%{transform:translateX(-150%);opacity:0;}12%{opacity:1;}88%{opacity:1;}100%{transform:translateX(150%);opacity:0;}}
+@keyframes glint-lift{0%{box-shadow:0 8px 40px rgba(255,255,255,.10);}
+  45%{box-shadow:0 8px 40px rgba(255,255,255,.10),0 0 26px 3px rgba(255,255,255,.42);}
+  100%{box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+
+/* ══ B — BLOOM ══ the cube catches light and blooms outward: an expanding ring
+   plus a short scale pop. Loudest of the three; reads at any size. */
+.v-bloom .cs-intro-box::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:0 0 0 0 rgba(255,255,255,.85);opacity:0;}
+.v-bloom.shine .cs-intro-box::before{animation:bloom-ring calc(.62s * var(--sp)) cubic-bezier(.2,.7,.25,1) forwards;}
+.v-bloom.shine .cs-intro-box{animation:bloom-pop calc(.62s * var(--sp)) cubic-bezier(.3,1.5,.4,1) forwards;}
+.v-bloom.shine .cs-intro-name{animation:bloom-name calc(.62s * var(--sp)) ease-out forwards;}
+@keyframes bloom-ring{0%{opacity:.9;box-shadow:0 0 0 0 rgba(255,255,255,.85),0 0 14px 0 rgba(255,255,255,.55);}
+  100%{opacity:0;box-shadow:0 0 0 22px rgba(255,255,255,0),0 0 46px 14px rgba(255,255,255,0);}}
+@keyframes bloom-pop{0%{transform:scale(1);}34%{transform:scale(1.085);}100%{transform:scale(1);}}
+@keyframes bloom-name{0%{text-shadow:none;}30%{text-shadow:0 0 22px rgba(255,255,255,.75);}100%{text-shadow:none;}}
+
+/* ══ C — LOCKUP SWEEP ══ one light source travels the whole lockup: it glints
+   the cube, then runs through the wordmark. Ties the two halves together. */
+.v-sweep .cs-intro-box{overflow:hidden;}
+.v-sweep .cs-intro-box::after{content:"";position:absolute;inset:-40%;pointer-events:none;
+  background:linear-gradient(112deg,transparent 40%,rgba(255,255,255,.35) 47%,#fff 51%,rgba(255,255,255,.35) 55%,transparent 62%);
+  transform:translateX(-150%);opacity:0;}
+.v-sweep.shine .cs-intro-box::after{animation:glint-sweep calc(.34s * var(--sp)) cubic-bezier(.4,0,.3,1) forwards;}
+.v-sweep .cs-intro-name{position:relative;
+  background-image:linear-gradient(105deg,#fff 42%,#fff 44%,#FFF6E2 50%,#fff 56%,#fff 58%);
+  background-size:280% 100%;background-position:130% 0;background-repeat:no-repeat;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:#fff;}
+.v-sweep.shine .cs-intro-name{animation:sweep-text calc(.44s * var(--sp)) cubic-bezier(.4,0,.3,1) calc(.16s * var(--sp)) forwards;}
+@keyframes sweep-text{
+  0%{background-position:130% 0;-webkit-text-fill-color:#fff;text-shadow:none;}
+  45%{-webkit-text-fill-color:transparent;text-shadow:0 0 20px rgba(255,246,226,.55);}
+  100%{background-position:-60% 0;-webkit-text-fill-color:#fff;text-shadow:none;}}
+
+@media (prefers-reduced-motion:reduce){
+  .cs-intro *,.cs-intro{animation:none !important;}
+  .cs-intro-mark{opacity:1;transform:none;}
+}
+</style></head><body>
+<div class="wrap">
+<header>
+  <h1>Cube shine — three takes on the same moment</h1>
+  <p>Each stage is a faithful replica of the real intro: the same markup, the same easing curves, the same beats. The cube fades in, spins at 600ms, holds until 1450ms, then the curtain drops over 550ms. The shine is timed to crest exactly as the curtain starts moving — that overlap is what makes it feel like one motion instead of two. Run it at ¼ speed to actually judge it.</p>
+</header>
+
+<div class="bar">
+  <button class="play" id="playAll">▶ Play all</button>
+  <span class="lab">Speed</span>
+  <div class="grp" id="speed">
+    <button data-s="1">1×</button>
+    <button data-s="2" class="on">½×</button>
+    <button data-s="4">¼×</button>
+  </div>
+  <span class="lab">Loop</span>
+  <div class="grp" id="loop">
+    <button data-l="1" class="on">On</button>
+    <button data-l="0">Off</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+</div>
+
+<script>
+const GLYPH='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="48" height="48"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg>';
+
+const VARIANTS=[
+ {k:'glint', n:'Take one', h:'Glint',
+  d:'A specular bar crosses the cube face, the way light catches a polished edge. Restrained — you register it without being able to say what happened.',
+  t:'shine 1330ms · 460ms'},
+ {k:'bloom', n:'Take two', h:'Bloom',
+  d:'The cube catches light and blooms: a ring pushes outward, the cube pops a few percent, and the wordmark glows for a beat. The loudest of the three.',
+  t:'shine 1300ms · 620ms'},
+ {k:'sweep', n:'Take three', h:'Lockup sweep',
+  d:'One light source travels the whole lockup — it glints the cube, then runs left to right through the letters of CastSlate. Ties the two halves into one object.',
+  t:'shine 1310ms · 600ms'}
+];
+
+// Shine start per variant, chosen so each one CRESTS on the curtain's first frame (1450ms).
+const SHINE_AT={glint:1330, bloom:1300, sweep:1310};
+const READY_AT=60, GO_AT=1450, FALL=550, REST=1000;
+
+let sp=2, looping=true;
+const timers=new Map();
+
+document.getElementById('grid').innerHTML=VARIANTS.map(v=>`
+  <div class="demo">
+    <div class="demo-head">
+      <div class="n">${v.n}</div><h2>${v.h}</h2><p>${v.d}</p>
+    </div>
+    <div class="stage">
+      <div class="fake">
+        <div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+        <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div></div>
+      </div>
+      <div class="cs-intro v-${v.k}" id="i-${v.k}">
+        <div class="cs-intro-bg">
+          <div class="cs-intro-hold">
+            <div class="cs-intro-mark">
+              <div class="cs-intro-box">${GLYPH}</div>
+              <span class="cs-intro-name">CastSlate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-foot"><span class="t">${v.t}</span><button data-replay="${v.k}">Replay</button></div>
+  </div>`).join('');
+
+function stop(k){ (timers.get(k)||[]).forEach(clearTimeout); timers.set(k,[]); }
+
+function run(k){
+  stop(k);
+  const el=document.getElementById('i-'+k);
+  el.className='cs-intro v-'+k;
+  el.style.setProperty('--sp', sp);
+  void el.offsetWidth;                       // restart the CSS animations
+  const q=[];
+  q.push(setTimeout(()=>el.classList.add('cs-ready'), READY_AT*sp));
+  q.push(setTimeout(()=>el.classList.add('shine'),    SHINE_AT[k]*sp));
+  q.push(setTimeout(()=>el.classList.add('cs-go'),    GO_AT*sp));
+  if(looping) q.push(setTimeout(()=>run(k), (GO_AT+FALL)*sp + REST));
+  timers.set(k,q);
+}
+const playAll=()=>VARIANTS.forEach(v=>run(v.k));
+
+document.getElementById('playAll').onclick=playAll;
+document.getElementById('grid').addEventListener('click',e=>{
+  const b=e.target.closest('[data-replay]'); if(b) run(b.dataset.replay);
+});
+document.getElementById('speed').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-s]'); if(!b)return;
+  sp=+b.dataset.s;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  playAll();
+});
+document.getElementById('loop').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-l]'); if(!b)return;
+  looping=b.dataset.l==='1';
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  if(looping)playAll(); else VARIANTS.forEach(v=>stop(v.k));
+});
+playAll();
+</script>
+</body></html>

@@ -1,0 +1,189 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Recommended Glint</title>
+<style>
+:root{--paper:#F7F5F1;--ink:#15161A;--ink2:#5A5A6B;--ink3:#8C8C9C;--line:#E3DFD7;--card:#FFFFFF;--accent:#2D8587;--gold:#C8963C;--cool:#5B6B8C;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#111114;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#2A2A31;--card:#1A1A1F;--accent:#48A5A7;--gold:#D9AC5A;--cool:#8496BC;}}
+:root[data-theme="dark"]{--paper:#111114;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#2A2A31;--card:#1A1A1F;--accent:#48A5A7;--gold:#D9AC5A;--cool:#8496BC;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 22px 70px;}
+h1{font-size:26px;font-weight:800;letter-spacing:-.6px;margin:0 0 6px;text-wrap:balance;}
+.sub{margin:0;color:var(--ink2);font-size:14px;line-height:1.6;max-width:66ch;}
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);margin:20px -22px 24px;padding:11px 22px;display:flex;gap:13px;align-items:center;flex-wrap:wrap;}
+.grp{display:flex;gap:3px;background:color-mix(in srgb,var(--ink) 7%,transparent);border-radius:9px;padding:3px;}
+.bar button{background:none;border:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);padding:7px 13px;border-radius:7px;cursor:pointer;}
+.bar button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+.bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.lab{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);}
+.play{background:var(--accent) !important;color:#fff !important;padding:9px 18px !important;border-radius:8px !important;}
+
+.hero{border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;margin-bottom:12px;}
+.hero .cap{padding:15px 20px 13px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.hero .cap .n{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);}
+.hero .cap h2{font-size:18px;font-weight:800;margin:3px 0 0;letter-spacing:-.2px;}
+.hero .cap .spec{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums;}
+.stage{position:relative;aspect-ratio:21/9;background:#0A0A0A;overflow:hidden;}
+.stage.sm{aspect-ratio:16/9;}
+.note{margin:0 0 26px;font-size:12.5px;color:var(--ink2);line-height:1.55;padding-left:2px;}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:760px){.two{grid-template-columns:1fr;}}
+.lane{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;}
+.lane .cap{padding:14px 16px 12px;border-bottom:1px solid var(--line);}
+.lane .cap .n{font-size:10.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px;}
+.lane.warm .cap .n{color:var(--cool);} .lane.cold .cap .n{color:var(--gold);}
+.lane .cap h3{font-size:15px;font-weight:800;margin:0 0 4px;}
+.lane .cap p{margin:0;font-size:12px;color:var(--ink2);line-height:1.5;}
+.lane .foot{padding:11px 16px 14px;}
+
+.tl{position:relative;height:24px;border-radius:6px;background:color-mix(in srgb,var(--ink) 6%,transparent);overflow:hidden;}
+.tl i{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;font-style:normal;color:#fff;white-space:nowrap;overflow:hidden;}
+.tl .sp{background:var(--cool);}
+.tl .gl{background:var(--gold);color:#2B1F06;}
+.tl .ho{background:color-mix(in srgb,var(--ink) 15%,transparent);color:var(--ink2);}
+.tl .br{background:repeating-linear-gradient(45deg,color-mix(in srgb,var(--ink) 10%,transparent) 0 6px,transparent 6px 12px);color:var(--ink3);}
+.tl .cu{background:#2E2E38;}
+.tl b.mount{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--accent);z-index:3;}
+.key{margin-top:8px;font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums;line-height:1.5;}
+.key em{font-style:normal;color:var(--accent);font-weight:700;}
+
+/* ── the intro, replicated ── */
+.cs-intro{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cs-intro-bg{position:absolute;inset:0;background:#0A0A0A;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-bg{animation:cs-bg-down calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-hold{animation:cs-mark-up calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-mark{display:flex;align-items:center;gap:var(--gap,12px);opacity:0;transform:translateY(18px) scale(.965);will-change:transform,opacity;backface-visibility:hidden;}
+.cs-intro.cs-ready .cs-intro-mark{animation:cs-intro-in calc(.3s * var(--sp)) cubic-bezier(.2,.7,.2,1) calc(.05s * var(--sp)) forwards,cs-breathe calc(1.3s * var(--sp)) ease-in-out calc(1.05s * var(--sp)) infinite alternate;}
+.cs-intro-box{position:relative;overflow:hidden;width:var(--cube,58px);height:var(--cube,58px);background:#fff;border-radius:calc(var(--cube,58px) * .225);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
+.cs-intro.cs-ready .cs-intro-box{animation:cs-spin calc(.3s * var(--sp)) cubic-bezier(.5,.05,.2,1) calc(.6s * var(--sp)) both;}
+.cs-intro-box svg{display:block;width:100%;height:100%;}
+.cs-intro-name{color:#fff;font-size:var(--nm,40px);font-weight:800;letter-spacing:-1px;}
+@keyframes cs-intro-in{to{opacity:1;transform:none;}}
+@keyframes cs-breathe{from{transform:scale(1);}to{transform:scale(1.016);}}
+@keyframes cs-bg-down{to{transform:translateY(101%);}}
+@keyframes cs-mark-up{to{transform:translateY(-101%);}}
+@keyframes cs-spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+.cs-intro-box::after{content:"";position:absolute;inset:-40%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.30) 46%,#fff 50%,rgba(255,255,255,.30) 54%,transparent 62%);
+  transform:translateX(-150%);opacity:0;}
+.cs-intro.shine .cs-intro-box::after{animation:glint calc(.4s * var(--sp)) cubic-bezier(.35,0,.2,1) forwards;}
+.cs-intro.shine .cs-intro-box{animation:lift calc(.4s * var(--sp)) ease-out forwards;}
+@keyframes glint{0%{transform:translateX(-150%);opacity:0;}12%{opacity:1;}88%{opacity:1;}100%{transform:translateX(150%);opacity:0;}}
+@keyframes lift{0%{box-shadow:0 8px 40px rgba(255,255,255,.10);}45%{box-shadow:0 8px 40px rgba(255,255,255,.10),0 0 26px 3px rgba(255,255,255,.42);}100%{box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+
+.fake{position:absolute;inset:0;background:#FAF7F1;display:flex;flex-direction:column;}
+.fake .nav{height:17%;border-bottom:1px solid #E5DFD2;display:flex;align-items:center;padding:0 20px;gap:10px;}
+.fake .dot{width:20px;height:20px;border-radius:5px;background:#1A1A2E;}
+.fake .nm{font-size:13px;font-weight:800;color:#1A1A2E;letter-spacing:-.3px;}
+.fake .body{flex:1;padding:18px 20px;}
+.fake .l{height:9px;border-radius:5px;background:#E9E3D6;margin-bottom:9px;}
+.fake .l.w1{width:58%;height:16px;background:#DED7C8;}.fake .l.w2{width:86%;}.fake .l.w3{width:44%;}
+.fake .spin{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#B9B2A2;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+@media (prefers-reduced-motion:reduce){.cs-intro,.cs-intro *{animation:none !important;}.cs-intro-mark{opacity:1;transform:none;}}
+</style></head><body>
+<div class="wrap">
+<h1>The recommendation, running</h1>
+<p class="sub">Glint fires the moment the spin settles, finishes in full, the cube holds 100ms, then the curtain drops. Total 2000ms — the same length as today. This plays at real speed by default; that is exactly what a visitor sees.</p>
+
+<div class="bar">
+  <button class="play" id="play">▶ Replay</button>
+  <span class="lab">Speed</span>
+  <div class="grp" id="speed"><button data-s="1" class="on">1× real</button><button data-s="2">½×</button><button data-s="4">¼×</button></div>
+  <span class="lab">Settle</span>
+  <div class="grp" id="settle"><button data-b="100" class="on">100ms</button><button data-b="200">200ms</button></div>
+</div>
+
+<div class="hero">
+  <div class="cap">
+    <div><div class="n">Recommended</div><h2>Glint · 100ms settle · 2000ms total</h2></div>
+    <div class="spec" id="spec"></div>
+  </div>
+  <div class="stage" style="--cube:58px;--nm:40px;--gap:13px">
+    <div class="fake"><div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+      <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div></div></div>
+    <div class="cs-intro" id="i-hero"><div class="cs-intro-bg"><div class="cs-intro-hold"><div class="cs-intro-mark">
+      <div class="cs-intro-box" id="g-hero"></div><span class="cs-intro-name">CastSlate</span>
+    </div></div></div></div>
+  </div>
+</div>
+<p class="note">Timeline: mark fades in at 60ms · cube spins 600–900ms · <strong>glint 950–1350ms</strong> · holds still to 1450ms · curtain falls 1450–2000ms.</p>
+
+<h1 style="font-size:20px;margin-bottom:5px">Why the settle is free</h1>
+<p class="sub" style="margin-bottom:18px">The curtain does not run on a timer. <code>e&gt;=MIN&amp;&amp;appReady()</code> — it waits for whichever finishes last, the 1450ms floor or React actually mounting. Same intro, two connections:</p>
+
+<div class="two" id="lanes"></div>
+</div>
+
+<script>
+const GLYPH='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg>';
+const READY=60,SPIN_S=600,SPIN_E=900,GS=950,GD=400,FALL=550,REST=1100;
+let settle=100, sp=1;
+const floor=()=>GS+GD+settle;            // 1450ms at a 100ms settle
+
+const LANES=[
+ {k:'warm',cls:'warm',n:'Warm load',h:'React mounted at 800ms',
+  d:'Bundle already cached. React beats the floor, so the curtain goes the instant the floor is reached — and the floor is 1450ms either way.',mount:800},
+ {k:'cold',cls:'cold',n:'Cold load',h:'React mounted at 2600ms',
+  d:'First visit, 792KB still parsing. The logo simply keeps breathing past the floor until the app is ready — the settle vanishes into a wait that was happening anyway.',mount:2600}
+];
+
+document.getElementById('g-hero').innerHTML=GLYPH;
+document.getElementById('lanes').innerHTML=LANES.map(l=>`
+  <div class="lane ${l.cls}">
+    <div class="cap"><div class="n">${l.n}</div><h3>${l.h}</h3><p>${l.d}</p></div>
+    <div class="stage sm" style="--cube:40px;--nm:27px;--gap:9px">
+      <div class="fake"><div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+        <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div></div></div>
+      <div class="cs-intro" id="i-${l.k}"><div class="cs-intro-bg"><div class="cs-intro-hold"><div class="cs-intro-mark">
+        <div class="cs-intro-box">${GLYPH}</div><span class="cs-intro-name">CastSlate</span>
+      </div></div></div></div>
+    </div>
+    <div class="foot"><div class="tl" id="tl-${l.k}"></div><div class="key" id="k-${l.k}"></div></div>
+  </div>`).join('');
+
+function drawTL(k,go,mount){
+  const total=go+FALL, pc=v=>(v/total*100)+'%';
+  const seg=[{c:'sp',l:'spin',a:SPIN_S,b:SPIN_E},{c:'gl',l:'glint',a:GS,b:GS+GD},
+             {c:'ho',l:'settle',a:GS+GD,b:floor()},
+             {c:'br',l:'waiting for React',a:floor(),b:go},
+             {c:'cu',l:'curtain',a:go,b:total}].filter(x=>x.b>x.a+1);
+  document.getElementById('tl-'+k).innerHTML=
+    seg.map(x=>`<i class="${x.c}" style="left:${pc(x.a)};width:${pc(x.b-x.a)}">${x.l}</i>`).join('')+
+    `<b class="mount" style="left:${pc(mount)}"></b>`;
+  const waited=Math.max(0,go-floor());
+  document.getElementById('k-'+k).innerHTML=
+    `React mounted <em>${mount}ms</em> · curtain ${go}ms · total ${total}ms<br>`+
+    (waited>0?`intro waited <em>${waited}ms</em> for the app — the ${settle}ms settle is inside that`
+             :`curtain went on the floor · settle cost <em>0ms</em>`);
+}
+
+const timers=new Map();
+const stop=k=>{(timers.get(k)||[]).forEach(clearTimeout);timers.set(k,[]);};
+function run(k,mount){
+  stop(k);
+  const go = mount==null ? floor() : Math.max(floor(),mount);
+  if(mount!=null) drawTL(k,go,mount);
+  const el=document.getElementById('i-'+k);
+  el.className='cs-intro'; el.style.setProperty('--sp',sp);
+  void el.offsetWidth;
+  const q=[setTimeout(()=>el.classList.add('cs-ready'),READY*sp),
+           setTimeout(()=>el.classList.add('shine'),GS*sp),
+           setTimeout(()=>el.classList.add('cs-go'),go*sp),
+           setTimeout(()=>run(k,mount),(go+FALL)*sp+REST)];
+  timers.set(k,q);
+}
+function playAll(){
+  document.getElementById('spec').textContent=
+    `glint ${GS}–${GS+GD}ms · settle ${settle}ms · curtain ${floor()}ms · total ${floor()+FALL}ms`;
+  run('hero',null); LANES.forEach(l=>run(l.k,l.mount));
+}
+document.getElementById('play').onclick=playAll;
+document.getElementById('speed').addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(!b)return;
+  sp=+b.dataset.s;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));playAll();});
+document.getElementById('settle').addEventListener('click',e=>{const b=e.target.closest('button[data-b]');if(!b)return;
+  settle=+b.dataset.b;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));playAll();});
+playAll();
+</script>
+</body></html>

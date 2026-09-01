@@ -1,0 +1,176 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Glint Before The Curtain</title>
+<style>
+:root{--paper:#F7F5F1;--ink:#15161A;--ink2:#5A5A6B;--ink3:#8C8C9C;--line:#E3DFD7;--card:#FFFFFF;--accent:#2D8587;--gold:#C8963C;--warn:#B4552F;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#111114;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#2A2A31;--card:#1A1A1F;--accent:#48A5A7;--gold:#D9AC5A;--warn:#E08A5F;}}
+:root[data-theme="dark"]{--paper:#111114;--ink:#F2F1EE;--ink2:#A8A8B8;--ink3:#75758A;--line:#2A2A31;--card:#1A1A1F;--accent:#48A5A7;--gold:#D9AC5A;--warn:#E08A5F;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 22px 70px;}
+header h1{font-size:26px;font-weight:800;letter-spacing:-.6px;margin:0 0 6px;text-wrap:balance;}
+header p{margin:0;color:var(--ink2);font-size:14px;line-height:1.6;max-width:68ch;}
+.bar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);margin:22px -22px 26px;padding:12px 22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.grp{display:flex;gap:3px;background:color-mix(in srgb,var(--ink) 7%,transparent);border-radius:9px;padding:3px;}
+.bar button{background:none;border:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);padding:7px 13px;border-radius:7px;cursor:pointer;}
+.bar button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.10);}
+.bar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.lab{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);}
+.play{background:var(--accent) !important;color:#fff !important;padding:9px 18px !important;border-radius:8px !important;}
+.total{font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums;margin-left:auto;}
+.total b{color:var(--ink);}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:24px;}
+.demo{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;}
+.demo.bad{opacity:.9;}
+.demo-head{padding:16px 18px 13px;border-bottom:1px solid var(--line);}
+.demo-head .n{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px;}
+.demo.bad .n{color:var(--warn);} .demo.good .n{color:var(--gold);}
+.demo-head h2{font-size:17px;font-weight:800;margin:0 0 5px;letter-spacing:-.2px;}
+.demo-head p{margin:0;font-size:12.5px;color:var(--ink2);line-height:1.5;}
+.demo-foot{padding:11px 18px 14px;}
+
+/* timeline strip */
+.tl{position:relative;height:26px;border-radius:6px;background:color-mix(in srgb,var(--ink) 6%,transparent);overflow:hidden;font-size:9px;}
+.tl span{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.04em;color:#fff;white-space:nowrap;overflow:hidden;}
+.tl .sp{background:#5B6B8C;} .tl .gl{background:var(--gold);color:#2B1F06;} .tl .st{background:color-mix(in srgb,var(--ink) 16%,transparent);color:var(--ink2);} .tl .cu{background:#2E2E38;}
+.tlkey{margin-top:7px;font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums;}
+
+.stage{position:relative;aspect-ratio:16/9;background:#0A0A0A;overflow:hidden;}
+.cs-intro{position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.cs-intro-bg{position:absolute;inset:0;background:#0A0A0A;z-index:1;overflow:hidden;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-bg{animation:cs-bg-down calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-hold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform;}
+.cs-intro.cs-go .cs-intro-hold{animation:cs-mark-up calc(.55s * var(--sp)) cubic-bezier(0,0,.2,1) forwards;}
+.cs-intro-mark{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(18px) scale(.965);will-change:transform,opacity;backface-visibility:hidden;}
+.cs-intro.cs-ready .cs-intro-mark{animation:cs-intro-in calc(.3s * var(--sp)) cubic-bezier(.2,.7,.2,1) calc(.05s * var(--sp)) forwards,cs-breathe calc(1.3s * var(--sp)) ease-in-out calc(1.05s * var(--sp)) infinite alternate;}
+.cs-intro-box{position:relative;overflow:hidden;width:48px;height:48px;background:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 40px rgba(255,255,255,0.10);}
+.cs-intro.cs-ready .cs-intro-box{animation:cs-spin calc(.3s * var(--sp)) cubic-bezier(.5,.05,.2,1) calc(.6s * var(--sp)) both;}
+.cs-intro-box svg{display:block;width:100%;height:100%;}
+.cs-intro-name{color:#fff;font-size:33px;font-weight:800;letter-spacing:-.8px;}
+@keyframes cs-intro-in{to{opacity:1;transform:none;}}
+@keyframes cs-breathe{from{transform:scale(1);}to{transform:scale(1.016);}}
+@keyframes cs-bg-down{to{transform:translateY(101%);}}
+@keyframes cs-mark-up{to{transform:translateY(-101%);}}
+@keyframes cs-spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+
+/* the glint — identical in both stages, ONLY the moment it fires differs */
+.cs-intro-box::after{content:"";position:absolute;inset:-40%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.30) 46%,#fff 50%,rgba(255,255,255,.30) 54%,transparent 62%);
+  transform:translateX(-150%);opacity:0;}
+.cs-intro.shine .cs-intro-box::after{animation:glint-sweep calc(var(--gd) * var(--sp)) cubic-bezier(.35,0,.2,1) forwards;}
+.cs-intro.shine .cs-intro-box{animation:glint-lift calc(var(--gd) * var(--sp)) ease-out forwards;}
+@keyframes glint-sweep{0%{transform:translateX(-150%);opacity:0;}12%{opacity:1;}88%{opacity:1;}100%{transform:translateX(150%);opacity:0;}}
+@keyframes glint-lift{0%{box-shadow:0 8px 40px rgba(255,255,255,.10);}45%{box-shadow:0 8px 40px rgba(255,255,255,.10),0 0 26px 3px rgba(255,255,255,.42);}100%{box-shadow:0 8px 40px rgba(255,255,255,.10);}}
+
+.fake{position:absolute;inset:0;background:#FAF7F1;display:flex;flex-direction:column;}
+.fake .nav{height:16%;border-bottom:1px solid #E5DFD2;display:flex;align-items:center;padding:0 18px;gap:9px;}
+.fake .dot{width:19px;height:19px;border-radius:5px;background:#1A1A2E;}
+.fake .nm{font-size:12px;font-weight:800;color:#1A1A2E;letter-spacing:-.3px;}
+.fake .body{flex:1;padding:16px 18px;}
+.fake .l{height:9px;border-radius:5px;background:#E9E3D6;margin-bottom:9px;}
+.fake .l.w1{width:62%;height:15px;background:#DED7C8;}.fake .l.w2{width:88%;}.fake .l.w3{width:47%;}
+@media (prefers-reduced-motion:reduce){.cs-intro,.cs-intro *{animation:none !important;}.cs-intro-mark{opacity:1;transform:none;}}
+</style></head><body>
+<div class="wrap">
+<header>
+  <h1>Glint before the curtain</h1>
+  <p>You were right — the glint was crossing into the curtain and getting clipped. The mark only survives about 275ms into the fall before the curtain's edge wipes through it, so a 460ms glint starting at 1330ms was always going to lose its tail. The fix isn't a slower curtain, it's an earlier glint: run it straight out of the spin, let it finish, hold a beat, then drop. Same effect, same total length.</p>
+</header>
+
+<div class="bar">
+  <button class="play" id="playAll">▶ Play both</button>
+  <span class="lab">Speed</span>
+  <div class="grp" id="speed"><button data-s="1">1×</button><button data-s="2" class="on">½×</button><button data-s="4">¼×</button></div>
+  <span class="lab">Settle beat</span>
+  <div class="grp" id="settle"><button data-b="100" class="on">100ms</button><button data-b="200">200ms</button><button data-b="320">320ms</button></div>
+  <span class="total" id="total"></span>
+</div>
+
+<div class="grid" id="grid"></div>
+</div>
+
+<script>
+const GLYPH='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="48" height="48"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0A0A0A"/></svg>';
+const READY=60, SPIN_S=600, SPIN_E=900, FALL=550, REST=1000;
+const OLD={shine:1330, gd:460, go:1450};          // what you saw — clipped
+let settle=100, sp=2;
+
+const STAGES=[
+ {k:'old', cls:'bad',  n:'What you saw', h:'Glint runs into the curtain',
+  d:'Glint fires at 1330ms and needs 460ms, but the curtain starts at 1450ms and wipes the mark ~275ms later. The last third of the sweep is cut.'},
+ {k:'new', cls:'good', n:'The fix', h:'Glint completes, then the curtain',
+  d:'Glint fires the moment the spin settles, finishes in full, and the cube holds still for a beat before the curtain moves. Nothing is clipped.'}
+];
+
+function plan(){
+  // New timing: glint starts as the spin lands, and must END before the curtain.
+  const gs=SPIN_E+50;                       // 950ms — straight out of the spin
+  const gd=400;                             // a touch quicker so it fits cleanly
+  const go=gs+gd+settle;                    // curtain waits for the glint + a beat
+  return {gs,gd,go,total:go+FALL};
+}
+
+document.getElementById('grid').innerHTML=STAGES.map(s=>`
+  <div class="demo ${s.cls}">
+    <div class="demo-head"><div class="n">${s.n}</div><h2>${s.h}</h2><p>${s.d}</p></div>
+    <div class="stage">
+      <div class="fake"><div class="nav"><span class="dot"></span><span class="nm">CastSlate</span></div>
+        <div class="body"><div class="l w1"></div><div class="l w2"></div><div class="l w3"></div></div></div>
+      <div class="cs-intro" id="i-${s.k}">
+        <div class="cs-intro-bg"><div class="cs-intro-hold"><div class="cs-intro-mark">
+          <div class="cs-intro-box">${GLYPH}</div><span class="cs-intro-name">CastSlate</span>
+        </div></div></div>
+      </div>
+    </div>
+    <div class="demo-foot"><div class="tl" id="tl-${s.k}"></div><div class="tlkey" id="tk-${s.k}"></div></div>
+  </div>`).join('');
+
+function drawTL(k,t){
+  const end=t.total, pc=ms=>(ms/end*100)+'%';
+  const bars=[
+    {c:'sp',l:'spin',    a:SPIN_S, b:SPIN_E},
+    {c:'gl',l:'glint',   a:t.gs,   b:t.gs+t.gd},
+    {c:'st',l:'hold',    a:t.gs+t.gd, b:t.go},
+    {c:'cu',l:'curtain', a:t.go,   b:t.go+FALL}
+  ].filter(x=>x.b>x.a);
+  document.getElementById('tl-'+k).innerHTML=bars.map(x=>
+    `<span class="${x.c}" style="left:${pc(x.a)};width:${pc(x.b-x.a)}">${x.l}</span>`).join('');
+  const clipAt=t.go+275, cut=Math.max(0,(t.gs+t.gd)-clipAt);
+  document.getElementById('tk-'+k).innerHTML=
+    `glint ${t.gs}–${t.gs+t.gd}ms · curtain ${t.go}ms · total ${t.total}ms` +
+    (cut>0?` · <b style="color:var(--warn)">${Math.round(cut)}ms of the glint is wiped</b>`:` · nothing clipped`);
+}
+
+const timers=new Map();
+function stop(k){(timers.get(k)||[]).forEach(clearTimeout);timers.set(k,[]);}
+function run(k){
+  stop(k);
+  const t = k==='old' ? {gs:OLD.shine,gd:OLD.gd,go:OLD.go,total:OLD.go+FALL} : plan();
+  drawTL(k,t);
+  const el=document.getElementById('i-'+k);
+  el.className='cs-intro';
+  el.style.setProperty('--sp',sp);
+  el.style.setProperty('--gd',(t.gd/1000)+'s');
+  void el.offsetWidth;
+  const q=[];
+  q.push(setTimeout(()=>el.classList.add('cs-ready'),READY*sp));
+  q.push(setTimeout(()=>el.classList.add('shine'),  t.gs*sp));
+  q.push(setTimeout(()=>el.classList.add('cs-go'),  t.go*sp));
+  q.push(setTimeout(()=>run(k), t.total*sp+REST));
+  timers.set(k,q);
+}
+function playAll(){
+  const t=plan();
+  document.getElementById('total').innerHTML=
+    `New total intro <b>${t.total}ms</b> · today it is <b>2000ms</b>`;
+  STAGES.forEach(s=>run(s.k));
+}
+document.getElementById('playAll').onclick=playAll;
+document.getElementById('speed').addEventListener('click',e=>{const b=e.target.closest('button[data-s]');if(!b)return;
+  sp=+b.dataset.s;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));playAll();});
+document.getElementById('settle').addEventListener('click',e=>{const b=e.target.closest('button[data-b]');if(!b)return;
+  settle=+b.dataset.b;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));playAll();});
+playAll();
+</script>
+</body></html>
