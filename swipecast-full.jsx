@@ -3542,11 +3542,22 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    layer only carries the mask, which dissolves the peeking neighbours at the
    section edges instead of slicing them on a hard line. The arrows are siblings
    of this element, not children, so the fade never touches them. */
-.fcs-viewport{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+/* ⚠️ overflow:hidden is NOT redundant with .fcs-stage's. A masked element is
+   rasterised as its own layer, and without a clip of its own that layer is the
+   entire track — twelve cards, roughly 14,000px wide — re-composited every frame
+   of every slide. That was the stutter. Clipping here bounds the masked layer to
+   one stage width. .fcs-stage keeps its own overflow for the iPad clip. */
+.fcs-viewport{overflow:hidden;
+              -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
               mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);}
 .fcs-track{display:flex;align-items:stretch;will-change:transform;transition:transform .55s cubic-bezier(.4,0,.2,1);}
 .fcs-card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;padding:38px 42px;cursor:pointer;box-sizing:border-box;flex-shrink:0;min-height:300px;
-  transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1),filter .45s ease,box-shadow .45s ease,border-color .25s ease;
+  /* opacity and transform ONLY — both are compositor-only, so a slide costs no
+     repaints. filter and box-shadow were in here and are not compositable: every
+     frame of every slide repainted each card that was changing state. They still
+     change, they just snap at the start of the slide, which cannot be seen under
+     the opacity and scale that are animating over it. */
+  transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1);
   box-shadow:0 1px 2px rgba(0,0,0,0.02);
 }
 /* ─── Anti-jump reservations. The carousel auto-advances every 5s and the cards
@@ -20595,7 +20606,14 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
     const h=el.offsetHeight;
     if(h>pinRef.current.h)pinRef.current.h=h;
     el.style.minHeight=pinRef.current.h+"px";
-  });
+  // ⚠️ Deps, not every render. Clearing minHeight and reading offsetHeight forces
+  //    a synchronous layout of the whole track, and with no dep array that ran on
+  //    the very render that starts each slide — a guaranteed layout thrash on the
+  //    transition's first frame, which is what the stutter felt like. The track's
+  //    height does not depend on idx any more (every card renders at one size
+  //    since the Browse card landed), so it only has to be re-measured when the
+  //    width or the data changes.
+  },[sectionWidth,vpw,castings.length]);
 
   const next=()=>setIdx(i=>(i+1)%(castings.length||1));
   const prev=()=>setIdx(i=>(i-1+(castings.length||1))%(castings.length||1));
@@ -20778,7 +20796,13 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                   </div>
                   <div className="fcs-ctawrap">
                     <button className="btn-teal cc-cta" tabIndex={isCenter?0:-1} onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
-                    <span className="fcs-count">· Casting {idx+1} of {castings.length}</span>
+                    {/* i, not idx. This used to print the centred card's number
+                        on every card, so one slide dirtied a text node inside all
+                        twelve and React re-rendered the lot; now only the two
+                        cards whose state actually changed update. It was also
+                        simply wrong once the side cards became readable — the
+                        card to the right of "Casting 4 of 12" also said 4. */}
+                    <span className="fcs-count">· Casting {i+1} of {castings.length}</span>
                   </div>
                 </div>
               </div>
