@@ -3529,7 +3529,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    of an invalid selector that swallows the rule below. That is exactly how
    .fcs-section silently lost its max-width, centring and padding — the header and
    the "Browse all" button sat flush against both screen edges on desktop. */
-.fcs-section{position:relative;width:100%;max-width:1480px;margin:0 auto;padding:48px 24px 16px;}
+.fcs-section{position:relative;width:100%;max-width:1600px;margin:0 auto;padding:48px 24px 16px;}
 /* NOTE: contain:inline-size is applied to .fcs-stage ONLY at <=1024px (the iPad
    fix), NOT here. At desktop widths the stage MUST stay uncontained: containing
    it removes the track's width contribution, which makes the flex-child
@@ -3537,6 +3537,13 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    viewport — that fed a wrong width into the coverflow-centre math and threw the
    centre card off-screen to the right (the "slider cut off on desktop" bug). */
 .fcs-stage{position:relative;overflow:hidden;padding:18px 0;}
+/* .fcs-stage keeps the overflow:hidden — it is the local clip the iPad needs
+   (see the contain:inline-size note above), so do not move it down here. This
+   layer only carries the mask, which dissolves the peeking neighbours at the
+   section edges instead of slicing them on a hard line. The arrows are siblings
+   of this element, not children, so the fade never touches them. */
+.fcs-viewport{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+              mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);}
 .fcs-track{display:flex;align-items:stretch;will-change:transform;transition:transform .55s cubic-bezier(.4,0,.2,1);}
 .fcs-card{position:relative;background:var(--s1);border:1px solid var(--bdr);border-radius:20px;padding:38px 42px;cursor:pointer;box-sizing:border-box;flex-shrink:0;min-height:300px;
   transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1),filter .45s ease,box-shadow .45s ease,border-color .25s ease;
@@ -3555,8 +3562,11 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    (pinRef in FeaturedCastingsSlider) already holds the track at the tallest
    card it has seen. Reserving here just parked 32px of dead space under every
    single-line title, between it and the badge row. */
-.fcs-cta-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.fcs-card-side .fcs-cta-row,.fcs-card-side .cc-foot{visibility:hidden;pointer-events:none;}
+/* The side cards render COMPLETE — pills, CTA and all — and are only faded
+   back. Hiding the foot on them (which .fcs-cta-row used to do, carried over
+   from the old design where only the centre card got a button) emptied the one
+   part of the peek worth previewing: a reader could see the next casting's
+   title but not its roles until it had already slid into the centre. */
 
 /* ─── The slider's card IS the Browse Castings card ──────────────────────────
    Everything visual comes from the shared .cc-* rules further up this file
@@ -3575,9 +3585,9 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fcs-count{font-size:11px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;font-weight:700;white-space:nowrap;}
 .fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 1px 10px rgba(26,26,46,0.05);}
 .fcs-card-center:hover{transform:scale(1.004) translateY(-1px);box-shadow:-12px 10px 30px -16px rgba(26,26,46,0.09),12px 10px 30px -16px rgba(26,26,46,0.09),0 14px 32px -18px rgba(26,26,46,0.08);border-color:var(--bdr);}
-.fcs-card-side{opacity:0.42;filter:grayscale(.12);transform:scale(.92);}
-.fcs-card-side:hover{opacity:0.7;filter:none;transform:scale(.96);}
-.fcs-card-far{opacity:0.18;}
+.fcs-card-side{opacity:0.5;filter:saturate(.75);transform:scale(.955);}
+.fcs-card-side:hover{opacity:0.78;filter:none;transform:scale(.975);}
+.fcs-card-far{opacity:0.26;}
 .fcs-arrow{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:var(--s1);border:1px solid var(--bdr);color:var(--t1);cursor:pointer;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,0.12);transition:transform .18s ease,background .18s ease,color .18s ease;font-family:'DM Sans',sans-serif;line-height:1;}
 .fcs-arrow:hover{background:var(--teal);color:#fff;transform:translateY(-50%) scale(1.08);border-color:var(--teal);}
 .fcs-arrow:disabled{opacity:0.45;cursor:not-allowed;}
@@ -3607,6 +3617,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 @media (max-width:768px){
   .fcs-section{padding:32px 16px 12px;}
   .fcs-stage{padding:6px 0;}
+  .fcs-viewport{-webkit-mask-image:none;mask-image:none;}
   .fcs-card{padding:24px 22px;min-height:auto;}
   /* The 900px block above already stacks .casting-card-row and .cc-foot for
      every Browse card; the slider card only needs its own padding back and a
@@ -20541,7 +20552,8 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   useEffect(()=>{if(idx>=castings.length&&castings.length>0)setIdx(0);},[castings.length,idx]);
 
   // ─── Height pin. The reservations in CSS (.fcs-track .fcs-card h3 min-height,
-  //     .fcs-cta-row) equalise the parts that depend on WHICH card is centred,
+  //     the foot row rendering on every card) equalise the parts that depend on
+  //     WHICH card is centred,
   //     but castings still differ in tagline and synopsis length, so the tallest
   //     card is not always the one on screen. Cards stretch to the track, so a
   //     taller card arriving resizes the whole section and shoves every section
@@ -20554,9 +20566,10 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   useLayoutEffect(()=>{
     const el=trackRef.current;
     if(!el)return;
-    // Width is read off the stage, not from stageWidth — that is computed further
-    // down the render and would be in its temporal dead zone up here, where the
-    // hook has to live to stay above the loading/empty early returns.
+    // Width is read off the track's parent (.fcs-viewport, which spans the stage),
+    // not from stageWidth — that is computed further down the render and would be
+    // in its temporal dead zone up here, where the hook has to live to stay above
+    // the loading/empty early returns.
     const w=el.parentElement?el.parentElement.offsetWidth:0;
     if(pinRef.current.w!==w)pinRef.current={w:w,h:0};
     el.style.minHeight="";
@@ -20624,8 +20637,16 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const isMid=isMobileVpw?false:(sectionWidth>=720&&sectionWidth<1024);
   const secHPad=isMobileVpw?16:(sectionWidth>=1024?24:sectionWidth>=768?20:16);
   const stageWidth=isMobileVpw?(vpw-32):(sectionWidth-2*secHPad);
-  const cardWidth=isWide?720:isMid?540:stageWidth;
-  const gap=isWide?28:isMid?20:14;
+  // A Browse Castings card is 1320px wide (.page-wide 1400 less its 40px padding
+  // each side) and about 200px tall. At 720 the SAME card stacked into roughly
+  // 1.8:1 and stopped reading as the same object — hence 1160, which keeps the
+  // landscape proportion while still leaving each neighbour a readable sliver.
+  // Browse's literal 1320 was measured too: it leaves so little peek that the
+  // section stops reading as a carousel at all.
+  // The -140 clamp is what guarantees that peek on a narrow desktop: without it
+  // the card would grow to the full stage and the neighbours would vanish.
+  const cardWidth=isMobileVpw?stageWidth:Math.min(isWide?1160:800,Math.max(320,stageWidth-140));
+  const gap=isMobileVpw?14:isWide?22:18;
   const itemStep=cardWidth+gap;
   const trackOffset=isMobileVpw?-(idx*itemStep):((stageWidth/2)-(cardWidth/2)-(idx*itemStep));
   return(<section className="fcs-section" ref={sectionRef}>
@@ -20649,6 +20670,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         smooth slide. Side cards remain clickable to jump straight to them. */}
     <div className="fcs-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();prev();}}>‹</button>}
+      <div className="fcs-viewport">
       <div className="fcs-track" ref={trackRef} style={{transform:`translate3d(${trackOffset}px,0,0)`,gap:`${gap}px`}}>
         {castings.map((sc,i)=>{
           const isCenter=i===idx;
@@ -20718,8 +20740,9 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                     pills open this casting on that role. Rendered on EVERY card,
                     not just the centred one — a row that appears and disappears
                     on the 5s timer resized the whole section. Hidden, not
-                    unmounted, so the space is always reserved (.fcs-cta-row). */}
-                <div className="cc-foot" aria-hidden={!isCenter}>
+                    unmounted, so the space is always reserved. Side cards now
+                    SHOW it too — see the .fcs-card-side note in the CSS. */}
+                <div className="cc-foot">
                   <div className="cc-pills">
                     {sPick.shown.map((r,ri)=>{
                       const spec=roleCardSpec(r);
@@ -20740,6 +20763,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             </div>
           </div>);
         })}
+      </div>
       </div>
       {castings.length>1&&<button className="fcs-arrow next" aria-label="Next casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();next();}}>›</button>}
     </div>
