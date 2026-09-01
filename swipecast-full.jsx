@@ -20390,12 +20390,31 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   // Stage width drives the responsive card sizing + the track-translate math.
   const sectionRef=useRef(null);
   const [sectionWidth,setSectionWidth]=useState(()=>typeof window!=="undefined"?Math.min(window.innerWidth,1200):1200);
+  // ⚠️ This MUST re-run when the real section mounts, not just once. sectionRef
+  //    is attached to the carousel's own <section>, but the first render returns
+  //    the LOADING section, which has no ref — so a mount-only effect measured
+  //    null, kept the 1200 default forever, and nothing ever corrected it. The
+  //    stale width fed both the card sizing and the centring maths, which is why
+  //    the centred card sat ~200px left of centre on a wide screen. Depending on
+  //    loading/castings.length re-attaches once the carousel is really on screen,
+  //    and the ResizeObserver then keeps it honest through layout changes that
+  //    never fire a window resize (scrollbar appearing, the intro curtain
+  //    releasing, a font landing).
   useEffect(()=>{
-    const update=()=>{if(sectionRef.current)setSectionWidth(sectionRef.current.offsetWidth);};
+    const el=sectionRef.current;
+    if(!el)return;
+    const update=()=>setSectionWidth(el.offsetWidth);
     update();
+    let ro=null;
+    if(typeof ResizeObserver!=="undefined"){
+      try{ro=new ResizeObserver(update);ro.observe(el);}catch(_){ro=null;}
+    }
     window.addEventListener("resize",update);
-    return()=>window.removeEventListener("resize",update);
-  },[]);
+    return()=>{
+      if(ro){try{ro.disconnect();}catch(_){}}
+      window.removeEventListener("resize",update);
+    };
+  },[loading,castings.length]);
 
   // Same select shape as SearchPage so the click navigates seamlessly into CastingDetailPage.
   const fetchCastings=useCallback(async()=>{
