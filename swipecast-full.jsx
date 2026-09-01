@@ -20643,9 +20643,12 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   // landscape proportion while still leaving each neighbour a readable sliver.
   // Browse's literal 1320 was measured too: it leaves so little peek that the
   // section stops reading as a carousel at all.
-  // The -140 clamp is what guarantees that peek on a narrow desktop: without it
-  // the card would grow to the full stage and the neighbours would vanish.
-  const cardWidth=isMobileVpw?stageWidth:Math.min(isWide?1160:800,Math.max(320,stageWidth-140));
+  // The clamp is what guarantees that peek on a narrower desktop: without it the
+  // card grows to the full stage and the neighbours vanish. 260 (=130px of
+  // neighbour each side) is the floor at which the peek still reads as another
+  // card rather than as a stray border — measured at 1280, where a 140 clamp
+  // left only 70px and the section stopped looking like a carousel.
+  const cardWidth=isMobileVpw?stageWidth:Math.min(isWide?1160:800,Math.max(560,stageWidth-260));
   const gap=isMobileVpw?14:isWide?22:18;
   const itemStep=cardWidth+gap;
   const trackOffset=isMobileVpw?-(idx*itemStep):((stageWidth/2)-(cardWidth/2)-(idx*itemStep));
