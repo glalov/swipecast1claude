@@ -182,7 +182,7 @@ const TRANSLATIONS = {
     'casting.shoots':'Shoot Dates','casting.rehearsal':'Rehearsal',
     'casting.submissions':'Submissions','casting.director':'Director',
     'casting.production':'Production','casting.roles':'Roles',
-    'casting.synopsis':'About the Project',
+    'casting.synopsis':'About the Project','casting.story':'The Story',
     'casting.role.lead':'Lead','casting.role.supporting':'Supporting','casting.role.featured':'Featured',
     'casting.role.seriesRegular':'Series Regular','casting.role.recurring':'Recurring',
     'casting.role.guestStar':'Guest Star','casting.role.principal':'Principal',
@@ -429,7 +429,7 @@ const TRANSLATIONS = {
     'casting.shoots':'Fechas de rodaje','casting.rehearsal':'Ensayo',
     'casting.submissions':'Postulaciones','casting.director':'Director',
     'casting.production':'Producción','casting.roles':'Papeles',
-    'casting.synopsis':'Sobre el proyecto',
+    'casting.synopsis':'Sobre el proyecto','casting.story':'La historia',
     'casting.role.lead':'Protagonista','casting.role.supporting':'Secundario','casting.role.featured':'Destacado',
     'casting.role.seriesRegular':'Regular de serie','casting.role.recurring':'Recurrente',
     'casting.role.guestStar':'Estrella invitada','casting.role.principal':'Principal',
@@ -803,6 +803,13 @@ function DirectorChairAvatar({size=52}){
 
 // Project / production types offered in the CD post form and the admin generator.
 const PROJECT_TYPE_OPTIONS=["Feature Film","Short Film","Student Film","Independent Film","Documentary","TV Series","TV Pilot","Web Series","Streaming Series","Commercial","Social Media Ad","Branded Content","Corporate Video","Industrial / Training Video","Promo Video","Product Demo","Music Video","Voiceover","Podcast / Audio Drama","Animation","Video Game","Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Live Event","Hosting / Presenter","Reality / Docu-Series","Lifestyle / Unscripted","Modeling","Print Campaign","Photo Shoot","Influencer / UGC Content","Educational Video","Public Service Announcement","Spec Commercial","Proof of Concept","Sizzle Reel","Pitch Trailer","Table Read","Experimental Film","Dance Project","Performance Art","Background / Extras","Stand-In","Body Double","Stunts","Motion Capture","Limited Series","Miniseries","Vertical Series","Pilot Presentation","Ad Campaign","Other"];
+
+// Narrative projects describe a story; everything else (commercials, print, corporate,
+// unscripted) describes a job. The synopsis heading follows suit — see t('casting.story').
+const NARRATIVE_PROJECT_TYPES=new Set(["feature film","short film","student film","independent film","indie film","film","experimental film","documentary","animation","proof of concept","pitch trailer","tv","tv series","tv pilot","streaming series","web series","limited series","miniseries","vertical series","pilot presentation","theater","theatre","off-broadway theater","off-off-broadway theater","musical theater","broadway","workshop / staged reading","table read","podcast / audio drama","video game"]);
+function isNarrativeProject(type){
+  return NARRATIVE_PROJECT_TYPES.has(String(type||"").trim().toLowerCase());
+}
 
 
 /* ── Project-type icons ───────────────────────────────────────────────────
@@ -12013,7 +12020,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>}
 
     <section style={{marginBottom:40}}>
-      <div className="section-label" style={{marginBottom:12}}>{t('casting.synopsis')}</div>
+      <div className="section-label" style={{marginBottom:12}}>{t(isNarrativeProject(casting.type)?'casting.story':'casting.synopsis')}</div>
       <p style={{color:"#3C4A52",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
     </section>
 
