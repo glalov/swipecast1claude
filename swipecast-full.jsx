@@ -30130,10 +30130,14 @@ const ACG = (()=>{
     // Ad, promo and stills work is titled the way the boards title it. A slice
     // still keeps the seed's own title, because spec and branded-short work
     // genuinely does carry one.
-    if(/commercial|branded content|social media ad|ad campaign|promo video|product demo|spec commercial|print campaign|photo shoot|influencer|ugc/i.test(String(type||""))&&Math.random()<0.72){
-      return adTitles(seed,city).filter((v,i,a)=>a.indexOf(v)===i);
-    }
     const stems=seedTitleStems(seed);
+    if(/commercial|branded content|social media ad|ad campaign|promo video|product demo|spec commercial|print campaign|photo shoot|influencer|ugc/i.test(String(type||""))&&Math.random()<0.72){
+      // Ad titles first, but the seed's own stems stay on the end: the caller
+      // walks this list until it finds one no previous listing has used, and
+      // handing it a four-item list would make a collision fail the whole
+      // concept instead of falling through to the next name.
+      return adTitles(seed,city).concat(stems).filter((v,i,a)=>!!v&&a.indexOf(v)===i);
+    }
     const genre=titleCase(String(seed.genre||"project").split(" ").slice(-1)[0]);
     const first=stems[0]||"Untitled";
     const roll=Math.random();
