@@ -24694,7 +24694,7 @@ const ACG = (()=>{
   const PAY_VARIES_B="Rate varies. Some projects pay $100–$400/day; others offer copy, credit, and meals only. Compensation confirmed per booking.";
   const PAY_VARIES_C="Unpaid to low-paid. These are micro-budget productions — most offer copy, IMDb credit, and a meal. Some offer a modest stipend.";
   const PAY_SHOWCASE="No pay. Selected submissions may be featured in CastSlate showcase emails or considered for future opportunities on the platform.";
-  const PAY_VOICEOVER_A="Varies. Paid session work (flat fee or buyout) for some projects; credit-only for others. Rate disclosed per project before booking.";
+  const PAY_VOICEOVER_A="Varies. Some projects pay a flat session fee, some pay once for unlimited use, and some are credit-only. The rate is given to you before you book.";
   const PAY_VOICEOVER_B="$50–$300 for most paid session projects. Some educational or spec content is credit-only. All rates disclosed up front.";
   const PAY_THEATER="Most workshop sessions are unpaid or offer a small stipend ($25–$75/day). Some funded workshops offer rehearsal pay. Details shared per project.";
   const PAY_COMMERCIAL="Day rates range from $150–$600 for paid commercial projects. Spec and student commercial work may be copy/credit only.";
@@ -26160,7 +26160,7 @@ const ACG = (()=>{
       h2:"the ads run backwards across the set, ending with the tool being borrowed",
       w:["a hardware store and the two houses either side of a driveway","a garden centre and a shared back alley","a home-improvement floor and a suburban garage"],
       c:[
-        {s:"the borrower",r:"Lead",a:"mature",x:"Cheerfully shameless. Comic timing on the button at the end of each cutdown."},
+        {s:"the borrower",r:"Lead",a:"mature",x:"Cheerfully shameless. The joke lands at the end of every short version of the ad, so the timing has to be exact."},
         {s:"the lender",r:"Lead",a:"midCareer",g:"F",x:"Patience with an expiry date. Reaction acting carries the campaign."},
         {s:"the store associate",r:"Supporting",a:"youngAdult",x:"Genuinely helpful; delivers product information without sounding like a brochure."},
         {s:"the kid on the bike",r:"Supporting",a:"child",x:"Guardian required. Non-speaking or one word."},
@@ -26238,7 +26238,7 @@ const ACG = (()=>{
       h2:"each face is paired with the same face twenty years older, cast in pairs",
       w:["a daylight studio and a rooftop at golden hour","a converted apartment with north-facing windows","a beach house shot across one long morning"],
       c:[
-        {s:"the campaign face",r:"Lead",a:"midCareer",g:"F",x:"Carries the hero print and film cutdown. Expressive in stills; comfortable with close, unretouched work."},
+        {s:"the campaign face",r:"Lead",a:"midCareer",g:"F",x:"The main face of the campaign, in both the photos and the short film. Comfortable being photographed close up, with nothing smoothed out afterwards."},
         {s:"the second face",r:"Lead",a:"senior",x:"Featured across the aging-skin range. Presence over polish."},
         {s:"the third face",r:"Supporting",a:"youngAdult",x:"Digital and social assets. Natural movement, easy laugh."},
         {s:"the fourth face",r:"Supporting",a:"teen",x:"Guardian required. Featured in the gentle-formula range; fully clothed, beauty-lighting only."},
@@ -26251,7 +26251,7 @@ const ACG = (()=>{
       h2:"the whole property is shot as one continuous day, so every picture has its own hour",
       w:["a boutique hotel lobby, rooms and rooftop","a restored downtown property with a bar and a courtyard","a coastal inn shot across a morning and an evening"],
       c:[
-        {s:"the traveling guest",r:"Lead",a:"midCareer",x:"Hero images and the film cutdown. Relaxed, unposed, strong in movement."},
+        {s:"the traveling guest",r:"Lead",a:"midCareer",x:"The main photos and the short film. Relaxed and unposed, and good at moving naturally while being filmed."},
         {s:"the second guest",r:"Lead",a:"youngAdult",g:"F",x:"Paired frames with the lead; genuine chemistry needed at callback."},
         {s:"the front-of-house staff",r:"Supporting",a:"youngAdult",x:"Featured service moments. Real hotel or restaurant experience helps."},
         {s:"the bartender",r:"Supporting",a:"midCareer",x:"Hands-and-craft detail shots plus two featured portraits."},
@@ -27415,7 +27415,7 @@ const ACG = (()=>{
       w:["a corner newsstand under a sidewalk shed","a stand outside a subway entrance","a kiosk wedged between two storefronts"],
       c:[
         {s:"the owner",r:"Lead",a:"mature",x:"Knows four hundred people by their order and none of them by name. Dry, alert, very funny."},
-        {s:"the owner's nephew",r:"Supporting",a:"youngAdult",fam:"a",x:"Works weekends and wants him to take the buyout."},
+        {s:"the owner's nephew",r:"Supporting",a:"youngAdult",fam:"a",x:"Works weekends and wants him to sell the place and take the money while someone is still offering."},
         {s:"the regular",r:"Supporting",a:"senior",g:"F",x:"Same paper, same time, eleven years. Two scenes that carry the ending."},
         {s:"the building manager",r:"Supporting",a:"midCareer",x:"Polite about something that is not negotiable."},
         {s:"the delivery driver",r:"Day Player",a:"midCareer",x:"Four in the morning, one conversation, all the backstory and none of it dull."}
@@ -29361,20 +29361,32 @@ const ACG = (()=>{
   // Rate bands by budget tier and role rank, in dollars. Deliberately at the
   // real market floor for independent work — nothing here quotes a number a
   // micro-budget short could not actually pay.
+  // Checked against what the working boards were actually paying in NY and LA:
+  // non-union indie features at $125-$300/day, funded ones to about $500;
+  // SAG-AFTRA background at $231/day and short-film agreements around $257;
+  // non-union commercials at $400-$500/day plus a usage payment, promos and
+  // stills flat at roughly $1,000-$1,250. The ceilings used to sit well above
+  // all of that, which made the money on this board read as invented.
   const RATE_BANDS={
-    micro:{Lead:[100,250],Supporting:[75,175],"Day Player":[75,150],Background:[50,125]},
-    low:{Lead:[200,475],Supporting:[150,300],"Day Player":[100,225],Background:[100,175]},
-    mid:{Lead:[400,1000],Supporting:[250,575],"Day Player":[175,375],Background:[125,250]},
-    spot:{Lead:[600,1750],Supporting:[350,850],"Day Player":[225,525],Background:[150,325]},
-    print:{Lead:[750,2500],Supporting:[400,1100],"Day Player":[275,650],Background:[175,400]}
+    micro:{Lead:[100,225],Supporting:[75,175],"Day Player":[75,150],Background:[50,125]},
+    low:{Lead:[125,325],Supporting:[100,250],"Day Player":[90,200],Background:[75,150]},
+    mid:{Lead:[250,650],Supporting:[175,400],"Day Player":[125,275],Background:[100,200]},
+    spot:{Lead:[400,1100],Supporting:[250,600],"Day Player":[175,400],Background:[125,250]},
+    print:{Lead:[600,1600],Supporting:[350,850],"Day Player":[250,525],Background:[150,325]},
+    // Theatre is paid by the WEEK, so these are weekly figures, pitched at the
+    // union house minimums rather than day rates.
+    stagepro:{Lead:[700,1600],Supporting:[600,1100],"Day Player":[550,900],Background:[500,800]}
   };
   function budgetTier(type,track){
     if(track==="print")return "print";
+    // Contracted houses pay a weekly minimum; workshops and the tiny rooms do
+    // not, and fall through to the low band below.
+    if(/broadway|musical theater/i.test(type)&&!/off-off/i.test(type))return "stagepro";
     if(/corporate video|industrial|training video/i.test(type))return "spot";
     if(/video game|motion capture/i.test(type))return "mid";
     if(track==="spot")return /spec|social media|public service/i.test(type)?"low":"spot";
     if(/student|experimental|table read|staged reading|proof of concept|spec/i.test(type))return "micro";
-    if(/short film|web series|sizzle|pitch trailer|educational|dance|podcast|off-off-broadway|workshop/i.test(type))return "low";
+    if(/short film|web series|sizzle|pitch trailer|educational|dance|podcast|off-off-broadway|workshop|music video/i.test(type))return "low";
     return "mid";
   }
   function money(n){return "$"+Math.round(n).toLocaleString("en-US");}
@@ -29880,7 +29892,10 @@ const ACG = (()=>{
     // print short. Padded categories are excluded: their sketch text is shared
     // between listings and the craft note is what keeps them distinct.
     let body=s;
-    if(!r._pad&&!/lead|principal/i.test(r.role_type||"")&&Math.random()<0.3){
+    // Only the genuinely small parts ever print as a single line, and now
+    // rarely — the ask on a real board is to tell an actor what the part is,
+    // and a one-liner on a supporting role reads as an afterthought.
+    if(!r._pad&&/day player|background|extra|stand/i.test(r.role_type||"")&&Math.random()<0.12){
       const one=sent(s,1);
       if(one&&one.length>28)body=one;
     }
@@ -29918,7 +29933,7 @@ const ACG = (()=>{
   // no-repeat tail so two breakdowns never read the same.
   const SUPPORT_NOTES=[
     x=>`${pick(["Few scenes","Not a big part","A handful of scenes","Two or three scenes"])}, ${pick(["but the story does not work without it.","and every one has to count.","so there is nowhere to hide.","and it is the one people remember."])}`,
-    x=>`${pick(["Plays opposite the lead","Shares most scenes with the lead","Works straight against the lead"])} — ${pick(["so we will read you together.","chemistry read at callback.","expect to be paired at the callback."])}`,
+    x=>`${pick(["Plays opposite the lead","Shares most scenes with the lead","Works straight against the lead"])} — ${pick(["so we will read you together.","you will read with the other actor at the callback.","expect to be paired at the callback."])}`,
     x=>`${pick(["Keep it real","No need to push","Play it straight"])}; ${pick(["the writing carries the size.","the situation does the work.","anything bigger fights the scene."])}`,
     x=>`${pick(["Comfortable talking over people","Good with interruptions","Able to talk over and be talked over"])} ${pick(["and quick resets.","without losing the thread.","and to hold a beat when the room goes quiet."])}`,
     x=>`${pick(["Local hire preferred for this one","Ideally a local hire","Local casting for this part"])}; ${pick(["one travel day at most.","one or two calls, close together.","the days are grouped."])}`,
@@ -29943,6 +29958,31 @@ const ACG = (()=>{
     x=>`${pick(["Under-18s welcome with a guardian","Family bookings possible","We can book people together"])} ${pick(["— tell us when you apply.","if that is easier for you.","and will schedule around school hours."])}`,
     x=>`${pick(["We book from photos only for this","No tape needed here","A photo is enough"])}; ${pick(["a clear recent picture is all we need.","phone photos are completely fine.","nothing posed."])}`,
     x=>`${pick(["Paid on the day","Paid within a week of the shoot","Paid on wrap"])} ${pick(["by transfer.","with the paperwork done in advance.","— no chasing required."])}`
+  ];
+  // Commercial and print parts were the thinnest thing on the board: one short
+  // line of craft shorthand ("comic timing on the button of each cutdown")
+  // where a real ad breakdown tells you what you will actually DO for a day —
+  // whether you speak, what you hold, how many times you repeat it, what you
+  // wear, and how long the finished ad is allowed to run. These are the notes
+  // an ad job really turns on, written the way you would explain the day to
+  // someone who has never been on a set.
+  const SPOT_ROLE_NOTES=[
+    x=>`${pick(["You do not speak in this one","There are no lines for this part","Nobody in this spot talks"])} — ${pick(["the whole thing is what your face does.","the words are added later by a voice over the top.","the music carries it, so your reactions are the story."])}`,
+    x=>`${pick(["You talk straight into the camera","You speak to the lens like you are speaking to a friend","Most of your part is said down the barrel of the camera"])}, ${pick(["so it has to sound like you, not like an advert.","and the words are short — two or three lines at most.","and we will give you the words on the day."])}`,
+    x=>`${pick(["You will hold the product and use it","There is product in your hands most of the day","You use the thing being sold, on camera, up close"])}; ${pick(["hands get filmed on their own too.","we will show you exactly how to hold it.","practice takes come first, so nobody is thrown in cold."])}`,
+    x=>`${pick(["Expect to do the same small action many times","The same ten seconds gets filmed again and again","One short moment, shot from four or five angles"])} — ${pick(["staying fresh on take twelve is the real skill here.","it looks easy and it is the hardest part of the day.","nothing changes but the camera."])}`,
+    x=>`${pick(["Wear your own everyday clothes","Bring a few plain outfits","Wardrobe is simple, and mostly your own"])}: ${pick(["nothing with logos or writing on it.","no stripes, no bright white, no brand names.","plain colours photograph best."])}`,
+    x=>`${pick(["There is a separate try-on day before the shoot","A fitting happens the week before","You come in once beforehand to try clothes on"])} ${pick(["and that day is paid too.","— it takes about an hour.","and it is short."])}`,
+    x=>`${pick(["You play one half of a couple","You are one of a pair","You are filmed with one other actor the whole time"])}, ${pick(["so we will pair people up before we decide.","and we cast the two of you together, not one at a time.","so being easy to act with matters as much as the acting."])}`,
+    x=>`${pick(["You play a parent","You are one of a family group","You are filmed as part of a family"])} — ${pick(["the children are cast separately and matched to you.","real warmth beats a big performance here.","we film the family together for most of the day."])}`,
+    x=>`${pick(["The day runs about ten hours","Plan for a full working day","It is a long day, roughly ten hours"])} ${pick(["with proper breaks and food.","and you are paid extra if it runs over.","including the waiting, which there is a lot of."])}`,
+    x=>`${pick(["The finished ad runs online for one year","This is used online and in shops for a year","The ad is allowed to run for twelve months"])}; ${pick(["after that they have to pay again to keep using it.","it is not going on television.","the exact terms come in writing with the offer."])}`,
+    x=>`${pick(["No acting experience is needed","You do not need a reel for this","First-timers are welcome here"])} — ${pick(["we are casting a real face, not a resume.","the director will talk you through every shot.","being comfortable being watched is the whole job."])}`,
+    x=>`${pick(["You need to really be able to do this","This one is cast on the skill, not the acting","We need the real thing, not a mime"])}: ${pick(["show us in your tape that you can.","tell us how long you have been doing it.","we will check on the day, kindly."])}`,
+    x=>`${pick(["You are in the background of the story","You are one of the people in the room","You fill the world around the main actors"])}, ${pick(["moving and behaving normally while they play the scene.","and a few of you get moved closer to camera on the day.","doing ordinary things, quietly."])}`,
+    x=>`${pick(["Bring a smile that is actually yours","We want a real laugh, not a posed one","The smile has to be real"])} — ${pick(["the fake version shows immediately on camera.","think of something funny, that is the trick.","we will make you laugh if we have to."])}`,
+    x=>`${pick(["You are on your feet and moving","There is walking, sitting and standing all day","The part is physical in an ordinary way"])}, ${pick(["nothing hard, just a lot of it.","so wear shoes you can stand in.","with breaks between each setup."])}`,
+    x=>`${pick(["Your face is what sells this","This is cast almost entirely on the face","We are choosing on the face and nothing else"])}; ${pick(["a clear, recent, unedited photo is what we need.","no filters, no makeup app, nothing smoothed.","a phone photo in daylight is perfect."])}`
   ];
   const RANK_ORDER=["Lead","Supporting","Day Player","Background"];
   // Every listing gets its own budget health. Without it two mid-tier features
@@ -30001,10 +30041,15 @@ const ACG = (()=>{
         // name — "Sade is on a three-day furlough" is how the real boards read.
         // frameSeedDescription does the framing once the name exists; _slot
         // carries what the character IS so the line can still say it.
+        // Ad and stills work draws from its own bank. A commercial part is not
+        // a small dramatic part — the job is the day, so the note explains the
+        // day. Everything else keeps the film/TV/stage banks.
         description:mediumSwap(
-          rank==="Background"
-            ? uniqueDescription(s.x,ATMOS_NOTES,h,res,usedNotes)
-            : uniqueDescription(s.x,rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res,usedNotes),
+          (track==="spot"||track==="print"||/commercial|branded|social media ad|promo|product demo|ad campaign|public service|print campaign|photo shoot|modeling|ugc|corporate|industrial/i.test(type))
+            ? uniqueDescription(s.x,SPOT_ROLE_NOTES,h,res,usedNotes)
+            : rank==="Background"
+              ? uniqueDescription(s.x,ATMOS_NOTES,h,res,usedNotes)
+              : uniqueDescription(s.x,rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res,usedNotes),
           track,type),
         _slot:s.s,
         _pad:!!s._pad,
@@ -30056,7 +30101,38 @@ const ACG = (()=>{
     const places=cgShuffle((seed.w||[]).map(phraseTitle).filter(Boolean));
     return t.concat(places).filter((v,i,a)=>a.indexOf(v)===i);
   }
+  // How ad work is actually titled on a trade board. A commercial almost never
+  // carries a poetic film title — the brand cannot be named while casting, so
+  // the listing is titled by CATEGORY plus what is being cast: "HAIR TOOLS
+  // BRAND", "SODA COMPANY - HAND MODEL", "WELL KNOWN FRAGRANCE PROMO". Using
+  // film titles on spots was the single most obvious tell that these listings
+  // were written by one hand.
+  const AD_CATEGORY=["Hair Care","Skincare","Mattress","Soda","Snack Food","Coffee","Insurance","Banking App","Home Improvement","Pet Food","Sneaker","Grocery","Pharmacy","Fitness App","Mobile Phone","Streaming Service","Car Dealership","Airline","Cleaning Product","Baby Care","Eyewear","Toothpaste","Frozen Food","Energy Drink","Paint","Furniture","Delivery App","Credit Union","Sunscreen","Vitamin","Laundry","Tea","Ice Cream","Cereal","Deodorant","Razor","Mascara","Nail Care","Hearing Aid","Allergy Medicine"];
+  const AD_QUALIFIER=["Well-Known","Popular","Major","National","Leading","Household-Name","Global","Nationwide","Widely Advertised","Top-Selling"];
+  const AD_FORM=["Commercial","Promo","Ad Campaign","Social Campaign","Brand Video","Digital Spot","Promo Shoot","Content Shoot"];
+  function adTitles(seed,city){
+    const cat=pick(AD_CATEGORY),q=pick(AD_QUALIFIER),form=pick(AD_FORM);
+    const cast=(seed.c||[]).map(r=>String(r.s||"")).filter(Boolean);
+    const who=cast.length?titleCase(pick(cast).replace(/^the /i,"")):"";
+    const out=[
+      `${q} ${cat} Brand — ${form}`,
+      `${cat} ${form}`,
+      `${q} ${cat} Brand ${form}`,
+      `${cat} Brand — ${form} (${city.short})`
+    ];
+    if(who){
+      out.push(`${cat} ${form} — ${who}`);
+      out.push(`${q} ${cat} Brand — ${who}`);
+    }
+    return out;
+  }
   function seedTitles(seed,city,type){
+    // Ad, promo and stills work is titled the way the boards title it. A slice
+    // still keeps the seed's own title, because spec and branded-short work
+    // genuinely does carry one.
+    if(/commercial|branded content|social media ad|ad campaign|promo video|product demo|spec commercial|print campaign|photo shoot|influencer|ugc/i.test(String(type||""))&&Math.random()<0.72){
+      return adTitles(seed,city).filter((v,i,a)=>a.indexOf(v)===i);
+    }
     const stems=seedTitleStems(seed);
     const genre=titleCase(String(seed.genre||"project").split(" ").slice(-1)[0]);
     const first=stems[0]||"Untitled";
@@ -30101,7 +30177,7 @@ const ACG = (()=>{
     y=>`Rate range ${y.lo}–${y.hi} ${y.per}. Checks go out weekly, not at the end.`,
     y=>`You will know your number before you say yes: ${y.lo} to ${y.hi} ${y.per}, written into the offer.`,
     y=>`${y.lo}–${y.hi} ${y.per} across ${y.sched}. Multiply your rate by your days and that is the job.`,
-    y=>`Scale is not on the table here, but the money is honest: ${y.lo} to ${y.hi} ${y.per}, plus meals.`,
+    y=>`This one cannot pay the union minimum, but the money is honest: ${y.lo} to ${y.hi} ${y.per}, plus meals.`,
     y=>`${y.hi} ${y.per} maximum. ${y.lo} ${y.per} minimum. Nothing in between is a surprise.`
   ];
   // Commercial, corporate and print work is bought differently — usage, buyout
@@ -30109,10 +30185,10 @@ const ACG = (()=>{
   const PAY_LINES_SPOT=[
     y=>`${y.lo}–${y.hi} ${y.per} plus a paid fitting. Twelve-month use, digital and social only; broadcast would be renegotiated.`,
     y=>`Session fee ${y.lo} to ${y.hi} ${y.per}. Use is one year, online and in store. No broadcast, no out-of-home.`,
-    y=>`${y.hi} ${y.per} at the top of the range. Session plus a one-year buyout, quoted in full in the offer.`,
-    y=>`Principals ${y.hi} ${y.per}; featured and background from ${y.lo}. Usage terms come with the offer, in writing.`,
+    y=>`${y.hi} ${y.per} at the top of the range: a fee for the shoot day plus a second payment covering the year the ad is allowed to run. Both numbers are written in the offer.`,
+    y=>`The main roles are ${y.hi} ${y.per}; featured and background parts start at ${y.lo}. How long the ad is allowed to run comes with the offer, in writing.`,
     y=>`Paid session, ${y.lo}–${y.hi} ${y.per}, plus a half-day wardrobe fitting. Six-month use on the brand's own channels.`,
-    y=>`${y.lo} to ${y.hi} ${y.per}. Overtime after ten, meal penalty if we run long, and use limited to twelve months.`
+    y=>`${y.lo} to ${y.hi} ${y.per}. Extra pay after ten hours, extra pay again if lunch runs late, and the ad can only be used for twelve months.`
   ];
   const PAY_LINES_STAGE=[
     y=>`${y.lo}–${y.hi} ${y.per}, covering rehearsal and performance. Paid weekly.`,
@@ -30868,7 +30944,10 @@ const ACG = (()=>{
     // character's real name exists.
     if(r._full)return frameSeedDescription({...r,description:base},charName);
     if(r._keepDescription)return sent(base,1)||base;
-    const len=pick(ROLE_LENGTHS);
+    // A lead described in four words tells an actor nothing. Bigger parts draw
+    // from the longer end of the scale; only the small parts can come out tiny.
+    const big=/lead|principal|supporting|series regular|recurring/i.test(r.role_type||"");
+    const len=pick(big?["medium","long","long","medium","short"]:ROLE_LENGTHS);
     const first=sent(base,1);
     const second=sent(base,2);
     const color=pick([
@@ -30897,8 +30976,8 @@ const ACG = (()=>{
       return pick(["$50-$150/day","$75/day","$100/day"]);
     }
     if(/tv|series|pilot|streaming|web series/i.test(type)){
-      if(/lead|principal/i.test(roleType))return pick(["$350-$850/day","$500/day","$650/day"]);
-      return pick(["$200-$375/day","$250/day","$325/day"]);
+      if(/lead|principal/i.test(roleType))return pick(["$300-$750/day","$450/day","$600/day"]);
+      return pick(["$175-$350/day","$225/day","$300/day"]);
     }
     if(/feature|independent film/i.test(type)){
       if(/lead|principal/i.test(roleType))return pick(["$300-$625/day","$350/day","$500/day"]);
@@ -30908,7 +30987,7 @@ const ACG = (()=>{
       if(/lead|principal/i.test(roleType))return pick(["$150-$325/day","$200/day","$275/day"]);
       return pick(["$100-$175/day","$125/day","$150/day"]);
     }
-    if(/commercial|ad|brand/i.test(type))return pick(["$400-$750/day","$500/day plus usage terms","$300-$600/day","$150-$300/day"]);
+    if(/commercial|ad|brand/i.test(type))return pick(["$400-$750/day","$500/day plus a payment for how long the ad runs","$300-$600/day","$1,000 flat","$150-$300/day"]);
     return pick(["$125-$250/day","$150-$300/day","$75-$175/day"]);
   }
   function extraRolesFor(type){
@@ -31135,7 +31214,7 @@ const ACG = (()=>{
       ],
       months:()=>pick([2,3]),
       roles:()=>[
-        {name:"Spokesperson / Lead",description:"On-camera spokesperson for product demos, brand launches, and direct-address commercial content. Natural, confident energy.",gender:"All genders",age_range:pick(["25–45","28–50","22–42"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Spokesperson / Lead",description:"On-camera presenter for product demos, brand launches and ads where you talk straight to the camera. Natural, confident energy.",gender:"All genders",age_range:pick(["25–45","28–50","22–42"]),ethnicity:"All ethnicities",pay:""},
         {name:"Lifestyle Character",description:"Family members, coworkers, friends — realistic lifestyle scenarios. Warm, relatable, believable.",gender:"All genders",age_range:pick(["22–55","25–50","30–55"]),ethnicity:"All ethnicities",pay:""},
         {name:"Background / Group Member",description:"Coffee shop regulars, crowd scenes, background with presence. Must be comfortable on a commercial set.",gender:"All genders",age_range:"18–35",ethnicity:"All ethnicities",pay:""}
       ]
@@ -31296,7 +31375,7 @@ const ACG = (()=>{
       ],
       months:()=>pick([2,3]),
       roles:()=>[
-        {name:"Commercial / Spokesperson VO",description:"Product narration, brand spots, and direct-address commercial scripts. Warm, confident, and conversational delivery.",gender:"All genders",age_range:pick(["25–50","28–52","22–48"]),ethnicity:"All ethnicities",pay:""},
+        {name:"Commercial / Spokesperson VO",description:"Product narration, brand spots and scripts where you speak straight to the listener. Warm, confident and conversational.",gender:"All genders",age_range:pick(["25–50","28–52","22–48"]),ethnicity:"All ethnicities",pay:""},
         {name:"Character / Animation Voice",description:"Animated or character-driven VO. Range, versatility, and distinctive character voices preferred.",gender:"All genders",age_range:pick(["18–55","20–50","22–52"]),ethnicity:"All ethnicities",pay:""},
         {name:"Narration / Documentary",description:"Long-form narration for documentaries, audiobooks, educational content, and explainer videos. Clear, measured, authoritative.",gender:"All genders",age_range:pick(["30–65","35–65","28–60"]),ethnicity:"All ethnicities",pay:""}
       ]
@@ -31487,7 +31566,7 @@ const ACG = (()=>{
       taglines:["A comedic branded-content campaign about grocery substitutions, family dinners, and tiny domestic negotiations."],
       cityShorts:["LA","NYC","Chicago"],
       synopsis:(c)=>`Casting a digital-first branded comedy campaign shooting in ${c.name}. The spots center on a grocery delivery app and the small emotional stakes of substitutions: oat milk instead of almond, cilantro instead of parsley, birthday candles with the wrong number, and one shopper who becomes weirdly invested in getting a family's Tuesday dinner exactly right.\n\nThe style is bright but not fake. Think grounded comedy, real family rhythms, and quick reaction beats. Actors should be comfortable with short-form scripts, fast resets, food props, and small improvisational buttons at the end of scenes. Families do not need to be real families, but believable chemistry is important.`,
-      pay:"Paid digital campaign. Principal roles $400-$750/day; featured/background $150-$300/day. Digital usage terms disclosed before booking.",
+      pay:"Paid digital campaign. Main roles $400-$750/day; featured and background $150-$300/day. You are told how long the ad can run before you book.",
       union:"Non-Union",
       req:"Submit headshot, commercial reel or short comedic self-tape, and availability for callbacks. Note food allergies and comfort handling groceries/meal props.",
       months:()=>pick([1,2]),
