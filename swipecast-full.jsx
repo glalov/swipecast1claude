@@ -25936,7 +25936,7 @@ const ACG = (()=>{
       ttl:["The Territory","Sample Case","Four Accounts Left"],
       p:"a salesman drives a route that keeps shrinking, in the last year before the company drops it",
       h:"the customer he has visited for nineteen years does not recognize him",
-      h2:"the company offers him the route back at half pay if he trains his replacement",
+      h2:"the company offers him his own route back at half pay if he trains his replacement",
       w:["a two-lane route between four small towns","a chain of hardware and feed stores off a state highway","a motel circuit and the diners between accounts"],
       c:[
         {s:"the salesman",r:"Lead",a:"senior",x:"Polite, practiced, and running out of road. Every scene is the same pitch delivered with less of them behind it."},
@@ -27171,7 +27171,7 @@ const ACG = (()=>{
       ]},
     {k:"skate-park-permit",era:"2010s",genre:"comedy",tracks:["film","tv"],
       ttl:["Concrete Sunday","The Permit","Nobody Owns a Ramp"],
-      p:"a group of skaters build a ramp under a bridge and get one meeting to keep it",
+      p:"a group of skaters build a ramp under a bridge and get one city meeting to argue for keeping the ramp",
       h:"the meeting is in eight days and none of them can stand up in front of a room",
       h2:"the council offers them a proper park two miles away, and half of them want to take it",
       w:["a strip of concrete under a highway bridge","a car park behind a closed leisure center","an old loading yard turned into a skate spot"],
@@ -27214,7 +27214,7 @@ const ACG = (()=>{
     // situation, no puzzle to solve before you know what the project is.
     {k:"co-op-board-interview",era:"2000s",genre:"drama",tracks:["film","tv","stage"],
       ttl:["The Board Meets Thursday","Two References","Apartment 6B"],
-      p:"a young couple sit for the board interview that decides whether they get the apartment",
+      p:"a young couple sits for the board interview that decides whether they get the apartment",
       h:"the questions turn to money, and the couple have rehearsed the wrong answers",
       h2:"one of the board members knows one of them from an old job",
       w:["a board room in a pre-war building","a lobby table set up for interviews","a resident's own living room, used for the meeting"],
@@ -28971,14 +28971,23 @@ const ACG = (()=>{
   // so those seeds simply never take an event-first opening.
   const TURN_ANAPHORA=/^(?:\S+\s+){0,6}\b(they|he|she|him|her|them|their|his|its|it)\b/i;
   function turnCanLead(t){return !!t&&!TURN_ANAPHORA.test(String(t));}
+  // Most turns are an event — something occurs. A few are a standing state or
+  // a date still ahead ("the meeting is in eight days…", "there is no talking
+  // in the main film…"). The aftermath and mid-action shapes look BACK on the
+  // turn as a thing that already happened, so handing them one of those prints
+  // "It all comes back to one afternoon: the meeting is in eight days", which
+  // is a sentence about a memory of the future. Anchored to the main clause on
+  // purpose — "…and nobody can prove it" is still an event.
+  const TURN_NOT_EVENT=/^(?:the|a|an|our|his|her|their)\s[^,]{0,60}?\b(?:is|are)\s(?:in|due in)\s\w+\s(?:days|weeks|months|hours)\b|^there\s(?:is|are)\sno\b/i;
+  function turnIsPastEvent(t){return turnCanLead(t)&&!TURN_NOT_EVENT.test(String(t||"").trim());}
   function dropArticle(v){return String(v||"").replace(/^(a|an|the)\s+/i,"");}
 
   const SYN_OPENINGS=[
     // ── Event first ────────────────────────────────────────────────────────
     {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}.`},
-    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. It starts because ${x.premise}.`},
-    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. How it got there: ${x.premise}.`},
-    {p:"event",t:"n",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Which would be survivable, except that ${x.premise}.`},
+    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. It starts when ${x.premise}.`},
+    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Where it starts: ${x.premise}.`},
+    {p:"event",t:"n",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Underneath it, ${x.premise}.`},
     {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Everything worth knowing before that: ${x.premise}.`},
     {p:"event",t:"f",need:x=>x.turnLeads,f:x=>`${x.capTurn}. The brief behind it: ${x.premise}.`},
 
@@ -29004,7 +29013,7 @@ const ACG = (()=>{
     // ── A question ─────────────────────────────────────────────────────────
     {p:"question",t:"n",f:x=>`What happens when ${x.premise}? ${x.capTurn}.`},
     {p:"question",t:"n",f:x=>`Here is the question underneath it: what do you do when ${x.premise}? ${x.capTurn}.`},
-    {p:"question",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Whose fault is it, in the end?","Who is actually responsible here?","Who gets the blame for this one?","Where does the blame land?"])} ${x.capTurn}. It began because ${x.premise}.`},
+    {p:"question",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Whose fault is it, in the end?","Who is actually responsible here?","Who gets the blame for this one?","Where does the blame land?"])} ${x.capTurn}. It begins when ${x.premise}.`},
 
     // ── A condition or a rule ──────────────────────────────────────────────
     {p:"rule",t:"b",need:x=>x.turnLeads,f:x=>`${pick(["One thing holds the whole piece together","Everything turns on a single fact","The hinge of it is this","It all rests on one thing","One detail carries the rest"])}: ${x.turn}.`},
@@ -29017,12 +29026,12 @@ const ACG = (()=>{
     {p:"contrast",t:"b",f:x=>`${pick(["The easy half","The simple part","What you can say in one line","The half anybody could guess"])}: ${x.premise}. ${pick(["The other half","The harder part","The half that is actually the story","The part nobody guesses"])}: ${x.turn}.`},
 
     // ── Aftermath ──────────────────────────────────────────────────────────
-    {p:"after",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["It all comes back to one afternoon","All of it traces to a single day","Everything points back to one hour"])}: ${x.turn}.`},
-    {p:"after",t:"n",need:x=>x.turnLeads,f:x=>`${x.capTurn}. ${pick(["Nobody in it walks away quite the same.","Everyone involved tells it differently afterwards.","It gets talked about for years and never accurately.","Nobody agrees later on what actually happened."])}`},
-    {p:"after",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Long afterwards, one thing is still being argued about","Years later they are still arguing about one thing","One detail from this is never settled"])}: ${x.turn}.`},
+    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["It all comes back to one afternoon","All of it traces to a single day","Everything points back to one hour"])}: ${x.turn}.`},
+    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${x.capTurn}. ${pick(["Nobody in it walks away quite the same.","Everyone involved tells it differently afterwards.","It gets talked about for years and never accurately.","Nobody agrees later on what actually happened."])}`},
+    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["Long afterwards, one thing is still being argued about","Years later they are still arguing about one thing","One detail from this is never settled"])}: ${x.turn}.`},
 
     // ── Telegraphic ────────────────────────────────────────────────────────
-    {p:"terse",t:"b",f:x=>`${pick(["Short version","The one-line version","Quickly","In brief"])}: ${x.turn}. ${pick(["Longer version","The rest of it","How that happened","Slightly longer"])}: ${x.premise}.`},
+    {p:"terse",t:"b",f:x=>`${pick(["Short version","The one-line version","Quickly","In brief"])}: ${x.turn}. ${pick(["Longer version","The rest of it","The setup","Slightly longer"])}: ${x.premise}.`},
     {p:"terse",t:"b",f:x=>`${pick(["Two sentences.","The whole thing in two lines.","No summary needed.","Here it is, plainly."])} ${x.capPremise}. ${x.capTurn}.`},
     {p:"terse",t:"n",need:x=>x.heroRoleBare&&x.second&&x.place,f:x=>`${capFirst(dropArticle(x.place))}. ${capFirst(x.heroRoleBare)}. ${capFirst(x.second)}. ${x.capTurn}.`},
 
@@ -29031,16 +29040,17 @@ const ACG = (()=>{
     {p:"genre",t:"n",need:x=>!x.mediumEcho,f:x=>`${capFirst(articleFor(x.genre).toLowerCase())} ${x.genre}, and a small one: ${x.premise}. ${x.capTurn}.`},
     {p:"genre",t:"b",need:x=>x.turnLeads&&!x.mediumEcho,f:x=>`We are making ${aArt(x.genreLabel)} ${x.genreLabel} about one thing: ${x.turn}.`},
     {p:"genre",t:"f",f:x=>`${capFirst(x.genre)}. ${x.capPremise}. ${x.capTurn}.`},
-    {p:"genre",t:"f",need:x=>x.turnLeads,f:x=>`The whole idea is this: ${x.turn}. It is built around ${x.premise}.`},
+    {p:"genre",t:"f",need:x=>x.turnLeads,f:x=>`The whole idea is this: ${x.turn}. It is built around one thing: ${x.premise}.`},
 
     // ── Mid-action ─────────────────────────────────────────────────────────
-    {p:"mid",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["We come in after the worst of it","The story picks up mid-fall","We join it late, on purpose","It opens with the damage already done"])}: ${x.turn}.`},
-    {p:"mid",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Open on the middle of the trouble","Start in the wrong place, deliberately","Drop in halfway"])}: ${x.turn}. ${pick(["Rewind a little and","Wind back and","Behind it,"])} ${x.premise}.`},
+    {p:"mid",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["We come in after the worst of it","The story picks up mid-fall","We join it late, on purpose","It opens with the damage already done"])}: ${x.turn}.`},
+    {p:"mid",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Open on the middle of the trouble","Start in the wrong place, deliberately","Drop in halfway"])}: ${x.turn}. ${pick(["Rewind a little:","Wind back:","Behind it,"])} ${x.premise}.`},
 
     // ── Premise first — kept, but now one shape among fifteen ──────────────
     {p:"premise",t:"b",f:x=>`${x.capPremise}. ${x.capTurn}.`},
     {p:"premise",t:"b",f:x=>`${x.capPremise}, and ${x.turn}.`},
-    {p:"premise",t:"n",f:x=>`${x.capPremise} — until ${x.turn}.`},
+    // "until" needs something to happen, not a standing state.
+    {p:"premise",t:"n",need:x=>x.turnHappened,f:x=>`${x.capPremise} — until ${x.turn}.`},
     {p:"premise",t:"f",f:x=>`${x.capPremise}. The idea: ${x.turn}.`}
   ];
 
@@ -30450,6 +30460,7 @@ const ACG = (()=>{
         // stops "A check-cashing storefront… a small robbery at a
         // check-cashing shop…" landing in one sentence.
         turnLeads:turnCanLead(turn),
+        turnHappened:turnIsPastEvent(turn),
         era:(seed.era&&!/^n\/a$/i.test(seed.era))?seed.era:"",
         placeEcho:stemsOverlap(seedPlace,seed.p),
         mediumEcho:premiseNamesMedium(seed.p,seedLabel(type),seed.genre),

@@ -95,18 +95,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260902-220308"/>
+  <link rel="preload" as="script" href="/app.js?v=20260902-224614"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260902-220308 -->
-  <meta name="build-version" content="20260902-220308"/>
+  <!-- BUILD: 20260902-224614 -->
+  <meta name="build-version" content="20260902-224614"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260902-220308";
+        var B="20260902-224614";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -544,7 +544,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260902-220308"
+        "/app.js?v=20260902-224614"
       ];
       function step(){
         var it=STEPS.shift();
@@ -585,7 +585,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260902-220308';
+      s.src='/castoria.js?v=20260902-224614';
       s.async=true;
       document.body.appendChild(s);
     }
