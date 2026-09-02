@@ -29001,9 +29001,12 @@ const ACG = (()=>{
 
     // ── A place first ──────────────────────────────────────────────────────
     {p:"place",t:"b",need:x=>x.place&&!x.placeEcho,f:x=>`${capFirst(x.place)}. ${x.capTurn}.`},
-    {p:"place",t:"b",need:x=>x.place,f:x=>`${pick(["Everything happens in","All of it takes place in","It never leaves","The whole thing lives in"])} ${x.place}. ${x.capTurn}.`},
-    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho,f:x=>`Set in ${x.place}. ${x.capPremise}. ${x.capTurn}.`},
-    {p:"place",t:"n",need:x=>x.place&&!x.placeEcho,f:x=>`${capFirst(x.place)} — and one day in it that does not go to plan. ${x.capTurn}.`},
+    // "It never leaves a diner" cannot sit over a premise about a storm-chasing
+    // season spent in a car, so the single-location claims need a story that
+    // actually stays put.
+    {p:"place",t:"b",need:x=>x.place&&x.oneplace,f:x=>`${pick(["Everything happens in","All of it takes place in","It never leaves","The whole thing lives in"])} ${x.place}. ${x.capTurn}.`},
+    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho&&x.oneplace,f:x=>`Set in ${x.place}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"place",t:"n",need:x=>x.place&&!x.placeEcho&&x.oneday,f:x=>`${capFirst(x.place)} — and one day in it that does not go to plan. ${x.capTurn}.`},
 
     // ── A decade first ─────────────────────────────────────────────────────
     {p:"era",t:"n",need:x=>x.era,f:x=>`${x.era}. ${x.capPremise}. ${x.capTurn}.`},
@@ -29140,6 +29143,22 @@ const ACG = (()=>{
     return fb;
   }
 
+  // A few of these assert the SHAPE of the story — how long it runs, how many
+  // places it visits. Appended blind, they contradict the premise they are
+  // stapled to: "a company pays people to live in it for SIX MONTHS … The whole
+  // thing plays out over ONE DAY." Same fault as the summary connectives —
+  // a sentence claiming a fact the rest of the listing already contradicts.
+  // scopeFits() drops any claim the story itself disproves.
+  const SPAN_LONG=/\b(months?|weeks?|years?|seasons?|decades?|summer|winter|semester|nights?|shifts?)\b|\bover \w+ (?:days|weeks|months)\b|\b(?:nine|ten|nineteen|twelve|four|three|two)\s+(?:days|weeks|months)\b/i;
+  const PLACE_MANY=/\b(routes?|roads?|tours?|across|cross-country|states|travell?ing|travels?|circuits?|highways?|seasons?|city to city|from \w+ to \w+|door to door|on the move|four towns|between)\b/i;
+  const CLAIMS_ONE_DAY=/\bone day\b|\ba single day\b|\bone afternoon\b|\bone shift\b/i;
+  const CLAIMS_ONE_PLACE=/\bone place\b|\bone main location\b|\bnever leaves\b|\bone room\b/i;
+  function scopeFits(line,x){
+    const story=`${x.premise||""} ${x.turn||""}`;
+    if(CLAIMS_ONE_DAY.test(line)&&SPAN_LONG.test(story))return false;
+    if(CLAIMS_ONE_PLACE.test(line)&&PLACE_MANY.test(story))return false;
+    return true;
+  }
   const STORY_EXTRA=[
     x=>`Most of it happens in one place, with a small group of people.`,
     x=>`The whole thing plays out over one day.`,
@@ -29223,7 +29242,10 @@ const ACG = (()=>{
     const core=pickOpening(x,seed,h,res,revived);
     const shape=pickSynShape();
     if(shape==="short"||shape==="medium")return core;
-    const extra=freshLine(isFormatSeed(seed)?FORMAT_EXTRA:STORY_EXTRA,x,h,res);
+    const bank=(isFormatSeed(seed)?FORMAT_EXTRA:STORY_EXTRA).filter(fn=>{
+      try{return scopeFits(String(fn(x)||""),x);}catch(_){return true;}
+    });
+    const extra=freshLine(bank.length?bank:(isFormatSeed(seed)?FORMAT_EXTRA:STORY_EXTRA),x,h,res);
     if(shape==="long")return `${core} ${extra}`;
     return `${core} ${extra} ${freshLine(STORY_WELCOME,x,h,res)}`;
   }
@@ -30505,6 +30527,8 @@ const ACG = (()=>{
         // check-cashing shop…" landing in one sentence.
         turnLeads:turnCanLead(turn),
         turnHappened:turnIsPastEvent(turn),
+        oneplace:!PLACE_MANY.test(`${seed.p||""} ${turn||""}`),
+        oneday:!SPAN_LONG.test(`${seed.p||""} ${turn||""}`),
         era:(seed.era&&!/^n\/a$/i.test(seed.era))?seed.era:"",
         placeEcho:stemsOverlap(seedPlace,seed.p),
         mediumEcho:premiseNamesMedium(seed.p,seedLabel(type),seed.genre),
