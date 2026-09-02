@@ -30117,11 +30117,52 @@ const ACG = (()=>{
   // BRAND", "SODA COMPANY - HAND MODEL", "WELL KNOWN FRAGRANCE PROMO". Using
   // film titles on spots was the single most obvious tell that these listings
   // were written by one hand.
-  const AD_CATEGORY=["Hair Care","Skincare","Mattress","Soda","Snack Food","Coffee","Insurance","Banking App","Home Improvement","Pet Food","Sneaker","Grocery","Pharmacy","Fitness App","Mobile Phone","Streaming Service","Car Dealership","Airline","Cleaning Product","Baby Care","Eyewear","Toothpaste","Frozen Food","Energy Drink","Paint","Furniture","Delivery App","Credit Union","Sunscreen","Vitamin","Laundry","Tea","Ice Cream","Cereal","Deodorant","Razor","Mascara","Nail Care","Hearing Aid","Allergy Medicine"];
   const AD_QUALIFIER=["Well-Known","Popular","Major","National","Leading","Household-Name","Global","Nationwide","Widely Advertised","Top-Selling"];
   const AD_FORM=["Commercial","Promo","Ad Campaign","Social Campaign","Brand Video","Digital Spot","Promo Shoot","Content Shoot"];
+  // The category has to come from the SEED, never from a random list. Picking
+  // one freely produced "Nationwide Frozen Food Brand — Commercial" sitting on
+  // top of a bookshop portrait campaign: a title that contradicts the story
+  // underneath it. If nothing here matches, adTitles returns null and the
+  // listing keeps the seed's own titles.
+  const AD_CATEGORY_OF=[
+    // Workwear before Home Improvement: a work-clothing catalog mentions tools
+    // and was being sold as a hardware ad.
+    [/work clothing|workwear|work boots|coverall/i,"Workwear"],
+    [/bookshop|bookstore|library/i,"Bookshop"],[/hardware|home-improvement|home improvement|tool/i,"Home Improvement"],
+    [/grocer|supermarket|corner shop|market hall/i,"Grocery"],[/pharmac/i,"Pharmacy"],
+    [/gym|fitness|workout/i,"Fitness"],[/insurance/i,"Insurance"],[/bike|bicycle/i,"Bike Shop"],
+    [/coffee|cafe|café/i,"Coffee"],[/men's health|mens health/i,"Men's Health"],[/barber|haircut/i,"Barbershop"],[/hair/i,"Hair Care"],
+    [/plant shop|community garden|garden centre|garden center/i,"Garden"],[/mattress|bedding/i,"Mattress"],
+    [/laundromat|laundry/i,"Laundry"],[/food truck/i,"Food Truck"],[/shoe repair|cobbler/i,"Shoe Repair"],
+    [/rideshare|taxi|car service/i,"Rideshare"],[/airline|airport|terminal/i,"Airline"],
+    [/bank|credit union|paycheck/i,"Banking"],[/pet |dog |animal shelter/i,"Pet Care"],
+    [/school run|classroom|back to school/i,"Back to School"],[/swim/i,"Swim Safety"],
+    [/diner|restaurant|takeout|kitchen/i,"Restaurant"],[/furniture|first apartment|empty apartment/i,"Furniture"],
+    [/phone|smartphone/i,"Mobile Phone"],[/skincare|sunscreen|moisturis|moisturiz/i,"Skincare"],
+    [/urgent care|clinic|hospital/i,"Healthcare"],[/moving|movers/i,"Moving Service"],
+    [/newsstand|newspaper/i,"News"],[/flower/i,"Florist"],[/bakery|baker/i,"Bakery"],
+    [/museum|gallery/i,"Museum"],[/sneaker|running shoe/i,"Sneaker"],[/soda|drink/i,"Soft Drink"],
+    [/snack|cereal|frozen food/i,"Snack Food"],
+    // Word boundaries: an unanchored /train/ matched "workplace TRAINing" and
+    // sold a safety video as a transit campaign.
+    [/\btrains?\b|\btransit\b|\bsubway\b|\bstation\b/i,"Transit"],
+    [/eyewear|glasses|spectacle/i,"Eyewear"],[/hotel|lodging/i,"Hotel"],
+    [/running|marathon|athletic/i,"Running Gear"],[/insurance/i,"Insurance"],
+    [/rideshare|ride share/i,"Rideshare"],[/print shop|same day print/i,"Print Shop"]
+  ];
+  function adCategory(seed){
+    // The seed KEY names the category more reliably than the prose does — the
+    // insurance seed's premise never says the word "insurance".
+    const hay=[String(seed.k||"").replace(/-/g," "),seed.p,seed.h,seed.h2,(seed.w||[]).join(" "),(seed.ttl||[]).join(" ")].filter(Boolean).join(" ");
+    // Training and corporate pieces are not brand ads; they keep their own titles.
+    if(/training|safety scenario|annual report|corporate/i.test(hay))return "";
+    for(const [re,cat] of AD_CATEGORY_OF){if(re.test(hay))return cat;}
+    return "";
+  }
   function adTitles(seed,city){
-    const cat=pick(AD_CATEGORY),q=pick(AD_QUALIFIER),form=pick(AD_FORM);
+    const cat=adCategory(seed);
+    if(!cat)return null;
+    const q=pick(AD_QUALIFIER),form=pick(AD_FORM);
     const cast=(seed.c||[]).map(r=>String(r.s||"")).filter(Boolean);
     const who=cast.length?titleCase(pick(cast).replace(/^the /i,"")):"";
     const out=[
@@ -30146,7 +30187,8 @@ const ACG = (()=>{
       // walks this list until it finds one no previous listing has used, and
       // handing it a four-item list would make a collision fail the whole
       // concept instead of falling through to the next name.
-      return adTitles(seed,city).concat(stems).filter((v,i,a)=>!!v&&a.indexOf(v)===i);
+      const ad=adTitles(seed,city);
+      if(ad)return ad.concat(stems).filter((v,i,a)=>!!v&&a.indexOf(v)===i);
     }
     const genre=titleCase(String(seed.genre||"project").split(" ").slice(-1)[0]);
     const first=stems[0]||"Untitled";
@@ -30175,7 +30217,9 @@ const ACG = (()=>{
   const PAY_LINES=[
     y=>`${y.lo}–${y.hi} ${y.per}, depending on the size of the part. Your own rate is printed on your role. Meals on every working day.`,
     y=>`Every part is paid. The smallest is ${y.lo} ${y.per}, the biggest is ${y.hi} ${y.per}, and the figure on your role card is the one you get.`,
-    y=>`Top rate ${y.hi} ${y.per}. Most parts sit nearer ${y.lo}. ${capFirst(y.sched)} of work in all.`,
+    // y.sched already ends "in total" on every non-stage track, so a trailing
+    // "of work in all" printed "17 shoot days in total of work in all".
+    y=>`Top rate ${y.hi} ${y.per}. Most parts sit nearer ${y.lo}. ${capFirst(y.sched)}.`,
     y=>`Leads are ${y.hi} ${y.per}. Smaller parts step down from there to ${y.lo} ${y.per}.`,
     y=>`Rates are set role by role and printed with each one — between ${y.lo} and ${y.hi} ${y.per}.`,
     y=>`Nothing here is deferred and nothing is copy and credit. ${y.lo} to ${y.hi} ${y.per}, paid.`,
