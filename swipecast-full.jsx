@@ -36300,6 +36300,29 @@ function AdminPremiumUpsell({session}){
     setBusy(false);
   };
 
+  // Pause is an emergency stop, so it must take effect the moment it is clicked
+  // — waiting for "Save Settings" is exactly how a halt gets forgotten and the
+  // next cron slot ships anyway. Writes straight to site_settings (the same flag
+  // the noon + evening run() reads) and rolls back the checkbox if the write fails.
+  const togglePause=async(next)=>{
+    const prev=form.premium_upsell_paused;
+    setForm(f=>({...f,premium_upsell_paused:next}));
+    setBusy(true);setMsg("");
+    const{error}=await window.sb.from("site_settings").update({
+      premium_upsell_paused:next,
+      updated_at:new Date().toISOString()
+    }).eq("id",1);
+    if(error){
+      setForm(f=>({...f,premium_upsell_paused:prev}));
+      showFeedback((next?"Couldn't pause: ":"Couldn't resume: ")+error.message);
+    }else{
+      showFeedback(next
+        ?"Paused — both the noon and evening sends are halted until you unpause."
+        :"Resumed — the noon and evening sends will go out on schedule again.");
+    }
+    setBusy(false);
+  };
+
   const sendTest=async()=>{
     if(!testEmail){showFeedback("Enter a test email address.");return;}
     setBusy(true);setMsg("");
@@ -36383,12 +36406,12 @@ function AdminPremiumUpsell({session}){
           </div>
         </label>
         <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
-          <input type="checkbox" checked={form.premium_upsell_paused}
-            onChange={e=>setForm(f=>({...f,premium_upsell_paused:e.target.checked}))}
+          <input type="checkbox" checked={form.premium_upsell_paused} disabled={busy}
+            onChange={e=>togglePause(e.target.checked)}
             style={{accentColor:"#e85454",width:16,height:16,marginTop:2}}/>
           <div>
             <div style={{fontWeight:600,fontSize:14,color:form.premium_upsell_paused?"var(--red)":"inherit"}}>Pause sending</div>
-            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Emergency stop — halts both slots without turning the campaign off.</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Emergency stop — takes effect immediately (no need to press Save). Halts both the noon and evening sends until you uncheck it; the campaign stays on.</div>
           </div>
         </label>
       </div>
