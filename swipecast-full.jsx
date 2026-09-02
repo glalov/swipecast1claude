@@ -25598,7 +25598,7 @@ const ACG = (()=>{
       ttl:["Frame Eleven","The Proof Sheet","Nothing in the Background"],
       p:"a wedding photographer notices something strange in the background of one photo",
       h:"the bigger she prints it the less she can prove, and the family in the photos starts calling her",
-      h2:"another client asks for photos from the same date, and neither of them was at that wedding",
+      h2:"another client asks for photos from the same date, and neither client was at that wedding",
       w:["a rented darkroom in the back of a camera shop","a converted apartment bedroom with blackout foil on the window","a photo lab at a suburban strip mall after closing"],
       c:[
         {s:"the photographer",r:"Lead",a:"midCareer",g:"F",x:"Orderly, alone, and better at looking than talking. Carries long wordless stretches; the tension is in her attention."},
@@ -28102,7 +28102,7 @@ const ACG = (()=>{
       ttl:["Open All Night","Booth Six","Three to Six"],
       p:"a brand film about the three hours a diner is nearly empty",
       h:"three people who have nothing in common end up at the same counter",
-      h2:"one of them comes in every night and nobody has ever asked why"        ,
+      h2:"one regular comes in every night and nobody has ever asked why"        ,
       w:["an all-night diner counter and two booths","a 24-hour cafe near a hospital","a truck-stop diner off a highway"],
       c:[
         {s:"the server",r:"Lead",a:"youngAdult",x:"Runs the whole room alone. Kind without ever being soft about it."},
@@ -29000,17 +29000,17 @@ const ACG = (()=>{
     {p:"person",t:"n",need:x=>x.hero&&x.second,f:x=>`${x.hero} and the ${x.second} end up on opposite sides of this. ${x.capTurn}.`},
 
     // ── A place first ──────────────────────────────────────────────────────
-    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho,f:x=>`${capFirst(x.place)}. ${x.capTurn}.`},
+    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho&&x.turnLeads,f:x=>`${capFirst(x.place)}. ${x.capTurn}.`},
     // "It never leaves a diner" cannot sit over a premise about a storm-chasing
     // season spent in a car, so the single-location claims need a story that
     // actually stays put.
-    {p:"place",t:"b",need:x=>x.place&&x.oneplace,f:x=>`${pick(["Everything happens in","All of it takes place in","It never leaves","The whole thing lives in"])} ${x.place}. ${x.capTurn}.`},
+    {p:"place",t:"b",need:x=>x.place&&x.oneplace&&x.turnLeads,f:x=>`${pick(["Everything happens in","All of it takes place in","It never leaves","The whole thing lives in"])} ${x.place}. ${x.capTurn}.`},
     {p:"place",t:"b",need:x=>x.place&&!x.placeEcho&&x.oneplace,f:x=>`Set in ${x.place}. ${x.capPremise}. ${x.capTurn}.`},
-    {p:"place",t:"n",need:x=>x.place&&!x.placeEcho&&x.oneday,f:x=>`${capFirst(x.place)} — and one day in it that does not go to plan. ${x.capTurn}.`},
+    {p:"place",t:"n",need:x=>x.place&&!x.placeEcho&&x.oneday&&x.turnLeads,f:x=>`${capFirst(x.place)} — and one day in it that does not go to plan. ${x.capTurn}.`},
 
     // ── A decade first ─────────────────────────────────────────────────────
     {p:"era",t:"n",need:x=>x.era,f:x=>`${x.era}. ${x.capPremise}. ${x.capTurn}.`},
-    {p:"era",t:"n",need:x=>x.era,f:x=>`${x.era}, ${x.city}. ${x.capTurn}.`},
+    {p:"era",t:"n",need:x=>x.era&&x.turnLeads,f:x=>`${x.era}, ${x.city}. ${x.capTurn}.`},
     {p:"era",t:"n",need:x=>x.era,f:x=>`Set in the ${x.era}: ${x.premise}. ${x.capTurn}.`},
 
     // ── A question ─────────────────────────────────────────────────────────
