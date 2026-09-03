@@ -36322,30 +36322,33 @@ function AdminPremiumUpsell({session}){
   };
   useEffect(()=>{loadAll();},[]);
 
+  // site_settings is service_role-only at the RLS layer (site_settings_no_update
+  // USING false), so a direct .update() from the browser matches ZERO rows and
+  // PostgREST reports no error — the card said "Settings saved." while nothing
+  // was written. Both writes go through the admin_set_premium_upsell RPC (the
+  // same SECURITY DEFINER pattern every other working admin toggle uses).
+  const writeSettings=async(enabled,paused)=>{
+    const{error}=await window.sb.rpc("admin_set_premium_upsell",{p_enabled:enabled,p_paused:paused});
+    return error;
+  };
+
   const saveSettings=async()=>{
     setBusy(true);setMsg("");
-    const{error}=await window.sb.from("site_settings").update({
-      premium_upsell_enabled:form.premium_upsell_enabled,
-      premium_upsell_paused:form.premium_upsell_paused,
-      updated_at:new Date().toISOString()
-    }).eq("id",1);
+    const error=await writeSettings(form.premium_upsell_enabled,form.premium_upsell_paused);
     if(error)showFeedback("Save failed: "+error.message);
-    else showFeedback("Settings saved.");
+    else{ showFeedback("Settings saved."); await loadAll(); }
     setBusy(false);
   };
 
   // Pause is an emergency stop, so it must take effect the moment it is clicked
   // — waiting for "Save Settings" is exactly how a halt gets forgotten and the
-  // next cron slot ships anyway. Writes straight to site_settings (the same flag
-  // the noon + evening run() reads) and rolls back the checkbox if the write fails.
+  // next cron slot ships anyway. Persists premium_upsell_paused — the same flag
+  // the noon + evening run() reads — and rolls the checkbox back if the write fails.
   const togglePause=async(next)=>{
     const prev=form.premium_upsell_paused;
     setForm(f=>({...f,premium_upsell_paused:next}));
     setBusy(true);setMsg("");
-    const{error}=await window.sb.from("site_settings").update({
-      premium_upsell_paused:next,
-      updated_at:new Date().toISOString()
-    }).eq("id",1);
+    const error=await writeSettings(form.premium_upsell_enabled,next);
     if(error){
       setForm(f=>({...f,premium_upsell_paused:prev}));
       showFeedback((next?"Couldn't pause: ":"Couldn't resume: ")+error.message);
