@@ -32089,15 +32089,18 @@ function AdminCastingGenerator({session}){
 
   const loadAll=useCallback(async()=>{
     setLoading(true);
+    // castings / roles / seen-keys are PAGED: PostgREST caps a response at 1000
+    // rows no matter how high .limit() goes, and a truncated roles pull weakens
+    // the story-reuse dedupe silently. fetchAllRows walks .range() to the end.
     const [{data:ss},{data:cs,error:ce},{data:rs,error:re},{data:sk,error:se}]=await Promise.all([
       window.sb.from("site_settings").select("casting_generator_enabled,casting_generator_last_run").eq("id",1).maybeSingle(),
       // NOTE: this list feeds the edit modal. Any column the editor writes MUST be
       // selected here, or the form loads it as undefined, renders blank, and the
       // next save writes NULL over good data. The editor also re-fetches its own
       // full row on open as a backstop, but keep this list complete regardless.
-      window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope").order("created_at",{ascending:false}).limit(2000),
-      window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay").limit(5000),
-      window.sb.from("casting_generator_seen").select("key").limit(50000)
+      fetchAllRows(()=>window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope").order("created_at",{ascending:false})).then(data=>({data})).catch(error=>({error})),
+      fetchAllRows(()=>window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay")).then(data=>({data})).catch(error=>({error})),
+      fetchAllRows(()=>window.sb.from("casting_generator_seen").select("key"),{key:"key"}).then(data=>({data})).catch(error=>({error}))
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
     if(ce)showMsg("Failed to load castings: "+ce.message);
@@ -34241,16 +34244,21 @@ function AdminOverview({onGoToBookingRequests,session,myProfile}){
   const [openingId,setOpeningId]=useState(null); // member id whose profile is being fetched
   useEffect(()=>{(async()=>{
     try{
-      const [p,c,a,au,br,xs]=await Promise.all([
-        window.sb.from("profiles").select("id,display_name,email,headshot_url,user_type,banned,suspended,verified,featured,verification_status,can_post_castings,membership_status,plan_type,subscription_status,created_at",{count:"exact"}).limit(5000),
-        window.sb.from("castings").select("status,featured",{count:"exact"}).limit(5000),
-        window.sb.from("applications").select("status",{count:"exact"}).limit(10000),
+      // Profiles and castings are PAGED (fetchAllRows) and applications are
+      // aggregated in Postgres (admin_application_stats) for the same reason
+      // the catalog was fixed: a .limit(5000) does not lift PostgREST's
+      // 1000-row response cap, so these tiles quietly stopped counting the
+      // newest rows the moment a table crossed 1000.
+      const [pu,cu,a,au,br,xs]=await Promise.all([
+        fetchAllRows(()=>window.sb.from("profiles").select("id,display_name,email,headshot_url,user_type,banned,suspended,verified,featured,verification_status,can_post_castings,membership_status,plan_type,subscription_status,created_at").order("created_at",{ascending:false})),
+        fetchAllRows(()=>window.sb.from("castings").select("status,featured").order("created_at",{ascending:false})),
+        window.sb.rpc("admin_application_stats"),
         window.sb.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(10),
         window.sb.from("class_booking_requests").select("id,status",{count:"exact"}).eq("status","pending_review").limit(5),
         window.sb.rpc("admin_extra_stats")
       ]);
-      if(p.error||c.error||a.error||au.error){setErr((p.error||c.error||a.error||au.error).message);return;}
-      const pu=p.data||[],cu=c.data||[],au2=a.data||[];
+      if(a.error||au.error){setErr((a.error||au.error).message);return;}
+      const ap=a.data||{};
       setPendingBookings(br.count||0);
       setStats({
         users:pu.length,
@@ -34266,11 +34274,11 @@ function AdminOverview({onGoToBookingRequests,session,myProfile}){
         open_castings:cu.filter(x=>x.status==="open").length,
         pending_review_castings:cu.filter(x=>x.status==="pending_review").length,
         featured_castings:cu.filter(x=>x.featured).length,
-        applications:au2.length,
-        pending:au2.filter(x=>x.status==="pending").length,
-        hold:au2.filter(x=>x.status==="hold").length,
-        selected:au2.filter(x=>x.status==="selected").length,
-        rejected:au2.filter(x=>x.status==="rejected").length,
+        applications:Number(ap.total||0),
+        pending:Number(ap.pending||0),
+        hold:Number(ap.hold||0),
+        selected:Number(ap.selected||0),
+        rejected:Number(ap.rejected||0),
         free_members:pu.filter(x=>x.membership_status==="free").length,
         premium_members:pu.filter(x=>x.membership_status==="active").length,
         paid_subs:pu.filter(x=>x.subscription_status==="active").length,
@@ -34797,13 +34805,36 @@ function AdminCDProfileView({u,session,myProfile,onBack}){
   );
 }
 
+// ─── Paged fetch: PostgREST silently caps every response at its max-rows
+//     setting (1000 on this project). A plain .limit(5000) does NOT lift that —
+//     the extra rows are dropped with no error, and because the query has no
+//     ORDER BY the rows lost are the ones added most recently. That is exactly
+//     how the Headshot Catalog came to show "0 applications" on brand-new
+//     members. Any admin listing that could ever exceed 1000 rows must page
+//     through .range() like this instead of asking for one big slice.
+//     `key` is a UNIQUE tiebreaker column appended to whatever ordering the
+//     caller set. Range paging over a non-deterministic order duplicates and
+//     skips rows across pages, which is the same class of quiet wrongness this
+//     helper exists to kill.
+async function fetchAllRows(build,{page=1000,max=100000,key="id"}={}){
+  const out=[];
+  for(let from=0;from<max;from+=page){
+    const {data,error}=await build().order(key).range(from,from+page-1);
+    if(error)throw error;
+    const rows=data||[];
+    out.push(...rows);
+    if(rows.length<page)break;
+  }
+  return out;
+}
+
 // ─── Headshot Catalog: live visual grid of every talent who uploaded a headshot.
 //     Click a card → the full profile (reused TalentProfile) + their casting
 //     applications. Realtime-subscribed + polling backstop so new sign-ups and
 //     freshly-uploaded headshots appear without a manual refresh.
 function AdminHeadshotCatalog({session,myProfile}){
   const [profiles,setProfiles]=useState([]);
-  const [appCounts,setAppCounts]=useState({});
+  const [appCounts,setAppCounts]=useState(null); // null = counts unavailable → show "—", never a false 0
   const [q,setQ]=useState("");
   const [tab,setTab]=useState("all"); // "all" | "premium" — Premium shows only paying members
   const [loading,setLoading]=useState(true);
@@ -34813,21 +34844,26 @@ function AdminHeadshotCatalog({session,myProfile}){
   const load=useCallback(async()=>{
     // Every talent with a non-empty headshot, newest first. No visible/suspended
     // filter — admins get full visibility (suspended/banned are flagged on the card).
-    const {data,error}=await window.sb.from("profiles")
-      .select("id,display_name,email,location,union_status,headshot_url,additional_photos,verified,featured,banned,suspended,created_at,membership_status")
-      .eq("user_type","talent")
-      .not("headshot_url","is",null)
-      .neq("headshot_url","")
-      .order("created_at",{ascending:false})
-      .limit(2000);
-    if(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
-    setProfiles(data||[]);setMsg("");
-    // Lightweight one-column pull → application counts grouped by talent (card pills).
+    let data;
     try{
-      const {data:apps}=await window.sb.from("applications").select("talent_id").limit(20000);
-      const counts={};(apps||[]).forEach(a=>{if(a.talent_id)counts[a.talent_id]=(counts[a.talent_id]||0)+1;});
-      setAppCounts(counts);
-    }catch(_){}
+      data=await fetchAllRows(()=>window.sb.from("profiles")
+        .select("id,display_name,email,location,union_status,headshot_url,additional_photos,verified,featured,banned,suspended,created_at,membership_status")
+        .eq("user_type","talent")
+        .not("headshot_url","is",null)
+        .neq("headshot_url","")
+        .order("created_at",{ascending:false}));
+    }catch(error){setMsg("Load failed: "+error.message);setLoading(false);return;}
+    setProfiles(data||[]);setMsg("");
+    // Application counts come from admin_talent_application_counts(), which
+    // aggregates in Postgres and returns a single {talent_id: n} row. Counting
+    // them here in JS meant pulling the whole applications table, which
+    // PostgREST truncated at 1000 rows — the newest actors silently showed 0.
+    // Never tally a table client-side again. On failure the pill shows "—",
+    // not a made-up 0.
+    try{
+      const {data:counts,error:cErr}=await window.sb.rpc("admin_talent_application_counts");
+      setAppCounts(cErr?null:(counts||{}));
+    }catch(_){setAppCounts(null);}
     setLoading(false);
   },[]);
   useEffect(()=>{load();},[load]);
@@ -34886,7 +34922,7 @@ function AdminHeadshotCatalog({session,myProfile}){
     {loading?<CastSlateLoader size="inline" text="Loading catalog…"/>:
       filtered.length===0?<div className="card" style={{padding:40,textAlign:"center",color:"var(--t3)"}}>No actors with headshots match.</div>:
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))",gap:16}}>
-        {filtered.map(u=><CatalogCard key={u.id} u={u} appCount={appCounts[u.id]||0} onOpen={()=>{try{scrollYRef.current=(document.scrollingElement||document.documentElement).scrollTop||window.pageYOffset||0;}catch(_){scrollYRef.current=window.pageYOffset||0;}setViewing(u);}}/>)}
+        {filtered.map(u=><CatalogCard key={u.id} u={u} appCount={appCounts?(appCounts[u.id]||0):null} onOpen={()=>{try{scrollYRef.current=(document.scrollingElement||document.documentElement).scrollTop||window.pageYOffset||0;}catch(_){scrollYRef.current=window.pageYOffset||0;}setViewing(u);}}/>)}
       </div>
     }
   </>);
@@ -34905,7 +34941,7 @@ function CatalogCard({u,appCount,onOpen}){
         {u.banned&&<span style={{background:"#c0392b",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4}}>BANNED</span>}
         {!u.banned&&u.suspended&&<span style={{background:"rgba(192,57,43,0.85)",color:"#fff",fontSize:9,fontWeight:800,padding:"2px 6px",borderRadius:4}}>SUSPENDED</span>}
       </div>
-      <div style={{position:"absolute",bottom:8,left:8,background:appCount>0?"var(--acc)":"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:20}}>{appCount} {appCount===1?"application":"applications"}</div>
+      <div style={{position:"absolute",bottom:8,left:8,background:appCount>0?"var(--acc)":"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:20}}>{appCount==null?"— applications":appCount+" "+(appCount===1?"application":"applications")}</div>
     </div>
     <div style={{padding:"10px 12px"}}>
       <div style={{fontWeight:700,fontSize:14,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{u.display_name||u.email||"Unknown"}</div>
