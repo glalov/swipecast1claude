@@ -29624,7 +29624,15 @@ const ACG = (()=>{
          .replace(/\bWe shoot\b/g,"We rehearse").replace(/\bwe shoot\b/g,"we rehearse")
          .replace(/\bentire film\b/g,"entire play").replace(/\bfilm's\b/g,"play's").replace(/\bwhole film\b/g,"whole play")
          .replace(/\bCameras roll\b/g,"We open").replace(/\bcameras roll\b/g,"we open")
-         .replace(/\bcamera\b/g,"house").replace(/\bfilmed\b/g,"staged");
+         .replace(/\bcamera\b/g,"house").replace(/\bfilmed\b/g,"staged")
+         // Money copy talks about footage and screens; on a stage job none of
+         // that exists, and a table read was offering "a copy of the finished
+         // film".
+         .replace(/\bfinished film\b/g,"finished piece").replace(/\bshoot days?\b/g,"call")
+         .replace(/\bfootage you can actually use\b/g,"a recording you can use")
+         .replace(/\bfootage\b/g,"a recording").replace(/\bon the screen\b/g,"on the stage")
+         .replace(/\bthe edit\b/g,"the recording").replace(/\ba cut you can use\b/g,"a recording you can use")
+         .replace(/\ba cut back to you\b/g,"a copy back to you");
     }else if(track==="print"){
       s=s.replace(/\bthe film\b/g,"the campaign").replace(/\bthis film\b/g,"this campaign");
     }else if(track==="spot"){
@@ -30403,7 +30411,9 @@ const ACG = (()=>{
       :u.unit==="session"?PAY_LINES_SESSION
       :(track==="spot"||track==="print"||/corporate|industrial|training|ad campaign|commercial/i.test(type))?PAY_LINES_SPOT.concat(PAY_LINES)
       :PAY_LINES;
-    return h&&res?freshLine(bank,y,h,res):bank[Math.floor(Math.random()*bank.length)](y);
+    const line=h&&res?freshLine(bank,y,h,res):bank[Math.floor(Math.random()*bank.length)](y);
+    // The money paragraph names the medium as much as the roles do.
+    return mediumSwap(line,track,type);
   }
 
   // Everything an actor reads is assembled here: one seed, one city, one voice.
