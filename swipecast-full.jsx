@@ -731,8 +731,48 @@ function whereWhenLine(c){
   if(when)return `Shoots ${when}.`;
   return `Shoots in ${loc}.`;
 }
+// The dates and the location are owned by shoot_start / shoot_end /
+// shoot_location and printed by whereWhenLine(). The schedule note is an
+// ADDENDUM — the human detail those fields cannot carry ("Three shoot days;
+// travel inside the city is on us"). It must never restate the dates.
+//
+// It used to. Generated notes were written as standalone sentences carrying
+// their own date range and area, so every listing printed the schedule twice
+// ("Shoots Oct 31 – Nov 2 in Bay Ridge, Brooklyn (New York, NY). Shoots Oct
+// 31–Nov 2 in Bay Ridge, Brooklyn. One shooting day in that frame."). Worse,
+// a fact stated twice can disagree: edit the shoot dates in the form and the
+// prose keeps the old ones, which is how 2:17 A.M. came to advertise Oct 14–23
+// and Oct 25–Nov 15 in the same breath.
+//
+// So any sentence of the note that names a calendar date is dropped before it
+// reaches talent. The generator no longer writes such sentences, but this is
+// the guarantee: whatever is in the column, and whoever typed it, a listing
+// prints its dates exactly once — from the structured fields.
+const NOTE_DATE_RE=/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b/i;
+function scheduleNoteAddendum(note){
+  const raw=(note||"").trim();
+  if(!raw)return "";
+  // Split on sentence ends, keeping the terminator, then drop the ones that
+  // carry a date. Anything without a month + day survives untouched.
+  const kept=(raw.match(/[^.!?]+[.!?]*/g)||[raw])
+    .map(x=>x.trim())
+    .filter(x=>x&&!NOTE_DATE_RE.test(x));
+  return kept.join(" ").trim();
+}
+// The exact string a listing prints under WHERE & WHEN, note included, so an
+// author previewing a casting sees what talent sees rather than half of it.
+function whereWhenFull(c){
+  return [whereWhenLine(c),scheduleNoteAddendum(c&&c.schedule_note)].filter(Boolean).join(" ");
+}
+// True when the typed note names a date, which the listing will drop — the
+// dates come from the shoot fields. Surfaced in the editors so it is never a
+// silent edit.
+function scheduleNoteHasDate(note){
+  const raw=(note||"").trim();
+  return !!raw&&raw!==scheduleNoteAddendum(raw);
+}
 // True only when the CD supplied at least one Where & When field.
-function hasWhereWhen(c){return !!(c&&(c.shoot_start||c.shoot_end||(c.shoot_location||"").trim()||(c.schedule_note||"").trim()));}
+function hasWhereWhen(c){return !!(c&&(c.shoot_start||c.shoot_end||(c.shoot_location||"").trim()||scheduleNoteAddendum(c.schedule_note)));}
 // Turn a free-text rate ("$500-$750/day", "$1,200 flat", "Copy/credit/meals")
 // into a structured rate. Used by the casting generator so generated roles get
 // the same treatment a CD would give them by hand. Takes the LOW end of a range
@@ -11950,7 +11990,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       const showTrust=!applicationsClosed&&(verified||bgChecked);
       const roll=castingPayRollup(c.roles);
       const wwLine=whereWhenLine(c);
-      const wwNote=(c.schedule_note||"").trim();
+      const wwNote=scheduleNoteAddendum(c.schedule_note);
       const ww=[wwLine,wwNote].filter(Boolean).join(" ");
       const roleCount=c.roles?.length||0;
       // One row builder, so a field the CD never filled in simply does not
@@ -20204,13 +20244,17 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       {/* ── Where & When ── every field optional; leave blank to omit the section */}
       <div className="form-group" style={{marginTop:4}}>
         <h3 style={{fontSize:16,fontWeight:700,marginBottom:4}}>Where &amp; When</h3>
-        <p style={{fontSize:11,color:"var(--t3)",marginBottom:10,lineHeight:1.5}}>Optional. Talent sees this as one line — e.g. “Shoots Aug 30 – Sept 6 in New York, NY.”</p>
+        <p style={{fontSize:11,color:"var(--t3)",marginBottom:10,lineHeight:1.5}}>Optional. Talent sees this as one line — e.g. “Shoots Aug 30 – Sept 6 in New York, NY. Two shoot days; exact days confirmed at booking.” The dates come from the fields below, so the note should add what they cannot say rather than repeat them.</p>
         <div className="form-row">
           <div><label className="label">Shoot starts</label><input className="input" type="date" value={f.shoot_start||""} onChange={e=>setField("shoot_start",e.target.value)}/></div>
           <div><label className="label">Shoot ends</label><input className="input" type="date" value={f.shoot_end||""} onChange={e=>setField("shoot_end",e.target.value)}/></div>
         </div>
         <div style={{marginTop:12}}><label className="label">Shoot location</label><input className="input" value={f.shoot_location||""} onChange={e=>setField("shoot_location",e.target.value)} placeholder="City, State"/></div>
         <div style={{marginTop:12}}><label className="label">Schedule note</label><input className="input" value={f.schedule_note||""} onChange={e=>setField("schedule_note",e.target.value)} placeholder="e.g. Two shoot days within this window; exact dates confirmed at booking."/></div>
+        {(whereWhenFull(f)||scheduleNoteHasDate(f.schedule_note))&&<div style={{marginTop:6}}>
+        {whereWhenFull(f)&&<p style={{fontSize:11,color:"var(--t3)",margin:0}}>Talent sees: “{whereWhenFull(f)}”</p>}
+        {scheduleNoteHasDate(f.schedule_note)&&<p style={{fontSize:11,color:"#b7791f",margin:"4px 0 0"}}>The dates in your schedule note are not shown — talent gets them from Shoot starts / Shoot ends, so a listing never prints two schedules. Keep the note for what those fields cannot say.</p>}
+      </div>}
       </div>
 
       {/* ── At a Glance ── the pay line is computed from role rates, never typed */}
@@ -30307,60 +30351,70 @@ const ACG = (()=>{
     ()=>`Unpaid. Travel inside the city is reimbursed on receipts, meals are hot, and the edit comes back to you before it goes anywhere else.`,
     ()=>`Copy, credit, meals and a signed release you actually get to keep. No fee, and no promises about one later.`
   ];
-  // ── Where & When, in a different hand every time ─────────────────────────
-  // This one line sat under every listing reading "Shoots <dates> in <area>.
-  // <N> shoot days; exact days confirmed at booking." — identical wording,
-  // listing after listing, which made the whole board look like one person
-  // filling in a form. Same facts, many hands.
+  // ── Where & When: the note is an ADDENDUM, never a restatement ───────────
+  // These banks exist so the line under a listing does not read like one
+  // person filling in the same form 500 times. They used to carry the dates
+  // and the area themselves — which meant the casting page printed the
+  // schedule twice, once from shoot_start/shoot_end/shoot_location and again
+  // in prose, and the two drifted apart the moment anybody edited the dates.
   //
-  // Builders take y = {s, e, area, city, cap, line, days, weeks, perfs, type}.
+  // So no builder below may name a date, a month or the shoot area. Those
+  // facts belong to the structured fields and are printed by whereWhenLine().
+  // What these lines carry is everything those fields cannot: how many days,
+  // how they sit in the window, what is provided, what is expected. Variety
+  // in the voice, one source of truth for the facts.
+  //
+  // Builders take y = {cap, line, days, weeks, perfs, type}. s / e / area /
+  // city are deliberately NOT used — scheduleNoteAddendum() strips any
+  // sentence that names a date anyway, so a builder that reintroduced one
+  // would simply be deleted before talent saw it.
   const SCHED_SHOOT=[
-    y=>`Shoots ${y.s}–${y.e} in ${y.area}. ${y.cap}; exact days confirmed at booking.`,
-    y=>`${y.cap} between ${y.s} and ${y.e}. Every location is in ${y.area}.`,
-    y=>`We are in ${y.area} from ${y.s} to ${y.e}. You will not be needed for all of it — your own days are on your role.`,
-    y=>`Filming ${y.s}–${y.e}. Most of it is ${y.area}; one or two days move.`,
-    y=>`${y.cap}, spread across ${y.s}–${y.e}. Weekdays mainly, with one weekend day in there.`,
-    y=>`Dates are ${y.s} through ${y.e}, all in ${y.area}. Calls land between 7am and 9am.`,
-    y=>`Production runs ${y.s}–${y.e} in ${y.area}. Individual call days are set once the cast is locked.`,
-    y=>`${y.s}–${y.e}, ${y.area}. ${y.cap}. If you have a conflict inside that window, tell us now rather than later.`,
-    y=>`Shooting ${y.s} to ${y.e}. ${y.cap}, and at least one of them is a night.`,
-    y=>`On location in ${y.area}, ${y.s}–${y.e}. Turnaround is honoured — nobody works two nights back to back.`,
-    y=>`${y.cap} somewhere inside ${y.s}–${y.e}. We build the schedule around the cast, not the other way round.`,
-    y=>`${y.s}–${y.e} in ${y.area}, plus a paid fitting the week before.`,
-    y=>`Camera rolls ${y.s} and we are finished by ${y.e}. ${y.cap} for you inside that.`,
-    y=>`${y.area}, ${y.s}–${y.e}. Expect a read-through before the first shoot day.`,
-    y=>`Your days fall between ${y.s} and ${y.e}. ${y.cap}; travel inside the city is on us.`,
-    y=>`${y.s} to ${y.e}. Six-day weeks are not happening here — ${y.cap.toLowerCase()}, and they are spread out on purpose.`,
-    y=>`Block shoot: ${y.cap} back to back, starting ${y.s}, wrapping no later than ${y.e}.`,
-    y=>`In ${y.area} across ${y.s}–${y.e}. We schedule around day jobs where we can; say what you need.`
+    y=>`${y.cap}; exact days are confirmed at booking.`,
+    y=>`${y.cap} inside that window, and every location sits in the same few blocks.`,
+    y=>`You are not needed for the whole run — your own days are on your role.`,
+    y=>`Most of it stays in the one neighbourhood; one or two days move.`,
+    y=>`${y.cap}, spread across the window. Weekdays mainly, with one weekend day in there.`,
+    y=>`Calls land between 7am and 9am.`,
+    y=>`Individual call days are set once the cast is locked.`,
+    y=>`${y.cap}. If you have a conflict inside that window, tell us now rather than later.`,
+    y=>`${y.cap}, and at least one of them is a night.`,
+    y=>`Turnaround is honoured — nobody works two nights back to back.`,
+    y=>`${y.cap} somewhere inside the window. We build the schedule around the cast, not the other way round.`,
+    y=>`${y.cap}, plus a paid fitting the week before.`,
+    y=>`${y.cap} for you inside that window.`,
+    y=>`Expect a read-through before the first shoot day.`,
+    y=>`${y.cap}; travel inside the city is on us.`,
+    y=>`Six-day weeks are not happening here — ${y.line}, and they are spread out on purpose.`,
+    y=>`Block shoot: ${y.cap}, back to back.`,
+    y=>`We schedule around day jobs where we can; say what you need.`
   ];
   const SCHED_STAGE=[
-    y=>`Rehearses and runs ${y.s}–${y.e} in ${y.area}. ${y.cap}; evenings and weekends.`,
-    y=>`${y.cap}. We start ${y.s} and close ${y.e}, all in ${y.area}.`,
-    y=>`Rehearsals begin ${y.s} in ${y.area}; the run ends ${y.e}. Weeknights, plus Saturday days.`,
-    y=>`${y.s}–${y.e}. ${y.cap}. Nobody is called every night — the schedule goes out in week one.`,
-    y=>`In the room from ${y.s}, on stage until ${y.e}. ${y.cap}, ${y.area}.`,
-    y=>`${y.area}, ${y.s}–${y.e}. ${y.cap}, with one dark night a week.`,
-    y=>`Rehearsal is evenings only, ${y.s} onward. Performances run to ${y.e}. ${y.cap}.`
+    y=>`${y.cap}; evenings and weekends.`,
+    y=>`${y.cap}, rehearsal and run in the same building.`,
+    y=>`Rehearsals are weeknights, plus Saturday days.`,
+    y=>`${y.cap}. Nobody is called every night — the schedule goes out in week one.`,
+    y=>`${y.cap}, in the room before you are on the stage.`,
+    y=>`${y.cap}, with one dark night a week.`,
+    y=>`Rehearsal is evenings only. ${y.cap}.`
   ];
   const SCHED_READ=[
-    y=>`Reads ${y.s} in ${y.area}. Sides go out 48 hours beforehand.`,
-    y=>`One session on ${y.s}, ${y.area}. You get the pages two days before.`,
-    y=>`${y.s} only, in ${y.area}. Roughly four hours around a table, and you are paid for the day.`,
-    y=>`A single afternoon, ${y.s}, in ${y.area}. Cold reading is fine — that is rather the point.`
+    y=>`Sides go out 48 hours beforehand.`,
+    y=>`You get the pages two days before.`,
+    y=>`Roughly four hours around a table, and you are paid for the day.`,
+    y=>`A single afternoon. Cold reading is fine — that is rather the point.`
   ];
   const SCHED_SESSION=[
-    y=>`Records ${y.s}–${y.e}. ${y.cap}; remote or at a studio near you.`,
-    y=>`Sessions run between ${y.s} and ${y.e}. ${y.cap}. A clean home booth is fine.`,
-    y=>`${y.cap}, booked inside ${y.s}–${y.e}. We work around your day job.`,
-    y=>`Recording ${y.s} to ${y.e}. You are directed live over a call and booked by the hour.`,
-    y=>`${y.s}–${y.e}. ${y.cap}. Pickups, if we need them, fall in the same window and are paid.`
+    y=>`${y.cap}; remote or at a studio near you.`,
+    y=>`${y.cap}. A clean home booth is fine.`,
+    y=>`${y.cap}, and we work around your day job.`,
+    y=>`You are directed live over a call, and booked by the hour.`,
+    y=>`${y.cap}. Pickups, if we need them, fall in the same window and are paid.`
   ];
   const SCHED_STILLS=[
-    y=>`Shoots ${y.s}–${y.e} in ${y.area}. ${y.cap}; hair and make-up provided on the day.`,
-    y=>`${y.cap} between ${y.s} and ${y.e}. The wardrobe fitting is separate, and paid.`,
-    y=>`${y.s}–${y.e}, ${y.area}. Call is early and we usually wrap by six.`,
-    y=>`One studio, ${y.area}, ${y.s} to ${y.e}. ${y.cap}, and you will know your date a week out.`
+    y=>`${y.cap}; hair and make-up are provided on the day.`,
+    y=>`${y.cap}. The wardrobe fitting is separate, and paid.`,
+    y=>`Call is early and we usually wrap by six.`,
+    y=>`${y.cap}, and you will know your date a week out.`
   ];
   function scheduleNote(track,type,plan,y,h,res){
     const bank=track==="stage"
@@ -30630,13 +30684,10 @@ const ACG = (()=>{
           shoot_start:start.toISOString().slice(0,10),
           shoot_end:end.toISOString().slice(0,10),
           shoot_location:areaName===city.name?city.name:`${areaName} (${city.name})`,
-          // One short line, the way a casting board prints it: what it does,
-          // when, where. Drawn from a bank and deduped against every line
-          // already on the board, so two listings never phrase it alike.
+          // No dates and no area in here — see the SCHED_* banks. The window
+          // and the location are shoot_start/shoot_end/shoot_location above,
+          // and the listing prints them from there, once.
           schedule_note:scheduleNote(track,type,plan,{
-            s:fmtShootDay(start.toISOString()),
-            e:fmtShootDay(end.toISOString()),
-            area:areaName,city:city.name,
             cap:plan.cap,line:plan.line,days:plan.days,weeks:plan.weeks,perfs:plan.perfs,type
           },h,res),
           talent_scope:track==="stage"
@@ -32854,7 +32905,10 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
       </div>
       <div style={{marginTop:10}}><label className="label">Shoot location</label><input className="input" value={form.shoot_location||""} onChange={e=>set("shoot_location",e.target.value)} placeholder="City, State"/></div>
       <div style={{marginTop:10}}><label className="label">Schedule note</label><input className="input" value={form.schedule_note||""} onChange={e=>set("schedule_note",e.target.value)} placeholder="e.g. Exact days confirmed at booking."/></div>
-      {whereWhenLine(form)&&<p style={{fontSize:11,color:"var(--t3)",marginTop:6}}>Talent sees: “{whereWhenLine(form)}”</p>}
+      {(whereWhenFull(form)||scheduleNoteHasDate(form.schedule_note))&&<div style={{marginTop:6}}>
+        {whereWhenFull(form)&&<p style={{fontSize:11,color:"var(--t3)",margin:0}}>Talent sees: “{whereWhenFull(form)}”</p>}
+        {scheduleNoteHasDate(form.schedule_note)&&<p style={{fontSize:11,color:"#b7791f",margin:"4px 0 0"}}>The dates in your schedule note are not shown — talent gets them from Shoot starts / Shoot ends, so a listing never prints two schedules. Keep the note for what those fields cannot say.</p>}
+      </div>}
     </div>
     <div className="form-group">
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>At a Glance</h3>
