@@ -718,10 +718,31 @@ function fmtShootDay(d){
   if(isNaN(dt.getTime()))return "";
   return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
 }
+// The card already prints LOCATION. The shoot location is stored in full —
+// "Bay Ridge, Brooklyn (New York, NY)" — because the editor and every other
+// consumer want the whole thing, but printing it whole directly under a
+// LOCATION row reading "New York, NY" says the city twice in two lines.
+// So the city is dropped from this line when it adds nothing over LOCATION:
+// the parenthetical goes when it merely repeats it, and the phrase goes
+// entirely when the shoot location IS the location. A shoot location that
+// genuinely differs — a Philadelphia shoot on a New York listing — is left
+// alone, because there the city is the point.
+function sameLocality(a,b){
+  const n=x=>String(x||"").toLowerCase().replace(/\s+/g," ").replace(/[.\s]+$/,"").trim();
+  return !!n(a)&&n(a)===n(b);
+}
+function shootLocationForLine(c){
+  const loc=(c&&c.shoot_location||"").trim();
+  if(!loc)return "";
+  if(sameLocality(loc,c.location))return "";           // "in New York, NY" under LOCATION: New York, NY
+  const m=loc.match(/^(.*?)\s*\(([^()]*)\)\s*$/);
+  if(m&&m[1].trim()&&sameLocality(m[2],c.location))return m[1].trim();
+  return loc;
+}
 function whereWhenLine(c){
   if(!c)return "";
   const start=fmtShootDay(c.shoot_start),end=fmtShootDay(c.shoot_end);
-  const loc=(c.shoot_location||"").trim();
+  const loc=shootLocationForLine(c);
   let when="";
   if(start&&end&&start!==end)when=`${start} – ${end}`;
   else if(start)when=start;
