@@ -11881,7 +11881,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-      {c.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
+      {castingIsPick(c)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
       <span style={{display:"inline-flex",alignItems:"center",padding:"4px 11px",background:"#E3EDFF",color:"#1D4ED8",border:"1px solid #B4CDFF",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>{translateCastingType(c.type,lang)}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
@@ -13245,7 +13245,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
         {casting&&(
           <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
             <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
-              {casting.featured&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
+              {castingIsPick(casting)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
               {casting.type&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.type}</span>}
               {casting.union&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.union}</span>}
             </div>
@@ -13512,7 +13512,18 @@ function castingRecencyCompare(a,b){
 // silently dropped the pinning — the picks fell to wherever their posted date
 // put them. Keep this ahead of the recency tiebreak.
 function castingFeaturedRank(casting){
-  return casting&&casting.featured===true?0:1;
+  return castingIsPick(casting)?0:1;
+}
+
+// A Cast Slate Pick is a promotion of something an actor can still apply to.
+// Once a casting expires or is archived the promotion has nothing left to
+// promote, so the whole treatment — gold band, pick pill, the pinning to the
+// top of its bucket — comes off. Derived from expiry at render rather than
+// stored, so it lapses on its own the moment the deadline passes: nothing to
+// unset by hand, no cron, and admin's `featured` flag is left untouched so the
+// pick returns intact if the casting is ever reopened or its deadline extended.
+function castingIsPick(casting){
+  return !!(casting&&casting.featured===true&&casting.status!=="archived"&&!castingIsExpired(casting));
 }
 
 function castingSortBucket(casting){
@@ -13864,7 +13875,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isFeat=!!c.featured;const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick no longer gets its own shadow: the band is the
                whole mark, and a gold lift underneath it was a second one. */
