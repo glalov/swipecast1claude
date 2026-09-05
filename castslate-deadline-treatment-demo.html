@@ -1,0 +1,438 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>No Clock On The Wall</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+</head><body>
+<style>
+:root{
+  --bg:#FAF7F1; --s1:#FFFFFF; --s2:#F1ECE2; --bdr:#E5DFD2;
+  --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0;
+  --teal:#2D8587; --teal-dk:#226365; --amber:#E8902A;
+  --page:#F6F2EA; --rule:#E5DFD2;
+  --live:#0F6E56; --liveBg:#EAF4EF; --liveBd:#C5E2D6;
+  --red:#c0392b; --redBg:#FDEEEA; --redBd:#E8B5A6;
+  --chipRoleBg:#E8EEFB; --chipRoleBd:#bcd0f2; --chipRoleFg:#1f4a92;
+  --chipPayBg:#F2F7F4; --chipPayBd:#D7E6DD; --chipPayFg:#2F6A52;
+  --gone:#EDEBF1; --goneFg:#5A5A72;
+  --shadow:0 1px 2px rgba(26,26,46,.05), 0 10px 26px -20px rgba(26,26,46,.4);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#191A24; --s1:#1E1F2B; --s2:#272935; --bdr:#333544;
+    --t1:#ECEAF2; --t2:#B0AEC2; --t3:#8A88A0;
+    --teal:#4FB3B5; --teal-dk:#69C6C8; --amber:#E0A860;
+    --page:#101019; --rule:#2A2C39;
+    --live:#7FCCA6; --liveBg:#17281F; --liveBd:#27462F;
+    --red:#F08C7A; --redBg:#2E1A16; --redBd:#5A2E26;
+    --chipRoleBg:#1D2740; --chipRoleBd:#2E4270; --chipRoleFg:#9DBAF0;
+    --chipPayBg:#182A22; --chipPayBd:#26483A; --chipPayFg:#7FCCA6;
+    --gone:#282A38; --goneFg:#B0AEC2;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 26px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#191A24; --s1:#1E1F2B; --s2:#272935; --bdr:#333544;
+  --t1:#ECEAF2; --t2:#B0AEC2; --t3:#8A88A0;
+  --teal:#4FB3B5; --teal-dk:#69C6C8; --amber:#E0A860;
+  --page:#101019; --rule:#2A2C39;
+  --live:#7FCCA6; --liveBg:#17281F; --liveBd:#27462F;
+  --red:#F08C7A; --redBg:#2E1A16; --redBd:#5A2E26;
+  --chipRoleBg:#1D2740; --chipRoleBd:#2E4270; --chipRoleFg:#9DBAF0;
+  --chipPayBg:#182A22; --chipPayBd:#26483A; --chipPayFg:#7FCCA6;
+  --gone:#282A38; --goneFg:#B0AEC2;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 26px -20px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding:44px 20px 90px;display:flex;flex-direction:column;gap:30px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:Newsreader,Georgia,"Times New Roman",serif;font-weight:500;
+   font-size:clamp(29px,5vw,40px);line-height:1.12;letter-spacing:-.01em;margin:6px 0 10px;text-wrap:balance}
+.lede{margin:0;color:var(--t2);font-size:15.5px;line-height:1.65;max-width:66ch}
+.lede b{color:var(--t1);font-weight:600}
+h2{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:22px;margin:0;letter-spacing:-.01em}
+.sechead{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:16px}
+.sechead .why{font-size:12.5px;color:var(--t3);margin-left:auto;text-align:right}
+
+
+/* ---- the browse scroll ---- */
+.scroller{max-height:520px;overflow-y:auto;background:var(--bg);border:1px solid var(--bdr);border-radius:16px;
+  padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow) inset}
+.minicard{background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:15px 17px;flex:none}
+.minicard.past{background:transparent;border-style:dashed}
+.minicard.past .mc-t,.minicard.past .mc-p{color:var(--t3)}
+.mc-t{font-size:17px;font-weight:800;letter-spacing:-.2px;margin-bottom:3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.mc-p{font-size:12.5px;color:var(--t3);margin-bottom:11px}
+.pick{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9A5E10;
+  background:#FBF0DE;border:1px solid #EBD6AC;border-radius:999px;padding:3px 8px}
+.divider{flex:none;padding:6px 2px 2px}
+.dv-rule{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.dv-rule::before,.dv-rule::after{content:"";height:1px;background:var(--bdr);flex:1}
+.dv-rule span{font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--t3);white-space:nowrap}
+.divider p{margin:0;font-size:13.5px;line-height:1.65;color:var(--t2);max-width:60ch}
+.divider p b{color:var(--t1);font-weight:700}
+
+/* ---- the day switcher ---- */
+.switch{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:20px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:14px}
+.days{display:flex;gap:8px;flex-wrap:wrap}
+.day{flex:1 1 120px;text-align:left;font:inherit;background:var(--s2);border:1px solid var(--bdr);border-radius:11px;
+  padding:11px 13px;cursor:pointer;transition:.15s;display:flex;flex-direction:column;gap:2px;min-width:112px}
+.day .n{font-size:13.5px;font-weight:700;color:var(--t1)}
+.day .d{font-size:11.5px;color:var(--t3);font-variant-numeric:tabular-nums}
+.day:hover{border-color:var(--teal)}
+.day[aria-pressed="true"]{background:var(--teal);border-color:var(--teal)}
+.day[aria-pressed="true"] .n,.day[aria-pressed="true"] .d{color:#fff}
+.day:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.stateline{font-size:13px;color:var(--t2)}
+.stateline b{color:var(--t1)}
+
+/* ---- shared card chrome ---- */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow)}
+.cc-title{font-size:21px;font-weight:800;letter-spacing:-.3px;margin:0 0 4px}
+.cc-prod{color:var(--t3);font-size:13px;margin:0 0 13px}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cc-chip{display:inline-flex;align-items:center;font-size:13.5px;font-weight:700;padding:6px 12px;border-radius:8px;
+  background:var(--s2);color:var(--t1);border:1px solid var(--bdr)}
+.cc-chip.pay{background:var(--chipPayBg);border-color:var(--chipPayBd);color:var(--chipPayFg)}
+.cc-chip.roles{background:var(--chipRoleBg);border-color:var(--chipRoleBd);color:var(--chipRoleFg)}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px}
+.cc-chip.gone{background:var(--gone);border-color:transparent;color:var(--goneFg)}
+.cc-chip.urgent{background:var(--red);border-color:var(--red);color:#fff}
+.cc-chip.dead{background:var(--redBg);border-color:var(--redBd);color:var(--red)}
+
+/* ---- the opened casting: fact card ---- */
+.cd-card{background:var(--bg);border:1px solid var(--bdr);border-radius:16px;overflow:hidden}
+.cd-grid{display:grid;grid-template-columns:1fr 232px}
+@media(max-width:700px){.cd-grid{grid-template-columns:1fr}}
+.cd-main{padding:20px 22px}
+.cd-top{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding-bottom:15px;border-bottom:1px solid var(--bdr);margin-bottom:16px}
+.live-badge{display:inline-flex;align-items:center;gap:7px;background:var(--liveBg);border:1px solid var(--liveBd);
+  color:var(--live);font-weight:700;font-size:13.5px;padding:5px 12px;border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--live);box-shadow:0 0 0 3px color-mix(in srgb,var(--live) 22%,transparent)}
+.cd-stat{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--t2);font-weight:600}
+.cd-stat .vl{color:var(--t1);font-weight:800}
+.cd-stat.dead{color:var(--red);font-weight:700}
+.cd-stat.last{color:var(--red);font-weight:700}
+.cd-rows{display:grid;grid-template-columns:1fr 1fr;gap:15px 22px}
+@media(max-width:620px){.cd-rows{grid-template-columns:1fr}}
+.cd-row{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.cd-row.full{grid-column:1 / -1}
+.cd-lab{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:2px}
+.cd-val{font-size:14px;color:var(--t1);font-weight:600;line-height:1.45}
+.sq{width:22px;height:22px;border-radius:6px;background:var(--s2);border:1px solid var(--bdr);flex:none;margin-top:1px}
+.sq.good{background:var(--chipPayBg);border-color:var(--chipPayBd)}
+.cd-side{background:var(--s2);border-left:1px solid var(--bdr);padding:20px 18px;display:flex;flex-direction:column;gap:10px}
+@media(max-width:700px){.cd-side{border-left:none;border-top:1px solid var(--bdr)}}
+.cd-side h3{margin:0;font-size:15px;font-weight:800}
+.fakeselect{background:var(--s1);border:1px solid var(--bdr);border-radius:9px;padding:9px 11px;font-size:13.5px;color:var(--t3)}
+.btn{background:var(--teal);color:#fff;border:none;border-radius:9px;padding:11px;font:inherit;font-weight:700;font-size:14px;text-align:center}
+.btn.ghost{background:transparent;color:var(--teal);border:1px solid var(--teal)}
+.hint{font-size:11.5px;color:var(--t3);text-align:center}
+.hint.warm{color:var(--live);font-weight:700}
+
+/* removed / kept annotations */
+.ann{margin-top:12px;display:flex;flex-direction:column;gap:5px}
+.ann div{font-size:12.5px;color:var(--t3);line-height:1.55}
+.ann s{opacity:.7}
+.ann .rm::before{content:"removed  ";font-weight:700;color:var(--red);letter-spacing:.04em;font-size:10.5px;text-transform:uppercase}
+.ann .kp::before{content:"new  ";font-weight:700;color:var(--live);letter-spacing:.04em;font-size:10.5px;text-transform:uppercase}
+
+.pair{display:flex;flex-direction:column;gap:10px}
+.pairlab{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+
+/* closed state footer */
+.nextup{margin-top:14px;background:var(--liveBg);border:1px solid var(--liveBd);border-radius:12px;padding:14px 16px;
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.nextup p{margin:0;font-size:13.5px;color:var(--t1);line-height:1.55;max-width:52ch}
+.nextup b{font-weight:800}
+
+.rule{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:18px 20px;font-size:14px;color:var(--t2);line-height:1.75}
+.rule ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:9px}
+.rule b{color:var(--t1);font-weight:700}
+.rule .q{color:var(--t1);font-weight:600}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:13px}
+.why-card{background:var(--s1);border:1px solid var(--bdr);border-left:3px solid var(--amber);border-radius:10px;padding:14px 16px}
+.why-card h3{margin:0 0 5px;font-size:13.5px;font-weight:800}
+.why-card p{margin:0;font-size:13px;color:var(--t2);line-height:1.6}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">CastSlate · browse + opened casting · demo</span>
+    <h1>No clock on the wall</h1>
+    <p class="lede">An actor who reads <b>“14 days left to apply”</b> learns nothing useful and one bad thing: that a clock is running out on them. Craigslist shows no expiry at all — only how long ago a post went up — and it works. Two changes here, and they answer the same fear from opposite ends: <b>while a casting is open, nothing on it mentions time except how fresh it is</b> — and the scroll now says out loud where the live castings end, so nine pages of closed listings read as a catalogue instead of as chances the actor missed.</p>
+  </header>
+
+
+  <section>
+    <div class="sechead"><h2>The scroll</h2><span class="why">scroll this list — the boundary is the point</span></div>
+    <div class="scroller" id="scroller">
+      <div class="minicard">
+        <div class="mc-t">2:17 A.M <span class="pick">Cast Slate Pick</span></div>
+        <div class="mc-p">Cameron Johnson · Experimental Thriller, Gowanus</div>
+        <div class="cc-strip">
+          <span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $175/day</span>
+          <span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted 14 hours ago</span>
+        </div>
+      </div>
+      <div class="minicard">
+        <div class="mc-t">Widely Advertised Hair Care Brand</div>
+        <div class="mc-p">Rae Whitcombe Casting · Branded Content</div>
+        <div class="cc-strip">
+          <span class="cc-chip roles">2 roles</span><span class="cc-chip pay">Up to $900</span>
+          <span class="cc-chip">Nationwide</span><span class="cc-chip quiet">Posted 39 hours ago</span>
+        </div>
+      </div>
+      <div class="minicard">
+        <div class="mc-t">Sunday Showings</div>
+        <div class="mc-p">Red Hook Film Group · Short Film</div>
+        <div class="cc-strip">
+          <span class="cc-chip roles">4 roles</span><span class="cc-chip pay">Up to $450/day</span>
+          <span class="cc-chip">Brooklyn, NY</span><span class="cc-chip quiet">Posted on Tuesday</span>
+        </div>
+      </div>
+      <div class="minicard">
+        <div class="mc-t">The Quiet Wing</div>
+        <div class="mc-p">Youssef Mourad / Atlanta Stage Door · Feature Film</div>
+        <div class="cc-strip">
+          <span class="cc-chip roles">4 roles</span><span class="cc-chip pay">Up to $450/day</span>
+          <span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted two weeks ago</span>
+        </div>
+      </div>
+
+      <div class="divider">
+        <div class="dv-rule"><span>That’s all of them</span></div>
+        <p><b>You have seen every casting taking submissions right now — all 26 of them.</b>
+        Everything below has finished casting. We keep them up so you can see the range of work that comes
+        through CastSlate, and so you know what to expect from the next one.</p>
+      </div>
+
+      <div class="minicard past">
+        <div class="mc-t">Rooftop Scene</div>
+        <div class="mc-p">Nightjar Pictures · Music Video</div>
+        <div class="cc-strip">
+          <span class="cc-chip dead">Applications closed</span><span class="cc-chip roles">3 roles</span>
+          <span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Jul 8, 2026</span>
+        </div>
+      </div>
+      <div class="minicard past">
+        <div class="mc-t">Circle List</div>
+        <div class="mc-p">Marrow &amp; Co. · Independent Film</div>
+        <div class="cc-strip">
+          <span class="cc-chip dead">Applications closed</span><span class="cc-chip roles">5 roles</span>
+          <span class="cc-chip">Queens, NY</span><span class="cc-chip quiet">Posted on Jul 6, 2026</span>
+        </div>
+      </div>
+      <div class="minicard past">
+        <div class="mc-t">Black Forest</div>
+        <div class="mc-p">Ember Lane Productions · Feature Film</div>
+        <div class="cc-strip">
+          <span class="cc-chip dead">Applications closed</span><span class="cc-chip roles">7 roles</span>
+          <span class="cc-chip">Los Angeles, CA</span><span class="cc-chip quiet">Posted on Jul 6, 2026</span>
+        </div>
+      </div>
+    </div>
+    <div class="ann">
+      <div class="kp">the divider is the whole change here — same cards, same order, nothing hidden. Without it, card six of “Applications closed” reads as <i>I am too late to everything</i>; with it, the same card reads as <i>this is the archive</i></div>
+      <div class="rm">no countdown chip on any open card, at any age</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>The same casting, day by day</h2><span class="why">posted Aug 1 · closes Sep 17</span></div>
+    <div class="switch">
+      <div class="days" id="days"></div>
+      <div class="stateline" id="stateline"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>On the browse list</h2></div>
+    <div class="pair">
+      <div class="card">
+        <div class="cc-title">Pick-Up After Six</div>
+        <div class="cc-prod">Market Street Creative Studio · New York, NY</div>
+        <div class="cc-strip" id="browseStrip"></div>
+        <div class="ann" id="browseAnn"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Opened</h2><span class="why">the fact card at the top of the casting page</span></div>
+    <div class="cd-card">
+      <div class="cd-grid" id="cdGrid">
+        <div class="cd-main">
+          <div class="cd-top" id="cdTop"></div>
+          <div class="cd-rows" id="cdRows"></div>
+        </div>
+        <div class="cd-side" id="cdSide"></div>
+      </div>
+    </div>
+    <div class="ann" id="cdAnn"></div>
+    <div id="closedFooter"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>The formula</h2></div>
+    <div class="rule">
+      Four rules. Three of them are about one casting; the last one is about the scroll they all sit in.
+      <ol>
+        <li><span class="q">Open — day 1 to the last day.</span> <b>Nothing about the deadline anywhere.</b> No countdown chip on the card, no DEADLINE row on the page, no “closes Sep 17” under the Apply button. The only time signal is <b>“Posted two weeks ago”</b>, and beside it <b>“Casting now — apply today”</b> with the tooltip you already wrote: an older post does not mean the role is taken.</li>
+        <li><span class="q">The final day.</span> One quiet line — <b>“Last day to apply”</b> — and nowhere else. It reads as an invitation, not as a clock: nobody is told they are late, they are told today counts. This is the only place a date is implied at all, and it is optional; say the word and it goes too.</li>
+        <li><span class="q">Closed.</span> Unambiguous and calm: <b>“Applications closed”</b>, the Apply panel replaced rather than left dangling — and immediately under it, the open castings that are still taking submissions. A closed listing must never be a dead end; that is where hope is actually lost, not in a date.</li>
+        <li><span class="q">The list itself.</span> Browse already sinks closed castings below every live one, so the real scroll is about two and a half pages of open work followed by nine pages of finished work — with <b>nothing marking the border</b>. One line marks it: <b>“You have seen every casting taking submissions right now — all 26 of them.”</b> Same cards, same order, nothing hidden. It turns an endless pile of missed chances into a finite set an actor can actually finish, and an archive that proves the place is busy.</li>
+      </ol>
+    </div>
+    <div class="why-grid" style="margin-top:14px">
+      <div class="why-card"><h3>Why not keep a small countdown</h3><p>“13 days left” is read as “12 days from now this is worthless.” It gives permission to come back later, and later is usually never — the same reason the browse card already hides any countdown over 14 days.</p></div>
+      <div class="why-card"><h3>Why the deadline row goes too</h3><p>A date in a facts table is still a clock. An actor comparing two castings will pick the one with more days left, which has nothing to do with whether they are right for the part.</p></div>
+      <div class="why-card"><h3>What the CD still sees</h3><p>The deadline stays exactly where it belongs — on the casting form, in the CD's own dashboard, and in the admin row. It keeps driving when the listing closes. It just stops being shouted at the actor.</p></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var DAY=86400000;
+  var POSTED=new Date(2026,7,1,10,15,0);          // Sat Aug 1 2026
+  var CLOSES=new Date(2026,8,17,23,59,59);        // Thu Sep 17 2026
+
+  function fmtDate(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+  function postedAgo(then,now){
+    var diff=now-then; if(diff<0)diff=0;
+    var MIN=60000,HOUR=3600000;
+    var mins=Math.floor(diff/MIN);
+    if(mins<1)return"just now";
+    if(mins<60)return mins===1?"1 minute ago":mins+" minutes ago";
+    var hours=Math.floor(diff/HOUR);
+    if(hours<=48)return hours===1?"1 hour ago":hours+" hours ago";
+    var days=Math.floor(diff/DAY);
+    if(days<7)return"on "+then.toLocaleDateString("en-US",{weekday:"long"});
+    if(days<14)return"a week ago";
+    if(days<21)return"two weeks ago";
+    if(days<28)return"three weeks ago";
+    return"on "+fmtDate(then);
+  }
+
+  // The five moments worth looking at. `view` is the day the actor is looking.
+  var STATES=[
+    {n:"Day it posts",  view:new Date(2026,7,1,14,0),   note:"fresh — the first hours"},
+    {n:"Four days in",  view:new Date(2026,7,5,12,0),   note:"the ordinary case, most of a casting's life"},
+    {n:"Two weeks in",  view:new Date(2026,7,17,12,0),  note:"old enough that the old card felt stale"},
+    {n:"Final day",     view:new Date(2026,8,17,12,0),  note:"the one day that gets a line of its own"},
+    {n:"Closed",        view:new Date(2026,8,20,12,0),  note:"deadline passed — the listing is done taking submissions"}
+  ];
+
+  var idx=1;
+  var daysEl=document.getElementById("days"),
+      stateline=document.getElementById("stateline"),
+      browseStrip=document.getElementById("browseStrip"),
+      browseAnn=document.getElementById("browseAnn"),
+      cdTop=document.getElementById("cdTop"),
+      cdRows=document.getElementById("cdRows"),
+      cdSide=document.getElementById("cdSide"),
+      cdGrid=document.getElementById("cdGrid"),
+      cdAnn=document.getElementById("cdAnn"),
+      closedFooter=document.getElementById("closedFooter");
+
+  STATES.forEach(function(s,i){
+    var b=document.createElement("button");
+    b.type="button"; b.className="day"; b.setAttribute("aria-pressed","false");
+    b.innerHTML='<span class="n">'+s.n+'</span><span class="d">'+
+      s.view.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})+'</span>';
+    b.addEventListener("click",function(){ idx=i; render(); });
+    daysEl.appendChild(b);
+  });
+
+  function row(lab,val,full,good){
+    return '<div class="cd-row'+(full?' full':'')+'"><span class="sq'+(good?' good':'')+'"></span><div style="min-width:0">'+
+      '<div class="cd-lab">'+lab+'</div><div class="cd-val">'+val+'</div></div></div>';
+  }
+
+  function render(){
+    var st=STATES[idx], now=st.view;
+    var closed=now>CLOSES;
+    var lastDay=!closed && now.toDateString()===CLOSES.toDateString();
+    var daysLeft=Math.ceil((CLOSES-now)/DAY);
+
+    [].forEach.call(daysEl.children,function(b,i){ b.setAttribute("aria-pressed", i===idx?"true":"false"); });
+
+    stateline.innerHTML='Actor is looking on <b>'+now.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})+
+      '</b> — '+st.note+'.';
+
+    // ---------- browse card strip ----------
+    var chips='<span class="cc-chip roles">3 Roles</span>'+
+              '<span class="cc-chip pay">Up to $850/day</span>'+
+              '<span class="cc-chip">New York, NY</span>';
+    if(closed) chips='<span class="cc-chip dead">Applications closed</span>'+chips;
+    chips+='<span class="cc-chip quiet">Posted '+postedAgo(POSTED,now)+'</span>';
+    browseStrip.innerHTML=chips;
+
+    var oldChip = closed ? 'Applications closed'
+                : (daysLeft<=14 ? '<s>'+(daysLeft===1?'1 day left to apply':daysLeft+' days left to apply')+'</s>'+(daysLeft<=5?' — in red':'') : null);
+    browseAnn.innerHTML = closed
+      ? '<div class="kp">the closed chip leads the strip, so it is the first thing read — that part does not change</div>'
+      : (oldChip ? '<div class="rm">'+oldChip+' — the countdown chip no longer appears at any point while the casting is open</div>'
+                 : '<div class="rm">nothing here today either — above 14 days the card already showed no countdown. Now it never does</div>');
+
+    // ---------- opened: top strip ----------
+    var top='';
+    if(closed){
+      top='<span class="cd-stat dead">Applications closed</span>'+
+          '<span class="cd-stat"><span class="vl">3</span> roles listed</span>'+
+          '<span class="cd-stat">Posted '+postedAgo(POSTED,now)+'</span>';
+    }else{
+      top='<span class="live-badge"><span class="dot"></span>Casting now — apply today</span>'+
+          '<span class="cd-stat"><span class="vl">$850</span> top rate</span>'+
+          '<span class="cd-stat"><span class="vl">3</span> roles open</span>'+
+          (lastDay?'<span class="cd-stat last">Last day to apply</span>':'')+
+          '<span class="cd-stat">Posted '+postedAgo(POSTED,now)+'</span>';
+    }
+    cdTop.innerHTML=top;
+
+    // ---------- opened: fact rows (DEADLINE row is gone) ----------
+    cdRows.innerHTML=
+      row("Union","Union and non-union welcome")+
+      row("Location","New York, NY")+
+      row("Nudity / Intimate content","None",false,true)+
+      row("Open to talent from","United States — Nationwide")+
+      row("Pay / Rate","$475–$850 per day, set per role and listed on each breakdown, over two shoot days in total.",true)+
+      row("Where &amp; When","Shoots Sep 27 – Oct 4 in Red Hook, Brooklyn.",true);
+
+    // ---------- opened: side panel ----------
+    if(closed){
+      cdGrid.style.gridTemplateColumns="1fr";
+      cdSide.style.display="none";
+      cdSide.innerHTML="";
+    }else{
+      cdGrid.style.gridTemplateColumns="";
+      cdSide.style.display="";
+      cdSide.innerHTML='<h3>Ready to apply?</h3>'+
+        '<div class="fakeselect">Select a role…</div>'+
+        '<div class="btn">Apply</div>'+
+        (lastDay?'<div class="hint warm">Last day to apply</div>':'<div class="hint">Open for submissions</div>');
+    }
+
+    cdAnn.innerHTML = closed
+      ? '<div class="rm"><s>14 days left to apply · closes Sep 17, 2026</s> and the whole Apply panel — a closed casting should not show a live Apply button</div>'
+      : '<div class="rm"><s>'+(lastDay?'0 days left · closes Sep 17, 2026':daysLeft+' days left to apply · closes Sep 17, 2026')+'</s> from the top strip, <s>DEADLINE · Sep 17, 2026</s> from the fact rows, and <s>closes Sep 17, 2026</s> from under the Apply button</div>'+
+        (lastDay
+          ? '<div class="kp">one line, twice: “Last day to apply”. An invitation to act today, not a warning that they are late</div>'
+          : '<div class="kp">“Open for submissions” under the button — presence, no number to weigh against another casting</div>');
+
+    // ---------- closed: never a dead end ----------
+    closedFooter.innerHTML = closed
+      ? '<div class="nextup"><p><b>This one has wrapped — but 26 castings are taking submissions right now,</b> and 4 of them are looking for your type in New York.</p><div class="btn ghost" style="padding:10px 16px">Browse open castings →</div></div>'
+      : '';
+  }
+
+  render();
+})();
+</script>
+</body></html>

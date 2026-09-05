@@ -11991,6 +11991,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <div style={{fontSize:13,color:"#c0392b",fontWeight:600,lineHeight:1.5}}>{castingArchived?"This role has been filled and is no longer accepting submissions.":"This casting has expired and is no longer accepting applications."}</div>
     </div>}
 
+    {/* A closed listing must never be a dead end — see OpenCastingsHandoff. */}
+    {(castingArchived||castingExpired)&&<OpenCastingsHandoff onBrowse={()=>{
+      if(inSheet&&typeof onBack==="function")onBack();
+      else if(typeof onNavigate==="function")onNavigate("search");
+    }}/>}
+
     {/* The still leads now: it sells the project before the paperwork. It used
         to sit between the apply box and the facts grid, and those became one
         card below, so there is no longer a middle for it to occupy. */}
@@ -12036,12 +12042,16 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               <span className="cd-stat"><Ico n="masks-theater" s={20}/><span className="sub">{roleCount} {roleCount===1?"role":"roles"} {applicationsClosed?"listed":"open"}</span></span>
               {applicationsClosed
                 ?<span className="cd-stat" style={{color:"#c0392b"}}><Ico n="calendar-event" s={20}/>Applications closed</span>
-                :<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+                :castingIsLastDay(c)
+                  ?<span className="cd-stat" style={{color:"#c0392b",fontWeight:700}}><Ico n="calendar-event" s={20}/>Last day to apply</span>
+                  :null}
             </div>
             <div className="cd-rows">
               {fact("union","file-text",t('casting.union'),c.union)}
               {fact("loc","map-pin",t('casting.location'),c.location)}
-              {fact("dl","calendar-event",t('casting.deadline'),fmtCastingDate(c.deadline)||"—")}
+              {/* No DEADLINE row — a date in a facts table is still a clock, and an
+                  actor comparing two castings would pick the one with more days
+                  left rather than the one they are right for. */}
               {fact("nud",c.has_nudity?"alert-triangle":"circle-check","Nudity / Intimate content",
                     c.has_nudity?"Yes — this project involves nudity or intimate content":"None",
                     false,c.has_nudity?"warn":"good")}
@@ -12070,7 +12080,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
             </select>
             <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply"}</button>
-            {fmtCastingDate(c.deadline)&&<div className="hint">closes {fmtCastingDate(c.deadline)}</div>}
+            {castingIsLastDay(c)
+              ?<div className="hint" style={{color:"#c0392b",fontWeight:700}}>Last day to apply</div>
+              :<div className="hint">Open for submissions</div>}
           </div>}
         </div>
       </div>);})()}
@@ -13350,13 +13362,116 @@ function castingPostedIsDayOnly(casting){
   return d.getUTCHours()===12&&d.getUTCMinutes()===0&&d.getUTCSeconds()===0&&d.getUTCMilliseconds()===0;
 }
 
-// Above this many days out, a browse card says NOTHING about the deadline.
-// A long countdown ("38 days left to apply") is not urgency — it is an explicit
-// licence to come back later, and later is usually never. The closing date is
-// on the casting page itself, where someone is actually deciding, so the card
-// does not need to carry it. Inside the window the countdown stays, and the
-// <=5 day red state and the final-48h ticking clock are untouched.
+// NO CLOCK ON THE WALL (2026-09-04). A card used to hide its countdown only
+// above 14 days out; now an OPEN casting says nothing about its deadline
+// anywhere — no chip on the card, no DEADLINE row on the casting page, no
+// "closes Sep 17" under the Apply button. A countdown teaches an actor nothing
+// they can act on and one thing they cannot: that a clock is running out on
+// them. It is also an explicit licence to come back later, and later is usually
+// never. Craigslist shows no expiry at all and works fine.
+// Two exceptions, both deliberate: the FINAL DAY gets one quiet "Last day to
+// apply" (an invitation to act today, not a warning that they are late), and a
+// CLOSED casting says so plainly — then hands the actor the castings that are
+// still open, because a dead end is where hope is actually lost, not in a date.
+// The deadline itself is untouched: it still governs closing, and CDs and admin
+// still see the date on the form, the dashboard and the admin row.
+// Kept as a constant because the value is still meaningful history and other
+// reading of this file references it.
 const CARD_COUNTDOWN_MAX_DAYS=14;
+
+// Is today the last day this casting accepts submissions?
+// Compares CALENDAR DAYS, deliberately — not castingCountdown's rolling 24h
+// figure. A date-only deadline is anchored at 23:59:59Z, which is 7:59pm in New
+// York, so a ceil-based countdown calls the real final day "1 day left" right
+// through that morning and then calls the FOLLOWING day "closes today". Tested:
+// with a deadline of today it returned false, and with yesterday's it returned
+// true — exactly backwards for the one line we still show.
+function castingIsLastDay(casting){
+  const dl=casting&&casting.deadline;
+  if(!dl)return false;
+  if(castingIsExpired(casting))return false;
+  try{
+    const str=String(dl);
+    let y,m,d;
+    if(str.length===10){
+      const parts=str.split("-").map(Number);
+      y=parts[0];m=parts[1];d=parts[2];
+    }else{
+      const dt=new Date(str);
+      if(isNaN(dt))return false;
+      y=dt.getFullYear();m=dt.getMonth()+1;d=dt.getDate();
+    }
+    const now=new Date();
+    return y===now.getFullYear()&&m===now.getMonth()+1&&d===now.getDate();
+  }catch(_){return false;}
+}
+
+// ─── OpenCastingsHandoff — what a closed casting owes the actor who opened it.
+// Someone reading "Applications closed" is at the worst moment on the site, and
+// the page used to simply stop there. It now names what IS open and puts them
+// one click from it. This is the piece that actually protects hope; the missing
+// countdown only stops us from damaging it.
+// The count is worked out the same way Browse works it out — pull the few
+// columns the client-side helpers need and run them — rather than restating
+// expiry, archival and go-live as SQL. A number that disagreed with the list it
+// sends people to would be worse than no number at all. No number is rendered
+// if the fetch fails or returns nothing, so the block is never wrong.
+// (PostgREST caps a response at 1000 rows; at ~120 published castings that is
+// far off, and an undercount would only ever understate what is open.)
+function OpenCastingsHandoff({onBrowse}){
+  const [openCount,setOpenCount]=useState(null);
+  useEffect(()=>{
+    let cancelled=false;
+    (async()=>{
+      try{
+        if(!window.sb)return;
+        const {data,error}=await window.sb.from("castings")
+          .select("id,status,deadline,expires_at,go_live_at")
+          .eq("published",true).eq("status","open").limit(1000);
+        if(cancelled||error||!Array.isArray(data))return;
+        const n=data.filter(x=>x&&x.status!=="archived"&&!castingIsScheduled(x)&&!castingIsExpired(x)).length;
+        if(n>0)setOpenCount(n);
+      }catch(_){}
+    })();
+    return()=>{cancelled=true;};
+  },[]);
+  return(<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,flexWrap:"wrap",
+      padding:"15px 18px",marginBottom:24,marginTop:-8,
+      background:"rgba(45,133,135,0.07)",border:"1px solid rgba(45,133,135,0.28)",borderRadius:12}}>
+    <p style={{margin:0,fontSize:13.5,color:"var(--t1)",lineHeight:1.6,maxWidth:"52ch"}}>
+      <strong style={{fontWeight:800}}>This one has wrapped{openCount?` — but ${openCount} castings are taking submissions right now.`:" — but other castings are taking submissions right now."}</strong>{" "}
+      Casting moves constantly here; the next one that fits you may already be up.
+    </p>
+    <button className="btn-teal btn-sm" style={{flex:"none",fontWeight:700}} onClick={onBrowse}>Browse open castings →</button>
+  </div>);
+}
+
+// ─── BrowsePastDivider — the line that tells an actor where the live castings
+// end. Browse deliberately keeps expired listings (they show the catalogue has
+// depth) and castingSortBucket sinks them below every open one, so the real
+// scroll is a couple of pages of open work followed by nine pages of finished
+// work with NOTHING marking the border. Card six of "Applications closed" then
+// reads as "I am too late to everything" instead of "this is the archive".
+// Same cards, same order, nothing hidden — one line of context.
+// `continued` is the top of a page that is already inside the past section, so
+// a reader who jumps straight to page 5 is not left without the frame.
+function BrowsePastDivider({liveCount,filtered,continued}){
+  const line=continued
+    ?null
+    :liveCount>0
+      ?<><strong style={{color:"var(--t1)",fontWeight:700}}>You&rsquo;ve seen every casting {filtered?"matching your search that is":"that is"} taking submissions right now &mdash; all {liveCount} of {liveCount===1?"it":"them"}.</strong> Everything below has finished casting. We keep them up so you can see the range of work that comes through CastSlate, and what to expect from the next one.</>
+      :<><strong style={{color:"var(--t1)",fontWeight:700}}>Nothing matching this search is taking submissions right now.</strong> Everything below has finished casting &mdash; clear the filters to see what is still open.</>;
+  return(<div style={{padding:"14px 2px 2px"}}>
+    <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:line?10:0}}>
+      <span style={{height:1,background:"var(--bdr)",flex:1}}/>
+      <span style={{fontSize:10.5,fontWeight:800,letterSpacing:".13em",textTransform:"uppercase",color:"var(--t3)",whiteSpace:"nowrap"}}>
+        {continued?"Past castings, continued":liveCount>0?"That\u2019s all of them":"Past castings"}
+      </span>
+      <span style={{height:1,background:"var(--bdr)",flex:1}}/>
+    </div>
+    {line&&<p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--t2)",maxWidth:"62ch"}}>{line}</p>}
+  </div>);
+}
 
 // Live "days left to apply" countdown derived from a deadline date (YYYY-MM-DD or
 // ISO). Recomputed against the current clock on every render, so the number rolls
@@ -13945,11 +14060,22 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
             <button className="btn-s btn-sm" onClick={()=>setRefreshTick(tk=>tk+1)} disabled={loading}>{loading?"…":t('search.refresh')}</button>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{(()=>{
+            // Where the open castings stop and the archive starts. Computed over
+            // the WHOLE filtered list, not the page, so pagination cannot move it.
+            const liveCount=fc.filter(x=>castingSortBucket(x)===0).length;
+            const firstPastIdx=fc.findIndex(x=>castingSortBucket(x)>0);
+            const filtersOn=!!(q||f.type||f.location||f.union);
+            return fc.slice((pg-1)*10,pg*10).map((rawC,pageIdx)=>{const globalIdx=(pg-1)*10+pageIdx;
+            const isPastCard=castingSortBucket(rawC)>0;
+            const showDivider=isPastCard&&firstPastIdx>=0&&(globalIdx===firstPastIdx||pageIdx===0);
+            const dividerContinued=showDivider&&globalIdx!==firstPastIdx;
+            const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick no longer gets its own shadow: the band is the
                whole mark, and a gold lift underneath it was a second one. */
-            const restShadow="0 1px 4px rgba(26,26,46,0.05)";return(
+            const restShadow="0 1px 4px rgba(26,26,46,0.05)";return(<React.Fragment key={c.id}>
+            {showDivider&&<BrowsePastDivider liveCount={liveCount} filtered={filtersOn} continued={dividerContinued}/>}
             <div key={c.id} className={isFeat?"cc-picked":undefined} style={{
               padding:0,overflow:"hidden",cursor:isClosedCard?"default":"pointer",borderRadius:14,position:"relative",
               background:isFeat?undefined:"var(--s1)",   /* picked: .cc-picked keeps it white */
@@ -13996,13 +14122,12 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                       <div className="cc-strip">
                         {roleCount>0&&<span className="cc-chip roles">{roleCount===1?`1 ${t('search.role')}`:`${roleCount} ${t('search.roles')}`}</span>}
                         {rateLine&&<span className={"cc-chip"+(rateLine.money?" pay":"")}>{rateLine.text}</span>}
+                        {/* No countdown while a casting is open — see the
+                            NO CLOCK note above CARD_COUNTDOWN_MAX_DAYS. Only the
+                            two end states say anything about time here. */}
                         {isArchived
                           ?<span className="cc-chip soon">Role filled — no longer accepting</span>
-                          :cdn&&!cdn.expired
-                            ?(cdn.days>CARD_COUNTDOWN_MAX_DAYS
-                              ?null
-                              :<span className={"cc-chip "+(cdn.urgent?"urgent":"soon")}>{cdn.label}</span>)
-                            :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
+                          :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
                         {c.location&&<span className="cc-chip">{c.location}</span>}
                         {castingPostedAt(c)&&<span className="cc-chip quiet">Posted {fmtPostedAgo(castingPostedAt(c),{dayOnly:castingPostedIsDayOnly(c)})}</span>}
                       </div>
@@ -14050,7 +14175,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 </div>
               </div>
               </div>
-            </div>);})}</div>
+            </div></React.Fragment>);});})()}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
             <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:32,flexWrap:"wrap"}}>
               <button className="btn-s btn-sm" disabled={pg===1} onClick={()=>{setPg(p=>Math.max(1,p-1));window.scrollTo(0,0);}} style={{opacity:pg===1?0.4:1}}>{t('search.prev')}</button>
@@ -19582,7 +19707,12 @@ function LiveCastingBadge({text="Casting now — apply today"}){
   </span>);
 }
 
-// ─── CastingCountdown — "X days left to apply" most of the time, auto-switching
+// ─── CastingCountdown — CURRENTLY UNUSED. Kept intact because it is the whole
+//     countdown behaviour in one place if a deadline display is ever wanted
+//     again; nothing renders it since the NO CLOCK change (see the note above
+//     CARD_COUNTDOWN_MAX_DAYS). Do not wire it back into a card or the casting
+//     page without that decision being made deliberately.
+// ─── "X days left to apply" most of the time, auto-switching
 //     to a live ticking clock (1d 6h 12m) in the final 48 hours before the apply
 //     deadline. Counts to the deadline date (end of that day), not listing expiry.
 //     The 1s interval only runs inside the final-48h window, so idle cards are cheap.
@@ -20923,9 +21053,8 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                 <div className="cc-strip">
                   {sRoles.length>0&&<span className="cc-chip roles">{sRoles.length===1?"1 Role":`${sRoles.length} Roles`}</span>}
                   {sRate&&<span className={"cc-chip"+(sRate.money?" pay":"")}>{sRate.text}</span>}
-                  {sCdn&&!sCdn.expired
-                    ?(sCdn.days>CARD_COUNTDOWN_MAX_DAYS?null:<span className={"cc-chip "+(sCdn.urgent?"urgent":"soon")}>{sCdn.label}</span>)
-                    :sCdn?<span className="cc-chip soon">Applications closed</span>:null}
+                  {/* No countdown while open — the Browse card rule, shared. */}
+                  {sCdn&&sCdn.expired?<span className="cc-chip soon">Applications closed</span>:null}
                   {sc.location&&<span className="cc-chip">{sc.location}</span>}
                   {sPosted&&<span className="cc-chip quiet">Posted {fmtPostedAgo(sPosted,{dayOnly:castingPostedIsDayOnly(sc)})}</span>}
                 </div>
