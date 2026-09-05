@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Posted Freshness Ladder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+</head><body>
+<style>
+:root{
+  /* CastSlate light tokens, straight from swipecast-full.jsx */
+  --bg:#FAF7F1; --s1:#FFFFFF; --s2:#F1ECE2; --bdr:#E5DFD2;
+  --t1:#1A1A2E; --t2:#5A5A72; --t3:#8E8EA0;
+  --teal:#2D8587;
+  --page:#F6F2EA; --rule:#E5DFD2;
+  --chipRoleBg:#E8EEFB; --chipRoleBd:#bcd0f2; --chipRoleFg:#1f4a92;
+  --chipPayBg:#F2F7F4; --chipPayBd:#D7E6DD; --chipPayFg:#2F6A52;
+  --tierLive:#2F6A52; --tierLiveBg:#EAF2ED;
+  --tierWk:#9A5E10;   --tierWkBg:#FBF0DE;
+  --tierDate:#5A5A72; --tierDateBg:#EDEBF1;
+  --shadow:0 1px 2px rgba(26,26,46,.05), 0 10px 26px -20px rgba(26,26,46,.4);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#191A24; --s1:#1E1F2B; --s2:#272935; --bdr:#333544;
+    --t1:#ECEAF2; --t2:#B0AEC2; --t3:#8A88A0;
+    --teal:#4FB3B5;
+    --page:#101019; --rule:#2A2C39;
+    --chipRoleBg:#1D2740; --chipRoleBd:#2E4270; --chipRoleFg:#9DBAF0;
+    --chipPayBg:#182A22; --chipPayBd:#26483A; --chipPayFg:#7FCCA6;
+    --tierLive:#7FCCA6; --tierLiveBg:#182A22;
+    --tierWk:#E0A860;   --tierWkBg:#2E2416;
+    --tierDate:#B0AEC2; --tierDateBg:#282A38;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 26px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#191A24; --s1:#1E1F2B; --s2:#272935; --bdr:#333544;
+  --t1:#ECEAF2; --t2:#B0AEC2; --t3:#8A88A0;
+  --teal:#4FB3B5;
+  --page:#101019; --rule:#2A2C39;
+  --chipRoleBg:#1D2740; --chipRoleBd:#2E4270; --chipRoleFg:#9DBAF0;
+  --chipPayBg:#182A22; --chipPayBd:#26483A; --chipPayFg:#7FCCA6;
+  --tierLive:#7FCCA6; --tierLiveBg:#182A22;
+  --tierWk:#E0A860;   --tierWkBg:#2E2416;
+  --tierDate:#B0AEC2; --tierDateBg:#282A38;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 26px -20px rgba(0,0,0,.9);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:44px 20px 80px;display:flex;flex-direction:column;gap:26px}
+
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:Newsreader,Georgia,"Times New Roman",serif;font-weight:500;
+   font-size:clamp(29px,5vw,40px);line-height:1.12;letter-spacing:-.01em;margin:6px 0 10px;text-wrap:balance}
+.lede{margin:0;color:var(--t2);font-size:15.5px;line-height:1.65;max-width:60ch}
+.lede b{color:var(--t1);font-weight:600}
+
+/* ---------- the clock ---------- */
+.clock{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:22px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:16px}
+.dates{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.dategroup{display:flex;flex-direction:column;gap:3px}
+.dategroup .k{font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--t3)}
+.dategroup .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+.dategroup.right{text-align:right}
+.dategroup.right .v{color:var(--teal)}
+.elapsed{font-size:13px;color:var(--t2);font-variant-numeric:tabular-nums}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:grab;margin:0}
+input[type=range]:active{cursor:grabbing}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:999px;border:1px solid var(--bdr);
+  background:linear-gradient(90deg,var(--teal) 0%,var(--teal) var(--pct,0%),var(--s2) var(--pct,0%),var(--s2) 100%)}
+input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:var(--s2);border:1px solid var(--bdr)}
+input[type=range]::-moz-range-progress{height:6px;border-radius:999px;background:var(--teal)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:var(--s1);border:2px solid var(--teal);margin-top:-11px;box-shadow:0 1px 5px rgba(26,26,46,.32)}
+input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--s1);
+  border:2px solid var(--teal);box-shadow:0 1px 5px rgba(26,26,46,.32)}
+input[type=range]:focus-visible{outline:2px solid var(--teal);outline-offset:6px;border-radius:999px}
+
+/* ---------- the real CastSlate browse card ---------- */
+.card{background:var(--bg);border:1px solid var(--bdr);border-radius:16px;padding:22px 24px;box-shadow:var(--shadow)}
+.cc-title{font-size:23px;font-weight:800;letter-spacing:-.3px;margin:0 0 5px}
+.cc-prod{color:var(--t3);font-size:13.5px;margin:0 0 15px}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+  background:var(--s2);color:var(--t1);border:1px solid var(--bdr)}
+.cc-chip.pay{background:var(--chipPayBg);border-color:var(--chipPayBd);color:var(--chipPayFg)}
+.cc-chip.roles{background:var(--chipRoleBg);border-color:var(--chipRoleBd);color:var(--chipRoleFg)}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px}
+.was{margin-top:12px;font-size:12.5px;color:var(--t3)}
+.was s{opacity:.7}
+
+.tierline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--t2)}
+.tier{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  padding:3px 9px;border-radius:6px;background:var(--tierDateBg);color:var(--tierDate)}
+.tier.live{background:var(--tierLiveBg);color:var(--tierLive)}
+.tier.wk{background:var(--tierWkBg);color:var(--tierWk)}
+
+.rule{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;
+  font-size:13.5px;color:var(--t2);line-height:1.85}
+.rule h2{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:17px;color:var(--t1);margin:0 0 8px}
+.rule b{color:var(--t1);font-weight:600}
+.rule .sw{color:var(--t3)}
+.foot{font-size:12.5px;color:var(--t3);line-height:1.7;margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">CastSlate · Browse card · demo</span>
+    <h1>One casting, posted August 1</h1>
+    <p class="lede">Drag the scroller to move the calendar forward and watch the same card age — minutes, hours through hour 48, the weekday, then weeks, and <b>from day 28 it goes back to the plain date</b>. Nothing is applied to the live site yet.</p>
+  </header>
+
+  <div class="clock">
+    <div class="dates">
+      <div class="dategroup">
+        <span class="k">Casting posted</span>
+        <span class="v" id="postedOn">Sat, Aug 1, 2026 · 10:15 AM</span>
+      </div>
+      <div class="dategroup right">
+        <span class="k">Actor is looking on</span>
+        <span class="v" id="viewOn">—</span>
+      </div>
+    </div>
+    <input id="sl" type="range" min="0" value="0" step="1" aria-label="Move the calendar forward from the day the casting was posted">
+    <div class="elapsed" id="elapsed">the moment it went live</div>
+  </div>
+
+  <div class="card">
+    <div class="cc-title">&lsquo;Lily&rsquo;</div>
+    <div class="cc-prod">Posted by Marcy Feldman · Hollow Pines Pictures</div>
+    <div class="cc-strip">
+      <span class="cc-chip roles">3 Roles</span>
+      <span class="cc-chip pay">$8,119 / project</span>
+      <span class="cc-chip">New York, NY</span>
+      <span class="cc-chip quiet" id="chip">Posted just now</span>
+    </div>
+    <div class="was">on the site today this chip reads <s>Posted Aug 1, 2026</s> — every day, forever</div>
+  </div>
+
+  <div class="tierline"><span class="tier live" id="tierBadge">Live</span><span id="tierWhy">under an hour old — counted in minutes</span></div>
+
+  <div class="rule">
+    <h2>The ladder in full</h2>
+    <b>under 1 min</b> just now <span class="sw">→</span> <b>under 1 hr</b> 6 minutes ago <span class="sw">→</span>
+    <b>1–48 hrs</b> 9 hours ago … 48 hours ago <span class="sw">→</span> <b>days 3–6</b> on Tuesday <span class="sw">→</span>
+    <b>days 7–13</b> a week ago <span class="sw">→</span> <b>days 14–20</b> two weeks ago <span class="sw">→</span>
+    <b>days 21–27</b> three weeks ago <span class="sw">→</span> <b>day 28 on</b> on Aug 1, 2026
+  </div>
+
+  <p class="foot">Backstage, for comparison, stops at the weekday — an eight-day-old post and a two-month-old post look identical on their page. This carries it through weeks and then hands back a real date, which matters here because a CastSlate casting can stay open for months.</p>
+
+</div>
+
+<script>
+(function(){
+  var MIN=60000, HOUR=3600000, DAY=86400000;
+  var POSTED = new Date(2026, 7, 1, 10, 15, 0);   // Sat 1 Aug 2026, 10:15 AM, local
+
+  /* ---- the proposed formatter ---- */
+  function fmtDate(d){ return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
+  function postedAgo(then, now){
+    var diff = now - then; if(diff < 0) diff = 0;
+    var mins = Math.floor(diff/MIN);
+    if(mins < 1)  return "just now";
+    if(mins < 60) return mins === 1 ? "1 minute ago" : mins + " minutes ago";
+    var hours = Math.floor(diff/HOUR);
+    if(hours <= 48) return hours === 1 ? "1 hour ago" : hours + " hours ago";
+    var days = Math.floor(diff/DAY);
+    if(days < 7)  return "on " + then.toLocaleDateString("en-US",{weekday:"long"});
+    if(days < 14) return "a week ago";
+    if(days < 21) return "two weeks ago";
+    if(days < 28) return "three weeks ago";
+    return "on " + fmtDate(then);
+  }
+
+  /* ---- one stop per slider notch, so every tier is reachable AND the far end
+         is unambiguously a date: minutes, then every hour to 48, then every day
+         out to 120 ---- */
+  var stops = [0, 30*1000];
+  [1,2,3,5,8,12,17,23,30,38,47,59].forEach(function(m){ stops.push(m*MIN); });
+  for(var h=1; h<=48; h++) stops.push(h*HOUR + 4*MIN);
+  for(var d=3; d<=120; d++) stops.push(d*DAY + 4*HOUR);
+
+  var sl = document.getElementById("sl");
+  sl.max = stops.length - 1;
+
+  var chip = document.getElementById("chip"),
+      viewOn = document.getElementById("viewOn"),
+      elapsed = document.getElementById("elapsed"),
+      badge = document.getElementById("tierBadge"),
+      why = document.getElementById("tierWhy");
+
+  function tierOf(ms){
+    if(ms < HOUR)      return ["live","Live",  "under an hour old — counted in minutes"];
+    if(ms <= 48*HOUR)  return ["live","Hours", "still inside the first 48 hours — counted in hours"];
+    if(ms < 7*DAY)     return ["",    "Weekday","days 3 to 6 — named by the day it landed"];
+    if(ms < 28*DAY)    return ["wk",  "Weeks",  "one, two or three weeks old"];
+    return ["date","Dated", "past three weeks — no longer recent, so the real date comes back"];
+  }
+  function elapsedText(ms){
+    if(ms < MIN)   return "the moment it went live";
+    if(ms < HOUR)  return Math.floor(ms/MIN) + " minutes later";
+    if(ms < 2*DAY){ var h = Math.floor(ms/HOUR); return h + (h === 1 ? " hour later" : " hours later"); }
+    var d = Math.floor(ms/DAY);
+    return d + (d === 1 ? " day later" : " days later");
+  }
+
+  function sync(){
+    var ms  = stops[+sl.value],
+        now = new Date(POSTED.getTime() + ms);
+    sl.style.setProperty("--pct", (100 * sl.value / sl.max) + "%");
+    chip.textContent  = "Posted " + postedAgo(POSTED, now);
+    viewOn.textContent = now.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"}) +
+                         " · " + now.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+    elapsed.textContent = elapsedText(ms);
+    var t = tierOf(ms);
+    badge.className = "tier " + t[0];
+    badge.textContent = t[1];
+    why.textContent = t[2];
+  }
+
+  sl.addEventListener("input", sync);
+  document.getElementById("postedOn").textContent =
+    POSTED.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"}) +
+    " · " + POSTED.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+  sync();
+})();
+</script>
+</body></html>

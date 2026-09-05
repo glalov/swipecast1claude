@@ -13280,6 +13280,76 @@ function fmtCastingDate(val){
   }catch{return String(val);}
 }
 
+// How long ago a casting was posted, in the words an actor actually thinks in.
+// "Posted Aug 12, 2026" makes them do arithmetic before they can tell whether a
+// listing is worth opening; "Posted 9 hours ago" answers the only question they
+// were asking. The ladder: minutes for the first hour, then hours all the way
+// through hour 48 (so "48 hours ago" really appears), then the weekday for days
+// 3-6, then a week / two weeks / three weeks — and from day 28 the plain date
+// comes back, because nothing that old reads as recent any more and our castings
+// stay open for months.
+//
+// Anything unparseable falls through to the date, which is also exactly what
+// every casting past three weeks still shows — so the bulk of the board reads
+// the same as it did before this.
+//
+// `dayOnly` is the honesty valve: see castingPostedIsDayOnly below. When the
+// stored stamp only knows which DAY a casting went up, this counts days and
+// never invents a clock time to count hours from.
+function fmtPostedAgo(val,opts){
+  if(!val)return"";
+  const dayOnly=!!(opts&&opts.dayOnly);
+  const nowMs=(opts&&typeof opts.nowMs==="number")?opts.nowMs:Date.now();
+  const dateOnly=String(val).length===10;   // a bare YYYY-MM-DD, anchored the way fmtCastingDate anchors it
+  let then;
+  try{ then=dateOnly?new Date(val+"T12:00:00Z"):new Date(val); }catch(_){ return fmtCastingDate(val); }
+  if(!then||isNaN(then))return fmtCastingDate(val);
+  const MIN=60000,HOUR=3600000,DAY=86400000;
+  const diff=nowMs-then.getTime();
+  const weekday=()=>{
+    try{ return "on "+then.toLocaleDateString("en-US",(dateOnly||dayOnly)?{weekday:"long",timeZone:"UTC"}:{weekday:"long"}); }
+    catch(_){ return "on "+fmtCastingDate(val); }
+  };
+  // Day-granular stamps: round, because the stamp sits at noon and "now" can be
+  // either side of it, so a floor would read a same-day post as -1 days.
+  const days=dayOnly?Math.round(diff/DAY):Math.floor(diff/DAY);
+  if(!dayOnly){
+    if(diff<MIN)return"just now";                     // also covers a stamp that has not arrived yet
+    const mins=Math.floor(diff/MIN);
+    if(mins<60)return mins===1?"1 minute ago":mins+" minutes ago";
+    const hours=Math.floor(diff/HOUR);
+    if(hours<=48)return hours===1?"1 hour ago":hours+" hours ago";
+  }else{
+    if(days<=0)return"today";
+    if(days===1)return"yesterday";
+  }
+  if(days<7)return weekday();
+  if(days<14)return"a week ago";
+  if(days<21)return"two weeks ago";
+  if(days<28)return"three weeks ago";
+  return "on "+fmtCastingDate(val);
+}
+
+// Does this casting's posted stamp know what TIME it went up, or only what day?
+// Admin's "Date Posted" editor takes a date and stores it anchored at noon UTC,
+// so 108 of the 120 live castings carry a stamp with no real clock time in it.
+// Counting hours off one of those would be a fabrication — an actor would read
+// "Posted 3 hours ago" off a listing that had been on the board since midnight,
+// or "just now" off one posted this morning, purely because noon UTC happens to
+// be 8am in New York. Every casting that goes live for real — the generator, a
+// CD posting one, a scheduled go-live — carries a true instant instead, so this
+// is false for them and the full minutes/hours ladder applies.
+// A go_live_at is always a real chosen instant, so it settles the question alone.
+function castingPostedIsDayOnly(casting){
+  if(!casting||casting.go_live_at)return false;
+  const v=casting.created_at;
+  if(!v)return false;
+  if(String(v).length===10)return true;
+  let d; try{ d=new Date(v); }catch(_){ return false; }
+  if(!d||isNaN(d))return false;
+  return d.getUTCHours()===12&&d.getUTCMinutes()===0&&d.getUTCSeconds()===0&&d.getUTCMilliseconds()===0;
+}
+
 // Above this many days out, a browse card says NOTHING about the deadline.
 // A long countdown ("38 days left to apply") is not urgency — it is an explicit
 // licence to come back later, and later is usually never. The closing date is
@@ -13934,7 +14004,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                               :<span className={"cc-chip "+(cdn.urgent?"urgent":"soon")}>{cdn.label}</span>)
                             :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
                         {c.location&&<span className="cc-chip">{c.location}</span>}
-                        {castingPostedAt(c)&&<span className="cc-chip quiet">Posted {fmtCastingDate(castingPostedAt(c))}</span>}
+                        {castingPostedAt(c)&&<span className="cc-chip quiet">Posted {fmtPostedAgo(castingPostedAt(c),{dayOnly:castingPostedIsDayOnly(c)})}</span>}
                       </div>
                     );
                   })()}
@@ -20857,7 +20927,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                     ?(sCdn.days>CARD_COUNTDOWN_MAX_DAYS?null:<span className={"cc-chip "+(sCdn.urgent?"urgent":"soon")}>{sCdn.label}</span>)
                     :sCdn?<span className="cc-chip soon">Applications closed</span>:null}
                   {sc.location&&<span className="cc-chip">{sc.location}</span>}
-                  {sPosted&&<span className="cc-chip quiet">Posted {fmtCastingDate(sPosted)}</span>}
+                  {sPosted&&<span className="cc-chip quiet">Posted {fmtPostedAgo(sPosted,{dayOnly:castingPostedIsDayOnly(sc)})}</span>}
                 </div>
                 {/* Role pills + CTA share the foot row, exactly as on Browse. The
                     pills open this casting on that role. Rendered on EVERY card,
