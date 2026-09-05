@@ -25363,8 +25363,17 @@ const ACG = (()=>{
       `A grounded ${label} ${pp} ${setting.place}.`
     ]);
   }
+  // Spelling is not pronunciation. "UGC" and "unscripted" both start with a
+  // vowel letter and both take "a", because they are said with a consonant
+  // sound at the front; "hour" is the reverse. The exceptions are listed rather
+  // than guessed at, because there are only a handful in this vocabulary.
+  const SOUNDS_CONSONANT=/^(u[bcdfghjklmnpqrstvwxyz]|uni|use|user|usual|utility|eu|one|once)/i;
+  const SOUNDS_VOWEL=/^(hour|honest|honor|heir)/i;
   function articleFor(text){
-    return /^[aeiou]/i.test(clean(text))?"An":"A";
+    const t=clean(text);
+    if(SOUNDS_VOWEL.test(t))return "An";
+    if(SOUNDS_CONSONANT.test(t))return "A";
+    return /^[aeiou]/i.test(t)?"An":"A";
   }
   // Lowercase article for mid-sentence use. The story templates used to
   // hardcode "a", which produced "a action feature", "a adventure short" and
@@ -28970,7 +28979,7 @@ const ACG = (()=>{
     [/\brealise(s|d)?\b/gi,"realize$1"],[/\borganise(s|d)?\b/gi,"organize$1"],[/\bapologise(s|d)?\b/gi,"apologize$1"],
     [/\bnormalise(s|d)?\b/gi,"normalize$1"],[/\brumour(s?)\b/gi,"rumor$1"],[/\bfavour(s?)\b/gi,"favor$1"],
     // Formal or unusual → plain.
-    [/\brepossession\b/gi,"the bank taking it back"],[/\btechnicality\b/gi,"small rule"],
+    [/\btechnicality\b/gi,"small rule"],
     [/\bmisunderstanding\b/gi,"mix-up"],[/\bunglamorous\b/gi,"plain"],[/\bredeveloped\b/gi,"rebuilt"],
     [/\bcustodian\b/gi,"caretaker"],[/\bworkforce\b/gi,"staff"],[/\bendeavou?r\b/gi,"try"],
     [/\bprior to\b/gi,"before"],[/\bin order to\b/gi,"to"],[/\butili[sz]e(s|d)?\b/gi,"use$1"],
@@ -28985,6 +28994,10 @@ const ACG = (()=>{
     [/\bregarding\b/gi,"about"],[/\bpertaining to\b/gi,"about"],[/\bin the event that\b/gi,"if"],
     [/\bat this juncture\b/gi,"now"],[/\bfacilitate(s|d)?\b/gi,"help$1"]
   ];
+  // Every entry must be like for like: noun for noun, verb for verb, adverb
+  // for adverb. A noun swapped for a clause reads as damage — the repossession
+  // entry turned "a car repossession crew" into "a car the bank taking it back
+  // crew" on a live listing. Nothing here may change a word's part of speech.
   function plainify(text){
     let out=String(text||"");
     PLAIN_SWAPS.forEach(([re,to])=>{out=out.replace(re,to);});
@@ -29060,7 +29073,7 @@ const ACG = (()=>{
 
   const SYN_OPENINGS=[
     // ── Event first ────────────────────────────────────────────────────────
-    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}.`},
+    {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. The setup behind it: ${x.premise}.`},
     {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. It starts when ${x.premise}.`},
     {p:"event",t:"b",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Where it starts: ${x.premise}.`},
     {p:"event",t:"n",need:x=>x.turnLeads,f:x=>`${x.capTurn}. Underneath it, ${x.premise}.`},
@@ -29068,25 +29081,25 @@ const ACG = (()=>{
     {p:"event",t:"f",need:x=>x.turnLeads,f:x=>`${x.capTurn}. The brief behind it: ${x.premise}.`},
 
     // ── A person first ─────────────────────────────────────────────────────
-    {p:"person",t:"n",need:x=>x.hero&&x.heroRole,f:x=>`${x.hero} is ${x.heroRole}. ${x.capTurn}.`},
-    {p:"person",t:"n",need:x=>x.hero&&x.heroRole&&x.turnLeads,f:x=>`It happens to ${x.hero}, ${x.heroRole}: ${x.turn}.`},
-    {p:"person",t:"n",need:x=>x.hero&&x.heroRole,f:x=>`${x.hero}, ${x.heroRole}, is the one this lands on. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.hero&&x.heroRole,f:x=>`${x.hero} is ${x.heroRole}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.hero&&x.heroRole,f:x=>`The story follows ${x.hero}, ${x.heroRole}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.hero&&x.heroRole,f:x=>`${x.hero}, ${x.heroRole}, is the one this lands on. ${x.capPremise}. ${x.capTurn}.`},
     {p:"person",t:"n",need:x=>x.hero,f:x=>`${pick([`Meet ${x.hero}.`,`Start with ${x.hero}.`,`${x.hero} first.`,`This one belongs to ${x.hero}.`])} ${x.capPremise}. ${x.capTurn}.`},
-    {p:"person",t:"n",need:x=>x.heroSketch&&x.hero&&x.heroRole,f:x=>`${x.heroSketch} That is ${x.hero}, ${x.heroRole}. ${x.capTurn}.`},
-    {p:"person",t:"n",need:x=>x.hero&&x.second,f:x=>`${x.hero} and the ${x.second} end up on opposite sides of this. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.heroSketch&&x.hero&&x.heroRole,f:x=>`${x.heroSketch} That is ${x.hero}, ${x.heroRole}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"person",t:"n",need:x=>x.hero&&x.second,f:x=>`${x.hero} and the ${x.second} end up on opposite sides of this. ${x.capPremise}. ${x.capTurn}.`},
 
     // ── A place first ──────────────────────────────────────────────────────
-    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho&&x.turnLeads,f:x=>`${capFirst(x.place)}. ${x.capTurn}.`},
+    {p:"place",t:"b",need:x=>x.place&&!x.placeEcho,f:x=>`${capFirst(x.place)}. ${x.capPremise}. ${x.capTurn}.`},
     // "It never leaves a diner" cannot sit over a premise about a storm-chasing
     // season spent in a car, so the single-location claims need a story that
     // actually stays put.
-    {p:"place",t:"b",need:x=>x.place&&x.oneplace&&x.turnLeads,f:x=>`${pick(["Everything happens in","All of it takes place in","It never leaves","The whole thing lives in"])} ${x.place}. ${x.capTurn}.`},
+    {p:"place",t:"b",need:x=>x.place&&x.oneplace,f:x=>`${pick(["Everything happens in","All of it takes place in","It never leaves","The whole thing lives in"])} ${x.place}. ${x.capPremise}. ${x.capTurn}.`},
     {p:"place",t:"b",need:x=>x.place&&!x.placeEcho&&x.oneplace,f:x=>`Set in ${x.place}. ${x.capPremise}. ${x.capTurn}.`},
-    {p:"place",t:"n",need:x=>x.place&&!x.placeEcho&&x.oneday&&x.turnLeads,f:x=>`${capFirst(x.place)} — and one day in it that does not go to plan. ${x.capTurn}.`},
+    {p:"place",t:"n",need:x=>x.place&&!x.placeEcho&&x.oneday,f:x=>`${capFirst(x.place)}, and one day in it that does not go to plan. ${x.capPremise}. ${x.capTurn}.`},
 
     // ── A decade first ─────────────────────────────────────────────────────
     {p:"era",t:"n",need:x=>x.era,f:x=>`${x.era}. ${x.capPremise}. ${x.capTurn}.`},
-    {p:"era",t:"n",need:x=>x.era&&x.turnLeads,f:x=>`${x.era}, ${x.city}. ${x.capTurn}.`},
+    {p:"era",t:"n",need:x=>x.era,f:x=>`${x.era}, ${x.city}. ${x.capPremise}. ${x.capTurn}.`},
     {p:"era",t:"n",need:x=>x.era,f:x=>`Set in the ${x.era}: ${x.premise}. ${x.capTurn}.`},
 
     // ── A question ─────────────────────────────────────────────────────────
@@ -29095,9 +29108,9 @@ const ACG = (()=>{
     {p:"question",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Whose fault is it, in the end?","Who is actually responsible here?","Who gets the blame for this one?","Where does the blame land?"])} ${x.capTurn}. It begins when ${x.premise}.`},
 
     // ── A condition or a rule ──────────────────────────────────────────────
-    {p:"rule",t:"b",need:x=>x.turnLeads,f:x=>`${pick(["One thing holds the whole piece together","Everything turns on a single fact","The hinge of it is this","It all rests on one thing","One detail carries the rest"])}: ${x.turn}.`},
-    {p:"rule",t:"f",need:x=>x.turnLeads,f:x=>`${pick(["One rule, and we are not bending it","One constraint, and it shapes everything","We gave ourselves one rule","There is exactly one rule here"])}: ${x.turn}.`},
-    {p:"rule",t:"b",need:x=>x.turnLeads,f:x=>`${pick(["Everything after this follows from one thing","The whole piece hangs on one moment","Take one thing away and there is no story"])}: ${x.turn}. ${capFirst(pick(["Before it,","Up to then,","Until that,"]))} ${x.premise}.`},
+    {p:"rule",t:"b",need:x=>x.turnLeads,f:x=>`${pick(["One thing holds the whole piece together","Everything turns on a single fact","The hinge of it is this","It all rests on one thing","One detail carries the rest"])}: ${x.turn}. ${capFirst(pick(["Before that,","Up to then,","The setup:"]))} ${x.premise}.`},
+    {p:"rule",t:"f",need:x=>x.turnLeads,f:x=>`${pick(["One rule, and we are not bending it","One constraint, and it shapes everything","We gave ourselves one rule"])}: ${x.turn}. ${capFirst(pick(["The brief:","Behind it,","The job itself:"]))} ${x.premise}.`},
+    {p:"rule",t:"b",need:x=>x.turnLeads,f:x=>`${pick(["Everything after this follows from one thing","The whole piece hangs on one moment"])}: ${x.turn}. ${capFirst(pick(["Before it,","Up to then,","Until that,"]))} ${x.premise}.`},
 
     // ── Contrast ───────────────────────────────────────────────────────────
     {p:"contrast",t:"b",f:x=>`${pick(["On paper it is simple","On paper this is nothing","Described out loud it sounds manageable","Written down it looks straightforward"])}: ${x.premise}. ${pick(["In practice","In the room","On the day","In reality"])}, ${x.turn}.`},
@@ -29105,24 +29118,27 @@ const ACG = (()=>{
     {p:"contrast",t:"b",f:x=>`${pick(["The easy half","The simple part","What you can say in one line","The half anybody could guess"])}: ${x.premise}. ${pick(["The other half","The harder part","The half that is actually the story","The part nobody guesses"])}: ${x.turn}.`},
 
     // ── Aftermath ──────────────────────────────────────────────────────────
-    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["It all comes back to one afternoon","All of it traces to a single day","Everything points back to one hour"])}: ${x.turn}.`},
-    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${x.capTurn}. ${pick(["Nobody in it walks away quite the same.","Everyone involved tells it differently afterwards.","It gets talked about for years and never accurately.","Nobody agrees later on what actually happened."])}`},
-    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["Long afterwards, one thing is still being argued about","Years later they are still arguing about one thing","One detail from this is never settled"])}: ${x.turn}.`},
+    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["It all comes back to one afternoon","All of it traces to a single day","Everything points back to one hour"])}: ${x.turn}. ${capFirst(pick(["Before that,","Up to then,","The setup:"]))} ${x.premise}.`},
+    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${x.capTurn}. Before any of that, ${x.premise}. ${pick(["Nobody in it walks away quite the same.","Everyone involved tells it differently afterwards.","Nobody agrees later on what actually happened."])}`},
+    {p:"after",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["Long afterwards, one thing is still being argued about","Years later they are still arguing about one thing","One detail from this is never settled"])}: ${x.turn}. ${capFirst(pick(["Before it,","The setup:","Up to then,"]))} ${x.premise}.`},
 
-    // ── Telegraphic ────────────────────────────────────────────────────────
-    {p:"terse",t:"b",f:x=>`${pick(["Short version","The one-line version","Quickly","In brief"])}: ${x.turn}. ${pick(["Longer version","The rest of it","The setup","Slightly longer"])}: ${x.premise}.`},
-    {p:"terse",t:"b",f:x=>`${pick(["Two sentences.","The whole thing in two lines.","No summary needed.","Here it is, plainly."])} ${x.capPremise}. ${x.capTurn}.`},
-    {p:"terse",t:"n",need:x=>x.heroRoleBare&&x.second&&x.place,f:x=>`${capFirst(dropArticle(x.place))}. ${capFirst(x.heroRoleBare)}. ${capFirst(x.second)}. ${x.capTurn}.`},
+    // ── Stated as a brief ──────────────────────────────────────────────────
+    {p:"brief",t:"b",f:x=>`Casting ${aArt(x.label)} ${x.label} in ${x.city}. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"brief",t:"b",need:x=>!x.mediumEcho,f:x=>`This is ${aArt(x.genreLabel)} ${x.genreLabel}. ${x.capPremise}. ${x.capTurn}.`},
+
+    // ── How it unfolds ─────────────────────────────────────────────────────
+    {p:"timeline",t:"b",f:x=>`It begins simply enough. ${x.capPremise}. ${x.capTurn}.`},
+    {p:"timeline",t:"b",f:x=>`${x.capPremise}. It does not stay simple: ${x.turn}.`},
 
     // ── Genre or medium forward ────────────────────────────────────────────
     {p:"genre",t:"n",f:x=>`${capFirst(x.genre)}. ${x.capPremise}. ${x.capTurn}.`},
     {p:"genre",t:"n",need:x=>!x.mediumEcho,f:x=>`${capFirst(articleFor(x.genre).toLowerCase())} ${x.genre}, and a small one: ${x.premise}. ${x.capTurn}.`},
-    {p:"genre",t:"b",need:x=>x.turnLeads&&!x.mediumEcho,f:x=>`We are making ${aArt(x.genreLabel)} ${x.genreLabel} about one thing: ${x.turn}.`},
+    {p:"genre",t:"b",need:x=>!x.mediumEcho,f:x=>`We are making ${aArt(x.genreLabel)} ${x.genreLabel}. ${x.capPremise}. ${x.capTurn}.`},
     {p:"genre",t:"f",f:x=>`${capFirst(x.genre)}. ${x.capPremise}. ${x.capTurn}.`},
     {p:"genre",t:"f",need:x=>x.turnLeads,f:x=>`The whole idea is this: ${x.turn}. It is built around one thing: ${x.premise}.`},
 
     // ── Mid-action ─────────────────────────────────────────────────────────
-    {p:"mid",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["We come in after the worst of it","The story picks up mid-fall","We join it late, on purpose","It opens with the damage already done"])}: ${x.turn}.`},
+    {p:"mid",t:"n",need:x=>x.turnHappened,f:x=>`${pick(["We come in after the worst of it","The story picks up mid-fall","We join it late, on purpose","It opens with the damage already done"])}: ${x.turn}. ${capFirst(pick(["Before that,","Up to then,","The setup:"]))} ${x.premise}.`},
     {p:"mid",t:"n",need:x=>x.turnLeads,f:x=>`${pick(["Open on the middle of the trouble","Start in the wrong place, deliberately","Drop in halfway"])}: ${x.turn}. ${pick(["Rewind a little:","Wind back:","Behind it,"])} ${x.premise}.`},
 
     // ── Premise first — kept, but now one shape among fifteen ──────────────
@@ -29604,6 +29620,16 @@ const ACG = (()=>{
   // ── City bank ────────────────────────────────────────────────────────────
   // Neighbourhood lists give the shoot location real specificity ("Greenpoint,
   // Brooklyn — New York, NY") instead of repeating the city name twice.
+  const LS_AREA_COUNTS="cs_acg_area_counts_v1";
+  function pickArea2(city,res){
+    const areas=(city.areas&&city.areas.length)?city.areas:null;
+    if(!areas)return city.name;
+    if(res&&!res._areaCounts)res._areaCounts=countMap(LS_AREA_COUNTS);
+    const counts=(res&&res._areaCounts)||{};
+    const usedHere=new Set((res&&res._areaBatch)||[]);
+    const key=a=>`${city.short}|${a}`;
+    return leastUsed(areas,a=>(counts[key(a)]||0)+(usedHere.has(a)?6:0),new Set())[0]||pick(areas);
+  }
   function pickArea(city){
     const a=city.areas&&city.areas.length?pick(city.areas):null;
     return a?`${a} — ${city.name}`:city.name;
@@ -30400,52 +30426,63 @@ const ACG = (()=>{
   // city are deliberately NOT used — scheduleNoteAddendum() strips any
   // sentence that names a date anyway, so a builder that reintroduced one
   // would simply be deleted before talent saw it.
+  // Dates and the location live in their own fields and are stripped out of
+  // this note at render, so nothing here may name one. What it must do is vary:
+  // a line built from fixed words alone repeats itself the moment the no-repeat
+  // pool is spent, which is how six listings ended up all saying "Expect a
+  // read-through before the first shoot day." Every entry carries something
+  // that moves.
   const SCHED_SHOOT=[
     y=>`${y.cap}; exact days are confirmed at booking.`,
     y=>`${y.cap} inside that window, and every location sits in the same few blocks.`,
-    y=>`You are not needed for the whole run — your own days are on your role.`,
-    y=>`Most of it stays in the one neighbourhood; one or two days move.`,
+    y=>`${y.cap}. You are not needed for the whole run — your own days are on your role.`,
+    y=>`${y.cap}. Most of it stays in the one neighborhood; one or two days move.`,
     y=>`${y.cap}, spread across the window. Weekdays mainly, with one weekend day in there.`,
-    y=>`Calls land between 7am and 9am.`,
-    y=>`Individual call days are set once the cast is locked.`,
+    y=>`${y.cap}. Calls land between ${pick(["6am and 8am","7am and 9am","8am and 10am","5am and 7am"])}.`,
+    y=>`${y.cap}. Individual call days are set once the cast is locked.`,
     y=>`${y.cap}. If you have a conflict inside that window, tell us now rather than later.`,
-    y=>`${y.cap}, and at least one of them is a night.`,
-    y=>`Turnaround is honoured — nobody works two nights back to back.`,
+    y=>`${y.cap}, and at least ${pick(["one of them is","two of them are"])} a night.`,
+    y=>`${y.cap}. Turnaround is honored — nobody works two nights back to back.`,
     y=>`${y.cap} somewhere inside the window. We build the schedule around the cast, not the other way round.`,
     y=>`${y.cap}, plus a paid fitting the week before.`,
     y=>`${y.cap} for you inside that window.`,
-    y=>`Expect a read-through before the first shoot day.`,
+    y=>`${y.cap}. Expect a read-through before the first ${pick(["shoot day","call","day on set"])}.`,
     y=>`${y.cap}; travel inside the city is on us.`,
     y=>`Six-day weeks are not happening here — ${y.line}, and they are spread out on purpose.`,
     y=>`Block shoot: ${y.cap}, back to back.`,
-    y=>`We schedule around day jobs where we can; say what you need.`
+    y=>`${y.cap}. We schedule around day jobs where we can; say what you need.`,
+    y=>`${y.cap}. Meal breaks are ${pick(["every six hours","on the clock","taken properly, not at the monitor"])}.`,
+    y=>`${y.cap}. The call sheet goes out ${pick(["the night before","48 hours ahead","two days ahead"])}, every time.`,
+    y=>`${y.cap}, and you will have your own dates ${pick(["a week out","ten days out","as soon as the cast is set"])}.`,
+    y=>`${y.cap}. Nothing runs past ${pick(["twelve hours","ten hours","a twelve-hour day"])} without your agreement.`
   ];
   const SCHED_STAGE=[
     y=>`${y.cap}; evenings and weekends.`,
     y=>`${y.cap}, rehearsal and run in the same building.`,
-    y=>`Rehearsals are weeknights, plus Saturday days.`,
+    y=>`${y.cap}. Rehearsals are weeknights, plus Saturday days.`,
     y=>`${y.cap}. Nobody is called every night — the schedule goes out in week one.`,
     y=>`${y.cap}, in the room before you are on the stage.`,
     y=>`${y.cap}, with one dark night a week.`,
     y=>`Rehearsal is evenings only. ${y.cap}.`
   ];
   const SCHED_READ=[
-    y=>`Sides go out 48 hours beforehand.`,
-    y=>`You get the pages two days before.`,
-    y=>`Roughly four hours around a table, and you are paid for the day.`,
-    y=>`A single afternoon. Cold reading is fine — that is rather the point.`
+    y=>`Sides go out ${pick(["48 hours","two days","a couple of days"])} beforehand.`,
+    y=>`You get the pages ${pick(["two days","48 hours","a day"])} before.`,
+    y=>`Roughly ${pick(["four hours","three hours","half a day"])} around a table, and you are paid for the day.`,
+    y=>`A single ${pick(["afternoon","morning","session"])}. Cold reading is fine — that is rather the point.`,
+    y=>`One sitting, ${pick(["lunch provided","coffee and lunch on us","and we finish when we finish"])}.`
   ];
   const SCHED_SESSION=[
     y=>`${y.cap}; remote or at a studio near you.`,
     y=>`${y.cap}. A clean home booth is fine.`,
     y=>`${y.cap}, and we work around your day job.`,
-    y=>`You are directed live over a call, and booked by the hour.`,
+    y=>`${y.cap}. You are directed live over a call, and booked by the hour.`,
     y=>`${y.cap}. Pickups, if we need them, fall in the same window and are paid.`
   ];
   const SCHED_STILLS=[
     y=>`${y.cap}; hair and make-up are provided on the day.`,
     y=>`${y.cap}. The wardrobe fitting is separate, and paid.`,
-    y=>`Call is early and we usually wrap by six.`,
+    y=>`${y.cap}. Call is early and we usually wrap by ${pick(["five","six","seven"])}.`,
     y=>`${y.cap}, and you will know your date a week out.`
   ];
   function scheduleNote(track,type,plan,y,h,res){
@@ -30587,7 +30624,12 @@ const ACG = (()=>{
       const seedPlace=pick(seed.w||[areaName]);
       const plan=shootPlan(type,track);
       const tier=budgetTier(type,track);
-      const areaName=(city.areas&&city.areas.length)?pick(city.areas):city.name;
+      // Neighborhoods rotate the same way project types and ethnicities do.
+      // Picking at random from eighteen of them put the same three on the board
+      // over and over, which reads as one production company shooting one
+      // block. Least-used-first against a durable tally, and never the one the
+      // batch just used.
+      const areaName=pickArea2(city,res);
       const castSize=chooseCastSize(track);
       const roles=seedRoles(seed,track,type,plan,tier,castSize,h,res);
 
@@ -30687,6 +30729,8 @@ const ACG = (()=>{
         turnOnlyKey:turnKey,
         catalystKey:toneKey,
         storyDetail:turn,
+        setupText:seed.p,
+        areaName,
         freshStory:true,
         seedKey:seed.k,
         crewNames:(posted.people||[]).filter(Boolean),
@@ -30825,14 +30869,18 @@ const ACG = (()=>{
     });
     // Rotation tallies, written only for listings that survived the batch —
     // counting rejected attempts would skew the very balance they exist to keep.
-    const ethC=countMap(LS_ETH_COUNTS),typeC=countMap(LS_TYPE_COUNTS);
+    const ethC=countMap(LS_ETH_COUNTS),typeC=countMap(LS_TYPE_COUNTS),areaC=countMap(LS_AREA_COUNTS);
     (items||[]).forEach(item=>{
       if(item.type)typeC[item.type]=(typeC[item.type]||0)+1;
+      if(item._areaName){
+        const ak=`${(item.location||"").split(",")[0]}|${item._areaName}`;
+        areaC[ak]=(areaC[ak]||0)+1;
+      }
       (item._roles||[]).forEach(r=>{
         if(r.ethnicity&&r.ethnicity!=="Any ethnicity")ethC[r.ethnicity]=(ethC[r.ethnicity]||0)+1;
       });
     });
-    saveCountMap(LS_ETH_COUNTS,ethC);saveCountMap(LS_TYPE_COUNTS,typeC);
+    saveCountMap(LS_ETH_COUNTS,ethC);saveCountMap(LS_TYPE_COUNTS,typeC);saveCountMap(LS_AREA_COUNTS,areaC);
     saveLocalSet(LS_KEYS.titles,titles);saveLocalSet(LS_KEYS.prods,prods);saveLocalSet(LS_KEYS.roles,roles);saveLocalSet(LS_KEYS.stories,stories);saveLocalSet(LS_KEYS.pays,pays);saveLocalSet(LS_KEYS.firsts,firsts);saveLocalSet(LS_KEYS.lasts,lasts);saveLocalSet(LS_KEYS.storyTexts,storyTexts);saveLocalSet(LS_KEYS.traits,traits);saveLocalSet(LS_KEYS.ages,ages);saveLocalSet(LS_KEYS.roleCounts,roleCounts);saveLocalSet(LS_KEYS.creatorKinds,creatorKinds);saveLocalSet(LS_KEYS.tags,tags);saveLocalSet(LS_KEYS.lines,lines);
   }
   function uniqueCompany(tpl,city,h,res){
@@ -31878,6 +31926,10 @@ const ACG = (()=>{
                 : "Local + self-report (within driving distance)"),
         };
       })()),
+      _areaName:tpl.areaName||null,
+      // What the pre-publication check measures the summary against.
+      _setupText:tpl.setupText||"",
+      _turnText:tpl.storyDetail||"",
       _baseKey:story.baseKey,
       _storyKey:story.storyKey,
       _storyTextKey:`${titleStr||""} ${tpl.type||""} ${story.synopsis||""}`.slice(0,1200),
@@ -31893,6 +31945,77 @@ const ACG = (()=>{
       _lines:tpl.lines||[],
       _roles:rolesArr
     };
+  }
+  // ── The pre-publication check ────────────────────────────────────────────
+  // Nothing reaches the admin's screen without passing this. A draft that fails
+  // is not patched up — it is thrown away and the batch generates another,
+  // which is the only honest way to "rewrite it" when the writer is a bank of
+  // sentence builders rather than a person.
+  //
+  // Every rule here exists because the generator actually produced the thing it
+  // forbids. In order:
+  //   setup      "Each picture is styled to a different decade and cast to
+  //              match it." — the twist with no situation in front of it. The
+  //              reader cannot tell what the project is or who is in it.
+  //   event      the mirror: a situation with nothing happening in it.
+  //   length     a 40-word sentence nobody parses on a phone.
+  //   meta       "Two sentences.", "No summary needed." — writing about the
+  //              writing instead of about the project.
+  //   formula    "Everything changes when", "Then one day" — the transitions
+  //              that make copy read as machine-written.
+  //   grammar    "a car the bank taking it back crew" — the damage a careless
+  //              word swap does.
+  //   plain      any word long enough that a reader has to stop and decode it.
+  const SYN_STOP=new Set("about after again against also around because before being between both cannot could does doing down during each else even ever every from have here into itself just like made make many more most much must never only other over same should since some such than that their them then there these they this those through under until very were what when where which while will with without would your".split(" "));
+  function keyWords(t){
+    return clean(t).split(/\s+/).filter(w=>w.length>3&&!SYN_STOP.has(w));
+  }
+  // How much of a source sentence actually survived into the summary. Used to
+  // prove the summary still contains the situation and the event, whichever
+  // order the builder put them in.
+  function covers(source,text){
+    const need=keyWords(source);
+    if(need.length<2)return 1;
+    const hay=" "+clean(text)+" ";
+    let hit=0;
+    need.forEach(w=>{if(hay.indexOf(" "+w)>-1||hay.indexOf(w)>-1)hit++;});
+    return hit/need.length;
+  }
+  function sentencesOf(text){
+    return (String(text||"").match(/[^.!?]+[.!?]*/g)||[]).map(x=>x.trim()).filter(Boolean);
+  }
+  const SYN_META=/\b(two sentences|no summary needed|short version|longer version|the one-line version|the whole thing in two lines|here it is, plainly|in brief:|quickly:|take one thing away)\b/i;
+  const SYN_FORMULA=/\b(everything changes when|then one day|until one night|little did|unbeknownst|and then everything changed|in a world where)\b/i;
+  // One pattern per fault. Combining them into a single alternation put the
+  // duplicated-word backreference in group 3 while it still said \1, so it
+  // matched the empty first group and flagged every string ever passed to it.
+  const SYN_BROKEN=[
+    /\b(?:a|an|the)\s+(?:a|an|the)\b/i,   // "a the counter manager"
+    /\b(\w+)\s+\1\b/i,                   // "the the", "of of"
+    /\s[,.]/,                              // " ," / " ."
+    /\(\s*\)/                              // an empty bracket
+  ];
+  const SYN_HARD=/\b\w{15,}\b|\b(notwithstanding|heretofore|aforementioned|ostensibly|ubiquitous|paradigm|synergy|myriad|plethora|erstwhile|hitherto|juxtaposition)\b/i;
+  function summaryProblems(item){
+    const syn=String(item.synopsis||"").trim();
+    const out=[];
+    if(!syn)return["empty"];
+    const sents=sentencesOf(syn);
+    const words=syn.split(/\s+/).length;
+    // 1 + 8. Does it explain what the production is about, and is it followable?
+    if(words<12||sents.length<2)out.push("too thin to explain the project");
+    // 2 + 4. The situation the characters are in has to be on the page, or
+    // nothing anybody does in it is motivated.
+    if(covers(item._setupText||"",syn)<0.55)out.push("no setup");
+    // 3. And something has to happen in it.
+    if(covers(item._turnText||"",syn)<0.55)out.push("no event");
+    // 5. Simple and natural.
+    if(sents.some(x=>x.split(/\s+/).length>30))out.push("sentence too long");
+    if(SYN_HARD.test(syn))out.push("hard word");
+    if(SYN_META.test(syn))out.push("writes about the writing");
+    if(SYN_FORMULA.test(syn))out.push("formula transition");
+    if(SYN_BROKEN.some(re=>re.test(syn)))out.push("broken grammar");
+    return out;
   }
   // `strict` is dropped once the batch has tried hard enough. The exact-key
   // checks always apply; only the fuzzy similarity pass is relaxed, so a board
@@ -31922,6 +32045,12 @@ const ACG = (()=>{
       attempts++;
       const item=generateOne(adminUserId,h,res);
       const key=clean(item.type+"|"+item.location+"|"+item.title);
+      // The soundness rules are relaxed only in the very last attempts, and
+      // even then the two that produce nonsense — broken grammar and a
+      // sentence nobody can read — still apply.
+      const probs=summaryProblems(item);
+      const blocking=attempts<200?probs:probs.filter(v=>v==="broken grammar"||v==="sentence too long"||v==="empty");
+      if(blocking.length)continue;
       if(itemFreshEnough(item,h,res,attempts<90)&&!res.stories.has(key)){
         res.stories.add(key);
         addUsed(res.storyTexts,item._storyTextKey);
@@ -31932,6 +32061,9 @@ const ACG = (()=>{
         addUsed(res.traits,item._catalystKey);
         addUsed(res.roleCounts,item._roleCountKey);
         addUsed(res.creatorKinds,item._creatorKind);
+        if(item._areaName){
+          res._areaBatch=(res._areaBatch||[]).concat([item._areaName]);
+        }
         (item._roles||[]).forEach(r=>{
           addUsed(res.ages,r.age_range);
           if(r.ethnicity&&r.ethnicity!==OPEN_ETHNICITY){
