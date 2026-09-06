@@ -21059,6 +21059,28 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // Keep this constant + function TOP-LEVEL (outside Landing) so React does not
 // recreate it on every Landing re-render, which would reset swipe state.
 // ═══════════════════════════════════════════
+// A landing swipe card's photo. A zoomed one has to live inside its own
+// clipping box: the <img> is a direct child of .s-card, so transform:scale()
+// spills it past its 68% band and over the name below (the card's own
+// overflow:hidden only clips the card's outer edge, not the band). The fitter
+// the crop was measured in had exactly this wrapper, so this also makes the
+// live card match the framing the owner approved, pixel for pixel.
+// Unzoomed cards render the bare <img> exactly as before — untouched.
+function SwipeCardPhoto({t,alt="",draggable}){
+  const pos=t.pos||"center 8%";
+  const base={width:"100%",height:"100%",objectFit:"cover",objectPosition:pos,display:"block"};
+  if(!t.zoom)return <img src={t.img} alt={alt} draggable={draggable} decoding="async"
+    style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:pos}}/>;
+  // inline-block, NOT block: a bare <img> is inline-level and baseline-aligned,
+  // which leaves ~5px of descender space under the photo. Every other card has
+  // that gap, so the wrapper has to sit on the baseline the same way or this
+  // card's name rides 5px higher than the rest of the deck.
+  return(<div style={{display:"inline-block",verticalAlign:"baseline",width:"100%",height:"68%",overflow:"hidden"}}>
+    <img src={t.img} alt={alt} draggable={draggable} decoding="async"
+      style={{...base,transform:`scale(${t.zoom})`,transformOrigin:pos}}/>
+  </div>);
+}
+
 const LANDING_SWIPE_DEMO=[
   // Kira leads the deck. NOTE the image URL carries NO h=/fit=crop: the owner
   // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
@@ -21202,11 +21224,11 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{position:"relative",width:300,height:450}}>
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
-          <img src={nt.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%",...(nt.zoom?{transform:`scale(${nt.zoom})`,transformOrigin:nt.pos||"center 8%"}:{})}}/>
+          <SwipeCardPhoto t={nt}/>
         </div>}
         {intro&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
           <div key={"swin"+i} className={"s-card "+(armed?"sw-intro-back":"sw-pre")} style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none",boxShadow:"none"}}>
-            <img src={bc.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%",...(bc.zoom?{transform:`scale(${bc.zoom})`,transformOrigin:bc.pos||"center 8%"}:{})}}/>
+            <SwipeCardPhoto t={bc}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:30,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
@@ -21216,8 +21238,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           onPointerCancel={()=>{if(!dragging.current){setDx(0);return;}const d=dxRef.current;dragging.current=false;if(d>50)advance(1);else if(d<-50)advance(-1);else setDx(0);}}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK <Ico n="check" s={24}/></div>
-          <img src={t.img} alt={t.name} draggable="false" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%",
-            ...(t.zoom?{transform:`scale(${t.zoom})`,transformOrigin:t.pos||"center 8%"}:{})}}/>
+          <SwipeCardPhoto t={t} alt={t.name} draggable="false"/>
           <div className="s-card-info">
             <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
             <div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div>
