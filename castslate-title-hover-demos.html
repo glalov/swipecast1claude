@@ -1,0 +1,218 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Three Title Hovers</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+</head><body>
+<style>
+:root{
+  --page:#F6F2EA; --ink:#1A1A2E; --ink2:#5A5A72; --ink3:#8E8EA0; --rule:#E5DFD2; --panel:#FFFFFF;
+  --teal:#2D8587;
+  /* the three candidates */
+  --hoverA:#226365;   /* teal, deepened   */
+  --hoverB:#B0670F;   /* Pick gold, deepened */
+  --hoverC:#1F5F6B;   /* ink pulled toward the brand */
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#101019; --ink:#ECEAF2; --ink2:#B0AEC2; --ink3:#8A88A0; --rule:#2A2C39; --panel:#1E1F2B;
+    --teal:#4FB3B5;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#101019; --ink:#ECEAF2; --ink2:#B0AEC2; --ink3:#8A88A0; --rule:#2A2C39; --panel:#1E1F2B;
+  --teal:#4FB3B5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding:44px 20px 90px;display:flex;flex-direction:column;gap:34px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:Newsreader,Georgia,"Times New Roman",serif;font-weight:500;
+   font-size:clamp(29px,5vw,40px);line-height:1.12;letter-spacing:-.01em;margin:6px 0 10px;text-wrap:balance}
+.lede{margin:0;color:var(--ink2);font-size:15.5px;line-height:1.65;max-width:64ch}
+.lede b{color:var(--ink);font-weight:600}
+h2{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:22px;margin:0;letter-spacing:-.01em}
+.sechead{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:16px}
+.sechead .why{font-size:12.5px;color:var(--ink3);margin-left:auto;text-align:right}
+
+/* ── option block ───────────────────────────────────────────────── */
+.opt{display:flex;flex-direction:column;gap:12px}
+.opthead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dot{width:26px;height:26px;border-radius:8px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.optname{font-size:16px;font-weight:800;letter-spacing:-.2px}
+.optmeta{margin-left:auto;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;text-align:right}
+.optnote{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.65;max-width:66ch}
+.optnote b{color:var(--ink);font-weight:600}
+
+/* ── the real CastSlate browse card, light-only (the site has no dark mode) ── */
+.cs{background:#FAF7F1;border:1px solid #E5DFD2;border-radius:16px;padding:18px}
+.card{background:#FFFFFF;border:1px solid #E5DFD2;border-radius:14px;padding:24px;cursor:pointer;
+  box-shadow:0 1px 4px rgba(26,26,46,.05);
+  transition:box-shadow .2s,transform .15s;
+  display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start}
+.tile{width:56px;height:56px;border-radius:12px;background:#E8EEFB;border:1px solid #bcd0f2;flex:none}
+.tile.b{background:#FBF0DE;border-color:#EBD6AC}
+.tile.c{background:#EAF4EF;border-color:#C5E2D6}
+.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0 0 8px;color:#1A1A2E;
+  /* one property, one paint — this is the entire effect */
+  transition:color .15s ease}
+.cc-tagline{color:#4a4f58;font-size:15px;line-height:1.45;margin:0 0 6px}
+.cc-prod{color:#8E8EA0;font-size:14px;margin:0 0 14px}
+.cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
+  background:#F1ECE2;color:#1A1A2E;border:1px solid #E5DFD2}
+.cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92}
+.cc-chip.quiet{background:transparent;border-color:transparent;color:#8E8EA0;font-weight:600;padding-left:2px}
+
+/* hover only where a real pointer exists — a touch screen must never stick */
+@media (hover:hover) and (pointer:fine){
+  .card:hover{box-shadow:0 4px 16px rgba(26,26,46,.09);transform:translateY(-1px)}
+  .a .card:hover .cc-title{color:var(--hoverA)}
+  .b .card:hover .cc-title{color:var(--hoverB)}
+  .c .card:hover .cc-title{color:var(--hoverC)}
+}
+/* keyboard users get the same signal */
+.a .card:focus-visible .cc-title{color:var(--hoverA)}
+.b .card:focus-visible .cc-title{color:var(--hoverB)}
+.c .card:focus-visible .cc-title{color:var(--hoverC)}
+.card:focus-visible{outline:2px solid #2D8587;outline-offset:3px}
+
+/* the side-by-side row */
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.row{grid-template-columns:1fr}}
+.mini{background:#FFFFFF;border:1px solid #E5DFD2;border-radius:12px;padding:16px;cursor:pointer;
+  transition:box-shadow .2s}
+.mini:hover{box-shadow:0 4px 14px rgba(26,26,46,.08)}
+.mini .t{font-size:19px;font-weight:800;letter-spacing:-.3px;color:#1A1A2E;transition:color .15s ease;margin-bottom:4px}
+.mini .s{font-size:12px;color:#8E8EA0}
+@media (hover:hover) and (pointer:fine){
+  .row .a:hover .t{color:var(--hoverA)}
+  .row .b:hover .t{color:var(--hoverB)}
+  .row .c:hover .t{color:var(--hoverC)}
+}
+.rowlabel{font-size:10.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px}
+
+/* facts panel */
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:13px;padding:18px 20px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);font-weight:700;padding:0 10px 9px;border-bottom:1px solid var(--rule)}
+td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:middle;color:var(--ink2)}
+tbody tr:last-child td{border-bottom:none}
+td.k{color:var(--ink);font-weight:700;white-space:nowrap}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pass{color:#2F6A52;font-weight:700}
+.ok{color:#9A5E10;font-weight:700}
+.rec{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  background:#EAF4EF;color:#0F6E56;border:1px solid #C5E2D6;border-radius:999px;padding:3px 9px}
+.costs{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.8}
+.costs b{color:var(--ink);font-weight:600}
+.costs code{background:rgba(127,127,140,.14);padding:1px 6px;border-radius:5px;font-size:12.5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.hint{font-size:12.5px;color:var(--ink3);margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">CastSlate · browse card · demo</span>
+    <h1>Three ways the title can answer the mouse</h1>
+    <p class="lede">Hover the cards below. All three are <b>one CSS property changing colour over 150ms</b> — no JavaScript, no image, no shadow or movement added to what the card already does, nothing extra downloaded. On a slow connection they cost exactly nothing, because they ship inside the stylesheet that is already there. Nothing is applied to the live site.</p>
+  </header>
+
+  <section class="opt a">
+    <div class="opthead">
+      <span class="dot" style="background:#226365"></span>
+      <span class="optname">A · Teal — the site's own action colour</span>
+      <span class="optmeta">#226365 · contrast 6.9:1</span>
+    </div>
+    <div class="cs"><div class="card" tabindex="0">
+      <div class="tile"></div>
+      <div>
+        <h3 class="cc-title">2:17 A.M</h3>
+        <p class="cc-tagline">Experimental Thriller Film, Gowanus, Brooklyn.</p>
+        <p class="cc-prod">Cameron Johnson</p>
+        <div class="cc-strip">
+          <span class="cc-chip roles">6 roles</span><span class="cc-chip pay">Up to $175/day</span>
+          <span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted 15 hours ago</span>
+        </div>
+      </div>
+    </div></div>
+    <p class="optnote">The same teal as every button on the site, darkened for contrast. <b>The most legible signal</b> — an actor already knows teal means “this does something”, so the title reads as clickable the instant the pointer lands. The trade: it is also the most familiar move on the web, so it will never feel like a decision somebody made.</p>
+  </section>
+
+  <section class="opt b">
+    <div class="opthead">
+      <span class="dot" style="background:#B0670F"></span>
+      <span class="optname">B · Gold — borrowed from Cast Slate Pick</span>
+      <span class="optmeta">#B0670F · contrast 4.4:1</span>
+    </div>
+    <div class="cs"><div class="card" tabindex="0">
+      <div class="tile b"></div>
+      <div>
+        <h3 class="cc-title">Widely Advertised Hair Care Brand</h3>
+        <p class="cc-tagline">Branded content, national campaign.</p>
+        <p class="cc-prod">Rae Whitcombe Casting</p>
+        <div class="cc-strip">
+          <span class="cc-chip roles">2 roles</span><span class="cc-chip pay">Up to $900</span>
+          <span class="cc-chip">Nationwide</span><span class="cc-chip quiet">Posted 40 hours ago</span>
+        </div>
+      </div>
+    </div></div>
+    <p class="optnote">Warm, editorial, and unmistakably CastSlate rather than “a website”. The risk is real though: <b>gold already means Cast Slate Pick</b> on this board, so hovering an ordinary casting briefly dresses it in the pick colour. Lowest contrast of the three — fine at 27px bold, too weak to use anywhere smaller.</p>
+  </section>
+
+  <section class="opt c">
+    <div class="opthead">
+      <span class="dot" style="background:#1F5F6B"></span>
+      <span class="optname">C · Ink pulled toward the brand</span>
+      <span class="optmeta">#1F5F6B · contrast 7.3:1</span>
+    </div>
+    <div class="cs"><div class="card" tabindex="0">
+      <div class="tile c"></div>
+      <div>
+        <h3 class="cc-title">The Quiet Wing</h3>
+        <p class="cc-tagline">When an overnight hospital worker covers up a mistake…</p>
+        <p class="cc-prod">Youssef Mourad / Atlanta Stage Door Productions</p>
+        <div class="cc-strip">
+          <span class="cc-chip roles">4 roles</span><span class="cc-chip pay">Up to $450/day</span>
+          <span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted two weeks ago</span>
+        </div>
+      </div>
+    </div></div>
+    <p class="optnote">The navy stays navy — it just cools a few degrees toward the teal. You register that <b>something answered you</b> without being able to name what changed, which is exactly what expensive interfaces do. Highest contrast of the three, and the only one that could never be mistaken for a stock link colour. <span class="rec">my pick</span></p>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>Side by side</h2><span class="why">move across all three</span></div>
+    <div class="rowlabel">Same title, same size — hover each</div>
+    <div class="row">
+      <div class="mini a"><div class="t">Sunday Showings</div><div class="s">A · teal #226365</div></div>
+      <div class="mini b"><div class="t">Sunday Showings</div><div class="s">B · gold #B0670F</div></div>
+      <div class="mini c"><div class="t">Sunday Showings</div><div class="s">C · cooled ink #1F5F6B</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>What each one costs</h2></div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>&nbsp;</th><th>Colour</th><th>Contrast on white</th><th>Reads as</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Today</td><td class="n">#1A1A2E</td><td class="n">17.1:1</td><td>no answer at all — only the card lifts</td></tr>
+          <tr><td class="k">A · Teal</td><td class="n">#226365</td><td class="n"><span class="pass">6.9:1</span></td><td>“this is a link”</td></tr>
+          <tr><td class="k">B · Gold</td><td class="n">#B0670F</td><td class="n"><span class="ok">4.4:1</span></td><td>“this is featured”</td></tr>
+          <tr><td class="k">C · Cooled ink</td><td class="n">#1F5F6B</td><td class="n"><span class="pass">7.3:1</span></td><td>“this is alive”</td></tr>
+        </tbody>
+      </table>
+      <p class="costs" style="margin-top:16px">
+        <b>Weight, for a user on bad wifi:</b> about 120 bytes of CSS inside a stylesheet that is already downloaded — <b>no new request, no image, no font, no JavaScript</b>. The change is <code>color</code> only, which repaints the text and nothing else: no reflow, no layout shift, no scroll jank, and no work at all until a pointer is actually over a card.<br>
+        <b>Bug surface:</b> the rule sits behind <code>@media (hover:hover) and (pointer:fine)</code>, so a phone or tablet can never get stuck showing a hovered title after a tap — the single most common bug with hover colour. The same colour is mirrored on <code>:focus-visible</code>, so keyboard users get the identical signal, and <code>prefers-reduced-motion</code> drops the fade to an instant switch.
+      </p>
+    </div>
+    <p class="hint" style="margin-top:12px">Whichever you choose applies to <code>.cc-title</code>, which Browse and the Featured Castings coverflow already share — so one rule covers both, and the closed/archived cards keep their existing dimmed treatment.</p>
+  </section>
+
+</div>
+</body></html>

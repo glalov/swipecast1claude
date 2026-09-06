@@ -2796,6 +2796,11 @@ body.sheet-push .b2t-cube{display:none;}
          box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 14%,transparent);}
 @supports not (color:color-mix(in srgb,#000 1%,transparent)){.pt-tile{box-shadow:inset 0 0 0 1px rgba(26,26,46,.10);}}
 .cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:0;color:var(--t1);}
+/* A live card's title opens the casting on its own — see the note in the card.
+   Hover/focus colour is deliberately not set here yet; the owner is choosing it
+   from the demo. Only the cursor and the focus ring ship for now. */
+.cc-title-link{cursor:pointer;}
+.cc-title-link:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
 /* The type badges sit on the title's baseline instead of owning a band above
    it. That single move is what shortened the card - NOT shrinking the title,
    which was measured at 4px and is why the title stayed at 27px. */
@@ -13978,7 +13983,22 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                       that row made the top of the card a wall of pills. */}
                   {isFeat&&<div className="cc-pickrow"><span className="cc-gpill"><Ico n="star" s={12}/> Cast Slate Pick</span></div>}
                   <div className="cc-titlewrap">
-                    <h3 className="cc-title">{c.title}</h3>
+                    {/* The title is its own click target, not just a passenger on the
+                        card. The card-level onClick bails out at <=768px so a stray
+                        tap while scrolling a phone cannot open a casting — which left
+                        the title dead on mobile, where it is the most obvious thing to
+                        tap. This opens the sheet at EVERY width, exactly like the
+                        "View Roles" button beside it, and stops propagation so the
+                        card handler cannot fire a second time on desktop.
+                        Closed and archived cards stay unclickable here, the same way
+                        their role pills and CTA already are. */}
+                    <h3 className={"cc-title"+(isClosedCard?"":" cc-title-link")}
+                        {...(isClosedCard?{}:{
+                          role:"link",
+                          tabIndex:0,
+                          onClick:(e)=>{e.stopPropagation();openSheet(rawC);},
+                          onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();openSheet(rawC);}}
+                        })}>{c.title}</h3>
                     <div className="cc-badgerow">
                       <span className="cc-badge">{translateCastingType(c.type,lang)}</span>
                       <span className="cc-badge">{c.union}</span>
