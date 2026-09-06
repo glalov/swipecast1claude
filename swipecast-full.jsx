@@ -2797,10 +2797,34 @@ body.sheet-push .b2t-cube{display:none;}
 @supports not (color:color-mix(in srgb,#000 1%,transparent)){.pt-tile{box-shadow:inset 0 0 0 1px rgba(26,26,46,.10);}}
 .cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:0;color:var(--t1);}
 /* A live card's title opens the casting on its own — see the note in the card.
-   Hover/focus colour is deliberately not set here yet; the owner is choosing it
-   from the demo. Only the cursor and the focus ring ship for now. */
-.cc-title-link{cursor:pointer;}
+   On hover it says so: the ink deepens to teal and a 2px teal rule appears under
+   the words. The rule is what makes it register — a shape arriving where there
+   was none is caught far faster than any colour change — and it is now honest,
+   because the title really is the click target.
+   ⚠️ The underline offset is in em, NEVER a flat px. Measured: at 27px the tails
+   of g/y/p/j reach 4.9px below the baseline, so the 5px I first tried landed
+   exactly ON them. 0.33em clears the deepest tail by ~4px and keeps clearing it
+   at the 23px mobile title and the 21px coverflow title, where a fixed pixel
+   value would be wrong in one direction or the other. skip-ink is off on
+   purpose: the line no longer needs to dodge anything, so it stays one
+   unbroken rule instead of breaking into segments under every descender.
+   Behind (hover:hover) and (pointer:fine) so a phone can never be left showing
+   a hovered title after a tap. Closed and archived titles carry no .cc-title-link
+   at all, so they stay inert here exactly as their role pills and CTA do. */
+.cc-title-link{cursor:pointer;transition:color .15s ease,text-decoration-color .15s ease;}
 .cc-title-link:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
+@media (hover:hover) and (pointer:fine){
+  .cc-title-link:hover{color:#226365;text-decoration:underline;text-decoration-thickness:2px;
+    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2D8587;}
+}
+/* Featured Castings: only the CENTRED card opens a casting on click, so only its
+   title gets the same answer. A side card recentres the slider instead, and a
+   title that looked clickable there would be lying. */
+@media (hover:hover) and (pointer:fine){
+  .fcs-card-center:hover .cc-title{color:#226365;text-decoration:underline;text-decoration-thickness:2px;
+    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2D8587;}
+}
+.fcs-card-center .cc-title{transition:color .15s ease,text-decoration-color .15s ease;}
 /* The type badges sit on the title's baseline instead of owning a band above
    it. That single move is what shortened the card - NOT shrinking the title,
    which was measured at 4px and is why the title stayed at 27px. */
