@@ -13355,8 +13355,13 @@ function castingPostedIsDayOnly(casting){
 // licence to come back later, and later is usually never. The closing date is
 // on the casting page itself, where someone is actually deciding, so the card
 // does not need to carry it. Inside the window the countdown stays, and the
-// <=5 day red state and the final-48h ticking clock are untouched.
-const CARD_COUNTDOWN_MAX_DAYS=14;
+// final-48h ticking clock is untouched.
+// 14 -> 3 (owner, 2026-09-05): at two weeks out the chip was on most of the
+// board and read as ambient decoration; at three days it only appears when the
+// number actually changes what an actor does today. Every chip that survives is
+// inside castingCountdown's <=5 day urgent band, so what shows is always the
+// solid red state — by design now, not by accident.
+const CARD_COUNTDOWN_MAX_DAYS=3;
 
 // Live "days left to apply" countdown derived from a deadline date (YYYY-MM-DD or
 // ISO). Recomputed against the current clock on every render, so the number rolls
