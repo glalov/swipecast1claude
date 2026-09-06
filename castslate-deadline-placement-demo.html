@@ -1,0 +1,274 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One Deadline, Placed Quietly</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+</head><body>
+<style>
+:root{
+  --page:#F6F2EA; --ink:#1A1A2E; --ink2:#5A5A72; --ink3:#8E8EA0; --rule:#E5DFD2; --panel:#FFFFFF; --teal:#2D8587;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#101019; --ink:#ECEAF2; --ink2:#B0AEC2; --ink3:#8A88A0; --rule:#2A2C39; --panel:#1E1F2B; --teal:#4FB3B5;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#101019; --ink:#ECEAF2; --ink2:#B0AEC2; --ink3:#8A88A0; --rule:#2A2C39; --panel:#1E1F2B; --teal:#4FB3B5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:940px;margin:0 auto;padding:44px 20px 90px;display:flex;flex-direction:column;gap:30px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:Newsreader,Georgia,"Times New Roman",serif;font-weight:500;
+   font-size:clamp(29px,5vw,40px);line-height:1.12;letter-spacing:-.01em;margin:6px 0 10px;text-wrap:balance}
+.lede{margin:0;color:var(--ink2);font-size:15.5px;line-height:1.65;max-width:66ch}
+.lede b{color:var(--ink);font-weight:600}
+h2{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:22px;margin:0;letter-spacing:-.01em}
+.sechead{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:10px;margin-bottom:16px}
+.sechead .why{font-size:12.5px;color:var(--ink3);margin-left:auto;text-align:right}
+
+/* controls */
+.ctrl{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.ctrlrow{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.ctrllab{font-size:10.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3);flex:none;width:112px}
+.pills{display:flex;gap:7px;flex-wrap:wrap}
+.pill{font:inherit;font-size:13px;font-weight:700;color:var(--ink2);background:transparent;border:1px solid var(--rule);
+  border-radius:999px;padding:7px 14px;cursor:pointer;transition:.14s}
+.pill:hover{border-color:var(--teal);color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.pill:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+/* ── the real casting page, faithfully ─────────────────────────── */
+.stage{background:#FAF7F1;border:1px solid #E5DFD2;border-radius:18px;padding:26px 28px 30px}
+.pt-badge{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  background:#E8EEFB;border:1px solid #bcd0f2;color:#1f4a92;border-radius:999px;padding:6px 14px}
+.actions{display:flex;gap:18px;align-items:center;margin:16px 0 10px;font-size:14px;color:#5A5A72;font-weight:600}
+.pagetitle{font-size:42px;font-weight:800;letter-spacing:-1px;line-height:1.08;margin:0 0 8px;color:#1A1A2E}
+.byline{font-size:14.5px;font-weight:700;color:#3C4A52;margin:0 0 20px}
+
+/* the deadline line — the only place a date appears */
+.dl-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:20px}
+.dl-row.right{justify-content:flex-end}
+.dl{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8E8EA0;
+  display:inline-flex;align-items:center;gap:7px}
+.dl svg{opacity:.7}
+.dl.soon{color:#A8341C}
+.dl.done{color:#8E8EA0}
+
+.cd-card{background:#FFFFFF;border:1px solid #E5DFD2;border-radius:16px;overflow:hidden}
+.cd-grid{display:grid;grid-template-columns:1fr 250px}
+@media(max-width:760px){.cd-grid{grid-template-columns:1fr}}
+.cd-main{padding:22px 24px}
+.cd-top{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding-bottom:16px;border-bottom:1px solid #E5DFD2;margin-bottom:18px}
+.live-badge{display:inline-flex;align-items:center;gap:8px;background:#EAF4EF;border:1px solid #C5E2D6;
+  color:#0F6E56;font-weight:700;font-size:14px;padding:6px 13px;border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%;background:#0F6E56;box-shadow:0 0 0 3px rgba(15,110,86,.18)}
+.money{display:inline-flex;align-items:center;gap:8px;background:#F2F7F4;border:1px solid #D7E6DD;color:#2F6A52;
+  font-size:14px;font-weight:700;padding:6px 13px;border-radius:999px}
+.money .vl{color:#1A1A2E;font-weight:800}
+.cd-stat{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:#5A5A72;font-weight:600}
+.cd-stat .vl{color:#1A1A2E;font-weight:800}
+.cd-stat.urgent{color:#c0392b;font-weight:700}
+.cd-stat.closed{color:#c0392b;font-weight:700}
+.cd-rows{display:grid;grid-template-columns:1fr 1fr;gap:17px 24px}
+@media(max-width:640px){.cd-rows{grid-template-columns:1fr}}
+.cd-row{display:flex;gap:11px;align-items:flex-start;min-width:0}
+.cd-row.full{grid-column:1 / -1}
+.cd-lab{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8E8EA0;margin-bottom:3px}
+.cd-val{font-size:14.5px;color:#1A1A2E;font-weight:600;line-height:1.45}
+.sq{width:22px;height:22px;border-radius:6px;background:#F1ECE2;border:1px solid #E5DFD2;flex:none;margin-top:1px}
+.sq.good{background:#F2F7F4;border-color:#D7E6DD}
+.cd-side{background:#F1ECE2;border-left:1px solid #E5DFD2;padding:22px 20px;display:flex;flex-direction:column;gap:11px}
+@media(max-width:760px){.cd-side{border-left:none;border-top:1px solid #E5DFD2}}
+.cd-side h3{margin:0;font-size:16px;font-weight:800;color:#1A1A2E}
+.fakeselect{background:#FFFFFF;border:1px solid #E5DFD2;border-radius:9px;padding:11px 12px;font-size:14px;color:#8E8EA0;
+  display:flex;justify-content:space-between}
+.btn{background:#2D8587;color:#fff;border:none;border-radius:9px;padding:13px;font:inherit;font-weight:700;font-size:15px;text-align:center}
+.btn.dim{background:#E5DFD2;color:#8E8EA0}
+.closedbar{display:flex;align-items:center;gap:12px;padding:13px 16px;margin-bottom:14px;
+  background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.3);border-radius:12px;
+  font-size:13.5px;color:#c0392b;font-weight:600}
+
+/* annotations */
+.ann{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.ann div{font-size:12.5px;color:var(--ink3);line-height:1.6}
+.ann s{opacity:.75}
+.ann .rm::before{content:"removed  ";font-weight:800;color:#c0392b;letter-spacing:.05em;font-size:10.5px;text-transform:uppercase}
+.ann .kp::before{content:"moved here  ";font-weight:800;color:#0F6E56;letter-spacing:.05em;font-size:10.5px;text-transform:uppercase}
+.note{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:16px 18px;
+  font-size:13.5px;color:var(--ink2);line-height:1.75}
+.note b{color:var(--ink);font-weight:700}
+.note ul{margin:9px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:7px}
+code{background:rgba(127,127,140,.14);padding:1px 6px;border-radius:5px;font-size:12.5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">CastSlate · opened casting · demo</span>
+    <h1>One deadline, placed quietly</h1>
+    <p class="lede">The date currently appears <b>three times</b> on an opened casting — in the green countdown line, in the DEADLINE fact row, and again under the Apply button. Here it appears <b>once</b>, small and grey, above the card. And the countdown itself only shows up in the <b>last 3 days</b>, matching the browse card. Everything else on the page is untouched.</p>
+  </header>
+
+  <div class="ctrl">
+    <div class="ctrlrow">
+      <span class="ctrllab">How long left</span>
+      <div class="pills" id="states"></div>
+    </div>
+    <div class="ctrlrow">
+      <span class="ctrllab">Date sits</span>
+      <div class="pills" id="places"></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="sechead"><h2>The casting page</h2><span class="why">everything below the card is unchanged</span></div>
+    <div class="stage">
+      <span class="pt-badge">Pitch Trailer</span>
+      <div class="actions"><span>&#9734; Save Casting</span><span>&#8599; Send to a Friend</span></div>
+      <h2 class="pagetitle">Places, Please</h2>
+      <p class="byline">Produced by Prod. Ellis Rhodes · Writer Amrita Gandhi</p>
+
+      <div class="dl-row" id="dlRow">
+        <span class="dl" id="dl"></span>
+      </div>
+
+      <div id="closedBar"></div>
+
+      <div class="cd-card">
+        <div class="cd-grid" id="grid">
+          <div class="cd-main">
+            <div class="cd-top" id="top"></div>
+            <div class="cd-rows" id="rows"></div>
+          </div>
+          <div class="cd-side" id="side"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ann" id="ann"></div>
+  </section>
+
+  <section>
+    <div class="sechead"><h2>What changed, exactly</h2></div>
+    <div class="note">
+      Three edits on this page and nothing else:
+      <ul>
+        <li><b>The countdown waits until 3 days.</b> Above that the status strip says nothing about time — same rule the browse card already follows. At 3 days and under, <code>3 days left to apply</code> appears in red, and the final-48h ticking clock is untouched.</li>
+        <li><b>The date is stated once.</b> The DEADLINE fact row and the <code>closes Oct 14, 2026</code> under the Apply button both go; the countdown line no longer repeats the date either.</li>
+        <li><b>It moves up and gets quiet.</b> A small grey <code>CLOSES OCT 14, 2026</code> above the card, the way Mandy puts <code>EXPIRES: September 23, 2026</code> at the top of the page — present for anyone who needs it, invisible to anyone who doesn't. It turns red only in the last 3 days, and reads <code>CLOSED OCT 14, 2026</code> once the casting has finished.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var CLOSES="Oct 14, 2026";
+  var STATES=[
+    {n:"39 days left", days:39},
+    {n:"7 days left",  days:7},
+    {n:"3 days left",  days:3},
+    {n:"1 day left",   days:1},
+    {n:"Closed",       days:-1}
+  ];
+  var PLACES=[{n:"Above, left",v:"left"},{n:"Above, right",v:"right"}];
+  var si=0, pi=0;
+
+  var statesEl=document.getElementById("states"), placesEl=document.getElementById("places"),
+      dlRow=document.getElementById("dlRow"), dl=document.getElementById("dl"),
+      top=document.getElementById("top"), rows=document.getElementById("rows"),
+      side=document.getElementById("side"), grid=document.getElementById("grid"),
+      ann=document.getElementById("ann"), closedBar=document.getElementById("closedBar");
+
+  STATES.forEach(function(s,i){
+    var b=document.createElement("button");
+    b.type="button";b.className="pill";b.textContent=s.n;b.setAttribute("aria-pressed","false");
+    b.addEventListener("click",function(){si=i;render();});
+    statesEl.appendChild(b);
+  });
+  PLACES.forEach(function(p,i){
+    var b=document.createElement("button");
+    b.type="button";b.className="pill";b.textContent=p.n;b.setAttribute("aria-pressed","false");
+    b.addEventListener("click",function(){pi=i;render();});
+    placesEl.appendChild(b);
+  });
+
+  var cal='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>';
+
+  function row(lab,val,full,good){
+    return '<div class="cd-row'+(full?' full':'')+'"><span class="sq'+(good?' good':'')+'"></span><div style="min-width:0">'+
+      '<div class="cd-lab">'+lab+'</div><div class="cd-val">'+val+'</div></div></div>';
+  }
+
+  function render(){
+    var st=STATES[si], place=PLACES[pi].v, closed=st.days<0, soon=!closed&&st.days<=3;
+
+    [].forEach.call(statesEl.children,function(b,i){b.setAttribute("aria-pressed",i===si?"true":"false");});
+    [].forEach.call(placesEl.children,function(b,i){b.setAttribute("aria-pressed",i===pi?"true":"false");});
+
+    // ── the one date ──
+    dlRow.className="dl-row"+(place==="right"?" right":"");
+    dl.className="dl"+(closed?" done":soon?" soon":"");
+    dl.innerHTML=cal+(closed?"Closed "+CLOSES:"Closes "+CLOSES);
+
+    // ── closed banner (unchanged from today) ──
+    closedBar.innerHTML=closed
+      ? '<div class="closedbar">This casting has expired and is no longer accepting applications.</div>'
+      : '';
+
+    // ── status strip ──
+    var t='';
+    if(closed){
+      t='<span class="cd-stat closed">'+cal+' Applications closed</span>'+
+        '<span class="cd-stat"><span class="vl">4</span> roles listed</span>';
+    }else{
+      t='<span class="live-badge"><span class="dot"></span>Casting now — apply today</span>'+
+        '<span class="money">Paid roles up to <span class="vl">$250</span></span>'+
+        '<span class="cd-stat"><span class="vl">4</span> roles open</span>'+
+        (soon?'<span class="cd-stat urgent">'+cal+' '+(st.days===1?"1 day left to apply":st.days+" days left to apply")+'</span>':'');
+    }
+    top.innerHTML=t;
+
+    // ── facts: DEADLINE row is gone, everything else identical ──
+    rows.innerHTML=
+      row("Union","Union and non-union welcome")+
+      row("Location","New York, NY")+
+      row("Nudity / Intimate content","None",false,true)+
+      row("Pay / Rate","PAID.")+
+      row("Where &amp; When","Shoots Oct 27 – Nov 1 in Midtown, Manhattan. One shoot day. You are not needed for the whole run.",true)+
+      row("Open to talent from","Local + self-report (within driving distance)",true);
+
+    // ── apply panel ──
+    if(closed){
+      grid.style.gridTemplateColumns="1fr";
+      side.style.display="none";side.innerHTML="";
+    }else{
+      grid.style.gridTemplateColumns="";
+      side.style.display="";
+      side.innerHTML='<h3>Ready to apply?</h3>'+
+        '<div class="fakeselect"><span>Select a role…</span><span>&#8964;</span></div>'+
+        '<div class="btn">Apply</div>';
+    }
+
+    // ── annotations ──
+    var a='';
+    if(closed){
+      a+='<div class="rm"><s>39 days left to apply · closes Oct 14, 2026</s>, <s>DEADLINE · Oct 14, 2026</s>, and <s>closes Oct 14, 2026</s> under the button</div>'+
+         '<div class="kp">a single grey <b>Closed Oct 14, 2026</b> above the card</div>';
+    }else{
+      a+='<div class="rm"><s>'+st.days+' days left to apply · closes '+CLOSES+'</s> from the green line, <s>DEADLINE · '+CLOSES+'</s> from the facts, <s>closes '+CLOSES+'</s> from under the Apply button</div>';
+      a+= soon
+        ? '<div class="kp">the date, once, above the card — and because there are '+st.days+' days left it turns red, and the countdown returns to the status strip</div>'
+        : '<div class="kp">the date, once, above the card — quiet grey, no countdown anywhere until 3 days are left</div>';
+    }
+    ann.innerHTML=a;
+  }
+
+  render();
+})();
+</script>
+</body></html>

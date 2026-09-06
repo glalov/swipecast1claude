@@ -2935,6 +2935,10 @@ body.sheet-push .b2t-cube{display:none;}
    Replaced a five-block stack (apply card / facts grid / At a Glance /
    Where & When) that carried four borders, three heading styles, and stated
    the deadline twice - once as a countdown, once as a date. */
+.cd-deadline-row{display:flex;justify-content:flex-end;margin:0 0 10px;}
+.cd-deadline{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
+.cd-deadline.soon{color:#A8341C;}
 .cd-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
   box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:24px;}
 .cd-grid{display:grid;grid-template-columns:1fr 288px;}
@@ -12025,6 +12029,16 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         card below, so there is no longer a middle for it to occupy. */}
     <CastingImageCarousel images={getCastingImages(c)} title={c.title}/>
 
+    {/* THE closing date — the only one on the page. Small, grey and top-right,
+        the way Mandy and Backstage carry an expiry: there for anyone who needs
+        it, invisible to anyone who does not. Red inside the final few days, and
+        past tense once the casting has finished. */}
+    {fmtCastingDate(c.deadline)&&<div className="cd-deadline-row">
+      <span className={"cd-deadline"+(applicationsClosed?"":castingCountdownIsSoon(c)?" soon":"")}>
+        <Ico n="calendar-event" s={14}/>{applicationsClosed?"Closed ":"Closes "}{fmtCastingDate(c.deadline)}
+      </span>
+    </div>}
+
     {/* ── ONE card: live status, every fact the CD supplied, and the picker.
            Replaces the old apply-card + facts grid + At a Glance + Where &
            When stack. Pay always takes a row here: the previous layout only
@@ -12063,14 +12077,22 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <Ico n="coin" s={20}/><span className="lb">Paid roles up to</span><span className="vl">{fmtMoney(roll.top)}</span>
               </span>}
               <span className="cd-stat"><Ico n="masks-theater" s={20}/><span className="sub">{roleCount} {roleCount===1?"role":"roles"} {applicationsClosed?"listed":"open"}</span></span>
+              {/* The countdown waits for the last few days — above that a number
+                  teaches an actor nothing and just starts a clock on them. The
+                  closing DATE is stated once, quietly, above this card; this is
+                  the urgency, so it carries no date of its own. */}
               {applicationsClosed
                 ?<span className="cd-stat" style={{color:"#c0392b"}}><Ico n="calendar-event" s={20}/>Applications closed</span>
-                :<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true}/></span>}
+                :castingCountdownIsSoon(c)
+                  ?<span style={{fontSize:14}}><CastingCountdown deadline={c.deadline} emoji={true} showDate={false}/></span>
+                  :null}
             </div>
             <div className="cd-rows">
               {fact("union","file-text",t('casting.union'),c.union)}
               {fact("loc","map-pin",t('casting.location'),c.location)}
-              {fact("dl","calendar-event",t('casting.deadline'),fmtCastingDate(c.deadline)||"—")}
+              {/* No DEADLINE row: the closing date is stated once, above this
+                  card. It used to appear three times on this page — here, in the
+                  countdown line, and under the Apply button. */}
               {fact("nud",c.has_nudity?"alert-triangle":"circle-check","Nudity / Intimate content",
                     c.has_nudity?"Yes — this project involves nudity or intimate content":"None",
                     false,c.has_nudity?"warn":"good")}
@@ -12099,7 +12121,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
             </select>
             <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply"}</button>
-            {fmtCastingDate(c.deadline)&&<div className="hint">closes {fmtCastingDate(c.deadline)}</div>}
+            {/* The closing date is above the card, said once. */}
           </div>}
         </div>
       </div>);})()}
@@ -13391,6 +13413,14 @@ function castingPostedIsDayOnly(casting){
 // inside castingCountdown's <=5 day urgent band, so what shows is always the
 // solid red state — by design now, not by accident.
 const CARD_COUNTDOWN_MAX_DAYS=3;
+
+// Inside the final stretch, where a countdown is worth showing. Same threshold
+// the browse card uses, so the card and the casting page can never disagree
+// about whether a casting is "closing soon".
+function castingCountdownIsSoon(casting){
+  const cdn=castingCountdown(casting&&casting.deadline);
+  return !!(cdn&&!cdn.expired&&cdn.days<=CARD_COUNTDOWN_MAX_DAYS);
+}
 
 // Live "days left to apply" countdown derived from a deadline date (YYYY-MM-DD or
 // ISO). Recomputed against the current clock on every render, so the number rolls
@@ -19635,7 +19665,7 @@ function LiveCastingBadge({text="Casting now — apply today"}){
 //     to a live ticking clock (1d 6h 12m) in the final 48 hours before the apply
 //     deadline. Counts to the deadline date (end of that day), not listing expiry.
 //     The 1s interval only runs inside the final-48h window, so idle cards are cheap.
-function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56"}){
+function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56",showDate=true}){
   const end=useMemo(()=>{
     if(!deadline)return null;
     const d=(typeof deadline==="string"&&deadline.length===10)?new Date(deadline+"T23:59:59"):new Date(deadline);
@@ -19656,11 +19686,11 @@ function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56"}){
   if(within48){
     const s=Math.floor(ms/1000),d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),sec=s%60;
     const clock=d>0?`${d}d ${h}h ${m}m left`:`${h}h ${m}m ${sec}s left to apply`;
-    return wrap("#c0392b",700,<>{clock} · closes {fmtCastingDate(deadline)}</>);
+    return wrap("#c0392b",700,<>{clock}{showDate?<> · closes {fmtCastingDate(deadline)}</>:null}</>);
   }
   const days=Math.ceil(ms/86400000);
   const label=days===1?"1 day left to apply":`${days} days left to apply`;
-  return wrap(days<=5?"#c0392b":baseColor,days<=5?700:600,<>{label} · closes {fmtCastingDate(deadline)}</>);
+  return wrap(days<=5?"#c0392b":baseColor,days<=5?700:600,<>{label}{showDate?<> · closes {fmtCastingDate(deadline)}</>:null}</>);
 }
 
 // ─── IDVerifiedBadge — "ID Verified" badge with disclaimer tooltip
