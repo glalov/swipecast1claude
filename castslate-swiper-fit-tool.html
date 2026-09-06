@@ -1,0 +1,207 @@
+<title>Swiper Card Fitter</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --page:#F6F2EA;--ink:#1A1A2E;--ink2:#5A5A72;--ink3:#8E8EA0;--rule:#E5DFD2;--panel:#FFF;--teal:#2D8587;
+  /* the card's own tokens, from the site */
+  --s1:#FFFFFF;--s2:#F1ECE2;--bdr:#E5DFD2;--t2:#5A5A72;--t3:#8E8EA0;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#101019;--ink:#ECEAF2;--ink2:#B0AEC2;--ink3:#8A88A0;--rule:#2A2C39;--panel:#1E1F2B;--teal:#4FB3B5;}}
+:root[data-theme="dark"]{--page:#101019;--ink:#ECEAF2;--ink2:#B0AEC2;--ink3:#8A88A0;--rule:#2A2C39;--panel:#1E1F2B;--teal:#4FB3B5;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.5}
+.wrap{max-width:1060px;margin:0 auto;padding:38px 20px 90px;display:flex;flex-direction:column;gap:24px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:clamp(27px,4.6vw,36px);line-height:1.14;margin:6px 0 8px;letter-spacing:-.01em}
+.lede{margin:0;color:var(--ink2);font-size:15px;line-height:1.65;max-width:70ch}
+.lede b{color:var(--ink);font-weight:600}
+
+.cols{display:grid;grid-template-columns:380px 1fr;gap:26px;align-items:start}
+@media(max-width:840px){.cols{grid-template-columns:1fr}}
+
+/* ── the real card, 340x530, image 68% ── */
+.stage{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:24px;display:flex;
+  flex-direction:column;align-items:center;gap:14px}
+.swipe-card-wrap{position:relative;width:340px;height:530px}
+.s-card{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);
+  user-select:none;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.imgbox{position:relative;width:100%;height:68%;overflow:hidden;cursor:grab;background:#EDE9E0}
+.imgbox:active{cursor:grabbing}
+.imgbox img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;transform-origin:center center}
+.s-card-info{padding:14px 18px}
+.s-card-info h3{font-size:17px;font-weight:700;margin:0 0 2px;color:#1A1A2E}
+.s-card-meta{color:var(--t2);font-size:12px;margin-bottom:8px}
+.s-card-tags{display:flex;gap:5px;flex-wrap:wrap}
+.s-card-tags span{background:var(--s2);padding:3px 8px;border-radius:5px;font-size:10px;color:var(--t2)}
+.cardnote{font-size:11.5px;color:var(--ink3);text-align:center}
+.guides .imgbox::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to right,transparent calc(50% - 1px),rgba(45,133,135,.55) calc(50% - 1px),rgba(45,133,135,.55) calc(50% + 1px),transparent calc(50% + 1px)),
+             linear-gradient(to bottom,transparent calc(33.33% - 1px),rgba(45,133,135,.35) calc(33.33% - 1px),rgba(45,133,135,.35) calc(33.33% + 1px),transparent calc(33.33% + 1px));}
+
+/* ── controls ── */
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.drop{border:2px dashed var(--rule);border-radius:12px;padding:20px;text-align:center;font-size:13.5px;color:var(--ink2);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--teal);color:var(--ink)}
+.drop b{color:var(--ink)}
+.row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.lab{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);width:74px;flex:none}
+input[type=range]{flex:1;min-width:150px;accent-color:var(--teal)}
+input[type=text]{flex:1;min-width:160px;font:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--rule);
+  border-radius:9px;background:var(--page);color:var(--ink)}
+.val{font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:700;color:var(--ink2);min-width:74px;text-align:right}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button.b{font:inherit;font-size:12.5px;font-weight:700;color:var(--ink2);background:transparent;border:1px solid var(--rule);
+  border-radius:999px;padding:7px 13px;cursor:pointer;transition:.14s}
+button.b:hover{border-color:var(--teal);color:var(--ink)}
+button.b.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.out{background:var(--page);border:1px solid var(--rule);border-radius:11px;padding:14px 15px;font-size:12.5px;line-height:1.9;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink2);overflow-x:auto}
+.out b{color:var(--teal);font-weight:700}
+.hint{font-size:12.5px;color:var(--ink3);line-height:1.65;margin:0}
+.hint b{color:var(--ink2)}
+.warn{background:var(--panel);border:1px solid var(--rule);border-left:3px solid #E8902A;border-radius:11px;
+  padding:13px 16px;font-size:13px;color:var(--ink2);line-height:1.65}
+.warn b{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">CastSlate · landing swipe demo · fitter</span>
+    <h1>Place her in the card</h1>
+    <p class="lede">This is the <b>real card</b> — 340&times;530, image area exactly 68% of the height, same radius, border and info block as the live landing page. Drop your photo in, then <b>drag the image to move it</b> and use the slider (or scroll on the image) to zoom. The values you need come out at the bottom.</p>
+  </header>
+
+  <div class="cols">
+    <div class="stage" id="stage">
+      <div class="swipe-card-wrap">
+        <div class="s-card">
+          <div class="imgbox" id="box">
+            <img id="shot" alt="" src="">
+          </div>
+          <div class="s-card-info">
+            <h3 id="nm">Your pick</h3>
+            <div class="s-card-meta" id="mt">24 · Female · 5'6"</div>
+            <div class="s-card-tags"><span>Drama Training</span><span>Voiceover</span><span>Stage Combat</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="cardnote">exactly as it renders on the landing page</p>
+    </div>
+
+    <div class="panel">
+      <label class="drop" id="drop">
+        <b>Drop the photo here</b> — or click to choose a file
+        <input type="file" id="file" accept="image/*" hidden>
+      </label>
+      <div class="row">
+        <span class="lab">or URL</span>
+        <input type="text" id="url" placeholder="https://images.pexels.com/photos/…">
+        <button class="b" id="load">Load</button>
+      </div>
+
+      <div class="row">
+        <span class="lab">Across</span>
+        <input type="range" id="px" min="0" max="100" value="50" step="1">
+        <span class="val" id="pxv">50%</span>
+      </div>
+      <div class="row">
+        <span class="lab">Up / down</span>
+        <input type="range" id="py" min="0" max="100" value="8" step="1">
+        <span class="val" id="pyv">8%</span>
+      </div>
+      <div class="row">
+        <span class="lab">Zoom</span>
+        <input type="range" id="zm" min="100" max="260" value="100" step="1">
+        <span class="val" id="zmv">1.00×</span>
+      </div>
+
+      <div class="btns">
+        <button class="b" id="reset">Reset</button>
+        <button class="b" id="face">Face crop preset</button>
+        <button class="b" id="grid">Guides</button>
+        <button class="b" id="copy">Copy values</button>
+      </div>
+
+      <div class="out" id="out"></div>
+      <p class="hint"><b>Across / Up-down</b> is CSS <code>object-position</code> — the same property the other nine cards already use (Zara sits at <code>center 8%</code>). <b>Zoom</b> is only needed if the framing you want is tighter than the photo allows; at 1.00× it costs nothing and I change a single value.</p>
+      <div class="warn"><b>Still to check before it ships:</b> the licence on this specific photo, and whether it carries a model release — putting an identifiable face on the swiper implies she is a CastSlate actor. Send me the source link with your values.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var box=document.getElementById('box'), img=document.getElementById('shot'),
+      px=document.getElementById('px'), py=document.getElementById('py'), zm=document.getElementById('zm'),
+      pxv=document.getElementById('pxv'), pyv=document.getElementById('pyv'), zmv=document.getElementById('zmv'),
+      out=document.getElementById('out'), stage=document.getElementById('stage');
+
+  function apply(){
+    var x=+px.value, y=+py.value, z=+zm.value/100;
+    img.style.objectPosition=x+'% '+y+'%';
+    img.style.transform= z===1 ? 'none' : 'scale('+z.toFixed(2)+')';
+    img.style.transformOrigin=x+'% '+y+'%';
+    pxv.textContent=x+'%'; pyv.textContent=y+'%'; zmv.textContent=z.toFixed(2)+'×';
+    var posStr=(x===50?'center':x+'%')+' '+y+'%';
+    out.innerHTML='object-position: <b>'+posStr+'</b>'+
+      (z===1?'' : '<br>transform: <b>scale('+z.toFixed(2)+')</b>  ·  transform-origin: <b>'+x+'% '+y+'%</b>')+
+      '<br><br>in LANDING_SWIPE_DEMO:<br>pos:"<b>'+posStr+'</b>"';
+  }
+  [px,py,zm].forEach(function(s){s.addEventListener('input',apply);});
+
+  // drag on the image to pan — inverted so the photo follows the pointer
+  var drag=false,sx=0,sy=0,ox=0,oy=0;
+  box.addEventListener('pointerdown',function(e){
+    if(!img.src)return;
+    drag=true;sx=e.clientX;sy=e.clientY;ox=+px.value;oy=+py.value;
+    try{box.setPointerCapture(e.pointerId);}catch(_){}
+  });
+  box.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    var w=box.clientWidth,h=box.clientHeight;
+    px.value=Math.max(0,Math.min(100, ox - (e.clientX-sx)/w*100));
+    py.value=Math.max(0,Math.min(100, oy - (e.clientY-sy)/h*100));
+    apply();
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){box.addEventListener(ev,function(){drag=false;});});
+  box.addEventListener('wheel',function(e){
+    if(!img.src)return; e.preventDefault();
+    zm.value=Math.max(100,Math.min(260, +zm.value - Math.sign(e.deltaY)*4)); apply();
+  },{passive:false});
+
+  // loading
+  function setSrc(s){ img.src=s; }
+  var drop=document.getElementById('drop'), file=document.getElementById('file');
+  drop.addEventListener('click',function(){file.click();});
+  file.addEventListener('change',function(){
+    var f=file.files&&file.files[0]; if(!f)return;
+    var r=new FileReader(); r.onload=function(){setSrc(r.result);}; r.readAsDataURL(f);
+  });
+  ['dragenter','dragover'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('over');});});
+  ['dragleave','drop'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('over');});});
+  drop.addEventListener('drop',function(e){
+    var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(!f)return;
+    var r=new FileReader(); r.onload=function(){setSrc(r.result);}; r.readAsDataURL(f);
+  });
+  document.addEventListener('paste',function(e){
+    var it=[...(e.clipboardData&&e.clipboardData.items||[])].find(function(i){return i.type.indexOf('image')===0;});
+    if(it){var r=new FileReader();r.onload=function(){setSrc(r.result);};r.readAsDataURL(it.getAsFile());}
+  });
+  document.getElementById('load').addEventListener('click',function(){
+    var u=document.getElementById('url').value.trim(); if(u)setSrc(u);
+  });
+
+  document.getElementById('reset').addEventListener('click',function(){px.value=50;py.value=8;zm.value=100;apply();});
+  document.getElementById('face').addEventListener('click',function(){px.value=50;py.value=18;zm.value=100;apply();});
+  document.getElementById('grid').addEventListener('click',function(){
+    stage.classList.toggle('guides'); this.classList.toggle('on');
+  });
+  document.getElementById('copy').addEventListener('click',function(){
+    var t=out.innerText; try{navigator.clipboard.writeText(t);this.textContent='Copied';var b=this;setTimeout(function(){b.textContent='Copy values';},1400);}catch(_){}
+  });
+
+  apply();
+})();
+</script>

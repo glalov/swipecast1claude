@@ -21060,8 +21060,14 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // recreate it on every Landing re-render, which would reset swipe state.
 // ═══════════════════════════════════════════
 const LANDING_SWIPE_DEMO=[
-  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
+  // Kira leads the deck. NOTE the image URL carries NO h=/fit=crop: the owner
+  // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
+  // server-side crop would re-frame the shot before object-position ever ran,
+  // throwing the crop away. w=1200 keeps the 3:2 source at retina size (86KB).
+  // Photo: Pexels #4668550 by Vlada Karpovich.
+  {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"https://images.pexels.com/photos/4668550/pexels-photo-4668550.jpeg?auto=compress&cs=tinysrgb&w=1200",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
   {id:20,name:"Julian J. West",age:30,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1587397845856-e6cf49176c70?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Drama","Screen Acting","Stage Combat"]},
+  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"center 20%",img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
@@ -21196,11 +21202,11 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{position:"relative",width:300,height:450}}>
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
-          <img src={nt.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%"}}/>
+          <img src={nt.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:nt.pos||"center 8%",...(nt.zoom?{transform:`scale(${nt.zoom})`,transformOrigin:nt.pos||"center 8%"}:{})}}/>
         </div>}
         {intro&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
           <div key={"swin"+i} className={"s-card "+(armed?"sw-intro-back":"sw-pre")} style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none",boxShadow:"none"}}>
-            <img src={bc.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%"}}/>
+            <img src={bc.img} alt="" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:bc.pos||"center 8%",...(bc.zoom?{transform:`scale(${bc.zoom})`,transformOrigin:bc.pos||"center 8%"}:{})}}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:30,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
@@ -21210,7 +21216,8 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           onPointerCancel={()=>{if(!dragging.current){setDx(0);return;}const d=dxRef.current;dragging.current=false;if(d>50)advance(1);else if(d<-50)advance(-1);else setDx(0);}}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK <Ico n="check" s={24}/></div>
-          <img src={t.img} alt={t.name} draggable="false" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%"}}/>
+          <img src={t.img} alt={t.name} draggable="false" decoding="async" style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:t.pos||"center 8%",
+            ...(t.zoom?{transform:`scale(${t.zoom})`,transformOrigin:t.pos||"center 8%"}:{})}}/>
           <div className="s-card-info">
             <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
             <div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div>
