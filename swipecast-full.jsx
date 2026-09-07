@@ -3915,36 +3915,71 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    OPEN LEDGER (default, 5 roles or fewer): nothing collapses. Every role is
    readable on arrival; only an over-long description clamps, and the reveal
    link is shown ONLY when the clamp actually hides a line (measured in JS —
-   with -webkit-line-clamp, scrollHeight always equals clientHeight, so the
-   usual overflow test silently reports "not truncated" for everything). */
 /* Role rows. The old pale-teal-on-teal treatment measured 2.44:1 contrast —
    under the 4.5:1 WCAG AA floor, so the meta and estimate lines were genuinely
    unreadable rather than merely quiet. Every value below is at or above AA on
    the white card. */
-.rl-row{border:1px solid #e2e0d8;border-radius:12px;background:#fff;padding:18px 20px;}
-.rl-top{display:flex;align-items:flex-start;gap:16px;}
-.rl-nm{font-size:18px;font-weight:800;letter-spacing:-.35px;color:#15162B;line-height:1.25;}
-.rl-mt{font-size:13.5px;font-weight:500;color:#4A4A63;margin-top:5px;line-height:1.5;}  /* 8.57:1 */
-.rl-mt .type{font-weight:800;color:#15162B;}
-.rl-mt .sep{color:#B9B7C4;margin:0 6px;}
+.rl-row{border:1px solid #e2e0d8;border-radius:12px;background:#fff;position:relative;overflow:hidden;transition:border-color .3s ease,box-shadow .3s ease;}
+/* Teal spine. Grows from the middle of the row outward as it opens, so the
+   motion reads as the row unfolding rather than as content being appended. */
+.rl-row::before{content:"";position:absolute;left:0;top:50%;bottom:50%;width:3px;background:#4F8A8B;transition:top .42s cubic-bezier(.22,.9,.28,1),bottom .42s cubic-bezier(.22,.9,.28,1);}
+.rl-row.rl-open::before{top:0;bottom:0;}
+.rl-row.rl-open{border-color:#cfe0e0;box-shadow:0 6px 20px rgba(47,95,96,.09);}
+/* The whole header is the hit target, not a small chevron: on a phone the
+   chevron alone is a 30px tap area inside a 120px row, which is exactly the
+   miss everyone makes. Apply stops the click so the two never fight. */
+.rl-top{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:#fff;transition:background .25s;}
+.rl-top.rl-clickable{cursor:pointer;}
+.rl-top.rl-clickable:hover{background:#fafcfc;}
+.rl-row.rl-open .rl-top{background:#fbfdfd;}
+.rl-top:focus-visible{outline:2px solid #37696A;outline-offset:-3px;border-radius:12px;}
+/* Type is set for readability first — a working actor reads these on a phone in
+   bad light. Every value here is AAA on white (description 15.6:1, meta 13.4:1)
+   rather than merely clearing the AA floor. */
+.rl-nm{font-size:20px;font-weight:800;letter-spacing:-.35px;color:#0A0B18;line-height:1.25;}
+.rl-mt{font-size:14.5px;font-weight:600;color:#20213A;margin-top:5px;line-height:1.5;}
+.rl-mt .type{font-weight:800;color:#0A0B18;}
+.rl-mt .sep{color:#8B8998;font-weight:500;margin:0 6px;}
 .rl-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.rl-desc{font-size:14.5px;color:#3C4A52;line-height:1.7;margin-top:13px;}
-.rl-desc.rl-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.rl-more{background:none;border:none;color:#37696A;font-size:13px;font-weight:700;cursor:pointer;padding:7px 0 0;font-family:inherit;text-decoration:underline;text-underline-offset:3px;}
-.rl-more:hover{color:#4F8A8B;}
+.rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid #e2e0d8;background:#fff;color:#37696A;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
+.rl-row.rl-open .rl-chev{transform:rotate(180deg);background:#eaf4f4;border-color:#cfe0e0;}
+/* 0fr -> 1fr animates to the content's real height with no JS measuring, so a
+   two-line brief and a ten-line one both open at the same speed. */
+.rl-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .44s cubic-bezier(.22,.9,.28,1);}
+.rl-row.rl-open .rl-body{grid-template-rows:1fr;}
+.rl-body>.rl-clip{overflow:hidden;}
+.rl-inner{padding:0 20px 20px;}
+.rl-rule{height:1px;background:#e2e0d8;margin-bottom:15px;}
+/* The lines arrive in sequence rather than all at once — a 60-word brief plus a
+   row of chips landing in one frame reads as a dump. */
+.rl-inner>*{opacity:0;transform:translateY(9px);transition:opacity .34s ease,transform .44s cubic-bezier(.22,.9,.28,1);}
+.rl-row.rl-open .rl-inner>*{opacity:1;transform:none;}
+.rl-row.rl-open .rl-inner>*:nth-child(1){transition-delay:.10s;}
+.rl-row.rl-open .rl-inner>*:nth-child(2){transition-delay:.17s;}
+.rl-row.rl-open .rl-inner>*:nth-child(3){transition-delay:.23s;}
+.rl-row.rl-open .rl-inner>*:nth-child(4){transition-delay:.29s;}
+.rl-desc{font-size:16.5px;color:#0E1A22;line-height:1.66;}
 /* The label the pills were missing — chips alone never said what they were for. */
-.rl-sw{display:flex;align-items:center;gap:6px;margin-top:15px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#6E7180;}
-.rl-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;align-items:center;}
+.rl-sw{display:flex;align-items:center;gap:7px;margin-top:16px;font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#2B2E3C;}
+.rl-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;align-items:center;}
 /* Scoped to the row: the global .badge is used all over the site and must not
-   change size here. */
-.rl-meta .badge{font-size:12.5px;padding:6px 12px;gap:5px;}
+   change size here. The chips carry a hairline border so each one reads as a
+   separate object instead of a run of grey blocks. */
+.rl-meta .badge{font-size:13.5px;padding:7px 13px;gap:6px;font-weight:700;}
+.rl-meta .badge-media{background:#EDE8DC;color:#14161F;border:1px solid #DFD8C8;}
+.rl-meta .badge-tape{background:rgba(226,183,60,.26);border-color:rgba(176,136,20,.75);color:#5A4106;}
+@media (prefers-reduced-motion: reduce){
+  .rl-row::before,.rl-top,.rl-body,.rl-chev,.rl-inner>*{transition:none !important;}
+}
 /* Pay is the reason they keep reading, so it gets the size the little green pill
    never had. Sits with the Apply button as one commitment block. The estimate
    line was 11px #8ba4a4 — 2.44:1, under the AA floor — and is now 6.69:1. */
 .rl-pay{text-align:right;}
-.rl-pay .v{display:flex;align-items:center;justify-content:flex-end;gap:7px;font-size:17.5px;font-weight:800;color:#15803d;letter-spacing:-.3px;white-space:nowrap;}
-.rl-pay .s{display:flex;align-items:center;justify-content:flex-end;gap:5px;font-size:12.5px;font-weight:600;color:#5A5A72;margin-top:4px;white-space:nowrap;}
-.rl-coin{width:24px;height:24px;border-radius:8px;background:rgba(21,128,61,.11);display:inline-flex;align-items:center;justify-content:center;flex:none;color:#15803d;}
+.rl-pay .v{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:17.5px;font-weight:800;color:#0F6B33;letter-spacing:-.3px;white-space:nowrap;}
+.rl-pay .s{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12.5px;font-weight:700;color:#32334A;margin-top:4px;white-space:nowrap;}
+/* A 15px coin in a 24px tile was a smudge nobody could identify. A banknote at
+   18px in a 28px tile is legible at arm's length and says "money" on sight. */
+.rl-coin{width:28px;height:28px;border-radius:9px;background:rgba(15,107,51,.15);display:inline-flex;align-items:center;justify-content:center;flex:none;color:#0F6B33;}
 /* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
    so an actor can compare every rate without losing their place. */
 .rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
@@ -4004,9 +4039,14 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rb-item{flex:none;min-width:132px;margin-bottom:0;}
   .rb-pane{padding:18px 18px;}
   .rb-nav{display:flex;}
-  .rl-top{flex-direction:column;gap:13px;}
+  .rl-top{flex-direction:column;gap:13px;padding:16px 16px;}
   .rl-right{margin-left:0;width:100%;}
   .rl-right .btn-teal{flex:1;text-align:center;}
+  .rl-right .rl-applywrap{flex:1;display:flex;}
+  .rl-right .rl-applywrap>*{flex:1;text-align:center;}
+  .rl-inner{padding:0 16px 18px;}
+  .rl-nm{font-size:19px;}
+  .rl-desc{font-size:16px;}
   /* Rate goes back to the left edge on a phone and the button takes the rest of
      the row, so pay and Apply still read as one block instead of stacking. */
   .rl-pay{text-align:left;}
@@ -11597,10 +11637,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const t=useT();
   const {lang}=useLanguage();
   const [applyRole,setApplyRole]=useState(null);
-  // Roles render as the Open Ledger (nothing collapses) up to ROLE_BOARD_MIN-1,
-  // and as the Casting Board (rail + swapping panel) at or above it.
+  // Roles render as the Ledger Unfold up to ROLE_BOARD_MIN-1, and as the Casting
+  // Board (rail + swapping panel) at or above it.
   // The Ledger is the default on purpose: choosing a role is a COMPARISON task,
-  // and a rail answers it by hiding every option but one behind a click.
+  // and a rail answers it by hiding every option but one behind a click. The
+  // ledger keeps name, type, gender, age, ethnicity, day rate and the estimated
+  // total on screen for EVERY role at once — only the brief and the upload
+  // requirements fold, which is the part you cannot compare at a glance anyway.
   // Set to 12 deliberately, which no current casting reaches — measured rather
   // than guessed: the longest casting posted has 8 roles, a ledger row is ~144px,
   // so the worst case is ~1320px, roughly one extra screen of scrolling. That is
@@ -11610,7 +11653,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const ROLE_BOARD_MIN=12;
   const [boardSel,setBoardSel]=useState(0);
   const [descOpen,setDescOpen]=useState({});
-  const toggleDesc=(i)=>setDescOpen(p=>({...p,[i]:!p[i]}));
   const rolesWrapRef=useRef(null);
   const railRef=useRef(null);
   // Keep the rail's scroll position tied to the selection, so stepping with the
@@ -11648,34 +11690,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     const instant=reduced||(typeof document!=="undefined"&&document.hidden);
     rail.scrollTo({left,behavior:instant?"auto":"smooth"});
   };
-  // Reveal "Read the full description" ONLY when the clamp is really hiding a
-  // line. Character-count guessing is wrong at both ends: a 240-character line
-  // fits in two lines on a wide column, and a short one can wrap on a phone.
-  //
-  // The catch: with -webkit-line-clamp the browser reports scrollHeight ===
-  // clientHeight, so the ordinary overflow test says "not truncated" for every
-  // element and the link would never appear. Unclamp, measure, re-clamp.
-  // No dependency array — descOpen changes and role swaps both need a re-measure.
-  useEffect(()=>{
-    const root=rolesWrapRef.current;
-    if(!root)return;
-    const sync=()=>{
-      root.querySelectorAll("[data-role-desc]").forEach(el=>{
-        const i=el.getAttribute("data-role-desc");
-        const btn=root.querySelector(`[data-role-more="${i}"]`);
-        if(!btn)return;
-        if(!el.classList.contains("rl-clamp")){btn.hidden=false;return;}
-        const clampedH=el.clientHeight;
-        el.classList.remove("rl-clamp");
-        const fullH=el.scrollHeight;
-        el.classList.add("rl-clamp");
-        btn.hidden=fullH<=clampedH+1;
-      });
-    };
-    sync();
-    window.addEventListener("resize",sync);
-    return ()=>window.removeEventListener("resize",sync);
-  });
   const autoOpenedRef=useRef(false);
   useEffect(()=>{
     if(autoApplyRole&&isLoggedIn&&!autoOpenedRef.current&&casting?.status!=="archived"&&!castingIsExpired(casting)){
@@ -12162,8 +12176,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           const pre=prescreenLabel(r.prescreen);
           if(!media.length&&!pre&&!hasInstructions)return null;
           return(<>
-            {media.map(m=><span key={m} className="badge badge-media"><Ico n={requiredMediaIcon(m)} s={14}/>{requiredMediaLabel(m)}</span>)}
-            {pre&&<span className="badge badge-tape"><Ico n="video" s={14}/>First look: {pre}</span>}
+            {media.map(m=><span key={m} className="badge badge-media"><Ico n={requiredMediaIcon(m)} s={17}/>{requiredMediaLabel(m)}</span>)}
+            {pre&&<span className="badge badge-tape"><Ico n="video" s={17}/>First look: {pre}</span>}
             {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={18}/> Self-Tape Required</span>}
           </>);
         };
@@ -12254,25 +12268,39 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           </div>);
         }
 
-        // ── OPEN LEDGER — fewer than ROLE_BOARD_MIN roles ──
+        // ── LEDGER UNFOLD — fewer than ROLE_BOARD_MIN roles ──
         // Every role is a full-width row carrying enough to triage without
-        // clicking: name, type, age/gender, pay, and whether it fits. Only the
-        // description folds. Where the actor's own profile can judge fit, the
+        // clicking: name, type, age/gender, pay, and whether it fits. The brief
+        // and the Submit-with chips unfold on click. Where the actor's own profile can judge fit, the
         // rows split into "Right for you" / "Also open to apply" — eight equal
         // options become a shortlist someone made for them, which is the whole
         // point of the layout.
         const ledgerRow=([r,i])=>{
           const {instr,hasInstructions}=metaFor(i);
-          const open=!!descOpen[i];
+          // A single-role casting opens by default: hiding the only brief on the
+          // page behind a click buys nothing. Any explicit click still wins.
+          const open=(i in descOpen)?!!descOpen[i]:sorted.length===1;
           const chips=submitChips(r,hasInstructions);
           const total=roleTotalPay(r);
           // Facets are spans rather than a joined string so the role type can
           // carry the weight — the old single-colour line ran the rank in at the
           // same pale tone as the ethnicity and none of it was legible.
           const facets=[roleGenderLabel(r.gender),roleAgeLabel(r.ageRange),roleEthnicityLabel(r.ethnicity)].filter(Boolean);
+          // Nothing to fold means nothing to click: a role with no brief, no
+          // required media and no audition pack stays a plain row rather than
+          // a chevron that opens onto empty space.
+          const foldable=!!(r.desc||chips||hasInstructions);
+          // Written from the EFFECTIVE open state, not from descOpen[i]: on a
+          // one-role casting the map starts empty while the row shows open, and
+          // !undefined would have made the first click a no-op.
+          const toggle=()=>{if(foldable)setDescOpen(p=>({...p,[i]:!open}));};
           return(
-          <div key={i} className="rl-row">
-            <div className="rl-top">
+          <div key={i} className={"rl-row"+(open&&foldable?" rl-open":"")}>
+            <div className={"rl-top"+(foldable?" rl-clickable":"")}
+              {...(foldable?{role:"button",tabIndex:0,"aria-expanded":open,
+                "aria-label":(open?"Collapse ":"Expand ")+(r.name||"role")+" details",
+                onClick:toggle,
+                onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();}}}:{})}>
               <div style={{minWidth:0}}>
                 <div className="rl-nm">{r.name}</div>
                 <div className="rl-mt">
@@ -12284,19 +12312,26 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               </div>
               <div className="rl-right">
                 {total!=null&&<div className="rl-pay">
-                  <div className="v"><span className="rl-coin"><Ico n="coin" s={15}/></span>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</div>
-                  {r.rate_unit!=="flat"&&r.est_days>1&&<div className="s"><Ico n="calendar" s={14}/>Est. {fmtMoney(total)} &middot; {r.est_days} days</div>}
+                  <div className="v"><span className="rl-coin"><Ico n="cash-banknote" s={18}/></span>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</div>
+                  {r.rate_unit!=="flat"&&r.est_days>1&&<div className="s"><Ico n="calendar" s={15}/>Est. {fmtMoney(total)} &middot; {r.est_days} days</div>}
                 </div>}
-                {applyCtl(r,i,hasInstructions)}
+                {/* Apply must never be swallowed by the row's toggle. */}
+                <span className="rl-applywrap" style={{display:"inline-flex"}}
+                  onClick={(e)=>e.stopPropagation()} onKeyDown={(e)=>e.stopPropagation()}>
+                  {applyCtl(r,i,hasInstructions)}
+                </span>
+                {foldable&&<span className="rl-chev" aria-hidden="true"><Ico n="chevron-down" s={16}/></span>}
               </div>
             </div>
-            {r.desc&&<div className={"rl-desc"+(open?"":" rl-clamp")} data-role-desc={i}>{r.desc}</div>}
-            {r.desc&&<button type="button" className="rl-more" data-role-more={i} hidden onClick={()=>toggleDesc(i)}>{open?"Show less":"Read the full description"}</button>}
-            {chips&&<>
-              <div className="rl-sw"><Ico n="upload" s={13}/>Submit with</div>
-              <div className="rl-meta">{chips}</div>
-            </>}
-            {auditionBlock(instr,hasInstructions)}
+            {foldable&&<div className="rl-body"><div className="rl-clip"><div className="rl-inner">
+              <div className="rl-rule"></div>
+              {r.desc&&<div className="rl-desc">{r.desc}</div>}
+              {chips&&<div>
+                <div className="rl-sw"><Ico n="upload" s={16}/>Submit with</div>
+                <div className="rl-meta">{chips}</div>
+              </div>}
+              {auditionBlock(instr,hasInstructions)}
+            </div></div></div>}
           </div>);
         };
         return(
