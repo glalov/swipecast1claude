@@ -3983,15 +3983,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-side{border-left:1px solid #e2e0d8;padding-left:30px;}
 .rl-side .btn-teal{width:100%;padding:14px 22px;font-size:14px;border-radius:9px;}
 .rl-side .tag{display:block;text-align:center;}
-/* The one sentence that answers the fear that actually stops people applying:
-   not "is this hard" but "will anyone look". It asks nothing of the reader, so
-   it is reassurance rather than instruction — and it stays only while it is
-   true. */
-.rl-reassure{font-size:12.5px;font-weight:700;color:#14161F;line-height:1.55;margin-top:12px;}
 /* What accompanies the role, as objects rather than a sentence: four pills read
    in a glance where a line of prose has to be read to the end to find the
    self-tape. Described, never demanded — no "submit", no "required", no "you". */
-.rl-lead{font-size:12.5px;font-weight:700;color:#4A5560;margin-top:16px;padding-top:15px;border-top:1px solid #EFEDE6;}
+.rl-lead{font-size:12.5px;font-weight:700;color:#4A5560;margin-top:18px;padding-top:16px;border-top:1px solid #EFEDE6;}
 .rl-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;}
 .rl-pills .badge{font-size:13px;padding:7px 13px;gap:6px;font-weight:700;background:#EDE8DC;color:#14161F;border:1px solid #DFD8C8;}
 .rl-pills .badge-tape{background:#EAF3F3;border-color:#CFE1E1;color:#173A3B;}
@@ -12383,7 +12378,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <div className="rl-desc">{r.desc}</div>
                 <div className="rl-side" onClick={(e)=>e.stopPropagation()} onKeyDown={(e)=>e.stopPropagation()}>
                   {applyCtl(r,i,hasInstructions)}
-                  {!applicationsClosed&&!applied.has(i)&&<div className="rl-reassure">The casting director reads every one.</div>}
                   {items}
                 </div>
               </div>
