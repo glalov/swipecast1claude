@@ -3919,12 +3919,17 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    under the 4.5:1 WCAG AA floor, so the meta and estimate lines were genuinely
    unreadable rather than merely quiet. Every value below is at or above AA on
    the white card. */
-.rl-row{border:1px solid #e2e0d8;border-radius:12px;background:#fff;position:relative;overflow:hidden;transition:border-color .3s ease,box-shadow .3s ease;}
+/* One ledger, not six floating cards: the roles belong to a single casting, so
+   they are ruled apart inside one bordered sheet rather than each carrying its
+   own card outline. */
+.rl-list{border:1px solid #e2e0d8;border-radius:12px;background:#fff;overflow:hidden;}
+.rl-row{background:#fff;position:relative;border-bottom:1px solid #EFEDE6;transition:background .3s ease;}
+.rl-row:last-child{border-bottom:none;}
 /* Teal spine. Grows from the middle of the row outward as it opens, so the
    motion reads as the row unfolding rather than as content being appended. */
 .rl-row::before{content:"";position:absolute;left:0;top:50%;bottom:50%;width:3px;background:#4F8A8B;transition:top .42s cubic-bezier(.22,.9,.28,1),bottom .42s cubic-bezier(.22,.9,.28,1);}
 .rl-row.rl-open::before{top:0;bottom:0;}
-.rl-row.rl-open{border-color:#cfe0e0;box-shadow:0 6px 20px rgba(47,95,96,.09);}
+.rl-row.rl-open{background:#FBFDFD;border-bottom-color:#E4EDEC;}
 /* The whole header is the hit target, not a small chevron: on a phone the
    chevron alone is a 30px tap area inside a 120px row, which is exactly the
    miss everyone makes. Apply stops the click so the two never fight. */
@@ -3932,14 +3937,15 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-top.rl-clickable{cursor:pointer;}
 .rl-top.rl-clickable:hover{background:#fafcfc;}
 .rl-row.rl-open .rl-top{background:#fbfdfd;}
-.rl-top:focus-visible{outline:2px solid #37696A;outline-offset:-3px;border-radius:12px;}
+.rl-top:focus-visible{outline:2px solid #37696A;outline-offset:-3px;}
 /* Type is set for readability first — a working actor reads these on a phone in
-   bad light. Every value here is AAA on white (description 15.6:1, meta 13.4:1)
-   rather than merely clearing the AA floor. */
+   bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
+   far past the 4.5:1 AA floor. The meta sits at weight 500 rather than 600 —
+   the weight was carrying more of the heaviness than the colour was. */
 .rl-nm{font-size:20px;font-weight:800;letter-spacing:-.35px;color:#0A0B18;line-height:1.25;}
-.rl-mt{font-size:14.5px;font-weight:600;color:#20213A;margin-top:5px;line-height:1.5;}
-.rl-mt .type{font-weight:800;color:#0A0B18;}
-.rl-mt .sep{color:#8B8998;font-weight:500;margin:0 6px;}
+.rl-mt{font-size:14.5px;font-weight:500;color:#3D3E58;margin-top:5px;line-height:1.5;}
+.rl-mt .type{font-weight:800;color:#1B1C33;}
+.rl-mt .sep{color:#AFADBA;font-weight:500;margin:0 6px;}
 .rl-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;}
 .rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid #e2e0d8;background:#fff;color:#37696A;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
 .rl-row.rl-open .rl-chev{transform:rotate(180deg);background:#eaf4f4;border-color:#cfe0e0;}
@@ -12335,7 +12341,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           </div>);
         };
         return(
-        <div ref={rolesWrapRef} style={{display:"flex",flexDirection:"column",gap:14}}>
+        <div ref={rolesWrapRef} className="rl-list">
           {indexed.map(ledgerRow)}
         </div>);
       })()}
