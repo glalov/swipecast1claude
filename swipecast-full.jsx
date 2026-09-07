@@ -3983,6 +3983,18 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-side{border-left:1px solid #e2e0d8;padding-left:30px;}
 .rl-side .btn-teal{width:100%;padding:14px 22px;font-size:14px;border-radius:9px;}
 .rl-side .tag{display:block;text-align:center;}
+/* The one sentence that answers the fear that actually stops people applying:
+   not "is this hard" but "will anyone look". It asks nothing of the reader, so
+   it is reassurance rather than instruction — and it stays only while it is
+   true. */
+.rl-reassure{font-size:12.5px;font-weight:700;color:#14161F;line-height:1.55;margin-top:12px;}
+/* What accompanies the role, as objects rather than a sentence: four pills read
+   in a glance where a line of prose has to be read to the end to find the
+   self-tape. Described, never demanded — no "submit", no "required", no "you". */
+.rl-lead{font-size:12.5px;font-weight:700;color:#4A5560;margin-top:16px;padding-top:15px;border-top:1px solid #EFEDE6;}
+.rl-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;}
+.rl-pills .badge{font-size:13px;padding:7px 13px;gap:6px;font-weight:700;background:#EDE8DC;color:#14161F;border:1px solid #DFD8C8;}
+.rl-pills .badge-tape{background:#EAF3F3;border-color:#CFE1E1;color:#173A3B;}
 @media (max-width:900px){
   .rl-cols{grid-template-columns:1fr;gap:0;}
   .rl-desc{max-width:none;}
@@ -12205,6 +12217,22 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
             {hasInstructions&&<span className="badge" style={{background:"rgba(99,60,180,0.1)",color:"var(--acc)",border:"1px solid rgba(99,60,180,0.25)"}}><Ico n="movie" s={18}/> Self-Tape Required</span>}
           </>);
         };
+        // Named for what they are — things that go with the role — rather than
+        // for what the actor must do with them. Same source data as the old
+        // Submit-with checklist; the difference is entirely in the framing.
+        const roleItems=(r,hasInstructions)=>{
+          const media=Array.isArray(r.required_media)?r.required_media.filter(Boolean):[];
+          const pre=prescreenLabel(r.prescreen);
+          if(!media.length&&!pre&&!hasInstructions)return null;
+          return(<>
+            <div className="rl-lead">Goes with this role</div>
+            <div className="rl-pills">
+              {media.map(m=><span key={m} className="badge badge-media"><Ico n={requiredMediaIcon(m)} s={17}/>{requiredMediaLabel(m)}</span>)}
+              {pre&&<span className="badge badge-tape"><Ico n="video" s={17}/>{pre}</span>}
+              {!pre&&hasInstructions&&<span className="badge badge-tape"><Ico n="movie" s={17}/>Self-tape</span>}
+            </div>
+          </>);
+        };
         const auditionBlock=(instr,hasInstructions)=>!hasInstructions?null:(
           <div style={{marginTop:14,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px"}}>
             <div style={{fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"var(--acc)",marginBottom:12}}>Audition Instructions</div>
@@ -12311,9 +12339,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           // be greyed back and the facts left dark. The role type is no longer
           // among them — it is a label above the name now.
           const facets=[roleGenderLabel(r.gender),roleAgeLabel(r.ageRange),roleEthnicityLabel(r.ethnicity)].filter(Boolean);
+          const items=roleItems(r,hasInstructions);
           // Nothing to fold means nothing to click. Such a row keeps Apply in
           // the header, since there is no fold for it to wait in.
-          const foldable=!!(r.desc||hasInstructions);
+          const foldable=!!(r.desc||items||hasInstructions);
           // Written from the EFFECTIVE open state, not from descOpen[i]: on a
           // one-role casting the map starts empty while the row shows open, and
           // !undefined would have made the first click a no-op.
@@ -12354,6 +12383,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
                 <div className="rl-desc">{r.desc}</div>
                 <div className="rl-side" onClick={(e)=>e.stopPropagation()} onKeyDown={(e)=>e.stopPropagation()}>
                   {applyCtl(r,i,hasInstructions)}
+                  {!applicationsClosed&&!applied.has(i)&&<div className="rl-reassure">The casting director reads every one.</div>}
+                  {items}
                 </div>
               </div>
               {auditionBlock(instr,hasInstructions)}
