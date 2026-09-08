@@ -2811,6 +2811,54 @@ body.sheet-push .b2t-cube{display:none;}
    Behind (hover:hover) and (pointer:fine) so a phone can never be left showing
    a hovered title after a tap. Closed and archived titles carry no .cc-title-link
    at all, so they stay inert here exactly as their role pills and CTA do. */
+
+/* ── Casting page: the block under the roles ──────────────────────────────
+   Two variants of one shell. .cfoot-join is the logged-out "one step from
+   submitting" panel; .cfoot-more is the signed-in "more roles" strip. Shares
+   the page's card surface so it reads as the last row of the casting, not as
+   an advert bolted to the bottom. */
+.cfoot{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;margin-bottom:32px;}
+.cfoot-join{padding:30px 32px;text-align:center;}
+.cfoot-join h3{font-size:21px;font-weight:700;letter-spacing:-.4px;margin:0 0 7px;}
+.cfoot-join .cfoot-sub{color:var(--t2);font-size:13.5px;line-height:1.65;margin:0 auto 22px;max-width:52ch;}
+.cfoot-steps{display:flex;align-items:flex-start;justify-content:center;margin:0 auto 24px;max-width:600px;}
+.cfoot-step{flex:1;position:relative;padding:0 6px;}
+.cfoot-step .dot{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;margin:0 auto 9px;font-size:13px;font-weight:800;background:var(--s2);color:var(--t3);border:1.5px solid var(--bdr);position:relative;z-index:2;}
+.cfoot-step.done .dot{background:var(--teal);border-color:var(--teal);color:#fff;}
+.cfoot-step.now .dot{background:var(--s1);border:2px solid var(--amber-dk);color:var(--amber-dk);box-shadow:0 0 0 4px rgba(232,144,42,.16);}
+.cfoot-step .lab{font-size:12.5px;font-weight:700;line-height:1.4;color:var(--t3);}
+.cfoot-step.done .lab,.cfoot-step.now .lab{color:var(--t1);}
+.cfoot-step .sm{font-size:11px;color:var(--t3);margin-top:3px;line-height:1.45;}
+/* The connector is drawn behind the dots, and only between them — the first
+   step has nothing to its left to join. */
+.cfoot-step::before{content:"";position:absolute;top:16px;left:-50%;width:100%;height:2px;background:var(--bdr);z-index:1;}
+.cfoot-step:first-child::before{display:none;}
+.cfoot-step.done::before,.cfoot-step.now::before{background:var(--teal);}
+.cfoot-cta{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;align-items:center;}
+.cfoot-foot{margin-top:15px;font-size:11.5px;color:var(--t3);}
+.cfoot-foot b{color:var(--t2);font-weight:700;}
+
+.cfoot-more{padding:28px 30px;}
+.cfoot-more-hd{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:17px;flex-wrap:wrap;}
+.cfoot-more-hd h3{font-size:18px;font-weight:700;letter-spacing:-.3px;margin:0;}
+.cfoot-all{background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--teal-dk);}
+.cfoot-all:hover{text-decoration:underline;text-underline-offset:.25em;}
+.cfoot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;}
+.cfoot-c{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:15px 16px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
+.cfoot-c:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 6px 18px -10px rgba(26,26,46,.3);}
+.cfoot-c:focus-visible{outline:2px solid var(--teal);outline-offset:3px;}
+.cfoot-c-mt{display:flex;gap:7px;align-items:center;margin-bottom:9px;flex-wrap:wrap;}
+.cfoot-pill{font-size:9.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(45,133,135,.11);color:var(--teal-dk);}
+.cfoot-pill.warm{background:rgba(232,144,42,.13);color:var(--amber-dk);}
+.cfoot-c h4{font-size:14.5px;font-weight:700;letter-spacing:-.2px;margin:0 0 5px;line-height:1.3;}
+.cfoot-c-meta{font-size:11.8px;color:var(--t2);line-height:1.55;}
+.cfoot-c-rate{margin-top:10px;padding-top:10px;border-top:1px solid var(--s2);font-size:12.5px;font-weight:700;color:var(--grn);}
+@media(max-width:768px){
+  .cfoot-join{padding:26px 20px;}
+  .cfoot-more{padding:24px 18px;}
+  .cfoot-grid{grid-template-columns:1fr;}
+}
+@media(prefers-reduced-motion:reduce){.cfoot-c{transition:none;}.cfoot-c:hover{transform:none;}}
 .cc-title-link{cursor:pointer;transition:color .15s ease,text-decoration-color .15s ease;}
 .cc-title-link:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
 @media (hover:hover) and (pointer:fine){
@@ -11664,7 +11712,7 @@ function AuditionModalInner({casting,role,roleId,instr,session,myPhotos,isDbCast
   );
 }
 
-function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false}){
+function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting}){
   const t=useT();
   const {lang}=useLanguage();
   const [applyRole,setApplyRole]=useState(null);
@@ -11756,6 +11804,48 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [auditionRole,setAuditionRole]=useState(null); // {role, roleId, instr} when AuditionModal open
   const withTimeout=(promise,ms=20000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Please try again.`)),ms))]);
   const isDbCasting=!!(casting&&casting.id&&typeof casting.id==="string"&&casting.id.length>20);
+  // ── "More roles in <city>" data (signed-in only) ────────────────────────
+  // Ranked, not filtered: same city outweighs same project type, and anything
+  // still open can fill the row. A hard AND-filter on city+type returns nothing
+  // on a thin market, which is exactly when the reader most needs somewhere to
+  // go. Castings the actor already submitted to are dropped — showing someone a
+  // role they have already taped for is the fastest way to look broken.
+  const [simCastings,setSimCastings]=useState([]);
+  const simCity=((casting?.location||"").split(",")[0]||"").trim();
+  useEffect(()=>{
+    if(!isLoggedIn||!casting?.id||!window.sb){setSimCastings([]);return;}
+    let cancelled=false;
+    (async()=>{
+      try{
+        const {data,error}=await window.sb.from("castings")
+          .select("id,slug,title,type,location,deadline,expires_at,created_at,roles(id,gender,age_range,rate_amount,rate_unit)")
+          .eq("status","open").eq("published",true)
+          .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
+          .neq("id",casting.id)
+          .order("created_at",{ascending:false})
+          .limit(60);
+        if(cancelled||error||!Array.isArray(data))return;
+        const seen=new Set();
+        try{
+          const uid=session?.user?.id;
+          if(uid){
+            const {data:mine}=await window.sb.from("applications").select("casting_id").eq("talent_id",uid);
+            (mine||[]).forEach(a=>seen.add(String(a.casting_id)));
+          }
+        }catch(_){/* the row is still useful without the exclusion */}
+        const norm=(x)=>(x||"").toLowerCase().replace(/[^a-z]/g,"");
+        const here=norm(casting.location),htype=norm(casting.type);
+        const ranked=data
+          .filter(c=>!seen.has(String(c.id))&&!castingIsExpired(c))
+          .map(c=>({c,score:(norm(c.location)===here?2:0)+(norm(c.type)===htype?1:0)}))
+          .sort((a,b)=>b.score-a.score)
+          .slice(0,3).map(x=>x.c);
+        if(!cancelled)setSimCastings(ranked);
+      }catch(_){/* the block simply does not render */}
+    })();
+    return()=>{cancelled=true;};
+  },[isLoggedIn,casting?.id,casting?.location,casting?.type,session?.user?.id]);
+
   const isTalent=(myProfile?.user_type||"").toLowerCase()==="talent";
   const isPremium=myProfile?.membership_status==="active";
   const weeklyLimit=isPremium?PREMIUM_PLAN.submissionsPerWeek:FREE_PLAN.submissionsPerWeek;
@@ -12392,11 +12482,64 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       })()}
     </section>
 
-    <section style={{padding:"28px 32px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,marginBottom:32,textAlign:"center"}}>
-      <h3 style={{fontSize:18,fontWeight:700,marginBottom:6}}>Think you're right for multiple roles?</h3>
-      <p style={{color:"var(--t2)",fontSize:13,marginBottom:14}}>{isTalent&&!isPremium?`Free plan: up to ${FREE_PLAN.submissionsPerWeek} submissions per week across all castings. Upgrade to Premium for unlimited.`:"You can submit for as many roles as you'd like."} Each submission is reviewed individually by the casting director.</p>
-      {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>}
-    </section>
+    {/* ── The block under the roles ──────────────────────────────────────────
+        Two audiences, two different jobs, so it is two different blocks.
+
+        LOGGED OUT: they have just read every role, rate and shoot length —
+        nothing here is gated, unlike the paywalled competitors — so the block
+        does not withhold anything. It names the one thing they cannot do yet
+        (submit) and how cheap it is to fix. The first step reads as already
+        done because reading the roles genuinely was step one.
+        Note this only ever renders for FEATURED castings: every other casting
+        sends a logged-out visitor to CastingGatePage before reaching here.
+
+        SIGNED IN: a join pitch is noise to someone who can already submit, and
+        the page is otherwise a dead end. They get the next three castings
+        instead — ranked, not filtered, so a thin market still fills the row. */}
+    {!isLoggedIn
+      ?<section className="cfoot cfoot-join">
+        <h3>You've seen the roles. Now make it possible to submit.</h3>
+        <p className="cfoot-sub">A free profile takes about two minutes and lets you submit to this casting &mdash; and every other one on CastSlate.</p>
+        <div className="cfoot-steps">
+          <div className="cfoot-step done"><div className="dot" aria-hidden="true">&#10003;</div><div className="lab">Found a role</div><div className="sm">You're here</div></div>
+          <div className="cfoot-step now"><div className="dot" aria-hidden="true">2</div><div className="lab">Create your profile</div><div className="sm">~2 min &middot; free</div></div>
+          <div className="cfoot-step"><div className="dot" aria-hidden="true">3</div><div className="lab">Submit</div><div className="sm">Reviewed one by one</div></div>
+        </div>
+        <div className="cfoot-cta">
+          <button className="btn-teal" onClick={()=>onRequireAuth?.()}>Create my free profile</button>
+          <button className="btn-s btn-sm" onClick={()=>onNavigate("login")}>I already have one</button>
+        </div>
+        <div className="cfoot-foot">No card required &middot; <b>Free accounts submit to {FREE_PLAN.submissionsPerWeek===1?"1 casting":`${FREE_PLAN.submissionsPerWeek} castings`} a week</b></div>
+      </section>
+      :simCastings.length>0&&<section className="cfoot cfoot-more">
+        <div className="cfoot-more-hd">
+          <h3>{simCity?`More roles in ${simCity}`:"More roles open now"}</h3>
+          <button className="cfoot-all" onClick={()=>onNavigate("search")}>Browse all castings &rarr;</button>
+        </div>
+        <div className="cfoot-grid">
+          {simCastings.map(sc=>{
+            const soon=castingCountdownIsSoon(sc);
+            const cdn=soon?castingCountdown(sc.deadline):null;
+            const n=(sc.roles||[]).length;
+            return(
+            <div key={sc.id} className="cfoot-c" role="link" tabIndex={0}
+                 onClick={()=>onOpenCasting?.(sc)}
+                 onKeyDown={(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onOpenCasting?.(sc);}}}>
+              <div className="cfoot-c-mt">
+                <span className="cfoot-pill">{translateCastingType(sc.type,lang)}</span>
+                {cdn&&<span className="cfoot-pill warm">{cdn.label}</span>}
+              </div>
+              <h4>{sc.title}</h4>
+              <div className="cfoot-c-meta">{[sc.location,n?`${n} role${n===1?"":"s"}`:null,castingCastSummary(sc.roles)].filter(Boolean).join(" \u00b7 ")}</div>
+              {(()=>{const r=castingRateLabel(sc.roles);return r?<div className="cfoot-c-rate">{r}</div>:null;})()}
+            </div>);
+          })}
+        </div>
+      </section>}
+
+    {!inSheet&&<div style={{textAlign:"center",marginBottom:32}}>
+      <button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>
+    </div>}
 
     {applyRole&&(()=>{
       const roleId=realRoleIds[applyRole.idx];
@@ -13581,6 +13724,42 @@ function roleCardSpec(role){
   if(a)bits.push(a.replace(/-/g,"–"));
   return bits.join(" · ");
 }
+// Short money line for the compact cards. Deliberately NOT the castings.pay
+// column: that is free text and is usually a paragraph ("Rates vary by role and
+// number of shoot days. See individual role descriptions…"), which a 1/3-width
+// card cannot hold. The roles carry a structured amount, so the top of the range
+// is derived from those and the card stays one line — or shows nothing at all.
+function castingRateLabel(roles){
+  const rs=Array.isArray(roles)?roles:[];
+  const amts=rs.map(r=>Number(r.rate_amount)).filter(n=>!isNaN(n)&&n>0);
+  if(!amts.length)return "";
+  const hi=Math.max(...amts),lo=Math.min(...amts);
+  const unit=(rs.find(r=>Number(r.rate_amount)===hi)||{}).rate_unit||"day";
+  const money=(n)=>"$"+Math.round(n).toLocaleString("en-US");
+  return (lo===hi?money(hi):"Up to "+money(hi))+"/"+String(unit).replace(/^per\s+/i,"");
+}
+
+// One-line "who this casting wants", condensed from its roles for the compact
+// cards under a casting page. Genders collapse to "Any gender" the moment they
+// disagree, and the age span is the outer envelope of every role — a summary,
+// deliberately not a filter.
+function castingCastSummary(roles){
+  const rs=Array.isArray(roles)?roles:[];
+  if(!rs.length)return "";
+  const gs=new Set(rs.map(r=>(r.gender||"").trim()).filter(g=>g&&g.toLowerCase()!=="any"));
+  const gender=gs.size===1?[...gs][0]:(gs.size>1?"Male & Female":"Any gender");
+  let lo=null,hi=null;
+  rs.forEach(r=>{
+    const m=String(r.age_range||r.ageRange||"").match(/(\d{1,3})\s*[-\u2013]\s*(\d{1,3})|(\d{1,3})\s*\+/);
+    if(!m)return;
+    const a=Number(m[1]||m[3]),b=Number(m[2]||m[3]);
+    if(!isNaN(a))lo=lo==null?a:Math.min(lo,a);
+    if(!isNaN(b))hi=hi==null?b:Math.max(hi,b);
+  });
+  const age=lo!=null&&hi!=null?(lo===hi?`${lo}+`:`${lo}\u2013${hi}`):"";
+  return age?`${gender}, ${age}`:gender;
+}
+
 function castingIsExpired(casting){
   if(!casting)return false;
   try{
@@ -14238,7 +14417,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close">×</button>
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
-          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)}/>
+          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full);window.scrollTo(0,0);}else{setSheetCasting(null);onNavigate("search");}}}/>
           : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>,document.body)}
@@ -41420,7 +41599,7 @@ function App(){
           ?<PageLoader/>
           :viewingCasting&&(isLoggedIn||viewingCasting.featured===true)
           ?<ErrorBoundary key={viewingCasting.id} label="Casting Page" onReset={()=>navigate("search")}>
-              <CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply}/>
+              <CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply} onOpenCasting={(sc)=>viewCastingById(sc.id)}/>
             </ErrorBoundary>
           :<PageLoader/>)}
         {page==="casting-gate"&&(viewingCasting
