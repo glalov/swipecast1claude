@@ -190,6 +190,8 @@ const TRANSLATIONS = {
     'casting.role.gender':'Gender','casting.role.ethnicity':'Ethnicity','casting.role.any':'Any',
     'casting.loginToApply':'Create a free account to apply',
     'casting.back':'← Back to castings',
+    'casting.backPlans':'← Back to plans',
+    'casting.backHome':'← Back to home',
     // Dashboards
     'td.title':'Talent Dashboard','td.browseCastings':'Browse Castings','td.myProfile':'My Profile',
     'td.savedCastings':'Saved Castings','td.applications':'My Applications',
@@ -437,6 +439,8 @@ const TRANSLATIONS = {
     'casting.role.gender':'Género','casting.role.ethnicity':'Origen étnico','casting.role.any':'Cualquiera',
     'casting.loginToApply':'Crea una cuenta gratuita para postularte',
     'casting.back':'← Volver a convocatorias',
+    'casting.backPlans':'← Volver a los planes',
+    'casting.backHome':'← Volver al inicio',
     // Dashboards
     'td.title':'Panel de talento','td.browseCastings':'Ver convocatorias','td.myProfile':'Mi perfil',
     'td.savedCastings':'Convocatorias guardadas','td.applications':'Mis postulaciones',
@@ -11712,9 +11716,13 @@ function AuditionModalInner({casting,role,roleId,instr,session,myPhotos,isDbCast
   );
 }
 
-function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting}){
+function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting,backKey}){
   const t=useT();
   const {lang}=useLanguage();
+  // onBack pops history, so it lands wherever the reader came from — the plan
+  // picker and the landing page both open castings. Labelling every one of them
+  // "Back to castings" told the reader the button did something it does not.
+  const backLabel=t(backKey||'casting.back');
   const [applyRole,setApplyRole]=useState(null);
   // Roles render as the Ledger Unfold up to ROLE_BOARD_MIN-1, and as the Casting
   // Board (rail + swapping panel) at or above it.
@@ -12034,7 +12042,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setSubmitting(false);
     }
   };
-  if(!casting)return(<div className="page"><p>Casting not found.</p><button className="btn-s" onClick={onBack}>{t('casting.back')}</button></div>);
+  if(!casting)return(<div className="page"><p>Casting not found.</p><button className="btn-s" onClick={onBack}>{backLabel}</button></div>);
   const c=getTranslatedCasting(casting,lang);
   const castingExpired=castingIsExpired(c);
   const castingArchived=c.status==="archived";
@@ -12043,7 +12051,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
   return(<div className="page" style={{maxWidth:1080}}>
     <div style={{display:"flex",justifyContent:inSheet?"flex-end":"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
-      {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>}
+      {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{backLabel}</button>}
       <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting"><Ico n="flag" s={22}/> Report</button>
     </div>
 
@@ -12537,7 +12545,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       </section>}
 
     {!inSheet&&<div style={{textAlign:"center",marginBottom:32}}>
-      <button className="btn-s btn-sm" onClick={onBack}>{t('casting.back')}</button>
+      <button className="btn-s btn-sm" onClick={onBack}>{backLabel}</button>
     </div>}
 
     {applyRole&&(()=>{
@@ -41005,7 +41013,11 @@ function App(){
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
   const handleViewCasting=async(c,from)=>{
     if(!c)return;
-    window.scrollTo(0,0);
+    // NOTE: no scroll here. Hydration below is awaited, so scrolling at this
+    // point jerks the page the reader is STILL looking at to the top and only
+    // then swaps it — read as a flash/blink when opening a casting from the
+    // pricing marquee, which sits far down the page. Scroll at the moment the
+    // page actually changes, in each branch below.
     // Not every card that opens a casting was loaded with its roles. The pricing
     // and membership marquee selects an explicit column list that never joined
     // the roles table, so its rows arrive with roles undefined — and handing one
@@ -41027,12 +41039,14 @@ function App(){
       setPendingApply({casting:full,role:null});
       setViewingCasting(full);
       setPrevPage(from||page);
+      window.scrollTo(0,0);
       setPage("casting-gate");
       pushHist("casting-gate",{slug:castingSlug});
       return;
     }
     setPrevPage(from||page);
     setViewingCasting(full);
+    window.scrollTo(0,0);
     setPage("casting-detail");
     setPageSEO("casting-detail",{title:full.title,prod:full.prod,type:full.type,slug:castingSlug});
     pushHist("casting-detail",{slug:castingSlug});
@@ -41645,7 +41659,7 @@ function App(){
           ?<PageLoader/>
           :viewingCasting&&(isLoggedIn||viewingCasting.featured===true)
           ?<ErrorBoundary key={viewingCasting.id} label="Casting Page" onReset={()=>navigate("search")}>
-              <CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply} onOpenCasting={(sc)=>viewCastingById(sc.id)}/>
+              <CastingDetailPage key={viewingCasting.id} casting={viewingCasting} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} myProfile={myProfile} session={session} onBack={()=>{window.history.back();}} onNavigate={navigate} autoApplyRole={pendingApply?.role} onAutoApplyConsumed={clearPendingApply} onOpenCasting={(sc)=>viewCastingById(sc.id)} backKey={prevPage==="membership"||prevPage==="pricing"||prevPage==="plan-summary"?"casting.backPlans":prevPage==="home"?"casting.backHome":"casting.back"}/>
             </ErrorBoundary>
           :<PageLoader/>)}
         {page==="casting-gate"&&(viewingCasting
