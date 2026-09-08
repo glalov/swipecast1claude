@@ -234,38 +234,51 @@ serve(async (req) => {
 
       // ── {{CASTINGS}} — live listings, resolved once per batch ──────────────
       // A campaign's HTML is written weeks before it finishes sending, so any
-      // casting hardcoded into it is guaranteed to expire mid-list. The template
-      // instead carries {{CASTINGS}} — optionally {{CASTINGS:slug}} to pin one
-      // while it lasts — and it is filled here from the DB, so every batch, and
-      // every test send, mails whatever is genuinely open right now. When a
-      // listing expires it drops out of the RPC and the next newest takes its
-      // place with no edit to the campaign.
+      // casting hardcoded into it is guaranteed to expire mid-list. Templates
+      // carry a tag instead, filled here from the DB, so every batch and every
+      // test send mails whatever is genuinely open right now. When a listing
+      // expires it drops out of the RPC and the next newest takes its place
+      // with no edit to the campaign.
+      //   {{CASTINGS}}        index rows      (The Marquee)
+      //   {{CASTINGS_CARDS}}  full cards      (Classic Cards)
+      //   {{CASTINGS_LATE}}   lead + two-up   (The Late Show)
+      // Any of them takes an optional ":slug" that pins that casting to the top
+      // for as long as it is live.
       const esc = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       const money = (n: number) => "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+      const clip = (v: unknown, n: number) => { const t = String(v ?? "").trim(); return t.length <= n ? esc(t) : esc(t.slice(0, n).replace(/\s+\S*$/, "")) + "&hellip;"; };
       const rateLine = (lo: number | null, hi: number | null, unit: string | null) => {
         if (lo == null || hi == null) return "";
         const sfx = unit === "flat" ? " flat" : unit === "week" ? "/week" : unit === "hour" ? "/hour" : "/day";
         return (Number(lo) === Number(hi) ? money(lo) : `${money(lo)}&ndash;${money(hi)}`) + sfx;
       };
-      const listingHtml = (c: any) => {
-        const url = `${APP_URL}/casting/${encodeURIComponent(c.slug)}`;
-        const eyebrow = [c.ctype, /not applicable/i.test(c.union_status || "") ? "" : c.union_status, "Paid"]
-          .filter(Boolean).map(esc).join(" &bull; ");
+      const payOf = (c: any) => rateLine(c.rate_lo, c.rate_hi, c.rate_unit);
+      const urlOf = (c: any) => `${APP_URL}/casting/${encodeURIComponent(c.slug)}`;
+      const rolesOf = (c: any) => Array.isArray(c.top_roles) ? c.top_roles : [];
+      const moreOf = (c: any) => Math.max(0, (c.role_count || 0) - rolesOf(c).length);
+      const unionOf = (c: any) => /not applicable/i.test(c.union_status || "") ? "" : (c.union_status || "");
+      const metaOf = (c: any) => {
         const roles = c.role_count === 1 ? "1 role" : `${c.role_count} roles`;
         const ages = (c.age_lo != null && c.age_hi != null && c.age_hi > c.age_lo) ? `, ages ${c.age_lo}&ndash;${c.age_hi}` : "";
-        const where = c.location ? `${esc(c.location)} &mdash; ` : "";
-        const meta = `${where}${roles}${ages}.`.trim();
-        const pay = rateLine(c.rate_lo, c.rate_hi, c.rate_unit);
-        // Not every casting has a still, and several never will. Rather than
-        // invent one or leave a broken frame, an imageless listing gets a black
-        // tile with the casting type set in white — automatic for every future
-        // casting posted without an image.
+        return `${c.location ? esc(c.location) + " &mdash; " : ""}${roles}${ages}.`;
+      };
+      // Imageless castings get a flat tile with the type set in it rather than a
+      // broken frame — automatic for every future casting posted without a
+      // still. Colour follows the design it lands in: the two light templates
+      // get black-on-white, the dark one a lifted charcoal, because pure black
+      // on a #0d0d10 page is an invisible hole.
+      const tile = (c: any, h: number, bg: string, fg: string, cls = "") =>
+        `<table width="100%" cellpadding="0" cellspacing="0" role="presentation"${cls ? ` class="${cls}"` : ""} style="width:100%;height:${h}px;background:${bg};"><tr><td style="height:${h}px;text-align:center;vertical-align:middle;padding:0 10px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${fg};line-height:1.45;">${esc(c.ctype || "Casting")}</td></tr></table>`;
+
+      // ── The Marquee: 140x96 thumb + index row ──
+      const marqueeRow = (c: any) => {
+        const eyebrow = [c.ctype, unionOf(c), "Paid"].filter(Boolean).map(esc).join(" &bull; ");
+        const pay = payOf(c);
+        // The mobile rule shrinks .thumb img to 100x74; the tile needs the same
+        // class hook or the photo ends up smaller than the tiles beside it.
         const thumb = c.image_url
           ? `<img src="${esc(c.image_url)}" width="140" alt="${esc(c.title)}" style="display:block;width:140px;height:96px;object-fit:cover;border:none;outline:none;" />`
-          : `<table width="140" cellpadding="0" cellspacing="0" role="presentation" style="width:140px;height:96px;background:#101014;"><tr><td style="height:96px;text-align:center;vertical-align:middle;padding:0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#ffffff;line-height:1.45;">${esc(c.ctype || "Casting")}</td></tr></table>`;
-        // Pay gets its own line: it is the thing being scanned for, and at
-        // #5c564a inside the run-on meta line it was the quietest text in the
-        // email. Icon is a PNG, not inline SVG — Gmail strips SVG entirely.
+          : `<table width="140" cellpadding="0" cellspacing="0" role="presentation" class="tile" style="width:140px;height:96px;background:#101014;"><tr><td class="tile-td" style="height:96px;text-align:center;vertical-align:middle;padding:0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#ffffff;line-height:1.45;">${esc(c.ctype || "Casting")}</td></tr></table>`;
         const payLine = pay
           ? `\n        <div style="margin-top:7px;font-family:Helvetica,Arial,sans-serif;font-size:13.5px;font-weight:800;color:#0F6B33;line-height:1.5;"><img src="${APP_URL}/email/money-icon.png" width="20" height="20" alt="" style="display:inline-block;width:20px;height:20px;vertical-align:-5px;margin-right:7px;border:none;outline:none;" />${pay}</div>`
           : "";
@@ -275,23 +288,110 @@ serve(async (req) => {
       <td style="vertical-align:top;">
         <div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#0F6B66;margin-bottom:4px;">${eyebrow}</div>
         <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#101014;line-height:1.25;margin-bottom:5px;">${esc(c.title)}</div>
-        <div style="font-family:Helvetica,Arial,sans-serif;font-size:12.5px;color:#332e24;line-height:1.6;">${meta}</div>${payLine}
-        <a href="${url}" style="display:inline-block;margin-top:8px;font-family:Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;color:#3a35c9;text-decoration:underline;">See the roles &rarr;</a>
+        <div style="font-family:Helvetica,Arial,sans-serif;font-size:12.5px;color:#332e24;line-height:1.6;">${metaOf(c)}</div>${payLine}
+        <a href="${urlOf(c)}" style="display:inline-block;margin-top:8px;font-family:Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;color:#3a35c9;text-decoration:underline;">See the roles &rarr;</a>
       </td>
     </tr></table>
   </td></tr>`;
       };
-      const CASTINGS_TAG = /\{\{CASTINGS(?::([a-z0-9-]+))?\}\}/i;
+
+      // ── Classic Cards: full-width image + pills + role table ──
+      const pill = (t: string, bg: string, fg: string) => `<span style="display:inline-block;background:${bg};color:${fg};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin:0 4px 4px 0;">${esc(t)}</span>`;
+      const cardBlock = (c: any) => {
+        const img = c.image_url
+          ? `<img src="${esc(c.image_url)}" width="600" class="card-img" alt="${esc(c.title)}" style="display:block;width:100%;height:auto;border:none;outline:none;" />`
+          : tile(c, 150, "#101014", "#ffffff", "card-tile");
+        const roleRows = rolesOf(c).map((r: any) =>
+          `          <tr><td style="padding:5px 0;border-bottom:1px solid #f8fafc;"><strong style="color:#0f172a;font-size:12px">${esc(r.name)}</strong>${r.age ? ` <span style="color:#cbd5e1">&middot;</span> <span style="color:#64748b;font-size:12px">${esc(r.age)}</span>` : ""}${r.gender ? ` <span style="color:#cbd5e1">&middot;</span> <span style="color:#64748b;font-size:12px">${esc(r.gender)}</span>` : ""}</td></tr>`).join("\n");
+        const more = moreOf(c) ? `\n          <tr><td style="padding:4px 0;font-size:11px;color:#94a3b8;">+${moreOf(c)} more role${moreOf(c) === 1 ? "" : "s"}</td></tr>` : "";
+        const pay = payOf(c);
+        return `    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;background:#ffffff;">
+      <tr><td style="padding:0;line-height:0;">${img}</td></tr>
+      <tr><td style="height:3px;background:#4338ca;line-height:0;font-size:0;">&nbsp;</td></tr>
+      <tr><td style="padding:16px 18px;">
+        <div style="font-size:16px;font-weight:800;color:#0f172a;line-height:1.3;margin-bottom:4px;">${esc(c.title)}</div>
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;">&#128205;&nbsp;${esc(c.location || "")}</div>
+        <div style="margin:0 0 10px;">${pill(c.ctype || "Casting", "#f0f0ff", "#4338ca")}${unionOf(c) ? pill(unionOf(c), "#f8fafc", "#475569") : ""}${pill("$ PAID", "#f0fdf4", "#15803d")}</div>
+        <p style="margin:0 0 8px;font-size:13px;color:#64748b;line-height:1.65;">${clip(c.synopsis, 230)}</p>
+        ${pay ? `<div style="font-size:13px;color:#0f172a;margin:0 0 12px;"><img src="${APP_URL}/email/money-icon.png" width="18" height="18" alt="" style="display:inline-block;width:18px;height:18px;vertical-align:-4px;margin-right:6px;border:none;outline:none;" /><strong style="color:#15803d;">${pay}</strong></div>` : ""}
+        <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin:10px 0 14px;border-top:1px solid #f1f5f9;">
+${roleRows}${more}
+        </table>
+        <a href="${urlOf(c)}" style="display:inline-block;background:#0F6B66;color:#ffffff;text-decoration:none;padding:12px 26px;border-radius:12px;font-size:13px;font-weight:700;">View Casting &rarr;</a>
+      </td></tr>
+    </table>`;
+      };
+
+      // ── The Late Show: first casting is the lead, the rest go two-up ──
+      const lateLead = (c: any) => {
+        const img = c.image_url
+          ? `<img src="${esc(c.image_url)}" width="548" alt="${esc(c.title)}" style="display:block;width:100%;height:auto;border:none;outline:none;" />`
+          : tile(c, 200, "#1d1d25", "#F0B860");
+        const roleRows = rolesOf(c).map((r: any) =>
+          `          <tr><td style="padding:8px 0;border-bottom:1px solid #26262f;font-family:Helvetica,Arial,sans-serif;font-size:12.5px;color:#dedae8;"><strong style="color:#ffffff;">${esc(r.name)}</strong>${r.age ? ` <span style="color:#4e4a5c;">&middot;</span> ${esc(r.age)}` : ""}${r.gender ? ` <span style="color:#4e4a5c;">&middot;</span> ${esc(r.gender)}` : ""}</td></tr>`).join("\n");
+        const more = moreOf(c) ? `\n          <tr><td style="padding:8px 0;font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#7d7890;">+${moreOf(c)} more role${moreOf(c) === 1 ? "" : "s"}</td></tr>` : "";
+        const pay = payOf(c);
+        return `  <tr><td class="pad" style="padding:22px 26px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+      <tr><td style="padding:0;line-height:0;">${img}</td></tr>
+      <tr><td style="padding:20px 22px 22px;">
+        <div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#F0B860;margin-bottom:7px;">Lead listing &bull; ${esc(c.ctype || "Casting")} &bull; Paid</div>
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:#ffffff;line-height:1.25;margin-bottom:8px;">${esc(c.title)}</div>
+        <p style="margin:0 0 12px;font-family:Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.75;color:#a9a4b6;">${clip(c.synopsis, 260)}</p>
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid #26262f;margin-bottom:16px;">
+${roleRows}${more}
+        </table>
+        ${pay ? `<div style="font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#dedae8;margin-bottom:16px;"><img src="${APP_URL}/email/money-icon.png" width="18" height="18" alt="" style="display:inline-block;width:18px;height:18px;vertical-align:-4px;margin-right:7px;border:none;outline:none;" /><strong style="color:#5dcaa5;">${pay}</strong></div>` : ""}
+        <a href="${urlOf(c)}" style="display:inline-block;background:#0F6B66;color:#ffffff;text-decoration:none;padding:13px 28px;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:800;">View Casting &rarr;</a>
+      </td></tr>
+    </table>
+  </td></tr>`;
+      };
+      const lateCell = (c: any, side: "left" | "right") => {
+        const img = c.image_url
+          ? `<img src="${esc(c.image_url)}" width="270" alt="${esc(c.title)}" style="display:block;width:100%;height:120px;object-fit:cover;border:none;outline:none;" />`
+          : tile(c, 120, "#1d1d25", "#F0B860");
+        const pay = payOf(c);
+        return `      <td width="50%" style="vertical-align:top;padding-${side === "left" ? "right" : "left"}:8px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
+          <tr><td style="padding:0;line-height:0;">${img}</td></tr>
+          <tr><td style="padding:14px 16px 18px;">
+            <div style="font-family:Helvetica,Arial,sans-serif;font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#F0B860;margin-bottom:6px;">${esc(c.ctype || "Casting")}${unionOf(c) ? " &bull; " + esc(unionOf(c)) : ""}</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:700;color:#ffffff;line-height:1.3;margin-bottom:6px;">${esc(c.title)}</div>
+            <p style="margin:0 0 10px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.65;color:#a9a4b6;">${clip(c.synopsis, 110)}</p>
+            ${pay ? `<div style="font-family:Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;color:#5dcaa5;margin-bottom:10px;"><img src="${APP_URL}/email/money-icon.png" width="16" height="16" alt="" style="display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:6px;border:none;outline:none;" />${pay}</div>` : ""}
+            <a href="${urlOf(c)}" style="font-family:Helvetica,Arial,sans-serif;font-size:12px;font-weight:800;color:#5dcaa5;text-decoration:underline;">View Casting &rarr;</a>
+          </td></tr>
+        </table>
+      </td>`;
+      };
+
+      const CASTINGS_TAG = /\{\{CASTINGS(_CARDS|_LATE)?(?::([a-z0-9-]+))?\}\}/i;
       let castingsBlock: string | null = null;
       const tagMatch = (camp.html || "").match(CASTINGS_TAG);
       if (tagMatch) {
-        const pinned = tagMatch[1] ? [tagMatch[1]] : [];
+        const variant = (tagMatch[1] || "").toUpperCase();
+        const pinned = tagMatch[2] ? [tagMatch[2]] : [];
         const { data: live, error: le } = await sb.rpc("get_campaign_castings", { n: 3, pinned });
         const rows = (live || []) as any[];
-        // Refuse rather than mail an empty "Open this week" section.
+        // Refuse rather than mail an empty listings section.
         if (le || !rows.length) return res({ error: le ? `castings lookup failed: ${le.message}` : "no live castings to feature — refusing to send" }, 500);
-        const rule = `  <tr><td class="pad" style="padding:14px 24px 0;"><div style="height:1px;background:#e2ddd0;"></div></td></tr>`;
-        castingsBlock = rows.map(listingHtml).join("\n" + rule + "\n") + "\n";
+        if (variant === "_CARDS") {
+          castingsBlock = rows.map(cardBlock).join("\n");
+        } else if (variant === "_LATE") {
+          const [lead, ...rest] = rows;
+          const grid = rest.length
+            ? `\n  <tr><td class="pad" style="padding:16px 26px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="twoup"><tr>
+${rest.map((c, i) => lateCell(c, i === 0 ? "left" : "right")).join("\n")}
+    </tr></table>
+  </td></tr>`
+            : "";
+          castingsBlock = lateLead(lead) + grid;
+        } else {
+          const rule = `  <tr><td class="pad" style="padding:14px 24px 0;"><div style="height:1px;background:#e2ddd0;"></div></td></tr>`;
+          castingsBlock = rows.map(marqueeRow).join("\n" + rule + "\n") + "\n";
+        }
       }
       const withCastings = (html: string) => castingsBlock == null ? html : html.replace(CASTINGS_TAG, castingsBlock);
 
