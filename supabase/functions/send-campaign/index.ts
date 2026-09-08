@@ -267,8 +267,15 @@ serve(async (req) => {
       // still. Colour follows the design it lands in: the two light templates
       // get black-on-white, the dark one a lifted charcoal, because pure black
       // on a #0d0d10 page is an invisible hole.
-      const tile = (c: any, h: number, bg: string, fg: string, cls = "") =>
-        `<table width="100%" cellpadding="0" cellspacing="0" role="presentation"${cls ? ` class="${cls}"` : ""} style="width:100%;height:${h}px;background:${bg};"><tr><td style="height:${h}px;text-align:center;vertical-align:middle;padding:0 10px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${fg};line-height:1.45;">${esc(c.ctype || "Casting")}</td></tr></table>`;
+      //
+      // Sized by PADDING, not height. The first version was a width:100% table
+      // with a CSS height, which held up on desktop and collapsed to a thin
+      // strip on mobile: once .twoup td becomes display:block the nested table
+      // has no definite height to resolve against and falls back to content
+      // height. Padding has nothing to resolve against, so it renders the same
+      // at every width and in every client.
+      const tile = (c: any, padY: number, bg: string, fg: string) =>
+        `<div style="background:${bg};text-align:center;padding:${padY}px 12px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${fg};line-height:1.45;">${esc(c.ctype || "Casting")}</div>`;
 
       // ── The Marquee: 140x96 thumb + index row ──
       const marqueeRow = (c: any) => {
@@ -300,7 +307,7 @@ serve(async (req) => {
       const cardBlock = (c: any) => {
         const img = c.image_url
           ? `<img src="${esc(c.image_url)}" width="600" class="card-img" alt="${esc(c.title)}" style="display:block;width:100%;height:auto;border:none;outline:none;" />`
-          : tile(c, 150, "#101014", "#ffffff", "card-tile");
+          : tile(c, 67, "#101014", "#ffffff");
         const roleRows = rolesOf(c).map((r: any) =>
           `          <tr><td style="padding:5px 0;border-bottom:1px solid #f8fafc;"><strong style="color:#0f172a;font-size:12px">${esc(r.name)}</strong>${r.age ? ` <span style="color:#cbd5e1">&middot;</span> <span style="color:#64748b;font-size:12px">${esc(r.age)}</span>` : ""}${r.gender ? ` <span style="color:#cbd5e1">&middot;</span> <span style="color:#64748b;font-size:12px">${esc(r.gender)}</span>` : ""}</td></tr>`).join("\n");
         const more = moreOf(c) ? `\n          <tr><td style="padding:4px 0;font-size:11px;color:#94a3b8;">+${moreOf(c)} more role${moreOf(c) === 1 ? "" : "s"}</td></tr>` : "";
@@ -326,7 +333,7 @@ ${roleRows}${more}
       const lateLead = (c: any) => {
         const img = c.image_url
           ? `<img src="${esc(c.image_url)}" width="548" alt="${esc(c.title)}" style="display:block;width:100%;height:auto;border:none;outline:none;" />`
-          : tile(c, 200, "#1d1d25", "#F0B860");
+          : tile(c, 92, "#1d1d25", "#F0B860");
         const roleRows = rolesOf(c).map((r: any) =>
           `          <tr><td style="padding:8px 0;border-bottom:1px solid #26262f;font-family:Helvetica,Arial,sans-serif;font-size:12.5px;color:#dedae8;"><strong style="color:#ffffff;">${esc(r.name)}</strong>${r.age ? ` <span style="color:#4e4a5c;">&middot;</span> ${esc(r.age)}` : ""}${r.gender ? ` <span style="color:#4e4a5c;">&middot;</span> ${esc(r.gender)}` : ""}</td></tr>`).join("\n");
         const more = moreOf(c) ? `\n          <tr><td style="padding:8px 0;font-family:Helvetica,Arial,sans-serif;font-size:11.5px;color:#7d7890;">+${moreOf(c)} more role${moreOf(c) === 1 ? "" : "s"}</td></tr>` : "";
@@ -350,7 +357,7 @@ ${roleRows}${more}
       const lateCell = (c: any, side: "left" | "right") => {
         const img = c.image_url
           ? `<img src="${esc(c.image_url)}" width="270" alt="${esc(c.title)}" style="display:block;width:100%;height:120px;object-fit:cover;border:none;outline:none;" />`
-          : tile(c, 120, "#1d1d25", "#F0B860");
+          : tile(c, 52, "#1d1d25", "#F0B860");
         const pay = payOf(c);
         return `      <td width="50%" style="vertical-align:top;padding-${side === "left" ? "right" : "left"}:8px;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#17171d;">
@@ -393,11 +400,22 @@ ${rest.map((c, i) => lateCell(c, i === 0 ? "left" : "right")).join("\n")}
           castingsBlock = rows.map(marqueeRow).join("\n" + rule + "\n") + "\n";
         }
       }
-      const withCastings = (html: string) => castingsBlock == null ? html : html.replace(CASTINGS_TAG, castingsBlock);
+      // The replacement MUST be a function, never a string. In a string
+      // replacement JS treats $1/$2/$& as backreferences, and the listings are
+      // full of "$100" and "$250" — those became group-2 (the pinned slug) plus
+      // "00", so a $100–$250/day rate mailed out as
+      // "00–the-seventh-landing-8f89e67150/day". A function replacement takes
+      // the text literally. Same reason the two below are functions.
+      const withCastings = (html: string) => castingsBlock == null ? html : html.replace(CASTINGS_TAG, () => castingsBlock as string);
 
       // withCastings first, then addUtm — the injected listing links have to be
       // in the HTML before the UTM pass runs or they go out untagged.
-      const buildHtml = (email: string, name?: string | null) => addUtm(withCastings(camp.html)).replaceAll("{{FIRST_NAME}}", firstNameOf(name)).replaceAll("{{UNSUB_URL}}", unsubUrl(email, campaign_id));
+      const buildHtml = (email: string, name?: string | null) => {
+        const first = firstNameOf(name), unsub = unsubUrl(email, campaign_id);
+        return addUtm(withCastings(camp.html))
+          .replaceAll("{{FIRST_NAME}}", () => first)
+          .replaceAll("{{UNSUB_URL}}", () => unsub);
+      };
       const send = async (to: string, html: string) => { const out = await sendEmail({ from: camp.from_email, to: [to], replyTo: camp.reply_to || CONTACT_EMAIL, subject: camp.subject, html, headers: { "List-Unsubscribe": `<${unsubUrl(to, campaign_id)}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }, sendProvider); if (out.ok) return { ok: true, id: out.id as string }; return { ok: false, err: out.err ?? "", status: out.status }; };
 
       const testEmail = (body.test_email ?? "").toString().toLowerCase().trim();
