@@ -41003,34 +41003,51 @@ function App(){
   useEffect(()=>{ window.__CS_NAV = p => navigate(p); },[navigate]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
-  const handleViewCasting=(c,from)=>{
+  const handleViewCasting=async(c,from)=>{
+    if(!c)return;
     window.scrollTo(0,0);
-    const castingSlug=c.slug||String(c.id);
+    // Not every card that opens a casting was loaded with its roles. The pricing
+    // and membership marquee selects an explicit column list that never joined
+    // the roles table, so its rows arrive with roles undefined — and handing one
+    // of those straight to the detail page rendered a live casting as
+    // "0 roles open" with an empty ROLES section. Hydrate through the canonical
+    // loader whenever the roles are missing. `undefined` is the tell, not an
+    // empty array: a casting that genuinely has no roles arrives as [] and must
+    // not trigger a second round trip on every click.
+    let full=c;
+    if(c.id!=null&&!Array.isArray(c.roles)){
+      const fetched=await fetchFullCasting(c.id);
+      if(fetched)full=fetched;
+    }
+    const castingSlug=full.slug||String(full.id);
     // Featured / staff-pick castings are public: signed-out visitors can open the
     // full detail page and only hit the create-account wall when they try to apply.
     // Every other casting still shows the create-profile gate up front.
-    if(!isLoggedIn&&!(c&&c.featured===true)){
-      setPendingApply({casting:c,role:null});
-      setViewingCasting(c);
+    if(!isLoggedIn&&!(full&&full.featured===true)){
+      setPendingApply({casting:full,role:null});
+      setViewingCasting(full);
       setPrevPage(from||page);
       setPage("casting-gate");
       pushHist("casting-gate",{slug:castingSlug});
       return;
     }
     setPrevPage(from||page);
-    setViewingCasting(c);
+    setViewingCasting(full);
     setPage("casting-detail");
-    setPageSEO("casting-detail",{title:c.title,prod:c.prod,type:c.type,slug:castingSlug});
+    setPageSEO("casting-detail",{title:full.title,prod:full.prod,type:full.type,slug:castingSlug});
     pushHist("casting-detail",{slug:castingSlug});
   };
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
-  const viewCastingById=useCallback(async(castingId)=>{
-    if(!castingId)return;
+  // The one place a complete casting is assembled from the database. Anything
+  // that holds only a partial casting row hydrates through this before it is
+  // handed to the detail page — see handleViewCasting.
+  const fetchFullCasting=useCallback(async(castingId)=>{
+    if(!castingId)return null;
     try{
       const{data,error}=await window.sb.from("castings")
         .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
-      if(error||!data)return;
+      if(error||!data)return null;
       const c={
         id:data.id,slug:data.slug||null,title:data.title,type:data.type||"Film",prod:data.prod||"",
         tagline:data.tagline||"",synopsis:data.synopsis||"",desc:data.synopsis||data.tagline||"",
@@ -41057,10 +41074,16 @@ function App(){
           prescreen:r.prescreen||null,
         })),
       };
-      setPrevPage(page);setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");
-      pushHist("casting-detail",{slug:data.slug||castingId});
-    }catch(e){console.warn("[viewCastingById]",e);}
-  },[page]);
+      return c;
+    }catch(e){console.warn("[fetchFullCasting]",e);return null;}
+  },[]);
+  const viewCastingById=useCallback(async(castingId)=>{
+    if(!castingId)return;
+    const c=await fetchFullCasting(castingId);
+    if(!c)return;
+    setPrevPage(page);setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");
+    pushHist("casting-detail",{slug:c.slug||castingId});
+  },[page,fetchFullCasting]);
   const completeAuth=()=>{if(pendingApply){const c=pendingApply.casting;const r=pendingApply.role;setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");pushHist("casting-detail",{slug:c?.slug||String(c?.id)});if(!r)setPendingApply(null);}else{setPage("search");pushHist("search");}};
   // ── Daily upgrade offer for TALENT (actors) — growth routing ─────────────
   //   • Premium talent                         → their Talent Dashboard.
