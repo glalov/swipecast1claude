@@ -245,7 +245,7 @@ serve(async (req) => {
       const rateLine = (lo: number | null, hi: number | null, unit: string | null) => {
         if (lo == null || hi == null) return "";
         const sfx = unit === "flat" ? " flat" : unit === "week" ? "/week" : unit === "hour" ? "/hour" : "/day";
-        return (Number(lo) === Number(hi) ? money(lo) : `${money(lo)}&ndash;${money(hi)}`) + sfx + ".";
+        return (Number(lo) === Number(hi) ? money(lo) : `${money(lo)}&ndash;${money(hi)}`) + sfx;
       };
       const listingHtml = (c: any) => {
         const url = `${APP_URL}/casting/${encodeURIComponent(c.slug)}`;
@@ -254,20 +254,28 @@ serve(async (req) => {
         const roles = c.role_count === 1 ? "1 role" : `${c.role_count} roles`;
         const ages = (c.age_lo != null && c.age_hi != null && c.age_hi > c.age_lo) ? `, ages ${c.age_lo}&ndash;${c.age_hi}` : "";
         const where = c.location ? `${esc(c.location)} &mdash; ` : "";
-        const meta = `${where}${roles}${ages}. ${rateLine(c.rate_lo, c.rate_hi, c.rate_unit)}`.trim();
-        // Not every casting has a still. Rather than invent one or leave a broken
-        // frame, an imageless listing gets a typographic tile in the same 140x96
-        // slot so the column keeps its rhythm.
+        const meta = `${where}${roles}${ages}.`.trim();
+        const pay = rateLine(c.rate_lo, c.rate_hi, c.rate_unit);
+        // Not every casting has a still, and several never will. Rather than
+        // invent one or leave a broken frame, an imageless listing gets a black
+        // tile with the casting type set in white — automatic for every future
+        // casting posted without an image.
         const thumb = c.image_url
           ? `<img src="${esc(c.image_url)}" width="140" alt="${esc(c.title)}" style="display:block;width:140px;height:96px;object-fit:cover;border:none;outline:none;" />`
-          : `<table width="140" cellpadding="0" cellspacing="0" role="presentation" style="width:140px;height:96px;background:#e6e1d4;"><tr><td style="height:96px;text-align:center;vertical-align:middle;padding:0 8px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#6b6455;line-height:1.4;">${esc(c.ctype || "Casting")}</td></tr></table>`;
+          : `<table width="140" cellpadding="0" cellspacing="0" role="presentation" style="width:140px;height:96px;background:#101014;"><tr><td style="height:96px;text-align:center;vertical-align:middle;padding:0 8px;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#ffffff;line-height:1.45;">${esc(c.ctype || "Casting")}</td></tr></table>`;
+        // Pay gets its own line: it is the thing being scanned for, and at
+        // #5c564a inside the run-on meta line it was the quietest text in the
+        // email. Icon is a PNG, not inline SVG — Gmail strips SVG entirely.
+        const payLine = pay
+          ? `\n        <div style="margin-top:7px;font-family:Helvetica,Arial,sans-serif;font-size:13.5px;font-weight:800;color:#0F6B33;line-height:1.5;"><img src="${APP_URL}/email/money-icon.png" width="20" height="20" alt="" style="display:inline-block;width:20px;height:20px;vertical-align:-5px;margin-right:7px;border:none;outline:none;" />${pay}</div>`
+          : "";
         return `  <tr><td class="pad" style="padding:14px 24px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
       <td class="thumb" width="140" style="vertical-align:top;padding-right:14px;line-height:0;">${thumb}</td>
       <td style="vertical-align:top;">
         <div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#0F6B66;margin-bottom:4px;">${eyebrow}</div>
         <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#101014;line-height:1.25;margin-bottom:5px;">${esc(c.title)}</div>
-        <div style="font-family:Helvetica,Arial,sans-serif;font-size:12.5px;color:#5c564a;line-height:1.6;">${meta}</div>
+        <div style="font-family:Helvetica,Arial,sans-serif;font-size:12.5px;color:#332e24;line-height:1.6;">${meta}</div>${payLine}
         <a href="${url}" style="display:inline-block;margin-top:8px;font-family:Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;color:#3a35c9;text-decoration:underline;">See the roles &rarr;</a>
       </td>
     </tr></table>
