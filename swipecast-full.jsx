@@ -11811,7 +11811,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // go. Castings the actor already submitted to are dropped — showing someone a
   // role they have already taped for is the fastest way to look broken.
   const [simCastings,setSimCastings]=useState([]);
-  const simCity=((casting?.location||"").split(",")[0]||"").trim();
   useEffect(()=>{
     if(!isLoggedIn||!casting?.id||!window.sb){setSimCastings([]);return;}
     let cancelled=false;
@@ -12513,7 +12512,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       </section>
       :simCastings.length>0&&<section className="cfoot cfoot-more">
         <div className="cfoot-more-hd">
-          <h3>{simCity?`More roles in ${simCity}`:"More roles open now"}</h3>
+          <h3>More roles</h3>
           <button className="cfoot-all" onClick={()=>onNavigate("search")}>Browse all castings &rarr;</button>
         </div>
         <div className="cfoot-grid">
@@ -13999,6 +13998,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // True when openSheet pushed a /casting/<slug> history entry that closeSheet
   // must pop back off to restore the /browse-castings URL.
   const sheetPushedRef=useRef(false);
+  // The sheet is its own scroll container (.cs-sheet is overflow-y:auto), so
+  // window.scrollTo cannot reach it. When one casting is opened from inside
+  // another the panel would otherwise keep the old scroll offset and drop the
+  // reader halfway down a project they have not seen the title of yet.
+  const sheetElRef=useRef(null);
   const animateClose=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);},460);},[]);
   // Same caa.com page push the agency directory uses — body.sheet-push slides `main`
   // left while the casting sheet comes in from the right. Removed the moment
@@ -14015,8 +14019,14 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // CastingDetailPage already owns this via autoApplyRole (login + expiry gated),
   // so nothing about the apply rules or the submission cap changes here.
   const [sheetRole,setSheetRole]=useState(null);
-  const openSheet=useCallback((c,role)=>{
-    sheetScrollY.current=window.scrollY;
+  // `replace` is set when one casting is opened from INSIDE another (the "More
+  // roles" strip under the roles). Pushing there would stack /casting/A,
+  // /casting/B… and the X — which pops exactly one entry — would land the reader
+  // back on the previous casting instead of Browse. Replacing keeps the stack at
+  // one deep no matter how far they hop, so X always returns to the list.
+  const openSheet=useCallback((c,role,opts)=>{
+    const replace=!!(opts&&opts.replace);
+    if(!replace)sheetScrollY.current=window.scrollY;
     setSheetRole(role||null);
     setSheetClosing(false);
     // Give the slide-in sheet its own shareable URL (/casting/<slug-or-id>) so a
@@ -14025,10 +14035,18 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     try{
       const slug=c&&(c.slug||(c.id!=null?String(c.id):""));
       if(slug){
-        window.history.pushState({swipecast:true,page:"casting-detail",castingSlug:slug,fromSheet:true},"",`/casting/${encodeURIComponent(slug)}`);
-        sheetPushedRef.current=true;
-      }else{sheetPushedRef.current=false;}
-    }catch(_){sheetPushedRef.current=false;}
+        const st={swipecast:true,page:"casting-detail",castingSlug:slug,fromSheet:true};
+        const url=`/casting/${encodeURIComponent(slug)}`;
+        if(replace){
+          // Leave sheetPushedRef alone: whether a back() is owed was decided by
+          // the FIRST open, and swapping the URL in place does not change it.
+          window.history.replaceState(st,"",url);
+        }else{
+          window.history.pushState(st,"",url);
+          sheetPushedRef.current=true;
+        }
+      }else if(!replace){sheetPushedRef.current=false;}
+    }catch(_){if(!replace)sheetPushedRef.current=false;}
     setSheetCasting(c);
   },[]);
   const closeSheet=useCallback(()=>{
@@ -14044,6 +14062,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // state must be force-cleared when the user navigates away via the top nav —
   // otherwise returning to Browse Castings shows the stale single casting.
   useEffect(()=>{if(!active){setSheetClosing(false);setSheetCasting(null);sheetPushedRef.current=false;}},[active]);
+  useEffect(()=>{
+    if(!sheetCasting)return;
+    const el=sheetElRef.current;
+    if(el)el.scrollTop=0;
+  },[sheetCasting]);
   useEffect(()=>{
     if(!sheetCasting)return;
     const onKey=(e)=>{if(e.key==="Escape")closeSheet();};
@@ -14412,12 +14435,12 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         of margin (layout every frame), which is what removed the stutter. */}
     {sheetCasting&&ReactDOM.createPortal(<>
       <div className={"cs-sheet-dim"+(sheetClosing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
-      <div className={"cs-sheet"+(sheetClosing?" closing":"")} role="dialog" aria-modal="true">
+      <div ref={sheetElRef} className={"cs-sheet"+(sheetClosing?" closing":"")} role="dialog" aria-modal="true">
         <div className="cs-sheet-bar">
           <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close">×</button>
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
-          ? <CastingDetailPage casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full);window.scrollTo(0,0);}else{setSheetCasting(null);onNavigate("search");}}}/>
+          ? <CastingDetailPage key={sheetCasting.id} casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full,null,{replace:true});}else{setSheetCasting(null);onNavigate("search");}}}/>
           : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>,document.body)}
