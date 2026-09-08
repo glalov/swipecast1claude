@@ -11726,8 +11726,14 @@ function AuditionModalInner({casting,role,roleId,instr,session,myPhotos,isDbCast
    two objects on purpose; the fanned-notes version has seven and they merge
    into a single smear at this size. */
 function PayNoteIcon({s=28}){
-  const NOTE="#84C93F", PLATE="#BDE68C", MARK="#5F9C2C",
-        TOP="#FFC94A", SIDE="#EDA61C", EDGE="#D89113";
+  /* Deliberately NOT stock-clipart lime + jackpot gold. The note sits in the
+     site's own green family so it reads as part of the pay plate rather than
+     an image dropped into it, and the coins are muted brass: saturated gold is
+     the strongest "get rich" signal there is, and this audience gets targeted
+     by pay-to-play casting scams. Warm enough to catch the eye, quiet enough
+     to still be a fact about the job. */
+  const NOTE="#1E7A46", PLATE="#8CC4A5", MARK="#0D5730",
+        TOP="#D6AC57", SIDE="#B98A33", EDGE="#9E7325";
   /* Coins are drawn bottom-up so each overlaps the one beneath it. */
   const coins=[21.2,18.5,15.8].map((cy,i)=>(
     <React.Fragment key={i}>
