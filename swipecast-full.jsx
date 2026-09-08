@@ -4060,9 +4060,12 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-pay{text-align:right;border:1px solid #D7E7DC;background:#F4FAF6;border-radius:11px;padding:11px 15px;}
 .rl-pay .v{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:17.5px;font-weight:800;color:#0F6B33;letter-spacing:-.3px;white-space:nowrap;}
 .rl-pay .s{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12.5px;font-weight:700;color:#32334A;white-space:nowrap;border-top:1px solid #E1EDE5;margin-top:8px;padding-top:7px;}
-/* A 15px coin in a 24px tile was a smudge nobody could identify. A banknote at
-   18px in a 28px tile is legible at arm's length and says "money" on sight. */
-.rl-coin{width:28px;height:28px;border-radius:9px;background:rgba(15,107,51,.15);display:inline-flex;align-items:center;justify-content:center;flex:none;color:#0F6B33;}
+/* A 15px coin in a 24px tile was a smudge nobody could identify, and an 18px
+   line glyph in a tinted tile was barely better — the tile's own contrast
+   against a pale mark is ~1.1:1, so it hid the icon instead of framing it.
+   The mark is now a filled 28px illustration on no tile: the tile's six pixels
+   went to the artwork. */
+.rl-coin{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;flex:none;}
 /* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
    so an actor can compare every rate without losing their place. */
 .rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
@@ -11716,6 +11719,39 @@ function AuditionModalInner({casting,role,roleId,instr,session,myPhotos,isDbCast
   );
 }
 
+/* The pay plate's money mark. A Tabler line glyph at 18px was a smudge next to
+   17.5px/800 type — an outline spends ink only on its perimeter, so it reads
+   lighter than it measures. This is filled, and drawn to fill its box: one
+   angled note plus one coin stack, both large enough to survive 28px. Kept to
+   two objects on purpose; the fanned-notes version has seven and they merge
+   into a single smear at this size. */
+function PayNoteIcon({s=28}){
+  const NOTE="#84C93F", PLATE="#BDE68C", MARK="#5F9C2C",
+        TOP="#FFC94A", SIDE="#EDA61C", EDGE="#D89113";
+  /* Coins are drawn bottom-up so each overlaps the one beneath it. */
+  const coins=[21.2,18.5,15.8].map((cy,i)=>(
+    <React.Fragment key={i}>
+      <path d={`M1.6 ${cy} v2.3 a5 1.9 0 0 0 10 0 v-2.3 z`} fill={SIDE}/>
+      <ellipse cx="6.6" cy={cy} rx="5" ry="1.9" fill={TOP}/>
+      <ellipse cx="6.6" cy={cy} rx="2.6" ry="0.95" fill={EDGE} opacity=".45"/>
+    </React.Fragment>
+  ));
+  return (
+    <svg width={s} height={s} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <g transform="translate(14 9.6) rotate(-8)">
+        <rect x="-9.4" y="-5" width="18.8" height="10" rx="1.2" fill={NOTE}/>
+        <ellipse cx="0" cy="0" rx="3.4" ry="2.9" fill={PLATE}/>
+        <g transform="scale(0.42)" fill="none" stroke={MARK} strokeWidth="4.05"
+           strokeLinecap="round" strokeLinejoin="round">
+          <path d="M0 -5.6 V5.6"/>
+          <path d="M2.7 -2.7 c-.5-1.1 -1.9-1.6 -3.1-1.2 c-1.6.5 -1.8 2.6 -.3 3.3 l3 1.4 c1.5.7 1.3 2.8 -.3 3.3 c-1.2.4 -2.6-.1 -3.1-1.2"/>
+        </g>
+      </g>
+      {coins}
+    </svg>
+  );
+}
+
 function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting,backKey}){
   const t=useT();
   const {lang}=useLanguage();
@@ -12457,7 +12493,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
               </div>
               <div className="rl-right">
                 {total!=null&&<div className="rl-pay">
-                  <div className="v"><span className="rl-coin"><Ico n="cash-banknote" s={18}/></span>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</div>
+                  <div className="v"><span className="rl-coin"><PayNoteIcon s={28}/></span>{fmtMoney(r.rate_amount)}{unitSfx(r.rate_unit)}</div>
                   {r.rate_unit!=="flat"&&r.est_days>1&&<div className="s"><Ico n="calendar" s={15}/>Est. {fmtMoney(total)} &middot; {r.est_days} days</div>}
                 </div>}
                 {/* Apply lives at the end of the brief. A row with nothing to
