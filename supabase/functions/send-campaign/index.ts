@@ -1,6 +1,6 @@
 // send-campaign — Supabase Edge Function (bulk email tool for CastSlate promo campaigns)
 // Auth: `secret` === SUPABASE_SERVICE_ROLE_KEY or ADMIN_CAMPAIGN_SECRET, OR an admin user JWT.
-// Public unsubscribe GET. Actions: create_campaign, update_campaign, import_recipients, list_campaigns,
+// Public unsubscribe GET. Actions: create_campaign, import_recipients, list_campaigns,
 // status, reset_campaign, requeue_failed, send_batch (+ test_email), provider_debug.
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
@@ -23,6 +23,13 @@ const EMAIL_PROVIDER        = "resend";
 const AWS_ACCESS_KEY_ID     = Deno.env.get("AWS_ACCESS_KEY_ID");
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_SECRET_ACCESS_KEY");
 const AWS_SES_REGION        = Deno.env.get("AWS_SES_REGION") ?? Deno.env.get("AWS_REGION") ?? "us-east-1";
+
+// A provider call with no timeout can hang past the 150s edge-function wall clock. When
+// that happened the gateway returned 504 to the admin UI *while the isolate kept sending*,
+// so the operator saw a hard error on a batch that was still in flight. Every provider
+// call now aborts at 20s, and send_batch keeps enough headroom to always return cleanly.
+const SEND_TIMEOUT_MS = 20_000;
+const fetchT = (url: string, init: RequestInit) => fetch(url, { ...init, signal: AbortSignal.timeout(SEND_TIMEOUT_MS) });
 
 function emailConfigured(): boolean {
   if (EMAIL_PROVIDER === "ses")    return !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY);
@@ -47,7 +54,7 @@ async function sendEmail(a: SendEmailArgs, providerOverride?: string): Promise<S
       // deno-lint-ignore no-explicit-any
       const payload:any = { FromEmailAddress:a.from, Destination:{ ToAddresses:a.to }, Content:content };
       if (a.replyTo) payload.ReplyToAddresses = [a.replyTo];
-      const r = await aws.fetch(`https://email.${AWS_SES_REGION}.amazonaws.com/v2/email/outbound-emails`, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload) });
+      const r = await aws.fetch(`https://email.${AWS_SES_REGION}.amazonaws.com/v2/email/outbound-emails`, { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(payload), signal:AbortSignal.timeout(SEND_TIMEOUT_MS) });
       if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.MessageId ?? null, err:null, status:r.status }; }
       return { ok:false, id:null, err:await r.text(), status:r.status };
     } catch (e) { return { ok:false, id:null, err:String(e), status:500 }; }
@@ -58,9 +65,11 @@ async function sendEmail(a: SendEmailArgs, providerOverride?: string): Promise<S
     // deno-lint-ignore no-explicit-any
     const sbody:any = { from:parseAddr(a.from), to:parseAddr(a.to[0]), subject:a.subject, html:a.html };
     if (a.text) sbody.text = a.text;
-    const r = await fetch("https://api.sender.net/v2/message/send", { method:"POST", headers:{ Authorization:`Bearer ${SENDER_API_KEY}`, "Content-Type":"application/json", Accept:"application/json" }, body:JSON.stringify(sbody) });
-    if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:(d.message_id ?? d.id ?? null), err:null, status:r.status }; }
-    return { ok:false, id:null, err:await r.text(), status:r.status };
+    try {
+      const r = await fetchT("https://api.sender.net/v2/message/send", { method:"POST", headers:{ Authorization:`Bearer ${SENDER_API_KEY}`, "Content-Type":"application/json", Accept:"application/json" }, body:JSON.stringify(sbody) });
+      if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:(d.message_id ?? d.id ?? null), err:null, status:r.status }; }
+      return { ok:false, id:null, err:await r.text(), status:r.status };
+    } catch (e) { return { ok:false, id:null, err:`provider_timeout after ${SEND_TIMEOUT_MS}ms — delivery uncertain: ${String(e)}`, status:504 }; }
   }
   if (!RESEND_API_KEY) return { ok:false, id:null, err:"RESEND_API_KEY not set", status:500 };
   // deno-lint-ignore no-explicit-any
@@ -68,9 +77,15 @@ async function sendEmail(a: SendEmailArgs, providerOverride?: string): Promise<S
   if (a.text) body.text = a.text;
   if (a.replyTo) body.reply_to = a.replyTo;
   if (a.headers) body.headers = a.headers;
-  const r = await fetch("https://api.resend.com/emails", { method:"POST", headers:{ Authorization:`Bearer ${RESEND_API_KEY}`, "Content-Type":"application/json" }, body:JSON.stringify(body) });
-  if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.id ?? null, err:null, status:r.status }; }
-  return { ok:false, id:null, err:await r.text(), status:r.status };
+  try {
+    const r = await fetchT("https://api.resend.com/emails", { method:"POST", headers:{ Authorization:`Bearer ${RESEND_API_KEY}`, "Content-Type":"application/json" }, body:JSON.stringify(body) });
+    if (r.ok) { const d = await r.json().catch(()=>({})); return { ok:true, id:d.id ?? null, err:null, status:r.status }; }
+    return { ok:false, id:null, err:await r.text(), status:r.status };
+  } catch (e) {
+    // Aborted or network-dropped: Resend may or may not have accepted it. Reported as a
+    // hard failure on purpose — requeueing a maybe-sent address would double-mail someone.
+    return { ok:false, id:null, err:`provider_timeout after ${SEND_TIMEOUT_MS}ms — delivery uncertain: ${String(e)}`, status:504 };
+  }
 }
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, GET, OPTIONS" };
@@ -137,11 +152,10 @@ serve(async (req) => {
     }
 
     // Swap the design (or subject) on a campaign that already has its list
-    // attached — the reason this exists is that a casting can expire halfway
-    // through a send, and re-uploading an 11K CSV just to fix the HTML would
-    // re-queue people who were already emailed. Recipients are untouched: only
-    // the still-queued rows pick up the new HTML, because send_batch reads
-    // camp.html fresh on every batch.
+    // attached — a casting can expire halfway through a send, and re-uploading
+    // an 11K CSV just to fix the HTML would re-queue people already emailed.
+    // Recipients are untouched: only the still-queued rows pick up the new HTML,
+    // because send_batch reads camp.html fresh on every batch.
     if (action === "update_campaign") {
       const { campaign_id, name, subject, html, from_email, reply_to } = body;
       if (!campaign_id) return res({ error: "campaign_id required" }, 400);
@@ -150,7 +164,7 @@ serve(async (req) => {
       if (typeof subject === "string" && subject.trim()) patch.subject = subject;
       if (typeof html === "string" && html.trim()) {
         // An email without the unsubscribe tag is not sendable — refuse rather
-        // than let a campaign go out that can't be opted out of.
+        // than let a campaign go out that cannot be opted out of.
         if (!html.includes("{{UNSUB_URL}}")) return res({ error: "html is missing {{UNSUB_URL}} — refusing to save" }, 400);
         patch.html = html;
       }
@@ -178,20 +192,21 @@ serve(async (req) => {
     if (action === "list_campaigns") {
       const { data: camps } = await sb.from("email_campaigns").select("id,name,subject,status,total_recipients,sent_count,failed_count,created_at").order("created_at", { ascending: false }).limit(30);
       const out = [];
-      for (const c of camps || []) { const cnt = async (st: string) => (await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", c.id).eq("status", st)).count ?? 0; const [queued, sent, failed, skipped] = await Promise.all([cnt("queued"), cnt("sent"), cnt("failed"), cnt("skipped_unsub")]); out.push({ ...c, queued, sent, failed, skipped }); }
+      for (const c of camps || []) { const cnt = async (st: string) => (await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", c.id).eq("status", st)).count ?? 0; const [queued, sent, failed, skipped, skippedIsUser] = await Promise.all([cnt("queued"), cnt("sent"), cnt("failed"), cnt("skipped_unsub"), cnt("skipped_is_user")]); out.push({ ...c, queued, sent, failed, skipped, skipped_is_user: skippedIsUser }); }
       return res({ campaigns: out });
     }
 
     if (action === "status") {
       const { campaign_id } = body; if (!campaign_id) return res({ error: "campaign_id required" }, 400);
       const cnt = async (status: string) => (await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", status)).count ?? 0;
-      const [queued, sent, failed, skipped] = await Promise.all([cnt("queued"), cnt("sent"), cnt("failed"), cnt("skipped_unsub")]);
-      return res({ queued, sent, failed, skipped, remaining: queued });
+      const [queued, sent, failed, skipped, skippedIsUser] = await Promise.all([cnt("queued"), cnt("sent"), cnt("failed"), cnt("skipped_unsub"), cnt("skipped_is_user")]);
+      return res({ queued, sent, failed, skipped, skipped_is_user: skippedIsUser, remaining: queued });
     }
 
     if (action === "reset_campaign") {
       const { campaign_id } = body; if (!campaign_id) return res({ error: "campaign_id required" }, 400);
-      await sb.from("email_campaign_recipients").update({ status: "queued", provider_message_id: null, error_message: null, sent_at: null }).eq("campaign_id", campaign_id).neq("status", "skipped_unsub");
+      // Never resurrect an unsubscribe, a registered user, or a known-bad address.
+      await sb.from("email_campaign_recipients").update({ status: "queued", provider_message_id: null, error_message: null, sent_at: null }).eq("campaign_id", campaign_id).not("status", "in", "(skipped_unsub,skipped_is_user,skipped_invalid)");
       await sb.from("email_campaigns").update({ status: "draft", sent_count: 0, failed_count: 0, updated_at: new Date().toISOString() }).eq("id", campaign_id);
       const { count } = await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", "queued");
       return res({ ok: true, requeued: count ?? 0 });
@@ -216,7 +231,65 @@ serve(async (req) => {
       // First-name personalization: {{FIRST_NAME}} → recipient's first name, with a
       // friendly "there" fallback for blank or handle-style names (e.g. "user8").
       const firstNameOf = (name?: string | null) => { const first = (name ?? "").trim().split(/\s+/)[0] || ""; if (!first || /\d/.test(first) || first.length > 20) return "there"; return first.charAt(0).toUpperCase() + first.slice(1); };
-      const buildHtml = (email: string, name?: string | null) => addUtm(camp.html).replaceAll("{{FIRST_NAME}}", firstNameOf(name)).replaceAll("{{UNSUB_URL}}", unsubUrl(email, campaign_id));
+
+      // ── {{CASTINGS}} — live listings, resolved once per batch ──────────────
+      // A campaign's HTML is written weeks before it finishes sending, so any
+      // casting hardcoded into it is guaranteed to expire mid-list. The template
+      // instead carries {{CASTINGS}} — optionally {{CASTINGS:slug}} to pin one
+      // while it lasts — and it is filled here from the DB, so every batch, and
+      // every test send, mails whatever is genuinely open right now. When a
+      // listing expires it drops out of the RPC and the next newest takes its
+      // place with no edit to the campaign.
+      const esc = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      const money = (n: number) => "$" + Number(n).toLocaleString("en-US", { maximumFractionDigits: 0 });
+      const rateLine = (lo: number | null, hi: number | null, unit: string | null) => {
+        if (lo == null || hi == null) return "";
+        const sfx = unit === "flat" ? " flat" : unit === "week" ? "/week" : unit === "hour" ? "/hour" : "/day";
+        return (Number(lo) === Number(hi) ? money(lo) : `${money(lo)}&ndash;${money(hi)}`) + sfx + ".";
+      };
+      const listingHtml = (c: any) => {
+        const url = `${APP_URL}/casting/${encodeURIComponent(c.slug)}`;
+        const eyebrow = [c.ctype, /not applicable/i.test(c.union_status || "") ? "" : c.union_status, "Paid"]
+          .filter(Boolean).map(esc).join(" &bull; ");
+        const roles = c.role_count === 1 ? "1 role" : `${c.role_count} roles`;
+        const ages = (c.age_lo != null && c.age_hi != null && c.age_hi > c.age_lo) ? `, ages ${c.age_lo}&ndash;${c.age_hi}` : "";
+        const where = c.location ? `${esc(c.location)} &mdash; ` : "";
+        const meta = `${where}${roles}${ages}. ${rateLine(c.rate_lo, c.rate_hi, c.rate_unit)}`.trim();
+        // Not every casting has a still. Rather than invent one or leave a broken
+        // frame, an imageless listing gets a typographic tile in the same 140x96
+        // slot so the column keeps its rhythm.
+        const thumb = c.image_url
+          ? `<img src="${esc(c.image_url)}" width="140" alt="${esc(c.title)}" style="display:block;width:140px;height:96px;object-fit:cover;border:none;outline:none;" />`
+          : `<table width="140" cellpadding="0" cellspacing="0" role="presentation" style="width:140px;height:96px;background:#e6e1d4;"><tr><td style="height:96px;text-align:center;vertical-align:middle;padding:0 8px;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#6b6455;line-height:1.4;">${esc(c.ctype || "Casting")}</td></tr></table>`;
+        return `  <tr><td class="pad" style="padding:14px 24px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+      <td class="thumb" width="140" style="vertical-align:top;padding-right:14px;line-height:0;">${thumb}</td>
+      <td style="vertical-align:top;">
+        <div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#0F6B66;margin-bottom:4px;">${eyebrow}</div>
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#101014;line-height:1.25;margin-bottom:5px;">${esc(c.title)}</div>
+        <div style="font-family:Helvetica,Arial,sans-serif;font-size:12.5px;color:#5c564a;line-height:1.6;">${meta}</div>
+        <a href="${url}" style="display:inline-block;margin-top:8px;font-family:Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;color:#3a35c9;text-decoration:underline;">See the roles &rarr;</a>
+      </td>
+    </tr></table>
+  </td></tr>`;
+      };
+      const CASTINGS_TAG = /\{\{CASTINGS(?::([a-z0-9-]+))?\}\}/i;
+      let castingsBlock: string | null = null;
+      const tagMatch = (camp.html || "").match(CASTINGS_TAG);
+      if (tagMatch) {
+        const pinned = tagMatch[1] ? [tagMatch[1]] : [];
+        const { data: live, error: le } = await sb.rpc("get_campaign_castings", { n: 3, pinned });
+        const rows = (live || []) as any[];
+        // Refuse rather than mail an empty "Open this week" section.
+        if (le || !rows.length) return res({ error: le ? `castings lookup failed: ${le.message}` : "no live castings to feature — refusing to send" }, 500);
+        const rule = `  <tr><td class="pad" style="padding:14px 24px 0;"><div style="height:1px;background:#e2ddd0;"></div></td></tr>`;
+        castingsBlock = rows.map(listingHtml).join("\n" + rule + "\n") + "\n";
+      }
+      const withCastings = (html: string) => castingsBlock == null ? html : html.replace(CASTINGS_TAG, castingsBlock);
+
+      // withCastings first, then addUtm — the injected listing links have to be
+      // in the HTML before the UTM pass runs or they go out untagged.
+      const buildHtml = (email: string, name?: string | null) => addUtm(withCastings(camp.html)).replaceAll("{{FIRST_NAME}}", firstNameOf(name)).replaceAll("{{UNSUB_URL}}", unsubUrl(email, campaign_id));
       const send = async (to: string, html: string) => { const out = await sendEmail({ from: camp.from_email, to: [to], replyTo: camp.reply_to || CONTACT_EMAIL, subject: camp.subject, html, headers: { "List-Unsubscribe": `<${unsubUrl(to, campaign_id)}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } }, sendProvider); if (out.ok) return { ok: true, id: out.id as string }; return { ok: false, err: out.err ?? "", status: out.status }; };
 
       const testEmail = (body.test_email ?? "").toString().toLowerCase().trim();
@@ -227,17 +300,31 @@ serve(async (req) => {
       }
 
       const batchSize = Math.min(Math.max(parseInt(body.batch_size ?? "50", 10) || 50, 1), 100);
-      const { data: recips } = await sb.from("email_campaign_recipients").select("id,email,name").eq("campaign_id", campaign_id).eq("status", "queued").limit(batchSize);
+      const { data: recips } = await sb.from("email_campaign_recipients").select("id,email,name").eq("campaign_id", campaign_id).eq("status", "queued").order("created_at", { ascending: true }).limit(batchSize);
       if (!recips?.length) { await sb.from("email_campaigns").update({ status: "sent", updated_at: new Date().toISOString() }).eq("id", campaign_id); return res({ sent: 0, failed: 0, skipped: 0, remaining: 0, done: true }); }
       await sb.from("email_campaigns").update({ status: "sending" }).eq("id", campaign_id);
       const emails = recips.map((r: any) => r.email);
       const { data: unsubs } = await sb.from("email_unsubscribes").select("email").in("email", emails);
       const unsubSet = new Set((unsubs || []).map((u: any) => u.email));
-      const started = Date.now(); const TIME_BUDGET_MS = 110_000;
-      let sent = 0, failed = 0, skipped = 0, deferred = 0, quotaHit = false, timedOut = false; let rateLimitStreak = 0;
+      // Cold-list campaigns skip anyone who has since become a CastSlate user, free
+      // or premium. A DB trigger already pulls them out of the queue at signup; this
+      // is the backstop for rows requeued by hand or a signup mid-run.
+      let memberSet = new Set<string>();
+      if (camp.exclude_registered_users !== false) {
+        const { data: mem, error: me } = await sb.rpc("cs_campaign_member_emails", { addrs: emails });
+        // Fail closed: a broken filter must not turn into a blast at paying members.
+        if (me) return res({ error: `member filter failed, batch not sent: ${me.message}` }, 500);
+        memberSet = new Set(((mem as string[]) || []).map((e) => e.toLowerCase()));
+      }
+      // Budget + per-send timeout must both fit inside the 150s edge-function wall clock:
+      // 85s of loop, plus at most one 20s send in flight, plus the tallies = ~110s worst
+      // case. Anything left over is reported as remaining and picked up by the next batch.
+      const started = Date.now(); const TIME_BUDGET_MS = 85_000;
+      let sent = 0, failed = 0, skipped = 0, skippedMember = 0, deferred = 0, quotaHit = false, timedOut = false; let rateLimitStreak = 0;
       for (const r of recips) {
         if (Date.now() - started > TIME_BUDGET_MS) { timedOut = true; break; }
         if (unsubSet.has(r.email)) { await sb.from("email_campaign_recipients").update({ status: "skipped_unsub" }).eq("id", r.id); skipped++; continue; }
+        if (memberSet.has(r.email)) { await sb.from("email_campaign_recipients").update({ status: "skipped_is_user" }).eq("id", r.id); skippedMember++; continue; }
         const out = await send(r.email, buildHtml(r.email, r.name));
         if (out.ok) { await sb.from("email_campaign_recipients").update({ status: "sent", provider_message_id: out.id, sent_at: new Date().toISOString(), error_message: null }).eq("id", r.id); sent++; rateLimitStreak = 0; }
         else {
@@ -251,7 +338,7 @@ serve(async (req) => {
       const cnt = async (status: string) => (await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", status)).count ?? 0;
       const [totalSent, totalFailed, remaining] = await Promise.all([cnt("sent"), cnt("failed"), cnt("queued")]);
       await sb.from("email_campaigns").update({ sent_count: totalSent, failed_count: totalFailed, status: remaining === 0 ? "sent" : "sending", updated_at: new Date().toISOString() }).eq("id", campaign_id);
-      return res({ sent, failed, skipped, deferred, quota_hit: quotaHit, timed_out: timedOut, remaining });
+      return res({ sent, failed, skipped, skipped_is_user: skippedMember, deferred, quota_hit: quotaHit, timed_out: timedOut, remaining });
     }
 
     return res({ error: "Unknown action" }, 400);
