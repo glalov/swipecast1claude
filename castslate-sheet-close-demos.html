@@ -1,0 +1,77 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Casting sheet close button</title>
+<style>
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;
+--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;--red:#D63B3B;}
+*{box-sizing:border-box}
+body{margin:0;background:#EFEAE0;font:15px/1.5 'DM Sans',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;color:var(--t1)}
+header{padding:28px 32px 20px;background:var(--bg);border-bottom:1px solid var(--bdr)}
+h1{margin:0 0 8px;font-size:22px;letter-spacing:-.4px}
+header p{margin:0;color:var(--t2);font-size:14px;max-width:900px}
+.grid{padding:24px 32px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:22px}
+.demo{border-radius:14px;overflow:hidden;box-shadow:0 3px 16px rgba(26,26,46,.10);background:var(--bg)}
+.dh{display:flex;align-items:baseline;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid var(--bdr)}
+.dn{font-size:12px;font-weight:800;color:var(--teal-dk);letter-spacing:.6px}
+.dt{font-size:14.5px;font-weight:800;letter-spacing:-.2px}
+.dd{font-size:12px;color:var(--t2);margin-left:auto;text-align:right;max-width:215px;line-height:1.4}
+/* exact copy of the live sheet bar */
+.cs-sheet-bar{display:flex;align-items:center;justify-content:flex-end;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--bdr)}
+.body{padding:16px 18px 20px;background:var(--bg)}
+.pill{display:inline-flex;align-items:center;gap:6px;background:#EFEAFB;color:#5B4BB5;font-size:10px;font-weight:800;letter-spacing:.8px;padding:5px 11px;border-radius:20px}
+.ttl{font-size:27px;font-weight:800;letter-spacing:-.8px;margin:10px 0 4px}
+.sub{color:var(--t2);font-size:13.5px}
+.cs-sheet-x{width:34px;height:34px;border-radius:9px;border:1px solid var(--bdr);background:var(--bg);font-size:18px;cursor:pointer;color:var(--t1);line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;font-family:inherit;transition:all .16s ease}
+/* ---- variants ---- */
+.v1{}
+.v2{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700}
+.v2:hover{background:var(--teal-dk);border-color:var(--teal-dk)}
+.v3{background:#fff;border:1.5px solid var(--teal);color:var(--teal-dk);font-weight:700}
+.v3:hover{background:var(--teal);color:#fff}
+.v4{background:var(--amber);border-color:var(--amber-dk);color:#3A2000;font-weight:800}
+.v4:hover{background:var(--amber-dk);color:#fff}
+.v5{width:auto;padding:0 14px;gap:7px;background:var(--t1);border-color:var(--t1);color:#fff;font-size:13px;font-weight:700;border-radius:9px}
+.v5:hover{background:#000}
+.v6{background:#fff;border:1px solid var(--bdr);color:var(--t1);box-shadow:0 1px 3px rgba(26,26,46,.12);border-radius:50%}
+.v6:hover{background:var(--s2)}
+.v7{width:auto;padding:0 13px;gap:7px;background:#FDF2E7;border:1.5px solid var(--amber);color:var(--amber-dk);font-size:12.5px;font-weight:800;letter-spacing:.3px}
+.v7:hover{background:var(--amber);color:#fff}
+.v8{background:var(--teal-dk);border-color:var(--teal-dk);color:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(34,99,101,.35)}
+.v8:hover{transform:scale(1.06)}
+.v9{background:#FBEDED;border:1.5px solid #E9BDBD;color:var(--red);font-weight:800}
+.v9:hover{background:var(--red);border-color:var(--red);color:#fff}
+.v10{width:auto;padding:0 14px 0 12px;gap:8px;background:var(--teal);border-color:var(--teal);color:#fff;font-size:12.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:20px}
+.v10:hover{background:var(--teal-dk)}
+.hint{padding:9px 16px;background:#fff;border-top:1px solid var(--bdr);font-size:11.5px;color:var(--t3)}
+svg{display:block}
+</style></head><body>
+<header>
+<h1>Casting sheet &mdash; close button</h1>
+<p>The live button is a 34px outline square in the page's own cream on cream, which is why it disappears. Ten more visible versions, each in an exact copy of the real sheet bar (same 11px&thinsp;/&thinsp;16px padding, same border, same page colours underneath). Hover each one to see its state.</p>
+</header>
+<div class="grid" id="g"></div>
+<script>
+const X = (w) => `<svg width="${w||16}" height="${w||16}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>`;
+const opts=[
+ {n:"00",t:"Current (for comparison)",d:"34px outline square, cream on cream, hairline border.",cls:"v1",html:"×"},
+ {n:"01",t:"Solid Teal",d:"The site's own teal, filled. Reads as the one control in the bar without shouting.",cls:"v2",html:X(16)},
+ {n:"02",t:"Teal Outline",d:"White chip, teal ring and glyph; fills teal on hover. Quieter, still unmissable.",cls:"v3",html:X(16)},
+ {n:"03",t:"Amber",d:"The site's amber. Warmest and highest attention — amber is used for the nav highlight already.",cls:"v4",html:X(16)},
+ {n:"04",t:"Labelled Ink",d:"Dark chip with the word. Removes all doubt about what it does — best for first-time visitors.",cls:"v5",html:X(15)+"Close"},
+ {n:"05",t:"White Circle",d:"Round, white, with a real shadow so it lifts off the cream instead of blending into it.",cls:"v6",html:X(16)},
+ {n:"06",t:"Amber Labelled",d:"Warm tinted chip with the word and a defined border. Visible without being a button-red.",cls:"v7",html:X(15)+"CLOSE"},
+ {n:"07",t:"Teal Circle",d:"Filled teal disc with a soft shadow. The most obviously clickable shape of the set.",cls:"v8",html:X(16)},
+ {n:"08",t:"Soft Red",d:"Tinted red that goes solid on hover. Clearest 'dismiss' cue, but red carries a warning tone.",cls:"v9",html:X(16)},
+ {n:"09",t:"Teal Pill",d:"Uppercase pill. The most deliberate — it looks like a decision rather than a stray glyph.",cls:"v10",html:X(14)+"CLOSE"},
+];
+document.getElementById('g').innerHTML=opts.map(o=>`
+<div class="demo">
+  <div class="dh"><span class="dn">${o.n}</span><span class="dt">${o.t}</span><span class="dd">${o.d}</span></div>
+  <div class="cs-sheet-bar"><button class="cs-sheet-x ${o.cls}">${o.html}</button></div>
+  <div class="body">
+    <span class="pill">CAST SLATE PICK</span>
+    <div class="ttl">2:17 A.M</div>
+    <div class="sub">Experimental Thriller Film, Gowanus, Brooklyn.</div>
+  </div>
+  <div class="hint">Hover the button to see its state</div>
+</div>`).join('');
+</script></body></html>

@@ -2730,8 +2730,15 @@ body.sheet-push .b2t-cube{display:none;}
 .cs-sheet .page{padding-top:14px !important;min-height:0 !important;}
 .cs-sheet-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:flex-end;padding:11px 16px;background:var(--bg);border-bottom:1px solid var(--bdr);}
 .cs-sheet-back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--acc);cursor:pointer;padding:6px 4px;}
-.cs-sheet-x{width:34px;height:34px;border-radius:9px;border:1px solid var(--bdr);background:var(--bg);font-size:18px;cursor:pointer;color:var(--t1);line-height:1;}
-.cs-sheet-x:hover{background:var(--s2);}
+/* Labelled, not a bare glyph. This bar is cream on cream, so the old 34px
+   outline square had almost no contrast and people did not register it as a
+   control at all — the word removes the ambiguity as well as the visibility
+   problem. */
+.cs-sheet-x{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:9px;
+  border:1px solid var(--t1);background:var(--t1);color:#fff;font-family:inherit;font-size:13px;
+  font-weight:700;line-height:1;cursor:pointer;transition:background .16s ease,border-color .16s ease;}
+.cs-sheet-x:hover{background:#000;border-color:#000;}
+.cs-sheet-x svg{display:block;}
 @media(max-width:768px){.cs-sheet{width:100%;}}
 @media(prefers-reduced-motion:reduce){.cs-sheet,.cs-sheet.closing,.cs-sheet-dim,.cs-sheet-dim.closing{animation:none;}}
 /* Menu drawer, modelled on caa.com. Three things make it read as "pushing the page
@@ -14480,7 +14487,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       <div className={"cs-sheet-dim"+(sheetClosing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
       <div ref={sheetElRef} className={"cs-sheet"+(sheetClosing?" closing":"")} role="dialog" aria-modal="true">
         <div className="cs-sheet-bar">
-          <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close">×</button>
+          <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>Close</button>
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
           ? <CastingDetailPage key={sheetCasting.id} casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full,null,{replace:true});}else{setSheetCasting(null);onNavigate("search");}}}/>
