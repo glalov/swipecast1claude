@@ -249,7 +249,7 @@ function cardStrip(k: Skin, locked: boolean): string {
 // button goes to /membership, which is where the plans live and stay correct.
 const PERKS = [
   `The Talent Agency &amp; Manager Directory &mdash; all ${DIR.total} across Los Angeles and New York`,
-  "Unlimited submissions (free accounts get one a week)",
+  "Unlimited submissions (free accounts get one submission, total)",
   "Actor Business Card with QR code",
   "Mailing postcard &amp; agent promo card",
   "Actor Slate Video &mdash; your 7-second intro",

@@ -671,7 +671,7 @@ Decline once and move on. Do not apologise twice.
 GROUNDING
 Never invent a price, a limit or a feature. Premium is $99/year ($8.25/month)
 and renews at $99; six months is $71.70 ($11.95/month); monthly is $14.95.
-Free accounts get 1 headshot and 1 submission per week. If you do not know,
+Free accounts get 1 headshot and one free submission — the first one, then Premium is required. If you do not know,
 say so and offer the team.
 
 WHO YOU ARE TALKING TO
@@ -723,7 +723,7 @@ a minor, or two consecutive misses - hand to the human team.`;
 
 /* ── help sheets ─────────────────────────────────────────────── */
 const ART={
- pricing:{t:'Membership & pricing',c:`<h5>Free account</h5><p>Free for as long as you want it, no card required. <b>1 headshot</b>, <b>${FREE.sub} submission per week</b>, and full browsing of every casting on the platform.</p><h5>Premium</h5><ul><li><b>$99 a year</b> — about $8.25/month, and it renews at $99. No first-year discount that climbs later.</li><li><b>$71.70 for six months</b> — $11.95/month.</li><li><b>$14.95 month to month</b> — cancel whenever.</li></ul><p>Every plan includes the same features. There is no higher tier holding anything back.</p>`},
+ pricing:{t:'Membership & pricing',c:`<h5>Free account</h5><p>Free for as long as you want it, no card required. <b>1 headshot</b>, <b>first submission free</b>, and full browsing of every casting on the platform.</p><h5>Premium</h5><ul><li><b>$99 a year</b> — about $8.25/month, and it renews at $99. No first-year discount that climbs later.</li><li><b>$71.70 for six months</b> — $11.95/month.</li><li><b>$14.95 month to month</b> — cancel whenever.</li></ul><p>Every plan includes the same features. There is no higher tier holding anything back.</p>`},
  guarantee:{t:'Every submission gets seen',c:`<p>Submissions are shown to casting directors <b>one at a time, full-screen</b>, and require an explicit decision — callback or pass. Nobody can scroll past you.</p><p>We measure review time per submission. The average is <b>over 8 seconds</b> — roughly five times longer than a grid platform where 80 headshots get scanned in twenty.</p>`},
  profile:{t:'Building a profile that gets callbacks',c:`<h5>Headshot</h5><ul><li>Taken within the last 18 months</li><li>At least 800×1000 pixels, JPG or PNG</li><li>Face filling about 60% of the frame</li><li>Natural or soft studio light, simple background</li></ul><h5>Bio</h5><p>Two to three sentences. Training first, then your strongest types, then one real differentiator.</p><h5>Reel</h5><p>Paste a YouTube or Vimeo URL into the Reel field and we embed it. Under two minutes, strongest work first.</p><h5>Credits & skills</h5><p>Your three most recent credits with years. Special skills only if you can do them on demand.</p>`},
  mm:{t:'Manager Mode',c:`<p>A private career check-in written for your profile, in your inbox every week. Not a newsletter — it reads your actual profile and your actual gaps.</p><ul><li><b>What you are doing well</b></li><li><b>What needs attention</b> — the specific gap holding you back</li><li><b>Your casting lane</b> — what you are most competitive for now</li><li><b>One task this week</b> — one, not a checklist</li></ul><p>It also suggests real industry events in New York and Los Angeles.</p><p>Manager Mode is a profile-improvement tool. It does not guarantee bookings, callbacks, representation or auditions.</p>`},
@@ -932,7 +932,7 @@ const KB=[
 
 {id:'pricing',k:'price cost how much premium membership subscription pay fee dollars month year plan plans expensive cheap billing charge',
  a:c=>`Here's the whole price list — there's nothing behind it.`+
- `<div class="hd">Free — $0, forever</div><ul><li>Full profile and unlimited browsing</li><li>${FREE.shots} headshot</li><li>${FREE.sub} submission per week</li><li>No card required, not a trial</li></ul>`+
+ `<div class="hd">Free — $0, forever</div><ul><li>Full profile and unlimited browsing</li><li>${FREE.shots} headshot</li><li>First submission free</li><li>No card required, not a trial</li></ul>`+
  `<div class="hd">Premium</div><ul><li><b>$99 a year</b> — about <b>$8.25 a month</b>, and it renews at $99. No first-year discount that climbs later.</li><li><b>$71.70 for six months</b> — $11.95 a month</li><li><b>$14.95 month to month</b></li></ul>`+
  `<p><b>Every plan includes the same features.</b> No higher tier, no per-submission fees.</p>`+
  (c.plan==='premium'?`<p>You're on Premium, so all of that is already switched on.</p>`:''),
@@ -961,7 +961,7 @@ const KB=[
 
 {id:'freevp',k:'free vs premium difference compare tiers what do i get upgrade unlock locked included',
  a:c=>`Every difference, in one list.`+
- `<div class="hd">Free account</div><ul><li>Full profile — stats, bio, credits, reel link</li><li>Browse and search every casting</li><li>Messages and callbacks in your Inbox</li><li>${FREE.shots} headshot</li><li>${FREE.sub} submission per week</li></ul>`+
+ `<div class="hd">Free account</div><ul><li>Full profile — stats, bio, credits, reel link</li><li>Browse and search every casting</li><li>Messages and callbacks in your Inbox</li><li>${FREE.shots} headshot</li><li>First submission free</li></ul>`+
  `<div class="hd">Premium adds</div><ul><li><b>Unlimited submissions</b></li><li><b>Unlimited photos, videos and Cast Me As clips</b></li><li><b>Slate Video</b> — a 7-second intro on your profile</li><li><b>Business Card</b> with QR code, plus mailing postcard and agent promo card</li><li><b>Manager Mode</b> — a private career check-in every week</li><li><b>Agency & Manager Directory</b> — ${DIR} companies in LA, Beverly Hills and NYC</li></ul>`,
  src:['pricing','card','mm'],s:['Is it worth it?','What is Manager Mode?','How do I upgrade?'],
  sell:c=>({e:'One price, every feature',h:'No tiers, nothing held back',b:'$99 a year — about <em>$8.25 a month</em> — renewing at $99. Or $14.95 monthly if you\'d rather keep it loose.'})},
@@ -970,7 +970,7 @@ const KB=[
  a:c=>c.plan==='premium'
  ?`You shouldn't be hitting a cap — Premium submissions are unlimited. If a role is refusing you, it's one of these:`+
   `<ul><li>The role hit its own <b>submission cap</b> (250–500) and closed automatically</li><li>The deadline passed and the casting director closed it</li><li>You already submitted to that role</li></ul><p>If none of those fit, I'll get the team to look at your account.</p>`
- :`Free accounts submit to <b>${FREE.sub} casting per week</b>, and it resets weekly. Nothing's wrong with your account.`+
+ :`Free accounts get <b>one free submission</b> — the first one. After that, submitting needs Premium. Nothing's wrong with your account.`+
   `<div class="hd">Making one submission count</div><ul><li>Spend it on a role you fit by <b>type and experience level</b>, not the most exciting one on the board</li><li>Submit <b>early</b> — many casting directors start reviewing days before the deadline</li><li>Write the two-sentence cover note. Cheapest edge available to you</li></ul>`+
   `<p>Roles also cap themselves at 250–500 submissions so casting can review every one properly.</p>`,
  src:['apply','pricing'],s:['How do I apply?','What does Premium include?','What if I miss a deadline?'],

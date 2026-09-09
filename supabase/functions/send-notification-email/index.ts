@@ -351,7 +351,7 @@ function newActorWelcomeHtml(firstName: string): string {
         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 10px">
           ${step("📸", `1 &middot; Add your headshot <span style="font-weight:700;color:#37696A">(required to apply)</span>`, "This is the one thing you need before you can submit to a casting. A clean, well-lit photo — even from your phone — works. You can add more later.")}
           ${step("✍️", "2 &middot; Fill in your basics", "Add your stats and a short bio so a casting director knows who they're looking at the moment they open your profile.")}
-          ${step("🎬", "3 &middot; Browse castings &amp; send your first submission", "Free accounts can submit to <strong>one casting a week</strong>. Find a role that fits and apply — every submission is reviewed by the casting director individually.")}
+          ${step("🎬", "3 &middot; Browse castings &amp; send your first submission", "Your <strong>first submission is free</strong>. Find a role that fits and apply — every submission is reviewed by the casting director individually.")}
         </table>
       </td></tr>
 

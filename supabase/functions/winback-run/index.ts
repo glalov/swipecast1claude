@@ -149,7 +149,7 @@ function email1(firstName: string, uid: string, planLabel: string, planOffer: st
   <tr><td style="padding:4px 30px 0;">${studioStrip()}</td></tr>
   <tr><td style="padding:14px 30px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-top:1px solid ${C.line};"><tr><td style="padding-top:14px;">
-      <div style="font-size:13.5px;color:${C.body};line-height:1.6;text-align:center;">Free members get <b style="color:${C.ink};">one</b> submission a week. Premium members applied to <b style="color:${C.ink};">every</b> casting the moment it posted.</div>
+      <div style="font-size:13.5px;color:${C.body};line-height:1.6;text-align:center;">Free members get <b style="color:${C.ink};">one</b> submission, total. Premium members applied to <b style="color:${C.ink};">every</b> casting the moment it posted.</div>
     </td></tr></table></td></tr>
   <tr><td style="height:20px;"></td></tr>`
   + footerRow(uid, "You started a Premium signup on CastSlate.");
@@ -186,7 +186,7 @@ function email3(firstName: string, uid: string): string {
   <tr><td style="padding:24px 38px 4px;">
     <h1 style="margin:0 0 16px;font-family:${SERIF};font-size:25px;font-weight:700;color:${C.ink};letter-spacing:-0.3px;line-height:1.3;">A quick note, ${esc(firstName)} &mdash;</h1>
     <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">We noticed you started signing up for Premium but didn't finish. No pressure at all &mdash; we just wanted to make sure nothing broke on our end.</p>
-    <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">Here's the honest pitch: free accounts get one submission a week. That's fine to test the waters, but the actors booking work are the ones applying the day a role drops. Premium unlocks unlimited submissions, every casting the moment it posts, our 550+ talent agency &amp; management directory, and your shareable TapeLink card.</p>
+    <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">Here's the honest pitch: free accounts get one submission — the first one, and that's it. That's fine to test the waters, but the actors booking work are the ones applying the day a role drops. Premium unlocks unlimited submissions, every casting the moment it posts, our 550+ talent agency &amp; management directory, and your shareable TapeLink card.</p>
     <p style="margin:0 0 4px;font-size:15.5px;line-height:1.72;color:${C.body};">Whenever you're ready, it's right here. Takes about 20 seconds and you're in.</p></td></tr>
   <tr><td style="padding:18px 34px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${C.panel};border-radius:12px;"><tr>

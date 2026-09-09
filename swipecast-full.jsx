@@ -4866,23 +4866,10 @@ const PLAN_EXCLUSIVES={
 
 // ─── Actor plan limits — single source of truth used by profile upload, casting
 //     submission gate, and the pricing page.
-const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsPerWeek:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
-const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsPerWeek:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
+const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsTotal:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
+const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsTotal:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="from $8.25/month";
-const UPGRADE_MSG=`You've used your ${FREE_PLAN.submissionsPerWeek===1?"free submission":`${FREE_PLAN.submissionsPerWeek} free submissions`} for this week. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more.`;
-// Most recent Monday 6:00 AM America/New_York as a Date — the point free submissions reset each week.
-function weeklyResetStart(){
-  const now=new Date();
-  const etNow=new Date(now.toLocaleString("en-US",{timeZone:"America/New_York"}));
-  const offset=now.getTime()-etNow.getTime();
-  const d=new Date(etNow);
-  const sinceMon=(d.getDay()+6)%7; // days since Monday (Mon=0 … Sun=6)
-  d.setDate(d.getDate()-sinceMon);
-  d.setHours(6,0,0,0);
-  if(d.getTime()>etNow.getTime())d.setDate(d.getDate()-7); // before 6 AM Monday → use last week's reset
-  return new Date(d.getTime()+offset);
-}
-
+const UPGRADE_MSG=`You've used your free submission. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more.`;
 // ─── "Cast Me As" / Casting Fit DNA ─────────────────────────────────────────
 const CASTING_TYPES=[
   "Quiet Threat","Final Girl / Final Boy","Romantic Lead","Unhinged Neighbor",
@@ -5579,7 +5566,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      Free actors can submit to {FREE_PLAN.submissionsPerWeek} {FREE_PLAN.submissionsPerWeek===1?"casting":"castings"} per week and upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency &amp; Manager Directory — 650+ talent agencies and management companies in LA &amp; New York.
+      Free actors get their first casting submission free and can upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency &amp; Manager Directory — 650+ talent agencies and management companies in LA &amp; New York.
 </p>
     {/* Shared value band. Every plan carries the same features, so they are
         stated once here instead of three times inside the cards. */}
@@ -7158,7 +7145,7 @@ const BLOG_CONTENT={
   2:"If you're an actor, model, or performer, you've probably done this math already. One casting site wants $25 a month. The next one somebody tells you that you absolutely need wants $30. That's $300 to $360 a year, per site, before you've walked into a single audition room.\n\nAnd let's be honest about what that money actually buys: access to a database. You upload your headshot, fill in your stats, and hope. Most platforms can't even promise you that a casting director opened your submission.\n\nWe built CastSlate differently, and we priced it for the actors we actually know. Almost every performer we talk to is covering rent with a service job between auditions — waiting tables, bartending, temping, driving, teaching. You already know exactly what $30 a month means when your income changes week to week. So we made CastSlate one of the most affordable options in casting, on purpose, because a subscription should never be the reason you skip submitting for a role.\n\nPremium is $99 a year — about $8.25 a month — and it's $99 the year after that too. No introductory rate that quietly climbs once you've stopped watching. Want something shorter? The 6-month plan is $71.70 ($11.95/month), or you can go month-to-month at $14.95 and cancel whenever you like.\n\nEvery plan includes exactly the same thing — no features held back for a higher tier. Unlimited submissions, your full profile, your Slate Video, your Business Card, and the part we care about most: a guarantee that every submission you send is seen individually by the casting director. There's also a free account, always, with no card required — plenty of actors start there and stay a while, and that's completely fine.\n\nYou should be spending your money on classes, headshots, and getting to the audition. Not on the privilege of being allowed to apply.",
   3:"After six months in closed beta with 200 casting directors and 12,000 talent profiles, CastSlate is officially live in New York City and Los Angeles.\n\nThe numbers from beta exceeded our expectations. Over 50,000 talent have created profiles. Casting directors reviewed an average of 94% of all submissions (compared to the industry average of roughly 40% on grid-based platforms). And talent reported a 3x higher callback rate than on competing platforms.\n\nLaunch markets were chosen strategically — NYC and LA represent the two largest talent pools in North America and account for over 60% of all professional casting activity.\n\nWhat's next? Chicago, Atlanta, and Vancouver are on the roadmap for Q3 2026, with London and Toronto planned for Q4. We're also rolling out self-tape integration, direct messaging between talent and casting, and audition scheduling tools in the coming months.\n\nTo every actor, model, and performer who signed up during beta: thank you for believing in a better way.",
   4:"We sat down with 15 working casting directors across film, TV, commercial, and theater to ask one question: What makes you swipe right on a headshot?\n\nThe answers were surprisingly consistent. Here's what they told us:\n\n1. Authenticity over glamour. 'I want to see YOU, not a retouched version of you,' said one streaming-network casting director. 'If you show up to the audition looking nothing like your headshot, we both wasted our time.'\n\n2. Eyes tell the story. Almost every CD mentioned eyes first. 'The eyes need to be alive. I'm looking for someone who can act through a still image.'\n\n3. Simple backgrounds. Distracting backgrounds, heavy filters, and artistic crops all got negative reactions. 'Plain gray or white. Maybe a subtle outdoor background. That's it.'\n\n4. Current photos. 'If your headshot is more than two years old, get a new one. People change. Hair changes. Weight changes. I need to know what you look like now.'\n\n5. Resolution matters. Blurry, low-res, or poorly lit headshots were the #1 instant-pass reason cited. Invest in a professional photographer — it's the single best investment in your career.",
-  5:"When we started CastSlate, people asked us the same question: 'How can talent pricing stay within reach when other platforms charge two and three times as much?'\n\nThe honest answer is that we started from the actors, not from the spreadsheet. Legacy casting platforms charge performers $25 to $30 a month — which lands as a tax on people who are, in most cases, working a service job between auditions. Bartending, waiting tables, temping, driving, teaching on the side. Those jobs don't pay a lot, and they don't pay predictably. Charging someone $360 a year for the chance to be looked at, and then not even promising they were looked at, is a hard thing to defend.\n\nSo CastSlate is one of the most affordable options in casting, and that's a deliberate choice rather than a launch promotion. Talent can choose a yearly plan at $99 ($8.25/month), a 6-month plan at $71.70 ($11.95/month), or month-to-month at $14.95. Every plan renews at the price you paid — we don't discount your first term and raise it later. Every plan includes the same features. No ads, and we don't sell your data.\n\nThere's also a genuinely free account. Not a trial that expires — a free account, with no card required, that lets you build a profile, browse everything, and submit each week. If Premium never makes sense for you, you're still welcome here.\n\nAn actor on the yearly plan pays about $1.90 a week for unlimited submissions that are each seen individually. That number matters to us, because we'd rather have a lot of working actors who can comfortably afford to stay than a few who are quietly wondering whether to cancel this month.\n\nFor larger studios and agencies, we offer custom enterprise pricing with team access, branding, and API integration.\n\nThe mission hasn't changed since day one: make casting fair, make it efficient, and charge a price that working actors can actually afford.",
+  5:"When we started CastSlate, people asked us the same question: 'How can talent pricing stay within reach when other platforms charge two and three times as much?'\n\nThe honest answer is that we started from the actors, not from the spreadsheet. Legacy casting platforms charge performers $25 to $30 a month — which lands as a tax on people who are, in most cases, working a service job between auditions. Bartending, waiting tables, temping, driving, teaching on the side. Those jobs don't pay a lot, and they don't pay predictably. Charging someone $360 a year for the chance to be looked at, and then not even promising they were looked at, is a hard thing to defend.\n\nSo CastSlate is one of the most affordable options in casting, and that's a deliberate choice rather than a launch promotion. Talent can choose a yearly plan at $99 ($8.25/month), a 6-month plan at $71.70 ($11.95/month), or month-to-month at $14.95. Every plan renews at the price you paid — we don't discount your first term and raise it later. Every plan includes the same features. No ads, and we don't sell your data.\n\nThere's also a genuinely free account. Not a trial that expires — a free account, with no card required, that lets you build a profile, browse everything, and make your first submission. If Premium never makes sense for you, you're still welcome here.\n\nAn actor on the yearly plan pays about $1.90 a week for unlimited submissions that are each seen individually. That number matters to us, because we'd rather have a lot of working actors who can comfortably afford to stay than a few who are quietly wondering whether to cancel this month.\n\nFor larger studios and agencies, we offer custom enterprise pricing with team access, branding, and API integration.\n\nThe mission hasn't changed since day one: make casting fair, make it efficient, and charge a price that working actors can actually afford.",
   6:"The self-tape has replaced the in-person pre-read for most roles, and casting directors now watch hundreds of them per breakdown. That means your tape is competing not just on performance — it's competing on watchability. A great performance in a poorly framed, echoey, dim room can get passed on in under ten seconds.\n\nHere is the honest minimum for a tape that won't get cut for technical reasons:\n\nLighting. A single window at 45 degrees to your face during daylight is free and looks better than most ring lights. If you tape at night, invest in one soft key light (around $60) and aim it through a diffusion panel or a white sheet. Avoid overhead lighting — it ages you and kills your eyes.\n\nFraming. Chest-up for most reads. Leave a small amount of headroom, keep your eyes roughly one-third from the top of the frame, and look slightly off-camera toward your reader. Never look directly into the lens unless the breakdown specifies a direct address or commercial.\n\nAudio. This is where most tapes fail. The built-in mic on your phone will pick up every fan, refrigerator, and neighbor. A cheap lavalier mic ($25-40) plugged into your phone is the single biggest upgrade you can make. Record in a carpeted, soft-furnished room. Close the windows.\n\nBackground. Plain neutral wall. Gray, off-white, or a soft blue. No art, no bookshelves, nothing that pulls the eye. Put your reader about four to six feet from the camera, never closer.\n\nSlate. First name, height, location, representation if any. Keep it under ten seconds. No accent, no attitude — just clean information.\n\nDo the technical part badly and your performance doesn't get evaluated. Do it competently and you're back to competing on the thing that actually matters.",
   7:"SAG-AFTRA eligibility is one of the most misunderstood career turning points for actors in the US. The decision to go union isn't just a box to check — it reshapes what roles you can take, how you get paid, and who you can work for.\n\nThe basics. In the US, SAG-AFTRA is the union for actors in film, television, commercials, and most new-media productions. Membership comes with minimum rates, overtime protections, pension and health contributions, residual payments for reused work, and enforceable safety standards on set. Initiation is around $3,000 plus semi-annual dues tied to your earnings.\n\nHow you become eligible. Three common paths: (1) working a union job under a Taft-Hartley waiver, (2) working a certain number of days as a background performer on union productions, or (3) being a member in good standing of an affiliated performers' union for at least one year. Specific requirements change — always check the current SAG-AFTRA eligibility page before making assumptions.\n\nThe trade-off nobody explains clearly. Once you join, you cannot accept non-union work in covered categories. Global Rule One is enforced. For actors in markets with lots of non-union commercial and indie film work, joining early can sharply reduce the number of available jobs during the transitional period. For actors in markets dominated by union productions, joining late costs you thousands in lost residuals and protections.\n\nWhen to join. The honest answer: join when the math works. If the non-union work you're turning down pays less, in total, than the union work you're now eligible for plus the protection value of being union, you're ready. If not, delaying eligibility and continuing to stack non-union credits is a legitimate strategy.\n\nTalk to two or three working actors in your exact market and category before deciding. A national network drama actor in LA and a regional-theater actor in Atlanta face very different calculations.",
   8:"On most casting platforms, 'submitted' means your photo was added to a database of 400+ others. There is no guarantee anyone looked at it. That's the industry standard we're trying to replace.\n\nHere's what actually happens when you submit on CastSlate.\n\nStep 1: Queueing. The moment you hit submit, your application is added to the casting director's review queue for that specific role. It isn't randomly ranked or hidden behind a 'premium' filter — every submission appears in order.\n\nStep 2: Forced-attention review. The CD reviews submissions one at a time in a swipe-style interface. They see your primary headshot, your cover note, and a compact reel of your stats. They must make a decision — move forward, maybe, or pass — before they can see the next submission. This is intentional. It prevents the grid-skim pattern that causes most submissions to get a fraction of a second of attention on other platforms.\n\nStep 3: A real decision on every card. Because the casting director can't skip ahead, your submission can't fall into a black hole. Every application gets an actual, individual decision — not a glance, not a maybe-someday, not a photo lost in a grid of 400. That is the difference, and it's the part we guarantee.\n\nStep 4: Notification when it matters. If a casting director wants to move forward with you — a callback, an audition request, or a direct message — you'll receive an email and in-app notification within seconds. You don't have to sit refreshing your dashboard waiting for news; when there's news worth hearing, it comes to you.\n\nThe review queue is typically worked through in batches of 30-50 submissions per session, so it can take a casting director hours or a day or two to reach your card depending on when they sit down to review. But they do reach it. Every submission, every time.\n\nThat guarantee — every submission seen and individually decided on — is the core of what we're building. It's also why we cap submissions per role, so the queue stays reviewable: which we'll cover in a separate post.",
@@ -7196,9 +7183,9 @@ const FAQ_CATEGORIES=[
   {id:"getting-started",label:"Getting Started",icon:"movie",blurb:"Creating your account, first steps, and how CastSlate works.",items:[
     {q:"What is CastSlate?",a:"CastSlate is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
     {q:"Is CastSlate actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
-    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors get their first casting submission free. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"Where is CastSlate available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
-    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Your first submission is free. Premium is $99 a year ($8.25/month) and stays $99 every year, or $14.95/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. Submit your casting for free — it goes live after admin approval."}
   ]},
   {id:"talent-profiles",label:"Talent Profiles",icon:"user",blurb:"Headshots, stats, bio, reel — building a profile that gets callbacks.",items:[
@@ -7226,7 +7213,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"credit-card",blurb:"Talent membership, casting fees, and billing.",items:[
-    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and submit to 1 casting per week at no cost. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and make your first casting submission at no cost. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How much does it cost to post a casting?",a:"Casting posts are free. Create a free industry account and submit your casting breakdown. It goes live after admin review and approval."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
     {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — CastSlate never stores your card details."},
@@ -8756,7 +8743,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
               <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>{t('pricing.noCreditCard')}</div>
             </div>
             <div style={{flex:1}}>
-              {[t('pricing.freeLabel')+' account','1 headshot','1 submission per week','Basic actor profile','Browse all castings'].map(f=>feat(f,"var(--grn)"))}
+              {[t('pricing.freeLabel')+' account','1 headshot','First submission free','Basic actor profile','Browse all castings'].map(f=>feat(f,"var(--grn)"))}
             </div>
             <button style={{...btnOutline,marginTop:24}} onClick={()=>onNavigate("register-talent")}>{t('pricing.getStartedFree')}</button>
           </div>
@@ -8824,7 +8811,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
           <div style={{display:"grid",gridTemplateColumns:isMobile?"2fr 1fr 1fr":"1fr 1fr 1fr",gap:isMobile?4:8,padding:"8px 0",borderBottom:"2px solid var(--bdr)",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>
             <span>{t('pricing.feature')}</span><span style={{textAlign:"center"}}>{t('pricing.freeLabel')}</span><span style={{textAlign:"center",color:"var(--acc)"}}>Premium</span>
           </div>
-          {featureRow("Casting submissions / week",String(FREE_PLAN.submissionsPerWeek),t('pricing.unlimitedLabel'))}
+          {featureRow("Casting submissions",String(FREE_PLAN.submissionsTotal)+" (first one free)",t('pricing.unlimitedLabel'))}
           {featureRow("Headshots","1","Unlimited")}
           {featureRow("Photos & videos","no","Unlimited")}
           {featureRow("Browse castings","yes","yes")}
@@ -11476,7 +11463,7 @@ function AuditionModalInner({casting,role,roleId,instr,session,myPhotos,isDbCast
       });
       if(error){
         const raw=(error.message||'').toLowerCase();
-        if(raw.includes('submission limit'))setErr('Weekly submission limit reached. Upgrade to Premium for unlimited submissions.');
+        if(raw.includes('submission limit'))setErr('You\'ve used your free submission. Upgrade to Premium for unlimited submissions.');
         else if(raw.includes('already submitted'))setErr("You've already submitted an audition for this role.");
         else setErr(error.message||'Submission failed. Please try again.');
         return;
@@ -11843,7 +11830,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [showVideoRecorder,setShowVideoRecorder]=useState(false);
   const [showUpgradePrompt,setShowUpgradePrompt]=useState(false);
   const [upgradeRole,setUpgradeRole]=useState(null); // role name the free actor was about to apply to (for the cap modal)
-  const [weekCount,setWeekCount]=useState(0); // free actor's submission count this week (resets Mon 6 AM ET)
+  const [usedCount,setUsedCount]=useState(0); // free actor's lifetime submission count (one free submission per account)
   const [cdProfile,setCdProfile]=useState(null); // CD's profile for verification badges
   const [isSaved,setIsSaved]=useState(false);
   const [savingCasting,setSavingCasting]=useState(false);
@@ -11897,7 +11884,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
 
   const isTalent=(myProfile?.user_type||"").toLowerCase()==="talent";
   const isPremium=myProfile?.membership_status==="active";
-  const weeklyLimit=isPremium?PREMIUM_PLAN.submissionsPerWeek:FREE_PLAN.submissionsPerWeek;
   const handleApply=(r,i)=>{
     if(casting?.status==="archived"||castingIsExpired(casting)){
       setApplyRole(null);
@@ -11905,8 +11891,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       return;
     }
     if(!isLoggedIn){onRequireAuth&&onRequireAuth(casting,{...r,idx:i});return;}
-    // Free actors hit their 3/week cap → show upgrade prompt instead of apply modal.
-    if(isTalent&&!isPremium&&weekCount>=FREE_PLAN.submissionsPerWeek){
+    // Free actors who already used their one free submission → upgrade prompt instead of apply modal.
+    if(isTalent&&!isPremium&&usedCount>=FREE_PLAN.submissionsTotal){
       setUpgradeRole(r?.name||null);
       setShowUpgradePrompt(true);
       return;
@@ -11929,11 +11915,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       if(prof?.headshot_url)list.push(prof.headshot_url);
       (prof?.additional_photos||[]).forEach(u=>{if(u&&!list.includes(u))list.push(u);});
       setMyPhotos(list);
-      // count this week's submissions for free-actor gate (resets Mon 6 AM ET)
+      // lifetime submission count for the free-actor gate — one free submission per account
       if(isTalent&&!isPremium){
-        const weekStart=weeklyResetStart();
-        const {count}=await window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",s.user.id).gte("created_at",weekStart.toISOString());
-        setWeekCount(count||0);
+        const {count}=await window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",s.user.id);
+        setUsedCount(count||0);
       }
     }
     if(isDbCasting){
@@ -12044,10 +12029,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           if(!isPremium){
             setUpgradeRole(applyRole?.name||null);
             setApplyRole(null);
-            setWeekCount(FREE_PLAN.submissionsPerWeek);
+            setUsedCount(FREE_PLAN.submissionsTotal);
             setShowUpgradePrompt(true);
           }else{
-            setApplyErr("You've reached your weekly submission limit. Please contact support.");
+            setApplyErr("You've reached your submission limit. Please contact support.");
           }
         }else if(raw.includes("already submitted")||raw.includes("duplicate")||raw.includes("unique")||code==="23505"){
           setApplyErr("You've already applied to this role.");
@@ -12070,7 +12055,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       // Meta Pixel: application submitted — key funnel event for ads optimization
       try{if(window.fbq)window.fbq('trackCustom','SubmitApplication');}catch(_){}
       setApplied(p=>new Set([...p,applyRole.idx]));
-      setWeekCount(n=>n+1);
+      setUsedCount(n=>n+1);
       setApplyOk(true);
       setTimeout(()=>{setApplyRole(null);setApplyOk(false);},1400);
     }catch(e){
@@ -12109,15 +12094,15 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       <span><strong>Scheduled — not yet public.</strong> This casting is hidden from the public until <strong>{formatNYDateTime(c.go_live_at)}</strong> (New York time), when it goes live automatically. You can see it because you created it or you're an admin.</span>
     </div>}
 
-    {/* ── Free-actor weekly-cap upgrade modal — premium treatment, fires at 3/3 ── */}
+    {/* ── Free-actor submission-cap upgrade modal — premium treatment, fires once the one free submission is used ── */}
     {showUpgradePrompt&&<BodyPortal><div className="modal-overlay" onClick={()=>setShowUpgradePrompt(false)}><div className="capm" onClick={e=>e.stopPropagation()}>
       <button aria-label="Close" onClick={()=>setShowUpgradePrompt(false)} style={{position:"absolute",top:16,right:16,background:"none",border:"none",color:"var(--t3)",cursor:"pointer",padding:4,lineHeight:0}}><Ico n="x" s={20}/></button>
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(229,83,60,.1)",border:"1px solid rgba(229,83,60,.32)",color:"#C0392B",fontSize:11.5,fontWeight:800,letterSpacing:.4,padding:"6px 12px",borderRadius:999,marginBottom:16}}>
         <span style={{display:"flex",gap:3}}><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/><span style={{width:16,height:6,borderRadius:3,background:"#E5533C"}}/></span>
-        {FREE_PLAN.submissionsPerWeek} / {FREE_PLAN.submissionsPerWeek} submissions used this week
+Free submission used
       </div>
       <h2 style={{color:"var(--t1)",fontSize:22,fontWeight:800,letterSpacing:-.5,lineHeight:1.15,margin:"0 0 8px"}}>Don't let this one get away.</h2>
-      <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.55,margin:"0 0 18px"}}>You're out of submissions for this week. The role you were about to apply to is still open:</p>
+      <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.55,margin:"0 0 18px"}}>You've used your one free submission. The role you were about to apply to is still open:</p>
       <div style={{display:"flex",gap:13,alignItems:"center",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:13,padding:13,marginBottom:16}}>
         <span style={{width:52,height:52,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Ico n="star" s={24}/></span>
         <div style={{minWidth:0}}>
@@ -12127,18 +12112,18 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         <span style={{marginLeft:"auto",color:"#E29A3A",flexShrink:0,lineHeight:0}}><Ico n="lock" s={18}/></span>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8,color:"#98630F",background:"rgba(236,148,42,.09)",fontSize:12.5,fontWeight:600,padding:"9px 11px",borderRadius:9,margin:"0 0 16px"}}>
-        <Ico n="clock" s={16}/><span>Your free submissions reset Monday at 6&nbsp;AM ET. Premium is unlimited — starting now.</span>
+        <Ico n="clock" s={16}/><span>Free accounts get one submission. Premium is unlimited — starting now.</span>
       </div>
       {/* CTA sells finishing THIS submission, not "Premium" in the abstract — the
           button names the casting the actor was just blocked from. */}
       <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)",padding:"14px 16px",borderRadius:11,marginBottom:9,boxShadow:"0 10px 24px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.4)"}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return`Go unlimited — ${PREMIUM_PRICE} →`;const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return`Unlock & submit to “${short}” →`;})()}</button>
-      <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, I'll wait until Monday</button>
+      <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, not right now</button>
       <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions · cancel anytime</div>
     </div></div></BodyPortal>}
 
     {/* ── Free-actor submissions remaining badge ── */}
     {isTalent&&!isPremium&&isLoggedIn&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-      <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: <strong style={{color:weekCount>=FREE_PLAN.submissionsPerWeek?"#c0392b":"var(--t1)"}}>{Math.max(0,FREE_PLAN.submissionsPerWeek-weekCount)}</strong> of {FREE_PLAN.submissionsPerWeek} submissions remaining this week</span>
+      <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: <strong style={{color:usedCount>=FREE_PLAN.submissionsTotal?"#c0392b":"var(--t1)"}}>{Math.max(0,FREE_PLAN.submissionsTotal-usedCount)}</strong> of {FREE_PLAN.submissionsTotal} free submission remaining</span>
       <button className="btn-s btn-sm btn-amber-hover" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade for Unlimited</button>
     </div>}
     {/* ── Save Casting / Send to a Friend — Backstage-style action row ── */}
@@ -12558,7 +12543,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           <button className="btn-teal" onClick={()=>onRequireAuth?.()}>Create my free profile</button>
           <button className="btn-s btn-sm" onClick={()=>onNavigate("login")}>I already have one</button>
         </div>
-        <div className="cfoot-foot">No card required &middot; <b>Free accounts submit to {FREE_PLAN.submissionsPerWeek===1?"1 casting":`${FREE_PLAN.submissionsPerWeek} castings`} a week</b></div>
+        <div className="cfoot-foot">No card required &middot; <b>Your first submission is free</b></div>
       </section>
       :simCastings.length>0&&<section className="cfoot cfoot-more">
         <div className="cfoot-more-hd">
@@ -12730,7 +12715,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       myPhotos={myPhotos}
       isDbCasting={isDbCasting}
       onClose={()=>setAuditionRole(null)}
-      onSubmitted={()=>{setApplied(p=>new Set([...p,auditionRole.role.idx]));setWeekCount(n=>n+1);}}
+      onSubmitted={()=>{setApplied(p=>new Set([...p,auditionRole.role.idx]));setUsedCount(n=>n+1);}}
     />}
 
     <Footer onNavigate={onNavigate}/></div>);
@@ -13588,7 +13573,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
           <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,margin:"0 auto 28px",maxWidth:360}}>CastSlate keeps full role information available to real actor profiles so casting pages stay cleaner, safer, and easier to manage.</p>
           <button className="btn-p" style={{width:"100%",marginBottom:12,fontSize:15,padding:"13px 20px",fontWeight:700}} onClick={onCreateProfile}>Create Free Actor Profile</button>
           <button className="btn-s" style={{width:"100%",fontSize:15,padding:"13px 20px"}} onClick={onLogin}>Log In</button>
-          <p style={{color:"var(--t3)",fontSize:12,marginTop:20,marginBottom:0}}>Free accounts can browse castings and submit up to 3 times per week.</p>
+          <p style={{color:"var(--t3)",fontSize:12,marginTop:20,marginBottom:0}}>Free accounts can browse castings and make their first submission free.</p>
         </div>
         <div style={{textAlign:"center",marginTop:16}}>
           <button className="btn-s btn-sm" onClick={onBack}>← Back to Browse Castings</button>
@@ -17086,7 +17071,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <>
                 <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Free Actor Account</p>
                 <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:16}}>
-                  {[`${FREE_PLAN.headshotsTotal} headshot`,`${FREE_PLAN.submissionsPerWeek} submissions per week`,"No video uploads"].map((f,i)=>(
+                  {[`${FREE_PLAN.headshotsTotal} headshot`,`First submission free`,"No video uploads"].map((f,i)=>(
                     <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
                       <span style={{color:"var(--t3)"}}>—</span>{f}
                     </div>
@@ -22478,11 +22463,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and 1 casting submission per week. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. No hidden tiers, no per-submission fees."},
+          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and their first casting submission free. Premium is $99 a year ($8.25/month), and it stays $99 every year — we do not discount your first year and raise it later. Prefer monthly? $14.95/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. No hidden tiers, no per-submission fees."},
           {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
-          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Free accounts can submit to 1 casting per week. Premium is $99 a year ($8.25/month) and stays $99 every year; the 6-month plan is $71.70 per term ($11.95/month), and month-to-month is $14.95/month. No plan uses an introductory rate that increases later. Every Premium plan includes unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, Manager Mode, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York, with addresses and how each one wants to be approached. Casting directors review every submission individually."}
+          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Your first submission is free. Premium is $99 a year ($8.25/month) and stays $99 every year; the 6-month plan is $71.70 per term ($11.95/month), and month-to-month is $14.95/month. No plan uses an introductory rate that increases later. Every Premium plan includes unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, Manager Mode, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York, with addresses and how each one wants to be approached. Casting directors review every submission individually."}
         ].map((f,i)=>
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
