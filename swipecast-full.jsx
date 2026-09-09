@@ -11722,38 +11722,31 @@ function AuditionModalInner({casting,role,roleId,instr,session,myPhotos,isDbCast
 /* The pay plate's money mark. A Tabler line glyph at 18px was a smudge next to
    17.5px/800 type — an outline spends ink only on its perimeter, so it reads
    lighter than it measures. This is filled, and drawn to fill its box: one
-   angled note plus one coin stack, both large enough to survive 28px. Kept to
-   two objects on purpose; the fanned-notes version has seven and they merge
-   into a single smear at this size. */
+   note, no coin stack. The coins were dropped deliberately — a gold coin pile
+   is the strongest "get rich quick" cue there is, and this audience is the one
+   pay-to-play casting scams target, so it was working against the credibility
+   of the figure it sits next to. */
 function PayNoteIcon({s=28}){
-  /* Deliberately NOT stock-clipart lime + jackpot gold. The note sits in the
-     site's own green family so it reads as part of the pay plate rather than
-     an image dropped into it, and the coins are muted brass: saturated gold is
-     the strongest "get rich" signal there is, and this audience gets targeted
-     by pay-to-play casting scams. Warm enough to catch the eye, quiet enough
-     to still be a fact about the job. */
-  const NOTE="#1E7A46", PLATE="#8CC4A5", MARK="#0D5730",
-        TOP="#D6AC57", SIDE="#B98A33", EDGE="#9E7325";
-  /* Coins are drawn bottom-up so each overlaps the one beneath it. */
-  const coins=[21.2,18.5,15.8].map((cy,i)=>(
-    <React.Fragment key={i}>
-      <path d={`M1.6 ${cy} v2.3 a5 1.9 0 0 0 10 0 v-2.3 z`} fill={SIDE}/>
-      <ellipse cx="6.6" cy={cy} rx="5" ry="1.9" fill={TOP}/>
-      <ellipse cx="6.6" cy={cy} rx="2.6" ry="0.95" fill={EDGE} opacity=".45"/>
-    </React.Fragment>
-  ));
+  /* Double-rule engraving: a solid note in the site's own green, framed by two
+     cream rules. Three things are doing the work here. The solid body gives the
+     mark enough weight to anchor the 17.5px/800 figure beside it — the pale
+     paper versions recede against the mint pay plate and the eye lands on
+     nothing. The rules are the framing convention every real currency uses, so
+     it reads institutional rather than lucky. And the warmth comes from cream
+     ink on green, the way money is actually warm; saturated gold is left out on
+     purpose. */
+  const NOTE="#1E7A46", INK="#F3E9D2";
   return (
     <svg width={s} height={s} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <g transform="translate(14 9.6) rotate(-8)">
-        <rect x="-9.4" y="-5" width="18.8" height="10" rx="1.2" fill={NOTE}/>
-        <ellipse cx="0" cy="0" rx="3.4" ry="2.9" fill={PLATE}/>
-        <g transform="scale(0.42)" fill="none" stroke={MARK} strokeWidth="4.05"
-           strokeLinecap="round" strokeLinejoin="round">
-          <path d="M0 -5.6 V5.6"/>
-          <path d="M2.7 -2.7 c-.5-1.1 -1.9-1.6 -3.1-1.2 c-1.6.5 -1.8 2.6 -.3 3.3 l3 1.4 c1.5.7 1.3 2.8 -.3 3.3 c-1.2.4 -2.6-.1 -3.1-1.2"/>
-        </g>
-      </g>
-      {coins}
+      <rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill={NOTE}/>
+      <path d="M3.3 8.4 h17.4 M3.3 15.6 h17.4" stroke={INK} strokeWidth="0.9"
+            opacity=".85" strokeLinecap="round"/>
+      {/* Typeset, not stroked. The old glyph was drawn with strokes and at 28px
+          its vertical bar thinned out until the mark read as parentheses. */}
+      <text x="12" y="12.1" fontSize="7.8" fontWeight="800"
+            fontFamily="Helvetica Neue,Helvetica,Arial,sans-serif" fill={INK}
+            textAnchor="middle" dominantBaseline="central"
+            style={{letterSpacing:"-.5px"}}>$</text>
     </svg>
   );
 }

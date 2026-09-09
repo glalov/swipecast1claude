@@ -1,0 +1,120 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Pay icon — single note demos</title>
+<style>
+:root{--cream:#FBF8F1;--ink:#12131A;--t2:#5A5C6B;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
+header{padding:30px 34px 22px;border-bottom:1px solid #E8E2D4}
+h1{margin:0 0 8px;font-size:23px;letter-spacing:-.4px}
+header p{margin:0;color:var(--t2);font-size:14px;max-width:860px}
+.legend{margin:14px 0 0;font-size:13px;color:var(--t2)}
+.wrap{padding:26px 34px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(560px,1fr));gap:22px}
+.demo{background:#fff;border:1px solid #EAE4D6;border-radius:14px;overflow:hidden}
+.dh{display:flex;align-items:baseline;gap:10px;padding:13px 18px;background:#FCFAF5;border-bottom:1px solid #EFEADD}
+.dn{font-size:12px;font-weight:800;color:#0F6B33;letter-spacing:.6px}
+.dt{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.dd{font-size:12.5px;color:var(--t2);margin-left:auto;text-align:right;max-width:290px;line-height:1.45}
+/* faithful copy of the live role row */
+.role{display:flex;align-items:center;gap:20px;padding:18px 20px}
+.rl-l{flex:1;min-width:0}
+.kind{font-size:11px;font-weight:800;color:#7B7D8C;letter-spacing:1.1px;margin-bottom:3px}
+.nm{font-size:21px;font-weight:800;letter-spacing:-.4px;margin-bottom:5px}
+.meta{font-size:14px;color:#5A5C6B}
+.rl-pay{text-align:right;border:1px solid #D7E7DC;background:#F4FAF6;border-radius:11px;padding:11px 15px}
+.rl-pay .v{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:17.5px;font-weight:800;color:#0F6B33;letter-spacing:-.3px;white-space:nowrap}
+.rl-pay .s{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12.5px;font-weight:700;color:#32334A;white-space:nowrap;border-top:1px solid #E1EDE5;margin-top:8px;padding-top:7px}
+.rl-coin{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.zoom{display:flex;align-items:center;gap:26px;padding:14px 20px 18px;border-top:1px dashed #EFEADD;background:#FDFCF8}
+.zoom .z{display:flex;flex-direction:column;align-items:center;gap:6px}
+.zoom .z span{font-size:10.5px;color:#9A9CA8;font-weight:700;letter-spacing:.5px}
+.on-dark{background:#1a1b2e;border-radius:10px;padding:6px}
+</style></head><body>
+<header>
+<h1>Role pay mark &mdash; single banknote, no coins</h1>
+<p>Ten replacements for the note-plus-coin-stack. Each one is shown at its real 28px inside an exact copy of the live role row, then enlarged to 40px, 64px and on the dark header ground so you can judge it the way people actually see it. The coin stack is gone in every option &mdash; coins are the strongest &ldquo;get rich quick&rdquo; signal and the one most likely to read as a scam to actors who get targeted by pay-to-play sites.</p>
+<p class="legend">Nothing is changed in the app yet. Pick a number.</p>
+</header>
+<div class="wrap" id="wrap"></div>
+<script>
+const G="#1E7A46", GD="#0F6B33", GL="#8CC4A5", PAPER="#F3E9D2", INKG="#0D5730";
+/* One crisp $ for every option. A stroked glyph at 28px loses its vertical bar
+   and reads as parentheses — a typeset one keeps it at any size. */
+const D = (x,y,size,fill,weight) => `<text x="${x}" y="${y}" font-size="${size}" font-weight="${weight||800}"
+  font-family="Helvetica Neue,Helvetica,Arial,sans-serif" fill="${fill}" text-anchor="middle"
+  dominant-baseline="central" style="letter-spacing:-.5px">$</text>`;
+
+const icons = [
+ {n:"01", t:"Clean Note", d:"The note you have now, straight on, coins removed. The smallest possible change.",
+  svg:`<rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="${G}"/>
+       <ellipse cx="12" cy="12" rx="3.6" ry="3.1" fill="${GL}"/>${D(12,12.2,7.4,INKG)}`},
+
+ {n:"02", t:"Engraved Paper", d:"How a banknote is actually built — warm paper, green ink, an inner rule. Reads as a document, not a prize.",
+  svg:`<rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="${PAPER}" stroke="${G}" stroke-width="1.2"/>
+       <rect x="3.9" y="8.4" width="16.2" height="7.2" rx="0.8" fill="none" stroke="${G}" stroke-width="0.7" opacity=".55"/>
+       ${D(12,12.2,8,G)}`},
+
+ {n:"03", t:"Green Band", d:"Warm paper carrying one green band. The band does the colour work, so it still reads when it shrinks.",
+  svg:`<rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="${PAPER}"/>
+       <path d="M1.8 9 h20.4 v6 H1.8 z" fill="${G}"/>
+       <rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="none" stroke="${GD}" stroke-width="0.9" opacity=".5"/>
+       ${D(12,12.1,7.6,PAPER)}`},
+
+ {n:"04", t:"Cut Mark", d:"Solid green note with the $ knocked out of it. The highest-contrast option — unmistakable at 28px.",
+  svg:`<rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="${G}"/>${D(12,12.2,9.4,"#FBF8F1")}`},
+
+ {n:"05", t:"Warm Tile", d:"The note inside the site's own rounded tile, in a warm sand tint — a set with the calendar chip below it.",
+  svg:`<rect x="1" y="4.3" width="22" height="15.4" rx="4.6" fill="#F6EDDC"/>
+       <rect x="4.3" y="8.1" width="15.4" height="7.8" rx="1.3" fill="${G}"/>${D(12,12.1,6.4,"#F6EDDC")}`},
+
+ {n:"06", t:"Laid Flat", d:"Slight perspective, as if the note is lying on the table being counted. Tactile, with no tilt-and-sparkle.",
+  svg:`<path d="M2.4 9 L21.5 7.2 a1 1 0 0 1 1.1 1 v6.6 a1 1 0 0 1 -.9 1 L2.9 17.6 a1 1 0 0 1 -1.1-1 V10 a1 1 0 0 1 .6-1 z" fill="${G}"/>
+       <path d="M2.4 9 L21.5 7.2 a1 1 0 0 1 1.1 1 v.7 L1.8 10.8 V10 a1 1 0 0 1 .6-1 z" fill="#37985F"/>
+       <ellipse cx="12.2" cy="12.4" rx="3.5" ry="3" fill="${GL}"/>${D(12.2,12.6,7.2,INKG)}`},
+
+ {n:"07", t:"Folded Corner", d:"One note with a turned corner. The fold is the only detail — it says handled and real, not minted and shiny.",
+  svg:`<path d="M3.5 6.4 h13.9 L22.2 11 v4.9 a1.7 1.7 0 0 1 -1.7 1.7 H3.5 a1.7 1.7 0 0 1 -1.7-1.7 V8.1 a1.7 1.7 0 0 1 1.7-1.7 z" fill="${G}"/>
+       <path d="M17.4 6.4 L22.2 11 h-3.6 a1.2 1.2 0 0 1 -1.2-1.2 z" fill="#63B084"/>
+       <ellipse cx="10.6" cy="12" rx="3.4" ry="3" fill="${GL}"/>${D(10.6,12.2,7,INKG)}`},
+
+ {n:"08", t:"Double Rule", d:"Green note framed by two cream rules — the engraving convention every currency uses. Quietly official.",
+  svg:`<rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="${G}"/>
+       <path d="M3.3 8.4 h17.4 M3.3 15.6 h17.4" stroke="${PAPER}" stroke-width="0.9" opacity=".85" stroke-linecap="round"/>
+       ${D(12,12.1,7.8,PAPER)}`},
+
+ {n:"09", t:"Warm Light", d:"Solid note lit from the top left, so it has a body without a highlight streak. Warmth from light, not from gold.",
+  svg:`<defs><linearGradient id="wl" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#409C68"/><stop offset=".55" stop-color="${G}"/><stop offset="1" stop-color="#135E38"/></linearGradient></defs>
+       <rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="url(#wl)"/>
+       <ellipse cx="12" cy="12" rx="3.6" ry="3.1" fill="#EFE3C8"/>${D(12,12.2,7.4,"#135E38")}`},
+
+ {n:"10", t:"Portrait Oval", d:"The oval where a face would sit, left empty, with engraved edge rules. The least clip-art of the set.",
+  svg:`<rect x="1.8" y="6.4" width="20.4" height="11.2" rx="1.7" fill="${PAPER}" stroke="${G}" stroke-width="1.15"/>
+       <ellipse cx="12" cy="12" rx="3.4" ry="3.9" fill="none" stroke="${G}" stroke-width="1"/>
+       ${D(12,12.1,6.2,G)}
+       <path d="M4.1 10.1 h2.3 M4.1 12 h2.3 M4.1 13.9 h2.3 M17.6 10.1 h2.3 M17.6 12 h2.3 M17.6 13.9 h2.3"
+             stroke="${G}" stroke-width="0.85" stroke-linecap="round" opacity=".7"/>`},
+];
+
+document.getElementById('wrap').innerHTML = icons.map(o=>{
+  const at = s => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true">${o.svg}</svg>`;
+  return `<div class="demo">
+    <div class="dh"><span class="dn">${o.n}</span><span class="dt">${o.t}</span><span class="dd">${o.d}</span></div>
+    <div class="role">
+      <div class="rl-l">
+        <div class="kind">LEAD</div>
+        <div class="nm">CLAIRE</div>
+        <div class="meta">Female &middot; Age 25&ndash;35 &middot; Any ethnicity</div>
+      </div>
+      <div class="rl-pay">
+        <div class="v"><span class="rl-coin">${at(28)}</span>$175/day</div>
+        <div class="s"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#32334A" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>Est. $1,400 &middot; 8 days</div>
+      </div>
+    </div>
+    <div class="zoom">
+      <div class="z">${at(28)}<span>28px LIVE</span></div>
+      <div class="z">${at(40)}<span>40px</span></div>
+      <div class="z">${at(64)}<span>64px</span></div>
+      <div class="z"><span class="on-dark">${at(28)}</span><span>ON DARK</span></div>
+    </div>
+  </div>`;
+}).join('');
+</script></body></html>
