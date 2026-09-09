@@ -14023,7 +14023,7 @@ function matchesLocationFilter(castingLoc,selectedFilter){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
-function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile,active=true}){
+function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile,active=true,restoreCasting=null,onRestoreConsumed}){
   const t=useT();
   const {lang}=useLanguage();
   const [mode,setMode]=useState("castings"); // always open castings, talent directory removed
@@ -14048,12 +14048,22 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // True when openSheet pushed a /casting/<slug> history entry that closeSheet
   // must pop back off to restore the /browse-castings URL.
   const sheetPushedRef=useRef(false);
+  // True when the sheet was rebuilt from a refreshed /casting/<slug> URL. Nothing
+  // was pushed in that case — the entry already exists — so closing owes a
+  // replaceState back to /browse-castings instead of a history.back().
+  const sheetRestoredRef=useRef(false);
   // The sheet is its own scroll container (.cs-sheet is overflow-y:auto), so
   // window.scrollTo cannot reach it. When one casting is opened from inside
   // another the panel would otherwise keep the old scroll offset and drop the
   // reader halfway down a project they have not seen the title of yet.
   const sheetElRef=useRef(null);
-  const animateClose=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);},460);},[]);
+  const animateClose=useCallback(()=>{setSheetClosing(true);setTimeout(()=>{
+    setSheetCasting(null);setSheetClosing(false);window.scrollTo(0,sheetScrollY.current);
+    if(sheetRestoredRef.current){
+      sheetRestoredRef.current=false;
+      try{window.history.replaceState({swipecast:true,page:"search"},"","/browse-castings");}catch(_){}
+    }
+  },460);},[]);
   // Same caa.com page push the agency directory uses — body.sheet-push slides `main`
   // left while the casting sheet comes in from the right. Removed the moment
   // sheetClosing flips so the page travels back with the exit animation; the cleanup
@@ -14076,7 +14086,12 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // one deep no matter how far they hop, so X always returns to the list.
   const openSheet=useCallback((c,role,opts)=>{
     const replace=!!(opts&&opts.replace);
-    if(!replace)sheetScrollY.current=window.scrollY;
+    // `restore` is a refresh landing back on /casting/<slug>: the history entry is
+    // already there and already correct, so we neither push nor replace the URL —
+    // we only re-stamp the state object and remember that closing must put the
+    // address back to Browse itself.
+    const restore=!!(opts&&opts.restore);
+    if(!replace&&!restore)sheetScrollY.current=window.scrollY;
     setSheetRole(role||null);
     setSheetClosing(false);
     // Give the slide-in sheet its own shareable URL (/casting/<slug-or-id>) so a
@@ -14087,7 +14102,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       if(slug){
         const st={swipecast:true,page:"casting-detail",castingSlug:slug,fromSheet:true};
         const url=`/casting/${encodeURIComponent(slug)}`;
-        if(replace){
+        if(restore){
+          window.history.replaceState(st,"",url);
+          sheetPushedRef.current=false;
+          sheetRestoredRef.current=true;
+        }else if(replace){
           // Leave sheetPushedRef alone: whether a back() is owed was decided by
           // the FIRST open, and swapping the URL in place does not change it.
           window.history.replaceState(st,"",url);
@@ -14095,10 +14114,18 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           window.history.pushState(st,"",url);
           sheetPushedRef.current=true;
         }
-      }else if(!replace){sheetPushedRef.current=false;}
-    }catch(_){if(!replace)sheetPushedRef.current=false;}
+      }else if(!replace&&!restore){sheetPushedRef.current=false;}
+    }catch(_){if(!replace&&!restore)sheetPushedRef.current=false;}
     setSheetCasting(c);
   },[]);
+  // Refresh restore. App resolves the casting behind /casting/<slug> and hands it
+  // over; the sheet then rebuilds exactly as it was rather than the reader being
+  // dropped onto the standalone full page they never chose to open.
+  useEffect(()=>{
+    if(!restoreCasting)return;
+    openSheet(restoreCasting,null,{restore:true});
+    if(onRestoreConsumed)onRestoreConsumed();
+  },[restoreCasting]); // eslint-disable-line react-hooks/exhaustive-deps
   const closeSheet=useCallback(()=>{
     // If we pushed a /casting/<slug> entry on open, step back so the URL returns
     // to /browse-castings; the popstate listener below runs the close animation.
@@ -40307,6 +40334,21 @@ function App(){
   },[]);
   const [viewingProfile,setViewingProfile]=useState(null);
   const [viewingCasting,setViewingCasting]=useState(()=>{const slug=urlToCastingSlug();return slug?(CASTINGS.find(c=>c.slug===slug)||null):null;});
+  // ── Refresh restore for the slide-in casting sheet ────────────────────────
+  // Reloading while the sheet was open used to drop the reader onto the
+  // standalone full casting page: the URL is /casting/<slug>, and urlToPage maps
+  // that to "casting-detail". The signal that the entry BELONGS to a sheet is
+  // the state object openSheet pushed — browsers preserve history.state across a
+  // reload — so a refresh can be told apart from a shared link opened cold, and
+  // shared links keep their full page. Desktop only, since on mobile the sheet
+  // is full-width anyway and the two are the same view.
+  const [sheetRestorePending,setSheetRestorePending]=useState(()=>{
+    try{
+      const st=window.history.state;
+      return !!(st&&st.fromSheet===true&&window.innerWidth>768&&/^\/casting\//.test(window.location.pathname));
+    }catch(_){return false;}
+  });
+  const [sheetRestoreCasting,setSheetRestoreCasting]=useState(null);
   const [viewingTalentSlug,setViewingTalentSlug]=useState(()=>urlToTalentSlug());
   const [viewingNewsSlug,setViewingNewsSlug]=useState(()=>urlToNewsSlug());
   const [prevPage,setPrevPage]=useState("home");
@@ -41344,8 +41386,23 @@ function App(){
   // (direct URL load like /casting/slug-or-id), try to find it in static
   // CASTINGS first, then fetch from the database. The gate page needs the
   // casting too (it shows the title), so it shares this loader.
+  // Swap to Browse before the browser paints, so the standalone casting page is
+  // never shown for a frame on the way to the sheet.
+  useLayoutEffect(()=>{
+    if(!sheetRestorePending)return;
+    setPage(pg=>(pg==="casting-detail"||pg==="casting-gate")?"search":pg);
+  },[sheetRestorePending]);
+  // Hand the resolved casting to SearchPage once the loader below has it.
   useEffect(()=>{
-    if((page!=="casting-detail"&&page!=="casting-gate")||viewingCasting)return;
+    if(!sheetRestorePending||!viewingCasting)return;
+    setSheetRestoreCasting(viewingCasting);
+    setSheetRestorePending(false);
+  },[sheetRestorePending,viewingCasting]);
+
+  useEffect(()=>{
+    // `sheetRestorePending` keeps this loader alive after the layout effect above
+    // has already moved `page` to "search" — the sheet still needs the casting.
+    if((page!=="casting-detail"&&page!=="casting-gate"&&!sheetRestorePending)||viewingCasting)return;
     const slug=urlToCastingSlug();
     if(!slug)return;
     // Try static array first (slugs and numeric IDs)
@@ -41691,7 +41748,7 @@ function App(){
         {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
-              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"}/>
+              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"} restoreCasting={sheetRestoreCasting} onRestoreConsumed={()=>setSheetRestoreCasting(null)}/>
             </ErrorBoundary>
           </div>}
         {/* Full casting detail renders ONLY for logged-in users with auth resolved.
