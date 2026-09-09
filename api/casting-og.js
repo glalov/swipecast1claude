@@ -183,9 +183,18 @@ module.exports = async (req, res) => {
 
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
+  // Browsers must revalidate every time. This page's HTML carries the
+  // /app.js?v=<build stamp> reference, and app.js is served immutable for a
+  // year — so any HTML a browser keeps pins that visitor to the bundle that
+  // was current when they cached it. With max-age=300 plus a day of
+  // stale-while-revalidate, a shipped change could stay invisible on casting
+  // pages long after it was live everywhere else (that is exactly what
+  // happened to the pay-mark change on 2026-09-08). The edge still caches for
+  // ten minutes so the OG crawlers this function exists for are cheap, and the
+  // stale window is short enough that it cannot outlive a deploy.
   res.setHeader(
     "Cache-Control",
-    "public, max-age=300, s-maxage=600, stale-while-revalidate=86400"
+    "public, max-age=0, must-revalidate, s-maxage=600, stale-while-revalidate=60"
   );
   res.end(finalHtml);
 };
