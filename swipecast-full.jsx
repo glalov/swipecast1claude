@@ -6619,10 +6619,10 @@ function RegisterTalent({onNavigate}){
         <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
-          <div className="eye">Free forever for actors</div>
+          <div className="eye">Free account for actors</div>
           <h3>Start getting<br/>seen today.</h3>
           <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-            {["Free account — no card required","Submit to real casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+            {["Free account — no card required","Submit to real casting calls — first one free","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
         </div>
       </div>
@@ -10912,7 +10912,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
-          <div className="eye">Free forever for actors</div>
+          <div className="eye">Free account for actors</div>
           <h3>{c?"You're one step away.":<>Start getting<br/>seen today.</>}</h3>
           {c?(
             <div style={{background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"14px 16px",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
@@ -10923,7 +10923,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-              {["Free account — no card required","Submit to real casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+              {["Free account — no card required","Submit to real casting calls — first one free","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
             </div>
           )}
         </div>
@@ -40212,9 +40212,9 @@ const PAGE_PATH={
 
 // SEO metadata per page — title + description updated dynamically on navigation
 const PAGE_SEO={
-  "home":{title:"CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."},
+  "home":{title:"CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater",desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free to join for actors."},
   "search":{title:"Browse Castings",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
-  "pricing":{title:"Pricing",desc:"CastSlate is free forever for actors. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more. See all plans and what's included."},
+  "pricing":{title:"Pricing",desc:"CastSlate is free to join for actors and your first submission is free. Upgrade to Premium from $8.25/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more. See all plans and what's included."},
   "classes":{title:"Acting Classes",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
   "actor-toolkit":{title:"Actor Toolkit",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
   "resources":{title:"Resources",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
