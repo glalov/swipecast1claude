@@ -12083,8 +12083,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-      {castingIsPick(c)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
-      <span style={{display:"inline-flex",alignItems:"center",padding:"4px 11px",background:"#E3EDFF",color:"#1D4ED8",border:"1px solid #B4CDFF",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>{translateCastingType(c.type,lang)}</span>
+      {castingIsPick(c)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#FBF4E4",color:"#6E4E12",border:"1px solid #E7D3A6",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
+      <span style={{display:"inline-flex",alignItems:"center",padding:"4px 11px",background:"#F0EBE1",color:"#4A443B",border:"1px solid #E4DCCB",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>{translateCastingType(c.type,lang)}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
 
@@ -13559,7 +13559,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
         {casting&&(
           <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
             <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
-              {castingIsPick(casting)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#EDE9FE",color:"#4C1D95",border:"1px solid #C4B5FD",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
+              {castingIsPick(casting)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#FBF4E4",color:"#6E4E12",border:"1px solid #E7D3A6",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
               {casting.type&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.type}</span>}
               {casting.union&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.union}</span>}
             </div>
