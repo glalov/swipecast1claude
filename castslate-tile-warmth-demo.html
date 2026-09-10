@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Card tiles — warmth</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:26px 18px 70px;background:#ded9d1;font-family:"DM Sans",-apple-system,Helvetica,Arial,sans-serif}
+  .page{max-width:960px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 4px;color:#241F19;letter-spacing:-.4px}
+  .lede{font-size:13.5px;color:#5f574c;margin:0 0 22px;line-height:1.6}
+  .cap{margin:24px 0 10px}
+  .cap b{font-size:13px;color:#241F19;display:block}
+  .cap span{font-size:11.5px;color:#6b6459}
+  /* live warm palette, as shipped */
+  .v{background:#FAF6EE;border:1px solid rgba(0,0,0,.10);border-radius:14px;padding:22px 20px}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .item{width:132px;text-align:center}
+  .pt-tile{display:grid;place-items:center;width:52px;height:52px;border-radius:15px;margin:0 auto 8px;
+           box-shadow:inset 0 0 0 1px color-mix(in srgb, currentcolor 14%, transparent)}
+  .lab{font-size:11.5px;color:#5F574C;line-height:1.35;font-weight:600}
+  .hexes{font-size:10px;color:#948B7C;font-family:ui-monospace,Menlo,monospace;margin-top:3px}
+  .card{background:#FFFDF8;border:1px solid #E4DCCB;border-radius:14px;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;margin-top:16px}
+  .ct{font-size:23px;font-weight:800;letter-spacing:-.4px;line-height:1.18;color:#241F19;margin:0 0 6px}
+  .cs{color:#544E46;font-size:15px;line-height:1.45;margin:0 0 8px}
+  .cm{color:#948B7C;font-size:13.5px;margin:0}
+  .note{margin:30px auto 0;font-size:13px;line-height:1.75;color:#4f483f;max-width:800px}
+  .note b{color:#241F19}
+  .note code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:rgba(0,0,0,.07);padding:1px 5px;border-radius:4px}
+  .keep{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;color:#1F6668;background:#E6F1F1;border-radius:20px;padding:2px 8px;margin-top:5px}
+  .chg{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;color:#9C4A22;background:#F7E8DF;border-radius:20px;padding:2px 8px;margin-top:5px}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Card type tiles — current vs warmed</h1>
+  <p class="lede">Real tiles, real icons, on the palette that's live now. Only two of the six change.</p>
+
+  <div class="cap"><b>A · Live right now</b><span>4 of 6 are cool — navy, purple, teal, green</span></div>
+  <div class="v">
+    <div class="row">
+      <div class="item"><div class="pt-tile" style="background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="7.8" cy="8.2" r="5.6"></circle><path d="M16.6 3.4 22.2 13H11z"></path><rect x="9.4" y="14.6" width="9.8" height="7.2" rx="1.4"></rect></svg></div><div class="lab">Film<br>Experimental · Student</div><div class="hexes">#2B3D80</div></div>
+      <div class="item"><div class="pt-tile" style="background:#EAE7F5;color:#4B3A8C;--k:#EAE7F5"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="16.8" cy="15.8" r="5.4"></circle><circle cx="4.4" cy="5.6" r="2.5"></circle><path d="M3.1 20.6a1.2 1.2 0 0 1-.6-2.3C7.7 15.6 10.6 10.9 11.6 4.4a1.2 1.2 0 0 1 2.4.36c-1.1 7.3-4.7 12.8-10.9 15.8z"></path></svg></div><div class="lab">Animation</div><div class="hexes">#4B3A8C</div></div>
+      <div class="item"><div class="pt-tile" style="background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"></path><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"></path><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"></path></svg></div><div class="lab">Commercial</div><div class="hexes">#9A5B10</div></div>
+      <div class="item"><div class="pt-tile" style="background:#E6F1F1;color:#1F6668;--k:#E6F1F1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="1.9" y="3.9" width="20.2" height="16.2" rx="2.4"></rect><rect x="1.9" y="8.4" width="20.2" height="1.5" fill="var(--k)"></rect><g fill="var(--k)"><circle cx="5.2" cy="6.2" r="1"></circle><circle cx="8.1" cy="6.2" r="1"></circle><circle cx="11" cy="6.2" r="1"></circle><path d="M10.1 11.6 15.9 14.9l-5.8 3.3z"></path></g></svg></div><div class="lab">Web Series · Pilot</div><div class="hexes">#1F6668</div></div>
+      <div class="item"><div class="pt-tile" style="background:#E4F1EA;color:#1F6B47;--k:#E4F1EA"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20.9 3.1a1.2 1.2 0 0 0-1-1C15.4 1.4 11.6 3 9.2 5.4L7.7 6.9l-3.4-.7a1.2 1.2 0 0 0-1.1.33L1.3 8.5a1.2 1.2 0 0 0 .5 2l2.9.9 7.9 7.9.9 2.9a1.2 1.2 0 0 0 2 .5l1.97-1.9a1.2 1.2 0 0 0 .33-1.1l-.7-3.4 1.5-1.5c2.4-2.4 4-6.2 3.3-10.7z"></path><circle cx="15.2" cy="8.8" r="2.1" fill="var(--k)"></circle></svg></div><div class="lab">Pitch Trailer</div><div class="hexes">#1F6B47</div></div>
+      <div class="item"><div class="pt-tile" style="background:#F3ECE1;color:#7A5A2E;--k:#F3ECE1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M2.4 5.2A1.6 1.6 0 0 1 4 3.6h6.4A1.6 1.6 0 0 1 12 5.2v14.6a1.6 1.6 0 0 0-1.6-1.6H4a1.6 1.6 0 0 1-1.6-1.6z"></path><path d="M12.4 5.2A1.6 1.6 0 0 1 14 3.6h6a1.6 1.6 0 0 1 1.6 1.6v11.4a1.6 1.6 0 0 1-1.6 1.6h-6a1.6 1.6 0 0 0-1.6 1.6z"></path><g fill="var(--k)"><rect x="14.6" y="6.6" width="5" height="1.5" rx=".75"></rect><rect x="14.6" y="9.7" width="5" height="1.5" rx=".75"></rect><rect x="14.6" y="12.8" width="3.4" height="1.5" rx=".75"></rect></g></svg></div><div class="lab">Print Campaign</div><div class="hexes">#7A5A2E</div></div>
+    </div>
+    <div class="card">
+      <div class="pt-tile" style="background:#E7EBF7;color:#2B3D80;--k:#E7EBF7"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="7.8" cy="8.2" r="5.6"></circle><path d="M16.6 3.4 22.2 13H11z"></path><rect x="9.4" y="14.6" width="9.8" height="7.2" rx="1.4"></rect></svg></div>
+      <div><h3 class="ct">The Seventh Landing</h3><p class="cs">Every coincidence has a witness.</p><p class="cm">North Bridge Pictures · New York, NY</p></div>
+    </div>
+  </div>
+
+  <div class="cap"><b>B · Navy → rust, purple → wine</b><span>4 of 6 warm; teal and green stay as the cool/semantic pair</span></div>
+  <div class="v">
+    <div class="row">
+      <div class="item"><div class="pt-tile" style="background:#F7E8DF;color:#9C4A22;--k:#F7E8DF"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="7.8" cy="8.2" r="5.6"></circle><path d="M16.6 3.4 22.2 13H11z"></path><rect x="9.4" y="14.6" width="9.8" height="7.2" rx="1.4"></rect></svg></div><div class="lab">Film<br>Experimental · Student</div><div class="hexes">#9C4A22</div><span class="chg">CHANGED</span></div>
+      <div class="item"><div class="pt-tile" style="background:#F6E7EA;color:#8A3A52;--k:#F6E7EA"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="16.8" cy="15.8" r="5.4"></circle><circle cx="4.4" cy="5.6" r="2.5"></circle><path d="M3.1 20.6a1.2 1.2 0 0 1-.6-2.3C7.7 15.6 10.6 10.9 11.6 4.4a1.2 1.2 0 0 1 2.4.36c-1.1 7.3-4.7 12.8-10.9 15.8z"></path></svg></div><div class="lab">Animation</div><div class="hexes">#8A3A52</div><span class="chg">CHANGED</span></div>
+      <div class="item"><div class="pt-tile" style="background:#FBEEDC;color:#9A5B10;--k:#FBEEDC"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M13.6 2.4a1.2 1.2 0 0 1 2 .9v17.4a1.2 1.2 0 0 1-2 .9L7.9 16.6H4.4A2.4 2.4 0 0 1 2 14.2V9.8a2.4 2.4 0 0 1 2.4-2.4h3.5z"></path><path d="M18.4 8.4a5.2 5.2 0 0 1 0 7.2 1 1 0 1 1-1.5-1.4 3.2 3.2 0 0 0 0-4.4 1 1 0 0 1 1.5-1.4"></path><path d="M21 5.4a9.4 9.4 0 0 1 0 13.2 1 1 0 1 1-1.5-1.4 7.4 7.4 0 0 0 0-10.4A1 1 0 0 1 21 5.4"></path></svg></div><div class="lab">Commercial</div><div class="hexes">#9A5B10</div><span class="keep">KEPT</span></div>
+      <div class="item"><div class="pt-tile" style="background:#E6F1F1;color:#1F6668;--k:#E6F1F1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><rect x="1.9" y="3.9" width="20.2" height="16.2" rx="2.4"></rect><rect x="1.9" y="8.4" width="20.2" height="1.5" fill="var(--k)"></rect><g fill="var(--k)"><circle cx="5.2" cy="6.2" r="1"></circle><circle cx="8.1" cy="6.2" r="1"></circle><circle cx="11" cy="6.2" r="1"></circle><path d="M10.1 11.6 15.9 14.9l-5.8 3.3z"></path></g></svg></div><div class="lab">Web Series · Pilot</div><div class="hexes">#1F6668</div><span class="keep">KEPT</span></div>
+      <div class="item"><div class="pt-tile" style="background:#E4F1EA;color:#1F6B47;--k:#E4F1EA"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20.9 3.1a1.2 1.2 0 0 0-1-1C15.4 1.4 11.6 3 9.2 5.4L7.7 6.9l-3.4-.7a1.2 1.2 0 0 0-1.1.33L1.3 8.5a1.2 1.2 0 0 0 .5 2l2.9.9 7.9 7.9.9 2.9a1.2 1.2 0 0 0 2 .5l1.97-1.9a1.2 1.2 0 0 0 .33-1.1l-.7-3.4 1.5-1.5c2.4-2.4 4-6.2 3.3-10.7z"></path><circle cx="15.2" cy="8.8" r="2.1" fill="var(--k)"></circle></svg></div><div class="lab">Pitch Trailer</div><div class="hexes">#1F6B47</div><span class="keep">KEPT</span></div>
+      <div class="item"><div class="pt-tile" style="background:#F3ECE1;color:#7A5A2E;--k:#F3ECE1"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M2.4 5.2A1.6 1.6 0 0 1 4 3.6h6.4A1.6 1.6 0 0 1 12 5.2v14.6a1.6 1.6 0 0 0-1.6-1.6H4a1.6 1.6 0 0 1-1.6-1.6z"></path><path d="M12.4 5.2A1.6 1.6 0 0 1 14 3.6h6a1.6 1.6 0 0 1 1.6 1.6v11.4a1.6 1.6 0 0 1-1.6 1.6h-6a1.6 1.6 0 0 0-1.6 1.6z"></path><g fill="var(--k)"><rect x="14.6" y="6.6" width="5" height="1.5" rx=".75"></rect><rect x="14.6" y="9.7" width="5" height="1.5" rx=".75"></rect><rect x="14.6" y="12.8" width="3.4" height="1.5" rx=".75"></rect></g></svg></div><div class="lab">Print Campaign</div><div class="hexes">#7A5A2E</div><span class="keep">KEPT</span></div>
+    </div>
+    <div class="card">
+      <div class="pt-tile" style="background:#F7E8DF;color:#9C4A22;--k:#F7E8DF"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><circle cx="7.8" cy="8.2" r="5.6"></circle><path d="M16.6 3.4 22.2 13H11z"></path><rect x="9.4" y="14.6" width="9.8" height="7.2" rx="1.4"></rect></svg></div>
+      <div><h3 class="ct">The Seventh Landing</h3><p class="cs">Every coincidence has a witness.</p><p class="cm">North Bridge Pictures · New York, NY</p></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <p><b>Only two tiles change.</b> Film goes <code>#2B3D80</code> navy → <code>#9C4A22</code> rust, and Animation goes <code>#4B3A8C</code> purple → <code>#8A3A52</code> wine. Their pale backing tints move with them.</p>
+    <p><b>Film matters most</b> because it's the most common type on your board — Experimental, Independent and Student all share that tile, so the navy was repeating down the whole page.</p>
+    <p><b>Why the other four stay.</b> Commercial amber and Print brown are already warm. Teal and green are worth keeping cool: they're the same two colours your live badge and pay chip use, so they read as a system rather than decoration — and with four warm tiles, they now provide the contrast instead of dominating.</p>
+    <p><b>On the wine.</b> Animation needed to stay distinguishable from rust and from Commercial's amber, so it moves to the warm side of red rather than into the orange family. It's the one value here I'd call a judgement call rather than an obvious call.</p>
+  </div>
+</div>
+</body>
+</html>

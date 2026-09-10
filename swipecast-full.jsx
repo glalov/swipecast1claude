@@ -1006,7 +1006,7 @@ const PROJECT_TYPE_GROUP={
   "Other":"other",
 };
 const PROJECT_TYPE_TINTS={
-  film:["#E7EBF7","#2B3D80"],
+  film:["#F7E8DF","#9C4A22"],
   series:["#E6F1F1","#1F6668"],
   comm:["#FBEEDC","#9A5B10"],
   corp:["#EBEDF0","#3D4658"],
