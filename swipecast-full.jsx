@@ -5904,22 +5904,22 @@ function writeCookiePrefs(p){
 //     authenticated user can write their own report; admins read & action).
 //     Falls back to a clear "Sign in to report" message for anonymous users.
 function ReportModal({open,onClose,session,target}){
-  const [reason,setReason]=useState("inappropriate");
   const [details,setDetails]=useState("");
   const [busy,setBusy]=useState(false);
   const [err,setErr]=useState("");
   const [done,setDone]=useState(false);
-  useEffect(()=>{if(open){setReason("inappropriate");setDetails("");setBusy(false);setErr("");setDone(false);}},[open]);
+  useEffect(()=>{if(open){setDetails("");setBusy(false);setErr("");setDone(false);}},[open]);
   if(!open)return null;
   const isAuthed=!!session?.user?.id;
   const submit=async()=>{
     if(busy)return;
+    if(!details.trim()){setErr("Please tell us what happened so we know what to look into.");return;}
     setBusy(true);setErr("");
     try{
       const row={
         reporter_id:session.user.id,
-        reason,
-        details:details.trim()||null,
+        reason:"other",
+        details:details.trim(),
         status:"open",
         subject_profile_id:target?.kind==="profile"?target.id:null,
         subject_casting_id:target?.kind==="casting"?target.id:null
@@ -5934,28 +5934,17 @@ function ReportModal({open,onClose,session,target}){
   return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}>
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520}}>
       <h2 style={{marginBottom:6}}>Report {target?.kind==="profile"?"this profile":"this casting"}</h2>
-      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>Reports go to the CastSlate safety team. We review every report and take action when our policies are violated. Your identity is not shared with the reported party.</p>
+      <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>This goes to the CastSlate safety team. You don't need to be certain — if something feels off, telling us is enough. We read every one, and the person you're reporting never sees your name.</p>
       {!isAuthed?<>
         <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:14,fontSize:13,color:"var(--t2)",marginBottom:16}}>You need to be signed in to submit a report. This lets us follow up if we need more details.</div>
         <div style={{display:"flex",gap:10}}><button className="btn-s" onClick={onClose} style={{flex:1}}>Close</button></div>
       </>:done?<div className="success-msg" style={{padding:"24px 20px"}}><div className="check"><Ico n="check" s={24}/></div><h3 style={{marginTop:6}}>Report received</h3><p style={{fontSize:13,color:"var(--t2)"}}>Thanks for flagging this. We'll review it shortly.</p></div>:<>
-        <div className="form-group"><label className="label">Reason</label>
-          <select className="select" style={{width:"100%"}} value={reason} onChange={e=>setReason(e.target.value)} disabled={busy}>
-            <option value="inappropriate">Inappropriate or unsafe content</option>
-            <option value="scam">Looks like a scam or fake casting</option>
-            <option value="spam">Spam or off-topic</option>
-            <option value="impersonation">Impersonation or stolen identity</option>
-            <option value="underage">Concerns about a minor</option>
-            <option value="illegal">Illegal activity</option>
-            <option value="other">Something else</option>
-          </select>
-        </div>
-        <div className="form-group"><label className="label">Details (optional)</label>
-          <textarea className="textarea" rows="4" placeholder="Anything specific we should know?" value={details} onChange={e=>setDetails(e.target.value)} disabled={busy}/>
+        <div className="form-group"><label className="label">What's going on?</label>
+          <textarea className="textarea" rows="6" placeholder="Tell us what you noticed — as much or as little as you like." value={details} onChange={e=>setDetails(e.target.value)} disabled={busy}/>
         </div>
         {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:6,marginBottom:12}}>{err}</div>}
         <div style={{display:"flex",gap:10,marginTop:8}}>
-          <button className="btn-p" onClick={submit} disabled={busy} style={{flex:1}}>{busy?"Submitting…":"Submit Report"}</button>
+          <button className="btn-p" onClick={submit} disabled={busy} style={{flex:1}}>{busy?"Sending…":"Send Report"}</button>
           <button className="btn-s" onClick={onClose} disabled={busy}>Cancel</button>
         </div>
       </>}
@@ -36297,7 +36286,7 @@ function AdminReports(){
             <div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:4}}>
                 <span className="tag" style={{background:r.status==="open"?"rgba(214,59,59,0.12)":r.status==="reviewing"?"rgba(200,137,0,0.15)":r.status==="actioned"?"rgba(46,204,113,0.15)":"var(--s2)",color:r.status==="open"?"#c0392b":r.status==="reviewing"?"#c88900":r.status==="actioned"?"#1d7b44":"var(--t2)",fontSize:10,fontWeight:700,letterSpacing:0.5}}>{r.status.toUpperCase()}</span>
-                <span className="tag" style={{background:"var(--s2)",color:"var(--t2)",fontSize:10,fontWeight:700}}>{reasonLabel(r.reason)}</span>
+                {r.reason&&r.reason!=="other"&&<span className="tag" style={{background:"var(--s2)",color:"var(--t2)",fontSize:10,fontWeight:700}}>{reasonLabel(r.reason)}</span>}
                 <span style={{fontSize:11,color:"var(--t3)"}}>{new Date(r.created_at).toLocaleString()}</span>
               </div>
               <div style={{fontWeight:600,fontSize:14}}>{target.label}</div>
