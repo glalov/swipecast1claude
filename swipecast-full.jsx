@@ -1986,7 +1986,7 @@ const css = `
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;}
+:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5F574C;--t3:#948B7C;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
 *{box-sizing:border-box;}
 html{width:100%;max-width:100%;}
@@ -2893,16 +2893,16 @@ body.sheet-push .b2t-cube{display:none;}
    the button sits beside the content instead of across a dead gap. */
 .cc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:nowrap;}
 .cc-foot .cc-pills{flex:1;min-width:0;}
-.cc-tagline{color:#4a4f58;font-size:16px;line-height:1.45;margin-bottom:6px;}
+.cc-tagline{color:#544e46;font-size:16px;line-height:1.45;margin-bottom:6px;}
 .cc-prod{color:var(--t3);font-size:14px;margin-bottom:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.cc-badge{background:#eef1f5;color:#3a4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
+.cc-badge{background:#f0ebe1;color:#4a443b;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px;}
 .cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
 .cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;
          background:var(--s2);color:var(--t1);border:1px solid var(--bdr);}
 .cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52;}   /* a tint, not a badge — see the note above .cc-title */
 .cc-chip.soon{background:#fdeeea;border-color:#e8b5a6;color:#a8341c;}
 .cc-chip.urgent{background:#a8341c;border-color:#a8341c;color:#fff;}
-.cc-chip.roles{background:#E8EEFB;border-color:#bcd0f2;color:#1f4a92;}
+.cc-chip.roles{background:var(--s2);border-color:var(--bdr);color:var(--t1);}
 .cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px;}
 .cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;

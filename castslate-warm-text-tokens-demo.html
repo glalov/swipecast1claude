@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cool vs warm — real Browse card</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:26px 18px 70px;background:#ded9d1;font-family:"DM Sans",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}
+  .page{max-width:1080px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 6px;color:#1A1A2E;letter-spacing:-.4px}
+  .lede{font-size:13.5px;color:#5f574c;margin:0 0 24px;line-height:1.6;max-width:780px}
+  .cap{margin:26px 0 9px}
+  .cap b{font-size:13px;color:#1A1A2E;display:block}
+  .cap span{font-size:11.5px;color:#6b6459;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  /* ── site tokens, exactly as live ── */
+  .v{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;
+     --t1:#1A1A2E;--t2:#5A5A72;--t3:#8E8EA0;--teal:#2D8587;--teal-dk:#226365;
+     background:var(--bg);border:1px solid rgba(0,0,0,.10);border-radius:14px;padding:22px 22px 24px}
+
+  /* ── real card CSS, copied off the live site ── */
+  .cc-titlewrap{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0;color:var(--t1)}
+  .cc-badgerow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .cc-badge{background:#EEF1F5;color:#3A4150;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px}
+  .cs-live-badge{display:inline-flex;align-items:center;gap:8px;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:700;padding:5px 12px;border-radius:99px;white-space:nowrap;line-height:1}
+  .cs-live-dot{width:10px;height:10px;border-radius:50%;background:#15A87F;display:inline-block;flex:0 0 auto}
+  .cc-tagline{color:#4A4F58;font-size:16px;line-height:1.45;margin:0 0 6px}
+  .cc-prod{color:var(--t3);font-size:14px;margin:0 0 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr)}
+  .cc-chip.roles{background:#E8EEFB;border-color:#BCD0F2;color:#1F4A92}
+  .cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+  .cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px}
+  .cc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+  .cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1 1 0}
+  .cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;background:var(--s1);padding:8.5px 14px;font:inherit;color:var(--t1)}
+  .cc-pill .p1{font-size:13.5px;font-weight:800}
+  .cc-pill .p2{font-size:13px;color:var(--t2)}
+  .btn-teal{background:var(--teal);color:#fff;border:none;padding:13px 22px;border-radius:10px;font-weight:700;font-size:15px;font-family:"DM Sans",sans-serif}
+
+  /* ══ B · warm the neutrals, keep only green as colour ══ */
+  .warm .cc-badge{background:#F0EBE1;color:#4A443B}
+  .warm .cc-tagline{color:#544E46}
+  .warm .cc-chip.roles{background:var(--s2);border-color:var(--bdr);color:var(--t1)}
+  .warm{--t2:#5F574C;--t3:#948B7C}
+
+  /* ══ C · warm the neutrals, keep the blue "roles" chip as one cool accent ══ */
+  .warm2 .cc-badge{background:#F0EBE1;color:#4A443B}
+  .warm2 .cc-tagline{color:#544E46}
+  .warm2{--t2:#5F574C;--t3:#948B7C}
+
+  .note{margin:34px auto 0;font-size:13px;line-height:1.72;color:#4f483f;max-width:820px}
+  .note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;background:rgba(0,0,0,.07);padding:1px 5px;border-radius:4px}
+  .note b{color:#1A1A2E}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Your real Browse card — current vs warmed</h1>
+  <p class="lede">This is your actual markup and actual CSS, pulled off the live page. Only colour values change between the three. Watch the two chips on the left of the strip and the grey description line.</p>
+
+  <div class="cap"><b>A · Live right now</b><span>badge #EEF1F5 (h214) · roles chip #E8EEFB (h221) · tagline #4A4F58 (h219)</span></div>
+  <div class="v">
+    <div class="cc-titlewrap"><h3 class="cc-title">Widely Advertised Hair Care Brand — Social Campaign</h3>
+      <div class="cc-badgerow"><span class="cc-badge">Print Campaign</span><span class="cc-badge">Not Applicable</span>
+      <span class="cs-live-badge"><span class="cs-live-dot"></span>Casting now — apply today</span></div></div>
+    <p class="cc-tagline">Print Campaign, New York, NY. Three shoot days.</p>
+    <p class="cc-prod">Old Post Road Photography Studio — Casting Ming Shimizu · Photographer Emilio Sandoval</p>
+    <div class="cc-strip"><span class="cc-chip roles">2 roles</span><span class="cc-chip pay">Up to $1,650/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Thursday</span></div>
+    <div class="cc-foot"><div class="cc-pills">
+      <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Male · 18–25</span></button>
+      <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Female · 20–25</span></button></div>
+      <button class="btn-teal">View Roles →</button></div>
+  </div>
+
+  <div class="cap"><b>B · Warm neutrals — green stays the only colour ✔ recommended</b><span>badge #F0EBE1 · roles chip → cream --s2 · tagline #544E46 · --t2 #5F574C · --t3 #948B7C</span></div>
+  <div class="v warm">
+    <div class="cc-titlewrap"><h3 class="cc-title">Widely Advertised Hair Care Brand — Social Campaign</h3>
+      <div class="cc-badgerow"><span class="cc-badge">Print Campaign</span><span class="cc-badge">Not Applicable</span>
+      <span class="cs-live-badge"><span class="cs-live-dot"></span>Casting now — apply today</span></div></div>
+    <p class="cc-tagline">Print Campaign, New York, NY. Three shoot days.</p>
+    <p class="cc-prod">Old Post Road Photography Studio — Casting Ming Shimizu · Photographer Emilio Sandoval</p>
+    <div class="cc-strip"><span class="cc-chip roles">2 roles</span><span class="cc-chip pay">Up to $1,650/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Thursday</span></div>
+    <div class="cc-foot"><div class="cc-pills">
+      <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Male · 18–25</span></button>
+      <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Female · 20–25</span></button></div>
+      <button class="btn-teal">View Roles →</button></div>
+  </div>
+
+  <div class="cap"><b>C · Warm neutrals, but keep the blue “roles” chip</b><span>same as B, roles chip left #E8EEFB as the single cool accent</span></div>
+  <div class="v warm2">
+    <div class="cc-titlewrap"><h3 class="cc-title">Widely Advertised Hair Care Brand — Social Campaign</h3>
+      <div class="cc-badgerow"><span class="cc-badge">Print Campaign</span><span class="cc-badge">Not Applicable</span>
+      <span class="cs-live-badge"><span class="cs-live-dot"></span>Casting now — apply today</span></div></div>
+    <p class="cc-tagline">Print Campaign, New York, NY. Three shoot days.</p>
+    <p class="cc-prod">Old Post Road Photography Studio — Casting Ming Shimizu · Photographer Emilio Sandoval</p>
+    <div class="cc-strip"><span class="cc-chip roles">2 roles</span><span class="cc-chip pay">Up to $1,650/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Thursday</span></div>
+    <div class="cc-foot"><div class="cc-pills">
+      <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Male · 18–25</span></button>
+      <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Female · 20–25</span></button></div>
+      <button class="btn-teal">View Roles →</button></div>
+  </div>
+
+  <div class="note">
+    <p><b>The actual problem.</b> Your paper is cream at hue&nbsp;40. Sitting on it are two blue-grey fills — <code>.cc-badge</code> at <code>#EEF1F5</code> (hue&nbsp;214) and <code>.cc-chip.roles</code> at <code>#E8EEFB</code> (hue&nbsp;221) — plus a slate description line at <code>#4A4F58</code> (hue&nbsp;219). Those are hardcoded in the CSS, not tokens, which is why my first suggestion of changing two variables wouldn't have fixed the card.</p>
+    <p><b>B</b> pulls the badge and the roles chip into the cream family, so the only colour left on the card is green — which now actually means something: live, and money. The teal button stands out more because nothing else is competing.</p>
+    <p><b>C</b> is the same but keeps “2 roles” blue if you want one cool accent for contrast.</p>
+    <p>Either way the greens and the teal button are untouched, and every text colour keeps its lightness, so contrast ratios don't move.</p>
+  </div>
+</div>
+</body>
+</html>
