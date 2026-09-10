@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Warmest palette — committed version</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:26px 18px 70px;background:#ded9d1;font-family:"DM Sans",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}
+  .page{max-width:1020px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 22px;color:#241F19;letter-spacing:-.4px}
+  .cap{margin:26px 0 10px}
+  .cap b{font-size:13px;color:#241F19;display:block}
+  .cap span{font-size:11.5px;color:#6b6459;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  .v{background:var(--bg);border:1px solid rgba(0,0,0,.10);border-radius:14px;padding:24px}
+
+  /* ── A · live right now ── */
+  .a{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5F574C;--t3:#948B7C;--teal:#2D8587}
+  /* ── B · warmest version I'd commit to ── */
+  .b{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--bdr:#E4DCCB;--t1:#241F19;--t2:#5F574C;--t3:#948B7C;--teal:#2D8587}
+
+  .card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px 22px}
+  .cc-titlewrap{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0;color:var(--t1)}
+  .cc-badgerow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .cc-badge{background:#F0EBE1;color:#4A443B;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px}
+  .cs-live-badge{display:inline-flex;align-items:center;gap:8px;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:700;padding:5px 12px;border-radius:99px;line-height:1}
+  .cs-live-dot{width:10px;height:10px;border-radius:50%;background:#15A87F;display:inline-block}
+  .cc-tagline{color:#544E46;font-size:16px;line-height:1.45;margin:0 0 6px}
+  .cc-prod{color:var(--t3);font-size:14px;margin:0 0 14px}
+  .cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr)}
+  .cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+  .cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px}
+  .cc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+  .cc-pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1 1 0}
+  .cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;background:var(--s1);padding:8.5px 14px;color:var(--t1)}
+  .cc-pill .p1{font-size:13.5px;font-weight:800}
+  .cc-pill .p2{font-size:13px;color:var(--t2)}
+  .btn-teal{background:var(--teal);color:#fff;border:none;padding:13px 22px;border-radius:10px;font-weight:700;font-size:15px;font-family:"DM Sans",sans-serif}
+
+  .sws{display:flex;gap:0;margin-top:16px;border-radius:9px;overflow:hidden;border:1px solid rgba(0,0,0,.12)}
+  .sw{flex:1;height:46px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;font-size:9.5px;font-family:ui-monospace,Menlo,monospace;color:rgba(0,0,0,.45)}
+  .note{margin:32px auto 0;font-size:13px;line-height:1.75;color:#4f483f;max-width:800px}
+  .note b{color:#241F19}
+  .note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;background:rgba(0,0,0,.07);padding:1px 5px;border-radius:4px}
+  table{border-collapse:collapse;margin:12px 0;font-size:12.5px;width:100%}
+  th,td{text-align:left;padding:6px 10px;border-bottom:1px solid rgba(0,0,0,.10)}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#6b6459}
+  .dot{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:7px;border:1px solid rgba(0,0,0,.16)}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Warmest palette — colour only</h1>
+
+  <div class="cap"><b>A · Live right now</b><span>bg #FAF7F1 · cards #FFFFFF · ink #1A1A2E (hue 240)</span></div>
+  <div class="v a">
+    <div class="card">
+      <div class="cc-titlewrap"><h3 class="cc-title">Widely Advertised Hair Care Brand — Social Campaign</h3>
+        <div class="cc-badgerow"><span class="cc-badge">Print Campaign</span>
+        <span class="cs-live-badge"><span class="cs-live-dot"></span>Casting now — apply today</span></div></div>
+      <p class="cc-tagline">Print Campaign, New York, NY. Three shoot days.</p>
+      <p class="cc-prod">Old Post Road Photography Studio — Casting Ming Shimizu · Photographer Emilio Sandoval</p>
+      <div class="cc-strip"><span class="cc-chip">2 roles</span><span class="cc-chip pay">Up to $1,650/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Thursday</span></div>
+      <div class="cc-foot"><div class="cc-pills">
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Male · 18–25</span></button>
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Female · 20–25</span></button></div>
+        <button class="btn-teal">View Roles →</button></div>
+    </div>
+    <div class="sws">
+      <div class="sw" style="background:#FAF7F1">#FAF7F1</div><div class="sw" style="background:#FFFFFF">#FFFFFF</div>
+      <div class="sw" style="background:#F1ECE2">#F1ECE2</div><div class="sw" style="background:#E5DFD2">#E5DFD2</div>
+      <div class="sw" style="background:#1A1A2E;color:rgba(255,255,255,.6)">#1A1A2E</div><div class="sw" style="background:#2D8587;color:rgba(255,255,255,.7)">#2D8587</div>
+    </div>
+  </div>
+
+  <div class="cap"><b>B · Warmest — the one I'd ship and stand behind</b><span>bg #FAF6EE · cards #FFFDF8 · ink #241F19 (hue 33)</span></div>
+  <div class="v b">
+    <div class="card">
+      <div class="cc-titlewrap"><h3 class="cc-title">Widely Advertised Hair Care Brand — Social Campaign</h3>
+        <div class="cc-badgerow"><span class="cc-badge">Print Campaign</span>
+        <span class="cs-live-badge"><span class="cs-live-dot"></span>Casting now — apply today</span></div></div>
+      <p class="cc-tagline">Print Campaign, New York, NY. Three shoot days.</p>
+      <p class="cc-prod">Old Post Road Photography Studio — Casting Ming Shimizu · Photographer Emilio Sandoval</p>
+      <div class="cc-strip"><span class="cc-chip">2 roles</span><span class="cc-chip pay">Up to $1,650/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Thursday</span></div>
+      <div class="cc-foot"><div class="cc-pills">
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Male · 18–25</span></button>
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Female · 20–25</span></button></div>
+        <button class="btn-teal">View Roles →</button></div>
+    </div>
+    <div class="sws">
+      <div class="sw" style="background:#FAF6EE">#FAF6EE</div><div class="sw" style="background:#FFFDF8">#FFFDF8</div>
+      <div class="sw" style="background:#F2ECE0">#F2ECE0</div><div class="sw" style="background:#E4DCCB">#E4DCCB</div>
+      <div class="sw" style="background:#241F19;color:rgba(255,255,255,.6)">#241F19</div><div class="sw" style="background:#2D8587;color:rgba(255,255,255,.7)">#2D8587</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <table>
+      <tr><th>Token</th><th>Live</th><th>Warmest</th><th>What it is</th></tr>
+      <tr><td><code>--t1</code></td><td><span class="dot" style="background:#1A1A2E"></span>#1A1A2E · h240</td><td><span class="dot" style="background:#241F19"></span>#241F19 · h33</td><td>every title, chip and pill label</td></tr>
+      <tr><td><code>--s1</code></td><td><span class="dot" style="background:#FFFFFF"></span>#FFFFFF · h0 s0</td><td><span class="dot" style="background:#FFFDF8"></span>#FFFDF8 · h41</td><td>card surfaces</td></tr>
+      <tr><td><code>--bg</code></td><td><span class="dot" style="background:#FAF7F1"></span>#FAF7F1</td><td><span class="dot" style="background:#FAF6EE"></span>#FAF6EE</td><td>page ground</td></tr>
+      <tr><td><code>--s2</code></td><td><span class="dot" style="background:#F1ECE2"></span>#F1ECE2</td><td><span class="dot" style="background:#F2ECE0"></span>#F2ECE0</td><td>chip fills</td></tr>
+      <tr><td><code>--bdr</code></td><td><span class="dot" style="background:#E5DFD2"></span>#E5DFD2</td><td><span class="dot" style="background:#E4DCCB"></span>#E4DCCB</td><td>all borders</td></tr>
+    </table>
+    <p><b>The two that matter.</b> <code>--t1</code> is the whole thing — a cool navy at hue 240 was the last large cold surface on a warm page, and it's on every title. And <code>--s1</code>: pure white cards on cream read as cold cut-outs pasted onto the page; a warm white makes the card belong to the paper.</p>
+    <p><b>What I will not warm, and this is the commitment you asked for:</b> the teal. <code>#2D8587</code> is cool at hue 181, and warming it would technically make the page warmer — but it's your brand: the button, the logo lockup, the links, the emails. Warmth bought by dissolving your identity is a bad trade, and a page where everything is one temperature has nothing to look at. The teal is now the only cool thing left, which is exactly what makes the CTA pull your eye.</p>
+    <p>The navy stays alive as a brand colour in the logo and dark sections — this changes reading text only. <code>--t2</code> and <code>--t3</code> are already warm from this afternoon, so they don't move. <code>--t1</code> gets slightly darker against a slightly lighter ground, so contrast improves rather than degrades.</p>
+  </div>
+</div>
+</body>
+</html>

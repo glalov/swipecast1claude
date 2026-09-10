@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Warmth: type & space pass</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:26px 18px 80px;background:#ded9d1;font-family:"DM Sans",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}
+  .page{max-width:1060px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 6px;color:#23201C;letter-spacing:-.4px}
+  .lede{font-size:13.5px;color:#5f574c;margin:0 0 6px;line-height:1.6;max-width:790px}
+  .cap{margin:28px 0 10px}
+  .cap b{font-size:13px;color:#23201C;display:block}
+  .cap span{font-size:11.5px;color:#6b6459;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+  .v{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;
+     --t1:#1A1A2E;--t2:#5F574C;--t3:#948B7C;--teal:#2D8587;
+     background:var(--bg);border:1px solid rgba(0,0,0,.10);border-radius:14px;padding:24px}
+
+  /* ═══ A · exactly what is live right now ═══ */
+  .a .cc-titlewrap{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .a .cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin:0;color:var(--t1)}
+  .a .cc-tagline{color:#544E46;font-size:16px;line-height:1.45;margin:0 0 6px}
+  .a .cc-prod{color:var(--t3);font-size:14px;margin:0 0 14px}
+  .a .cc-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .a .cc-chip{display:inline-flex;align-items:center;font-size:14px;font-weight:700;padding:7px 13px;border-radius:8px;background:var(--s2);color:var(--t1);border:1px solid var(--bdr)}
+  .a .cc-pill{display:inline-flex;align-items:baseline;gap:8px;border:1px solid var(--bdr);border-radius:999px;background:var(--s1);padding:8.5px 14px;color:var(--t1)}
+  .a .cc-pill .p1{font-size:13.5px;font-weight:800}
+  .a .cc-pill .p2{font-size:13px;color:var(--t2)}
+  .a .btn-teal{background:var(--teal);color:#fff;border:none;padding:13px 22px;border-radius:10px;font-weight:700;font-size:15px;font-family:"DM Sans",sans-serif}
+
+  /* ═══ B · the version I'd ship ═══ */
+  .b .cc-titlewrap{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:11px}
+  .b .cc-title{font-family:"Source Serif 4",Georgia,serif;font-size:29px;font-weight:600;letter-spacing:-.15px;line-height:1.24;margin:0;color:#23201C}
+  .b .cc-tagline{color:#544E46;font-size:16px;line-height:1.64;margin:0 0 9px}
+  .b .cc-prod{color:var(--t3);font-size:13.5px;margin:0 0 20px;line-height:1.5}
+  .b .cc-strip{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+  .b .cc-chip{display:inline-flex;align-items:center;font-size:13.5px;font-weight:600;padding:8px 15px;border-radius:10px;background:var(--s2);color:#3C362E;border:1px solid var(--bdr)}
+  .b .cc-pill{display:inline-flex;align-items:baseline;gap:9px;border:1px solid var(--bdr);border-radius:999px;background:var(--s1);padding:10px 17px;color:#23201C}
+  .b .cc-pill .p1{font-size:13.5px;font-weight:700}
+  .b .cc-pill .p2{font-size:13px;color:var(--t2)}
+  .b .btn-teal{background:var(--teal);color:#fff;border:none;padding:14px 26px;border-radius:11px;font-weight:700;font-size:15px;font-family:"DM Sans",sans-serif}
+
+  /* shared bits — untouched between versions */
+  .cc-badgerow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .cc-badge{background:#F0EBE1;color:#4A443B;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:100px}
+  .cs-live-badge{display:inline-flex;align-items:center;gap:8px;background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:700;padding:5px 12px;border-radius:99px;line-height:1}
+  .cs-live-dot{width:10px;height:10px;border-radius:50%;background:#15A87F;display:inline-block}
+  .cc-chip.pay{background:#F2F7F4;border-color:#D7E6DD;color:#2F6A52}
+  .cc-chip.quiet{background:transparent;border-color:transparent;color:var(--t3);font-weight:600;padding-left:2px}
+  .cc-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+  .cc-pills{display:flex;flex-wrap:wrap;gap:9px;align-items:center;flex:1 1 0}
+  .card{background:#fff;border:1px solid var(--bdr);border-radius:14px}
+  .a .card{padding:20px 22px}
+  .b .card{padding:26px 28px}
+
+  /* welcome block */
+  .wel{margin-top:20px;border-top:1px solid var(--bdr);padding-top:20px}
+  .a .wel h4{font-size:19px;font-weight:800;letter-spacing:-.4px;color:var(--t1);margin:0 0 7px}
+  .a .wel p{font-size:14.5px;line-height:1.5;color:var(--t2);margin:0 0 6px;max-width:56ch}
+  .a .wel small{font-size:12.5px;color:var(--t3);line-height:1.45}
+  .b .wel h4{font-family:"Source Serif 4",Georgia,serif;font-size:21px;font-weight:600;letter-spacing:-.1px;color:#23201C;margin:0 0 10px}
+  .b .wel p{font-size:15px;line-height:1.72;color:#544E46;margin:0 0 10px;max-width:62ch}
+  .b .wel small{font-size:12.5px;color:var(--t3);line-height:1.6}
+
+  .note{margin:34px auto 0;font-size:13px;line-height:1.75;color:#4f483f;max-width:830px}
+  .note b{color:#23201C}
+  .note code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;background:rgba(0,0,0,.07);padding:1px 5px;border-radius:4px}
+  .note ul{padding-left:19px;margin:9px 0}
+  .note li{margin-bottom:5px}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Warmth pass — type and space, not colour</h1>
+  <p class="lede">Same palette in both. Everything that differs is typeface, weight, line-height, spacing and radius.</p>
+
+  <div class="cap"><b>A · Live right now</b><span>DM Sans 800 · title 27px/1.15 · tagline 1.45 · chips r8 · card padding 20px</span></div>
+  <div class="v a">
+    <div class="card">
+      <div class="cc-titlewrap"><h3 class="cc-title">Widely Advertised Hair Care Brand — Social Campaign</h3>
+        <div class="cc-badgerow"><span class="cc-badge">Print Campaign</span>
+        <span class="cs-live-badge"><span class="cs-live-dot"></span>Casting now — apply today</span></div></div>
+      <p class="cc-tagline">Print Campaign, New York, NY. Three shoot days.</p>
+      <p class="cc-prod">Old Post Road Photography Studio — Casting Ming Shimizu · Photographer Emilio Sandoval</p>
+      <div class="cc-strip"><span class="cc-chip">2 roles</span><span class="cc-chip pay">Up to $1,650/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Thursday</span></div>
+      <div class="cc-foot"><div class="cc-pills">
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Male · 18–25</span></button>
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Female · 20–25</span></button></div>
+        <button class="btn-teal">View Roles →</button></div>
+      <div class="wel">
+        <h4>Start getting seen today.</h4>
+        <p>Create a free account, build your profile, and submit to real casting calls. Every submission is reviewed by the casting director individually — not scored by a machine.</p>
+        <small>Free account, no card required. Your first submission is free.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="cap"><b>B · The version I'd ship</b><span>Source Serif 4 600 · title 29px/1.24 · tagline 1.64 · chips r10, weight 600 · card padding 26px · warm ink #23201C</span></div>
+  <div class="v b">
+    <div class="card">
+      <div class="cc-titlewrap"><h3 class="cc-title">Widely Advertised Hair Care Brand — Social Campaign</h3>
+        <div class="cc-badgerow"><span class="cc-badge">Print Campaign</span>
+        <span class="cs-live-badge"><span class="cs-live-dot"></span>Casting now — apply today</span></div></div>
+      <p class="cc-tagline">Print Campaign, New York, NY. Three shoot days.</p>
+      <p class="cc-prod">Old Post Road Photography Studio — Casting Ming Shimizu · Photographer Emilio Sandoval</p>
+      <div class="cc-strip"><span class="cc-chip">2 roles</span><span class="cc-chip pay">Up to $1,650/day</span><span class="cc-chip">New York, NY</span><span class="cc-chip quiet">Posted on Thursday</span></div>
+      <div class="cc-foot"><div class="cc-pills">
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Male · 18–25</span></button>
+        <button class="cc-pill"><span class="p1">Principal</span><span class="p2">Female · 20–25</span></button></div>
+        <button class="btn-teal">View Roles →</button></div>
+      <div class="wel">
+        <h4>Start getting seen today.</h4>
+        <p>Create a free account, build your profile, and submit to real casting calls. Every submission is reviewed by the casting director individually — not scored by a machine.</p>
+        <small>Free account, no card required. Your first submission is free.</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <p><b>What changed and why — this is my actual reasoning, not decoration.</b></p>
+    <ul>
+      <li><b>Serif headline.</b> Geometric sans at weight 800 with tight tracking reads as urgent and commercial — it's the voice of a deals site. A serif at weight 600 reads as editorial and considered: someone wrote this, a person is behind it. For a casting platform, where the fear is "is this real?", the typeface is doing credibility work as much as warmth work. Your emails already use a serif headline, so this makes the site and the inbox sound like the same company.</li>
+      <li><b>Weight 800 → 600.</b> Heavy type is loud. Loud is not welcoming. This is the single biggest change on the card.</li>
+      <li><b>Line-height 1.45 → 1.64 on body, 1.15 → 1.24 on the title.</b> Air between lines is the most reliable "this is calm" signal there is, and it costs nothing but pixels.</li>
+      <li><b>Card padding 20 → 26px, and real space before the chip strip.</b> Crowding reads as pressure. Space reads as confidence.</li>
+      <li><b>Chip radius 8 → 10, weight 700 → 600.</b> Softer corners, less shouting.</li>
+      <li><b>Ink <code>#1A1A2E</code> → <code>#23201C</code> on card text.</b> A warm near-black instead of a cool navy. I'd keep the navy as the brand colour in the logo and buttons — this only changes reading text.</li>
+      <li><b>Measure capped at ~62 characters.</b> Long lines are tiring; a comfortable measure is one of the few typographic rules with genuinely solid evidence behind it.</li>
+    </ul>
+    <p><b>What I deliberately did not change:</b> the palette, the greens, the teal button, the badges. We fixed those already, and stacking more change would make it impossible to tell what worked.</p>
+    <p><b>My honest confidence:</b> high on weight, line-height and spacing — those are close to settled craft. Medium on the serif, which is a voice decision: it will make the site feel more like a publication and less like a marketplace. If you want the marketplace feel, keep DM Sans and take everything else. That's the one line in here I'd call taste rather than craft, and I'll say so rather than dress it up.</p>
+  </div>
+</div>
+</body>
+</html>

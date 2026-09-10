@@ -4,7 +4,7 @@ function _extends(){return _extends=Object.assign?Object.assign.bind():function(
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#FAF7F1;--s1:#FFFFFF;--s2:#F1ECE2;--s3:#E8E0D0;--bdr:#E5DFD2;--t1:#1A1A2E;--t2:#5F574C;--t3:#948B7C;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;}
+:root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#5F574C;--t3:#948B7C;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
 *{box-sizing:border-box;}
 html{width:100%;max-width:100%;}
