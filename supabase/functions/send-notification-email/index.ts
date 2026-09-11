@@ -344,7 +344,7 @@ function premiumWelcomeHtml(firstName: string): string {
       <tr><td class="pw-pad" style="padding:18px 36px 6px">
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8f1;border:1px solid #f3dcc6;border-radius:16px">
           <tr><td class="pw-note" style="padding:26px 26px 8px">
-            <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#c4622d;margin:0 0 8px">A friendly warning</div>
+            <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#c4622d;margin:0 0 8px">If you're just starting out</div>
             <div style="font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;color:#1a0533;letter-spacing:-0.3px;line-height:1.2;margin:0 0 10px">How to waste your membership 🙃</div>
             <div style="font-size:15px;line-height:1.7;color:#5a4a44">We've seen a lot of Premium profiles, and there are two tried-and-true ways to get absolutely nothing out of yours. Please don't try either of them.</div>
           </td></tr>
