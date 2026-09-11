@@ -13,11 +13,13 @@
 // stays false because the DB callers are not JWT-bearing — the check below is the gate.
 //
 // PREMIUM MEMBERS RECEIVE EMAIL NORMALLY — inbox messages, shortlists, holds, class and
-// event invitations, booking updates, activity recaps, and the premium welcome all send
-// exactly as they do for free accounts. Exactly ONE type is withheld:
+// event invitations, booking updates, and the premium welcome all send exactly as they
+// do for free accounts. Two types are withheld:
 //   • 'weekly_checkin' — the Manager Mode weekly note lives in the member's inbox on the
 //     site and is read there. Emailing it was what turned a quiet week into a
 //     cancellation, so the note is delivered in-app and never mailed.
+//   • 'activity_digest' — the daily "you're getting noticed" recap is for NON-premium
+//     accounts only (owner's rule, 2026-09-10). Also filtered in run_activity_digest().
 // The daily CASTING digest is also premium-free, but that is enforced elsewhere — in the
 // get_digest_emails() RPC, which omits active members — not here.
 
@@ -43,7 +45,7 @@ const AWS_SES_REGION        = Deno.env.get("AWS_SES_REGION") ?? Deno.env.get("AW
 
 // The only notification types withheld from a paying member. Everything not listed here
 // reaches them exactly as it reaches a free account.
-const PREMIUM_EMAIL_BLOCKED = new Set(["weekly_checkin"]);
+const PREMIUM_EMAIL_BLOCKED = new Set(["weekly_checkin", "activity_digest"]);
 
 function emailConfigured(): boolean {
   return EMAIL_PROVIDER === "ses"
@@ -115,7 +117,6 @@ interface NotifyRequest {
   cd_name?: string;
   // activity_digest extras (the daily "you're getting noticed" recap)
   profile_views?: number;
-  tape_views?: number;
   shortlists?: number;
 }
 
@@ -535,7 +536,25 @@ function applicationHoldHtml(firstName: string, projectName?: string, roleName?:
   });
 }
 
-function activityDigestHtml(firstName: string, profileViews: number, tapeViews: number, shortlists: number): string {
+// Same five-item checklist (and so the same %) the Day-2 email and
+// day2_eligible_actors() use: headshot, height+weight, skills, bio, credits.
+// deno-lint-ignore no-explicit-any
+function profileCompletionPct(p: any): number {
+  const has = (v: unknown) => v !== null && v !== undefined && String(v).trim() !== "";
+  const done = [
+    has(p.headshot_url),
+    has(p.height) && has(p.weight),
+    Array.isArray(p.skills) && p.skills.filter(Boolean).length > 0,
+    has(p.bio),
+    has(p.credits),
+  ].filter(Boolean).length;
+  return Math.round(done / 5 * 100);
+}
+
+// "Profile strength" replaced "Reel plays" (2026-09-10): free accounts can't
+// upload a reel, so that line was inaccurate. The % is the member's real
+// completion, read at send time, and the card is always present.
+function activityDigestHtml(firstName: string, profileViews: number, profilePct: number, shortlists: number): string {
   const t = NOTICED_TONE;
   const row = (glyph: string, label: string, text: string) => `
         <tr><td style="background:${t.card};border:1px solid ${t.cardBd};border-radius:12px;padding:16px 18px">
@@ -554,7 +573,7 @@ function activityDigestHtml(firstName: string, profileViews: number, tapeViews: 
   const rows = [
     shortlists   > 0 ? row("&#9733;", "Shortlisted",   `${shortlists} casting ${shortlists === 1 ? "director" : "directors"} shortlisted you`) : "",
     profileViews > 0 ? row("&#9673;", "Profile views", `${profileViews} casting ${profileViews === 1 ? "director" : "directors"} viewed your profile`) : "",
-    tapeViews    > 0 ? row("&#9658;", "Reel plays",    `${tapeViews} watched your audition ${tapeViews === 1 ? "reel" : "reels"}`) : "",
+    row("%", "Profile strength", `Your profile is ${profilePct}% complete`),
   ].join("");
   const mid = `
         <tr><td class="cs-pad" style="padding:22px 30px 0">
@@ -605,7 +624,7 @@ serve(async (req) => {
     });
 
   try {
-    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, instructor_name, slot_label, admin_note, class_price, class_id, task, project_name, role_name, cd_name, profile_views, tape_views, shortlists } = (await req.json()) as NotifyRequest;
+    const { to_user_id, type, from_id, from_name: rawFromName, application_id, casting_id, class_title, instructor_name, slot_label, admin_note, class_price, class_id, task, project_name, role_name, cd_name, profile_views, shortlists } = (await req.json()) as NotifyRequest;
 
     if (!to_user_id || !type) {
       return json({ error: "Missing to_user_id or type" }, 400);
@@ -762,8 +781,9 @@ serve(async (req) => {
     }
 
     // ── Daily activity digest ("you're getting noticed") — one batched email
-    //    per day recapping profile views / tape watches / shortlists. Gated on
-    //    the applications preference so it honors the same opt-out as shortlists. ──
+    //    per day recapping profile views / shortlists, plus the member's real
+    //    profile-completion %. Non-premium only (PREMIUM_EMAIL_BLOCKED above).
+    //    Gated on the applications preference, same opt-out as shortlists. ──
     if (type === "activity_digest") {
       const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
       const emailEnabled = profile.notification_email !== false && profile.notification_applications !== false;
@@ -771,9 +791,8 @@ serve(async (req) => {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
       }
       const pv = Math.max(0, Math.round(Number(profile_views) || 0));
-      const tv = Math.max(0, Math.round(Number(tape_views) || 0));
       const sl = Math.max(0, Math.round(Number(shortlists) || 0));
-      if (pv + tv + sl === 0) {
+      if (pv + sl === 0) {
         return json({ ok: true, results: { email: "skipped:no_activity" } });
       }
       if (!emailConfigured()) {
@@ -784,10 +803,15 @@ serve(async (req) => {
       if (authErr || !authData?.user?.email) {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
+      const { data: checklist } = await supabase
+        .from("profiles")
+        .select("headshot_url, height, weight, skills, bio, credits")
+        .eq("id", to_user_id)
+        .maybeSingle();
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: "You're getting noticed on CastSlate",
-        html: activityDigestHtml(firstName, pv, tv, sl),
+        html: activityDigestHtml(firstName, pv, profileCompletionPct(checklist ?? {}), sl),
       });
       if (!sent.ok) {
         console.error("[send-notification-email] activity digest send error:", sent.err);
