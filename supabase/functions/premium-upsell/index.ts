@@ -30,6 +30,39 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.com").replace(/\/$/,"");
+
+// ── Universal email footer "A · Cream Colophon" (approved 2026-09-10) ─────────
+// The SAME helpers live in every CastSlate email function: send-notification-
+// email, day2-getnoticed, premium-upsell, process-digest-queue, weekly-upsell,
+// winback-run and member-announce. Change one, change all seven. Each email
+// passes its own "why you got this" sentence, accent colour and unsubscribe URL.
+const CS_CREAM = "#F3EEE6";
+function csFooterStripe(accent: string): string {
+  return `<tr><td style="height:6px;line-height:6px;font-size:0;background:${accent};background:linear-gradient(90deg,${accent},${accent} 55%,${accent}55)">&nbsp;</td></tr>`;
+}
+function csFooterA(reason: string, accent: string, unsubUrl: string): string {
+  const sans = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+  const serif = "Georgia,'Times New Roman',serif";
+  const fb = "https://www.facebook.com/people/CastSlate/61590920810941/";
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:560px;margin:0 auto">
+  <tr><td align="center" style="padding:30px 22px 40px">
+    <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="max-width:500px;width:100%">
+      <tr><td align="center" style="padding-bottom:10px"><table cellpadding="0" cellspacing="0" role="presentation"><tr>
+        <td style="padding-right:10px;vertical-align:middle"><img src="${APP_URL}/logo-email-tile.png" width="34" height="34" alt="CastSlate" style="display:block;border-radius:8px"/></td>
+        <td style="vertical-align:middle;font-family:${sans};font-size:17px;font-weight:800;letter-spacing:2.4px;color:#1A1A2E">CASTSLATE</td>
+      </tr></table></td></tr>
+      <tr><td align="center" style="font-family:${serif};font-style:italic;font-size:14px;color:#8A7A66;padding-bottom:20px">Get seen. Get cast.</td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:12.5px;line-height:1.7;color:#7A7064;padding-bottom:18px">${reason}</td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:13px;font-weight:700;color:#2B2622;padding-bottom:3px">Getting too many emails, or not enough?</td></tr>
+      <tr><td align="center" style="padding-bottom:12px"><a href="${APP_URL}/account-settings" style="font-family:${sans};font-size:13px;font-weight:700;color:${accent};text-decoration:none">Choose what you receive &rarr;</a></td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:12.5px;color:#7A7064;padding-bottom:22px">Or to stop completely, <a href="${unsubUrl}" style="color:${accent};text-decoration:underline">unsubscribe</a>.</td></tr>
+      <tr><td align="center" style="padding-bottom:20px"><a href="${fb}" style="text-decoration:none"><table cellpadding="0" cellspacing="0" role="presentation" align="center"><tr><td width="30" height="30" align="center" style="width:30px;height:30px;background:${accent};border-radius:15px;font-family:Arial,sans-serif;font-size:16px;font-weight:700;line-height:30px;color:#FFFFFF;text-align:center">f</td></tr></table></a></td></tr>
+      <tr><td align="center" style="border-top:1px solid #E2D9CB;padding-top:16px;font-family:${sans};font-size:11.5px;color:#A39684">&copy; ${new Date().getFullYear()} CastSlate &middot; <a href="mailto:team@castslate.com" style="color:#8A7A66;text-decoration:none">team@castslate.com</a></td></tr>
+    </table>
+  </td></tr>
+</table>`;
+}
+
 const FROM_EMAIL           = Deno.env.get("NOTIFY_FROM_EMAIL") ?? "CastSlate <notifications@castslate.com>";
 const CONTACT_EMAIL        = Deno.env.get("CONTACT_EMAIL") ?? "team@castslate.com";
 const UNSUB_BASE           = `${SUPABASE_URL}/functions/v1/premium-upsell`;
@@ -262,9 +295,9 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 @media (prefers-reduced-motion: reduce){.cs-tw,.cs-rule{animation:none !important;}}
 </style>
 </head>
-<body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
+<body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
 
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="wrap" style="background:#f0f4f4;padding:28px 16px;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="wrap" style="background:${CS_CREAM};padding:28px 16px;">
 <tr><td align="center">
 
 <table width="600" cellpadding="0" cellspacing="0" role="presentation" class="shell" style="background:#ffffff;max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.09);">
@@ -341,22 +374,10 @@ ${jobsSection}
   </td>
 </tr>
 
-<!-- FOOTER -->
-<tr>
-  <td class="foot-pad" style="background:#ffffff;padding:24px 32px 28px;text-align:center;">
-    <p style="margin:0 0 10px;font-size:12px;color:#94a3b8;line-height:1.8;">You're receiving this because you signed up for CastSlate casting recommendations.</p>
-    <p style="margin:0 0 14px;font-size:12px;line-height:1.6;">
-      <a href="${browse}" style="color:#4338ca;text-decoration:none;font-weight:600;">Browse castings</a>
-      <span style="color:#e2e8f0;margin:0 8px;">&bull;</span>
-      <a href="${unsub}" style="color:#4338ca;text-decoration:none;font-weight:600;">Unsubscribe</a>
-      <span style="color:#e2e8f0;margin:0 8px;">&bull;</span>
-      <a href="mailto:${CONTACT_EMAIL}" style="color:#4338ca;text-decoration:none;font-weight:600;">${CONTACT_EMAIL}</a>
-    </p>
-    <p style="margin:0;font-size:11px;color:#cbd5e1;"><a href="${home}" style="color:#94a3b8;text-decoration:none;font-weight:700;">CastSlate</a> &mdash; The casting platform built for working actors.</p>
-  </td>
-</tr>
+${csFooterStripe("#4338ca")}
 
 </table>
+    ${csFooterA("You're receiving this because you signed up for CastSlate casting recommendations.", "#4338ca", unsub)}
 </td></tr></table>
 </body></html>`;
 }

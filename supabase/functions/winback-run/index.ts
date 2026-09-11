@@ -24,6 +24,39 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.com").replace(/\/$/,"");
+
+// ── Universal email footer "A · Cream Colophon" (approved 2026-09-10) ─────────
+// The SAME helpers live in every CastSlate email function: send-notification-
+// email, day2-getnoticed, premium-upsell, process-digest-queue, weekly-upsell,
+// winback-run and member-announce. Change one, change all seven. Each email
+// passes its own "why you got this" sentence, accent colour and unsubscribe URL.
+const CS_CREAM = "#F3EEE6";
+function csFooterStripe(accent: string): string {
+  return `<tr><td style="height:6px;line-height:6px;font-size:0;background:${accent};background:linear-gradient(90deg,${accent},${accent} 55%,${accent}55)">&nbsp;</td></tr>`;
+}
+function csFooterA(reason: string, accent: string, unsubUrl: string): string {
+  const sans = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+  const serif = "Georgia,'Times New Roman',serif";
+  const fb = "https://www.facebook.com/people/CastSlate/61590920810941/";
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:560px;margin:0 auto">
+  <tr><td align="center" style="padding:30px 22px 40px">
+    <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="max-width:500px;width:100%">
+      <tr><td align="center" style="padding-bottom:10px"><table cellpadding="0" cellspacing="0" role="presentation"><tr>
+        <td style="padding-right:10px;vertical-align:middle"><img src="${APP_URL}/logo-email-tile.png" width="34" height="34" alt="CastSlate" style="display:block;border-radius:8px"/></td>
+        <td style="vertical-align:middle;font-family:${sans};font-size:17px;font-weight:800;letter-spacing:2.4px;color:#1A1A2E">CASTSLATE</td>
+      </tr></table></td></tr>
+      <tr><td align="center" style="font-family:${serif};font-style:italic;font-size:14px;color:#8A7A66;padding-bottom:20px">Get seen. Get cast.</td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:12.5px;line-height:1.7;color:#7A7064;padding-bottom:18px">${reason}</td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:13px;font-weight:700;color:#2B2622;padding-bottom:3px">Getting too many emails, or not enough?</td></tr>
+      <tr><td align="center" style="padding-bottom:12px"><a href="${APP_URL}/account-settings" style="font-family:${sans};font-size:13px;font-weight:700;color:${accent};text-decoration:none">Choose what you receive &rarr;</a></td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:12.5px;color:#7A7064;padding-bottom:22px">Or to stop completely, <a href="${unsubUrl}" style="color:${accent};text-decoration:underline">unsubscribe</a>.</td></tr>
+      <tr><td align="center" style="padding-bottom:20px"><a href="${fb}" style="text-decoration:none"><table cellpadding="0" cellspacing="0" role="presentation" align="center"><tr><td width="30" height="30" align="center" style="width:30px;height:30px;background:${accent};border-radius:15px;font-family:Arial,sans-serif;font-size:16px;font-weight:700;line-height:30px;color:#FFFFFF;text-align:center">f</td></tr></table></a></td></tr>
+      <tr><td align="center" style="border-top:1px solid #E2D9CB;padding-top:16px;font-family:${sans};font-size:11.5px;color:#A39684">&copy; ${new Date().getFullYear()} CastSlate &middot; <a href="mailto:team@castslate.com" style="color:#8A7A66;text-decoration:none">team@castslate.com</a></td></tr>
+    </table>
+  </td></tr>
+</table>`;
+}
+
 const FROM_EMAIL           = Deno.env.get("NOTIFY_FROM_EMAIL") ?? "CastSlate <notifications@castslate.com>";
 const CONTACT_EMAIL        = Deno.env.get("CONTACT_EMAIL") ?? "team@castslate.com";
 const UNSUB_BASE           = `${SUPABASE_URL}/functions/v1/winback-run`;
@@ -59,7 +92,7 @@ async function sendBatch(items: SendArgs[]): Promise<SendResult[]> {
 // per step. Palette is light + brand teal so the email matches the checkout page
 // it sends people back to.
 const C = {
-  paper:"#F4F7F6", card:"#FFFFFF", ink:"#16202A", body:"#4A5A5C", muted:"#93A0A0",
+  paper:CS_CREAM, card:"#FFFFFF", ink:"#16202A", body:"#4A5A5C", muted:"#93A0A0",
   line:"#E2EBE9", panel:"#EDF5F3", brand:"#2F7E7F", soft:"#DCEAE7", footBg:"#EDF2F1", footInk:"#8C9A9A",
 };
 const SERIF = "Georgia,'Times New Roman',serif";
@@ -108,26 +141,21 @@ function directoryNote(): string {
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${C.panel};border-radius:12px;"><tr>
       <td style="padding:15px 18px;">
         <div style="font-size:9.5px;font-weight:800;color:${C.brand};letter-spacing:1.4px;text-transform:uppercase;margin-bottom:6px;">Also included</div>
-        <div style="font-size:13.5px;line-height:1.6;color:${C.body};">The <b style="color:${C.ink};">550+ Talent Agency &amp; Management Directory</b> &mdash; LA and NY agencies with submission details, yours the moment you're in.</div>
+        <div style="font-size:13.5px;line-height:1.6;color:${C.body};">The <b style="color:${C.ink};">650+ Talent Agency &amp; Management Directory</b> &mdash; LA and NY agencies with submission details, yours the moment you're in.</div>
       </td></tr></table></td></tr>`;
 }
 
-function footerRow(uid: string, note: string): string {
-  return `<tr><td style="background:${C.footBg};padding:18px 30px;text-align:center;">
-    <div style="font-size:11.5px;color:${C.footInk};line-height:1.65;">${note}<br/>CastSlate &middot; Your career, one link. &nbsp;${footerUnsub(uid)}</div></td></tr>`;
+function unsubUrl(uid: string): string {
+  return `${UNSUB_BASE}?action=unsubscribe&uid=${encodeURIComponent(uid)}`;
 }
 
-function footerUnsub(uid: string): string {
-  return `<a href="${UNSUB_BASE}?action=unsubscribe&uid=${encodeURIComponent(uid)}" style="color:${C.footInk};text-decoration:underline;">Unsubscribe</a>`;
-}
-
-function docShell(title: string, inner: string): string {
+function docShell(title: string, inner: string, after = ""): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="color-scheme" content="light"/><title>${esc(title)}</title></head>
 <body style="margin:0;padding:0;background:${C.paper};-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${C.paper};padding:26px 12px;"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="width:600px;max-width:100%;background:${C.card};border:1px solid ${C.line};border-radius:16px;overflow:hidden;">
 ${inner}
-</table></td></tr></table></body></html>`;
+</table>${after}</td></tr></table></body></html>`;
 }
 
 // ── ① One step away ──
@@ -152,8 +180,8 @@ function email1(firstName: string, uid: string, planLabel: string, planOffer: st
       <div style="font-size:13.5px;color:${C.body};line-height:1.6;text-align:center;">Free members get <b style="color:${C.ink};">one</b> submission, total. Premium members applied to <b style="color:${C.ink};">every</b> casting the moment it posted.</div>
     </td></tr></table></td></tr>
   <tr><td style="height:20px;"></td></tr>`
-  + footerRow(uid, "You started a Premium signup on CastSlate.");
-  return docShell(`You were one step from Premium, ${firstName}`, inner);
+  + csFooterStripe(C.brand);
+  return docShell(`You were one step from Premium, ${firstName}`, inner, csFooterA("You started a Premium signup on CastSlate.", C.brand, unsubUrl(uid)));
 }
 
 // ── ② Locked out ──
@@ -176,8 +204,8 @@ function email2(firstName: string, uid: string, attempts: number, castings: {tit
   + directoryNote() + `
   <tr><td style="padding:4px 30px 0;">${studioStrip()}</td></tr>
   <tr><td style="height:22px;"></td></tr>`
-  + footerRow(uid, "You reached Premium checkout on CastSlate.");
-  return docShell(`${firstName}, these castings went live without you`, inner);
+  + csFooterStripe(C.brand);
+  return docShell(`${firstName}, these castings went live without you`, inner, csFooterA("You reached Premium checkout on CastSlate.", C.brand, unsubUrl(uid)));
 }
 
 // ── ③ Founder note ──
@@ -186,7 +214,7 @@ function email3(firstName: string, uid: string): string {
   <tr><td style="padding:24px 38px 4px;">
     <h1 style="margin:0 0 16px;font-family:${SERIF};font-size:25px;font-weight:700;color:${C.ink};letter-spacing:-0.3px;line-height:1.3;">A quick note, ${esc(firstName)} &mdash;</h1>
     <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">We noticed you started signing up for Premium but didn't finish. No pressure at all &mdash; we just wanted to make sure nothing broke on our end.</p>
-    <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">Here's the honest pitch: free accounts get one submission — the first one, and that's it. That's fine to test the waters, but the actors booking work are the ones applying the day a role drops. Premium unlocks unlimited submissions, every casting the moment it posts, our 550+ talent agency &amp; management directory, and your shareable TapeLink card.</p>
+    <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">Here's the honest pitch: free accounts get one submission — the first one, and that's it. That's fine to test the waters, but the actors booking work are the ones applying the day a role drops. Premium unlocks unlimited submissions, every casting the moment it posts, our 650+ talent agency &amp; management directory, and your shareable TapeLink card.</p>
     <p style="margin:0 0 4px;font-size:15.5px;line-height:1.72;color:${C.body};">Whenever you're ready, it's right here. Takes about 20 seconds and you're in.</p></td></tr>
   <tr><td style="padding:18px 34px 0;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${C.panel};border-radius:12px;"><tr>
@@ -202,8 +230,8 @@ function email3(firstName: string, uid: string): string {
       <div style="font-size:14.5px;line-height:1.6;color:${C.body};">Either way, glad you're here.<br/><span style="font-family:${SERIF};font-style:italic;font-size:16px;color:${C.ink};">&mdash; The CastSlate Team</span></div>
     </td></tr></table></td></tr>
   <tr><td style="height:20px;"></td></tr>`
-  + footerRow(uid, "You're getting this because you started a Premium signup.");
-  return docShell(`A quick note, ${firstName}`, inner);
+  + csFooterStripe(C.brand);
+  return docShell(`A quick note, ${firstName}`, inner, csFooterA("You're getting this because you started a Premium signup.", C.brand, unsubUrl(uid)));
 }
 
 function firstNameOf(displayName: unknown): string { return String(displayName ?? "").split(" ")[0].trim() || "there"; }
@@ -216,7 +244,7 @@ function planLabelOf(planKey: unknown): string {
 function planOfferOf(planKey: unknown): string {
   const k = String(planKey ?? "monthly").toLowerCase();
   if (k.includes("year") || k.includes("annual")) return "$99/year · same price every year";
-  if (k.includes("six") || k.includes("6")) return "$89.70 every 6 months · $14.95/month";
+  if (k.includes("six") || k.includes("6")) return "$71.70 every 6 months · $11.95/month";
   return "$14.95/month · cancel anytime";
 }
 function subjectFor(step: number, firstName: string): string {

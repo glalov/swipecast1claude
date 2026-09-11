@@ -38,6 +38,39 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.com").replace(/\/$/,"");
+
+// ── Universal email footer "A · Cream Colophon" (approved 2026-09-10) ─────────
+// The SAME helpers live in every CastSlate email function: send-notification-
+// email, day2-getnoticed, premium-upsell, process-digest-queue, weekly-upsell,
+// winback-run and member-announce. Change one, change all seven. Each email
+// passes its own "why you got this" sentence, accent colour and unsubscribe URL.
+const CS_CREAM = "#F3EEE6";
+function csFooterStripe(accent: string): string {
+  return `<tr><td style="height:6px;line-height:6px;font-size:0;background:${accent};background:linear-gradient(90deg,${accent},${accent} 55%,${accent}55)">&nbsp;</td></tr>`;
+}
+function csFooterA(reason: string, accent: string, unsubUrl: string): string {
+  const sans = "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+  const serif = "Georgia,'Times New Roman',serif";
+  const fb = "https://www.facebook.com/people/CastSlate/61590920810941/";
+  return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:560px;margin:0 auto">
+  <tr><td align="center" style="padding:30px 22px 40px">
+    <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="max-width:500px;width:100%">
+      <tr><td align="center" style="padding-bottom:10px"><table cellpadding="0" cellspacing="0" role="presentation"><tr>
+        <td style="padding-right:10px;vertical-align:middle"><img src="${APP_URL}/logo-email-tile.png" width="34" height="34" alt="CastSlate" style="display:block;border-radius:8px"/></td>
+        <td style="vertical-align:middle;font-family:${sans};font-size:17px;font-weight:800;letter-spacing:2.4px;color:#1A1A2E">CASTSLATE</td>
+      </tr></table></td></tr>
+      <tr><td align="center" style="font-family:${serif};font-style:italic;font-size:14px;color:#8A7A66;padding-bottom:20px">Get seen. Get cast.</td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:12.5px;line-height:1.7;color:#7A7064;padding-bottom:18px">${reason}</td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:13px;font-weight:700;color:#2B2622;padding-bottom:3px">Getting too many emails, or not enough?</td></tr>
+      <tr><td align="center" style="padding-bottom:12px"><a href="${APP_URL}/account-settings" style="font-family:${sans};font-size:13px;font-weight:700;color:${accent};text-decoration:none">Choose what you receive &rarr;</a></td></tr>
+      <tr><td align="center" style="font-family:${sans};font-size:12.5px;color:#7A7064;padding-bottom:22px">Or to stop completely, <a href="${unsubUrl}" style="color:${accent};text-decoration:underline">unsubscribe</a>.</td></tr>
+      <tr><td align="center" style="padding-bottom:20px"><a href="${fb}" style="text-decoration:none"><table cellpadding="0" cellspacing="0" role="presentation" align="center"><tr><td width="30" height="30" align="center" style="width:30px;height:30px;background:${accent};border-radius:15px;font-family:Arial,sans-serif;font-size:16px;font-weight:700;line-height:30px;color:#FFFFFF;text-align:center">f</td></tr></table></a></td></tr>
+      <tr><td align="center" style="border-top:1px solid #E2D9CB;padding-top:16px;font-family:${sans};font-size:11.5px;color:#A39684">&copy; ${new Date().getFullYear()} CastSlate &middot; <a href="mailto:team@castslate.com" style="color:#8A7A66;text-decoration:none">team@castslate.com</a></td></tr>
+    </table>
+  </td></tr>
+</table>`;
+}
+
 const FROM_EMAIL           = Deno.env.get("NOTIFY_FROM_EMAIL") ?? "CastSlate <notifications@castslate.com>";
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY");
 const ADMIN_SECRET         = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "";
@@ -287,9 +320,9 @@ function shell(a: ShellArgs): string {
     .cs-mast{padding:22px 16px 17px !important}
   }
 </style></head>
-<body style="margin:0;padding:0;background:#f0f4f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+<body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0">${a.preheader}</div>
-  <table width="100%" cellpadding="0" cellspacing="0" class="cs-outer" style="background:#f0f4f4;padding:36px 22px"><tr><td align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" class="cs-outer" style="background:${CS_CREAM};padding:36px 22px"><tr><td align="center">
     <table width="560" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:${T.cream};border-radius:16px;overflow:hidden;border:1px solid #E1E8E8;box-shadow:0 4px 30px rgba(47,95,96,0.13)">
       ${masthead(a.tag)}
       <tr><td style="background:#000000;line-height:0;font-size:0">
@@ -302,10 +335,9 @@ function shell(a: ShellArgs): string {
         ${a.mid}
         ${cta}
       </td></tr>
-      <tr><td class="cs-pad" style="padding:26px 36px 30px;border-top:1px solid #EFE7D6">
-        <p style="margin:0;font-size:11.5px;color:#9a9382;line-height:1.7">${a.foot}<br/>Manage notifications in <a href="${APP_URL}/account-settings" style="color:${T.solid};text-decoration:none">Account Settings &rarr; Notifications</a>${a.unsub ? ` &middot; <a href="${a.unsub}" style="color:#9a9382;text-decoration:underline">Unsubscribe from announcements</a>` : ""}.</p>
-      </td></tr>
+      ${csFooterStripe(T.solid)}
     </table>
+    ${csFooterA(a.foot, T.solid, (a.unsub ?? `${APP_URL}/account-settings`))}
   </td></tr></table>
 </body></html>`;
 }
