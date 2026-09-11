@@ -456,7 +456,7 @@ function newActorWelcomeHtml(firstName: string): string {
       <tr><td style="padding:0 36px 30px">
         <div style="background:#f4f9f9;border:1px dashed #bfdcdc;border-radius:12px;padding:16px 18px">
           <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Want to move faster?</div>
-          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium is <strong>$99 a year ($8.25/month)</strong>, or $14.95/month — it unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor's Slate, an Actor Business Card with a QR code, and the <strong>Talent Agency &amp; Manager Directory</strong> — 650+ agencies and management companies across LA and New York, with the submission route each one actually accepts. Start free — upgrade whenever you're ready.</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium is <strong>$129 a year ($10.75/month)</strong>, or $17.99/month — it unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor's Slate, an Actor Business Card with a QR code, and the <strong>Talent Agency &amp; Manager Directory</strong> — 650+ agencies and management companies across LA and New York, with the submission route each one actually accepts. Start free — upgrade whenever you're ready.</div>
         </div>
       </td></tr>
 

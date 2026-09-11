@@ -200,7 +200,7 @@ function email2(firstName: string, uid: string, attempts: number, castings: {tit
     <h1 style="margin:0 0 12px;font-family:${SERIF};font-size:29px;font-weight:700;color:${C.ink};letter-spacing:-0.5px;line-height:1.22;">${head}</h1>
     <p style="margin:0 auto;font-size:15.5px;line-height:1.7;color:${C.body};max-width:430px;">${intro}</p></td></tr>
   <tr><td style="padding:20px 30px 0;">${rows}${more}</td></tr>`
-  + ctaRow("Unlock every casting &rarr;", "$14.95/month or $99/year &middot; unlimited submissions")
+  + ctaRow("Unlock every casting &rarr;", "$17.99/month or $129/year &middot; unlimited submissions")
   + directoryNote() + `
   <tr><td style="padding:4px 30px 0;">${studioStrip()}</td></tr>
   <tr><td style="height:22px;"></td></tr>`
@@ -220,7 +220,7 @@ function email3(firstName: string, uid: string): string {
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${C.panel};border-radius:12px;"><tr>
       <td style="padding:16px 20px;"><table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
         <td><div style="font-size:11.5px;color:${C.muted};">CastSlate Premium</div>
-        <div style="font-size:23px;font-weight:800;color:${C.ink};letter-spacing:-0.5px;">$99 <span style="font-size:12.5px;font-weight:600;color:${C.muted};">/ year &middot; or $14.95 monthly</span></div></td>
+        <div style="font-size:23px;font-weight:800;color:${C.ink};letter-spacing:-0.5px;">$129 <span style="font-size:12.5px;font-weight:600;color:${C.muted};">/ year &middot; or $17.99 monthly</span></div></td>
         <td style="text-align:right;"><span style="display:inline-block;background:${C.card};color:${C.brand};font-size:10.5px;font-weight:800;padding:5px 11px;border-radius:20px;">Unlimited submissions</span></td>
       </tr></table></td></tr></table></td></tr>`
   + ctaRow("Finish signing up &rarr;", "Cancel anytime") + `
@@ -243,9 +243,9 @@ function planLabelOf(planKey: unknown): string {
 }
 function planOfferOf(planKey: unknown): string {
   const k = String(planKey ?? "monthly").toLowerCase();
-  if (k.includes("year") || k.includes("annual")) return "$99/year · same price every year";
-  if (k.includes("six") || k.includes("6")) return "$71.70 every 6 months · $11.95/month";
-  return "$14.95/month · cancel anytime";
+  if (k.includes("year") || k.includes("annual")) return "$129/year · same price every year";
+  if (k.includes("six") || k.includes("6")) return "$79 every 6 months · $13.17/month";
+  return "$17.99/month · cancel anytime";
 }
 function subjectFor(step: number, firstName: string): string {
   if (step===1) return `You were one step from Premium, ${firstName}`;
@@ -310,7 +310,7 @@ serve(async (req) => {
       const { list, more } = await lockedCastings();
       const cast = list.length ? list : [{title:"Netflix Feature — Supporting Lead",meta:"Los Angeles · SAG-AFTRA · Rate hidden"},{title:"National Commercial — Principal",meta:"Remote self-tape · Paid"}];
       const items:SendArgs[] = [
-        { to:[to_email], subject:subjectFor(1,"there"), html:email1("there","test-uid","monthly plan","$14.95/month · cancel anytime") },
+        { to:[to_email], subject:subjectFor(1,"there"), html:email1("there","test-uid","monthly plan","$17.99/month · cancel anytime") },
         { to:[to_email], subject:subjectFor(2,"there"), html:email2("there","test-uid",9,cast,more||14) },
         { to:[to_email], subject:subjectFor(3,"there"), html:email3("there","test-uid") },
       ];
