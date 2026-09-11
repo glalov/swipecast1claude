@@ -292,12 +292,12 @@ function weeklyCheckinHtml(firstName: string, task?: string): string {
 
 function premiumWelcomeHtml(firstName: string): string {
   const card = (emoji: string, title: string, body: string) =>
-    `<tr><td style="background:#f7f4fd;border:1px solid #e6ddf8;border-radius:13px;padding:15px 17px">
+    `<tr><td height="84" style="height:84px;background:#f7f4fd;border:1px solid #e6ddf8;border-radius:13px;padding:0 18px">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td width="52" valign="top">
-          <span style="display:inline-block;width:40px;height:40px;line-height:40px;text-align:center;font-size:19px;border-radius:11px;background:linear-gradient(135deg,#6b3ecb,#8b5cf6);box-shadow:0 4px 10px rgba(107,62,203,0.32)">${emoji}</span>
+        <td width="54" valign="middle">
+          <span style="display:inline-block;width:40px;height:40px;line-height:40px;text-align:center;font-size:19px;border-radius:11px;background:linear-gradient(135deg,#6b3ecb,#8b5cf6)">${emoji}</span>
         </td>
-        <td valign="top" style="padding-left:14px"><div style="font-size:15px;font-weight:800;color:#2d1052;margin:0 0 3px">${title}</div><div style="font-size:14px;line-height:1.6;color:#555">${body}</div></td>
+        <td valign="middle" style="padding-left:12px"><div style="font-size:15px;font-weight:800;color:#2d1052;margin:0 0 3px;line-height:1.3">${title}</div><div style="font-size:14px;line-height:1.55;color:#555">${body}</div></td>
       </tr></table>
     </td></tr>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head><body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -323,12 +323,68 @@ function premiumWelcomeHtml(firstName: string): string {
       </td></tr>
       <tr><td style="padding:0 36px 8px">
         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 10px">
-          ${card("📅", "Manager Mode — your weekly check-in", "Every week (usually Monday–Wednesday) you'll get one focused task to improve your profile and stay castable, waiting for you in your CastSlate inbox. Sign in to read it — small steps each week add up fast.")}
-          ${card("📸", "Upload everything you can", "Add as many photos and headshots as possible, fill out <strong>all</strong> your stats, and record your <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>. A full profile is what makes casting directors stop and look.")}
-          ${card("🎞️", "Unlimited storage", "Upload demo reels, video clips, and photos with no limits — build the most complete picture of your range.")}
+          ${card("📅", "Manager Mode — your weekly check-in", "One focused task every week (Mon–Wed), waiting in your CastSlate inbox.")}
+          ${card("📸", "Upload everything you can", "Photos, all your stats, <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>.")}
+          ${card("🎞️", "Unlimited storage", "Demo reels, video clips and photos with no limits. Show your full range.")}
           ${card("💬", "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
-          ${card("🏛️", "The Talent Agency &amp; Manager Directory — 650+ companies", "Now unlocked: every talent agency and management company we track across LA, Beverly Hills and New York — with office addresses, websites and the submission route each one actually accepts. It also flags who reads mail from actors they haven't met yet, so you're not sending into a void.")}
-          ${card("🪪", "Your Actor Business Card + QR code", "Everything above becomes viewable anywhere, by any industry professional, in seconds — your card's QR code opens your full profile, reels, slate, and stats right in front of them.")}
+          ${card("🏛️", "Agency &amp; Manager Directory", "<strong>650+</strong> agencies and managers in LA &amp; NY, with how each one takes submissions.")}
+          ${card("🪪", "Actor Business Card + QR code", "One scan opens your full profile, reels, slate and stats for any industry pro.")}
+        </table>
+      </td></tr>
+      <!-- "How to waste your membership" note -->
+      <tr><td style="padding:18px 36px 6px">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8f1;border:1px solid #f3dcc6;border-radius:16px">
+          <tr><td style="padding:26px 26px 8px">
+            <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#c4622d;margin:0 0 8px">A friendly warning</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;color:#1a0533;letter-spacing:-0.3px;line-height:1.2;margin:0 0 10px">How to waste your membership 🙃</div>
+            <div style="font-size:15px;line-height:1.7;color:#5a4a44">We've seen a lot of Premium profiles, and there are two tried-and-true ways to get absolutely nothing out of yours. Please don't try either of them.</div>
+          </td></tr>
+
+          <!-- Waste #1 -->
+          <tr><td style="padding:18px 26px 4px">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td width="40" valign="top"><span style="display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:15px;background:#e0784a;color:#ffffff;font-size:14px;font-weight:800">1</span></td>
+              <td valign="top" style="padding-left:6px">
+                <div style="font-size:16px;font-weight:800;color:#2d1052;margin:3px 0 6px">Upload one or two photos… and call it a day</div>
+                <div style="font-size:14.5px;line-height:1.7;color:#555;margin:0 0 10px">It's the classic move: one lonely headshot, maybe a second, and not a single video. Your storage is <strong>unlimited</strong>, so you can upload literally <strong>hundreds</strong> of photos and videos. Fill it up and your profile becomes your own personal website.</div>
+                <div style="font-size:14.5px;line-height:1.7;color:#555">Casting directors, agents and managers today want to see you <strong>on video</strong>. No professional footage? No problem. Grab your phone and record a monologue, or shoot a scene with a friend. Nobody in the industry cares whether it was shot on an ARRI Alexa or an iPhone. They care about <strong>the acting</strong>.</div>
+              </td>
+            </tr></table>
+          </td></tr>
+
+          <!-- Waste #2 -->
+          <tr><td style="padding:20px 26px 4px">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td width="40" valign="top"><span style="display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:15px;background:#e0784a;color:#ffffff;font-size:14px;font-weight:800">2</span></td>
+              <td valign="top" style="padding-left:6px">
+                <div style="font-size:16px;font-weight:800;color:#2d1052;margin:3px 0 6px">Never print a single business card</div>
+                <div style="font-size:14.5px;line-height:1.7;color:#555;margin:0 0 10px">The runner-up: ignore the built-in <strong>Business Card builder</strong> and its <strong>three printable mailing cards</strong>, and never open the <strong>Talent Agency &amp; Manager Directory</strong>.</div>
+                <div style="font-size:14.5px;line-height:1.7;color:#555">Do the opposite. Print your cards and start mailing agents and managers now. In this industry you never know whose desk your card will land on, and you might be exactly the face and energy they're looking for. Nobody is going to knock on your door. You have to go out there and let them know you exist.</div>
+              </td>
+            </tr></table>
+          </td></tr>
+
+          <!-- What they actually care about -->
+          <tr><td style="padding:22px 26px 4px">
+            <div style="border-top:1px dashed #efcfb3;padding-top:20px">
+              <div style="font-size:16px;font-weight:800;color:#2d1052;margin:0 0 6px">What they actually care about</div>
+              <div style="font-size:14.5px;line-height:1.7;color:#555">Fill out your whole profile: write your bio and add your measurements and credits. No credits yet? That's completely fine. Filmmakers aren't reading long résumés. They care about two things: <strong>do you have basic acting ability</strong>, and <strong>are you the right person for the part?</strong> If you are, they'll cast you and coach you through the rest. They know the tricks.</div>
+            </div>
+          </td></tr>
+
+          <!-- Johnny Depp story -->
+          <tr><td style="padding:18px 26px 6px">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td style="background:#ffffff;border:1px solid #efe3f9;border-left:3px solid #8b5cf6;border-radius:10px;padding:16px 18px">
+                <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#6b3ecb;margin:0 0 7px">Case in point</div>
+                <div style="font-family:Georgia,'Times New Roman',serif;font-size:15.5px;line-height:1.65;color:#2d1052">Johnny Depp never planned to be an actor. He came to Los Angeles chasing a music career, and when the band wasn't paying the rent, a friend introduced him to an agent. He walked into his first audition with no acting experience at all, and his look caught the director's eye on the spot. That role was <em>A Nightmare on Elm Street</em>, and the rest is history.</div>
+              </td>
+            </tr></table>
+          </td></tr>
+
+          <tr><td style="padding:16px 26px 24px">
+            <div style="font-size:15px;line-height:1.7;color:#5a4a44">So don't waste it. Upload the videos, print the cards, send the mail, and make them aware you exist. We'll be cheering you on every step of the way. 💜</div>
+          </td></tr>
         </table>
       </td></tr>
       <tr><td style="padding:22px 36px 36px" align="center">
