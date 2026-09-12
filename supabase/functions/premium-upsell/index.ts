@@ -361,7 +361,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 <body style="margin:0;padding:0;background:${p.paper};-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${p.paper};">
   <tr><td align="center">
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:1000px;width:100%;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:1400px;width:100%;">
 
     <tr><td class="mast" style="background:${p.mastBg};padding:26px 40px;text-align:center;">
       <a href="${APP_URL}" style="text-decoration:none;">
@@ -373,7 +373,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
 
     ${marquee(p)}
 
-    <tr><td style="padding:0;line-height:0;"><img src="${still}" width="1000" alt="" style="display:block;width:100%;height:auto;border:0;"/></td></tr>
+    <tr><td style="padding:0;line-height:0;"><img src="${still}" width="1400" alt="" style="display:block;width:100%;height:auto;border:0;"/></td></tr>
     <tr><td style="height:5px;line-height:5px;font-size:0;background:${p.rule};">&nbsp;</td></tr>
     ${caption}
 
