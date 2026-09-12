@@ -249,15 +249,16 @@ function castingRow(c: any, p: Palette): string {
   // "Deferred". Only prefix "Paid —" when the value is an amount, or we end up
   // printing "Paid — Paid." to every recipient.
   const rawPay = String(c.pay ?? "").trim();
-  // Long free-text rates ("Varies by project. Some opportunities may be...")
-  // would swallow the row, so clamp before it reaches the layout.
-  const payText = rawPay.length > 64 ? `${rawPay.slice(0, 64).trim()}\u2026` : rawPay;
   // Only prefix "Paid —" when the value is an actual amount. Otherwise we print
   // "Paid — Paid." or, worse, "Paid — Unpaid" to every recipient.
   const isAmount = /[\d$]/.test(rawPay) && !/^(paid|unpaid|deferred|no pay|tfp)/i.test(rawPay);
-  const payLine = !rawPay
-    ? "Deferred / copy, credit &amp; meals"
-    : isAmount ? `Paid — ${esc(payText)}` : esc(payText);
+  const payFull = !rawPay
+    ? "Deferred / copy, credit & meals"
+    : isAmount ? `Paid — ${rawPay}` : rawPay;
+  // ONE LINE, always. Casting directors write anything from "Paid" to a
+  // 180-character paragraph; letting it wrap made the left column taller on
+  // some rows than others, so the three casting rows stopped lining up.
+  const payLine = esc(payFull.length > 46 ? `${payFull.slice(0, 46).trim()}\u2026` : payFull);
   let deadline: string | null = null;
   if (c.deadline) {
     const raw = String(c.deadline);
@@ -271,7 +272,7 @@ function castingRow(c: any, p: Palette): string {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
           <td class="col" width="44%" style="width:44%;vertical-align:top;padding-right:24px;">
             <div style="font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${p.kicker};">${esc(String(c.type || "Casting")).toUpperCase()}</div>
-            <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:${p.ink};margin:8px 0 16px;">${payLine}</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:${p.ink};margin:8px 0 16px;white-space:nowrap;overflow:hidden;">${payLine}</div>
             <a href="${href}" style="display:inline-block;background:${p.cta};color:${p.ctaInk};text-decoration:none;padding:13px 30px;border-radius:${p.radius};font-size:14px;font-weight:800;letter-spacing:.3px;">View Now</a>
           </td>
           <td class="col" width="56%" style="width:56%;vertical-align:top;">
