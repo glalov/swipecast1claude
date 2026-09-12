@@ -349,7 +349,10 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   .col{display:block!important;width:100%!important;padding-right:0!important;}
   .col+.col{padding-top:14px!important;}
   .row-pad,.prem-pad,.strip-pad{padding-left:18px!important;padding-right:18px!important;}
-  .mast{padding-left:16px!important;padding-right:16px!important;}
+  .mast{padding:26px 16px!important;}
+  .mast-logo{width:34px!important;height:34px!important;border-radius:8px!important;}
+  .mast-word{font-size:26px!important;letter-spacing:3px!important;margin-left:12px!important;}
+  .mast-sub{font-size:11px!important;letter-spacing:3px!important;margin-top:12px!important;}
   .hl{font-size:28px!important;} .hl2{font-size:25px!important;}
   .l-a24{width:44px!important;height:18px!important;}
   .l-neon{width:64px!important;height:18px!important;}
@@ -363,12 +366,12 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   <tr><td align="center">
   <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:1400px;width:100%;">
 
-    <tr><td class="mast" style="background:${p.mastBg};padding:26px 40px;text-align:center;">
+    <tr><td class="mast" style="background:${p.mastBg};padding:38px 40px 34px;text-align:center;">
       <a href="${APP_URL}" style="text-decoration:none;">
-        <img src="${APP_URL}/email/castslate-logo.png" width="34" height="34" alt="CastSlate" style="vertical-align:middle;border-radius:8px;border:0;"/>
-        <span style="vertical-align:middle;margin-left:12px;font-size:26px;font-weight:800;letter-spacing:3px;color:${p.mastInk};">CASTSLATE</span>
+        <img class="mast-logo" src="${APP_URL}/email/castslate-logo.png" width="54" height="54" alt="CastSlate" style="width:54px;height:54px;vertical-align:middle;border-radius:13px;border:0;"/>
+        <span class="mast-word" style="vertical-align:middle;margin-left:18px;font-size:40px;font-weight:800;letter-spacing:5px;color:${p.mastInk};">CASTSLATE</span>
       </a>
-      <div style="margin-top:12px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${p.mastSub};">${slotLabel}</div>
+      <div class="mast-sub" style="margin-top:16px;font-size:14px;font-weight:700;letter-spacing:4.5px;text-transform:uppercase;color:${p.mastSub};">${slotLabel}</div>
     </td></tr>
 
     ${marquee(p)}
