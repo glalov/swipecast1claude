@@ -237,11 +237,27 @@ const PERKS = [
 function castingRow(c: any, p: Palette): string {
   const roles = c.roles || [];
   const r = roles[0];
+  const extra = roles.length - 1;
   const roleLine = r
     ? [r.name || "Role", r.age_range, (r.gender && String(r.gender).toLowerCase() !== "any") ? r.gender : null]
-        .filter(Boolean).join(" &middot; ") + (roles.length > 1 ? ` <span style="color:${p.body}">+${roles.length - 1} more</span>` : "")
+        .filter(Boolean).map((x) => esc(x)).join(" &middot; ")
+      + (extra > 0 ? ` &middot; <span style="color:${p.body}">+${extra} more role${extra === 1 ? "" : "s"}</span>` : "")
     : "Open casting call";
-  const payLine = c.pay ? `Paid — ${esc(c.pay)}` : "Deferred / copy, credit &amp; meals";
+  const title = esc(String(c.title ?? "").trim()) || "Open casting";
+  const href  = c.slug ? `${APP_URL}/casting/${encodeURIComponent(String(c.slug))}` : `${APP_URL}/browse-castings`;
+  // The pay field is free text a CD typed: "Paid", "$2,500/week", "Unpaid",
+  // "Deferred". Only prefix "Paid —" when the value is an amount, or we end up
+  // printing "Paid — Paid." to every recipient.
+  const rawPay = String(c.pay ?? "").trim();
+  // Long free-text rates ("Varies by project. Some opportunities may be...")
+  // would swallow the row, so clamp before it reaches the layout.
+  const payText = rawPay.length > 64 ? `${rawPay.slice(0, 64).trim()}\u2026` : rawPay;
+  // Only prefix "Paid —" when the value is an actual amount. Otherwise we print
+  // "Paid — Paid." or, worse, "Paid — Unpaid" to every recipient.
+  const isAmount = /[\d$]/.test(rawPay) && !/^(paid|unpaid|deferred|no pay|tfp)/i.test(rawPay);
+  const payLine = !rawPay
+    ? "Deferred / copy, credit &amp; meals"
+    : isAmount ? `Paid — ${esc(payText)}` : esc(payText);
   let deadline: string | null = null;
   if (c.deadline) {
     const raw = String(c.deadline);
@@ -256,10 +272,10 @@ function castingRow(c: any, p: Palette): string {
           <td class="col" width="44%" style="width:44%;vertical-align:top;padding-right:24px;">
             <div style="font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${p.kicker};">${esc(String(c.type || "Casting")).toUpperCase()}</div>
             <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:${p.ink};margin:8px 0 16px;">${payLine}</div>
-            <a href="${APP_URL}/casting/${c.slug}" style="display:inline-block;background:${p.cta};color:${p.ctaInk};text-decoration:none;padding:13px 30px;border-radius:${p.radius};font-size:14px;font-weight:800;letter-spacing:.3px;">View Now</a>
+            <a href="${href}" style="display:inline-block;background:${p.cta};color:${p.ctaInk};text-decoration:none;padding:13px 30px;border-radius:${p.radius};font-size:14px;font-weight:800;letter-spacing:.3px;">View Now</a>
           </td>
           <td class="col" width="56%" style="width:56%;vertical-align:top;">
-            <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:${p.ink};line-height:1.25;margin:0 0 10px;">&lsquo;${esc(c.title)}&rsquo;</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:${p.ink};line-height:1.25;margin:0 0 10px;">&lsquo;${title}&rsquo;</div>
             <div style="font-size:14.5px;line-height:2;color:${p.body};">
               <strong style="color:${p.ink};">Location:</strong> ${esc(c.location || "Location TBD")}${c.union_status ? ` &middot; ${esc(c.union_status)}` : ""}<br/>
               <strong style="color:${p.ink};">Role:</strong> ${roleLine}<br/>
@@ -304,7 +320,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   const kicker    = slot === "evening" ? "Before the day's out" : "Fresh for you today";
   const headline  = slot === "evening"
     ? (count ? "Still open tonight" : "Still open tonight")
-    : (count ? "Find Your Next Big Break" : "New castings are waiting");
+    : (count ? "The work is looking for you" : "New castings are waiting");
   const lede = count
     ? (slot === "evening"
         ? `${count === 1 ? "A role is" : `${count} roles are`} taking submissions right now, ${esc(firstName)}. Ten minutes today beats a week of waiting.`
@@ -367,7 +383,8 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
       <p style="margin:0 auto;max-width:560px;font-size:16px;line-height:1.75;color:${p.body};">${lede}</p>
     </td></tr>
 
-    <tr><td style="padding:22px 40px 0;"><div style="height:2px;background:${p.rule};font-size:0;line-height:0;">&nbsp;</div></td></tr>
+    <tr><td style="height:22px;line-height:22px;font-size:0;">&nbsp;</td></tr>
+    <tr><td style="height:2px;line-height:2px;font-size:0;background:${p.rule};">&nbsp;</td></tr>
     ${rows}
 
     <tr><td class="row-pad" style="padding:30px 40px 46px;text-align:center;${count ? `border-top:1px solid ${p.line};` : ""}">
