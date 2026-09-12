@@ -271,17 +271,23 @@ function castingRow(c: any, p: Palette): string {
 }
 
 function marquee(p: Palette): string {
-  const logo = (f: string, w: number) =>
-    `<img src="${APP_URL}/logos/${f}" height="30" style="height:30px;width:${w}px;vertical-align:middle;border:0;" alt=""/>`;
-  const dot = `<span style="display:inline-block;width:5px;height:5px;border-radius:5px;background:${p.stripDot};vertical-align:middle;margin:0 26px;"></span>`;
+  // The three logos live in ONE table row so they can never wrap to a second
+  // line on a phone, and each has a mobile width that keeps its aspect ratio
+  // (shrinking height alone used to stretch them).
+  const cell = (f: string, cls: string, w: number) =>
+    `<td style="vertical-align:middle;"><img class="${cls}" src="${APP_URL}/logos/${f}" width="${w}" height="30" style="width:${w}px;height:30px;vertical-align:middle;border:0;" alt=""/></td>`;
+  const dot =
+    `<td class="sep" style="vertical-align:middle;padding:0 26px;"><span style="display:inline-block;width:5px;height:5px;border-radius:5px;background:${p.stripDot};"></span></td>`;
   return `
     <tr><td class="strip-pad" style="background:${p.stripBg};padding:30px 40px 28px;text-align:center;border-bottom:1px solid ${p.stripLine};">
       <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 16px;"><tr>
         <td style="width:44px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
-        <td style="padding:0 14px;font-size:11px;font-weight:800;letter-spacing:3.4px;text-transform:uppercase;color:${p.stripInk};white-space:nowrap;">Casting across every format</td>
+        <td class="strip-label" style="padding:0 14px;font-size:11px;font-weight:800;letter-spacing:3.4px;text-transform:uppercase;color:${p.stripInk};white-space:nowrap;">Casting across every format</td>
         <td style="width:44px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
       </tr></table>
-      <div class="logos" style="line-height:1;">${logo("a24-black.png",72)}${dot}${logo("neon-black.png",106)}${dot}${logo("netflix-red.png",111)}</div>
+      <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto;"><tr>
+        ${cell("a24-black.png","l-a24",72)}${dot}${cell("neon-black.png","l-neon",106)}${dot}${cell("netflix-red.png","l-nflx",111)}
+      </tr></table>
       <div style="margin-top:16px;font-size:11.5px;letter-spacing:.4px;color:${p.stripInk};">Indie features to streaming series &mdash; the same inbox.</div>
     </td></tr>`;
 }
@@ -329,7 +335,11 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   .row-pad,.prem-pad,.strip-pad{padding-left:18px!important;padding-right:18px!important;}
   .mast{padding-left:16px!important;padding-right:16px!important;}
   .hl{font-size:28px!important;} .hl2{font-size:25px!important;}
-  .logos img{height:22px!important;}
+  .l-a24{width:44px!important;height:18px!important;}
+  .l-neon{width:64px!important;height:18px!important;}
+  .l-nflx{width:67px!important;height:18px!important;}
+  .sep{padding:0 11px!important;}
+  .strip-label{font-size:9.5px!important;letter-spacing:2.2px!important;padding:0 8px!important;}
 }
 </style></head>
 <body style="margin:0;padding:0;background:${p.paper};-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
