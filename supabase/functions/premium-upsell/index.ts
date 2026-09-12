@@ -81,6 +81,11 @@ const cors = {
 
 function emailConfigured(): boolean { return !!RESEND_API_KEY; }
 
+// Escape user/casting-supplied text before it goes into the HTML body.
+function esc(s: unknown): string {
+  return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
 interface SendEmailArgs { from:string; to:string[]; subject:string; html:string; text?:string; replyTo?:string; headers?:Record<string,string>; }
 interface SendEmailResult { ok:boolean; id:string|null; err:string|null; status:number; }
 
@@ -176,209 +181,213 @@ function castingAgeOk(c: any, age: number|null|undefined): boolean {
   return roles.some((r:any)=>roleCoversAge(r.age_range,age));
 }
 
-// Casting card — the SAME white/indigo card the daily casting digest uses, so
-// the two emails read as one family (requested). No posted-date stamp: recency
-// is enforced by the RECENT_POOL window below, not shown to the reader.
-function pill(text: string, bg: string, fg: string): string {
-  return `<span style="display:inline-block;background:${bg};color:${fg};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin:0 4px 4px 0;">${text}</span>`;
+// ── Full-width "wide screen" layout (approved 2026-09-11) ───────────────────
+// Edge-to-edge colour bands instead of one narrow card, modelled on how the
+// big casting sites lay their promos out. Two palettes, keyed to the slot so
+// noon and evening never look like duplicate mail in the same inbox:
+//   noon    = Golden Hour (sunset masthead, ivory paper, gold Premium band)
+//   evening = Sage & Clay (deep sage masthead, sand paper, clay CTAs)
+// The studio marquee sits UP TOP, under the masthead and above the still, with
+// the logos at 30px — it used to be a small strip at the bottom.
+interface Palette {
+  paper:string; ink:string; body:string; line:string; rule:string; kicker:string; alert:string;
+  mastBg:string; mastInk:string; mastSub:string;
+  cta:string; ctaInk:string; radius:string;
+  permBg:string; permInk:string; permBody:string; permAccent:string; permCta:string; permCtaInk:string;
+  stripBg:string; stripInk:string; stripLine:string; stripDot:string;
+  foot:string; footInk:string; footSub:string; footLink:string;
+  fallbackStill:string;
 }
+const PALETTES: Record<string, Palette> = {
+  noon: {
+    paper:"#FFF9F0", ink:"#25170F", body:"#6B5847", line:"#EEDFC9", rule:"#E0873B", kicker:"#B4531C", alert:"#C2432C",
+    mastBg:"linear-gradient(115deg,#7A2E1E 0%,#C05A25 55%,#E0873B 100%)", mastInk:"#FFF3E2", mastSub:"#F2C79B",
+    cta:"#C05A25", ctaInk:"#FFFFFF", radius:"999px",
+    permBg:"radial-gradient(ellipse 520px 320px at 50% 0%,rgba(232,185,106,.28) 0%,rgba(43,26,18,0) 70%),#2B1A12",
+    permInk:"#FBEEDC", permBody:"#C6AE93", permAccent:"#E8B96A",
+    permCta:"linear-gradient(90deg,#F4D987,#D9A92E)", permCtaInk:"#2B1A12",
+    stripBg:"#FFF3E2", stripInk:"#A9825C", stripLine:"#EBD6BA", stripDot:"#E0873B",
+    foot:"#25170F", footInk:"#FFF3E2", footSub:"#B5967A", footLink:"#E8B96A",
+    fallbackStill:"https://image.tmdb.org/t/p/w1280/7HR38hMBl23lf38MAN63y4pKsHz.jpg",
+  },
+  evening: {
+    paper:"#FAF4EC", ink:"#22322E", body:"#5F7069", line:"#DCE6DF", rule:"#C3653F", kicker:"#2F5B52", alert:"#C3653F",
+    mastBg:"linear-gradient(120deg,#24453E 0%,#2F5B52 60%,#3C7065 100%)", mastInk:"#F4FAF6", mastSub:"#AFCBC0",
+    cta:"#C3653F", ctaInk:"#FFFFFF", radius:"10px",
+    permBg:"radial-gradient(ellipse 520px 300px at 50% 0%,rgba(195,101,63,.30) 0%,rgba(31,58,53,0) 70%),#1F3A35",
+    permInk:"#F2F8F4", permBody:"#A9C2B8", permAccent:"#E8A87C",
+    permCta:"#E08A57", permCtaInk:"#221208",
+    stripBg:"#F1EAE0", stripInk:"#8D9A91", stripLine:"#DED3C4", stripDot:"#C3653F",
+    foot:"#22322E", footInk:"#F4FAF6", footSub:"#9DB3A9", footLink:"#E8A87C",
+    fallbackStill:"https://image.tmdb.org/t/p/w1280/bKCpRjjTKcr3KAITmwjVMobbBYg.jpg",
+  },
+};
 
-function card(c: any): string {
-  const roles  = (c.roles||[]).slice(0,3);
-  const more   = Math.max(0,(c.roles||[]).length-3);
-  const link   = `${APP_URL}/casting/${c.slug}`;
+const PERKS = [
+  "Unlimited casting submissions",
+  "Unlimited photos, videos &amp; demo reels",
+  "Actor's Slate &amp; 'Cast Me As' videos",
+  "Actor Business Card + QR code",
+  "Manager Mode weekly check-ins",
+  "Agency &amp; Manager Directory — 650+ in LA &amp; NY",
+];
 
-  const typePill  = c.type         ? pill(String(c.type).toUpperCase(),"#f0f0ff","#4338ca") : "";
-  const unionPill = c.union_status ? pill(c.union_status,"#f8fafc","#475569")               : "";
-  const paidPill  = c.pay          ? pill("$ PAID","#f0fdf4","#15803d")                     : pill("DEFERRED","#fefce8","#854d0e");
-
-  const rolesBlock = roles.length ? `
-  <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin:10px 0 14px;border-top:1px solid #f1f5f9;">
-    ${roles.map((r:any)=>{
-      const p=[`<strong style="color:#0f172a;font-size:12px">${r.name||"Role"}</strong>`];
-      if(r.age_range) p.push(`<span style="color:#64748b;font-size:12px">${r.age_range}</span>`);
-      if(r.gender&&String(r.gender).toLowerCase()!=="any") p.push(`<span style="color:#64748b;font-size:12px">${r.gender}</span>`);
-      if(r.pay) p.push(`<span style="color:#16a34a;font-size:12px;font-weight:600">${r.pay}</span>`);
-      return `<tr><td style="padding:5px 0;border-bottom:1px solid #f8fafc;">${p.join(" <span style='color:#cbd5e1'>&middot;</span> ")}</td></tr>`;
-    }).join("")}
-    ${more>0?`<tr><td style="padding:4px 0;font-size:11px;color:#94a3b8;">+${more} more role${more>1?"s":""}</td></tr>`:""}
-  </table>` : "";
-
-  const synopsis = c.synopsis
-    ? `<p style="margin:0 0 12px;font-size:13px;color:#64748b;line-height:1.65;">${String(c.synopsis).slice(0,200)}${String(c.synopsis).length>200?"&hellip;":""}</p>`
-    : "";
-
+// One casting = one wide row: category / pay / button on the left, the role
+// details on the right. Stacks to a single column under 620px.
+function castingRow(c: any, p: Palette): string {
+  const roles = c.roles || [];
+  const r = roles[0];
+  const roleLine = r
+    ? [r.name || "Role", r.age_range, (r.gender && String(r.gender).toLowerCase() !== "any") ? r.gender : null]
+        .filter(Boolean).join(" &middot; ") + (roles.length > 1 ? ` <span style="color:${p.body}">+${roles.length - 1} more</span>` : "")
+    : "Open casting call";
+  const payLine = c.pay ? `Paid — ${esc(c.pay)}` : "Deferred / copy, credit &amp; meals";
+  let deadline: string | null = null;
+  if (c.deadline) {
+    const raw = String(c.deadline);
+    const d = new Date(raw.length <= 10 ? `${raw}T12:00:00Z` : raw);
+    if (!isNaN(d.getTime())) {
+      deadline = d.toLocaleDateString("en-US", { timeZone:"America/New_York", month:"short", day:"numeric" });
+    }
+  }
   return `
-<table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin-bottom:12px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;background:#ffffff;">
-<tr>
-  <td style="width:3px;background:#4338ca;" width="3"></td>
-  <td style="padding:16px 18px 16px 16px;">
-    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;margin-bottom:8px;"><tr>
-      <td style="vertical-align:top;">
-        <div style="font-size:16px;font-weight:800;color:#0f172a;line-height:1.3;margin-bottom:4px;">${c.title}</div>
-        <div style="font-size:12px;color:#94a3b8;">&#128205;&nbsp;${c.location||"Location TBD"}</div>
-      </td>
-    </tr></table>
-    <div style="margin:6px 0 10px;">${typePill}${unionPill}${paidPill}</div>
-    ${synopsis}
-    ${rolesBlock}
-    <a href="${link}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:0.2px;">View Casting &rarr;</a>
-  </td>
-</tr>
-</table>`;
+      <tr><td class="row-pad" style="padding:22px 40px;border-top:1px solid ${p.line};">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+          <td class="col" width="44%" style="width:44%;vertical-align:top;padding-right:24px;">
+            <div style="font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${p.kicker};">${esc(String(c.type || "Casting")).toUpperCase()}</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:${p.ink};margin:8px 0 16px;">${payLine}</div>
+            <a href="${APP_URL}/casting/${c.slug}" style="display:inline-block;background:${p.cta};color:${p.ctaInk};text-decoration:none;padding:13px 30px;border-radius:${p.radius};font-size:14px;font-weight:800;letter-spacing:.3px;">View Now</a>
+          </td>
+          <td class="col" width="56%" style="width:56%;vertical-align:top;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:${p.ink};line-height:1.25;margin:0 0 10px;">&lsquo;${esc(c.title)}&rsquo;</div>
+            <div style="font-size:14.5px;line-height:2;color:${p.body};">
+              <strong style="color:${p.ink};">Location:</strong> ${esc(c.location || "Location TBD")}${c.union_status ? ` &middot; ${esc(c.union_status)}` : ""}<br/>
+              <strong style="color:${p.ink};">Role:</strong> ${roleLine}<br/>
+              ${deadline ? `<strong style="color:${p.ink};">Apply by:</strong> <span style="color:${p.alert};font-weight:700;">${deadline}</span>` : `<strong style="color:${p.ink};">Status:</strong> Open now`}
+            </div>
+          </td>
+        </tr></table>
+      </td></tr>`;
 }
 
-// ── The email — film still on top, job cards, dark Premium spotlight (Version D). ──
+function marquee(p: Palette): string {
+  const logo = (f: string, w: number) =>
+    `<img src="${APP_URL}/logos/${f}" height="30" style="height:30px;width:${w}px;vertical-align:middle;border:0;" alt=""/>`;
+  const dot = `<span style="display:inline-block;width:5px;height:5px;border-radius:5px;background:${p.stripDot};vertical-align:middle;margin:0 26px;"></span>`;
+  return `
+    <tr><td class="strip-pad" style="background:${p.stripBg};padding:30px 40px 28px;text-align:center;border-bottom:1px solid ${p.stripLine};">
+      <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 16px;"><tr>
+        <td style="width:44px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
+        <td style="padding:0 14px;font-size:11px;font-weight:800;letter-spacing:3.4px;text-transform:uppercase;color:${p.stripInk};white-space:nowrap;">Casting across every format</td>
+        <td style="width:44px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
+      </tr></table>
+      <div class="logos" style="line-height:1;">${logo("a24-black.png",72)}${dot}${logo("neon-black.png",106)}${dot}${logo("netflix-red.png",111)}</div>
+      <div style="margin-top:16px;font-size:11.5px;letter-spacing:.4px;color:${p.stripInk};">Indie features to streaming series &mdash; the same inbox.</div>
+    </td></tr>`;
+}
+
 interface Hero { image_url: string; caption: string; subject_hook: string; style: string; accent: string; title: string; year: number | null; }
 
 function buildEmail(firstName: string, castings: any[], userId: string, slot: string, hero: Hero | null = null): string {
-  const count      = castings.length;
-  const cards      = castings.map(card).join("");
-  const unsub      = `${UNSUB_BASE}?action=unsubscribe&uid=${userId}&slot=${slot}`;
-  const browse     = `${APP_URL}/browse-castings`;
-  const upgrade    = `${APP_URL}/membership`;
-  const home       = APP_URL;
-  const logoImgUrl = `${APP_URL}/email/castslate-logo.png`;
-  const greetLead  = slot === "evening" ? "Before the day's out" : "Fresh for you today";
-  const slotLabel  = slot === "evening" ? "Evening castings" : "Daily castings";
+  const p     = PALETTES[slot === "evening" ? "evening" : "noon"];
+  const count = castings.length;
+  const unsub = `${UNSUB_BASE}?action=unsubscribe&uid=${userId}&slot=${slot}`;
+  const still = hero?.image_url || p.fallbackStill;
 
-  const jobsSection = count ? `
-<tr>
-  <td class="cards-pad" style="background:#f8fafc;padding:20px 18px 8px;">${cards}</td>
-</tr>
-<tr>
-  <td class="cta-pad" style="background:#f8fafc;padding:4px 28px 26px;text-align:center;">
-    <a href="${browse}" style="display:inline-block;background:#37696A;color:#ffffff;text-decoration:none;padding:12px 30px;border-radius:9px;font-size:14px;font-weight:700;letter-spacing:0.1px;border:2px solid #37696A;">Browse All Castings</a>
-  </td>
-</tr>` : `
-<tr>
-  <td class="cta-pad" style="background:#f8fafc;padding:20px 28px 26px;text-align:center;">
-    <a href="${browse}" style="display:inline-block;background:#37696A;color:#ffffff;text-decoration:none;padding:12px 30px;border-radius:9px;font-size:14px;font-weight:700;letter-spacing:0.1px;border:2px solid #37696A;">Browse Open Castings</a>
-  </td>
-</tr>`;
-
-  const headline = count
-    ? (count===1 ? "A fresh casting for you today" : `${count} fresh castings for you today`)
-    : "New castings are waiting";
-  const sub = count
-    ? "Review them, then submit while the roles are still open — casting moves fast."
+  const slotLabel = slot === "evening" ? "Evening castings" : "Noon castings";
+  const kicker    = slot === "evening" ? "Before the day's out" : "Fresh for you today";
+  const headline  = slot === "evening"
+    ? (count ? "Still open tonight" : "Still open tonight")
+    : (count ? "Find Your Next Big Break" : "New castings are waiting");
+  const lede = count
+    ? (slot === "evening"
+        ? `${count === 1 ? "A role is" : `${count} roles are`} taking submissions right now, ${esc(firstName)}. Ten minutes today beats a week of waiting.`
+        : `${count === 1 ? "A role" : `${count} roles`} opened since yesterday, ${esc(firstName)}. Submit while they're still reading.`)
     : "New projects post every day. Take a look and submit to the ones that fit.";
 
+  const rows  = castings.map((c) => castingRow(c, p)).join("");
+  const perks = PERKS.map((t) => `
+          <tr><td style="padding:9px 0;color:${p.permInk};font-size:15.5px;">
+            <span style="color:${p.permAccent};font-weight:800;">&#10022;</span>&nbsp;&nbsp;${t}</td></tr>`).join("");
+
+  const caption = hero?.caption
+    ? `<tr><td class="row-pad" style="padding:18px 40px 0;text-align:center;">
+        <div style="font-size:10px;color:${p.stripInk};letter-spacing:.4px;margin-bottom:8px;">Still: <em>${esc(hero.title)}</em>${hero.year ? ` (${hero.year})` : ""}</div>
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.35;font-weight:700;color:${p.ink};">${esc(hero.caption)}</div>
+      </td></tr>` : "";
+
   return `<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="color-scheme" content="light"/>
 <title>${headline} &mdash; CastSlate</title>
 <style>
 @media only screen and (max-width:620px){
-  .wrap{padding:0 !important;}
-  .shell{border-radius:0 !important;}
-  .hero-img{height:auto !important;}
-  .head-pad{padding:10px 18px !important;}
-  .body-pad{padding:22px 20px 18px !important;}
-  .cards-pad{padding:16px 12px 6px !important;}
-  .cta-pad{padding:4px 16px 22px !important;}
-  .prem-pad{padding:34px 22px 30px !important;}
-  .hl{font-size:21px !important;}
-  .foot-pad{padding:18px 18px 22px !important;}
+  .col{display:block!important;width:100%!important;padding-right:0!important;}
+  .col+.col{padding-top:14px!important;}
+  .row-pad,.prem-pad,.strip-pad{padding-left:18px!important;padding-right:18px!important;}
+  .mast{padding-left:16px!important;padding-right:16px!important;}
+  .hl{font-size:28px!important;} .hl2{font-size:25px!important;}
+  .logos img{height:22px!important;}
 }
-/* Motion — animates in Apple Mail / iOS Mail; other clients show the static design.
-   The glow is baked into the section BACKGROUND (not a positioned layer) so it
-   renders identically in Gmail/Outlook, which strip position. */
-@keyframes cs_twinkle{0%,100%{opacity:0.4;}50%{opacity:1;}}
-@keyframes cs_rule{0%,100%{opacity:0.55;}50%{opacity:1;}}
-.cs-tw{animation:cs_twinkle 3s ease-in-out infinite;}
-.cs-tw.d1{animation-delay:0.6s;}
-.cs-rule{animation:cs_rule 4.5s ease-in-out infinite;}
-@media (prefers-reduced-motion: reduce){.cs-tw,.cs-rule{animation:none !important;}}
-</style>
-</head>
-<body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
+</style></head>
+<body style="margin:0;padding:0;background:${p.paper};-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${p.paper};">
+  <tr><td align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:1000px;width:100%;">
 
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="wrap" style="background:${CS_CREAM};padding:28px 16px;">
-<tr><td align="center">
+    <tr><td class="mast" style="background:${p.mastBg};padding:26px 40px;text-align:center;">
+      <a href="${APP_URL}" style="text-decoration:none;">
+        <img src="${APP_URL}/email/castslate-logo.png" width="34" height="34" alt="CastSlate" style="vertical-align:middle;border-radius:8px;border:0;"/>
+        <span style="vertical-align:middle;margin-left:12px;font-size:26px;font-weight:800;letter-spacing:3px;color:${p.mastInk};">CASTSLATE</span>
+      </a>
+      <div style="margin-top:12px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${p.mastSub};">${slotLabel}</div>
+    </td></tr>
 
-<table width="600" cellpadding="0" cellspacing="0" role="presentation" class="shell" style="background:#ffffff;max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.09);">
+    ${marquee(p)}
 
-<!-- HEADER — the daily casting digest's dark nav bar, so noon/evening reads as
-     the same family of email. Deliberately NOT a white banner card above the
-     still: that pushed the image below the fold and buried it. -->
-<tr>
-  <td class="head-pad" style="background:#1a1b2e;padding:14px 24px;">
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td style="vertical-align:middle;">
-        <a href="${home}" style="text-decoration:none;">
-          <table cellpadding="0" cellspacing="0" role="presentation"><tr>
-            <td style="vertical-align:middle;padding-right:10px;">
-              <img src="${logoImgUrl}" width="32" height="32" alt="CastSlate" style="display:block;border-radius:7px;border:none;outline:none;text-decoration:none;" />
-            </td>
-            <td style="vertical-align:middle;">
-              <span style="font-size:18px;font-weight:800;color:#ffffff;letter-spacing:-0.4px;">CastSlate</span>
-            </td>
-          </tr></table>
-        </a>
-      </td>
-      <td style="text-align:right;vertical-align:middle;">
-        <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;">${slotLabel}</span>
-      </td>
-    </tr></table>
-  </td>
-</tr>
-${hero ? `<tr><td style="padding:0;line-height:0;"><img src="${hero.image_url}" width="600" alt="Still from ${hero.title}" style="display:block;width:100%;max-width:600px;height:auto;border:none;outline:none;" /></td></tr>
-<tr><td style="height:4px;background:${hero.accent};line-height:0;font-size:0;">&nbsp;</td></tr>
-<tr><td style="padding:16px 28px 4px;background:#ffffff;"><div style="font-family:Helvetica,Arial,sans-serif;font-size:10px;color:#94a3b8;letter-spacing:.4px;margin-bottom:8px;">Still: <em>${hero.title}</em>${hero.year ? ` (${hero.year})` : ""}</div><div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.35;font-weight:700;color:#0f172a;">${hero.caption}</div></td></tr>` : ""}
+    <tr><td style="padding:0;line-height:0;"><img src="${still}" width="1000" alt="" style="display:block;width:100%;height:auto;border:0;"/></td></tr>
+    <tr><td style="height:5px;line-height:5px;font-size:0;background:${p.rule};">&nbsp;</td></tr>
+    ${caption}
 
-<!-- STUDIO STRIP — A24 / Neon / Netflix (muted charcoal) on teal tint -->
-<tr>
-  <td style="background:#eef5f5;padding:16px 20px 14px;text-align:center;border-bottom:1px solid #dce9e9;border-top:1px solid #f0f3f3;">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:#6f9a9a;margin-bottom:8px;">Casting across every format</div>
-    <div style="font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:23px;letter-spacing:-0.5px;"><span style="color:#0A0A0A;">A24</span> <span style="color:#b7c8c8;font-weight:400;">&middot;</span> <span style="color:#FF2D6F;">Neon</span> <span style="color:#b7c8c8;font-weight:400;">&middot;</span> <span style="color:#E50914;">Netflix</span></div>
-  </td>
-</tr>
+    <tr><td class="row-pad" style="padding:40px 40px 10px;text-align:center;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:${p.kicker};margin-bottom:14px;">${kicker}</div>
+      <h1 class="hl" style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:40px;font-weight:700;color:${p.ink};letter-spacing:-.5px;line-height:1.12;">${headline}</h1>
+      <p style="margin:0 auto;max-width:560px;font-size:16px;line-height:1.75;color:${p.body};">${lede}</p>
+    </td></tr>
 
-<!-- GREETING -->
-<tr>
-  <td class="body-pad" style="background:#ffffff;padding:26px 28px 22px;text-align:center;border-bottom:1px solid #f1f5f9;">
-    ${count?`<div style="display:inline-block;background:#eef2ff;color:#4338ca;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">${greetLead}</div>`:""}
-    <h1 class="hl" style="margin:0 0 12px;font-size:24px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;line-height:1.25;">Hi ${firstName} &mdash; ${headline} &#127916;</h1>
-    <p style="margin:0 auto;font-size:15px;line-height:1.75;color:#64748b;max-width:440px;">${sub}</p>
-  </td>
-</tr>
+    <tr><td style="padding:22px 40px 0;"><div style="height:2px;background:${p.rule};font-size:0;line-height:0;">&nbsp;</div></td></tr>
+    ${rows}
 
-${jobsSection}
+    <tr><td class="row-pad" style="padding:30px 40px 46px;text-align:center;${count ? `border-top:1px solid ${p.line};` : ""}">
+      <a href="${APP_URL}/browse-castings" style="display:inline-block;background:transparent;border:2px solid ${p.cta};color:${p.cta};text-decoration:none;padding:13px 36px;border-radius:${p.radius};font-size:14px;font-weight:800;">Browse all open castings</a>
+    </td></tr>
 
-<!-- PREMIUM UPSELL — Petrol Noir cinematic marquee (glow baked into background) -->
-<tr>
-  <td class="prem-pad" style="padding:40px 34px 40px;border-top:3px solid #e2b73c;background:#0a1418;background:radial-gradient(ellipse 440px 300px at 50% -6%, rgba(240,207,122,0.30) 0%, rgba(226,183,60,0.08) 40%, rgba(10,20,24,0) 72%), radial-gradient(ellipse at 94% 112%, rgba(45,120,120,0.26) 0%, rgba(45,120,120,0) 54%), linear-gradient(160deg,#08151a 0%,#0c2024 52%,#0f2a2e 100%);">
-    <div style="text-align:center;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#e6c98a;margin-bottom:16px;"><span class="cs-tw">&#9733;</span> &nbsp;Now Showing&nbsp; <span class="cs-tw d1">&#9733;</span></div>
-      <h2 style="margin:0 0 10px;font-size:29px;font-weight:800;color:#f4f8f7;letter-spacing:-0.5px;line-height:1.15;">CastSlate <span style="color:#f0cf7a;">Premium</span></h2>
-      <div class="cs-rule" style="width:52px;height:2px;background:linear-gradient(90deg,transparent,#e2b73c,transparent);margin:0 auto 18px;font-size:0;line-height:0;">&nbsp;</div>
-      <p style="margin:0 auto 26px;font-size:14.5px;line-height:1.7;color:#a7bcbd;max-width:410px;">Step into the version of your career where nothing holds you back.</p>
-    </div>
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      <tr><td style="padding:11px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Unlimited casting submissions</td></tr></table></td></tr>
-      <tr><td style="padding:11px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Unlimited photos &amp; gallery media</td></tr></table></td></tr>
-      <tr><td style="padding:11px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Unlimited video uploads</td></tr></table></td></tr>
-      <tr><td style="padding:11px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Actor Slate Video <span style="color:#8ba4a4;font-weight:400;">&mdash; 7-sec intro</span></td></tr></table></td></tr>
-      <tr><td style="padding:11px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Actor cards <span style="color:#8ba4a4;font-weight:400;">with QR business card, postcard &amp; agent promo</span></td></tr></table></td></tr>
-      <tr><td style="padding:11px 4px;border-top:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Manager Mode <span style="color:#8ba4a4;font-weight:400;">weekly check-ins</span></td></tr></table></td></tr>
-      <tr><td style="padding:11px 4px;border-top:1px solid rgba(226,183,60,0.14);border-bottom:1px solid rgba(226,183,60,0.14);"><table width="100%" role="presentation"><tr><td width="30" valign="top" style="color:#e2b73c;font-size:16px;">&#10022;</td><td style="color:#eef4f3;font-size:15px;font-weight:600;">Talent Agency &amp; Manager Directory <span style="color:#8ba4a4;font-weight:400;">650+ in LA, Beverly Hills &amp; NYC</span></td></tr></table></td></tr>
-    </table>
-    <div style="text-align:center;margin-top:30px;">
-      <a href="${upgrade}" style="display:inline-block;background:linear-gradient(90deg,#f4d987,#d9a92e);color:#241a05;text-decoration:none;padding:16px 48px;border-radius:40px;font-weight:800;font-size:15.5px;letter-spacing:0.3px;box-shadow:0 0 26px rgba(226,183,60,0.45),0 8px 20px rgba(0,0,0,0.4);">Unlock Premium &rarr;</a>
-      <p style="margin:16px 0 0;font-size:12px;letter-spacing:1px;color:#7c8f8f;">PLANS FROM $10.75 / MONTH &middot; CANCEL ANYTIME</p>
-    </div>
-  </td>
-</tr>
+    <tr><td class="prem-pad" style="background:${p.permBg};padding:48px 40px;">
+      <div style="text-align:center;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:${p.permAccent};margin-bottom:14px;">More roles. Unlimited submissions.</div>
+        <h2 class="hl2" style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:700;color:${p.permInk};line-height:1.15;">Go Premium, and stop<br/>counting submissions.</h2>
+        <p style="margin:0 auto 26px;max-width:520px;font-size:15.5px;line-height:1.7;color:${p.permBody};">Free accounts get one submission, total. Premium members applied to every casting above the day it posted.</p>
+      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;margin:0 auto;">${perks}</table>
+      <div style="text-align:center;margin-top:30px;">
+        <a href="${APP_URL}/membership" style="display:inline-block;background:${p.permCta};color:${p.permCtaInk};text-decoration:none;padding:17px 50px;border-radius:${p.radius};font-size:16px;font-weight:800;letter-spacing:.3px;">Unlock Premium &rarr;</a>
+        <div style="margin-top:16px;font-size:12.5px;letter-spacing:1px;color:${p.permBody};">$129 / YEAR &nbsp;&middot;&nbsp; $17.99 MONTHLY &nbsp;&middot;&nbsp; CANCEL ANYTIME</div>
+      </div>
+    </td></tr>
 
-${csFooterStripe("#4338ca")}
+    <tr><td class="row-pad" style="background:${p.foot};padding:34px 40px;text-align:center;">
+      <div style="font-size:17px;font-weight:800;letter-spacing:2.6px;color:${p.footInk};">CASTSLATE</div>
+      <div style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:14px;color:${p.footSub};margin-top:8px;">Get seen. Get cast.</div>
+      <div style="margin-top:18px;font-size:12px;line-height:1.8;color:${p.footSub};">You're receiving this because you signed up for CastSlate casting recommendations.<br/>
+        <a href="${APP_URL}/account-settings" style="color:${p.footLink};">Choose what you receive</a> &nbsp;&middot;&nbsp; <a href="${unsub}" style="color:${p.footLink};">Unsubscribe</a></div>
+      <div style="margin-top:14px;font-size:11.5px;color:${p.footSub};">&copy; ${new Date().getFullYear()} CastSlate &middot; <a href="mailto:team@castslate.com" style="color:${p.footSub};text-decoration:none;">team@castslate.com</a></div>
+    </td></tr>
 
+  </table>
+  </td></tr>
 </table>
-    ${csFooterA("You're receiving this because you signed up for CastSlate casting recommendations.", "#4338ca", unsub)}
-</td></tr></table>
 </body></html>`;
 }
 
