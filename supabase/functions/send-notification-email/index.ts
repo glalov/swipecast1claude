@@ -294,20 +294,23 @@ function premiumWelcomeHtml(firstName: string): string {
   const card = (emoji: string, title: string, body: string) =>
     `<tr><td class="pw-card" height="84" style="height:84px;background:#f7f4fd;border:1px solid #e6ddf8;border-radius:13px;padding:0 18px">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td width="54" valign="middle">
+        <td width="54" valign="middle" class="pw-ico">
           <span style="display:inline-block;width:40px;height:40px;line-height:40px;text-align:center;font-size:19px;border-radius:11px;background:linear-gradient(135deg,#6b3ecb,#8b5cf6)">${emoji}</span>
         </td>
-        <td valign="middle" style="padding-left:12px"><div style="font-size:15px;font-weight:800;color:#2d1052;margin:0 0 3px;line-height:1.3">${title}</div><div style="font-size:14px;line-height:1.55;color:#555">${body}</div></td>
+        <td valign="middle" class="pw-body" style="padding-left:12px"><div style="font-size:15px;font-weight:800;color:#2d1052;margin:0 0 3px;line-height:1.3">${title}</div><div style="font-size:14px;line-height:1.55;color:#555">${body}</div></td>
       </tr></table>
     </td></tr>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
 @media only screen and (max-width:480px){
-  .pw-outer{padding:20px 8px!important}
-  .pw-pad{padding-left:18px!important;padding-right:18px!important}
-  .pw-note{padding-left:18px!important;padding-right:18px!important}
-  .pw-card{padding:12px 14px!important;height:108px!important}
+  .pw-outer{padding:12px 4px!important}
+  .pw-pad{padding-left:12px!important;padding-right:12px!important}
+  .pw-note{padding-left:14px!important;padding-right:14px!important}
+  .pw-card{padding:10px 12px!important;height:85px!important}
+  .pw-ico{width:44px!important}
+  .pw-ico span{width:34px!important;height:34px!important;line-height:34px!important;font-size:17px!important}
+  .pw-body{padding-left:10px!important}
 }
 </style></head><body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM}"><tr><td class="pw-outer" align="center" style="padding:40px 20px">
