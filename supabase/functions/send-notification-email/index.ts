@@ -614,16 +614,16 @@ ${a.after ?? ""}
 // wording, so a subject can never read "for undefined".
 function clampText(v: string, n: number): string {
   const t = v.trim();
-  return t.length > n ? `${t.slice(0, n).trim()}\u2026` : t;
+  return t.length > n ? `${t.slice(0, n).trim()}…` : t;
 }
 function shortlistSubject(firstName: string, projectName?: string, roleName?: string): string {
   return projectName && roleName
-    ? `You\u2019re shortlisted for ${clampText(roleName, 24)} in \u2018${clampText(projectName, 40)}\u2019`
+    ? `You’re shortlisted for ${clampText(roleName, 24)} in ‘${clampText(projectName, 40)}’`
     : `${firstName}, you've been shortlisted on CastSlate`;
 }
 function holdSubject(firstName: string, projectName?: string): string {
   return projectName
-    ? `Still in the running for \u2018${clampText(projectName, 40)}\u2019`
+    ? `Still in the running for ‘${clampText(projectName, 40)}’`
     : `${firstName}, your profile was reviewed on CastSlate`;
 }
 
@@ -635,7 +635,7 @@ function applicationSelectedHtml(firstName: string, projectName?: string, roleNa
   const t        = SHORTLIST_TONE;
   // Every line here states only what CastSlate actually does: inbox messages
   // are emailed (inbox_message), audition requests are in-app notifications
-  // only \u2014 there is no audition email, so the copy must not promise one.
+  // only — there is no audition email, so the copy must not promise one.
   const step = (n: number, html: string, last = false) => `
           <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 ${last ? 0 : 12}px"><tr>
             <td width="38" style="width:38px;vertical-align:top;padding-top:1px">
