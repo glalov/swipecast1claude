@@ -4741,7 +4741,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .mm-premium-pill-dot{animation:mmPremiumDotGlow 3.2s ease-in-out infinite;}
 .mm-live-inbox{position:relative;z-index:2;animation:mmInboxFloat var(--mm-loop) ease-in-out infinite;}
 .mm-live-stage{isolation:isolate;}
-.mm-live-stage::before{content:"";position:absolute;inset:20px -12px auto;height:420px;border-radius:36px;background:linear-gradient(135deg,rgba(110,231,183,.22),rgba(37,99,235,.16) 46%,rgba(232,144,42,.11));filter:blur(18px);opacity:.72;animation:mmHaloShift 7s ease-in-out infinite;z-index:0;pointer-events:none;}
+.mm-live-stage::before{content:"";position:absolute;inset:20px -12px auto;height:420px;border-radius:36px;background:linear-gradient(135deg,rgba(240,184,96,.22),rgba(159,196,181,.16) 46%,rgba(232,144,42,.11));filter:blur(18px);opacity:.72;animation:mmHaloShift 7s ease-in-out infinite;z-index:0;pointer-events:none;}
 .mm-live-tab{position:relative;}
 .mm-live-tab::after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:#1A1A2E;transform:scaleX(0);transform-origin:left;animation:mmUnderline var(--mm-loop) ease-in-out infinite;}
 .mm-live-preview{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;}
@@ -4772,19 +4772,19 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .mm-live-task.mm-task-visible{opacity:1;transform:scale(1);}
 .mm-spark{position:absolute;width:16px;height:16px;border-radius:5px;background:#E8902A;box-shadow:0 0 24px rgba(232,144,42,.92);opacity:0;z-index:3;pointer-events:none;animation:mmSparkFloat 5.8s ease-in-out infinite;}
 .mm-spark-1{right:26px;top:134px;animation-delay:4.6s;}
-.mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#6EE7B7;box-shadow:0 0 24px rgba(110,231,183,.82);animation-delay:7.8s;}
+.mm-spark-2{right:104px;top:56px;width:14px;height:14px;background:#F0B860;box-shadow:0 0 24px rgba(240,184,96,.82);animation-delay:7.8s;}
 .mm-spark-3{right:76px;bottom:112px;width:18px;height:18px;background:#7AA2FF;box-shadow:0 0 25px rgba(122,162,255,.82);animation-delay:11.6s;}
 .mm-spark-4{right:414px;top:202px;width:13px;height:13px;animation-delay:14.2s;}
 .mm-live-cursor,.mm-restart-cursor{position:absolute;width:38px;height:38px;color:#fff;filter:drop-shadow(0 8px 13px rgba(0,0,0,.38));opacity:0;z-index:8;pointer-events:none;transform-origin:8px 4px;}
 .mm-live-cursor{left:calc(50% + 430px);top:calc(50% + 210px);animation:mmCursorPath var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
 .mm-restart-cursor{left:0;top:0;z-index:9;animation:mmRestartCursor var(--mm-loop) cubic-bezier(.22,1,.36,1) infinite;}
-.mm-click-ring{position:absolute;width:42px;height:42px;border:2px solid rgba(110,231,183,.8);border-radius:50%;opacity:0;pointer-events:none;z-index:4;}
+.mm-click-ring{position:absolute;width:42px;height:42px;border:2px solid rgba(240,184,96,.8);border-radius:50%;opacity:0;pointer-events:none;z-index:4;}
 .mm-ring-1{left:66px;top:64px;border-color:rgba(232,144,42,.85);animation:mmClickRing var(--mm-loop) ease infinite;}
-.mm-ring-2{left:376px;top:279px;border-color:rgba(37,99,235,.72);animation:mmClickRing2 var(--mm-loop) ease infinite;}
+.mm-ring-2{left:376px;top:279px;border-color:rgba(159,196,181,.72);animation:mmClickRing2 var(--mm-loop) ease infinite;}
 .mm-ring-3{left:27px;bottom:25px;border-color:rgba(232,144,42,.78);animation:mmClickRing3 var(--mm-loop) ease infinite;}
-.mm-logo-click-ring{position:absolute;left:0;top:0;width:54px;height:54px;border:2px solid rgba(110,231,183,.86);border-radius:16px;opacity:0;transform:translate(-8px,-8px);pointer-events:none;z-index:8;animation:mmLogoClickRing var(--mm-loop) ease infinite;}
-@keyframes mmPremiumPillBreathe{0%,100%{box-shadow:0 0 0 0 rgba(110,231,183,0);}50%{box-shadow:0 0 0 5px rgba(110,231,183,.09),0 0 22px rgba(110,231,183,.22);}}
-@keyframes mmPremiumDotGlow{0%,100%{box-shadow:0 0 10px #6EE7B7;transform:scale(1);}50%{box-shadow:0 0 18px #6EE7B7;transform:scale(1.12);}}
+.mm-logo-click-ring{position:absolute;left:0;top:0;width:54px;height:54px;border:2px solid rgba(240,184,96,.86);border-radius:16px;opacity:0;transform:translate(-8px,-8px);pointer-events:none;z-index:8;animation:mmLogoClickRing var(--mm-loop) ease infinite;}
+@keyframes mmPremiumPillBreathe{0%,100%{box-shadow:0 0 0 0 rgba(240,184,96,0);}50%{box-shadow:0 0 0 5px rgba(240,184,96,.09),0 0 22px rgba(240,184,96,.22);}}
+@keyframes mmPremiumDotGlow{0%,100%{box-shadow:0 0 10px #F0B860;transform:scale(1);}50%{box-shadow:0 0 18px #F0B860;transform:scale(1.12);}}
 @keyframes mmInboxFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
 @keyframes mmHaloShift{0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.62;}50%{transform:translate3d(-16px,10px,0) scale(1.04);opacity:.82;}}
 @keyframes mmUnderline{0%,9%{transform:scaleX(0);}13%,96%{transform:scaleX(1);}100%{transform:scaleX(0);}}
@@ -4795,7 +4795,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 @keyframes mmClickRing2{0%,42.6%{opacity:0;transform:scale(.28);}43.2%{opacity:.9;transform:scale(.28);}49%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
 @keyframes mmClickRing3{0%,54.6%{opacity:0;transform:scale(.28);}55.2%{opacity:.9;transform:scale(.28);}61%{opacity:0;transform:scale(1.5);}100%{opacity:0;}}
 @keyframes mmLogoClickRing{0%,92.8%{opacity:0;transform:translate(-8px,-8px) scale(.45);}93.2%{opacity:.95;transform:translate(-8px,-8px) scale(.45);}98%{opacity:0;transform:translate(-8px,-8px) scale(1.45);}100%{opacity:0;}}
-@keyframes mmHeroLogoPulse{0%,92%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}94%{transform:scale(.92);box-shadow:inset 0 0 14px rgba(255,255,255,.06),0 0 0 7px rgba(110,231,183,.13),0 0 28px rgba(110,231,183,.35);}98%,100%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}}
+@keyframes mmHeroLogoPulse{0%,92%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}94%{transform:scale(.92);box-shadow:inset 0 0 14px rgba(255,255,255,.06),0 0 0 7px rgba(240,184,96,.13),0 0 28px rgba(240,184,96,.35);}98%,100%{transform:scale(1);box-shadow:inset 0 0 14px rgba(255,255,255,.06);}}
 .mm-card-outer{width:100%;overflow:hidden;}
 @media(max-width:860px){
   .mm-show-desktop{display:none !important;}
@@ -8874,7 +8874,7 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
               <span style={{fontSize:fs(12,10),fontWeight:700,color:"#1A1A2E"}}>CastSlate Career Team</span>
-              <span style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.25)",color:"#1B873E",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
+              <span style={{background:"rgba(59,101,89,0.1)",border:"1px solid rgba(59,101,89,0.25)",color:"#3B6559",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
             </div>
             <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Weekly Actor Check-In</div>
             <div className="mm-live-preview" style={{fontSize:fs(10,8),color:"#8E8EA0"}}>{mmPreview}</div>
@@ -8887,7 +8887,7 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
               <span key={`${mmCycle}-l${i}`} className={`mm-live-line ${i<mmLines?"mm-line-visible":""}`}><span>{line}</span></span>
             ))}
           </div>
-          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#1B873E","rgba(27,135,62,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#2563EB","rgba(37,99,235,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
+          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#3B6559","rgba(59,101,89,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#3B6559","rgba(59,101,89,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
             <div key={`${mmCycle}-${label}`} className={`mm-live-card ${idx<mmCards?"mm-card-visible":""}`} style={{"--mm-rail":col,background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
@@ -8981,9 +8981,9 @@ function ManagerModePage({onNavigate,session,myProfile}){
   return(<div className="page">
 
     {/* ══════ HERO ══════ */}
-    <section className="mm-live-hero" style={{background:"linear-gradient(155deg,#150F1E 0%,#241633 42%,#3A1E2E 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
+    <section className="mm-live-hero" style={{background:"radial-gradient(ellipse 37% 50% at 0% -5%,rgba(220,172,108,0.24) 0%,transparent 70%),radial-gradient(ellipse 40% 70% at 5% 105%,rgba(255,255,255,0.07) 0%,transparent 70%),radial-gradient(ellipse 45% 70% at 105% 105%,rgba(14,38,32,0.23) 0%,transparent 70%),linear-gradient(135deg,#487066 0%,#3B6559 45%,#284840 100%)",color:"#fff",padding:"clamp(56px,8vw,96px) clamp(16px,5vw,60px) clamp(48px,7vw,80px)",position:"relative",overflow:"hidden"}}>
       <svg className="mm-live-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
-      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 18% 60%,rgba(232,144,42,0.20) 0%,transparent 55%),radial-gradient(ellipse at 84% 16%,rgba(214,59,123,0.16) 0%,transparent 50%),radial-gradient(ellipse at 50% 100%,rgba(240,184,96,0.07) 0%,transparent 50%)",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"none",pointerEvents:"none"}}/>
       <div className="mm-hero-row" style={{maxWidth:1160,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 300px",minWidth:0,width:"100%"}}>
           <div className="mm-hero-brand" style={{display:"flex",alignItems:"center",gap:10,marginBottom:24,position:"relative"}}>
@@ -8995,19 +8995,19 @@ function ManagerModePage({onNavigate,session,myProfile}){
               <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",letterSpacing:0.2}}>castslate.com</div>
             </div>
           </div>
-          <div className="mm-premium-pill" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.3)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:24}}>
-            <span className="mm-premium-pill-dot" style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 10px #6EE7B7"}}/>Premium Feature
+          <div className="mm-premium-pill" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(240,184,96,0.1)",border:"1px solid rgba(240,184,96,0.3)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"#FFE6C2",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:24}}>
+            <span className="mm-premium-pill-dot" style={{width:6,height:6,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 10px #F0B860"}}/>Premium Feature
           </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>CastSlate becomes your talent manager before you have a talent manager.</h1>
           <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>CastSlate doesn't just help actors find auditions. It helps actors become more castable.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className="btn-amber-hover" style={{padding:"14px 28px",fontSize:14,background:"#fff",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer",boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("membership")}>Unlock Manager Mode</button>
+            <button className="btn-amber-hover" style={{padding:"14px 28px",fontSize:14,background:"#F0B860",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer",boxShadow:"0 6px 20px -6px rgba(240,184,96,0.55)"}} onClick={()=>onNavigate("membership")}>Unlock Manager Mode</button>
             <button style={{padding:"14px 28px",fontSize:14,background:"transparent",color:"rgba(255,255,255,0.82)",borderRadius:100,fontWeight:700,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.28)",cursor:"pointer"}} onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile guidance","One task per week"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.6)"}}>
-                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:13}}><Ico n="check" s={24}/></span>{f}
+                <span style={{color:"#F0B860",fontWeight:800,fontSize:13}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
@@ -9021,7 +9021,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <span className="mm-click-ring mm-ring-1"/>
             <span className="mm-click-ring mm-ring-2"/>
             <span className="mm-click-ring mm-ring-3"/>
-            <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(110,231,183,0.3),rgba(99,102,241,0.2),transparent 60%)",borderRadius:22,filter:"blur(1px)"}}/>
+            <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(240,184,96,0.3),rgba(255,255,255,0.10),transparent 60%)",borderRadius:22,filter:"blur(1px)"}}/>
             <InboxMockup mobile={false} mmPreview={mmPreview} mmLines={mmLines} mmCards={mmCards} mmTask={mmTask} mmCycle={mmCycle}/>
           </div>
         </div>
@@ -9031,7 +9031,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <span className="mm-spark mm-spark-2"/>
             <span className="mm-spark mm-spark-3"/>
             <span className="mm-spark mm-spark-4"/>
-            <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(110,231,183,0.24),rgba(99,102,241,0.18),transparent 62%)",borderRadius:18,filter:"blur(1px)"}}/>
+            <div style={{position:"absolute",inset:-1,background:"linear-gradient(135deg,rgba(240,184,96,0.24),rgba(255,255,255,0.10),transparent 62%)",borderRadius:18,filter:"blur(1px)"}}/>
             <InboxMockup mobile={true} mmPreview={mmPreview} mmLines={mmLines} mmCards={mmCards} mmTask={mmTask} mmCycle={mmCycle}/>
           </div>
         </div>
@@ -9059,12 +9059,12 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
       <div className="grid-2" style={{gap:20}}>
         {[
-          {icon:"mailbox",accent:"#2563EB",title:"Weekly Career Check-Ins",body:"Receive a private weekly CastSlate note with one clear step to improve your profile. No noise. No overwhelm. One thing you can actually do this week."},
-          {icon:"photo",accent:"#7C3AED",title:"Profile Improvement Guidance",body:"Get suggestions on your headshots, slate video, bio, resume, reel, skills, and overall profile presentation so casting directors see your best self."},
-          {icon:"target",accent:"#1B873E",title:"Casting Lane Suggestions",body:"See which role types may fit your current profile so you can submit more strategically and focus your energy where you're most likely to connect."},
-          {icon:"circle-check",accent:"#D97706",title:"One Task Per Week",body:"Manager Mode gives you one focused task each week instead of overwhelming you with a long checklist — because progress happens one step at a time."},
-          {icon:"map-pin",accent:"#DC2626",title:"Industry Events in NYC & LA",body:"Receive curated suggestions for in-person industry events — mixers, showcases, networking nights, and workshops in New York and Los Angeles where you can meet agents, managers, directors, and fellow actors. Because in-person connection still matters."},
-          {icon:"credit-card",accent:"#0891B2",title:"Actor Business Card",body:"Create a personalized actor business card with your headshot and a unique QR code linking directly to your CastSlate profile. Walk into any room with a card that opens your full profile in seconds."}
+          {icon:"mailbox",accent:"#3B6559",title:"Weekly Career Check-Ins",body:"Receive a private weekly CastSlate note with one clear step to improve your profile. No noise. No overwhelm. One thing you can actually do this week."},
+          {icon:"photo",accent:"#8A5A12",title:"Profile Improvement Guidance",body:"Get suggestions on your headshots, slate video, bio, resume, reel, skills, and overall profile presentation so casting directors see your best self."},
+          {icon:"target",accent:"#3B6559",title:"Casting Lane Suggestions",body:"See which role types may fit your current profile so you can submit more strategically and focus your energy where you're most likely to connect."},
+          {icon:"circle-check",accent:"#8A5A12",title:"One Task Per Week",body:"Manager Mode gives you one focused task each week instead of overwhelming you with a long checklist — because progress happens one step at a time."},
+          {icon:"map-pin",accent:"#C3653F",title:"Industry Events in NYC & LA",body:"Receive curated suggestions for in-person industry events — mixers, showcases, networking nights, and workshops in New York and Los Angeles where you can meet agents, managers, directors, and fellow actors. Because in-person connection still matters."},
+          {icon:"credit-card",accent:"#3B6559",title:"Actor Business Card",body:"Create a personalized actor business card with your headshot and a unique QR code linking directly to your CastSlate profile. Walk into any room with a card that opens your full profile in seconds."}
         ].map(({icon,accent,title,body})=>(
           <div key={title} className="card" style={{padding:"28px 26px",display:"flex",flexDirection:"column",gap:14,borderLeft:`3px solid ${accent}`,transition:"all 0.25s"}}>
             <div style={{width:44,height:44,borderRadius:12,background:`${accent}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n={icon} s={22} style={{color:accent}}/></div>
@@ -9085,7 +9085,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
 
       {/* Actor profile card with real photo */}
       <div className="mm-card-outer" style={{maxWidth:700,margin:"0 auto",background:"#fff",border:"1px solid var(--bdr)",borderRadius:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(26,26,46,0.07)"}}>
-        <div style={{background:"linear-gradient(135deg,#1A1A2E,#16213e)",padding:"14px 20px",display:"flex",alignItems:"center",gap:8}}>
+        <div style={{background:"linear-gradient(135deg,#1A1A2E,#22223A)",padding:"14px 20px",display:"flex",alignItems:"center",gap:8}}>
           <span style={{display:"block",width:16,height:16,color:"#fff",flexShrink:0}}><LogoMark/></span>
           <span style={{color:"rgba(255,255,255,0.7)",fontSize:12,fontWeight:600,letterSpacing:0.3}}>CastSlate — Manager Mode Profile View</span>
         </div>
@@ -9107,8 +9107,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
                 </div>
               ))}
             </div>
-            <div style={{background:"rgba(37,99,235,0.05)",border:"1px solid rgba(37,99,235,0.15)",borderRadius:10,padding:"10px 14px"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#2563EB",letterSpacing:0.6,textTransform:"uppercase",marginBottom:4}}>This week's Manager Mode note</div>
+            <div style={{background:"rgba(59,101,89,0.05)",border:"1px solid rgba(59,101,89,0.15)",borderRadius:10,padding:"10px 14px"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#3B6559",letterSpacing:0.6,textTransform:"uppercase",marginBottom:4}}>This week's Manager Mode note</div>
               <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.55,margin:0,fontStyle:"italic"}}>"Riley, your headshot is working well. Your next step is to record a 7-second slate video — it will significantly strengthen your profile for commercial and young professional submissions."</p>
             </div>
           </div>
@@ -9125,8 +9125,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
       <div className="grid-2 mm-card-outer" style={{gap:20,maxWidth:900,margin:"0 auto"}}>
         {[
-          {city:"New York",icon:"ny",color:"#1A1A2E",accent:"rgba(99,102,241,0.08)",border:"rgba(99,102,241,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
-          {city:"Los Angeles",icon:"la",color:"#0f2347",accent:"rgba(37,99,235,0.07)",border:"rgba(37,99,235,0.2)",events:["Film festival industry parties","Pilot season prep events","Agent & manager meet-and-greets","TV studio open calls & showcases","Commercial union member events","Industry workshop weekends"]}
+          {city:"New York",icon:"ny",color:"#1A1A2E",accent:"rgba(59,101,89,0.08)",border:"rgba(59,101,89,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
+          {city:"Los Angeles",icon:"la",color:"#1A1A2E",accent:"rgba(59,101,89,0.07)",border:"rgba(59,101,89,0.2)",events:["Film festival industry parties","Pilot season prep events","Agent & manager meet-and-greets","TV studio open calls & showcases","Commercial union member events","Industry workshop weekends"]}
         ].map(({city,icon,color,accent,border,events})=>{
           const EventIcon = ({large=false}) => (
             <svg viewBox="0 0 24 24" aria-hidden="true" style={{width:large?80:24,height:large?80:24,display:"block",fill:"none",stroke:"currentColor",strokeWidth:2.15,strokeLinecap:"round",strokeLinejoin:"round"}}>
@@ -9173,21 +9173,21 @@ function ManagerModePage({onNavigate,session,myProfile}){
     {/* ══════ ACTOR BUSINESS CARD ══════ */}
     <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}>
       <div style={{maxWidth:1140,margin:"0 auto"}}>
-        <div style={{background:"linear-gradient(160deg,#0D0D1A 0%,#1A1A2E 50%,#0f2347 100%)",borderRadius:24,padding:"clamp(36px,5vw,64px) clamp(20px,4vw,56px)",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 70% 20%,rgba(99,102,241,0.18) 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,rgba(37,99,235,0.12) 0%,transparent 50%)",pointerEvents:"none"}}/>
+        <div style={{background:"radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,0.14) 0%,transparent 70%),linear-gradient(160deg,#13142A 0%,#1A1A2E 55%,#22223A 100%)",borderRadius:24,padding:"clamp(36px,5vw,64px) clamp(20px,4vw,56px)",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"none",pointerEvents:"none"}}/>
           <div className="mm-bcard-row" style={{position:"relative",display:"flex",alignItems:"center",gap:"clamp(28px,5vw,64px)",flexWrap:"wrap"}}>
 
             {/* Left: Text content */}
             <div className="mm-bcard-text" style={{flex:"1 1 280px",minWidth:0}}>
-              <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.25)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:22}}>
-                <span style={{width:5,height:5,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 8px #6EE7B7"}}/>Premium Benefit
+              <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(240,184,96,0.1)",border:"1px solid rgba(240,184,96,0.25)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"#FFE6C2",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:22}}>
+                <span style={{width:5,height:5,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 8px #F0B860"}}/>Premium Benefit
               </div>
               <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,40px)",letterSpacing:-1.2,lineHeight:1.06,marginBottom:14,color:"#fff"}}>Your Actor Business Card, Built Into CastSlate</h2>
               <h3 style={{fontWeight:600,fontSize:"clamp(15px,2vw,20px)",color:"rgba(255,255,255,0.65)",letterSpacing:-0.3,marginBottom:20,lineHeight:1.35}}>Walk into the room with a profile they can scan.</h3>
               <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:14}}>With CastSlate Premium, every actor can create a personalized actor business card featuring their headshot, name, contact details, casting type, and a unique QR code that links directly to their CastSlate profile.</p>
               <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:14}}>Actors can use the card at networking events, acting classes, showcases, film festivals, auditions, industry mixers, and anywhere they may meet agents, managers, casting directors, producers, or filmmakers.</p>
               <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:24}}>Instead of hoping someone remembers your name, give them a card that opens your full profile in seconds.</p>
-              <p style={{fontSize:14,color:"rgba(255,255,255,0.5)",lineHeight:1.6,marginBottom:28,fontStyle:"italic",borderLeft:"3px solid rgba(110,231,183,0.4)",paddingLeft:14}}>Manager Mode helps you improve your profile every week. Your Actor Business Card helps you share it in the real world.</p>
+              <p style={{fontSize:14,color:"rgba(255,255,255,0.5)",lineHeight:1.6,marginBottom:28,fontStyle:"italic",borderLeft:"3px solid rgba(240,184,96,0.4)",paddingLeft:14}}>Manager Mode helps you improve your profile every week. Your Actor Business Card helps you share it in the real world.</p>
               <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
                 {[
                   {icon:"palette",title:"Personalized Design",body:"Choose a clean actor card layout with your headshot, name, and profile details."},
@@ -9196,7 +9196,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                   {icon:"arrow-down",title:"Download & Print",body:"Premium members can download a print-ready version and print it anywhere."}
                 ].map(({icon,title,body})=>(
                   <div key={title} style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                    <Ico n={icon} s={18} style={{flexShrink:0,marginTop:2,color:"#6EE7B7"}}/>
+                    <Ico n={icon} s={18} style={{flexShrink:0,marginTop:2,color:"#F0B860"}}/>
                     <div>
                       <span style={{fontSize:13.5,fontWeight:700,color:"rgba(255,255,255,0.9)"}}>{title}</span>
                       <span style={{fontSize:13,color:"rgba(255,255,255,0.55)",marginLeft:6}}>{body}</span>
@@ -9204,7 +9204,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                   </div>
                 ))}
               </div>
-              <button className="btn-amber-hover" style={{padding:"14px 28px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={cardCTA}>{cardCTALabel}</button>
+              <button className="btn-amber-hover" style={{padding:"14px 28px",borderRadius:100,background:"#F0B860",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 6px 20px -6px rgba(240,184,96,0.55)"}} onClick={cardCTA}>{cardCTALabel}</button>
             </div>
 
             {/* Right: Business card visual */}
@@ -9212,7 +9212,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
               {/* The card */}
               <div style={{width:"100%",maxWidth:320,background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:"0 24px 72px rgba(0,0,0,0.5),0 8px 24px rgba(0,0,0,0.3)",position:"relative"}}>
                 {/* Card top accent bar */}
-                <div style={{height:6,background:"linear-gradient(90deg,#1A1A2E,#2563EB,#1A1A2E)"}}/>
+                <div style={{height:6,background:"linear-gradient(90deg,#1A1A2E,#D9A444,#1A1A2E)"}}/>
                 <div style={{padding:"clamp(16px,3vw,22px)"}}>
                   <div style={{display:"flex",gap:"clamp(12px,2vw,16px)",alignItems:"flex-start",marginBottom:"clamp(14px,2.5vw,18px)"}}>
                     {/* Headshot */}
@@ -9236,7 +9236,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                           <span key={t} style={{background:"rgba(26,26,46,0.07)",color:"#1A1A2E",fontSize:"clamp(7px,1.2vw,8.5px)",fontWeight:700,padding:"2px 6px",borderRadius:4}}>{t}</span>
                         ))}
                       </div>
-                      <p style={{fontSize:"clamp(7.5px,1.2vw,9px)",color:"#2563EB",margin:0,fontWeight:700,letterSpacing:0.2}}>SAG-AFTRA Eligible</p>
+                      <p style={{fontSize:"clamp(7.5px,1.2vw,9px)",color:"#3B6559",margin:0,fontWeight:700,letterSpacing:0.2}}>SAG-AFTRA Eligible</p>
                     </div>
                   </div>
                   {/* Divider */}
@@ -9256,7 +9256,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                   </div>
                 </div>
                 {/* Card bottom bar */}
-                <div style={{height:4,background:"linear-gradient(90deg,#1A1A2E,#2563EB,#1A1A2E)"}}/>
+                <div style={{height:4,background:"linear-gradient(90deg,#1A1A2E,#D9A444,#1A1A2E)"}}/>
               </div>
               <p style={{fontSize:11,color:"rgba(255,255,255,0.35)",textAlign:"center",maxWidth:280,lineHeight:1.5}}>Example card design. Premium members can create and download their own personalized version.</p>
             </div>
@@ -9268,8 +9268,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
 
     {/* ══════ INCLUDED WITH PREMIUM ══════ */}
     <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,80px)",maxWidth:860,margin:"0 auto",boxSizing:"border-box"}}>
-      <div style={{background:"linear-gradient(145deg,#1A1A2E,#16213e)",borderRadius:20,padding:"clamp(28px,5vw,56px) clamp(18px,4vw,48px)",textAlign:"center",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 50% 0%,rgba(99,102,241,0.18) 0%,transparent 60%)",pointerEvents:"none"}}/>
+      <div style={{background:"radial-gradient(ellipse 55% 60% at 50% -10%,rgba(240,184,96,0.16) 0%,transparent 70%),linear-gradient(145deg,#1A1A2E 0%,#202038 100%)",borderRadius:20,padding:"clamp(28px,5vw,56px) clamp(18px,4vw,48px)",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"none",pointerEvents:"none"}}/>
         <div style={{position:"relative"}}>
           <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>
             <div style={{width:52,height:52,background:"rgba(255,255,255,0.08)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(255,255,255,0.14)",color:"#fff",overflow:"hidden"}}>
@@ -9282,11 +9282,11 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",marginBottom:32}}>
             {["Weekly career check-ins","Profile improvement notes","Casting lane suggestions","One focused task/week","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,color:"rgba(255,255,255,0.78)"}}>
-                <span style={{color:"#6EE7B7",fontWeight:800,fontSize:14}}><Ico n="check" s={24}/></span>{f}
+                <span style={{color:"#F0B860",fontWeight:800,fontSize:14}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
-          <button className="btn-amber-hover" style={{padding:"15px 34px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("membership")}>Upgrade to Premium</button>
+          <button className="btn-amber-hover" style={{padding:"15px 34px",borderRadius:100,background:"#F0B860",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 6px 20px -6px rgba(240,184,96,0.55)"}} onClick={()=>onNavigate("membership")}>Upgrade to Premium</button>
         </div>
       </div>
     </section>
