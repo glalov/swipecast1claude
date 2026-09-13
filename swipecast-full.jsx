@@ -3146,6 +3146,19 @@ body.sheet-push .b2t-cube{display:none;}
    is free (the section paints its own gradient into the seam), and paint an
    extra pixel with a shadow where layout must not move. ─── */
 .lh-mm{margin-top:-1px;}   /* iOS teaser → Manager Mode teaser */
+/* Manager Mode teaser: stacked weekly letters + paper week stamp. */
+.mm-stk{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:36px;}
+.mm-stk .mm-letter{position:relative;z-index:5;}
+.mm-sheet{position:absolute;left:0;right:0;top:36px;bottom:0;border-radius:14px;box-shadow:0 6px 14px -5px rgba(20,14,6,0.42);}
+.mm-sheet span{position:absolute;top:-17px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 9px 4px;border-radius:7px 7px 0 0;color:#6E5E48;}
+.mm-sheet-2{background:#E6D7BD;transform:translate(26px,-4px) rotate(5.5deg);z-index:1;}
+.mm-sheet-2 span{right:20px;background:#E6D7BD;}
+.mm-sheet-1{background:#EFE2CC;transform:translate(13px,-10px) rotate(2.6deg);z-index:2;}
+.mm-sheet-1 span{right:100px;background:#EFE2CC;}
+.mm-stamp{position:absolute;z-index:6;top:0;left:-14px;width:48px;height:48px;border-radius:50%;background:#FFFAF2;color:#8A5A12;border:1.5px solid #D9A444;box-shadow:0 2px 5px rgba(20,14,6,0.22);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;box-sizing:border-box;}
+.mm-stamp span{font-size:7.5px;font-weight:800;letter-spacing:1.4px;}
+.mm-stamp b{font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:800;margin-top:1px;}
+@media (max-width:420px){.mm-sheet-2{transform:translate(9px,-4px) rotate(2.6deg);}.mm-sheet-1{transform:translate(4px,-10px) rotate(1.2deg);}.mm-stamp{left:-6px;}}
 .lh-cta{margin-top:-1px;}  /* Manager Mode teaser → final CTA */
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
@@ -22501,17 +22514,25 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </div>
         {/* Card column may shrink: on a 375px phone the section leaves ~295px, and a fixed
             280–340px card overflowed and was clipped at the right edge. */}
-        <div style={{flex:"0 1 340px",minWidth:0,maxWidth:"100%",display:"flex",justifyContent:"center"}}>
+        <div style={{flex:"0 1 390px",minWidth:0,maxWidth:"100%",display:"flex",justifyContent:"center"}}>
           {/* The check-in as a letter (approved 2026-09-13): warm paper, serif note, gold rule,
               no avatar / grey boxes / chip. The old bright-white dashboard card competed with
               the headline and read as a pasted-on screenshot. */}
-          <div style={{background:"#FFFAF2",borderRadius:14,padding:"26px 26px 22px",boxShadow:"0 6px 14px -4px rgba(30,20,8,0.38),0 1px 3px rgba(30,20,8,0.16)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box",color:"#3A3128"}}>
-            <div style={{fontSize:11,letterSpacing:0.3,color:"#7A6A55",marginBottom:12}}>From your CastSlate Career Team · <span style={{color:"#8A5A12",fontWeight:700}}>This week</span></div>
-            <p style={{fontFamily:"'Source Serif 4',Georgia,serif",fontSize:16,lineHeight:1.55,color:"#3A3128",margin:"0 0 16px"}}>Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make it significantly stronger.</p>
-            <div style={{width:40,height:2,background:"#E0A93F",margin:"0 0 14px"}}/>
-            <div style={{fontSize:13.5,fontWeight:600,color:"#2B2419",marginBottom:6}}><span style={{fontSize:10,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"#8A5A12",marginRight:8}}>Your task</span>Record a 7-second slate video.</div>
-            <div style={{fontSize:12,color:"#7A6A55",marginBottom:14}}>Casting lane: young professional / commercial friend</div>
-            <button onClick={()=>onNavigate("manager-mode")} style={{background:"none",border:"none",padding:"0 0 1px",cursor:"pointer",fontFamily:"inherit",fontSize:12.5,fontWeight:700,color:"#8A5A12",borderBottom:"1.5px solid #E0A93F"}}>Open my check-in →</button>
+          {/* Last weeks' letters peek out behind this week's, with a paper "WK 12" stamp
+              (approved 2026-09-13, stack "B" + seal "paper stamp"). The stamp sits above the
+              letter's top edge so it never touches the "From your CastSlate" line. */}
+          <div className="mm-stk">
+            <div className="mm-sheet mm-sheet-2"><span>Week 10</span></div>
+            <div className="mm-sheet mm-sheet-1"><span>Week 11</span></div>
+            <div className="mm-stamp" aria-hidden="true"><span>WK</span><b>12</b></div>
+            <div className="mm-letter" style={{background:"#FFFAF2",borderRadius:14,padding:"26px 26px 22px",boxShadow:"0 6px 14px -4px rgba(30,20,8,0.38),0 1px 3px rgba(30,20,8,0.16)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box",color:"#3A3128"}}>
+              <div style={{fontSize:11,letterSpacing:0.3,color:"#7A6A55",marginBottom:12}}>From your CastSlate Career Team · <span style={{color:"#8A5A12",fontWeight:700}}>This week</span></div>
+              <p style={{fontFamily:"'Source Serif 4',Georgia,serif",fontSize:16,lineHeight:1.55,color:"#3A3128",margin:"0 0 16px"}}>Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make it significantly stronger.</p>
+              <div style={{width:40,height:2,background:"#E0A93F",margin:"0 0 14px"}}/>
+              <div style={{fontSize:13.5,fontWeight:600,color:"#2B2419",marginBottom:6}}><span style={{fontSize:10,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"#8A5A12",marginRight:8}}>Your task</span>Record a 7-second slate video.</div>
+              <div style={{fontSize:12,color:"#7A6A55",marginBottom:14}}>Casting lane: young professional / commercial friend</div>
+              <button onClick={()=>onNavigate("manager-mode")} style={{background:"none",border:"none",padding:"0 0 1px",cursor:"pointer",fontFamily:"inherit",fontSize:12.5,fontWeight:700,color:"#8A5A12",borderBottom:"1.5px solid #E0A93F"}}>Open my check-in →</button>
+            </div>
           </div>
         </div>
       </div>
