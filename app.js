@@ -1196,7 +1196,10 @@ body.sheet-push .b2t-cube{display:none;}
 .agdc.mm-bc-card{--agdcw:420px;max-width:100%;transform:rotate(-2.5deg);box-shadow:0 18px 40px -12px rgba(0,0,0,.45);}
 .mm-bc-note{font-size:11px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;margin:10px 0 0;}
 @media (max-width:860px){.mm-bc{grid-template-columns:1fr;}.agdc.mm-bc-card{--agdcw:340px;}}
-@media (max-width:420px){.mm-bc-grid{grid-template-columns:1fr;}.agdc.mm-bc-card{--agdcw:300px;}}
+/* Phones: the card is drawn at fixed type sizes, so squeezing its width below ~340px made it too
+   short and pushed the profile link + QR out of the bottom. Keep its real proportions and scale
+   the whole card down instead; the negative margin closes the gap the scale leaves below. */
+@media (max-width:420px){.mm-bc-grid{grid-template-columns:1fr;}.agdc.mm-bc-card{--agdcw:340px;max-width:none;transform:rotate(-2.5deg) scale(.78);transform-origin:center top;margin-bottom:-42px;}}
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
