@@ -22451,8 +22451,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <AgencyDirectoryStripe onNavigate={onNavigate} isPremium={myProfile?.membership_status==="active"}/>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
-    <section className="lh-mm" style={{padding:"72px 40px",background:"radial-gradient(ellipse 37% 50% at 0% -5%,rgba(220,172,108,0.24) 0%,transparent 70%),radial-gradient(ellipse 40% 70% at 5% 105%,rgba(255,255,255,0.07) 0%,transparent 70%),radial-gradient(ellipse 45% 70% at 105% 105%,rgba(14,38,32,0.23) 0%,transparent 70%),linear-gradient(135deg,#487066 0%,#3B6559 45%,#284840 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
-      {/* Sage Velvet stripe (approved 2026-09-13): full-width sage gradient. Glow set by the owner
+    <section className="lh-mm" style={{padding:"72px 40px",background:"radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,0.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
+      {/* SOFT NAVY since 2026-09-13 (owner: same colours + gold glow as the /manager-mode business card section, .mm-bc). Previously a Sage Velvet stripe: full-width sage gradient. Glow set by the owner
           in the glow tuner: "Top-left · strength 24 · size 37 · warmth 17 · shade 23" (a soft muted-gold
           glow top-left, off the letter, faint light bottom-left, gentle shade bottom-right). Originally an amber glow
           top-right and soft light bottom-left, styled after the "It's time to get seen" card.
