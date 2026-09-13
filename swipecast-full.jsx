@@ -22502,20 +22502,16 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         {/* Card column may shrink: on a 375px phone the section leaves ~295px, and a fixed
             280–340px card overflowed and was clipped at the right edge. */}
         <div style={{flex:"0 1 340px",minWidth:0,maxWidth:"100%",display:"flex",justifyContent:"center"}}>
-          <div style={{background:"#FFFFFF",borderRadius:16,padding:"0 20px 20px",overflow:"hidden",boxShadow:"0 6px 14px -4px rgba(10,24,20,0.38),0 1px 3px rgba(10,24,20,0.18)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box"}}>
-            <div style={{height:8,margin:"0 -20px 18px",background:"linear-gradient(90deg,#284840,#3B6559)"}}/>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:14,borderBottom:"1px solid #E6ECE7"}}>
-              <div style={{width:36,height:36,borderRadius:"50%",background:"#3B6559",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
-              <div><div style={{fontSize:12,fontWeight:700,color:"#22322E"}}>CastSlate Career Team</div><div style={{fontSize:11,color:"#8D9A91"}}>Your Weekly Actor Check-In</div></div>
-            </div>
-            <p style={{fontSize:13,color:"#3A4945",lineHeight:1.6,marginBottom:14}}>"Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make your profile significantly stronger."</p>
-            {[["Casting lane","Young professional / commercial friend"],["This week's task","Record a 7-second slate video."]].map(([lbl,val])=>(
-              <div key={lbl} style={{background:"#F4F5F1",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
-                <div style={{fontSize:9,fontWeight:700,color:"#C3653F",letterSpacing:0.8,textTransform:"uppercase",marginBottom:2}}>{lbl}</div>
-                <div style={{fontSize:12,color:"#22322E",fontWeight:600}}>{val}</div>
-              </div>
-            ))}
-            <div style={{marginTop:12,display:"inline-block",background:"#C3653F",color:"#fff",fontSize:11,fontWeight:700,padding:"6px 14px",borderRadius:100,letterSpacing:0.3}}>Complete This Week's Task →</div>
+          {/* The check-in as a letter (approved 2026-09-13): warm paper, serif note, gold rule,
+              no avatar / grey boxes / chip. The old bright-white dashboard card competed with
+              the headline and read as a pasted-on screenshot. */}
+          <div style={{background:"#FFFAF2",borderRadius:14,padding:"26px 26px 22px",boxShadow:"0 6px 14px -4px rgba(30,20,8,0.38),0 1px 3px rgba(30,20,8,0.16)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box",color:"#3A3128"}}>
+            <div style={{fontSize:11,letterSpacing:0.3,color:"#7A6A55",marginBottom:12}}>From your CastSlate Career Team · <span style={{color:"#8A5A12",fontWeight:700}}>This week</span></div>
+            <p style={{fontFamily:"'Source Serif 4',Georgia,serif",fontSize:16,lineHeight:1.55,color:"#3A3128",margin:"0 0 16px"}}>Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make it significantly stronger.</p>
+            <div style={{width:40,height:2,background:"#E0A93F",margin:"0 0 14px"}}/>
+            <div style={{fontSize:13.5,fontWeight:600,color:"#2B2419",marginBottom:6}}><span style={{fontSize:10,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"#8A5A12",marginRight:8}}>Your task</span>Record a 7-second slate video.</div>
+            <div style={{fontSize:12,color:"#7A6A55",marginBottom:14}}>Casting lane: young professional / commercial friend</div>
+            <button onClick={()=>onNavigate("manager-mode")} style={{background:"none",border:"none",padding:"0 0 1px",cursor:"pointer",fontFamily:"inherit",fontSize:12.5,fontWeight:700,color:"#8A5A12",borderBottom:"1.5px solid #E0A93F"}}>Open my check-in →</button>
           </div>
         </div>
       </div>
