@@ -375,24 +375,36 @@ function castingRow(c: any, p: Palette): string {
 }
 
 function marquee(p: Palette): string {
-  // The three logos live in ONE table row so they can never wrap to a second
-  // line on a phone, and each has a mobile width that keeps its aspect ratio
-  // (shrinking height alone used to stretch them).
+  // Desktop (approved 2026-09-12, demo "B"): three equal columns across a
+  // 1000px band with hairline dividers, so each studio owns its own space —
+  // the old single row read as one clump in a wide Gmail pane.
+  // Phones keep the original single row with dots: .mq-desk / .mq-mob swap in
+  // the 620px media query. On a phone the three logos live in ONE table row so
+  // they can never wrap, and each has a mobile width that keeps its aspect ratio.
+  const logo = (f: string, cls: string, w: number) =>
+    `<img class="${cls}" src="${APP_URL}/logos/${f}" width="${w}" height="30" style="width:${w}px;height:30px;vertical-align:middle;border:0;" alt=""/>`;
+  const col = (f: string, w: number, last: boolean) =>
+    `<td width="33%" style="width:33.33%;text-align:center;vertical-align:middle;padding:10px 0;${last ? "" : `border-right:1px solid ${p.stripLine};`}">${logo(f, "", w)}</td>`;
   const cell = (f: string, cls: string, w: number) =>
-    `<td style="vertical-align:middle;"><img class="${cls}" src="${APP_URL}/logos/${f}" width="${w}" height="30" style="width:${w}px;height:30px;vertical-align:middle;border:0;" alt=""/></td>`;
+    `<td style="vertical-align:middle;">${logo(f, cls, w)}</td>`;
   const dot =
     `<td class="sep" style="vertical-align:middle;padding:0 26px;"><span style="display:inline-block;width:5px;height:5px;border-radius:5px;background:${p.stripDot};"></span></td>`;
   return `
-    <tr><td class="strip-pad" style="background:${p.stripBg};padding:30px 40px 28px;text-align:center;border-bottom:1px solid ${p.stripLine};">
-      <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 16px;"><tr>
-        <td style="width:44px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
+    <tr><td class="strip-pad" style="background:${p.stripBg};padding:38px 40px 34px;text-align:center;border-bottom:1px solid ${p.stripLine};">
+      <table class="mq-label" cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 26px;"><tr>
+        <td class="mq-rule" style="width:120px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
         <td class="strip-label" style="padding:0 14px;font-size:11px;font-weight:800;letter-spacing:3.4px;text-transform:uppercase;color:${p.stripInk};white-space:nowrap;">Casting across every format</td>
-        <td style="width:44px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
+        <td class="mq-rule" style="width:120px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
       </tr></table>
-      <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto;"><tr>
+      <table class="mq-desk" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center" style="width:100%;max-width:1000px;margin:0 auto;"><tr>
+        ${col("a24-black.png", 72, false)}${col("neon-black.png", 106, false)}${col("netflix-red.png", 111, true)}
+      </tr></table>
+      <!--[if !mso]><!-->
+      <table class="mq-mob" cellpadding="0" cellspacing="0" role="presentation" align="center" style="display:none;margin:0 auto;"><tr>
         ${cell("a24-black.png","l-a24",72)}${dot}${cell("neon-black.png","l-neon",106)}${dot}${cell("netflix-red.png","l-nflx",111)}
       </tr></table>
-      <div style="margin-top:16px;font-size:11.5px;letter-spacing:.4px;color:${p.stripInk};">Indie features to streaming series &mdash; the same inbox.</div>
+      <!--<![endif]-->
+      <div class="mq-sub" style="margin-top:26px;font-size:11.5px;letter-spacing:.4px;color:${p.stripInk};">Indie features to streaming series &mdash; the same inbox.</div>
     </td></tr>`;
 }
 
@@ -447,6 +459,12 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   .l-nflx{width:67px!important;height:18px!important;}
   .sep{padding:0 11px!important;}
   .strip-label{font-size:9.5px!important;letter-spacing:2.2px!important;padding:0 8px!important;}
+  .mq-desk{display:none!important;}
+  .mq-mob{display:table!important;}
+  .strip-pad{padding-top:30px!important;padding-bottom:28px!important;}
+  .mq-label{margin-bottom:16px!important;}
+  .mq-rule{width:44px!important;}
+  .mq-sub{margin-top:16px!important;}
 }
 </style></head>
 <body style="margin:0;padding:0;background:${p.paper};-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
