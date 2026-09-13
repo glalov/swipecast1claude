@@ -22499,7 +22499,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <p style={{display:"inline-flex",alignItems:"center",gap:8,fontSize:11.5,fontWeight:700,letterSpacing:1.6,textTransform:"uppercase",color:"#FFE6C2",margin:"0 0 16px"}}>
             <span style={{width:7,height:7,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 10px #F0B860"}}/>New — Manager Mode
           </p>
-          <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(30px,4.2vw,48px)",lineHeight:1.07,letterSpacing:-0.5,marginBottom:16,color:"#fff"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 64%,rgba(240,184,96,0.40) 64%)"}}>talent manager</span> before you have a talent manager.</h2>
+          <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(30px,4vw,46px)",lineHeight:1.12,letterSpacing:-0.1,marginBottom:16,color:"#fff"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 64%,rgba(240,184,96,0.40) 64%)"}}>talent manager</span> before you have a talent manager.</h2>
           <p style={{fontSize:"clamp(15px,1.8vw,18px)",lineHeight:1.65,color:"rgba(255,255,255,0.9)",marginBottom:28,maxWidth:520}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className="home-cta-primary" style={{padding:"16px 30px",fontSize:15}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
