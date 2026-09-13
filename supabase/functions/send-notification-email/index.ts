@@ -528,6 +528,10 @@ interface DecisionArgs {
   // daily recap). Left unset, every one of these keeps the shortlist/hold
   // wording byte-for-byte identical to what shipped.
   kicker?: string; mid?: string; cta?: string; href?: string; foot?: string;
+  // preheader = the grey preview line an inbox shows under the subject. Without
+  // it Gmail fills that line with the header labels ("CASTSLATE Casting update").
+  // after = an extra block between the submission card and the button.
+  preheader?: string; after?: string;
 }
 function decisionEmail(a: DecisionArgs): string {
   const t = a.tone;
@@ -558,6 +562,7 @@ function decisionEmail(a: DecisionArgs): string {
 }
 </style></head>
 <body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  ${a.preheader ? `<div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:${CS_CREAM};opacity:0">${a.preheader}${"&#8199;&#65279;&#847; ".repeat(60)}</div>` : ""}
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM}"><tr><td align="center" style="padding:32px 14px">
   <!--[if mso]><table width="560" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
     <table width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FCFAF7;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
@@ -587,6 +592,7 @@ function decisionEmail(a: DecisionArgs): string {
 
       <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">${a.body}</p></td></tr>
 ${a.mid ?? card}
+${a.after ?? ""}
       <tr><td class="cs-pad cs-cta" style="padding:26px 30px 34px">
         <table cellpadding="0" cellspacing="0"><tr><td style="background:${t.cta};border-radius:11px">
           <a href="${APP_URL}${a.href ?? "/talent-dashboard"}" style="display:inline-block;padding:16px 34px;font-size:14.5px;font-weight:800;letter-spacing:0.2px;color:#FFFFFF;text-decoration:none">${a.cta ?? "View my applications"} &nbsp;&rarr;</a>
@@ -602,15 +608,55 @@ ${a.mid ?? card}
 </body></html>`;
 }
 
+// Subject lines lead with the role and project: a phone shows ~35 characters of
+// subject, and "Marian, you've been shortlisted on CastSlate" spent all of them
+// on words that never change. Missing role/project falls back to that original
+// wording, so a subject can never read "for undefined".
+function clampText(v: string, n: number): string {
+  const t = v.trim();
+  return t.length > n ? `${t.slice(0, n).trim()}\u2026` : t;
+}
+function shortlistSubject(firstName: string, projectName?: string, roleName?: string): string {
+  return projectName && roleName
+    ? `You\u2019re shortlisted for ${clampText(roleName, 24)} in \u2018${clampText(projectName, 40)}\u2019`
+    : `${firstName}, you've been shortlisted on CastSlate`;
+}
+function holdSubject(firstName: string, projectName?: string): string {
+  return projectName
+    ? `Still in the running for \u2018${clampText(projectName, 40)}\u2019`
+    : `${firstName}, your profile was reviewed on CastSlate`;
+}
+
 function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
   const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
   const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
   const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
+  const who      = cdName ? esc(cdName) : "The casting director";
+  const t        = SHORTLIST_TONE;
+  // Every line here states only what CastSlate actually does: inbox messages
+  // are emailed (inbox_message), audition requests are in-app notifications
+  // only \u2014 there is no audition email, so the copy must not promise one.
+  const step = (n: number, html: string, last = false) => `
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 ${last ? 0 : 12}px"><tr>
+            <td width="38" style="width:38px;vertical-align:top;padding-top:1px">
+              <table cellpadding="0" cellspacing="0"><tr><td width="26" height="26" align="center" style="width:26px;height:26px;background:${t.card};border:1px solid ${t.cardBd};border-radius:13px;font-size:13px;font-weight:800;line-height:26px;color:${t.cta};text-align:center">${n}</td></tr></table>
+            </td>
+            <td style="vertical-align:top;font-size:15px;line-height:1.6;color:#5A5A72">${html}</td>
+          </tr></table>`;
+  const nextSteps = `
+        <tr><td class="cs-pad" style="padding:24px 30px 0">
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${t.kicker};margin:0 0 12px">What happens next</div>
+          ${step(1, `${who} may <strong style="color:#1A1A2E">message you</strong> or <strong style="color:#1A1A2E">request an audition</strong>. Messages are emailed to you straight away; audition requests appear in your CastSlate notifications.`)}
+          ${step(2, `This is when they look closest. Make sure your headshots, reel and Actor&rsquo;s Slate are current.`)}
+          ${step(3, `Being shortlisted isn&rsquo;t a booking yet &mdash; but it means you&rsquo;re one of the few still in the room.`, true)}
+        </td></tr>`;
   return decisionEmail({
     tone: SHORTLIST_TONE,
     headTop: "You&rsquo;ve been", headAccent: "shortlisted",
     body: `${reviewer} shortlisted you${forRole}. Your submission stood out &mdash; you're on the short list to move forward.`,
     title,
+    preheader: `${cdName ? esc(cdName) : "A casting director"} picked you out of the submissions. Here&rsquo;s what happens next.`,
+    after: nextSteps,
   });
 }
 
@@ -624,6 +670,7 @@ function applicationHoldHtml(firstName: string, projectName?: string, roleName?:
     body: `${reviewer} opened your submission${forRole} and moved you to under consideration ` +
           `&mdash; you're still in for the role while they finalize casting. Nothing is needed from you right now.`,
     title,
+    preheader: `${cdName ? esc(cdName) : "A casting director"} reviewed your profile${roleName ? ` for ${esc(roleName)}` : ""} and kept you under consideration. Nothing needed yet.`,
   });
 }
 
@@ -832,7 +879,7 @@ serve(async (req) => {
       }
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
-        subject: `${firstName}, you've been shortlisted on CastSlate`,
+        subject: shortlistSubject(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined),
         html: applicationSelectedHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined),
       });
       if (!sent.ok) {
@@ -861,7 +908,7 @@ serve(async (req) => {
       }
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
-        subject: `${firstName}, your profile was reviewed on CastSlate`,
+        subject: holdSubject(firstName, project_name?.trim() || undefined),
         html: applicationHoldHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined),
       });
       if (!sent.ok) {
