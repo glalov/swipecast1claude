@@ -22476,25 +22476,25 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <AgencyDirectoryStripe onNavigate={onNavigate} isPremium={myProfile?.membership_status==="active"}/>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
-    <section className="lh-mm" style={{padding:"72px 40px",background:"#EDEFE3",color:"#22322E",borderTop:"1px solid #E1E6DE",position:"relative",overflow:"hidden"}}>
-      {/* Sage & Cream (approved 2026-09-13): Sage Mist band, white "letter" card with a crisp
-          shadow, lighter sage #4A7F72 on the button + CS icon. Replaced the navy teaser, which
-          read cold between the pink agency stripe and the dark footer. */}
-      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 84% 45%,rgba(60,112,101,0.12) 0%,transparent 55%)",pointerEvents:"none"}}/>
+    <section className="lh-mm" style={{padding:"72px 40px",background:"radial-gradient(ellipse 46% 80% at 92% 0%,rgba(232,144,42,0.30) 0%,transparent 70%),radial-gradient(ellipse 38% 70% at 4% 100%,rgba(255,255,255,0.10) 0%,transparent 70%),linear-gradient(135deg,#487066 0%,#3B6559 45%,#284840 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
+      {/* Sage Velvet stripe (approved 2026-09-13): full-width sage gradient with an amber glow
+          top-right and soft light bottom-left, styled after the "It's time to get seen" card.
+          Replaced the Sage Mist cream band, which felt cut off between the pink stripe and the
+          dark section below. Text colours were checked at 4.5:1 across the whole copy column. */}
       <div style={{maxWidth:1100,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 320px",minWidth:280}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#FFFFFF",border:"1px solid #BFD2C8",boxShadow:"0 1px 2px rgba(34,50,46,0.06)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"#2F5B52",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:20}}>
-            <span style={{width:6,height:6,borderRadius:"50%",background:"#4A7F72"}}/>New — Manager Mode
-          </div>
-          <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(26px,4vw,42px)",lineHeight:1.1,letterSpacing:-0.6,marginBottom:16,color:"#22322E"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 62%,#F2CBB0 62%)"}}>talent manager</span> before you have a talent manager.</h2>
-          <p style={{fontSize:"clamp(14px,1.8vw,17px)",lineHeight:1.65,color:"#5F7069",marginBottom:28,maxWidth:500}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
+          <p style={{display:"inline-flex",alignItems:"center",gap:8,fontSize:11.5,fontWeight:700,letterSpacing:1.6,textTransform:"uppercase",color:"#FFE6C2",margin:"0 0 16px"}}>
+            <span style={{width:7,height:7,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 10px #F0B860"}}/>New — Manager Mode
+          </p>
+          <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(30px,4.2vw,48px)",lineHeight:1.07,letterSpacing:-0.5,marginBottom:16,color:"#fff"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 64%,rgba(240,184,96,0.40) 64%)"}}>talent manager</span> before you have a talent manager.</h2>
+          <p style={{fontSize:"clamp(15px,1.8vw,18px)",lineHeight:1.65,color:"rgba(255,255,255,0.9)",marginBottom:28,maxWidth:520}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button style={{padding:"13px 24px",borderRadius:100,background:"#4A7F72",color:"#F4FAF6",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
+            <button className="home-cta-primary" style={{padding:"16px 30px",fontSize:15}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
           </div>
-          <div style={{display:"flex",gap:20,marginTop:20,flexWrap:"wrap"}}>
+          <div style={{display:"flex",gap:20,marginTop:22,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile improvement guidance","One focused task per week"].map(f=>(
-              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"#5F7069"}}>
-                <span style={{color:"#C3653F",fontWeight:800}}><Ico n="check" s={24}/></span>{f}
+              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12.5,color:"rgba(255,255,255,0.9)"}}>
+                <span style={{color:"#F0B860",fontWeight:800}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
@@ -22502,15 +22502,15 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         {/* Card column may shrink: on a 375px phone the section leaves ~295px, and a fixed
             280–340px card overflowed and was clipped at the right edge. */}
         <div style={{flex:"0 1 340px",minWidth:0,maxWidth:"100%",display:"flex",justifyContent:"center"}}>
-          <div style={{background:"#FFFFFF",borderRadius:16,padding:"0 20px 20px",overflow:"hidden",boxShadow:"0 2px 6px rgba(34,50,46,0.10),0 0 0 1px rgba(34,50,46,0.07)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box"}}>
-            <div style={{height:8,margin:"0 -20px 18px",background:"linear-gradient(90deg,#24453E,#3C7065)"}}/>
+          <div style={{background:"#FFFFFF",borderRadius:16,padding:"0 20px 20px",overflow:"hidden",boxShadow:"0 6px 14px -4px rgba(10,24,20,0.38),0 1px 3px rgba(10,24,20,0.18)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box"}}>
+            <div style={{height:8,margin:"0 -20px 18px",background:"linear-gradient(90deg,#284840,#3B6559)"}}/>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:14,borderBottom:"1px solid #E6ECE7"}}>
-              <div style={{width:36,height:36,borderRadius:"50%",background:"#4A7F72",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
+              <div style={{width:36,height:36,borderRadius:"50%",background:"#3B6559",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
               <div><div style={{fontSize:12,fontWeight:700,color:"#22322E"}}>CastSlate Career Team</div><div style={{fontSize:11,color:"#8D9A91"}}>Your Weekly Actor Check-In</div></div>
             </div>
             <p style={{fontSize:13,color:"#3A4945",lineHeight:1.6,marginBottom:14}}>"Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make your profile significantly stronger."</p>
             {[["Casting lane","Young professional / commercial friend"],["This week's task","Record a 7-second slate video."]].map(([lbl,val])=>(
-              <div key={lbl} style={{background:"#F1F6F2",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
+              <div key={lbl} style={{background:"#F4F5F1",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
                 <div style={{fontSize:9,fontWeight:700,color:"#C3653F",letterSpacing:0.8,textTransform:"uppercase",marginBottom:2}}>{lbl}</div>
                 <div style={{fontSize:12,color:"#22322E",fontWeight:600}}>{val}</div>
               </div>
