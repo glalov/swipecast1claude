@@ -246,7 +246,7 @@ function canonicalProjectType(raw: unknown): string {
   if(TYPE_ICON_SET.has(t)) return t;
   const k=t.toLowerCase();
   if(TYPE_ALIASES[k]) return TYPE_ALIASES[k];
-  const has=(x: string)=>k.includes(x);//
+  const has=(x: string)=>k.includes(x);
   if(has("talent pool")||has("roster")||has("showcase")||has("submissions")){
     if(has("voice")) return "Voiceover";
     if(has("commercial")) return "Commercial";
