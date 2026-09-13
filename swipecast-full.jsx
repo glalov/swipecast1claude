@@ -22476,40 +22476,44 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <AgencyDirectoryStripe onNavigate={onNavigate} isPremium={myProfile?.membership_status==="active"}/>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
-    <section className="lh-mm" style={{padding:"72px 40px",background:"linear-gradient(160deg,#1A1A2E 0%,#16213e 60%,#0f3460 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 80% 50%,rgba(99,102,241,0.13) 0%,transparent 60%)",pointerEvents:"none"}}/>
+    <section className="lh-mm" style={{padding:"72px 40px",background:"#EDEFE3",color:"#22322E",borderTop:"1px solid #E1E6DE",position:"relative",overflow:"hidden"}}>
+      {/* Sage & Cream (approved 2026-09-13): Sage Mist band, white "letter" card with a crisp
+          shadow, lighter sage #4A7F72 on the button + CS icon. Replaced the navy teaser, which
+          read cold between the pink agency stripe and the dark footer. */}
+      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"radial-gradient(ellipse at 84% 45%,rgba(60,112,101,0.12) 0%,transparent 55%)",pointerEvents:"none"}}/>
       <div style={{maxWidth:1100,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 320px",minWidth:280}}>
-          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"rgba(255,255,255,0.85)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:20}}>
-            <span style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 8px #6EE7B7"}}/>New — Manager Mode
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"#FFFFFF",border:"1px solid #BFD2C8",boxShadow:"0 1px 2px rgba(34,50,46,0.06)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"#2F5B52",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:20}}>
+            <span style={{width:6,height:6,borderRadius:"50%",background:"#4A7F72"}}/>New — Manager Mode
           </div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(26px,4vw,42px)",lineHeight:1.1,letterSpacing:-1.5,marginBottom:16,color:"#fff"}}>CastSlate becomes your talent manager before you have a talent manager.</h2>
-          <p style={{fontSize:"clamp(14px,1.8vw,17px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:28,maxWidth:500}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
+          <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(26px,4vw,42px)",lineHeight:1.1,letterSpacing:-0.6,marginBottom:16,color:"#22322E"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 62%,#F2CBB0 62%)"}}>talent manager</span> before you have a talent manager.</h2>
+          <p style={{fontSize:"clamp(14px,1.8vw,17px)",lineHeight:1.65,color:"#5F7069",marginBottom:28,maxWidth:500}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button style={{padding:"13px 24px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
+            <button style={{padding:"13px 24px",borderRadius:100,background:"#4A7F72",color:"#F4FAF6",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:20,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile improvement guidance","One focused task per week"].map(f=>(
-              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.65)"}}>
-                <span style={{color:"#6EE7B7",fontWeight:800}}><Ico n="check" s={24}/></span>{f}
+              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"#5F7069"}}>
+                <span style={{color:"#C3653F",fontWeight:800}}><Ico n="check" s={24}/></span>{f}
               </div>
             ))}
           </div>
         </div>
         <div style={{flex:"0 0 auto",display:"flex",justifyContent:"center"}}>
-          <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:20,backdropFilter:"blur(10px)",minWidth:280,maxWidth:340}}>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:14,borderBottom:"1px solid rgba(255,255,255,0.1)"}}>
-              <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
-              <div><div style={{fontSize:12,fontWeight:700,color:"#fff"}}>CastSlate Career Team</div><div style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>Your Weekly Actor Check-In</div></div>
+          <div style={{background:"#FFFFFF",borderRadius:16,padding:"0 20px 20px",overflow:"hidden",boxShadow:"0 2px 6px rgba(34,50,46,0.10),0 0 0 1px rgba(34,50,46,0.07)",minWidth:280,maxWidth:340}}>
+            <div style={{height:8,margin:"0 -20px 18px",background:"linear-gradient(90deg,#24453E,#3C7065)"}}/>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:14,borderBottom:"1px solid #E6ECE7"}}>
+              <div style={{width:36,height:36,borderRadius:"50%",background:"#4A7F72",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
+              <div><div style={{fontSize:12,fontWeight:700,color:"#22322E"}}>CastSlate Career Team</div><div style={{fontSize:11,color:"#8D9A91"}}>Your Weekly Actor Check-In</div></div>
             </div>
-            <p style={{fontSize:13,color:"rgba(255,255,255,0.75)",lineHeight:1.6,marginBottom:14}}>"Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make your profile significantly stronger."</p>
+            <p style={{fontSize:13,color:"#3A4945",lineHeight:1.6,marginBottom:14}}>"Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make your profile significantly stronger."</p>
             {[["Casting lane","Young professional / commercial friend"],["This week's task","Record a 7-second slate video."]].map(([lbl,val])=>(
-              <div key={lbl} style={{background:"rgba(255,255,255,0.05)",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
-                <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,0.45)",letterSpacing:0.8,textTransform:"uppercase",marginBottom:2}}>{lbl}</div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,0.85)",fontWeight:500}}>{val}</div>
+              <div key={lbl} style={{background:"#F1F6F2",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
+                <div style={{fontSize:9,fontWeight:700,color:"#C3653F",letterSpacing:0.8,textTransform:"uppercase",marginBottom:2}}>{lbl}</div>
+                <div style={{fontSize:12,color:"#22322E",fontWeight:600}}>{val}</div>
               </div>
             ))}
-            <div style={{marginTop:12,display:"inline-block",background:"rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.9)",fontSize:11,fontWeight:700,padding:"6px 14px",borderRadius:100,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.2)"}}>Complete This Week's Task →</div>
+            <div style={{marginTop:12,display:"inline-block",background:"#C3653F",color:"#fff",fontSize:11,fontWeight:700,padding:"6px 14px",borderRadius:100,letterSpacing:0.3}}>Complete This Week's Task →</div>
           </div>
         </div>
       </div>
