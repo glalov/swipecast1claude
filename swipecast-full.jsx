@@ -22499,8 +22499,10 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             ))}
           </div>
         </div>
-        <div style={{flex:"0 0 auto",display:"flex",justifyContent:"center"}}>
-          <div style={{background:"#FFFFFF",borderRadius:16,padding:"0 20px 20px",overflow:"hidden",boxShadow:"0 2px 6px rgba(34,50,46,0.10),0 0 0 1px rgba(34,50,46,0.07)",minWidth:280,maxWidth:340}}>
+        {/* Card column may shrink: on a 375px phone the section leaves ~295px, and a fixed
+            280–340px card overflowed and was clipped at the right edge. */}
+        <div style={{flex:"0 1 340px",minWidth:0,maxWidth:"100%",display:"flex",justifyContent:"center"}}>
+          <div style={{background:"#FFFFFF",borderRadius:16,padding:"0 20px 20px",overflow:"hidden",boxShadow:"0 2px 6px rgba(34,50,46,0.10),0 0 0 1px rgba(34,50,46,0.07)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box"}}>
             <div style={{height:8,margin:"0 -20px 18px",background:"linear-gradient(90deg,#24453E,#3C7065)"}}/>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:14,borderBottom:"1px solid #E6ECE7"}}>
               <div style={{width:36,height:36,borderRadius:"50%",background:"#4A7F72",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
