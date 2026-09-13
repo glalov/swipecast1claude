@@ -3160,6 +3160,25 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-stamp b{font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:800;margin-top:1px;}
 @media (max-width:420px){.mm-sheet-2{transform:translate(9px,-4px) rotate(2.6deg);}.mm-sheet-1{transform:translate(4px,-10px) rotate(1.2deg);}.mm-stamp{left:-6px;}}
 .lh-cta{margin-top:-1px;}  /* Manager Mode teaser → final CTA */
+/* Manager Mode: compact Actor Business Card section (approved 2026-09-13, soft navy). */
+.mm-bc{background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);color:#fff;border-radius:24px;position:relative;overflow:hidden;padding:clamp(28px,4vw,44px) clamp(20px,4vw,48px);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(24px,4vw,48px);align-items:center;}
+.mm-bc-text{min-width:0;}
+.mm-bc-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(240,184,96,.12);border:1px solid rgba(240,184,96,.34);color:#FFE6C2;padding:5px 13px;border-radius:100px;font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;}
+.mm-bc-pill i{width:5px;height:5px;border-radius:50%;background:#F0B860;box-shadow:0 0 8px #F0B860;}
+.mm-bc h2{font-weight:800;font-size:clamp(26px,3vw,36px);letter-spacing:-1.1px;line-height:1.06;margin:14px 0 8px;color:#fff;}
+.mm-bc h3{font-weight:600;font-size:clamp(15px,1.6vw,18px);color:rgba(255,255,255,.72);letter-spacing:-.2px;margin:0 0 12px;line-height:1.35;}
+.mm-bc-lede{font-size:14.5px;color:rgba(255,255,255,.72);line-height:1.65;margin:0 0 20px;}
+.mm-bc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;margin-bottom:22px;}
+.mm-bc-feat{display:flex;gap:12px;align-items:flex-start;min-width:0;}
+.mm-bc-tile{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;flex-shrink:0;color:#F0B860;}
+.mm-bc-feat b{display:block;font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;}
+.mm-bc-feat span{display:block;font-size:12.5px;color:rgba(255,255,255,.72);line-height:1.45;}
+.mm-bc-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:100px;background:#F0B860;color:#1A1A2E;font-size:14px;font-weight:800;letter-spacing:.3px;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px -6px rgba(240,184,96,.55);font-family:inherit;}
+.mm-bc-cardcol{display:flex;flex-direction:column;align-items:center;min-width:0;}
+.agdc.mm-bc-card{--agdcw:420px;max-width:100%;transform:rotate(-2.5deg);box-shadow:0 18px 40px -12px rgba(0,0,0,.45);}
+.mm-bc-note{font-size:11px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;margin:10px 0 0;}
+@media (max-width:860px){.mm-bc{grid-template-columns:1fr;}.agdc.mm-bc-card{--agdcw:340px;}}
+@media (max-width:420px){.mm-bc-grid{grid-template-columns:1fr;}.agdc.mm-bc-card{--agdcw:300px;}}
 /* ─── Global site footer — dark charcoal, applied via Footer component everywhere.
        The width:100vw + negative-margin-50vw pattern lets the footer's dark bg
        escape any constrained .page (max-width:1200px) parent so it always
@@ -9171,96 +9190,36 @@ function ManagerModePage({onNavigate,session,myProfile}){
     </section>
 
     {/* ══════ ACTOR BUSINESS CARD ══════ */}
+    {/* Compact split (approved 2026-09-13, demo "1" in Soft navy). About half the old height:
+        the four features are a 2x2 grid of icon tiles, and the example is the REAL landscape
+        Actor Business Card (AgdCard, same as the Agency Directory / ActorCardPreview), not the
+        old square mockup. Styles: .mm-bc* next to .lh-mm in the global CSS. */}
     <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}>
       <div style={{maxWidth:1140,margin:"0 auto"}}>
-        <div style={{background:"radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,0.14) 0%,transparent 70%),linear-gradient(160deg,#13142A 0%,#1A1A2E 55%,#22223A 100%)",borderRadius:24,padding:"clamp(36px,5vw,64px) clamp(20px,4vw,56px)",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"none",pointerEvents:"none"}}/>
-          <div className="mm-bcard-row" style={{position:"relative",display:"flex",alignItems:"center",gap:"clamp(28px,5vw,64px)",flexWrap:"wrap"}}>
-
-            {/* Left: Text content */}
-            <div className="mm-bcard-text" style={{flex:"1 1 280px",minWidth:0}}>
-              <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(240,184,96,0.1)",border:"1px solid rgba(240,184,96,0.25)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"#FFE6C2",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:22}}>
-                <span style={{width:5,height:5,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 8px #F0B860"}}/>Premium Benefit
-              </div>
-              <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,40px)",letterSpacing:-1.2,lineHeight:1.06,marginBottom:14,color:"#fff"}}>Your Actor Business Card, Built Into CastSlate</h2>
-              <h3 style={{fontWeight:600,fontSize:"clamp(15px,2vw,20px)",color:"rgba(255,255,255,0.65)",letterSpacing:-0.3,marginBottom:20,lineHeight:1.35}}>Walk into the room with a profile they can scan.</h3>
-              <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:14}}>With CastSlate Premium, every actor can create a personalized actor business card featuring their headshot, name, contact details, casting type, and a unique QR code that links directly to their CastSlate profile.</p>
-              <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:14}}>Actors can use the card at networking events, acting classes, showcases, film festivals, auditions, industry mixers, and anywhere they may meet agents, managers, casting directors, producers, or filmmakers.</p>
-              <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:24}}>Instead of hoping someone remembers your name, give them a card that opens your full profile in seconds.</p>
-              <p style={{fontSize:14,color:"rgba(255,255,255,0.5)",lineHeight:1.6,marginBottom:28,fontStyle:"italic",borderLeft:"3px solid rgba(240,184,96,0.4)",paddingLeft:14}}>Manager Mode helps you improve your profile every week. Your Actor Business Card helps you share it in the real world.</p>
-              <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
-                {[
-                  {icon:"palette",title:"Personalized Design",body:"Choose a clean actor card layout with your headshot, name, and profile details."},
-                  {icon:"device-mobile",title:"Unique QR Code",body:"Every card includes a QR code that links directly to your CastSlate profile."},
-                  {icon:"heart-handshake",title:"Made for Industry Events",body:"Share your profile quickly with agents, managers, directors, producers, and casting professionals."},
-                  {icon:"arrow-down",title:"Download & Print",body:"Premium members can download a print-ready version and print it anywhere."}
-                ].map(({icon,title,body})=>(
-                  <div key={title} style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                    <Ico n={icon} s={18} style={{flexShrink:0,marginTop:2,color:"#F0B860"}}/>
-                    <div>
-                      <span style={{fontSize:13.5,fontWeight:700,color:"rgba(255,255,255,0.9)"}}>{title}</span>
-                      <span style={{fontSize:13,color:"rgba(255,255,255,0.55)",marginLeft:6}}>{body}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button className="btn-amber-hover" style={{padding:"14px 28px",borderRadius:100,background:"#F0B860",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 6px 20px -6px rgba(240,184,96,0.55)"}} onClick={cardCTA}>{cardCTALabel}</button>
-            </div>
-
-            {/* Right: Business card visual */}
-            <div style={{flex:"1 1 280px",minWidth:0,display:"flex",flexDirection:"column",alignItems:"center",gap:16,maxWidth:360}}>
-              {/* The card */}
-              <div style={{width:"100%",maxWidth:320,background:"#fff",borderRadius:18,overflow:"hidden",boxShadow:"0 24px 72px rgba(0,0,0,0.5),0 8px 24px rgba(0,0,0,0.3)",position:"relative"}}>
-                {/* Card top accent bar */}
-                <div style={{height:6,background:"linear-gradient(90deg,#1A1A2E,#D9A444,#1A1A2E)"}}/>
-                <div style={{padding:"clamp(16px,3vw,22px)"}}>
-                  <div style={{display:"flex",gap:"clamp(12px,2vw,16px)",alignItems:"flex-start",marginBottom:"clamp(14px,2.5vw,18px)"}}>
-                    {/* Headshot */}
-                    <div style={{flexShrink:0,position:"relative"}}>
-                      <img src={CARD_PHOTO} alt="Maya Reynolds — Actor Headshot" style={{width:"clamp(64px,12vw,84px)",height:"clamp(80px,15vw,106px)",objectFit:"cover",objectPosition:"center top",borderRadius:10,display:"block",boxShadow:"0 4px 16px rgba(26,26,46,0.22)"}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}}/>
-                      <div style={{width:"clamp(64px,12vw,84px)",height:"clamp(80px,15vw,106px)",borderRadius:10,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:28}}><Ico n="masks-theater" s={22}/></div>
-                    </div>
-                    {/* Name + info */}
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                        <div style={{width:16,height:16,background:"#1A1A2E",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#fff",overflow:"hidden"}}>
-                          <LogoMark/>
-                        </div>
-                        <span style={{fontSize:8,fontWeight:700,color:"#8E8EA0",letterSpacing:1,textTransform:"uppercase"}}>CastSlate</span>
-                      </div>
-                      <h4 style={{fontWeight:800,fontSize:"clamp(14px,2.5vw,18px)",color:"#1A1A2E",margin:"0 0 2px",letterSpacing:-0.4,lineHeight:1.1}}>Maya Reynolds</h4>
-                      <p style={{fontSize:"clamp(9px,1.5vw,11px)",color:"#5A5A72",margin:"0 0 8px",fontWeight:600}}>Actor</p>
-                      <p style={{fontSize:"clamp(8.5px,1.4vw,10px)",color:"#8E8EA0",margin:"0 0 6px",lineHeight:1.4}}>New York / Los Angeles</p>
-                      <div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:6}}>
-                        {["Drama","Comedy","Commercial"].map(t=>(
-                          <span key={t} style={{background:"rgba(26,26,46,0.07)",color:"#1A1A2E",fontSize:"clamp(7px,1.2vw,8.5px)",fontWeight:700,padding:"2px 6px",borderRadius:4}}>{t}</span>
-                        ))}
-                      </div>
-                      <p style={{fontSize:"clamp(7.5px,1.2vw,9px)",color:"#3B6559",margin:0,fontWeight:700,letterSpacing:0.2}}>SAG-AFTRA Eligible</p>
-                    </div>
-                  </div>
-                  {/* Divider */}
-                  <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E2E7,transparent)",marginBottom:"clamp(12px,2vw,16px)"}}/>
-                  {/* Bottom: QR code + scan */}
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
-                    <div>
-                      <p style={{fontSize:"clamp(8px,1.3vw,10px)",color:"#8E8EA0",margin:"0 0 2px",fontWeight:600,letterSpacing:0.3}}>castslate.com/talent/</p>
-                      <p style={{fontSize:"clamp(8.5px,1.4vw,10.5px)",color:"#1A1A2E",margin:0,fontWeight:700}}>maya-reynolds</p>
-                    </div>
-                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                      <div style={{padding:6,background:"white",border:"1px solid #E2E2E7",borderRadius:8,display:"inline-block",boxShadow:"0 2px 8px rgba(26,26,46,0.08)"}}>
-                        <QRCode/>
-                      </div>
-                      <span style={{fontSize:"clamp(7px,1.1vw,8.5px)",color:"#8E8EA0",fontWeight:600,letterSpacing:0.3,textTransform:"uppercase"}}>Scan to view profile</span>
-                    </div>
-                  </div>
+        <div className="mm-bc">
+          <div className="mm-bc-text">
+            <span className="mm-bc-pill"><i/>Premium Benefit</span>
+            <h2>Your Actor Business Card, Built Into CastSlate</h2>
+            <h3>Walk into the room with a profile they can scan.</h3>
+            <p className="mm-bc-lede">Create a personalized card with your headshot, name, contact details, casting type, and a unique QR code that opens your CastSlate profile in seconds.</p>
+            <div className="mm-bc-grid">
+              {[
+                {icon:"palette",title:"Personalized Design",body:"A clean layout with your headshot and details."},
+                {icon:"qrcode",title:"Unique QR Code",body:"Links straight to your CastSlate profile."},
+                {icon:"heart-handshake",title:"Made for Industry Events",body:"Share with agents, managers and casting."},
+                {icon:"download",title:"Download & Print",body:"A print-ready version, printable anywhere."}
+              ].map(({icon,title,body})=>(
+                <div key={title} className="mm-bc-feat">
+                  <div className="mm-bc-tile"><Ico n={icon} s={24}/></div>
+                  <div><b>{title}</b><span>{body}</span></div>
                 </div>
-                {/* Card bottom bar */}
-                <div style={{height:4,background:"linear-gradient(90deg,#1A1A2E,#D9A444,#1A1A2E)"}}/>
-              </div>
-              <p style={{fontSize:11,color:"rgba(255,255,255,0.35)",textAlign:"center",maxWidth:280,lineHeight:1.5}}>Example card design. Premium members can create and download their own personalized version.</p>
+              ))}
             </div>
-
+            <button className="btn-amber-hover mm-bc-btn" onClick={cardCTA}>{cardCTALabel}</button>
+          </div>
+          <div className="mm-bc-cardcol">
+            <AgdCard k="mm-bc-card" c={{name:"Maya Reynolds",head:"Actor · Film & TV",loc:"New York / Los Angeles",slug:"maya-reynolds",tags:["Drama","Comedy","Commercial"],img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=420&h=560&q=80",pos:"center 20%"}}/>
+            <p className="mm-bc-note">Example card. Premium members create and download their own.</p>
           </div>
         </div>
       </div>
