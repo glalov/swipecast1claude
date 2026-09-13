@@ -8847,7 +8847,7 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
           <div style={{display:"flex",gap:5,flexShrink:0}}>
             {["rgba(255,90,80,0.7)","rgba(255,190,0,0.7)","rgba(40,200,100,0.7)"].map((c,i)=><div key={i} style={{width:mobile?7:8,height:mobile?7:8,borderRadius:"50%",background:c}}/>)}
           </div>
-          <div style={{flex:1,textAlign:"center",fontSize:fs(11,9),color:"rgba(255,255,255,0.45)",letterSpacing:0.5,fontWeight:500}}>Inbox — Cast Slate</div>
+          <div style={{flex:1,textAlign:"center",fontSize:fs(11,9),color:"rgba(255,255,255,0.45)",letterSpacing:0.5,fontWeight:500}}>Inbox — CastSlate</div>
         </div>
         <div style={{background:"#F7F7F8",padding:pd("3px 0","2px 0"),borderBottom:"1px solid #E2E2E7"}}>
           {["Career Team","This week","Profile Tips"].map((lbl,i)=>(
@@ -8860,7 +8860,7 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
           </div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-              <span style={{fontSize:fs(12,10),fontWeight:700,color:"#1A1A2E"}}>Cast Slate Career Team</span>
+              <span style={{fontSize:fs(12,10),fontWeight:700,color:"#1A1A2E"}}>CastSlate Career Team</span>
               <span style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.25)",color:"#1B873E",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
             </div>
             <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Weekly Actor Check-In</div>
@@ -8978,15 +8978,15 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <svg className="mm-restart-cursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="white"/><path d="M8 4 31 24 20 26 15 37 8 4Z" fill="none" stroke="#1A1A2E" strokeWidth="2" strokeLinejoin="round"/></svg>
             <CSLogo size={38} className="mm-hero-logo"/>
             <div>
-              <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.3}}>Cast Slate</div>
+              <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.3}}>CastSlate</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",letterSpacing:0.2}}>castslate.com</div>
             </div>
           </div>
           <div className="mm-premium-pill" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.3)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:24}}>
             <span className="mm-premium-pill-dot" style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 10px #6EE7B7"}}/>Premium Feature
           </div>
-          <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>Cast Slate becomes your talent manager before you have a talent manager.</h1>
-          <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>Cast Slate doesn't just help actors find auditions. It helps actors become more castable.</p>
+          <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>CastSlate becomes your talent manager before you have a talent manager.</h1>
+          <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>CastSlate doesn't just help actors find auditions. It helps actors become more castable.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className="btn-amber-hover" style={{padding:"14px 28px",fontSize:14,background:"#fff",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer",boxShadow:"0 4px 20px rgba(255,255,255,0.2)"}} onClick={()=>onNavigate("membership")}>Unlock Manager Mode</button>
             <button style={{padding:"14px 28px",fontSize:14,background:"transparent",color:"rgba(255,255,255,0.82)",borderRadius:100,fontWeight:700,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.28)",cursor:"pointer"}} onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
@@ -9033,7 +9033,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         </div>
         <div style={{flex:"1 1 260px",minWidth:0,textAlign:"left"}}>
           <h3 style={{fontWeight:800,fontSize:"clamp(18px,2.5vw,26px)",letterSpacing:-0.8,marginBottom:10,lineHeight:1.2}}>Your profile doesn't sit in a pile.</h3>
-          <p style={{color:"var(--t2)",fontSize:"clamp(14px,1.6vw,16px)",lineHeight:1.7,margin:0}}>Manager Mode is designed to give your profile focused, personal attention. Each week, a Cast Slate career check-in is prepared for your inbox — reflecting your specific profile, your actual gaps, and one concrete step forward. This is not a generic newsletter. It is written for you, about your profile, every single week.</p>
+          <p style={{color:"var(--t2)",fontSize:"clamp(14px,1.6vw,16px)",lineHeight:1.7,margin:0}}>Manager Mode is designed to give your profile focused, personal attention. Each week, a CastSlate career check-in is prepared for your inbox — reflecting your specific profile, your actual gaps, and one concrete step forward. This is not a generic newsletter. It is written for you, about your profile, every single week.</p>
         </div>
       </div>
     </section>
@@ -9046,12 +9046,12 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
       <div className="grid-2" style={{gap:20}}>
         {[
-          {icon:"mailbox",accent:"#2563EB",title:"Weekly Career Check-Ins",body:"Receive a private weekly Cast Slate note with one clear step to improve your profile. No noise. No overwhelm. One thing you can actually do this week."},
+          {icon:"mailbox",accent:"#2563EB",title:"Weekly Career Check-Ins",body:"Receive a private weekly CastSlate note with one clear step to improve your profile. No noise. No overwhelm. One thing you can actually do this week."},
           {icon:"photo",accent:"#7C3AED",title:"Profile Improvement Guidance",body:"Get suggestions on your headshots, slate video, bio, resume, reel, skills, and overall profile presentation so casting directors see your best self."},
           {icon:"target",accent:"#1B873E",title:"Casting Lane Suggestions",body:"See which role types may fit your current profile so you can submit more strategically and focus your energy where you're most likely to connect."},
           {icon:"circle-check",accent:"#D97706",title:"One Task Per Week",body:"Manager Mode gives you one focused task each week instead of overwhelming you with a long checklist — because progress happens one step at a time."},
           {icon:"map-pin",accent:"#DC2626",title:"Industry Events in NYC & LA",body:"Receive curated suggestions for in-person industry events — mixers, showcases, networking nights, and workshops in New York and Los Angeles where you can meet agents, managers, directors, and fellow actors. Because in-person connection still matters."},
-          {icon:"credit-card",accent:"#0891B2",title:"Actor Business Card",body:"Create a personalized actor business card with your headshot and a unique QR code linking directly to your Cast Slate profile. Walk into any room with a card that opens your full profile in seconds."}
+          {icon:"credit-card",accent:"#0891B2",title:"Actor Business Card",body:"Create a personalized actor business card with your headshot and a unique QR code linking directly to your CastSlate profile. Walk into any room with a card that opens your full profile in seconds."}
         ].map(({icon,accent,title,body})=>(
           <div key={title} className="card" style={{padding:"28px 26px",display:"flex",flexDirection:"column",gap:14,borderLeft:`3px solid ${accent}`,transition:"all 0.25s"}}>
             <div style={{width:44,height:44,borderRadius:12,background:`${accent}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n={icon} s={22} style={{color:accent}}/></div>
@@ -9067,14 +9067,14 @@ function ManagerModePage({onNavigate,session,myProfile}){
       <div style={{textAlign:"center",marginBottom:34}}>
         <div className="section-label">Sample Weekly Check-In</div>
         <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>See what lands in your inbox.</h2>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:520,margin:"14px auto 0"}}>Every week, your private Cast Slate career note arrives with personalized guidance and one focused task — written specifically for your profile.</p>
+        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:520,margin:"14px auto 0"}}>Every week, your private CastSlate career note arrives with personalized guidance and one focused task — written specifically for your profile.</p>
       </div>
 
       {/* Actor profile card with real photo */}
       <div className="mm-card-outer" style={{maxWidth:700,margin:"0 auto",background:"#fff",border:"1px solid var(--bdr)",borderRadius:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(26,26,46,0.07)"}}>
         <div style={{background:"linear-gradient(135deg,#1A1A2E,#16213e)",padding:"14px 20px",display:"flex",alignItems:"center",gap:8}}>
           <span style={{display:"block",width:16,height:16,color:"#fff",flexShrink:0}}><LogoMark/></span>
-          <span style={{color:"rgba(255,255,255,0.7)",fontSize:12,fontWeight:600,letterSpacing:0.3}}>Cast Slate — Manager Mode Profile View</span>
+          <span style={{color:"rgba(255,255,255,0.7)",fontSize:12,fontWeight:600,letterSpacing:0.3}}>CastSlate — Manager Mode Profile View</span>
         </div>
         <div style={{padding:"clamp(16px,3vw,28px)",display:"flex",gap:"clamp(16px,3vw,24px)",alignItems:"flex-start",flexWrap:"wrap"}}>
           <div style={{flexShrink:0}}>
@@ -9153,7 +9153,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         })}
       </div>
       <div style={{textAlign:"center",marginTop:28}}>
-        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6,maxWidth:520,margin:"0 auto"}}>Event suggestions are included in your one-time monthly Cast Slate career check-in. Manager Mode recommends events relevant to your location, casting lane, and current career stage.</p>
+        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6,maxWidth:520,margin:"0 auto"}}>Event suggestions are included in your one-time monthly CastSlate career check-in. Manager Mode recommends events relevant to your location, casting lane, and current career stage.</p>
       </div>
     </section>
 
@@ -9169,16 +9169,16 @@ function ManagerModePage({onNavigate,session,myProfile}){
               <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(110,231,183,0.1)",border:"1px solid rgba(110,231,183,0.25)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"#6EE7B7",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:22}}>
                 <span style={{width:5,height:5,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 8px #6EE7B7"}}/>Premium Benefit
               </div>
-              <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,40px)",letterSpacing:-1.2,lineHeight:1.06,marginBottom:14,color:"#fff"}}>Your Actor Business Card, Built Into Cast Slate</h2>
+              <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,40px)",letterSpacing:-1.2,lineHeight:1.06,marginBottom:14,color:"#fff"}}>Your Actor Business Card, Built Into CastSlate</h2>
               <h3 style={{fontWeight:600,fontSize:"clamp(15px,2vw,20px)",color:"rgba(255,255,255,0.65)",letterSpacing:-0.3,marginBottom:20,lineHeight:1.35}}>Walk into the room with a profile they can scan.</h3>
-              <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:14}}>With Cast Slate Premium, every actor can create a personalized actor business card featuring their headshot, name, contact details, casting type, and a unique QR code that links directly to their Cast Slate profile.</p>
+              <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:14}}>With CastSlate Premium, every actor can create a personalized actor business card featuring their headshot, name, contact details, casting type, and a unique QR code that links directly to their CastSlate profile.</p>
               <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:14}}>Actors can use the card at networking events, acting classes, showcases, film festivals, auditions, industry mixers, and anywhere they may meet agents, managers, casting directors, producers, or filmmakers.</p>
               <p style={{fontSize:"clamp(13px,1.6vw,15px)",color:"rgba(255,255,255,0.65)",lineHeight:1.7,marginBottom:24}}>Instead of hoping someone remembers your name, give them a card that opens your full profile in seconds.</p>
               <p style={{fontSize:14,color:"rgba(255,255,255,0.5)",lineHeight:1.6,marginBottom:28,fontStyle:"italic",borderLeft:"3px solid rgba(110,231,183,0.4)",paddingLeft:14}}>Manager Mode helps you improve your profile every week. Your Actor Business Card helps you share it in the real world.</p>
               <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
                 {[
                   {icon:"palette",title:"Personalized Design",body:"Choose a clean actor card layout with your headshot, name, and profile details."},
-                  {icon:"device-mobile",title:"Unique QR Code",body:"Every card includes a QR code that links directly to your Cast Slate profile."},
+                  {icon:"device-mobile",title:"Unique QR Code",body:"Every card includes a QR code that links directly to your CastSlate profile."},
                   {icon:"heart-handshake",title:"Made for Industry Events",body:"Share your profile quickly with agents, managers, directors, producers, and casting professionals."},
                   {icon:"arrow-down",title:"Download & Print",body:"Premium members can download a print-ready version and print it anywhere."}
                 ].map(({icon,title,body})=>(
@@ -9264,8 +9264,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
             </div>
           </div>
           <div style={{display:"inline-block",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.14)",color:"rgba(255,255,255,0.8)",fontSize:10,fontWeight:800,letterSpacing:2,padding:"5px 14px",borderRadius:100,marginBottom:18,textTransform:"uppercase"}}>Included With Premium</div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08,marginBottom:14,color:"#fff"}}>Manager Mode is included with<br/>Cast Slate Premium.</h2>
-          <p style={{fontSize:"clamp(13px,1.7vw,16px)",lineHeight:1.7,color:"rgba(255,255,255,0.65)",maxWidth:600,margin:"0 auto 28px"}}>Premium members receive weekly Cast Slate career check-ins, profile improvement notes, casting lane suggestions, focused weekly tasks, industry event recommendations in NYC and LA, and a personalized actor business card with a unique QR code linking directly to their Cast Slate profile.</p>
+          <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08,marginBottom:14,color:"#fff"}}>Manager Mode is included with<br/>CastSlate Premium.</h2>
+          <p style={{fontSize:"clamp(13px,1.7vw,16px)",lineHeight:1.7,color:"rgba(255,255,255,0.65)",maxWidth:600,margin:"0 auto 28px"}}>Premium members receive weekly CastSlate career check-ins, profile improvement notes, casting lane suggestions, focused weekly tasks, industry event recommendations in NYC and LA, and a personalized actor business card with a unique QR code linking directly to their CastSlate profile.</p>
           <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",marginBottom:32}}>
             {["Weekly career check-ins","Profile improvement notes","Casting lane suggestions","One focused task/week","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,color:"rgba(255,255,255,0.78)"}}>
@@ -9308,7 +9308,7 @@ function TapeLinkPage({onNavigate}){
     <div style={{background:"#fff",border:"1px solid #E2E2E7",borderRadius:18,overflow:"hidden",boxShadow:"0 20px 56px rgba(26,26,46,0.18)",width:"100%",maxWidth:380,minWidth:0,flexShrink:1}}>
       <div style={{background:"#1A1A2E",padding:"11px 16px",display:"flex",alignItems:"center",gap:8}}>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="15" height="15"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="white"/></svg>
-        <span style={{color:"rgba(255,255,255,0.7)",fontSize:11,fontWeight:600,letterSpacing:0.3}}>Role — Cast Slate</span>
+        <span style={{color:"rgba(255,255,255,0.7)",fontSize:11,fontWeight:600,letterSpacing:0.3}}>Role — CastSlate</span>
       </div>
       <div style={{padding:"16px 18px"}}>
         <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6,flexWrap:"wrap"}}>
@@ -9383,7 +9383,7 @@ function TapeLinkPage({onNavigate}){
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:24}}>
             <CSLogo size={38}/>
             <div>
-              <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.3}}>Cast Slate</div>
+              <div style={{fontSize:13,fontWeight:800,color:"#fff",letterSpacing:0.3}}>CastSlate</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",letterSpacing:0.2}}>castslate.com</div>
             </div>
           </div>
@@ -9397,7 +9397,7 @@ function TapeLinkPage({onNavigate}){
             <button style={{padding:"14px 28px",fontSize:14,background:"transparent",color:"rgba(255,255,255,0.82)",borderRadius:100,fontWeight:700,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.28)",cursor:"pointer"}} onClick={()=>onNavigate("register-cd")}>Post a Job</button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
-            {["Attach sides to a role","Practice & re-record","Submit through Cast Slate"].map(f=>(
+            {["Attach sides to a role","Practice & re-record","Submit through CastSlate"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.6)"}}>
                 <span style={{color:"#6EE7B7",fontWeight:800,fontSize:13}}><Ico n="check" s={24}/></span>{f}
               </div>
@@ -9554,7 +9554,7 @@ function TapeLinkPage({onNavigate}){
 
     {/* ══════ TRUST / LEGAL ══════ */}
     <section style={{padding:"0 clamp(16px,5vw,40px) clamp(48px,7vw,72px)",maxWidth:720,margin:"0 auto",textAlign:"center"}}>
-      <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>TapeLink is designed to make self-tape casting faster and more direct. Available self-tape options, take limits, recording, and upload features depend on each casting director's settings for a given role. Cast Slate does not guarantee auditions, callbacks, bookings, or career outcomes.</p>
+      <p style={{fontSize:12.5,color:"var(--t3)",lineHeight:1.75}}>TapeLink is designed to make self-tape casting faster and more direct. Available self-tape options, take limits, recording, and upload features depend on each casting director's settings for a given role. CastSlate does not guarantee auditions, callbacks, bookings, or career outcomes.</p>
     </section>
 
     <Footer onNavigate={onNavigate} backToTop/>
@@ -16872,7 +16872,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{posterDisplayName(t.profile,t.casting,"Unknown")}</span>
                             {t.castingTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{t.castingTitle}</span>}
                           </div>
-                          <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(()=>{const raw=t.latest?.body||"";let txt=raw;if(/^\s*\{/.test(raw)){try{const c=JSON.parse(raw);txt=(c.note||c.task||"Your weekly Cast Slate career note is ready.").toString();}catch(_){}}return txt.slice(0,72)+(txt.length>72?"…":"");})()}</div>
+                          <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(()=>{const raw=t.latest?.body||"";let txt=raw;if(/^\s*\{/.test(raw)){try{const c=JSON.parse(raw);txt=(c.note||c.task||"Your weekly CastSlate career note is ready.").toString();}catch(_){}}return txt.slice(0,72)+(txt.length>72?"…":"");})()}</div>
                         </div>
                         <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
                           <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{fmtDate(t.latest?.created_at)}</span>
@@ -17083,7 +17083,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <span style={{fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',width:36,height:36,borderRadius:10,background:'rgba(255,255,255,0.14)'}}><Ico n="credit-card" s={22}/></span>
               <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Card Studio</h3>
             </div>
-            <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Build your business card, mailing postcard, or agent promo card — each with your headshot and a QR code linking to your Cast Slate profile.</p>
+            <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Build your business card, mailing postcard, or agent promo card — each with your headshot and a QR code linking to your CastSlate profile.</p>
             <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)',color:'#1A1A2E',boxShadow:'0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
           </div>
 
@@ -19228,7 +19228,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
     {profile?.user_type==="talent"&&checkins.length>0&&(()=>{
       const latest=checkins[0];
       const isUnread=!latest.read_at;
-      let preview="Your weekly Cast Slate career note is ready.";
+      let preview="Your weekly CastSlate career note is ready.";
       try{const c=JSON.parse(latest.body);if(c.task)preview=c.task;}catch(_){}
       const dt=new Date(latest.created_at);
       const dateLabel=dt.toLocaleDateString(undefined,{month:"short",day:"numeric"});
@@ -19243,7 +19243,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
               </div>
               <div style={{minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
-                  <strong style={{fontSize:14,fontWeight:isUnread?800:700}}>Cast Slate Career Team</strong>
+                  <strong style={{fontSize:14,fontWeight:isUnread?800:700}}>CastSlate Career Team</strong>
                   <span className="tag" style={{fontSize:9,background:"rgba(26,26,200,0.08)",color:"var(--acc)",fontWeight:700}}>WEEKLY CHECK-IN</span>
                   {checkins.length>1&&<span style={{fontSize:11,color:"var(--t3)"}}>· {checkins.length} notes</span>}
                 </div>
@@ -19357,7 +19357,7 @@ function generateWeeklyCheckInContent(profile){
 
   if(completed<2){
     return{
-      note:"Your Cast Slate profile is still in the early stage. The best move this week is to complete your basic profile so casting directors can understand who you are and what roles may fit you.",
+      note:"Your CastSlate profile is still in the early stage. The best move this week is to complete your basic profile so casting directors can understand who you are and what roles may fit you.",
       doing_well:"You've started your profile, which is the first step.",
       needs_attention:"Your profile needs more material before it can make a strong first impression.",
       casting_lane:"General background and open-call roles",
@@ -19411,11 +19411,11 @@ function generateWeeklyCheckInContent(profile){
 
   let note;
   if(completed>=4){
-    note="Based on your current Cast Slate profile, your materials are in good shape. Your next step is putting that profile to work — casting directors review talent who are active on the platform more regularly than those who are not.";
+    note="Based on your current CastSlate profile, your materials are in good shape. Your next step is putting that profile to work — casting directors review talent who are active on the platform more regularly than those who are not.";
   }else if(completed===3){
-    note="Your Cast Slate profile is moving in the right direction. You have some strong materials in place, and one or two additions this week could make a meaningful difference in how casting directors respond to your profile.";
+    note="Your CastSlate profile is moving in the right direction. You have some strong materials in place, and one or two additions this week could make a meaningful difference in how casting directors respond to your profile.";
   }else{
-    note="Here is your career note for this week. Based on your current Cast Slate profile, there are a few targeted steps that could strengthen how your profile reads to casting directors.";
+    note="Here is your career note for this week. Based on your current CastSlate profile, there are a few targeted steps that could strengthen how your profile reads to casting directors.";
   }
 
   const union=(profile?.union_status||"").toLowerCase();
@@ -19496,7 +19496,7 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
           <button className="btn-s btn-sm" onClick={onClose}>←</button>
           <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}><Ico n="clipboard" s={22}/></div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px"}}>Cast Slate Career Team</div>
+            <div style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px"}}>CastSlate Career Team</div>
             <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:2}}>WEEKLY CAREER NOTE</div>
           </div>
           <div style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{weekLabel}</div>
@@ -19505,7 +19505,7 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
         {/* Body */}
         <div style={{flex:1,overflowY:"auto",padding:"24px 26px"}}>
           <div style={{fontWeight:800,fontSize:20,letterSpacing:"-0.5px",marginBottom:2}}>Your Weekly Actor Check-In</div>
-          <div style={{fontSize:12,color:"var(--t3)",marginBottom:24,letterSpacing:0.2}}>{weekLabel} · Cast Slate Career Team</div>
+          <div style={{fontSize:12,color:"var(--t3)",marginBottom:24,letterSpacing:0.2}}>{weekLabel} · CastSlate Career Team</div>
 
           <CheckInSection icon="" title="This week's note" body={content.note}/>
           <CheckInSection icon="" title="What you're doing well" body={content.doing_well} accent="var(--grn)"/>
@@ -19525,7 +19525,7 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
 
         {/* No-reply footer */}
         <div style={{borderTop:"1px solid var(--bdr)",padding:"12px 22px",background:"var(--s2)",flexShrink:0,textAlign:"center"}}>
-          <p style={{fontSize:11,color:"var(--t3)",margin:0,lineHeight:1.6}}>This is your weekly Cast Slate career note. Replies are not available for this message.</p>
+          <p style={{fontSize:11,color:"var(--t3)",margin:0,lineHeight:1.6}}>This is your weekly CastSlate career note. Replies are not available for this message.</p>
         </div>
       </div>
     </div>
@@ -22483,7 +22483,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",padding:"5px 14px",borderRadius:100,fontSize:11,color:"rgba(255,255,255,0.85)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:20}}>
             <span style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7",boxShadow:"0 0 8px #6EE7B7"}}/>New — Manager Mode
           </div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(26px,4vw,42px)",lineHeight:1.1,letterSpacing:-1.5,marginBottom:16,color:"#fff"}}>Cast Slate becomes your talent manager before you have a talent manager.</h2>
+          <h2 style={{fontWeight:800,fontSize:"clamp(26px,4vw,42px)",lineHeight:1.1,letterSpacing:-1.5,marginBottom:16,color:"#fff"}}>CastSlate becomes your talent manager before you have a talent manager.</h2>
           <p style={{fontSize:"clamp(14px,1.8vw,17px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:28,maxWidth:500}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
             <button style={{padding:"13px 24px",borderRadius:100,background:"#fff",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
@@ -22500,7 +22500,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:20,backdropFilter:"blur(10px)",minWidth:280,maxWidth:340}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,paddingBottom:14,borderBottom:"1px solid rgba(255,255,255,0.1)"}}>
               <div style={{width:36,height:36,borderRadius:"50%",background:"rgba(255,255,255,0.12)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontWeight:800,fontSize:12}}>CS</span></div>
-              <div><div style={{fontSize:12,fontWeight:700,color:"#fff"}}>Cast Slate Career Team</div><div style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>Your Weekly Actor Check-In</div></div>
+              <div><div style={{fontSize:12,fontWeight:700,color:"#fff"}}>CastSlate Career Team</div><div style={{fontSize:11,color:"rgba(255,255,255,0.5)"}}>Your Weekly Actor Check-In</div></div>
             </div>
             <p style={{fontSize:13,color:"rgba(255,255,255,0.75)",lineHeight:1.6,marginBottom:14}}>"Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make your profile significantly stronger."</p>
             {[["Casting lane","Young professional / commercial friend"],["This week's task","Record a 7-second slate video."]].map(([lbl,val])=>(
@@ -39858,7 +39858,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
             <span style={{width:6,height:6,borderRadius:'50%',background:'var(--acc)'}}/>{isPremium?'Premium Feature':'Free Preview'}
           </div>
           <h1 style={{fontWeight:800,fontSize:isMobile?24:30,letterSpacing:-0.8,color:'var(--t1)',marginBottom:8,margin:'0 0 8px'}}>Actor Card Studio</h1>
-          <p style={{color:'var(--t2)',fontSize:15,margin:0}}>{isPremium?'Create a business card, mailing postcard, or agent promo card with your headshot and a QR code linking directly to your Cast Slate profile.':'Build your actor card live below — it uses your real headshot, name, and profile. Customize it free; upgrade to Premium to download and print.'}</p>
+          <p style={{color:'var(--t2)',fontSize:15,margin:0}}>{isPremium?'Create a business card, mailing postcard, or agent promo card with your headshot and a QR code linking directly to your CastSlate profile.':'Build your actor card live below — it uses your real headshot, name, and profile. Customize it free; upgrade to Premium to download and print.'}</p>
         </div>
 
         <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20,marginBottom:28}}>
@@ -40054,7 +40054,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                   "Use matte or satin cardstock for a cleaner actor card look.",
                   "Choose high-quality print settings and make sure scaling is set to 100%.",
                   "After printing, cut along the guide lines with scissors or a paper cutter.",
-                  "Before printing many copies, scan the QR code from the PDF preview to make sure it opens your Cast Slate profile."
+                  "Before printing many copies, scan the QR code from the PDF preview to make sure it opens your CastSlate profile."
                 ].map((tip,i)=>(
                   <div key={i} style={{display:'flex',gap:9,fontSize:12,color:'var(--t2)',lineHeight:1.55}}>
                     <span style={{color:'var(--acc)',fontWeight:700,flexShrink:0,marginTop:1}}>•</span>{tip}
@@ -40217,10 +40217,10 @@ const PAGE_SEO={
   "terms":{title:"Terms of Use",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
   "privacy":{title:"Privacy Policy",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "studios":{title:"For Studios",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
-  "manager-mode":{title:"Manager Mode",desc:"Cast Slate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
+  "manager-mode":{title:"Manager Mode",desc:"CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
   "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
-  "actor-business-card":{title:"Actor Business Card",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your Cast Slate profile. Download an A4 print-ready sheet."},
+  "actor-business-card":{title:"Actor Business Card",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Actor Profile",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
   "register-cd":{title:"Post a Casting",desc:"Post your casting call on CastSlate and review actor submissions one at a time. Start for free."},
