@@ -232,6 +232,90 @@ const PERKS = [
   "Agency &amp; Manager Directory — 650+ in LA &amp; NY",
 ];
 
+// ── Project-type icon tiles (approved 2026-09-12, demo "A") ─────────────────
+// The same tinted tile + glyph actors see on Browse Castings, pre-rendered to
+// PNG at 3x (Gmail strips inline SVG) and served from /email/type-icons/.
+// Type names, aliases and the keyword fallback are copied from
+// PROJECT_TYPE_GLYPHS / PROJECT_TYPE_ALIASES / canonicalProjectType in
+// swipecast-full.jsx — add a type there, re-render the PNGs, add it here.
+const TYPE_ICON_SET = new Set<string>(["Feature Film", "Short Film", "Student Film", "Independent Film", "Documentary", "Experimental Film", "TV Series", "TV Pilot", "Web Series", "Streaming Series", "Limited Series", "Miniseries", "Vertical Series", "Pilot Presentation", "Commercial", "Social Media Ad", "Branded Content", "Spec Commercial", "Ad Campaign", "Promo Video", "Product Demo", "Corporate Video", "Industrial / Training Video", "Educational Video", "Public Service Announcement", "Music Video", "Voiceover", "Podcast / Audio Drama", "Animation", "Video Game", "Theater", "Off-Broadway Theater", "Off-Off-Broadway Theater", "Musical Theater", "Workshop / Staged Reading", "Table Read", "Dance Project", "Performance Art", "Live Event", "Hosting / Presenter", "Reality / Docu-Series", "Lifestyle / Unscripted", "Modeling", "Print Campaign", "Photo Shoot", "Influencer / UGC Content", "Proof of Concept", "Sizzle Reel", "Pitch Trailer", "Background / Extras", "Stand-In", "Body Double", "Stunts", "Motion Capture", "Other"]);
+const TYPE_ALIASES: Record<string, string> = { "film": "Feature Film", "film & tv": "Feature Film", "low-budget indie film": "Independent Film", "indie film": "Independent Film", "tv": "TV Series", "pilot": "TV Pilot", "internet": "Web Series", "digital & new media": "Web Series", "commercials & branded content": "Branded Content", "brand ambassador": "Branded Content", "influencer campaign": "Influencer / UGC Content", "ugc ad": "Influencer / UGC Content", "creator collaboration pool": "Influencer / UGC Content", "industrial": "Industrial / Training Video", "industrial video": "Industrial / Training Video", "explainer video": "Educational Video", "hand model": "Modeling", "beauty shoot": "Photo Shoot", "e-commerce shoot": "Photo Shoot", "lifestyle print": "Print Campaign", "animation voiceover": "Voiceover", "voiceover roster": "Voiceover", "video game voiceover": "Video Game", "vr / ar project": "Video Game", "performance capture": "Motion Capture", "theater & musicals": "Theater", "broadway": "Musical Theater", "theater workshop submissions": "Workshop / Staged Reading", "trade show": "Live Event", "comedy sketch talent pool": "Web Series", "commercial talent pool": "Commercial", "horror short talent pool": "Short Film", "indie short film talent pool": "Short Film", "music video talent pool": "Music Video", "experimental film roster": "Experimental Film", "podcast guest / on-camera segment pool": "Podcast / Audio Drama", "open talent pool": "Other", "self-tape showcase": "Other", "actor profile review opportunity": "Other", "película": "Feature Film", "película independiente": "Independent Film", "cortometraje": "Short Film", "serie de tv": "TV Series", "comercial": "Commercial", "teatro": "Theater", "modelaje": "Modeling", "video musical": "Music Video", "locución": "Voiceover" };
+function canonicalProjectType(raw: unknown): string {
+  if(!raw) return "Other";
+  const t=String(raw).trim();
+  if(TYPE_ICON_SET.has(t)) return t;
+  const k=t.toLowerCase();
+  if(TYPE_ALIASES[k]) return TYPE_ALIASES[k];
+  const has=(x: string)=>k.includes(x);//
+  if(has("talent pool")||has("roster")||has("showcase")||has("submissions")){
+    if(has("voice")) return "Voiceover";
+    if(has("commercial")) return "Commercial";
+    if(has("music")) return "Music Video";
+    if(has("theater")||has("theatre")) return "Workshop / Staged Reading";
+    if(has("short")) return "Short Film";
+    if(has("film")) return "Independent Film";
+    return "Other";
+  }
+  if(has("voiceover")||has("voice over")) return "Voiceover";
+  if(has("podcast")||has("audio")) return "Podcast / Audio Drama";
+  if(has("music video")) return "Music Video";
+  if(has("animation")) return "Animation";
+  if(has("game")) return "Video Game";
+  if(has("capture")||has("mocap")) return "Motion Capture";
+  if(has("stunt")) return "Stunts";
+  if(has("background")||has("extra")) return "Background / Extras";
+  if(has("stand-in")||has("stand in")) return "Stand-In";
+  if(has("double")) return "Body Double";
+  if(has("model")||has("beauty")) return "Modeling";
+  if(has("print")||has("editorial")) return "Print Campaign";
+  if(has("photo")||has("shoot")) return "Photo Shoot";
+  if(has("ugc")||has("influencer")||has("creator")) return "Influencer / UGC Content";
+  if(has("musical")) return "Musical Theater";
+  if(has("off-off")) return "Off-Off-Broadway Theater";
+  if(has("off-broadway")) return "Off-Broadway Theater";
+  if(has("staged reading")||has("workshop")) return "Workshop / Staged Reading";
+  if(has("table read")) return "Table Read";
+  if(has("dance")) return "Dance Project";
+  if(has("theater")||has("theatre")||has("broadway")) return "Theater";
+  if(has("live event")||has("trade show")) return "Live Event";
+  if(has("host")||has("presenter")) return "Hosting / Presenter";
+  if(has("reality")||has("docu-series")) return "Reality / Docu-Series";
+  if(has("lifestyle")||has("unscripted")) return "Lifestyle / Unscripted";
+  if(has("documentary")) return "Documentary";
+  if(has("industrial")||has("training")) return "Industrial / Training Video";
+  if(has("corporate")) return "Corporate Video";
+  if(has("educational")||has("explainer")) return "Educational Video";
+  if(has("announcement")||has("psa")) return "Public Service Announcement";
+  if(has("branded")) return "Branded Content";
+  if(has("social")) return "Social Media Ad";
+  if(has("spec commercial")) return "Spec Commercial";
+  if(has("campaign")) return "Ad Campaign";
+  if(has("promo")) return "Promo Video";
+  if(has("product")) return "Product Demo";
+  if(has("commercial")||has("advert")) return "Commercial";
+  if(has("sizzle")) return "Sizzle Reel";
+  if(has("pitch")) return "Pitch Trailer";
+  if(has("proof of concept")) return "Proof of Concept";
+  if(has("vertical")) return "Vertical Series";
+  if(has("miniseries")) return "Miniseries";
+  if(has("limited")) return "Limited Series";
+  if(has("streaming")) return "Streaming Series";
+  if(has("web series")) return "Web Series";
+  if(has("presentation")) return "Pilot Presentation";
+  if(has("pilot")) return "TV Pilot";
+  if(has("series")||has("tv")||has("television")) return "TV Series";
+  if(has("student")) return "Student Film";
+  if(has("experimental")) return "Experimental Film";
+  if(has("short")) return "Short Film";
+  if(has("independent")||has("indie")) return "Independent Film";
+  if(has("feature")||has("film")) return "Feature Film";
+  return "Other";
+}
+function typeIconUrl(raw: unknown): string {
+  const slug = canonicalProjectType(raw).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return `${APP_URL}/email/type-icons/${slug}.png`;
+}
+
 // One casting = one wide row: category / pay / button on the left, the role
 // details on the right. Stacks to a single column under 620px.
 function castingRow(c: any, p: Palette): string {
@@ -271,8 +355,11 @@ function castingRow(c: any, p: Palette): string {
       <tr><td class="row-pad" style="padding:22px 40px;border-top:1px solid ${p.line};">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
           <td class="col" width="44%" style="width:44%;vertical-align:top;padding-right:24px;">
-            <div style="font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${p.kicker};">${esc(String(c.type || "Casting")).toUpperCase()}</div>
-            <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:${p.ink};margin:8px 0 16px;white-space:nowrap;overflow:hidden;">${payLine}</div>
+            <table cellpadding="0" cellspacing="0" role="presentation"><tr>
+              <td style="vertical-align:middle;padding-right:12px;"><img src="${typeIconUrl(c.type)}" width="46" height="46" alt="" style="display:block;width:46px;height:46px;border:0;"/></td>
+              <td style="vertical-align:middle;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${p.kicker};">${esc(String(c.type || "Casting")).toUpperCase()}</td>
+            </tr></table>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:${p.ink};margin:12px 0 16px;white-space:nowrap;overflow:hidden;">${payLine}</div>
             <a href="${href}" style="display:inline-block;background:${p.cta};color:${p.ctaInk};text-decoration:none;padding:13px 30px;border-radius:${p.radius};font-size:14px;font-weight:800;letter-spacing:.3px;">View Now</a>
           </td>
           <td class="col" width="56%" style="width:56%;vertical-align:top;">
