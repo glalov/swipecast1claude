@@ -22489,8 +22489,10 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <AgencyDirectoryStripe onNavigate={onNavigate} isPremium={myProfile?.membership_status==="active"}/>
 
     {/* ───────── MANAGER MODE TEASER ───────── */}
-    <section className="lh-mm" style={{padding:"72px 40px",background:"radial-gradient(ellipse 46% 80% at 92% 0%,rgba(232,144,42,0.30) 0%,transparent 70%),radial-gradient(ellipse 38% 70% at 4% 100%,rgba(255,255,255,0.10) 0%,transparent 70%),linear-gradient(135deg,#487066 0%,#3B6559 45%,#284840 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
-      {/* Sage Velvet stripe (approved 2026-09-13): full-width sage gradient with an amber glow
+    <section className="lh-mm" style={{padding:"72px 40px",background:"radial-gradient(ellipse 37% 50% at 0% -5%,rgba(220,172,108,0.24) 0%,transparent 70%),radial-gradient(ellipse 40% 70% at 5% 105%,rgba(255,255,255,0.07) 0%,transparent 70%),radial-gradient(ellipse 45% 70% at 105% 105%,rgba(14,38,32,0.23) 0%,transparent 70%),linear-gradient(135deg,#487066 0%,#3B6559 45%,#284840 100%)",color:"#fff",position:"relative",overflow:"hidden"}}>
+      {/* Sage Velvet stripe (approved 2026-09-13): full-width sage gradient. Glow set by the owner
+          in the glow tuner: "Top-left · strength 24 · size 37 · warmth 17 · shade 23" (a soft muted-gold
+          glow top-left, off the letter, faint light bottom-left, gentle shade bottom-right). Originally an amber glow
           top-right and soft light bottom-left, styled after the "It's time to get seen" card.
           Replaced the Sage Mist cream band, which felt cut off between the pink stripe and the
           dark section below. Text colours were checked at 4.5:1 across the whole copy column. */}
