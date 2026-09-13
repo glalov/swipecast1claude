@@ -478,7 +478,7 @@ function newActorWelcomeHtml(firstName: string): string {
 // other six emails. Everything else still matches the family — cream paper,
 // Georgia headline, a tinted detail card.
 //
-// The two must stay visually distinct: shortlisted (the win) is sapphire with a
+// The two must stay visually distinct: shortlisted (the win) is terracotta with a
 // star, hold (still deciding) is emerald with a check. Same colour for both would
 // make the best news and the "no decision yet" news look identical in the inbox.
 //
@@ -499,11 +499,14 @@ interface DecisionTone {
   badge: string;    // filename of the hexagon badge PNG
   bell: string;     // filename of the footer bell PNG, tinted to match
 }
+// Terracotta (2026-09-12, replaced sapphire, which read cold for the best news
+// an actor gets). Warm and celebratory, matches the noon upsell's sunset tones,
+// and still clearly apart from the emerald hold.
 const SHORTLIST_TONE: DecisionTone = {
-  band: "#1C46A8", band2: "#2A62D8", foot: "#153784",
-  onDark: "#A6C6FF", onCream: "#1F4FBB", rule: "#3E75DD", rule0: "rgba(28,70,168,0)",
-  kicker: "#1F4FBB", card: "#EDF3FE", cardBd: "#D6E3FA", cta: "#1C46A8",
-  badge: "email-shortlist-badge.png", bell: "email-bell-sapphire.png",
+  band: "#9A4127", band2: "#C4623F", foot: "#7A321E",
+  onDark: "#FFD2B8", onCream: "#A8472A", rule: "#D9774F", rule0: "rgba(154,65,39,0)",
+  kicker: "#A8472A", card: "#FBEEE7", cardBd: "#F1D6C8", cta: "#9A4127",
+  badge: "email-shortlist-badge-terracotta.png", bell: "email-bell-sapphire.png",
 };
 const HOLD_TONE: DecisionTone = {
   band: "#0F5A3C", band2: "#17805A", foot: "#0B4A31",
@@ -513,7 +516,7 @@ const HOLD_TONE: DecisionTone = {
 };
 
 // Rose Ember — the daily "you're getting noticed" recap. Deliberately clear of
-// both the sapphire shortlist and the emerald hold: this is interest, not a
+// both the terracotta shortlist and the emerald hold: this is interest, not a
 // decision, so the tone is warm and personal rather than a win or a verdict.
 const NOTICED_TONE: DecisionTone = {
   band: "#7C2438", band2: "#B5455F", foot: "#4A121F",
