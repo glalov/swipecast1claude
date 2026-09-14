@@ -1215,6 +1215,8 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-end-btn .ti{color:#8A5A12;}
 .mm-end-btn:hover{transform:translateY(-1px);box-shadow:0 0 0 8px rgba(255,246,230,.16);}
 @media (max-width:600px){.mm-end-br{display:none;}}
+/* The stripe sits straight on the footer: drop the 40px cream spacer only when it follows .mm-end. */
+.mm-end + .site-footer-spacer{display:none;}
 .mm-bc-cardcol{display:flex;flex-direction:column;align-items:center;min-width:0;}
 .agdc.mm-bc-card{--agdcw:420px;max-width:100%;transform:rotate(-2.5deg);box-shadow:0 18px 40px -12px rgba(0,0,0,.45);}
 .mm-bc-note{font-size:11px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;margin:10px 0 0;}
