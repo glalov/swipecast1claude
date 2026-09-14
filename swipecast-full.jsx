@@ -577,6 +577,15 @@ function Ico({n,s=22,style,...p}){
   return <i className={"ti ti-"+n} aria-hidden="true"
     style={{fontSize:(typeof s==="number"?s+"px":s),lineHeight:0,verticalAlign:"-0.15em",display:"inline-block",flexShrink:0,...style}} {...p}/>;
 }
+// Rounded "play" triangle used as the forward arrow inside every CTA button.
+function Tri({style}){
+  return <svg className="cs-tri" viewBox="0 0 12 14" aria-hidden="true" focusable="false" style={style}><path d="M2.2 1.1 10.6 6.2a.9.9 0 0 1 0 1.6L2.2 12.9A.9.9 0 0 1 .8 12.1V1.9A.9.9 0 0 1 2.2 1.1Z" fill="currentColor"/></svg>;
+}
+// Label string ending in "→" (i18n / templated) → text + <Tri/>. Anything else passes through.
+function withTri(label){
+  if(typeof label!=="string"||!/\s*→$/.test(label))return label;
+  return <>{label.replace(/\s*→$/,"")} <Tri/></>;
+}
 
 // ─── Casting Type Label Translation ──────────────────────────────────────────
 function translateCastingType(type, lang) {
@@ -4733,8 +4742,15 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
 .home-cta-inner h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(36px,6vw,64px);letter-spacing:-0.5px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
 .home-cta-lede{font-size:clamp(17px,2vw,21px);line-height:1.6;max-width:740px;margin:0 auto 30px;color:rgba(255,255,255,.86);position:relative;}
-.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:18px 38px;font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:#F0B860;color:#1A1A2E;transition:transform .12s,filter .2s;position:relative;}
-.home-cta-primary:hover{transform:translateY(-2px);filter:brightness(1.04);}
+.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:18px 38px;font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:#EAC080;color:#23333A;box-shadow:none;transition:transform .12s,background .2s;position:relative;}
+.home-cta-primary:hover{transform:translateY(-2px);background:#EEC98E;}
+/* Forward "play" triangle inside CTA buttons (replaces the → glyph site-wide). */
+.cs-tri{display:inline-block;width:.58em;height:.68em;vertical-align:-.02em;flex-shrink:0;transition:transform .18s ease;}
+button:hover .cs-tri{transform:translateX(3px);}
+button:disabled:hover .cs-tri{transform:none;}
+.mm-bc-btn .cs-tri,.mm-teaser-btn .cs-tri{color:#F0B860;}
+.mm-glass-btn .cs-tri{color:#FFE6C2;}
+.mm-end-btn .cs-tri{color:#8A5A12;}
 .home-cta-sub{position:relative;display:flex;justify-content:center;align-items:center;gap:18px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,.22);}
 .home-cta-sub .txt{display:flex;flex-direction:column;text-align:left;}
 .home-cta-sub .txt b{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;}
@@ -5408,13 +5424,13 @@ function FeaturedClassBanner({onNavigate}){
         <span className="fcs-ov-label">Featured Class</span>
         <span className="fcs-ov-title">Scene Study<br/>Workshop</span>
         <span className="fcs-ov-tag">Deepen your craft and bring depth, truth, and connection to every scene.</span>
-        <button type="button" className="fcs-ov-btn" onClick={go}>View Classes →</button>
+        <button type="button" className="fcs-ov-btn" onClick={go}>View Classes <Tri/></button>
       </div>
       {/* Mobile: live, readable title + button over the cover-cropped photo. */}
       <div className="fcs-mobile">
         <span className="fcs-m-label">Featured Class</span>
         <span className="fcs-m-title">Scene Study Workshop</span>
-        <button type="button" className="fcs-m-btn" onClick={go}>View Classes →</button>
+        <button type="button" className="fcs-m-btn" onClick={go}>View Classes <Tri/></button>
       </div>
       {introOn&&<BannerCodeIntro onDone={()=>setIntroOn(false)}/>}
     </div>
@@ -5424,7 +5440,7 @@ function FeaturedClassBanner({onNavigate}){
         <span className="fcs-compact-label">Featured Class</span>
         <span className="fcs-compact-title">Scene Study Workshop</span>
       </div>
-      <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>View Classes →</button>
+      <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>View Classes <Tri/></button>
     </div>
     {/* Intro veil — last child so it paints over both banner states, and
         aria-hidden + pointer-events:none so it is invisible to screen readers
@@ -5591,7 +5607,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
       <div className="card" style={{padding:32,textAlign:"center",maxWidth:560,margin:"0 auto"}}>
         <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>You don't need a membership.</h3>
         <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>Industry accounts are free — head to your dashboard and post a casting when you're ready.</p>
-        <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard →</button>
+        <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard <Tri/></button>
       </div>
       <Footer onNavigate={onNavigate}/>
     </div>);
@@ -5621,7 +5637,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
         {myProfile?.membership_start_date&&<p style={{fontSize:12,color:"var(--t3)",marginTop:8}}>Started {new Date(myProfile.membership_start_date).toLocaleDateString()}</p>}
         {renewDate&&hasStripe&&<p style={{fontSize:12,color:renewExpired?"var(--red)":"var(--t3)"}}>{renewExpired?"Expired":"Renews"} {new Date(renewDate).toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</p>}
         <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:18}}>
-          <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings →</button>
+          <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
           <button className="btn-s" onClick={()=>onNavigate("account-settings")}>Account Settings</button>
         </div>
       </div>
@@ -5778,7 +5794,7 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
       <h2 style={{fontSize:20,marginBottom:8}}>Please choose your plan</h2>
       <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>No plan was selected. Please pick one of the options below.</p>
-      <button className="btn-p" onClick={()=>onNavigate("membership")}>View Plans →</button>
+      <button className="btn-p" onClick={()=>onNavigate("membership")}>View Plans <Tri/></button>
     </div><Footer onNavigate={onNavigate}/></div>);
   }
 
@@ -5787,7 +5803,7 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
     return(<div className="page page-wide"><div className="card" style={{padding:48,textAlign:"center"}}>
       <h2 style={{fontSize:20,marginBottom:8}}>Industry accounts don't need a membership</h2>
       <p style={{color:"var(--t3)",fontSize:14,marginBottom:18}}>You only pay when you post a casting.</p>
-      <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard →</button>
+      <button className="btn-p" onClick={()=>onNavigate("dashboard")}>Open Dashboard <Tri/></button>
     </div><Footer onNavigate={onNavigate}/></div>);
   }
 
@@ -5960,7 +5976,7 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
     </p>
     {isPremium&&<p style={{color:"var(--acc)",fontWeight:700,marginBottom:24,fontSize:15}}>Unlimited submissions unlocked <Ico n="check" s={24}/></p>}
     <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-      <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings →</button>
+      <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
       <button className="btn-s" onClick={()=>onNavigate("my-profile")}>My Profile</button>
     </div>
   </div><Footer onNavigate={onNavigate}/></div>);
@@ -7175,7 +7191,7 @@ function ResetPasswordPage({onNavigate,session}){
       setErr(msg);
     }finally{setLoading(false);submittingRef.current=false;}
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue →</button></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>Password Updated</h3><p style={{marginBottom:24}}>You're all set — your new password is active.</p><button className="btn-p" onClick={()=>onNavigate(session?.user?.email?.toLowerCase()===(window.SC_CONFIG?.ADMIN_EMAIL||"").toLowerCase()?"admin":"my-profile")}>Continue <Tri/></button></div><Footer onNavigate={onNavigate}/></div>);
   return(<div className="page"><form onSubmit={submit} style={{maxWidth:440,margin:"60px auto 0"}}>
     <div style={{textAlign:"center",marginBottom:32}}>
       <div className="logo" style={{justifyContent:"center",fontSize:24,marginBottom:12}}><div className="logo-i" style={{width:36,height:36}}><LogoMark/></div>CastSlate</div>
@@ -7386,7 +7402,7 @@ function FaqPage({onNavigate}){
         <div style={{maxWidth:680,margin:"60px auto 0",padding:28,background:"var(--s2)",borderRadius:14,border:"1px solid var(--bdr)",textAlign:"center"}}>
           <h3 style={{fontSize:18,fontWeight:800,marginBottom:6}}>Still need help?</h3>
           <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:16}}>Our support team responds inside 24 hours, including weekends.</p>
-          <button className="btn-p" onClick={()=>onNavigate("contact")}>Contact Support →</button>
+          <button className="btn-p" onClick={()=>onNavigate("contact")}>Contact Support <Tri/></button>
         </div>
       </>
     }
@@ -7769,7 +7785,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
           </div>
           <button disabled={classPayBusy} onClick={()=>handleClassPayment(viewing)}
             style={{flexShrink:0,background:classPayBusy?"#3a8a5f":"linear-gradient(90deg,#1a6b42,#1e8050)",color:"#fff",fontWeight:800,fontSize:14,padding:"13px 28px",borderRadius:10,border:"none",cursor:classPayBusy?"default":"pointer",fontFamily:"inherit",whiteSpace:"nowrap",boxShadow:"0 4px 14px rgba(26,107,66,0.32)",opacity:classPayBusy?0.8:1}}>
-            {classPayBusy?t('classes.openingCheckout'):t('classes.completePayment')}
+            {classPayBusy?t('classes.openingCheckout'):withTri(t('classes.completePayment'))}
           </button>
         </div>
       )}
@@ -8030,7 +8046,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         <div style={{maxWidth:900,margin:"0 auto",paddingBottom:40}}>
           <div style={{padding:24,background:"var(--s2)",borderRadius:12,border:"1px solid var(--bdr)"}}>
             <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.65,marginBottom:12}}>{t('classes.enrollDesc')}</p>
-            <button className="btn-p" onClick={()=>onNavigate("contact")}>{t('classes.contactToEnroll')}</button>
+            <button className="btn-p" onClick={()=>onNavigate("contact")}>{withTri(t('classes.contactToEnroll'))}</button>
           </div>
         </div>
       )}
@@ -8108,7 +8124,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
           </button>
           <button className="btn-s btn-sm" style={{whiteSpace:"nowrap"}}
             onClick={e=>{e.stopPropagation();setViewing(cls);window.scrollTo(0,0);}}>
-            {t('classes.quickView')}
+            {withTri(t('classes.quickView'))}
           </button>
         </div>
       </div>
@@ -8156,7 +8172,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
     <div style={{maxWidth:680,margin:"60px auto 0",padding:28,background:"var(--s2)",borderRadius:14,border:"1px solid var(--bdr)",textAlign:"center"}}>
       <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>Teach on CastSlate</h3>
       <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:18}}>Working casting directors, coaches, and professional actors with five or more years of teaching experience can apply to list a class. We curate carefully.</p>
-      <button className="btn-p" onClick={()=>onNavigate("contact")}>Apply to Teach →</button>
+      <button className="btn-p" onClick={()=>onNavigate("contact")}>Apply to Teach <Tri/></button>
     </div>
     <Footer onNavigate={onNavigate}/>
   </div>);
@@ -8859,7 +8875,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
               {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Talent Agency & Manager Directory — 650+ in LA, Beverly Hills & NYC'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
-              ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan →</button>
+              ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan <Tri/></button>
               :<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>{t('pricing.getPremium')}</button>}
           </div>
 
@@ -9092,7 +9108,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>CastSlate becomes your talent manager before you have a talent manager.</h1>
           <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>CastSlate doesn't just help actors find auditions. It helps actors become more castable.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className="mm-glass-btn" onClick={()=>onNavigate("membership")}>Unlock Manager Mode<Ico n="arrow-right" s={16}/></button>
+            <button className="mm-glass-btn" onClick={()=>onNavigate("membership")}>Unlock Manager Mode<Tri/></button>
             <button className="mm-outline-btn" onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
@@ -9226,7 +9242,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                 </div>
               ))}
             </div>
-            <button className="mm-bc-btn" onClick={cardCTA}>{cardCTALabel}<Ico n="arrow-right" s={16}/></button>
+            <button className="mm-bc-btn" onClick={cardCTA}>{cardCTALabel}<Tri/></button>
           </div>
           <div className="mm-bc-cardcol">
             <AgdCard k="mm-bc-card" c={{name:"Maya Reynolds",head:"Actor · Film & TV",loc:"New York / Los Angeles",slug:"maya-reynolds",tags:["Drama","Comedy","Commercial"],img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=420&h=560&q=80",pos:"center 20%"}}/>
@@ -9249,7 +9265,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <div key={f}><Ico n="check" s={20}/>{f}</div>
         ))}
       </div>
-      <button className="mm-end-btn" onClick={()=>onNavigate("membership")}>Upgrade to Premium<Ico n="arrow-right" s={16}/></button>
+      <button className="mm-end-btn" onClick={()=>onNavigate("membership")}>Upgrade to Premium<Tri/></button>
     </section>
 
     {/* The Manager Mode / Business Card / event-suggestion disclaimer that used
@@ -10056,7 +10072,7 @@ function PayTalentPage({onNavigate}){
               </div>
               <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:6}}><span>Session fee</span><span>$1,000.00</span></div>
               <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:14}}><span>Residuals</span><span>$200.00</span></div>
-              <button style={{width:"100%",padding:"12px",borderRadius:8,background:"#635BFF",color:"#fff",fontWeight:700,fontSize:14,border:"none",cursor:"default",letterSpacing:"-0.2px"}}>Send Payment via Stripe →</button>
+              <button style={{width:"100%",padding:"12px",borderRadius:8,background:"#635BFF",color:"#fff",fontWeight:700,fontSize:14,border:"none",cursor:"default",letterSpacing:"-0.2px"}}>Send Payment via Stripe <Tri/></button>
               <div style={{textAlign:"center",fontSize:11,color:"var(--t3)",marginTop:10}}>This feature is coming soon — request early access below</div>
             </div>
           </div>
@@ -10922,7 +10938,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
-          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?"Create Free Account & Apply →":"Create Free Account →"}</button>
+          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?<>Create Free Account & Apply <Tri/></>:<>Create Free Account <Tri/></>}</button>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </>:<>
@@ -10945,7 +10961,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
             <span style={{color:"var(--blu)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Forgot password?</span>
           </div>
 
-          <button className="btn-p" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":c?"Log In & Continue to Apply →":"Log In →"}</button>
+          <button className="btn-p" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":c?<>Log In & Continue to Apply <Tri/></>:<>Log In <Tri/></>}</button>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to CastSlate? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
         </>}
@@ -12079,7 +12095,7 @@ Free submission used
       </div>
       {/* CTA sells finishing THIS submission, not "Premium" in the abstract — the
           button names the casting the actor was just blocked from. */}
-      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)",padding:"14px 16px",borderRadius:11,marginBottom:9,boxShadow:"0 10px 24px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.4)"}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return`Go unlimited — ${PREMIUM_PRICE} →`;const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return`Unlock & submit to “${short}” →`;})()}</button>
+      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)",padding:"14px 16px",borderRadius:11,marginBottom:9,boxShadow:"0 10px 24px -10px rgba(240,160,60,.85),inset 0 1px 0 rgba(255,255,255,.4)"}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return withTri(`Go unlimited — ${PREMIUM_PRICE} →`);const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return withTri(`Unlock & submit to “${short}” →`);})()}</button>
       <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, not right now</button>
       <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions · cancel anytime</div>
     </div></div></BodyPortal>}
@@ -12511,7 +12527,7 @@ Free submission used
       :simCastings.length>0&&<section className="cfoot cfoot-more">
         <div className="cfoot-more-hd">
           <h3>More roles</h3>
-          <button className="cfoot-all" onClick={()=>onNavigate("search")}>Browse all castings &rarr;</button>
+          <button className="cfoot-all" onClick={()=>onNavigate("search")}>Browse all castings <Tri/></button>
         </div>
         <div className="cfoot-grid">
           {simCastings.map(sc=>{
@@ -12660,7 +12676,7 @@ Free submission used
             </div>
 
             <div style={{display:"flex",gap:12,marginTop:20}}>
-              <button className="btn-teal" style={{flex:1,opacity:myPhotos.length===0?0.5:1}} onClick={submitApp} disabled={submitting||myPhotos.length===0}>{submitting?"Submitting Audition…":myPhotos.length===0?"Add a headshot to apply":"Submit My Audition →"}</button>
+              <button className="btn-teal" style={{flex:1,opacity:myPhotos.length===0?0.5:1}} onClick={submitApp} disabled={submitting||myPhotos.length===0}>{submitting?"Submitting Audition…":myPhotos.length===0?"Add a headshot to apply":<>Submit My Audition <Tri/></>}</button>
               <button className="btn-s" onClick={()=>setApplyRole(null)} disabled={submitting}>{t('cancel')}</button>
             </div>
           </>
@@ -13342,7 +13358,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
                   <div style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>Want to work with {talentFirst}?</div>
                   <div style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5,marginTop:2}}>Casting directors &amp; producers can invite {talentFirst} to a project or send a message — free to start.</div>
                 </div>
-                <button className="btn-p btn-sm" style={{flexShrink:0}} onClick={()=>{try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");}}>Create a free account →</button>
+                <button className="btn-p btn-sm" style={{flexShrink:0}} onClick={()=>{try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");}}>Create a free account <Tri/></button>
               </div>
             )}
           </div>);
@@ -13504,7 +13520,7 @@ function PublicProfileButtons({slug}){
     <button style={{background:"var(--s2)",color:"var(--t2)",border:"1px solid var(--bdr)",borderRadius:7,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer",transition:"color .15s"}} onClick={copy}>
       {copied?"Link copied!":"Copy Profile Link"}
     </button>
-    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>window.open(`/talent/${encodeURIComponent(slug)}`,"_blank")}><Ico n="eye" s={22}/> View Public Profile →</button>
+    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>window.open(`/talent/${encodeURIComponent(slug)}`,"_blank")}><Ico n="eye" s={22}/> View Public Profile <Tri/></button>
   </>);
 }
 
@@ -14435,7 +14451,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",flexShrink:0}}>
                       {isArchived||isExpiredCasting
                         ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
-                        :<button className="btn-teal cc-cta" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{t('search.viewRoles')}</button>}
+                        :<button className="btn-teal cc-cta" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{withTri(t('search.viewRoles'))}</button>}
                       {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                     </div>
                   </div>
@@ -14554,7 +14570,7 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
             </div>
           ))}
         </div>
-        <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium to unlock suggestions →</button>
+        <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium to unlock suggestions <Tri/></button>
       </div>
     );
   }
@@ -15568,7 +15584,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
       <div style={{width:46,height:46,borderRadius:"50%",background:"var(--t1)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}><Ico n="lock" s={20}/></div>
       <h3 style={{margin:"0 0 8px",fontSize:20,fontWeight:800,color:"var(--t1)"}}>{title}</h3>
       <p style={{margin:"0 auto 18px",maxWidth:450,fontSize:13.5,color:"var(--t2)",lineHeight:1.6}}>{body}</p>
-      <button className="btn-p" onClick={()=>{setOpen(false);setClosing(false);onNavigate("membership");}}>Unlock with Premium →</button>
+      <button className="btn-p" onClick={()=>{setOpen(false);setClosing(false);onNavigate("membership");}}>Unlock with Premium <Tri/></button>
     </div>
   );
 
@@ -15590,7 +15606,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
         <div><b>{counts.tips}</b><span>Insider tips</span></div>
       </div>
       <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
-        {isPremium?"Open the Directory →":"Unlock the Directory →"}
+        {isPremium?<>Open the Directory <Tri/></>:<>Unlock the Directory <Tri/></>}
       </button>
       {/* LAST child on purpose — anything after it would paint over the panel. */}
       <span className="tad-tip"><b>A powerful knowledge tool</b>Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors years to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.</span>
@@ -15659,7 +15675,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                       <div><b>{counts.open}</b><span>Open to submissions</span></div>
                       <div><b>{counts.small}</b><span>Take beginners</span></div>
                     </div>
-                    <button className="btn-p" onClick={()=>{setOpen(false);setClosing(false);onNavigate("membership");}}>Unlock with Premium →</button>
+                    <button className="btn-p" onClick={()=>{setOpen(false);setClosing(false);onNavigate("membership");}}>Unlock with Premium <Tri/></button>
                     <div style={{fontSize:11.5,color:"var(--t3)",marginTop:10}}>Cancel anytime · list re-curated every few months</div>
                   </div>
                 </div>
@@ -16180,7 +16196,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       {/* Status-filter tabs removed — the list shows all of the actor's
           applications (submitted, shortlisted, in-consideration, archived). */}
       <div style={{padding:24}}>
-        {appsLoading?(<CastSlateLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={22}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:12}}>{filteredApps.map(app=>{const ui=APP_CARD_UI[app.status]||APP_CARD_UI.pending;const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;const win=ui.tier==="win",warm=ui.tier==="warm",faded=ui.tier==="faded";const fresh=(win||warm)&&app.reviewed_at&&(Date.now()-new Date(app.reviewed_at).getTime()<3*24*60*60*1000);const reviewer=castingDecisionName(app.castings);const micro=app.status==="selected"?`${reviewer} shortlisted you`:app.status==="hold"?`${reviewer} is considering you`:ui.micro;return(<div key={app.id} style={{position:"relative",display:"flex",alignItems:"center",gap:14,padding:win?"16px 18px":"14px 16px",background:ui.cardBg,border:(win?"1.5px":"1px")+" solid "+ui.cardBorder,borderRadius:14,overflow:"hidden",boxSizing:"border-box",width:"100%",opacity:faded?0.62:1,transition:"border-color .15s"}}>{win&&<div style={{position:"absolute",top:0,left:0,height:"100%",width:6,background:ui.accent}}/>}<div style={{flexShrink:0,width:win?46:faded?34:40,height:win?46:faded?34:40,borderRadius:"50%",background:ui.iconBg,color:ui.iconColor,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n={ui.icon} s={win?24:faded?17:20} style={win?{animation:"csAppStar 2.6s ease-in-out infinite"}:undefined}/></div><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><div style={{fontWeight:faded?600:700,fontSize:win?17:faded?15:16,color:faded?"var(--t2)":"var(--t1)",letterSpacing:-0.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"100%"}}>{app.castings?.title||"Unknown Project"}</div>{fresh&&<span style={{fontSize:10,fontWeight:700,color:ui.accent,background:ui.accentBg,padding:"2px 7px",borderRadius:20,letterSpacing:.4,flexShrink:0}}>NEW</span>}</div>{micro&&!faded&&<div style={{fontSize:12.5,fontWeight:600,color:ui.accent,marginTop:3}}>{win&&<Ico n="confetti" s={14} style={{marginRight:4,verticalAlign:"-2px"}}/>}{micro}</div>}<div style={{fontSize:12,color:"var(--t2)",marginTop:4,display:"flex",flexWrap:"wrap",gap:"3px 8px"}}><span>Role: <strong style={{color:faded?"var(--t2)":"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div>{!faded&&<div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>}</div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>{win?<span style={{fontSize:12,fontWeight:700,color:"#fff",background:"linear-gradient(100deg,"+ui.accent+","+ui.accentLight+","+ui.accent+")",backgroundSize:"220% 100%",padding:"6px 14px",borderRadius:20,whiteSpace:"nowrap",animation:"csAppSheen 3.4s ease-in-out infinite",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color="#fff" width={300}/></span>:<span style={{fontSize:11,fontWeight:warm?700:600,color:faded?"var(--t3)":ui.accent,background:faded?"transparent":ui.accentBg,border:faded?"1px solid var(--bdr)":"none",padding:"5px 12px",borderRadius:20,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color={faded?"var(--t3)":ui.accent} width={300}/></span>}{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",...(win?{borderColor:ui.accent,color:ui.accent}:{})}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}</div></div>);})}</div>)}
+        {appsLoading?(<CastSlateLoader size="inline" text="Loading applications…"/>):appsErr?(<div style={{textAlign:"center",padding:"28px 0"}}><p style={{color:"var(--red)",fontSize:13,marginBottom:12}}>Applications could not load. Please try again.</p><button className="btn-s btn-sm" onClick={loadApps}>Retry</button></div>):filteredApps.length===0?(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:32,marginBottom:10}}><Ico n="clipboard" s={22}/></div><p style={{color:"var(--t2)",fontSize:14,marginBottom:16,fontWeight:500}}>{appsTab==="all"?"You don't have any applications here yet.":appsTab==="invites"?"No casting invites yet.":appsTab==="drafts"?"No saved drafts.":appsTab==="submitted"?"No submitted applications.":appsTab==="auditions"?"No audition requests yet.":"No archived applications."}</p>{(appsTab==="all"||appsTab==="submitted")&&<button className="btn-p btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>}</div>):(<div style={{display:"flex",flexDirection:"column",gap:12}}>{filteredApps.map(app=>{const ui=APP_CARD_UI[app.status]||APP_CARD_UI.pending;const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;const win=ui.tier==="win",warm=ui.tier==="warm",faded=ui.tier==="faded";const fresh=(win||warm)&&app.reviewed_at&&(Date.now()-new Date(app.reviewed_at).getTime()<3*24*60*60*1000);const reviewer=castingDecisionName(app.castings);const micro=app.status==="selected"?`${reviewer} shortlisted you`:app.status==="hold"?`${reviewer} is considering you`:ui.micro;return(<div key={app.id} style={{position:"relative",display:"flex",alignItems:"center",gap:14,padding:win?"16px 18px":"14px 16px",background:ui.cardBg,border:(win?"1.5px":"1px")+" solid "+ui.cardBorder,borderRadius:14,overflow:"hidden",boxSizing:"border-box",width:"100%",opacity:faded?0.62:1,transition:"border-color .15s"}}>{win&&<div style={{position:"absolute",top:0,left:0,height:"100%",width:6,background:ui.accent}}/>}<div style={{flexShrink:0,width:win?46:faded?34:40,height:win?46:faded?34:40,borderRadius:"50%",background:ui.iconBg,color:ui.iconColor,display:"flex",alignItems:"center",justifyContent:"center"}}><Ico n={ui.icon} s={win?24:faded?17:20} style={win?{animation:"csAppStar 2.6s ease-in-out infinite"}:undefined}/></div><div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><div style={{fontWeight:faded?600:700,fontSize:win?17:faded?15:16,color:faded?"var(--t2)":"var(--t1)",letterSpacing:-0.2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"100%"}}>{app.castings?.title||"Unknown Project"}</div>{fresh&&<span style={{fontSize:10,fontWeight:700,color:ui.accent,background:ui.accentBg,padding:"2px 7px",borderRadius:20,letterSpacing:.4,flexShrink:0}}>NEW</span>}</div>{micro&&!faded&&<div style={{fontSize:12.5,fontWeight:600,color:ui.accent,marginTop:3}}>{win&&<Ico n="confetti" s={14} style={{marginRight:4,verticalAlign:"-2px"}}/>}{micro}</div>}<div style={{fontSize:12,color:"var(--t2)",marginTop:4,display:"flex",flexWrap:"wrap",gap:"3px 8px"}}><span>Role: <strong style={{color:faded?"var(--t2)":"var(--t1)"}}>{app.roles?.name||"—"}</strong></span>{app.castings?.type&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.type&&<span>{app.castings.type}</span>}{app.castings?.location&&<span style={{color:"var(--t3)"}}>·</span>}{app.castings?.location&&<span>{app.castings.location}</span>}</div>{!faded&&<div style={{fontSize:11,color:"var(--t3)",marginTop:3}}>Submitted {fmtDate(app.created_at)}{dl&&<span style={{marginLeft:8,color:dl.urgent?"var(--red)":"var(--t3)"}}>· Deadline {dl.label}</span>}</div>}</div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>{win?<span style={{fontSize:12,fontWeight:700,color:"#fff",background:"linear-gradient(100deg,"+ui.accent+","+ui.accentLight+","+ui.accent+")",backgroundSize:"220% 100%",padding:"6px 14px",borderRadius:20,whiteSpace:"nowrap",animation:"csAppSheen 3.4s ease-in-out infinite",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color="#fff" width={300}/></span>:<span style={{fontSize:11,fontWeight:warm?700:600,color:faded?"var(--t3)":ui.accent,background:faded?"transparent":ui.accentBg,border:faded?"1px solid var(--bdr)":"none",padding:"5px 12px",borderRadius:20,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color={faded?"var(--t3)":ui.accent} width={300}/></span>}{app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",...(win?{borderColor:ui.accent,color:ui.accent}:{})}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View <Tri/></button>}</div></div>);})}</div>)}
       </div>
     </div>
   </div>);}
@@ -16239,7 +16255,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         <span style={{fontSize:12,fontWeight:600,color:"var(--acc)",padding:"4px 10px",background:"rgba(99,60,180,0.07)",borderRadius:6,border:"1px solid rgba(99,60,180,0.15)"}}>⏳ Request pending review</span>
                       ):inv.status==="approved_pending_payment"?(
                         <>
-                          <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}>Complete Payment →</button>
+                          <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}>Complete Payment <Tri/></button>
                           <span style={{fontSize:11,color:"#c0392b",fontWeight:600}}>Payment required</span>
                         </>
                       ):inv.status==="declined"?(
@@ -16249,7 +16265,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         </>
                       ):(
                         <>
-                          <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}>View Class →</button>
+                          <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}>View Class <Tri/></button>
                           <button className="btn-s btn-sm" style={{fontSize:12,color:"var(--t3)"}} onClick={()=>dismissInvitation(inv.id)}>Dismiss</button>
                         </>
                       )}
@@ -16285,9 +16301,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           <div style={{fontWeight:700,fontSize:win?15:14,color:win?win.accent:"var(--t1)",marginBottom:3}}>{n.title}</div>
           <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}>{n.body}</div>
           <div style={{fontSize:11,color:"var(--t3)",marginTop:6}}>{new Date(n.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"})}</div>
-          {n.type==="booking_approved"&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12,background:"#1a6b42",borderColor:"#1a6b42"}} onClick={()=>{const inv=classInvitations.find(i=>i.status==="approved_pending_payment"&&i.class_id===n.related_class_id);if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:inv?.id||n.related_invitation_id||null});else onNavigate("classes");}}>Complete Payment →</button>)}
-          {n.type==="class_invitation"&&n.link_url&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:n.related_invitation_id||null});else onNavigate("classes");}}>View Class →</button>)}
-          {["application_selected","audition_requested","application_profile_viewed","application_video_viewed"].includes(n.type)&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>setDashView("applications")}>View My Applications →</button>)}
+          {n.type==="booking_approved"&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12,background:"#1a6b42",borderColor:"#1a6b42"}} onClick={()=>{const inv=classInvitations.find(i=>i.status==="approved_pending_payment"&&i.class_id===n.related_class_id);if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:inv?.id||n.related_invitation_id||null});else onNavigate("classes");}}>Complete Payment <Tri/></button>)}
+          {n.type==="class_invitation"&&n.link_url&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>{if(n.related_class_id)onNavigate("classes",{classId:n.related_class_id,invitationId:n.related_invitation_id||null});else onNavigate("classes");}}>View Class <Tri/></button>)}
+          {["application_selected","audition_requested","application_profile_viewed","application_video_viewed"].includes(n.type)&&(<button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>setDashView("applications")}>View My Applications <Tri/></button>)}
         </div>
         {!n.is_read&&<div style={{width:8,height:8,borderRadius:"50%",background:win?win.accent:"var(--acc)",flexShrink:0,marginTop:4}}/>}
       </div>);};
@@ -16359,7 +16375,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               style={{background:"#fff",color:"#1a6b42",fontWeight:800,fontSize:13,padding:"11px 22px",
                 borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
                 boxShadow:"0 2px 8px rgba(0,0,0,0.18)",flexShrink:0}}
-            >Complete Payment →</button>
+            >Complete Payment <Tri/></button>
           </div>
         );
       })()}
@@ -16393,7 +16409,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             style={{background:"transparent",color:"#B3261E",fontWeight:800,fontSize:13,padding:"11px 22px",
               borderRadius:10,border:"1px solid #E7A9A5",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
               boxShadow:"none",flexShrink:0}}
-          >See Premium Plans →</button>
+          >See Premium Plans <Tri/></button>
         </div>
       )}
 
@@ -16695,7 +16711,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             <button
                               style={{fontSize:13,padding:"12px 26px",fontWeight:700,background:"linear-gradient(90deg,#1a3d38,#254f49)",color:"#f0f8f6",border:"none",borderRadius:10,cursor:"pointer",boxShadow:"0 4px 16px rgba(20,50,45,0.28)",fontFamily:"inherit",whiteSpace:"nowrap",flex:isMobile?1:"none"}}
                               onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}
-                            >Complete Payment →</button>
+                            >Complete Payment <Tri/></button>
                             <span style={{fontSize:11,color:"#c0392b",alignSelf:"center",fontWeight:600}}>Payment required to confirm your spot</span>
                           </>
                         ):inv.status==="declined"?(
@@ -16708,7 +16724,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                             <button
                               style={{fontSize:13,padding:"12px 26px",fontWeight:700,background:"linear-gradient(90deg,#1a3d38,#254f49)",color:"#f0f8f6",border:"none",borderRadius:10,cursor:"pointer",boxShadow:"0 4px 16px rgba(20,50,45,0.28)",fontFamily:"inherit",whiteSpace:"nowrap",flex:isMobile?1:"none"}}
                               onClick={()=>{markInvitationViewed(inv.id);onNavigate("classes",{classId:inv.class_id,invitationId:inv.id});}}
-                            >View Recommended Class →</button>
+                            >View Recommended Class <Tri/></button>
                             <button
                               style={{fontSize:12,padding:"12px 20px",fontWeight:600,background:"rgba(255,255,255,0.45)",border:"1px solid rgba(50,80,75,0.22)",color:"#3a5a55",borderRadius:10,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",flex:isMobile?1:"none"}}
                               onClick={()=>dismissInvitation(inv.id)}
@@ -16734,7 +16750,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 }}
                 onClick={()=>setDashView("class-invitations")}
               >
-                View All {classInvitations.length} Recommended Classes →
+                View All {classInvitations.length} Recommended Classes <Tri/>
               </button>
             </div>
           )}
@@ -16800,7 +16816,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                           </div>
                           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8,flexShrink:0}}>
                             {win?<span style={{fontSize:12,fontWeight:700,color:"#fff",background:"linear-gradient(100deg,"+ui.accent+","+ui.accentLight+","+ui.accent+")",backgroundSize:"220% 100%",padding:"6px 14px",borderRadius:20,whiteSpace:"nowrap",animation:"csAppSheen 3.4s ease-in-out infinite",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color="#fff" width={300}/></span>:<span style={{fontSize:11,fontWeight:warm?700:600,color:faded?"var(--t3)":ui.accent,background:faded?"transparent":ui.accentBg,border:faded?"1px solid var(--bdr)":"none",padding:"5px 12px",borderRadius:20,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>{ui.label}<StatusInfoTip status={app.status} label={ui.label} color={faded?"var(--t3)":ui.accent} width={300}/></span>}
-                            {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",...(win?{borderColor:ui.accent,color:ui.accent}:{})}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View →</button>}
+                            {app.castings?.id&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",...(win?{borderColor:ui.accent,color:ui.accent}:{})}} onClick={()=>onViewCastingById?onViewCastingById(app.castings.id):onNavigate("search")}>View <Tri/></button>}
                           </div>
                         </div>
                       );
@@ -16808,7 +16824,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                   </div>
                   <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <span style={{fontSize:12,color:"var(--t3)"}}>{applications.length} total application{applications.length!==1?"s":""}</span>
-                    <button className="btn-s btn-sm" onClick={()=>{setAppsTab("all");setDashView("applications");}}>View All Applications →</button>
+                    <button className="btn-s btn-sm" onClick={()=>{setAppsTab("all");setDashView("applications");}}>View All Applications <Tri/></button>
                   </div>
                 </>
               )}
@@ -16822,7 +16838,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Messages Inbox</h2>
                 {globalUnreadCount>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 8px",fontSize:11,fontWeight:800}}>{globalUnreadCount}</span>}
               </div>
-              <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>Open Inbox →</button>
+              <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>Open Inbox <Tri/></button>
             </div>
             <div style={{padding:24}}>
               {msgsLoading?(
@@ -16857,7 +16873,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                   </div>
                   <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <span style={{fontSize:12,color:"var(--t3)"}}>{threads.length} conversation{threads.length!==1?"s":""}</span>
-                    <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>View All Messages →</button>
+                    <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>View All Messages <Tri/></button>
                   </div>
                 </>
               )}
@@ -16871,7 +16887,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recommended for You</h2>
                 <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Matched to your gender, age range and location</p>
               </div>
-              <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse All →</button>
+              <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse All <Tri/></button>
             </div>
             <div style={{padding:24}}>
               {recsLoading?(
@@ -16906,7 +16922,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         </div>}
                         {dl&&<div style={{fontSize:11,color:dl.urgent?"var(--red)":"var(--t3)",fontWeight:dl.urgent?600:400}}>Deadline: {dl.label}</div>}
                         <div style={{display:"flex",gap:8,marginTop:4}}>
-                          <button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(c.id):onNavigate("search")}>Apply →</button>
+                          <button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(c.id):onNavigate("search")}>Apply <Tri/></button>
                         </div>
                       </div>
                     );
@@ -16956,7 +16972,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                   </div>
                   <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <span style={{fontSize:12,color:"var(--t3)"}}>{savedCastings.length} saved casting{savedCastings.length!==1?"s":""}</span>
-                    <button className="btn-s btn-sm" onClick={()=>setDashView("saved")}>View All Saved Castings →</button>
+                    <button className="btn-s btn-sm" onClick={()=>setDashView("saved")}>View All Saved Castings <Tri/></button>
                   </div>
                 </>
               )}
@@ -17000,7 +17016,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <p style={{fontSize:13,color:"var(--t2)",margin:0}}>Your profile is visible to casting directors browsing talent.</p>
               </div>
             )}
-            <button className="btn-p btn-sm" style={{width:"100%"}} onClick={slideToEditor}>{isProfileComplete?"View My Profile →":"Edit My Profile →"}</button>
+            <button className="btn-p btn-sm" style={{width:"100%"}} onClick={slideToEditor}>{isProfileComplete?<>View My Profile <Tri/></>:<>Edit My Profile <Tri/></>}</button>
           </div>
 
           {/* Media Locker card removed 2026-08-06 — it duplicated the Profile Checklist
@@ -17040,7 +17056,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     </div>
                   ))}
                 </div>
-                <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium →</button>
+                <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium <Tri/></button>
               </>
             )}
           </div>
@@ -17058,7 +17074,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Card Studio</h3>
             </div>
             <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Build your business card, mailing postcard, or agent promo card — each with your headshot and a QR code linking to your CastSlate profile.</p>
-            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)',color:'#1A1A2E',boxShadow:'0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?'Build My Actor Card →':'Preview Actor Card →'}</button>
+            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)',color:'#1A1A2E',boxShadow:'0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?<>Build My Actor Card <Tri/></>:<>Preview Actor Card <Tri/></>}</button>
           </div>
 
           {/* Talent Agency Directory — premium-gated; sits next to the business card on purpose
@@ -17082,7 +17098,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             ):recentlyViewed.length===0?(
               <>
                 <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px"}}>You haven't viewed any casting calls yet.</p>
-                <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings →</button>
+                <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
               </>
             ):(
               <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
@@ -18089,7 +18105,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <button className={`tab ${tab==="castings"?"active":""}`} onClick={()=>setTab("castings")}>{t('cd.myCastings')}</button>
         <button className={`tab ${tab==="allSelected"?"active":""}`} onClick={()=>{setTab("allSelected");try{window.history.pushState({swipecast:true,page:"dashboard",dashTab:"allSelected"},"","/dashboard#t=allSelected");}catch(_){}}}>All Selected <span style={{opacity:.6}}>({allSelected.length})</span></button>
         <button className={`tab ${tab==="savedLists"?"active":""}`} onClick={()=>{setTab("savedLists");setActiveList(null);try{window.history.pushState({swipecast:true,page:"dashboard",dashTab:"savedLists"},"","/dashboard#t=savedLists");}catch(_){}}}>Saved Lists <span style={{opacity:.6}}>({savedLists.length})</span></button>
-        <button className={`tab ${tab==="inbox"?"active":""}`} onClick={()=>onNavigate("inbox")}>Inbox →</button>
+        <button className={`tab ${tab==="inbox"?"active":""}`} onClick={()=>onNavigate("inbox")}>Inbox <Tri/></button>
       </div>
       {cdLoadErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
         <span>Couldn't refresh dashboard: {cdLoadErr}{myCastings.length>0?" — showing last loaded list.":""}</span>
@@ -18137,7 +18153,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               </div>
             </div>
             <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap",borderTop:"1px solid var(--bdr)",paddingTop:10}}>
-              {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>openReview(c)}>View Submissions →</button>}
+              {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>openReview(c)}>View Submissions <Tri/></button>}
               <button className="btn-s btn-sm" style={{fontSize:12}} onClick={()=>setEditCasting(c)}><Ico n="pencil" s={22}/> Edit</button>
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12}} disabled={busy} onClick={()=>busy||toggleCastingStatus(c,"closed")}>{busy?"…":"Close Casting"}</button>}
               {isOpen&&<button className="btn-s btn-sm" style={{fontSize:12,color:"#c0392b",borderColor:"rgba(192,57,43,0.4)"}} disabled={busy} title="Found your talent? Mark this filled — it stays listed with a red ARCHIVED stamp and stops taking submissions." onClick={()=>{if(busy)return;if(window.confirm("Mark “"+c.title+"” as filled? It will stay listed with a red ARCHIVED stamp and stop accepting new submissions. You can unarchive anytime."))toggleCastingStatus(c,"archived");}}>{busy?"…":"Mark Filled (Archive)"}</button>}
@@ -18968,7 +18984,7 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
                            {meta&&<div style={{fontSize:12.5,color:"var(--t2)",marginTop:3}}>{meta}</div>}
                            {inv.role&&<div style={{marginTop:11}}><span style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--s2)",borderRadius:8,padding:"5px 10px",fontSize:13,fontWeight:700,color:"var(--t1)"}}><span style={{color:"var(--t3)",fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:"0.05em"}}>Role</span>{inv.role}</span></div>}
                            {inv.note&&<div style={{marginTop:11,padding:"10px 12px",background:"var(--bg)",borderRadius:8,fontSize:13,color:"var(--t2)",lineHeight:1.5,fontStyle:"italic",borderLeft:"2px solid var(--bdr)"}}>&ldquo;{inv.note}&rdquo;</div>}
-                           {canOpen&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(cid);onClose();}}>{mine?"View casting →":"View & respond →"}</button>}
+                           {canOpen&&<button className="btn-p btn-sm" style={{marginTop:12,fontSize:13}} onClick={()=>{onViewCasting(cid);onClose();}}>{mine?<>View casting <Tri/></>:<>View & respond <Tri/></>}</button>}
                          </div>);})()}
                          {isAdmin&&<button onClick={()=>deleteOne(m.id)} title="Delete this message" className="msg-del-btn" style={{position:"absolute",top:-8,right:-8,width:22,height:22,borderRadius:"50%",border:"1px solid var(--bdr)",background:"#fff",color:"var(--t3)",fontSize:11,cursor:"pointer",padding:0}}><Ico n="x" s={24}/></button>}
                        </div>
@@ -21195,7 +21211,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
           <>
             <h3 style={{fontSize:20,fontWeight:800,marginBottom:8,letterSpacing:-0.5}}>No active casting calls yet</h3>
             <p style={{color:"var(--t3)",fontSize:14,maxWidth:420,margin:"0 auto 18px"}}>Check back soon — new roles are posted weekly. Casting directors, you can post one in seconds.</p>
-            {onNavigate&&<button className="btn-p btn-sm" onClick={()=>onNavigate("register-cd")}>Post a Casting →</button>}
+            {onNavigate&&<button className="btn-p btn-sm" onClick={()=>onNavigate("register-cd")}>Post a Casting <Tri/></button>}
           </>
         )}
       </div>
@@ -21241,7 +21257,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Roles that are actually casting right now.</h2>
         {!isMobileVpw&&<p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>}
       </div>
-      {onNavigate&&<button className="btn-teal" style={{flexShrink:0,padding:"11px 22px",fontSize:14}} onClick={()=>onNavigate("search")}>Browse all →</button>}
+      {onNavigate&&<button className="btn-teal" style={{flexShrink:0,padding:"11px 22px",fontSize:14}} onClick={()=>onNavigate("search")}>Browse all <Tri/></button>}
     </div>
 
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
@@ -21340,7 +21356,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                     {sPick.rest>0&&<span className="cc-pill-rest">+ {sPick.rest} more {sPick.rest===1?"role":"roles"}</span>}
                   </div>
                   <div className="fcs-ctawrap">
-                    <button className="btn-teal cc-cta" tabIndex={isCenter?0:-1} onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply →</button>
+                    <button className="btn-teal cc-cta" tabIndex={isCenter?0:-1} onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply <Tri/></button>
                     {/* i, not idx. This used to print the centred card's number
                         on every card, so one slide dirtied a text node inside all
                         twelve and React re-rendered the lot; now only the two
@@ -22152,7 +22168,7 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
           <h3 className="adx-h">Learn in an afternoon<br/>what took everyone else<br/>a decade.</h3>
           <p className="adx-lede">For every company: the mailing address, the website, the division to write to, how big they are, and whether they take unsolicited mail at all — plus the ones charging a fee, flagged so you walk away.</p>
           <button className="adx-cta" onClick={()=>onNavigate(isPremium?"dashboard":"membership")}>
-            <span>{isPremium?"Open the Directory →":"See What's Inside →"}</span>
+            <span>{isPremium?<>Open the Directory <Tri/></>:<>See What's Inside <Tri/></>}</span>
           </button>
           <div className="adx-meta"><div>354 agencies</div><div>309 management companies</div><div>Re-checked every few months</div></div>
         </div>
@@ -22314,7 +22330,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             ))}
           </div>
           <div>
-            <button className="btn-teal" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
+            <button className="btn-teal" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
           </div>
         </div>
       </div>
@@ -22399,7 +22415,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             ))}
           </div>
           <div style={{marginTop:4}}>
-            <button className="btn-teal" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>Create CD Account →</button>
+            <button className="btn-teal" style={{padding:"13px 22px",fontSize:14}} onClick={()=>onNavigate("register-cd")}>Create CD Account <Tri/></button>
           </div>
         </div>
       </div>
@@ -22412,7 +22428,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <p className="home-cta-eyebrow"><span className="dot"/>Free to submit</p>
         <h2>It's time to get seen.</h2>
         <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Premium plans start at $10.75/mo when you want more.</p>
-        <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile →</button>
+        <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
         <div className="home-cta-sub">
           <div className="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
           <button className="home-cta-outline" onClick={()=>onNavigate("register-cd")}>Post a Project</button>
@@ -22465,7 +22481,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(30px,4vw,46px)",lineHeight:1.12,letterSpacing:-0.1,marginBottom:16,color:"#fff"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 64%,rgba(240,184,96,0.40) 64%)"}}>talent manager</span> before you have a talent manager.</h2>
           <p style={{fontSize:"clamp(15px,1.8vw,18px)",lineHeight:1.65,color:"rgba(255,255,255,0.9)",marginBottom:28,maxWidth:520}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className="mm-teaser-btn" onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode<Ico n="arrow-right" s={17}/></button>
+            <button className="mm-teaser-btn" onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode<Tri/></button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:22,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile improvement guidance","One focused task per week"].map(f=>(
@@ -22494,7 +22510,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
               <div style={{width:40,height:2,background:"#E0A93F",margin:"0 0 14px"}}/>
               <div style={{fontSize:13.5,fontWeight:600,color:"#2B2419",marginBottom:6}}><span style={{fontSize:10,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"#8A5A12",marginRight:8}}>Your task</span>Record a 7-second slate video.</div>
               <div style={{fontSize:12,color:"#7A6A55",marginBottom:14}}>Casting lane: young professional / commercial friend</div>
-              <button onClick={()=>onNavigate("manager-mode")} style={{background:"none",border:"none",padding:"0 0 1px",cursor:"pointer",fontFamily:"inherit",fontSize:12.5,fontWeight:700,color:"#8A5A12",borderBottom:"1.5px solid #E0A93F"}}>Open my check-in →</button>
+              <button onClick={()=>onNavigate("manager-mode")} style={{background:"none",border:"none",padding:"0 0 1px",cursor:"pointer",fontFamily:"inherit",fontSize:12.5,fontWeight:700,color:"#8A5A12",borderBottom:"1.5px solid #E0A93F"}}>Open my check-in <Tri/></button>
             </div>
           </div>
         </div>
@@ -22509,7 +22525,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <h2 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,lineHeight:1.1,marginBottom:16,color:"#fff"}}>Start applying today.<br/>Get cast.</h2>
         <p style={{fontSize:16,lineHeight:1.6,color:"rgba(255,255,255,0.75)",marginBottom:32,maxWidth:500,margin:"0 auto 32px"}}>Create your profile for free and start browsing open castings right now. Choose a Premium plan from $10.75/month when you're ready to submit.</p>
         <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>onNavigate("auth-gate")} style={{padding:"14px 28px",borderRadius:100,border:"none",background:"#fff",color:"#1a1a2e",fontSize:14,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>Create My Profile →</button>
+          <button onClick={()=>onNavigate("auth-gate")} style={{padding:"14px 28px",borderRadius:100,border:"none",background:"#fff",color:"#1a1a2e",fontSize:14,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>Create My Profile <Tri/></button>
           <button onClick={()=>onNavigate("search")} style={{padding:"14px 28px",borderRadius:100,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:0.3}}>Browse Castings</button>
           <button onClick={()=>onNavigate("register-cd")} style={{padding:"14px 28px",borderRadius:100,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:0.3}}>Post a Casting</button>
         </div>
@@ -23458,7 +23474,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           <div style={{fontSize:13,color:"#7a4c0b",lineHeight:1.6}}>
             Your account is on the free plan for now, and your gallery photos and videos are hidden from your public profile. <strong>Nothing has been deleted.</strong> As soon as your payment goes through, everything is restored exactly as you left it.
           </div>
-          <button className="btn-p btn-sm" style={{marginTop:12}} onClick={()=>onNavigate&&onNavigate("membership")}>Restore my Premium →</button>
+          <button className="btn-p btn-sm" style={{marginTop:12}} onClick={()=>onNavigate&&onNavigate("membership")}>Restore my Premium <Tri/></button>
         </div>
       </div>
     </div>}
@@ -23500,7 +23516,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               ?<input className="input" placeholder="@handle" value={f.instagram} onChange={e=>up("instagram",e.target.value)}/>
               :<button type="button" onClick={()=>onNavigate&&onNavigate("pricing")} title="Upgrade to add your Instagram" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"12px 14px",borderRadius:10,border:"1px dashed var(--bdr)",background:"var(--s2)",color:"var(--t2)",font:"inherit",fontSize:14,cursor:"pointer",textAlign:"left"}}>
                   <span style={{display:"flex",alignItems:"center",gap:8}}><Ico n="lock" s={16}/> Unlock with Premium</span>
-                  <span style={{fontWeight:700,color:"var(--acc)",whiteSpace:"nowrap"}}>Upgrade →</span>
+                  <span style={{fontWeight:700,color:"var(--acc)",whiteSpace:"nowrap"}}>Upgrade <Tri/></span>
                 </button>}
           </div>
         </div>
@@ -23531,7 +23547,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <div className="card" style={{padding:24,marginBottom:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
             <h3 style={{fontSize:15,fontWeight:700}}>Credits & Experience {dbCredits.length>0&&<span style={{fontSize:12,fontWeight:400,color:"var(--t3)"}}>{dbCredits.length} credit{dbCredits.length!==1?"s":""} added</span>}</h3>
-            <button className="btn-s btn-sm" onClick={()=>setTab("credits")}>+ Add / Edit Credits →</button>
+            <button className="btn-s btn-sm" onClick={()=>setTab("credits")}>+ Add / Edit Credits <Tri/></button>
           </div>
           {dbCredits.length===0
             ?<p style={{fontSize:13,color:"var(--t3)",marginBottom:0}}>No credits yet. Use the Credits tab to add your Film & TV, Theatre, and Commercial credits.</p>
@@ -24735,7 +24751,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
               ?"Your last payment failed. We'll keep retrying your card automatically for the next two months — your subscription stays open until you cancel it. Update your card to restore Premium right away."
               :"Your subscription has been canceled. Your account is back on the Free Plan."}
           </p>
-          <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Re-subscribe to Premium →</button>
+          <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Re-subscribe to Premium <Tri/></button>
         </div>
       )}
 
@@ -34109,7 +34125,7 @@ function AdminMemberAnnounce({session,SUPA}){
         {preview.eligible} eligible · skipped: {preview.skipped?.already_sent||0} already sent, {preview.skipped?.suppressed||0} suppressed, {preview.skipped?.opted_out||0} opted out, {preview.skipped?.no_email||0} no email
       </div>
       {preview.to_send>0&&<button className="btn-p" style={{marginTop:12,fontSize:14,padding:"12px 22px"}} disabled={busy} onClick={doSend}>
-        {busy?"Sending…":`Send now to ${preview.to_send} member${preview.to_send===1?"":"s"} →`}
+        {busy?"Sending…":withTri(`Send now to ${preview.to_send} member${preview.to_send===1?"":"s"} →`)}
       </button>}
       {preview.to_send===0&&<div style={{marginTop:8,color:"var(--t3)",fontSize:12}}>Nothing to send — everyone eligible has already received this announcement.</div>}
     </div>}
@@ -34390,7 +34406,7 @@ function AdminEmailCampaigns({session}){
               <div style={{padding:"10px 12px 12px"}}>
                 <div style={{fontWeight:800,fontSize:13.5,marginBottom:3}}>{t.name}</div>
                 <div style={{fontSize:11.5,color:"var(--t3)",lineHeight:1.55}}>{t.blurb}</div>
-                <button className="btn-s btn-sm" style={{marginTop:8}} onClick={e=>{e.stopPropagation();previewTemplate(t.id);}}>Preview →</button>
+                <button className="btn-s btn-sm" style={{marginTop:8}} onClick={e=>{e.stopPropagation();previewTemplate(t.id);}}>Preview <Tri/></button>
               </div>
             </div>
           ))}
@@ -35113,7 +35129,7 @@ function AdminOverview({onGoToBookingRequests,session,myProfile}){
             </div>
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>Talent has submitted booking requests that need your review. Approve or decline each request to move the flow forward.</p>
           </div>
-          <button className="btn-p btn-sm" onClick={onGoToBookingRequests} style={{flexShrink:0}}>Review Booking Requests →</button>
+          <button className="btn-p btn-sm" onClick={onGoToBookingRequests} style={{flexShrink:0}}>Review Booking Requests <Tri/></button>
         </div>
       </div>
     )}
@@ -39828,7 +39844,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
           <div style={{fontSize:40,marginBottom:16}}><Ico n="credit-card" s={22}/></div>
           <h2 style={{fontWeight:800,fontSize:22,marginBottom:10}}>Complete your profile first</h2>
           <p style={{color:'var(--t2)',marginBottom:20,fontSize:14}}>You need a public profile to generate your actor business card. Finish setting up your profile to get started.</p>
-          <button className="btn-p" onClick={()=>onNavigate('my-profile')}>Complete My Profile →</button>
+          <button className="btn-p" onClick={()=>onNavigate('my-profile')}>Complete My Profile <Tri/></button>
         </div>
         <Footer onNavigate={onNavigate}/>
       </div>
@@ -39911,7 +39927,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               {allPhotos.length===0?(
                 <div style={{padding:'12px 14px',background:'rgba(214,59,59,0.05)',border:'1px solid rgba(214,59,59,0.2)',borderRadius:8,fontSize:13,color:'var(--red)',display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
                   <span>Upload a headshot before creating your actor card.</span>
-                  <button className="btn-s btn-sm" style={{fontSize:11,flexShrink:0}} onClick={()=>onNavigate('my-profile')}>Upload Now →</button>
+                  <button className="btn-s btn-sm" style={{fontSize:11,flexShrink:0}} onClick={()=>onNavigate('my-profile')}>Upload Now <Tri/></button>
                 </div>
               ):(
                 <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
@@ -39999,7 +40015,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <div style={{padding:'20px',background:'linear-gradient(135deg,rgba(99,60,180,0.06),rgba(99,60,180,0.02))',border:'1px solid rgba(99,60,180,0.22)',borderRadius:14,textAlign:'center'}}>
                 <div style={{fontSize:15,fontWeight:800,color:'var(--t1)',marginBottom:8}}>Actor Card Studio — Premium</div>
                 <p style={{fontSize:13,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.65}}>Free users can preview every format. Upgrade to Premium to download and print your business card, mailing postcard, or agent promo card.</p>
-                <button className="btn-p" onClick={()=>onNavigate('membership')} style={{padding:'12px 24px',fontSize:14}}>Upgrade to Premium →</button>
+                <button className="btn-p" onClick={()=>onNavigate('membership')} style={{padding:'12px 24px',fontSize:14}}>Upgrade to Premium <Tri/></button>
               </div>
             ):(
               <div style={{display:'flex',flexDirection:'column',gap:12,background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:18}}>
