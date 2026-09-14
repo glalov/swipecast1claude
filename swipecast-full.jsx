@@ -3183,6 +3183,23 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-glass-btn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px);}
 .mm-outline-btn{background:transparent;color:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.28);}
 .mm-outline-btn:hover{background:rgba(255,255,255,.06);transform:translateY(-1px);}
+/* Manager Mode: slim statement band + compact 3x2 benefit cards (approved 2026-09-13). */
+.mm-pile{padding:28px clamp(20px,5vw,40px);background:var(--s1);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);}
+.mm-pile-in{max-width:1000px;margin:0 auto;display:flex;align-items:center;gap:22px;}
+.mm-pile-logo{width:48px;height:48px;border-radius:12px;background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;box-shadow:0 8px 24px rgba(26,26,46,.18);}
+.mm-pile h3{font-weight:800;font-size:clamp(18px,2vw,22px);letter-spacing:-.6px;margin:0 0 4px;line-height:1.2;}
+.mm-pile p{color:var(--t2);font-size:14.5px;line-height:1.55;margin:0;}
+.mm-helps{padding:clamp(44px,6vw,64px) clamp(16px,5vw,40px);max-width:1140px;margin:0 auto;box-sizing:border-box;}
+.mm-helps-hd{text-align:center;margin-bottom:28px;}
+.mm-helps-hd h2{font-weight:800;font-size:clamp(24px,3vw,34px);letter-spacing:-1.1px;line-height:1.08;margin:0;}
+.mm-helps-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.mm-helps-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px 18px 16px;min-width:0;}
+.mm-helps-top{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.mm-helps-ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mm-helps-card h3{font-weight:700;font-size:15px;letter-spacing:-.2px;margin:0;line-height:1.25;}
+.mm-helps-card p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:0;}
+@media (max-width:900px){.mm-helps-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width:560px){.mm-helps-grid{grid-template-columns:1fr;}.mm-pile-in{align-items:flex-start;}.mm-helps-card{padding:14px 16px;}}
 /* Manager Mode ending: full-width soft navy stripe (approved 2026-09-13). */
 /* Break out of the page container to run edge to edge, the same way .site-footer does. */
 .mm-end{position:relative;width:100vw;left:50%;margin-left:-50vw;box-sizing:border-box;background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);padding:clamp(56px,8vw,88px) clamp(20px,5vw,40px);text-align:center;color:#fff;}
@@ -9094,38 +9111,40 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
     </section>
 
-    {/* ══════ PERSONAL ATTENTION ══════ */}
-    <section style={{padding:"clamp(48px,7vw,80px) clamp(16px,5vw,40px)",background:"var(--s1)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)"}}>
-      <div style={{maxWidth:900,margin:"0 auto",display:"flex",alignItems:"center",gap:"clamp(20px,4vw,48px)",flexWrap:"wrap",justifyContent:"center"}}>
-        <div style={{flexShrink:0,width:56,height:56,borderRadius:14,background:"#1A1A2E",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 8px 24px rgba(26,26,46,0.18)",color:"#fff",overflow:"hidden"}}>
-          <LogoMark/>
-        </div>
-        <div style={{flex:"1 1 260px",minWidth:0,textAlign:"left"}}>
-          <h3 style={{fontWeight:800,fontSize:"clamp(18px,2.5vw,26px)",letterSpacing:-0.8,marginBottom:10,lineHeight:1.2}}>Your profile doesn't sit in a pile.</h3>
-          <p style={{color:"var(--t2)",fontSize:"clamp(14px,1.6vw,16px)",lineHeight:1.7,margin:0}}>Manager Mode is designed to give your profile focused, personal attention. Each week, a CastSlate career check-in is prepared for your inbox — reflecting your specific profile, your actual gaps, and one concrete step forward. This is not a generic newsletter. It is written for you, about your profile, every single week.</p>
+    {/* ══════ PERSONAL ATTENTION + HOW IT HELPS ══════ */}
+    {/* Compact version (approved 2026-09-13, demo "1 · Slim band + 3x2 cards"): about half the old
+        height. Slim statement band, then the six benefits as a 3x2 grid of compact cards with the icon
+        beside the title and a one-line description. Styles: .mm-pile / .mm-helps next to .mm-bc. */}
+    <section className="mm-pile">
+      <div className="mm-pile-in">
+        <div className="mm-pile-logo"><LogoMark/></div>
+        <div>
+          <h3>Your profile doesn't sit in a pile.</h3>
+          <p>Every week a CastSlate career check-in is written for your inbox about your profile, your real gaps and one concrete next step. Not a generic newsletter.</p>
         </div>
       </div>
     </section>
 
-    {/* ══════ HOW IT HELPS ══════ */}
-    <section style={{padding:"clamp(56px,8vw,88px) clamp(16px,5vw,40px)",maxWidth:1140,margin:"0 auto"}}>
-      <div style={{textAlign:"center",marginBottom:48}}>
+    <section className="mm-helps">
+      <div className="mm-helps-hd">
         <div className="section-label">How Manager Mode Helps You</div>
-        <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>Everything a talent manager does.<br/>Every single week.</h2>
+        <h2>Everything a talent manager does.<br/>Every single week.</h2>
       </div>
-      <div className="grid-2" style={{gap:20}}>
+      <div className="mm-helps-grid">
         {[
-          {icon:"mailbox",accent:"#3B6559",title:"Weekly Career Check-Ins",body:"Receive a private weekly CastSlate note with one clear step to improve your profile. No noise. No overwhelm. One thing you can actually do this week."},
-          {icon:"photo",accent:"#8A5A12",title:"Profile Improvement Guidance",body:"Get suggestions on your headshots, slate video, bio, resume, reel, skills, and overall profile presentation so casting directors see your best self."},
-          {icon:"target",accent:"#3B6559",title:"Casting Lane Suggestions",body:"See which role types may fit your current profile so you can submit more strategically and focus your energy where you're most likely to connect."},
-          {icon:"circle-check",accent:"#8A5A12",title:"One Task Per Week",body:"Manager Mode gives you one focused task each week instead of overwhelming you with a long checklist — because progress happens one step at a time."},
-          {icon:"map-pin",accent:"#C3653F",title:"Industry Events in NYC & LA",body:"Receive curated suggestions for in-person industry events — mixers, showcases, networking nights, and workshops in New York and Los Angeles where you can meet agents, managers, directors, and fellow actors. Because in-person connection still matters."},
-          {icon:"credit-card",accent:"#3B6559",title:"Actor Business Card",body:"Create a personalized actor business card with your headshot and a unique QR code linking directly to your CastSlate profile. Walk into any room with a card that opens your full profile in seconds."}
+          {icon:"mailbox",accent:"#3B6559",title:"Weekly Career Check-Ins",body:"One private note a week with one clear step to improve your profile."},
+          {icon:"photo",accent:"#8A5A12",title:"Profile Improvement Guidance",body:"Tips on your headshots, slate video, bio, resume, reel and skills."},
+          {icon:"target",accent:"#3B6559",title:"Casting Lane Suggestions",body:"See which role types fit your profile, so you submit smarter."},
+          {icon:"circle-check",accent:"#8A5A12",title:"One Task Per Week",body:"One focused task instead of a long checklist. Progress, one step at a time."},
+          {icon:"map-pin",accent:"#C3653F",title:"Industry Events in NYC & LA",body:"Curated mixers, showcases and workshops where you meet agents and managers."},
+          {icon:"credit-card",accent:"#3B6559",title:"Actor Business Card",body:"Your headshot and a QR code that opens your full profile in seconds."}
         ].map(({icon,accent,title,body})=>(
-          <div key={title} className="card" style={{padding:"28px 26px",display:"flex",flexDirection:"column",gap:14,borderLeft:`3px solid ${accent}`,transition:"all 0.25s"}}>
-            <div style={{width:44,height:44,borderRadius:12,background:`${accent}12`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}><Ico n={icon} s={22} style={{color:accent}}/></div>
-            <h3 style={{fontWeight:700,fontSize:16,letterSpacing:-0.3,margin:0,lineHeight:1.3}}>{title}</h3>
-            <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{body}</p>
+          <div key={title} className="mm-helps-card">
+            <div className="mm-helps-top">
+              <div className="mm-helps-ic" style={{background:`${accent}1A`,color:accent}}><Ico n={icon} s={22}/></div>
+              <h3>{title}</h3>
+            </div>
+            <p>{body}</p>
           </div>
         ))}
       </div>
