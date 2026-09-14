@@ -3184,7 +3184,8 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-outline-btn{background:transparent;color:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.28);}
 .mm-outline-btn:hover{background:rgba(255,255,255,.06);transform:translateY(-1px);}
 /* Manager Mode ending: full-width soft navy stripe (approved 2026-09-13). */
-.mm-end{background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);padding:clamp(56px,8vw,88px) clamp(20px,5vw,40px);text-align:center;color:#fff;}
+/* Break out of the page container to run edge to edge, the same way .site-footer does. */
+.mm-end{position:relative;width:100vw;left:50%;margin-left:-50vw;box-sizing:border-box;background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);padding:clamp(56px,8vw,88px) clamp(20px,5vw,40px);text-align:center;color:#fff;}
 .mm-end-logo{width:52px;height:52px;border-radius:14px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;overflow:hidden;}
 .mm-end-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(240,184,96,.12);border:1px solid rgba(240,184,96,.34);color:#FFE6C2;font-size:10.5px;font-weight:800;letter-spacing:1.8px;padding:6px 14px;border-radius:100px;margin-bottom:16px;text-transform:uppercase;}
 .mm-end-tag i{width:5px;height:5px;border-radius:50%;background:#F0B860;box-shadow:0 0 8px #F0B860;}
