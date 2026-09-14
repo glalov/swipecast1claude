@@ -3200,6 +3200,20 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-helps-card p{color:var(--t2);font-size:13.5px;line-height:1.55;margin:0;}
 @media (max-width:900px){.mm-helps-grid{grid-template-columns:1fr 1fr;}}
 @media (max-width:560px){.mm-helps-grid{grid-template-columns:1fr;}.mm-pile-in{align-items:flex-start;}.mm-helps-card{padding:14px 16px;}}
+/* Manager Mode industry events: editorial split (approved 2026-09-13). */
+.mm-ev{padding:clamp(36px,5vw,44px) clamp(16px,5vw,40px) clamp(40px,6vw,56px);max-width:1140px;margin:0 auto;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,5vw,64px);align-items:center;}
+.mm-ev-lead h2{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:clamp(28px,3.4vw,42px);letter-spacing:-.6px;line-height:1.08;margin:0 0 12px;}
+.mm-ev-lead p{margin:0 0 16px;color:var(--t2);font-size:15px;line-height:1.6;}
+.mm-ev-fine{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.55;color:var(--t3);}
+.mm-ev-fine .ti{color:#8A5A12;flex-shrink:0;margin-top:1px;}
+.mm-ev-fine b{color:var(--t1);font-weight:700;}
+.mm-ev-rows{border-top:1px solid #E3D9C8;min-width:0;}
+.mm-ev-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;padding:18px 0;border-bottom:1px solid #E3D9C8;}
+.mm-ev-ic{width:40px;height:40px;border-radius:11px;background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mm-ev-ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;display:block;}
+.mm-ev-row h3{font-weight:800;font-size:16.5px;margin:0 0 4px;}
+.mm-ev-row p{margin:0;font-size:14.5px;line-height:1.6;color:var(--t2);}
+@media (max-width:860px){.mm-ev{grid-template-columns:1fr;}}
 /* Manager Mode ending: full-width soft navy stripe (approved 2026-09-13). */
 /* Break out of the page container to run edge to edge, the same way .site-footer does. */
 .mm-end{position:relative;width:100vw;left:50%;margin-left:-50vw;box-sizing:border-box;background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);padding:clamp(56px,8vw,88px) clamp(20px,5vw,40px);text-align:center;color:#fff;}
@@ -9151,56 +9165,34 @@ function ManagerModePage({onNavigate,session,myProfile}){
     </section>
 
     {/* ══════ INDUSTRY EVENTS ══════ */}
-    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)",maxWidth:1140,margin:"0 auto"}}>
-      <div style={{textAlign:"center",marginBottom:48}}>
+    {/* Editorial split (approved 2026-09-13, round-2 demo "3"): serif headline + honest note on the
+        left, two ruled city rows on the right. No pills/tags. The note says plainly that events are
+        only suggested when a good one exists and are not guaranteed. Styles: .mm-ev* next to .mm-bc. */}
+    <section className="mm-ev">
+      <div className="mm-ev-lead">
         <div className="section-label">Industry Events</div>
-        <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>Get out of your apartment.<br/>Get in the room.</h2>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:560,margin:"14px auto 0"}}>Manager Mode also suggests in-person industry events in New York and Los Angeles — because the industry still runs on real-world relationships. Mixers, showcases, workshops, and networking nights where you can meet agents, managers, casting directors, producers, and fellow actors face to face.</p>
+        <h2>Get out of your apartment. Get in the room.</h2>
+        <p>The industry still runs on real relationships. Manager Mode points you to in-person events where you can meet agents, managers and casting directors.</p>
+        <div className="mm-ev-fine"><Ico n="calendar-event" s={17}/><div><b>Only when it's worth your time.</b> We add an event to your monthly check-in only when we find a good one near you. Some months there won't be one, and events aren't guaranteed.</div></div>
       </div>
-      <div className="grid-2 mm-card-outer" style={{gap:20,maxWidth:900,margin:"0 auto"}}>
+      <div className="mm-ev-rows">
         {[
-          {city:"New York",icon:"ny",color:"#1A1A2E",accent:"rgba(59,101,89,0.08)",border:"rgba(59,101,89,0.2)",events:["Industry mixers & networking nights","Actor showcases & casting showcases","SAG-AFTRA member events","Workshop series with working CDs","Off-Broadway opening night events","Commercial acting intensives"]},
-          {city:"Los Angeles",icon:"la",color:"#1A1A2E",accent:"rgba(59,101,89,0.07)",border:"rgba(59,101,89,0.2)",events:["Film festival industry parties","Pilot season prep events","Agent & manager meet-and-greets","TV studio open calls & showcases","Commercial union member events","Industry workshop weekends"]}
-        ].map(({city,icon,color,accent,border,events})=>{
-          const EventIcon = ({large=false}) => (
-            <svg viewBox="0 0 24 24" aria-hidden="true" style={{width:large?80:24,height:large?80:24,display:"block",fill:"none",stroke:"currentColor",strokeWidth:2.15,strokeLinecap:"round",strokeLinejoin:"round"}}>
-              {icon==="ny" ? <>
-                <path d="M7 19V9a5 5 0 0 1 10 0v10"/>
-                <path d="M5 19h14"/>
-                <path d="M9 12h6"/>
-                <path d="M9 16h6"/>
-              </> : <>
-                <path d="M4 18h16"/>
-                <path d="M7 18l5-12 5 12"/>
-                <path d="M9.2 13h5.6"/>
-                <path d="M12 6v12"/>
-              </>}
-            </svg>
-          );
-          return (
-          <div key={city} className="mm-event-card" style={{background:accent,border:`1px solid ${border}`,borderRadius:18,padding:"clamp(20px,3vw,28px)",overflow:"hidden",position:"relative"}}>
-            <div style={{position:"absolute",top:-20,right:-20,opacity:0.06,lineHeight:1,pointerEvents:"none",color}}><EventIcon large /></div>
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
-              <div className="mm-event-icon" style={{width:44,height:44,borderRadius:12,background:color,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><EventIcon /></div>
-              <div>
-                <h3 style={{fontWeight:800,fontSize:18,margin:0,letterSpacing:-0.4}}>{city}</h3>
-                <p style={{fontSize:12,color:"var(--t3)",margin:0,fontWeight:500}}>Monthly event suggestions</p>
-              </div>
+          {city:"New York",icon:"ny",text:"Industry mixers, actor showcases, SAG-AFTRA member events, workshops with working casting directors and Off-Broadway opening nights."},
+          {city:"Los Angeles",icon:"la",text:"Film festival industry parties, agent and manager meet-and-greets, pilot season prep, studio open calls and workshop weekends."}
+        ].map(({city,icon,text})=>(
+          <div key={city} className="mm-ev-row">
+            <div className="mm-ev-ic">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                {icon==="ny" ? <>
+                  <path d="M7 19V9a5 5 0 0 1 10 0v10"/><path d="M5 19h14"/><path d="M9 12h6"/><path d="M9 16h6"/>
+                </> : <>
+                  <path d="M4 18h16"/><path d="M7 18l5-12 5 12"/><path d="M9.2 13h5.6"/><path d="M12 6v12"/>
+                </>}
+              </svg>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {events.map(ev=>(
-                <div key={ev} style={{display:"flex",alignItems:"flex-start",gap:8}}>
-                  <span style={{color:color,fontWeight:800,fontSize:13,flexShrink:0,marginTop:1}}>→</span>
-                  <span style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.45}}>{ev}</span>
-                </div>
-              ))}
-            </div>
+            <div><h3>{city}</h3><p>{text}</p></div>
           </div>
-          );
-        })}
-      </div>
-      <div style={{textAlign:"center",marginTop:28}}>
-        <p style={{fontSize:13,color:"var(--t3)",lineHeight:1.6,maxWidth:520,margin:"0 auto"}}>Event suggestions are included in your one-time monthly CastSlate career check-in. Manager Mode recommends events relevant to your location, casting lane, and current career stage.</p>
+        ))}
       </div>
     </section>
 
