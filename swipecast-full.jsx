@@ -3214,6 +3214,10 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-ev-row h3{font-weight:800;font-size:16.5px;margin:0 0 4px;}
 .mm-ev-row p{margin:0;font-size:14.5px;line-height:1.6;color:var(--t2);}
 @media (max-width:860px){.mm-ev{grid-template-columns:1fr;}}
+/* Homepage Manager Mode teaser button: squared cream outline (approved 2026-09-13, option C). */
+.mm-teaser-btn{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#FFE6C2;padding:14px 24px;border:none;border-radius:8px;box-shadow:inset 0 0 0 1.5px rgba(255,230,194,.6);font-family:inherit;font-size:15px;font-weight:800;letter-spacing:.2px;cursor:pointer;white-space:nowrap;transition:background .15s,box-shadow .15s,transform .15s;}
+.mm-teaser-btn .ti{color:#F0B860;}
+.mm-teaser-btn:hover{background:rgba(255,230,194,.08);box-shadow:inset 0 0 0 1.5px rgba(255,230,194,.85);transform:translateY(-1px);}
 /* Manager Mode ending: full-width soft navy stripe (approved 2026-09-13). */
 /* Break out of the page container to run edge to edge, the same way .site-footer does. */
 .mm-end{position:relative;width:100vw;left:50%;margin-left:-50vw;box-sizing:border-box;background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);padding:clamp(56px,8vw,88px) clamp(20px,5vw,40px);text-align:center;color:#fff;}
@@ -22461,7 +22465,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(30px,4vw,46px)",lineHeight:1.12,letterSpacing:-0.1,marginBottom:16,color:"#fff"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 64%,rgba(240,184,96,0.40) 64%)"}}>talent manager</span> before you have a talent manager.</h2>
           <p style={{fontSize:"clamp(15px,1.8vw,18px)",lineHeight:1.65,color:"rgba(255,255,255,0.9)",marginBottom:28,maxWidth:520}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className="home-cta-primary" style={{padding:"16px 30px",fontSize:15}} onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode →</button>
+            <button className="mm-teaser-btn" onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode<Ico n="arrow-right" s={17}/></button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:22,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile improvement guidance","One focused task per week"].map(f=>(
