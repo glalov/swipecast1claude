@@ -2806,7 +2806,7 @@ body.sheet-push .b2t-cube{display:none;}
 .pt-tile{display:grid;place-items:center;flex:none;align-self:start;
          box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 14%,transparent);}
 @supports not (color:color-mix(in srgb,#000 1%,transparent)){.pt-tile{box-shadow:inset 0 0 0 1px rgba(26,26,46,.10);}}
-.cc-title{font-size:27px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:0;color:var(--t1);}
+.cc-title{font-size:24px;font-weight:700;letter-spacing:0;line-height:1.25;margin-bottom:0;color:var(--t1);}  /* option B, 2026-09-13: was 27px/800/-.5px (larger than Backstage 24px) */
 /* A live card's title opens the casting on its own — see the note in the card.
    On hover it says so: the ink deepens to teal and a 2px teal rule appears under
    the words. The rule is what makes it register — a shape arriving where there
@@ -3034,7 +3034,7 @@ body.sheet-push .b2t-cube{display:none;}
   .cd-side{padding:18px;}
 }
 @media(max-width:768px){
-  .cc-title{font-size:23px;}
+  .cc-title{font-size:21px;}
   .cc-tagline{font-size:15px;}
   .cc-chip{font-size:13px;padding:6px 11px;}
   .cc-pill .p2{font-size:12.5px;}
