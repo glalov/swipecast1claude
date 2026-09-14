@@ -106,7 +106,20 @@ Deno.serve(async (req: Request) => {
     const sessionId  = data.session_id as string ?? payload.session_id as string ?? "";
 
     if (vendorData && (event === "status.updated" || event === "data.updated" || status)) {
-      if (status === "APPROVED") {
+      // Didit sends exact, case-sensitive strings: "Approved", "Declined",
+      // "In Review", "Abandoned" (docs: integration/verification-statuses).
+      // Non-approval events from an older session (e.g. a first attempt that
+      // expired) must not overwrite the profile's current session.
+      let stale = false;
+      if (status !== "Approved") {
+        const { data: cur } = await adminClient.from("profiles")
+          .select("verification_session_id, verification_status").eq("id", vendorData).maybeSingle();
+        stale = !!(sessionId && cur?.verification_session_id && cur.verification_session_id !== sessionId);
+        if (status === "Abandoned" && cur?.verification_status === "verified") stale = true;
+      }
+      if (stale) {
+        console.log("Didit: ignored stale event", { vendorData, sessionId, status });
+      } else if (status === "Approved") {
         // ID PASSED — mark identity verified, but do NOT grant posting.
         // Posting requires an explicit admin "Allow posting" click.
         await adminClient.from("profiles").update({
@@ -120,7 +133,7 @@ Deno.serve(async (req: Request) => {
         }).eq("id", vendorData);
         console.log("Didit: ID verified (awaiting admin posting approval)", vendorData);
         await notifyIdVerified(adminClient, vendorData);
-      } else if (status === "DECLINED") {
+      } else if (status === "Declined") {
         await adminClient.from("profiles").update({
           verification_status:      "rejected",
           identity_verified:        false,
@@ -129,12 +142,22 @@ Deno.serve(async (req: Request) => {
           updated_at: now,
         }).eq("id", vendorData);
         console.log("Didit: declined", vendorData);
-      } else if (status === "REVIEW_NEEDED" || status === "PENDING") {
+      } else if (status === "In Review") {
         await adminClient.from("profiles").update({
           verification_status: "needs_review",
           updated_at: now,
         }).eq("id", vendorData);
         console.log("Didit: needs_review", vendorData);
+      } else if (status === "Abandoned") {
+        // User started but didn't finish — back to not_started so the
+        // dashboard offers "Start verification" again.
+        await adminClient.from("profiles").update({
+          verification_status: "not_started",
+          updated_at: now,
+        }).eq("id", vendorData);
+        console.log("Didit: abandoned", vendorData);
+      } else {
+        console.log("Didit: status not handled", { vendorData, status });
       }
       return json({ ok: true });
     }
