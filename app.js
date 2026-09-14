@@ -1219,7 +1219,7 @@ body.sheet-push .b2t-cube{display:none;}
 @media (max-width:900px){.mm-helps-grid{grid-template-columns:1fr 1fr;}}
 @media (max-width:560px){.mm-helps-grid{grid-template-columns:1fr;}.mm-pile-in{align-items:flex-start;}.mm-helps-card{padding:14px 16px;}}
 /* Manager Mode industry events: editorial split (approved 2026-09-13). */
-.mm-ev{padding:clamp(36px,5vw,44px) clamp(16px,5vw,40px) clamp(40px,6vw,56px);max-width:1140px;margin:0 auto;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,5vw,64px);align-items:center;}
+.mm-ev{padding:clamp(8px,1.2vw,16px) clamp(16px,5vw,40px) clamp(52px,7.2vw,80px);max-width:1140px;margin:0 auto;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,5vw,64px);align-items:center;}
 .mm-ev-lead h2{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:clamp(28px,3.4vw,42px);letter-spacing:-.6px;line-height:1.08;margin:0 0 12px;}
 .mm-ev-lead p{margin:0 0 16px;color:var(--t2);font-size:15px;line-height:1.6;}
 .mm-ev-fine{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.55;color:var(--t3);}
