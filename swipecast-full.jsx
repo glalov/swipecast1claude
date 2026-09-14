@@ -3142,8 +3142,8 @@ body.sheet-push .b2t-cube{display:none;}
 /* Breathing room between page content (e.g. pagination) and the Back-to-top bar. */
 .page-foot-gap{flex:none;height:clamp(40px,6vw,64px);}
 /* ─── Hairline seam guards for the dark run at the bottom of the landing page.
-   Four dark sections stack back to back — iOS teaser → Manager Mode → final CTA
-   → footer — and every one of them is sized with clamp()'d type, so each lands
+   Three dark sections stack back to back — iOS teaser → Manager Mode → footer
+   (the old final CTA was removed 2026-09-13; the footer's -1px shadow guards that seam) — and every one of them is sized with clamp()'d type, so each lands
    on a fractional CSS pixel (measured: .5469, .5391). At DPR 2–3 the top box's
    bottom edge and the next box's top edge round to different device-pixel rows,
    leaving one row of the cream .app background showing between them. It blinks
@@ -3168,7 +3168,6 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-stamp span{font-size:7.5px;font-weight:800;letter-spacing:1.4px;}
 .mm-stamp b{font-family:'Source Serif 4',Georgia,serif;font-size:17px;font-weight:800;margin-top:1px;}
 @media (max-width:420px){.mm-sheet-2{transform:translate(9px,-4px) rotate(2.6deg);}.mm-sheet-1{transform:translate(4px,-10px) rotate(1.2deg);}.mm-stamp{left:-6px;}}
-.lh-cta{margin-top:-1px;}  /* Manager Mode teaser → final CTA */
 /* Manager Mode: compact Actor Business Card section (approved 2026-09-13, soft navy). */
 .mm-bc{background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);color:#fff;border-radius:24px;position:relative;overflow:hidden;padding:clamp(28px,4vw,44px) clamp(20px,4vw,48px);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(24px,4vw,48px);align-items:center;}
 .mm-bc-text{min-width:0;}
@@ -4751,6 +4750,7 @@ button:disabled:hover .cs-tri{transform:none;}
 .mm-bc-btn .cs-tri,.mm-teaser-btn .cs-tri{color:#F0B860;}
 .mm-glass-btn .cs-tri{color:#FFE6C2;}
 .mm-end-btn .cs-tri{color:#8A5A12;}
+.home-cta-reassure{position:relative;margin:14px 0 0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:500;color:rgba(255,255,255,.82);}
 .home-cta-sub{position:relative;display:flex;justify-content:center;align-items:center;gap:18px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,.22);}
 .home-cta-sub .txt{display:flex;flex-direction:column;text-align:left;}
 .home-cta-sub .txt b{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:#fff;}
@@ -4765,19 +4765,20 @@ button:disabled:hover .cs-tri{transform:none;}
 .home-cta-construct:not(.is-in) .home-cta-eyebrow{transform:translateY(-150px);clip-path:inset(0 0 100% 0);}
 .home-cta-construct:not(.is-in) .home-cta-inner h2{transform:translateX(-280px);clip-path:inset(0 100% 0 0);}
 .home-cta-construct:not(.is-in) .home-cta-lede{transform:translateX(280px);clip-path:inset(0 0 0 100%);}
-.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-sub{transform:translateY(170px);clip-path:inset(100% 0 0 0);}
+.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-reassure,.home-cta-construct:not(.is-in) .home-cta-sub{transform:translateY(170px);clip-path:inset(100% 0 0 0);}
 .home-cta-construct.is-in .home-cta-inner{animation:homeCtaShellIn .82s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-eyebrow{animation:homeCtaDetailTop .56s .74s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-inner h2{animation:homeCtaDetailLeft .64s .86s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-lede{animation:homeCtaDetailRight .64s .98s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-primary{animation:homeCtaDetailBottom .62s 1.12s cubic-bezier(.18,.86,.24,1) backwards;}
+.home-cta-construct.is-in .home-cta-reassure{animation:homeCtaDetailBottom .64s 1.19s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-sub{animation:homeCtaDetailBottom .68s 1.26s cubic-bezier(.18,.86,.24,1) backwards;}
 @keyframes homeCtaShellIn{0%{transform:translateX(115%) scale(.98);}72%{transform:translateX(-10px) scale(.98);}100%{transform:translateX(0) scale(1);}}
 @keyframes homeCtaDetailTop{0%{transform:translateY(-150px);clip-path:inset(0 0 100% 0);}62%{transform:translateY(7px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
 @keyframes homeCtaDetailLeft{0%{transform:translateX(-280px);clip-path:inset(0 100% 0 0);}62%{transform:translateX(8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
 @keyframes homeCtaDetailRight{0%{transform:translateX(280px);clip-path:inset(0 0 0 100%);}62%{transform:translateX(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
 @keyframes homeCtaDetailBottom{0%{transform:translateY(170px);clip-path:inset(100% 0 0 0);}62%{transform:translateY(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
-@media (prefers-reduced-motion:reduce){.home-cta-construct:not(.is-in) .home-cta-inner,.home-cta-construct:not(.is-in) .home-cta-eyebrow,.home-cta-construct:not(.is-in) .home-cta-inner h2,.home-cta-construct:not(.is-in) .home-cta-lede,.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-sub{transform:none;clip-path:none;}.home-cta-construct.is-in .home-cta-inner,.home-cta-construct.is-in .home-cta-eyebrow,.home-cta-construct.is-in .home-cta-inner h2,.home-cta-construct.is-in .home-cta-lede,.home-cta-construct.is-in .home-cta-primary,.home-cta-construct.is-in .home-cta-sub{animation:none;}}
+@media (prefers-reduced-motion:reduce){.home-cta-construct:not(.is-in) .home-cta-inner,.home-cta-construct:not(.is-in) .home-cta-eyebrow,.home-cta-construct:not(.is-in) .home-cta-inner h2,.home-cta-construct:not(.is-in) .home-cta-lede,.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-reassure,.home-cta-construct:not(.is-in) .home-cta-sub{transform:none;clip-path:none;}.home-cta-construct.is-in .home-cta-inner,.home-cta-construct.is-in .home-cta-eyebrow,.home-cta-construct.is-in .home-cta-inner h2,.home-cta-construct.is-in .home-cta-lede,.home-cta-construct.is-in .home-cta-primary,.home-cta-construct.is-in .home-cta-reassure,.home-cta-construct.is-in .home-cta-sub{animation:none;}}
 .guarantee-construct{overflow:hidden;}
 .guarantee-card-construct{will-change:transform;}
 .guarantee-construct:not(.is-in) .guarantee-card-construct{transform:translateX(-115%) scale(.98);}
@@ -22429,6 +22430,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <h2>It's time to get seen.</h2>
         <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Premium plans start at $10.75/mo when you want more.</p>
         <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
+        <p className="home-cta-reassure"><Ico n="bolt" s={15}/>Profiles are free forever. No card needed.</p>
         <div className="home-cta-sub">
           <div className="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
           <button className="home-cta-outline" onClick={()=>onNavigate("register-cd")}>Post a Project</button>
@@ -22516,26 +22518,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </div>
       </div>
     </section>
-
-    {/* ───────── FINAL CTA — only for anonymous visitors. The platform is live;
-                the call to action is to start using it now, not to join a waitlist. ───────── */}
-    {!isLoggedIn&&<section className="lh-cta" style={{padding:"80px 40px",background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",color:"#fff",textAlign:"center"}}>
-      <div style={{maxWidth:640,margin:"0 auto"}}>
-        <div style={{display:"inline-block",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",color:"#fff",fontSize:11,fontWeight:700,letterSpacing:1,padding:"6px 14px",borderRadius:100,marginBottom:20,fontFamily:"'DM Sans',sans-serif"}}>LIVE NOW · FREE PROFILES</div>
-        <h2 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,lineHeight:1.1,marginBottom:16,color:"#fff"}}>Start applying today.<br/>Get cast.</h2>
-        <p style={{fontSize:16,lineHeight:1.6,color:"rgba(255,255,255,0.75)",marginBottom:32,maxWidth:500,margin:"0 auto 32px"}}>Create your profile for free and start browsing open castings right now. Choose a Premium plan from $10.75/month when you're ready to submit.</p>
-        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>onNavigate("auth-gate")} style={{padding:"14px 28px",borderRadius:100,border:"none",background:"#fff",color:"#1a1a2e",fontSize:14,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>Create My Profile <Tri/></button>
-          <button onClick={()=>onNavigate("search")} style={{padding:"14px 28px",borderRadius:100,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:0.3}}>Browse Castings</button>
-          <button onClick={()=>onNavigate("register-cd")} style={{padding:"14px 28px",borderRadius:100,border:"1px solid rgba(255,255,255,0.3)",background:"transparent",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",letterSpacing:0.3}}>Post a Casting</button>
-        </div>
-        <div style={{display:"flex",justifyContent:"center",gap:32,marginTop:40,fontSize:12,color:"rgba(255,255,255,0.6)",flexWrap:"wrap"}}>
-          <span><Ico n="lock" s={22}/> Your data, your control</span>
-          <span><Ico n="mail" s={22}/> We never sell emails</span>
-          <span><Ico n="bolt" s={22}/> Profiles are free forever</span>
-        </div>
-      </div>
-    </section>}
 
     <Footer onNavigate={onNavigate} noSpacer backToTop/>
   </>);
