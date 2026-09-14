@@ -591,6 +591,16 @@ function whenFontsReady(cb,max=900){
   const set=()=>document.documentElement.classList.toggle("cs-slow-net",!!(c.saveData||/2g/.test(c.effectiveType||"")));
   set();if(c.addEventListener)c.addEventListener("change",set);
 }catch(_){}})();
+// Scroll-idle flag. Starting a video decoder is the single most expensive thing a
+// phone does mid-scroll, so clips wait for a ~160ms pause in scrolling and start
+// then (window "cs:scroll-idle"). Pausing stays immediate.
+(function(){try{
+  let t=0;window.__csScrolling=false;
+  window.addEventListener("scroll",function(){
+    window.__csScrolling=true;clearTimeout(t);
+    t=setTimeout(function(){window.__csScrolling=false;try{window.dispatchEvent(new Event("cs:scroll-idle"));}catch(_){}},160);
+  },{passive:true});
+}catch(_){}})();
 // Rounded "play" triangle used as the forward arrow inside every CTA button.
 function Tri({style}){
   return <svg className="cs-tri" viewBox="0 0 12 14" aria-hidden="true" focusable="false" style={style}><path d="M2.2 1.1 10.6 6.2a.9.9 0 0 1 0 1.6L2.2 12.9A.9.9 0 0 1 .8 12.1V1.9A.9.9 0 0 1 2.2 1.1Z" fill="currentColor"/></svg>;
@@ -2012,7 +2022,7 @@ html{width:100%;max-width:100%;}
 body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;width:100%;max-width:100%;margin:0;display:flex;flex-direction:column;}
 #root{flex:1 1 auto;display:flex;flex-direction:column;min-height:100vh;width:100%;max-width:100%;}
 img,video,iframe{max-width:100%;}
-.app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;padding-top:var(--site-top-h,0px);}
+.app{min-height:100vh;background:var(--bg);display:flex;flex-direction:column;flex:1 1 auto;padding-top:var(--site-top-pad,var(--site-top-h,0px));}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* Hairline seam guard, same family as the one on the landing's dark run (see
@@ -3981,7 +3991,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    whose backdrop-filter already gave it a layer). Rounded bottom corners keep
    the overlay inside the card even when a composited layer escapes overflow. */
 .fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:3;transform:translateZ(0);-webkit-transform:translateZ(0);border-bottom-left-radius:18px;border-bottom-right-radius:18px;background:linear-gradient(180deg,rgba(8,8,16,0) 0%,rgba(8,8,16,.55) 55%,rgba(8,8,16,.88) 100%);}
-.fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);}
+.fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.26);}
 .fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);color:#fff;}
 .fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
 @media (max-width:768px){
@@ -6411,10 +6421,11 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       }
     }catch(_){}};
     const armTimer=setTimeout(()=>{ready=true;check();},700);
-    window.addEventListener('scroll',check,{passive:true});
+    let chkRaf=0;const checkSoon=()=>{if(!chkRaf)chkRaf=requestAnimationFrame(()=>{chkRaf=0;check();});};
+    window.addEventListener('scroll',checkSoon,{passive:true});
     window.addEventListener('resize',check);
     check();
-    return()=>{clearTimeout(armTimer);window.removeEventListener('scroll',check);window.removeEventListener('resize',check);};
+    return()=>{clearTimeout(armTimer);cancelAnimationFrame(chkRaf);window.removeEventListener('scroll',checkSoon);window.removeEventListener('resize',check);};
   },[]);
   // Safety net: always clear the animation class shortly after it starts, even if
   // the animationend event is missed (it can be, mid-scroll on mobile). Settling
@@ -21807,7 +21818,7 @@ function BufferedLoopVideo(props){
     // because Chrome pauses offscreen script-started muted videos and won't
     // resume them itself (it only does that for the autoplay attribute).
     let buffered=isTouch||v.readyState>=4, visible=false, fbT=0;
-    const sync=function(){ if(buffered&&visible&&!window.__scGliding){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } else if(!visible){ try{v.pause();}catch(_){} } };
+    const sync=function(){ if(buffered&&visible&&!window.__scGliding&&!window.__csScrolling){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } else if(!visible){ try{v.pause();}catch(_){} } };
     const onBuf=function(){ buffered=true; sync(); };
     v.addEventListener('canplaythrough',onBuf);
     // Fallback: some mobile browsers withhold canplaythrough under data-saver;
@@ -21845,13 +21856,14 @@ function BufferedLoopVideo(props){
     const onVis=function(){ if(!document.hidden) sync(); };
     document.addEventListener('visibilitychange',onVis);
     window.addEventListener('sc:glide-end',sync); // resume after a back-to-top flight froze video starts
+    window.addEventListener('cs:scroll-idle',sync); // start a clip that came into view mid-scroll
     // Self-healing: browsers quietly pause loops on their own (memory/power
     // pressure, brief tab switches). Any pause we didn't cause gets resumed,
     // so the loop never sits frozen while the user is looking at it.
     const onPause=function(){ if(visible&&buffered&&!window.__scGliding&&!document.hidden) setTimeout(sync,150); };
     v.addEventListener('pause',onPause);
     const guard=setInterval(function(){ if(visible&&buffered&&v.paused&&!window.__scGliding&&!document.hidden) sync(); },4000);
-    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); v.removeEventListener('pause',onPause); clearTimeout(fbT); clearInterval(guard); if(io)io.disconnect(); if(loadIo)loadIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync); };
+    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); v.removeEventListener('pause',onPause); clearTimeout(fbT); clearInterval(guard); if(io)io.disconnect(); if(loadIo)loadIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync);window.removeEventListener('cs:scroll-idle',sync); };
   },[]);
   // iOS Safari will not paint the `poster` attribute while preload="none" — it
   // waits for a load to be initiated, so the box sits EMPTY until the mp4 itself
@@ -21884,6 +21896,7 @@ function FormatReel(){
       attach(v);
       if(window.__scGliding)return; // back-to-top flight: don't spin up decoders mid-ascent; resynced on sc:glide-end
       v._csWanted=true;
+      if(window.__csScrolling)return; // started on cs:scroll-idle
       // Never start a clip until the browser can play it through without
       // stalling — on slow wifi the card holds its sharp poster instead of
       // showing a stuttering half-buffered video. Once buffered it loops
@@ -21891,7 +21904,7 @@ function FormatReel(){
       if(v.readyState>=4){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); return; }
       if(!v._csArmed){
         v._csArmed=true;
-        v.addEventListener('canplaythrough',function(){ if(v._csWanted){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } });
+        v.addEventListener('canplaythrough',function(){ if(v._csWanted&&!window.__csScrolling){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } });
       }
     }
     let io=null;
@@ -21912,6 +21925,8 @@ function FormatReel(){
     // cards are actually in view resume playing.
     const onGlideEnd=function(){ if(io) vids.forEach(function(v){ io.unobserve(v); io.observe(v); }); };
     window.addEventListener('sc:glide-end',onGlideEnd);
+    const onIdle=function(){ vids.forEach(function(v){ if(v._csWanted&&v.paused) play(v); }); };
+    window.addEventListener('cs:scroll-idle',onIdle);
     // Self-healing: our own pauses clear _csWanted first, so a pause event with
     // the flag still set is the BROWSER quietly stopping a clip (memory/power
     // pressure). Resume it — visible cards must never sit frozen.
@@ -21938,7 +21953,7 @@ function FormatReel(){
     } else {
       warm(); // no IntersectionObserver: behave exactly as before
     }
-    return function(){ if(io)io.disconnect(); if(warmIo)warmIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd); vids.forEach(function(v){ v.removeEventListener('pause',onPause); }); clearInterval(guard); };
+    return function(){ if(io)io.disconnect(); if(warmIo)warmIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd);window.removeEventListener('cs:scroll-idle',onIdle); vids.forEach(function(v){ v.removeEventListener('pause',onPause); }); clearInterval(guard); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
@@ -22237,25 +22252,23 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     return()=>io.disconnect();
   },[taglineOn]);
   const homeCtaRef=React.useRef(null);
-  const[homeCtaIn,setHomeCtaIn]=React.useState(false);
   React.useEffect(()=>{
     const el=homeCtaRef.current;
     if(!el)return;
-    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setHomeCtaIn(true);return;}
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){el.classList.add("is-in");return;}
     const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();whenFontsReady(()=>setHomeCtaIn(true));}});
+      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();whenFontsReady(()=>el.classList.add("is-in"));}});
     },{threshold:0.28,rootMargin:"0px 0px -10% 0px"});
     io.observe(el);
     return()=>io.disconnect();
   },[]);
   const guaranteeRef=React.useRef(null);
-  const[guaranteeIn,setGuaranteeIn]=React.useState(false);
   React.useEffect(()=>{
     const el=guaranteeRef.current;
     if(!el)return;
-    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setGuaranteeIn(true);return;}
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){el.classList.add("is-in");return;}
     const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();whenFontsReady(()=>setGuaranteeIn(true));}});
+      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();whenFontsReady(()=>el.classList.add("is-in"));}});
     },{threshold:0.32,rootMargin:"0px 0px -10% 0px"});
     io.observe(el);
     return()=>io.disconnect();
@@ -22359,7 +22372,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── THE GUARANTEE ───────── */}
-    <div ref={guaranteeRef} className={`guarantee-construct${guaranteeIn?" is-in":""}`} style={{maxWidth:880,margin:"24px auto 64px",padding:"0 24px"}}>
+    <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"24px auto 64px",padding:"0 24px"}}>
       <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
         {/* colorful glow blobs */}
         <span className="guarantee-glow-left" style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,138,139,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
@@ -22444,7 +22457,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── Home CTA card (warm teal block; full plans live on /pricing) ───────── */}
-    <section ref={homeCtaRef} className={`home-cta home-cta-construct${homeCtaIn?" is-in":""}`}>
+    <section ref={homeCtaRef} className="home-cta home-cta-construct">
       <div className="home-cta-inner">
         <span className="home-cta-blob b1"/><span className="home-cta-blob b2"/>
         <p className="home-cta-eyebrow"><span className="dot"/>Free to submit</p>
@@ -41505,12 +41518,23 @@ function App(){
   useLayoutEffect(()=>{
     const el=siteTopRef.current;
     if(!el)return;
-    const apply=()=>document.documentElement.style.setProperty("--site-top-h",el.offsetHeight+"px");
-    apply();
+    // The banner + marquee fold away on scroll by animating their height. Writing
+    // that height into .app padding every frame re-laid out the WHOLE page for the
+    // .42s fold and (iOS has no scroll anchoring) jumped the content under the
+    // visitor's finger. So: --site-top-pad (page offset) only ever takes the
+    // EXPANDED height, and both vars are written once the size has settled.
+    let tm=0;
+    const write=(first)=>{
+      const h=el.offsetHeight,st=document.documentElement.style;
+      st.setProperty("--site-top-h",h+"px");
+      if(first||!el.querySelector(".is-collapsed"))st.setProperty("--site-top-pad",h+"px");
+    };
+    const apply=()=>{clearTimeout(tm);tm=setTimeout(()=>write(false),460);};
+    write(true);
     let ro;
     if(typeof ResizeObserver!=="undefined"){ro=new ResizeObserver(apply);ro.observe(el);}
     window.addEventListener("resize",apply);
-    return()=>{if(ro)ro.disconnect();window.removeEventListener("resize",apply);};
+    return()=>{clearTimeout(tm);if(ro)ro.disconnect();window.removeEventListener("resize",apply);};
   },[page,isLoggedIn,myProfile?.user_type,myProfile?.membership_status]);
 
   // Show a soft shadow under the white nav only after scrolling a hair down;
