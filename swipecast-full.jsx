@@ -577,6 +577,20 @@ function Ico({n,s=22,style,...p}){
   return <i className={"ti ti-"+n} aria-hidden="true"
     style={{fontSize:(typeof s==="number"?s+"px":s),lineHeight:0,verticalAlign:"-0.15em",display:"inline-block",flexShrink:0,...style}} {...p}/>;
 }
+// Entrance animations start only once web fonts are in (or after a short cap), so a
+// late font swap can't re-lay text out halfway through a slide-in on slow wifi.
+function whenFontsReady(cb,max=900){
+  let done=false;const go=()=>{if(!done){done=true;cb();}};
+  try{if(document.fonts&&document.fonts.status!=="loaded"){document.fonts.ready.then(go);setTimeout(go,max);return;}}catch(_){}
+  go();
+}
+// Slow-network / data-saver flag (Chrome & Android expose navigator.connection; iOS
+// Safari does not). CSS under .cs-slow-net pauses purely decorative looping motion.
+(function(){try{
+  const c=navigator.connection;if(!c)return;
+  const set=()=>document.documentElement.classList.toggle("cs-slow-net",!!(c.saveData||/2g/.test(c.effectiveType||"")));
+  set();if(c.addEventListener)c.addEventListener("change",set);
+}catch(_){}})();
 // Rounded "play" triangle used as the forward arrow inside every CTA button.
 function Tri({style}){
   return <svg className="cs-tri" viewBox="0 0 12 14" aria-hidden="true" focusable="false" style={style}><path d="M2.2 1.1 10.6 6.2a.9.9 0 0 1 0 1.6L2.2 12.9A.9.9 0 0 1 .8 12.1V1.9A.9.9 0 0 1 2.2 1.1Z" fill="currentColor"/></svg>;
@@ -1990,10 +2004,6 @@ const BLOG_POSTS = [
 // STYLES
 // ═══════════════════════════════════════════
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#5F574C;--t3:#948B7C;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
@@ -2024,6 +2034,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav.scrolled{box-shadow:0 6px 18px -6px rgba(10,10,10,.16);}
 @media(max-width:900px){.nav.scrolled{box-shadow:0 5px 16px rgba(10,10,10,.15);}}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
+/* Fonts: loaded once by the head link in build-html.py (the duplicate CSS imports here re-fetched them mid-animation on slow wifi). */
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
 .logo-i svg{width:100%;height:100%;display:block;}
 /* Top-nav logo: a bit larger + a 3D "cube turn" spin once every 10s. */
@@ -2221,7 +2232,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .sw-btn.pass:hover{border-color:var(--red);background:rgba(214,59,59,0.07);transform:scale(1.1);}
 .sw-btn.save:hover{border-color:var(--blu);background:rgba(37,99,235,0.07);transform:scale(1.1);}
 .sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,0.07);transform:scale(1.1);}
-@keyframes sw-ring{0%,100%{box-shadow:0 0 0 0 rgba(99,91,255,0)}55%{box-shadow:0 0 0 10px rgba(99,91,255,0.22)}}
+@keyframes sw-ring{0%,100%{transform:scale(.9);opacity:0}55%{transform:scale(1);opacity:1}}
 /* Swipe-hint "travel flip" coin: glides left<->right while turning, and the face
    colour changes with direction (navy going left, amber going right). Travel and
    turn share one 2.8s clock so direction and colour never disagree. Both inner
@@ -2242,8 +2253,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @media(prefers-reduced-motion:reduce){.sw-hint-arrow .fc-travel,.sw-hint-arrow .fc-coin{animation:none;}}
 .sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
-.sw-btn.save{animation:sw-ring 2.8s ease-in-out infinite;color:var(--blu);}
-.sw-btn.save:hover{animation:none;}
+.sw-btn.save{position:relative;isolation:isolate;color:var(--blu);}
+.sw-btn.save::after{content:"";position:absolute;inset:-2px;border-radius:50%;box-shadow:0 0 0 10px rgba(99,91,255,0.22);z-index:-1;pointer-events:none;opacity:0;animation:sw-ring 2.8s ease-in-out infinite;}
+.sw-btn.save:hover::after{animation:none;opacity:0;}
 .sw-star-wrap{position:relative;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
 .sw-star-fill{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;animation:sw-star-fill 2.8s ease-in-out infinite;}
 .sw-star-glow{position:absolute;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle, rgba(99,91,255,.35) 0%, rgba(99,91,255,0) 72%);animation:sw-star-glow 2.8s ease-in-out infinite;pointer-events:none;}
@@ -2773,12 +2785,18 @@ body.sheet-push .b2t-cube{display:none;}
 /* Logged-out account CTA: one restrained invitation glow after auth resolves,
    then fully still. Transform-based emphasis never changes nav layout. */
 @keyframes joinFreeSoftInvitation{
-  0%,14%{transform:scale(1);box-shadow:0 4px 12px rgba(55,105,106,.16),0 0 0 0 rgba(79,138,139,.24);}
-  42%{transform:scale(1.035);box-shadow:0 7px 19px rgba(55,105,106,.24),0 0 0 9px rgba(79,138,139,.11);}
-  75%,100%{transform:scale(1);box-shadow:0 4px 12px rgba(55,105,106,.16),0 0 0 0 rgba(79,138,139,0);}
+  0%,14%{transform:scale(1);}
+  42%{transform:scale(1.035);}
+  75%,100%{transform:scale(1);}
 }
-.join-free-soft{animation:joinFreeSoftInvitation 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;transform-origin:center;}
-@media(prefers-reduced-motion:reduce){.join-free-soft{animation:none;}}
+@keyframes joinFreeSoftHalo{
+  0%,14%{transform:scale(.92);opacity:0;}
+  42%{transform:scale(1);opacity:1;}
+  75%,100%{transform:scale(1.02);opacity:0;}
+}
+.join-free-soft{position:relative;box-shadow:0 4px 12px rgba(55,105,106,.16);animation:joinFreeSoftInvitation 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;transform-origin:center;}
+.join-free-soft::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 7px 19px rgba(55,105,106,.10),0 0 0 9px rgba(79,138,139,.11);opacity:0;animation:joinFreeSoftHalo 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;}
+@media(prefers-reduced-motion:reduce){.join-free-soft,.join-free-soft::after{animation:none;}}
 @keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeIn .15s ease;}
 /* Right-anchored variant (mobile nav + mobile menu) — same look as desktop, but
@@ -4750,6 +4768,8 @@ button:disabled:hover .cs-tri{transform:none;}
 .mm-bc-btn .cs-tri,.mm-teaser-btn .cs-tri{color:#F0B860;}
 .mm-glass-btn .cs-tri{color:#FFE6C2;}
 .mm-end-btn .cs-tri{color:#8A5A12;}
+/* Slow network / data saver: pause decorative looping motion (never the nav logo, marquee or back-to-top cube). */
+.cs-slow-net .cls-featured-glow,.cs-slow-net .sw-btn.save::after,.cs-slow-net .landing-stat-live,.cs-slow-net .footer-cookie-card,.cs-slow-net .footer-cookie-card::before,.cs-slow-net .footer-cookie-card::after,.cs-slow-net .lang-toggle-btn{animation:none !important;}
 .home-cta-reassure{position:relative;margin:14px 0 0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:500;color:rgba(255,255,255,.82);}
 .home-cta-sub{position:relative;display:flex;justify-content:center;align-items:center;gap:18px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,.22);}
 .home-cta-sub .txt{display:flex;flex-direction:column;text-align:left;}
@@ -4762,10 +4782,10 @@ button:disabled:hover .cs-tri{transform:none;}
 .home-cta-blob.b2{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-110px;left:-40px;}
 .home-cta-construct{overflow:hidden;}
 .home-cta-construct:not(.is-in) .home-cta-inner{transform:translateX(115%) scale(.98);}
-.home-cta-construct:not(.is-in) .home-cta-eyebrow{transform:translateY(-150px);clip-path:inset(0 0 100% 0);}
-.home-cta-construct:not(.is-in) .home-cta-inner h2{transform:translateX(-280px);clip-path:inset(0 100% 0 0);}
-.home-cta-construct:not(.is-in) .home-cta-lede{transform:translateX(280px);clip-path:inset(0 0 0 100%);}
-.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-reassure,.home-cta-construct:not(.is-in) .home-cta-sub{transform:translateY(170px);clip-path:inset(100% 0 0 0);}
+.home-cta-construct:not(.is-in) .home-cta-eyebrow{transform:translateY(-150px);opacity:0;}
+.home-cta-construct:not(.is-in) .home-cta-inner h2{transform:translateX(-280px);opacity:0;}
+.home-cta-construct:not(.is-in) .home-cta-lede{transform:translateX(280px);opacity:0;}
+.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-reassure,.home-cta-construct:not(.is-in) .home-cta-sub{transform:translateY(170px);opacity:0;}
 .home-cta-construct.is-in .home-cta-inner{animation:homeCtaShellIn .82s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-eyebrow{animation:homeCtaDetailTop .56s .74s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-inner h2{animation:homeCtaDetailLeft .64s .86s cubic-bezier(.18,.86,.24,1) backwards;}
@@ -4774,18 +4794,18 @@ button:disabled:hover .cs-tri{transform:none;}
 .home-cta-construct.is-in .home-cta-reassure{animation:homeCtaDetailBottom .64s 1.19s cubic-bezier(.18,.86,.24,1) backwards;}
 .home-cta-construct.is-in .home-cta-sub{animation:homeCtaDetailBottom .68s 1.26s cubic-bezier(.18,.86,.24,1) backwards;}
 @keyframes homeCtaShellIn{0%{transform:translateX(115%) scale(.98);}72%{transform:translateX(-10px) scale(.98);}100%{transform:translateX(0) scale(1);}}
-@keyframes homeCtaDetailTop{0%{transform:translateY(-150px);clip-path:inset(0 0 100% 0);}62%{transform:translateY(7px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
-@keyframes homeCtaDetailLeft{0%{transform:translateX(-280px);clip-path:inset(0 100% 0 0);}62%{transform:translateX(8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
-@keyframes homeCtaDetailRight{0%{transform:translateX(280px);clip-path:inset(0 0 0 100%);}62%{transform:translateX(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
-@keyframes homeCtaDetailBottom{0%{transform:translateY(170px);clip-path:inset(100% 0 0 0);}62%{transform:translateY(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
-@media (prefers-reduced-motion:reduce){.home-cta-construct:not(.is-in) .home-cta-inner,.home-cta-construct:not(.is-in) .home-cta-eyebrow,.home-cta-construct:not(.is-in) .home-cta-inner h2,.home-cta-construct:not(.is-in) .home-cta-lede,.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-reassure,.home-cta-construct:not(.is-in) .home-cta-sub{transform:none;clip-path:none;}.home-cta-construct.is-in .home-cta-inner,.home-cta-construct.is-in .home-cta-eyebrow,.home-cta-construct.is-in .home-cta-inner h2,.home-cta-construct.is-in .home-cta-lede,.home-cta-construct.is-in .home-cta-primary,.home-cta-construct.is-in .home-cta-reassure,.home-cta-construct.is-in .home-cta-sub{animation:none;}}
+@keyframes homeCtaDetailTop{0%{transform:translateY(-150px);opacity:0;}35%{opacity:1;}62%{transform:translateY(7px);}100%{transform:translateY(0);opacity:1;}}
+@keyframes homeCtaDetailLeft{0%{transform:translateX(-280px);opacity:0;}35%{opacity:1;}62%{transform:translateX(8px);}100%{transform:translateX(0);opacity:1;}}
+@keyframes homeCtaDetailRight{0%{transform:translateX(280px);opacity:0;}35%{opacity:1;}62%{transform:translateX(-8px);}100%{transform:translateX(0);opacity:1;}}
+@keyframes homeCtaDetailBottom{0%{transform:translateY(170px);opacity:0;}35%{opacity:1;}62%{transform:translateY(-8px);}100%{transform:translateY(0);opacity:1;}}
+@media (prefers-reduced-motion:reduce){.home-cta-construct:not(.is-in) .home-cta-inner,.home-cta-construct:not(.is-in) .home-cta-eyebrow,.home-cta-construct:not(.is-in) .home-cta-inner h2,.home-cta-construct:not(.is-in) .home-cta-lede,.home-cta-construct:not(.is-in) .home-cta-primary,.home-cta-construct:not(.is-in) .home-cta-reassure,.home-cta-construct:not(.is-in) .home-cta-sub{transform:none;clip-path:none;opacity:1;}.home-cta-construct.is-in .home-cta-inner,.home-cta-construct.is-in .home-cta-eyebrow,.home-cta-construct.is-in .home-cta-inner h2,.home-cta-construct.is-in .home-cta-lede,.home-cta-construct.is-in .home-cta-primary,.home-cta-construct.is-in .home-cta-reassure,.home-cta-construct.is-in .home-cta-sub{animation:none;}}
 .guarantee-construct{overflow:hidden;}
 .guarantee-card-construct{will-change:transform;}
 .guarantee-construct:not(.is-in) .guarantee-card-construct{transform:translateX(-115%) scale(.98);}
-.guarantee-construct:not(.is-in) .guarantee-glow-left,.guarantee-construct:not(.is-in) .guarantee-title{transform:translateX(-220px);clip-path:inset(0 100% 0 0);}
-.guarantee-construct:not(.is-in) .guarantee-glow-right,.guarantee-construct:not(.is-in) .guarantee-rule{transform:translateX(220px);clip-path:inset(0 0 0 100%);}
-.guarantee-construct:not(.is-in) .guarantee-badge{transform:translateY(-120px);clip-path:inset(0 0 100% 0);}
-.guarantee-construct:not(.is-in) .guarantee-copy{transform:translateY(140px);clip-path:inset(100% 0 0 0);}
+.guarantee-construct:not(.is-in) .guarantee-glow-left,.guarantee-construct:not(.is-in) .guarantee-title{transform:translateX(-220px);opacity:0;}
+.guarantee-construct:not(.is-in) .guarantee-glow-right,.guarantee-construct:not(.is-in) .guarantee-rule{transform:translateX(220px);opacity:0;}
+.guarantee-construct:not(.is-in) .guarantee-badge{transform:translateY(-120px);opacity:0;}
+.guarantee-construct:not(.is-in) .guarantee-copy{transform:translateY(140px);opacity:0;}
 .guarantee-construct.is-in .guarantee-card-construct{animation:guaranteeCardLeftIn .76s cubic-bezier(.18,.86,.24,1) backwards;}
 .guarantee-construct.is-in .guarantee-glow-left{animation:guaranteeDetailLeft .62s .65s cubic-bezier(.18,.86,.24,1) backwards;}
 .guarantee-construct.is-in .guarantee-glow-right{animation:guaranteeDetailRight .62s .72s cubic-bezier(.18,.86,.24,1) backwards;}
@@ -4794,11 +4814,11 @@ button:disabled:hover .cs-tri{transform:none;}
 .guarantee-construct.is-in .guarantee-rule{animation:guaranteeDetailRight .62s 1.04s cubic-bezier(.18,.86,.24,1) backwards;}
 .guarantee-construct.is-in .guarantee-copy{animation:guaranteeDetailBottom .66s 1.16s cubic-bezier(.18,.86,.24,1) backwards;}
 @keyframes guaranteeCardLeftIn{0%{transform:translateX(-115%) scale(.98);}72%{transform:translateX(10px) scale(.98);}100%{transform:translateX(0) scale(1);}}
-@keyframes guaranteeDetailLeft{0%{transform:translateX(-220px);clip-path:inset(0 100% 0 0);}62%{transform:translateX(8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
-@keyframes guaranteeDetailRight{0%{transform:translateX(220px);clip-path:inset(0 0 0 100%);}62%{transform:translateX(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateX(0);clip-path:inset(0 0 0 0);}}
-@keyframes guaranteeDetailTop{0%{transform:translateY(-120px);clip-path:inset(0 0 100% 0);}62%{transform:translateY(7px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
-@keyframes guaranteeDetailBottom{0%{transform:translateY(140px);clip-path:inset(100% 0 0 0);}62%{transform:translateY(-8px);clip-path:inset(0 0 0 0);}100%{transform:translateY(0);clip-path:inset(0 0 0 0);}}
-@media (prefers-reduced-motion:reduce){.guarantee-construct:not(.is-in) .guarantee-card-construct,.guarantee-construct:not(.is-in) .guarantee-glow-left,.guarantee-construct:not(.is-in) .guarantee-glow-right,.guarantee-construct:not(.is-in) .guarantee-badge,.guarantee-construct:not(.is-in) .guarantee-title,.guarantee-construct:not(.is-in) .guarantee-rule,.guarantee-construct:not(.is-in) .guarantee-copy{transform:none;clip-path:none;}.guarantee-construct.is-in .guarantee-card-construct,.guarantee-construct.is-in .guarantee-glow-left,.guarantee-construct.is-in .guarantee-glow-right,.guarantee-construct.is-in .guarantee-badge,.guarantee-construct.is-in .guarantee-title,.guarantee-construct.is-in .guarantee-rule,.guarantee-construct.is-in .guarantee-copy{animation:none;}}
+@keyframes guaranteeDetailLeft{0%{transform:translateX(-220px);opacity:0;}35%{opacity:1;}62%{transform:translateX(8px);}100%{transform:translateX(0);opacity:1;}}
+@keyframes guaranteeDetailRight{0%{transform:translateX(220px);opacity:0;}35%{opacity:1;}62%{transform:translateX(-8px);}100%{transform:translateX(0);opacity:1;}}
+@keyframes guaranteeDetailTop{0%{transform:translateY(-120px);opacity:0;}35%{opacity:1;}62%{transform:translateY(7px);}100%{transform:translateY(0);opacity:1;}}
+@keyframes guaranteeDetailBottom{0%{transform:translateY(140px);opacity:0;}35%{opacity:1;}62%{transform:translateY(-8px);}100%{transform:translateY(0);opacity:1;}}
+@media (prefers-reduced-motion:reduce){.guarantee-construct:not(.is-in) .guarantee-card-construct,.guarantee-construct:not(.is-in) .guarantee-glow-left,.guarantee-construct:not(.is-in) .guarantee-glow-right,.guarantee-construct:not(.is-in) .guarantee-badge,.guarantee-construct:not(.is-in) .guarantee-title,.guarantee-construct:not(.is-in) .guarantee-rule,.guarantee-construct:not(.is-in) .guarantee-copy{transform:none;clip-path:none;opacity:1;}.guarantee-construct.is-in .guarantee-card-construct,.guarantee-construct.is-in .guarantee-glow-left,.guarantee-construct.is-in .guarantee-glow-right,.guarantee-construct.is-in .guarantee-badge,.guarantee-construct.is-in .guarantee-title,.guarantee-construct.is-in .guarantee-rule,.guarantee-construct.is-in .guarantee-copy{animation:none;}}
 @media(max-width:640px){
   .home-cta-sub{flex-direction:column;gap:14px;}
   .home-cta-sub .txt{text-align:center;align-items:center;}
@@ -21963,6 +21983,7 @@ function LandingStats(){
   const[values,setValues]=React.useState(()=>stats.map(()=>0));
   const[spinIndex,setSpinIndex]=React.useState(-1);
   const wrapRef=React.useRef(null);
+  const valueRefs=React.useRef([]);
   React.useEffect(()=>{
     const el=wrapRef.current;
     if(!el)return;
@@ -21985,7 +22006,7 @@ function LandingStats(){
       const tick=(now)=>{
         const raw=Math.min((now-start)/duration,1);
         const eased=1-Math.pow(1-raw,3);
-        setValues(stats.map(s=>s.target*eased));
+        valueRefs.current.forEach((n,i)=>{if(n)n.textContent=format(stats[i],stats[i].target*eased);});
         if(raw<1)raf=requestAnimationFrame(tick);
         else setValues(stats.map(s=>s.target));
       };
@@ -21993,7 +22014,7 @@ function LandingStats(){
     };
     if(!("IntersectionObserver" in window)){run();return()=>cancelAnimationFrame(raf);}
     const io=new IntersectionObserver(entries=>{
-      entries.forEach(e=>{if(e.isIntersecting){run();io.disconnect();}});
+      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();whenFontsReady(run);}});
     },{threshold:.45});
     io.observe(el);
     return()=>{io.disconnect();cancelAnimationFrame(raf);};
@@ -22022,7 +22043,7 @@ function LandingStats(){
     <div className="landing-stats-live" ref={wrapRef}>
       {stats.map((stat,i)=>(
         <div key={stat.label} className={`landing-stat-live ${active?"is-on":""} ${spinIndex===i?"spin-once":""}`}>
-          <div className="landing-stat-value">{format(stat,values[i])}</div>
+          <div className="landing-stat-value" ref={n=>{valueRefs.current[i]=n;}}>{format(stat,values[i])}</div>
           <div className="landing-stat-pulse"><span/></div>
           <div className="landing-stat-label">{stat.label}</div>
         </div>
@@ -22222,7 +22243,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     if(!el)return;
     if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setHomeCtaIn(true);return;}
     const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting){setHomeCtaIn(true);io.disconnect();}});
+      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();whenFontsReady(()=>setHomeCtaIn(true));}});
     },{threshold:0.28,rootMargin:"0px 0px -10% 0px"});
     io.observe(el);
     return()=>io.disconnect();
@@ -22234,7 +22255,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     if(!el)return;
     if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){setGuaranteeIn(true);return;}
     const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting){setGuaranteeIn(true);io.disconnect();}});
+      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();whenFontsReady(()=>setGuaranteeIn(true));}});
     },{threshold:0.32,rootMargin:"0px 0px -10% 0px"});
     io.observe(el);
     return()=>io.disconnect();
