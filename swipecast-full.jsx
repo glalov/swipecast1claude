@@ -8928,6 +8928,16 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
           </div>
           <div style={{fontSize:fs(9,7.5),color:"#8E8EA0",flexShrink:0,whiteSpace:"nowrap"}}>Today</div>
         </div>
+        {/* Profile check (added 2026-09-13): the one unique idea from the removed "Sample weekly
+            check-in" section, showing that Manager Mode reads the actor's profile. */}
+        <div className="mm-live-pcheck" style={{padding:pd("9px 18px 11px","7px 13px 9px"),borderBottom:"1px solid #EDEDF0"}}>
+          <div style={{fontSize:fs(8.5,7),fontWeight:800,letterSpacing:0.9,textTransform:"uppercase",color:"#8A5A12",marginBottom:pd(6,5)}}>Profile check</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:mobile?4:5}}>
+            {[["Headshot",true],["Bio",true],["Resume",true],["Skills",true],["Slate video",false],["Reel",false]].map(([l,ok])=>(
+              <span key={l} style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:fs(10,8.5),fontWeight:700,padding:pd("3px 8px","2px 6px"),borderRadius:6,background:ok?"#EEF4F0":"#FBEFE9",color:ok?"#2F5B52":"#A5502D",border:`1px solid ${ok?"#CFE0D6":"#F0CDBE"}`,whiteSpace:"nowrap"}}><Ico n={ok?"check":"alert-circle"} s={mobile?10:12}/>{l}</span>
+            ))}
+          </div>
+        </div>
         <div style={{padding:pd("16px 18px","11px 13px")}}>
           <div className="mm-live-message" style={{fontSize:fs(12,9.5),color:"#1A1A2E",lineHeight:1.65,marginBottom:pd(12,8),fontWeight:400,minHeight:mobile?80:70}}>
             {MM_BODY_LINES.map((line,i)=>(
@@ -9021,7 +9031,6 @@ function ManagerModePage({onNavigate,session,myProfile}){
     </svg>
   );
 
-  const ACTOR_PHOTO="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&h=480&q=80";
   const CARD_PHOTO="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=220&h=280&q=80";
 
 
@@ -9119,47 +9128,6 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.65,margin:0}}>{body}</p>
           </div>
         ))}
-      </div>
-    </section>
-
-    {/* ══════ SAMPLE CHECK-IN ══════ */}
-    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)",maxWidth:1140,margin:"0 auto"}}>
-      <div style={{textAlign:"center",marginBottom:34}}>
-        <div className="section-label">Sample Weekly Check-In</div>
-        <h2 style={{fontWeight:800,fontSize:"clamp(24px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08}}>See what lands in your inbox.</h2>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:520,margin:"14px auto 0"}}>Every week, your private CastSlate career note arrives with personalized guidance and one focused task — written specifically for your profile.</p>
-      </div>
-
-      {/* Actor profile card with real photo */}
-      <div className="mm-card-outer" style={{maxWidth:700,margin:"0 auto",background:"#fff",border:"1px solid var(--bdr)",borderRadius:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(26,26,46,0.07)"}}>
-        <div style={{background:"linear-gradient(135deg,#1A1A2E,#22223A)",padding:"14px 20px",display:"flex",alignItems:"center",gap:8}}>
-          <span style={{display:"block",width:16,height:16,color:"#fff",flexShrink:0}}><LogoMark/></span>
-          <span style={{color:"rgba(255,255,255,0.7)",fontSize:12,fontWeight:600,letterSpacing:0.3}}>CastSlate — Manager Mode Profile View</span>
-        </div>
-        <div style={{padding:"clamp(16px,3vw,28px)",display:"flex",gap:"clamp(16px,3vw,24px)",alignItems:"flex-start",flexWrap:"wrap"}}>
-          <div style={{flexShrink:0}}>
-            <img src={ACTOR_PHOTO} alt="Riley Morse — Actor Profile" style={{width:88,height:108,borderRadius:12,objectFit:"cover",objectPosition:"center top",display:"block",boxShadow:"0 4px 16px rgba(26,26,46,0.15)"}} onError={e=>{e.target.style.display="none";e.target.nextSibling.style.display="flex";}} />
-            <div style={{width:88,height:108,borderRadius:12,background:"linear-gradient(135deg,#1A1A2E,#2D2D44)",display:"none",alignItems:"center",justifyContent:"center",fontSize:32}}><Ico n="masks-theater" s={22}/></div>
-          </div>
-          <div style={{flex:1,minWidth:200}}>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6,flexWrap:"wrap"}}>
-              <h4 style={{fontSize:17,fontWeight:800,margin:0,letterSpacing:-0.4}}>Riley Morse</h4>
-              <div style={{background:"rgba(27,135,62,0.1)",border:"1px solid rgba(27,135,62,0.3)",color:"var(--grn)",fontSize:10,fontWeight:800,padding:"2px 9px",borderRadius:100,letterSpacing:0.6,textTransform:"uppercase"}}>Premium</div>
-            </div>
-            <p style={{color:"var(--t2)",fontSize:13,margin:"0 0 14px",lineHeight:1.45}}>Actor · New York · Commercial · Young Professional · SAG-AFTRA Eligible</p>
-            <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:14}}>
-              {[{label:"Headshot",ok:true},{label:"Slate Video",ok:false},{label:"Bio",ok:true},{label:"Resume",ok:true},{label:"Reel",ok:false},{label:"Skills",ok:true}].map(({label,ok})=>(
-                <div key={label} style={{display:"flex",alignItems:"center",gap:4,background:ok?"rgba(27,135,62,0.07)":"rgba(214,59,59,0.07)",border:`1px solid ${ok?"rgba(27,135,62,0.22)":"rgba(214,59,59,0.22)"}`,borderRadius:6,padding:"3px 9px",fontSize:11,color:ok?"var(--grn)":"var(--red)",fontWeight:700}}>
-                  <span style={{fontSize:10}}>{ok?"":"!"}</span>{label}
-                </div>
-              ))}
-            </div>
-            <div style={{background:"rgba(59,101,89,0.05)",border:"1px solid rgba(59,101,89,0.15)",borderRadius:10,padding:"10px 14px"}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#3B6559",letterSpacing:0.6,textTransform:"uppercase",marginBottom:4}}>This week's Manager Mode note</div>
-              <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.55,margin:0,fontStyle:"italic"}}>"Riley, your headshot is working well. Your next step is to record a 7-second slate video — it will significantly strengthen your profile for commercial and young professional submissions."</p>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
