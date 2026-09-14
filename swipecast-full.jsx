@@ -3173,7 +3173,29 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-bc-tile{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;flex-shrink:0;color:#F0B860;}
 .mm-bc-feat b{display:block;font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;}
 .mm-bc-feat span{display:block;font-size:12.5px;color:rgba(255,255,255,.72);line-height:1.45;}
-.mm-bc-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:100px;background:#F0B860;color:#1A1A2E;font-size:14px;font-weight:800;letter-spacing:.3px;border:none;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px -6px rgba(240,184,96,.55);font-family:inherit;}
+.mm-bc-btn{display:inline-flex;align-items:center;gap:10px;background:none;border:none;border-bottom:2px solid #F0B860;border-radius:0;padding:6px 0;color:#FFE6C2;font-size:15px;font-weight:800;letter-spacing:.2px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:gap .15s,color .15s;}
+.mm-bc-btn .ti{color:#F0B860;}
+.mm-bc-btn:hover{gap:14px;color:#fff;}
+/* Manager Mode hero: squared frosted-glass primary + squared outline secondary (approved 2026-09-13). */
+.mm-glass-btn,.mm-outline-btn{display:inline-flex;align-items:center;gap:10px;padding:15px 24px;border-radius:8px;font-size:14px;font-weight:800;letter-spacing:.2px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:transform .15s,background .15s;}
+.mm-glass-btn{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.4);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);}
+.mm-glass-btn .ti{color:#FFE6C2;}
+.mm-glass-btn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px);}
+.mm-outline-btn{background:transparent;color:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.28);}
+.mm-outline-btn:hover{background:rgba(255,255,255,.06);transform:translateY(-1px);}
+/* Manager Mode ending: full-width soft navy stripe (approved 2026-09-13). */
+.mm-end{background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#26273F 100%);padding:clamp(56px,8vw,88px) clamp(20px,5vw,40px);text-align:center;color:#fff;}
+.mm-end-logo{width:52px;height:52px;border-radius:14px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;overflow:hidden;}
+.mm-end-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(240,184,96,.12);border:1px solid rgba(240,184,96,.34);color:#FFE6C2;font-size:10.5px;font-weight:800;letter-spacing:1.8px;padding:6px 14px;border-radius:100px;margin-bottom:16px;text-transform:uppercase;}
+.mm-end-tag i{width:5px;height:5px;border-radius:50%;background:#F0B860;box-shadow:0 0 8px #F0B860;}
+.mm-end h2{font-weight:800;font-size:clamp(26px,3.4vw,42px);letter-spacing:-1.3px;line-height:1.06;margin:0 auto 26px;color:#fff;max-width:760px;text-wrap:balance;}
+.mm-end-checks{display:flex;justify-content:center;gap:10px 18px;flex-wrap:wrap;margin:0 auto 28px;max-width:760px;}
+.mm-end-checks div{display:flex;align-items:center;gap:6px;font-size:13.5px;color:rgba(255,255,255,.9);}
+.mm-end-checks .ti{color:#F0B860;}
+.mm-end-btn{display:inline-flex;align-items:center;gap:10px;background:#FFF6E6;color:#1A1A2E;padding:17px 34px;border-radius:14px;border:none;font-size:15px;font-weight:800;letter-spacing:.2px;cursor:pointer;font-family:inherit;box-shadow:0 0 0 6px rgba(255,246,230,.12);transition:transform .15s,box-shadow .15s;}
+.mm-end-btn .ti{color:#8A5A12;}
+.mm-end-btn:hover{transform:translateY(-1px);box-shadow:0 0 0 8px rgba(255,246,230,.16);}
+@media (max-width:600px){.mm-end-br{display:none;}}
 .mm-bc-cardcol{display:flex;flex-direction:column;align-items:center;min-width:0;}
 .agdc.mm-bc-card{--agdcw:420px;max-width:100%;transform:rotate(-2.5deg);box-shadow:0 18px 40px -12px rgba(0,0,0,.45);}
 .mm-bc-note{font-size:11px;color:rgba(255,255,255,.5);text-align:center;line-height:1.5;margin:10px 0 0;}
@@ -9023,8 +9045,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
           <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>CastSlate becomes your talent manager before you have a talent manager.</h1>
           <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>CastSlate doesn't just help actors find auditions. It helps actors become more castable.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className="btn-amber-hover" style={{padding:"14px 28px",fontSize:14,background:"#F0B860",color:"#1A1A2E",borderRadius:100,fontWeight:800,letterSpacing:0.3,border:"none",cursor:"pointer",boxShadow:"0 6px 20px -6px rgba(240,184,96,0.55)"}} onClick={()=>onNavigate("membership")}>Unlock Manager Mode</button>
-            <button style={{padding:"14px 28px",fontSize:14,background:"transparent",color:"rgba(255,255,255,0.82)",borderRadius:100,fontWeight:700,letterSpacing:0.3,border:"1px solid rgba(255,255,255,0.28)",cursor:"pointer"}} onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
+            <button className="mm-glass-btn" onClick={()=>onNavigate("membership")}>Unlock Manager Mode<Ico n="arrow-right" s={16}/></button>
+            <button className="mm-outline-btn" onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
             {["Weekly career check-ins","Profile guidance","One task per week"].map(f=>(
@@ -9218,7 +9240,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
                 </div>
               ))}
             </div>
-            <button className="btn-amber-hover mm-bc-btn" onClick={cardCTA}>{cardCTALabel}</button>
+            <button className="mm-bc-btn" onClick={cardCTA}>{cardCTALabel}<Ico n="arrow-right" s={16}/></button>
           </div>
           <div className="mm-bc-cardcol">
             <AgdCard k="mm-bc-card" c={{name:"Maya Reynolds",head:"Actor · Film & TV",loc:"New York / Los Angeles",slug:"maya-reynolds",tags:["Drama","Comedy","Commercial"],img:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=420&h=560&q=80",pos:"center 20%"}}/>
@@ -9229,28 +9251,19 @@ function ManagerModePage({onNavigate,session,myProfile}){
     </section>
 
     {/* ══════ INCLUDED WITH PREMIUM ══════ */}
-    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,80px)",maxWidth:860,margin:"0 auto",boxSizing:"border-box"}}>
-      <div style={{background:"radial-gradient(ellipse 55% 60% at 50% -10%,rgba(240,184,96,0.16) 0%,transparent 70%),linear-gradient(145deg,#1A1A2E 0%,#202038 100%)",borderRadius:20,padding:"clamp(28px,5vw,56px) clamp(18px,4vw,48px)",textAlign:"center",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundImage:"none",pointerEvents:"none"}}/>
-        <div style={{position:"relative"}}>
-          <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>
-            <div style={{width:52,height:52,background:"rgba(255,255,255,0.08)",borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid rgba(255,255,255,0.14)",color:"#fff",overflow:"hidden"}}>
-              <LogoMark/>
-            </div>
-          </div>
-          <div style={{display:"inline-block",background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.14)",color:"rgba(255,255,255,0.8)",fontSize:10,fontWeight:800,letterSpacing:2,padding:"5px 14px",borderRadius:100,marginBottom:18,textTransform:"uppercase"}}>Included With Premium</div>
-          <h2 style={{fontWeight:800,fontSize:"clamp(22px,3.2vw,38px)",letterSpacing:-1.2,lineHeight:1.08,marginBottom:14,color:"#fff"}}>Manager Mode is included with<br/>CastSlate Premium.</h2>
-          <p style={{fontSize:"clamp(13px,1.7vw,16px)",lineHeight:1.7,color:"rgba(255,255,255,0.65)",maxWidth:600,margin:"0 auto 28px"}}>Premium members receive weekly CastSlate career check-ins, profile improvement notes, casting lane suggestions, focused weekly tasks, industry event recommendations in NYC and LA, and a personalized actor business card with a unique QR code linking directly to their CastSlate profile.</p>
-          <div style={{display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",marginBottom:32}}>
-            {["Weekly career check-ins","Profile improvement notes","Casting lane suggestions","One focused task/week","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
-              <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:13,color:"rgba(255,255,255,0.78)"}}>
-                <span style={{color:"#F0B860",fontWeight:800,fontSize:14}}><Ico n="check" s={24}/></span>{f}
-              </div>
-            ))}
-          </div>
-          <button className="btn-amber-hover" style={{padding:"15px 34px",borderRadius:100,background:"#F0B860",color:"#1A1A2E",fontSize:14,fontWeight:800,border:"none",cursor:"pointer",letterSpacing:0.3,boxShadow:"0 6px 20px -6px rgba(240,184,96,0.55)"}} onClick={()=>onNavigate("membership")}>Upgrade to Premium</button>
-        </div>
+    {/* Full-width soft navy stripe (approved 2026-09-13), replacing a second boxed navy card that
+        read as a repeat of the business card section right above it. The paragraph that restated
+        the six checks was dropped. Styles: .mm-end* next to .mm-bc in the global CSS. */}
+    <section className="mm-end">
+      <div className="mm-end-logo"><LogoMark/></div>
+      <span className="mm-end-tag"><i/>Included With Premium</span>
+      <h2>Manager Mode is included with<br className="mm-end-br"/> CastSlate Premium.</h2>
+      <div className="mm-end-checks">
+        {["Weekly career check-ins","Profile improvement notes","Casting lane suggestions","One focused task/week","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
+          <div key={f}><Ico n="check" s={20}/>{f}</div>
+        ))}
       </div>
+      <button className="mm-end-btn" onClick={()=>onNavigate("membership")}>Upgrade to Premium<Ico n="arrow-right" s={16}/></button>
     </section>
 
     {/* The Manager Mode / Business Card / event-suggestion disclaimer that used
