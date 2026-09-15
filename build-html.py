@@ -887,7 +887,7 @@ ROUTES = [
     ("browse-castings.html",  "/browse-castings", "Browse Castings", "Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."),
     ("pricing.html",          "/pricing",         "Pricing", "CastSlate is free forever for actors. Upgrade to Premium from $10.75/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
     ("classes.html",          "/classes",         "Acting Classes", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
-    ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit", "Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."),
+    ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit", "There's no secret actor toolkit — just talent, and the right places to be found. Find agencies, apply to castings that fit, and run your own career with CastSlate."),
     ("resources.html",        "/resources",       "Resources", "Guides and resources for actors and casting directors on the CastSlate platform."),
     ("trust-safety.html",     "/trust-safety",    "Trust & Safety", "CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."),
     ("pay-talent.html",       "/pay-talent",      "Pay Talent", "Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."),

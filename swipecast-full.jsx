@@ -10132,13 +10132,18 @@ function PayTalentPage({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: ACTOR TOOLKIT
 // ═══════════════════════════════════════════
-// Soft-navy toolkit (demo B6, approved 2026-09-15): navy hero + the "Talent." card, nothing else.
-// Owner cut the tip sections; do not re-add them or tickable checklists (they saved nothing).
+// Soft-navy toolkit (demo C4, approved 2026-09-15): "no toolkit" paradox hero + one card whose 3 lines
+// point at real features (Agency Directory, castings, Manager Mode) + "Talent." Do not re-add tip sections,
+// tickable checklists, or "stop chasing agents" copy (the site sells an agency directory).
 function ActorToolkitPage({onNavigate,session,myProfile}){
   const loggedIn=!!session;
   const isPremium=myProfile?.membership_status==="active";
   const jump=(id)=>(e)=>{e.preventDefault();const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
-  const nope=["A perfect jawline","10k followers","A cousin at Netflix","A $4,000 camera"];
+  const paradox=[
+    {n:"01",stop:"Stop guessing agencies.",go:"Know who to ask.",icon:"address-book",tag:"Agency Directory",premium:true,to:"agency-directory"},
+    {n:"02",stop:"Stop applying to all.",go:"Fit, then apply.",icon:"movie",tag:"Browse Castings",premium:false,to:"search"},
+    {n:"03",stop:"Stop needing managers.",go:"Be your own.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
+  ];
 
   return(
     <div className="page atk">
@@ -10148,7 +10153,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         .atk h1,.atk h2,.atk h3{margin:0;}
         .atk-serif{font-family:'Source Serif 4',Georgia,serif;}
         .atk-eyebrow{font-size:12px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 12px;color:#8A5A12;}
-        .atk-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:12px;padding:15px 28px;font:800 15.5px 'DM Sans',sans-serif;border:none;cursor:pointer;text-decoration:none;transition:transform .12s;}
+        .atk-btn{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:12px;padding:15px 28px;font:800 15.5px 'DM Sans',sans-serif;border:none;cursor:pointer;text-decoration:none;transition:transform .12s;}
         .atk-btn:hover{transform:translateY(-2px);}
         .atk-btn-sand{background:#EAC080;color:#23333A;}
         .atk-btn-line{color:#fff;border:1px solid rgba(255,255,255,.28);background:transparent;}
@@ -10172,27 +10177,38 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         .atk-p2{inset:16% 0 0 16%;transform:rotate(3deg);border:5px solid #FFFDF8;}
         .atk-talent{text-align:center;padding:72px 32px 64px;}
         .atk-q{font-size:clamp(26px,3vw,36px);line-height:1.15;color:var(--t2);font-weight:600;}
-        .atk-answer{font-size:clamp(88px,15vw,176px);line-height:.95;font-weight:700;letter-spacing:-2px;color:var(--t1);margin:18px 0 24px;}
+        .atk-answer{font-size:clamp(80px,13vw,150px);line-height:.95;font-weight:700;letter-spacing:-2px;color:var(--t1);margin:6px 0 10px;}
         .atk-answer span{color:#F0B860;}
-        .atk-nope{list-style:none;padding:0;margin:8px auto 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:960px;}
-        .atk-nope li{display:flex;align-items:center;justify-content:center;min-height:72px;font-size:21px;font-weight:700;color:var(--t1);text-decoration:line-through;text-decoration-color:#D63B3B;text-decoration-thickness:3px;padding:14px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:16px;box-shadow:0 10px 22px -18px rgba(36,31,25,.35);}
-        .atk-fine{margin:0 0 32px;font-size:18px;color:var(--t2);}
-        .atk-fine b{color:var(--t1);}
+        .atk-px{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:18px;max-width:960px;margin:30px auto 44px;}
+        .atk-px-c{background:#fff;border:1.5px solid var(--bdr);border-radius:18px;padding:28px 22px;display:flex;flex-direction:column;align-items:center;box-shadow:0 12px 26px -20px rgba(36,31,25,.35);}
+        .atk-px-n{font-family:'Source Serif 4',Georgia,serif;font-size:22px;font-weight:700;color:#D9C9A8;margin-bottom:10px;}
+        .atk-px-stop{min-height:2.7em;display:flex;align-items:center;justify-content:center;text-align:center;margin:0;font-size:19px;font-weight:700;color:var(--t2);text-decoration:line-through;text-decoration-color:#D63B3B;text-decoration-thickness:3px;line-height:1.3;}
+        .atk-px-go{min-height:2.3em;display:flex;align-items:center;justify-content:center;text-align:center;margin:6px 0 16px;font-size:clamp(24px,2.5vw,31px);font-weight:700;color:var(--t1);line-height:1.1;}
+        .atk-px-tag{margin-top:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;font:700 13px 'DM Sans',sans-serif;color:#2E3050;background:#F3F1F8;border:1px solid #DEDAEA;border-radius:100px;padding:6px 12px;cursor:pointer;transition:border-color .15s;}
+        .atk-px-tag:hover{border-color:#F0B860;}
+        .atk-px-tag i{color:#8A5A12;}
+        .atk-px-tag em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#8A5A12;background:#FFF3DC;border:1px solid #F0D9B5;border-radius:100px;padding:2px 7px;}
+        .atk-kit{margin:0 auto 32px;}
+        .atk-kit>span{font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#8A5A12;}
+        .atk-kit small{display:block;font-size:17px;color:var(--t2);}
         .atk-last{padding-bottom:88px;}
         @media(max-width:900px){
           .atk-wrap,.atk-prem{padding:0 20px;}
           .atk-hero{padding:44px 24px;}
           .atk-hero{grid-template-columns:1fr;}
           .atk-stack{max-width:320px;}
-          .atk-nope{grid-template-columns:1fr 1fr;}
+          .atk-px{grid-template-columns:1fr;grid-auto-rows:auto;max-width:420px;}
           .atk-s{padding-top:64px;}
           .atk-last{padding-bottom:64px;}
         }
         @media(max-width:600px){
           .atk-hero-btns{grid-template-columns:1fr;}
-          .atk-nope li{font-size:18px;min-height:60px;}
           .atk-talent{padding:52px 20px 44px;}
           .atk-hero{border-radius:22px;}
+        }
+        @media(max-width:1100px){
+          .atk-px-tag{font-size:12px;padding:5px 10px;gap:5px;}
+          .atk-px-tag em{font-size:9.5px;padding:2px 5px;}
         }
       `}</style>
 
@@ -10201,10 +10217,10 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
       <div className="atk-hero-wrap"><div className="atk-wrap"><header className="atk-hero">
         <div>
           <p className="atk-eyebrow"><i className="atk-dot"/>Actor Toolkit</p>
-          <h1 className="atk-serif">Tools for actors who want to submit better.</h1>
-          <p>Headshots, self-tapes, and submitting — the short version.</p>
+          <h1 className="atk-serif">The best actor toolkit is not having one.</h1>
+          <p>No formula, no shortcut, no one handing you anything. Sounds bleak. It's actually the best news in the industry.</p>
           <div className="atk-hero-btns">
-            <a className="atk-btn atk-btn-sand" href="#atk-talent" onClick={jump("atk-talent")}>Start reading <Tri/></a>
+            <a className="atk-btn atk-btn-sand" href="#atk-talent" onClick={jump("atk-talent")}>Explain yourself <Tri/></a>
             <a className="atk-btn atk-btn-line" href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate("search");}}>Browse Castings</a>
           </div>
         </div>
@@ -10216,14 +10232,20 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
 
       <section className="atk-s atk-last" id="atk-talent"><div className="atk-wrap">
         <div className="atk-card atk-talent">
-          <p className="atk-eyebrow">The big question</p>
-          <h2 className="atk-serif atk-q">What are casting teams looking for?</h2>
-          <div className="atk-serif atk-answer">Talent<span>.</span></div>
-          <ul className="atk-nope">{nope.map(t=><li key={t}>{t}</li>)}</ul>
-          <p className="atk-fine">Everything below just helps them <b>see</b> the talent.</p>
+          <p className="atk-eyebrow">The paradox</p>
+          <h2 className="atk-serif atk-q">The less you chase, the more you're found.</h2>
+          <div className="atk-px">{paradox.map(p=>(
+            <div key={p.n} className="atk-px-c">
+              <span className="atk-px-n">{p.n}</span>
+              <p className="atk-px-stop">{p.stop}</p>
+              <p className="atk-serif atk-px-go">{p.go}</p>
+              <button type="button" className="atk-px-tag" onClick={()=>onNavigate(p.to)}><Ico n={p.icon} s={16}/>{p.tag}{p.premium&&<em>Premium</em>}</button>
+            </div>
+          ))}</div>
+          <div className="atk-kit"><span>The whole toolkit:</span><div className="atk-serif atk-answer">Talent<span>.</span></div><small>Nobody can give it to you. Nobody can take it either.</small></div>
           {loggedIn
             ?<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
-            :<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("register-talent")}>Create My Free Account <Tri/></button>}
+            :<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("register-talent")}>Start Being Found <Tri/></button>}
         </div>
       </div></section>
 
@@ -39959,7 +39981,7 @@ const PAGE_SEO={
   "search":{title:"Browse Castings",desc:"Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."},
   "pricing":{title:"Pricing",desc:"CastSlate is free to join for actors and your first submission is free. Upgrade to Premium from $10.75/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more. See all plans and what's included."},
   "classes":{title:"Acting Classes",desc:"Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."},
-  "actor-toolkit":{title:"Actor Toolkit",desc:"Free tools, guides, and resources for working actors — headshot advice, self-tape setup, audition prep, and more."},
+  "actor-toolkit":{title:"Actor Toolkit",desc:"There's no secret actor toolkit — just talent, and the right places to be found. Find agencies, apply to castings that fit, and run your own career with CastSlate."},
   "resources":{title:"Resources",desc:"Guides and resources for actors and casting directors on the CastSlate platform."},
   "trust-safety":{title:"Trust & Safety",desc:"CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."},
   "pay-talent":{title:"Pay Talent",desc:"Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."},
