@@ -10132,21 +10132,13 @@ function PayTalentPage({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: ACTOR TOOLKIT
 // ═══════════════════════════════════════════
-// Soft-navy toolkit (demo B5, approved 2026-09-14). One joke ("Talent."), short tips,
-// equal-column grids only. Nothing overlays the actor photos. No tickable checklists:
-// they saved nothing and felt like a trap before a paywall.
+// Soft-navy toolkit (demo B6, approved 2026-09-15): navy hero + the "Talent." card, nothing else.
+// Owner cut the tip sections; do not re-add them or tickable checklists (they saved nothing).
 function ActorToolkitPage({onNavigate,session,myProfile}){
   const loggedIn=!!session;
   const isPremium=myProfile?.membership_status==="active";
-  const isFreeTalent=loggedIn&&myProfile?.user_type==="talent"&&!isPremium;
   const jump=(id)=>(e)=>{e.preventDefault();const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
   const nope=["A perfect jawline","10k followers","A cousin at Netflix","A $4,000 camera"];
-  const doList=["Recent photo","Face fully visible","Natural light"];
-  const avoidList=["Heavy filters","Hats, sunglasses, props","Old or blurry photos"];
-  const tape=[["video","Framing","Medium close-up, eyes visible."],["bulb","Lighting","Soft light facing you."],["microphone","Sound","A quiet room beats a fancy camera."],["photo","Background","Plain wall. Focus on you."],["file-check","File","Make sure it plays."],["clipboard-list","Instructions","Asked for one take? Send one."]];
-  const submit=[["Read the breakdown","Dates, pay, location, union."],["Actually fit the role","Not just the project."],["Be available","Shoot and callback dates."],["Right materials","Best-fit headshot or tape."],["Working link","Not private, not broken."],["Short note","A line or two. That's it."]];
-  const material=[["masks-theater","Plays & Monologues","Published plays and theater books."],["movie","Scene Study","Scenes that fit your range."],["user-search","Character Work","Clear objective, clear shift."]];
-  const chips=[["atk-talent","The big one"],["atk-headshot","Headshot"],["atk-selftape","Self-tape"],["atk-submit","Submitting"],["atk-material","Material"],["atk-final","Get started"]];
 
   return(
     <div className="page atk">
@@ -10162,12 +10154,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         .atk-btn-line{color:#fff;border:1px solid rgba(255,255,255,.28);background:transparent;}
         .atk-btn-ink{background:var(--acc);color:#fff;}
         .atk-card{background:var(--s1);border:1px solid var(--bdr);border-radius:20px;box-shadow:0 14px 30px -24px rgba(36,31,25,.25);}
-        .atk-tile{width:44px;height:44px;border-radius:12px;background:#2E3050;color:#F0B860;display:grid;place-items:center;flex-shrink:0;}
-        .atk-g3{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:24px;}
-        .atk-g3>*{min-width:0;}
         .atk-s{padding:72px 0 0;scroll-margin-top:90px;}
-        .atk-head{text-align:center;max-width:680px;margin:0 auto 32px;}
-        .atk-head h2{font-size:clamp(30px,3.4vw,42px);line-height:1.1;}
         .atk-prem{max-width:1160px;margin:24px auto 0;padding:0 40px;}
         .atk-prem div{background:#FFF7E8;border:1px solid #F0D9B5;border-radius:14px;padding:14px 18px;display:flex;gap:12px;align-items:center;justify-content:center;font-size:14.5px;color:var(--t2);}
         .atk-prem b{color:var(--t1);}
@@ -10178,9 +10165,6 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         .atk-hero h1{font-size:clamp(36px,4.6vw,56px);line-height:1.05;color:#fff;}
         .atk-hero p{color:rgba(255,255,255,.8);font-size:18px;line-height:1.6;margin:18px 0 30px;}
         .atk-hero-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:460px;}
-        .atk-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:30px;max-width:460px;}
-        .atk-chips a{text-align:center;color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:9px 6px;border-radius:100px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);}
-        .atk-chips a:hover{border-color:#F0B860;color:#EAC080;}
         .atk-stack{position:relative;aspect-ratio:1/1;width:100%;max-width:420px;justify-self:center;}
         .atk-stack .atk-ph{position:absolute;border-radius:18px;overflow:hidden;box-shadow:0 20px 40px -18px rgba(0,0,0,.5);}
         .atk-stack img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -10194,57 +10178,21 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         .atk-nope li{display:flex;align-items:center;justify-content:center;min-height:72px;font-size:21px;font-weight:700;color:var(--t1);text-decoration:line-through;text-decoration-color:#D63B3B;text-decoration-thickness:3px;padding:14px 12px;background:#fff;border:1.5px solid var(--bdr);border-radius:16px;box-shadow:0 10px 22px -18px rgba(36,31,25,.35);}
         .atk-fine{margin:0 0 32px;font-size:18px;color:var(--t2);}
         .atk-fine b{color:var(--t1);}
-        .atk-hs .atk-card{padding:28px;display:flex;flex-direction:column;}
-        .atk-hs h3{display:flex;gap:10px;align-items:center;font-size:19px;margin-bottom:14px;}
-        .atk-hs ul{margin:0;padding:0;list-style:none;display:grid;grid-template-rows:repeat(3,1fr);flex:1;}
-        .atk-hs li{display:flex;align-items:center;border-top:1px dashed var(--bdr);color:var(--t2);font-size:15px;line-height:1.5;padding:12px 0;}
-        .atk-hs li:first-child{border-top:0;}
-        .atk-hs .atk-ph{border-radius:20px;overflow:hidden;position:relative;min-height:300px;}
-        .atk-hs .atk-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-        .atk-tip{text-align:center;margin:22px 0 0;font-size:15px;color:var(--t2);}
-        .atk-tip span{font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#8A5A12;margin-right:6px;}
-        .atk-step{padding:28px;display:flex;flex-direction:column;}
-        .atk-step-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-        .atk-step-row span{font-family:'Source Serif 4',Georgia,serif;font-size:26px;font-weight:700;color:#D9C9A8;}
-        .atk-step h3{font-size:18px;margin-bottom:8px;}
-        .atk-step p{margin:0;color:var(--t2);font-size:15px;line-height:1.6;}
-        .atk-submit{background:var(--atk-navy);color:#fff;border-radius:28px;padding:56px;}
-        .atk-submit .atk-eyebrow{color:#FFE6C2;}
-        .atk-submit h2{color:#fff;}
-        .atk-tip4{display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px;}
-        .atk-n{width:30px;height:30px;border-radius:50%;background:#F0B860;color:#26273F;display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0;}
-        .atk-tip4 h3{font-size:16px;margin-bottom:4px;color:#fff;}
-        .atk-tip4 p{margin:0;color:rgba(255,255,255,.72);font-size:14px;line-height:1.5;}
-        .atk-shop{margin-top:24px;padding:28px;text-align:center;display:flex;flex-direction:column;align-items:center;}
-        .atk-shop h3{font-size:19px;margin:14px 0 6px;}
-        .atk-shop p{margin:0 0 18px;color:var(--t2);font-size:15px;max-width:520px;line-height:1.6;}
-        .atk-disc{font-size:12px;color:var(--t3);margin:12px 0 0;text-align:center;}
-        .atk-cta{padding:88px 0;}
-        .atk-cta-in{background:var(--atk-navy);color:#fff;border-radius:28px;padding:72px 40px;text-align:center;}
-        .atk-cta-logo{width:64px;height:64px;border-radius:16px;background:#EAC080;color:#26273F;margin:0 auto 24px;padding:6px;}
-        .atk-cta h2{font-size:clamp(32px,4.4vw,50px);line-height:1.08;max-width:740px;margin:0 auto 14px;color:#fff;}
-        .atk-cta p{color:rgba(255,255,255,.8);font-size:18px;line-height:1.6;max-width:580px;margin:0 auto 30px;}
-        .atk-cta small{display:block;margin-top:16px;color:rgba(255,255,255,.62);font-size:13px;}
-        .atk-cta small a{color:#EAC080;font-weight:700;cursor:pointer;}
+        .atk-last{padding-bottom:88px;}
         @media(max-width:900px){
           .atk-wrap,.atk-prem{padding:0 20px;}
-          .atk-hero,.atk-submit{padding:44px 24px;}
+          .atk-hero{padding:44px 24px;}
           .atk-hero{grid-template-columns:1fr;}
           .atk-stack{max-width:320px;}
-          .atk-hs.atk-g3{grid-template-columns:1fr;grid-auto-rows:auto;}
-          .atk-hs .atk-ph{min-height:360px;order:-1;}
-          .atk-g3{grid-template-columns:1fr 1fr;}
           .atk-nope{grid-template-columns:1fr 1fr;}
           .atk-s{padding-top:64px;}
-          .atk-cta{padding:64px 0;}
+          .atk-last{padding-bottom:64px;}
         }
         @media(max-width:600px){
-          .atk-g3{grid-template-columns:1fr;grid-auto-rows:auto;}
           .atk-hero-btns{grid-template-columns:1fr;}
           .atk-nope li{font-size:18px;min-height:60px;}
           .atk-talent{padding:52px 20px 44px;}
-          .atk-cta-in{padding:52px 22px;}
-          .atk-hero,.atk-submit,.atk-cta-in{border-radius:22px;}
+          .atk-hero{border-radius:22px;}
         }
       `}</style>
 
@@ -10259,7 +10207,6 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
             <a className="atk-btn atk-btn-sand" href="#atk-talent" onClick={jump("atk-talent")}>Start reading <Tri/></a>
             <a className="atk-btn atk-btn-line" href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate("search");}}>Browse Castings</a>
           </div>
-          <div className="atk-chips">{chips.map(([id,label])=><a key={id} href={"#"+id} onClick={jump(id)}>{label}</a>)}</div>
         </div>
         <div className="atk-stack">
           <div className="atk-ph atk-p1"><img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=700&q=80" alt="Actor marking up a script at a desk"/></div>
@@ -10267,7 +10214,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         </div>
       </header></div></div>
 
-      <section className="atk-s" id="atk-talent"><div className="atk-wrap">
+      <section className="atk-s atk-last" id="atk-talent"><div className="atk-wrap">
         <div className="atk-card atk-talent">
           <p className="atk-eyebrow">The big question</p>
           <h2 className="atk-serif atk-q">What are casting teams looking for?</h2>
@@ -10279,60 +10226,6 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
             :<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("register-talent")}>Create My Free Account <Tri/></button>}
         </div>
       </div></section>
-
-      <section className="atk-s" id="atk-headshot"><div className="atk-wrap">
-        <div className="atk-head"><p className="atk-eyebrow">So they can see the talent</p><h2 className="atk-serif">Look like you, right now.</h2></div>
-        <div className="atk-hs atk-g3">
-          <div className="atk-card"><h3><Ico n="circle-check" s={22} style={{color:"var(--grn)"}}/>Do</h3><ul>{doList.map(t=><li key={t}>{t}</li>)}</ul></div>
-          <div className="atk-ph"><img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=700&q=80" alt="Clear, natural-light actor headshot"/></div>
-          <div className="atk-card"><h3><Ico n="circle-x" s={22} style={{color:"var(--red)"}}/>Avoid</h3><ul>{avoidList.map(t=><li key={t}>{t}</li>)}</ul></div>
-        </div>
-        <p className="atk-tip"><span>Casting tip</span> Your headshot is the first thing they see.</p>
-      </div></section>
-
-      <section className="atk-s" id="atk-selftape"><div className="atk-wrap">
-        <div className="atk-head"><p className="atk-eyebrow">So they can hear the talent</p><h2 className="atk-serif">Clear beats expensive.</h2></div>
-        <div className="atk-g3">{tape.map(([ic,h,p],i)=>(
-          <div key={h} className="atk-card atk-step"><div className="atk-step-row"><div className="atk-tile"><Ico n={ic} s={22}/></div><span>0{i+1}</span></div><h3>{h}</h3><p>{p}</p></div>
-        ))}</div>
-      </div></section>
-
-      <section className="atk-s" id="atk-submit"><div className="atk-wrap"><div className="atk-submit">
-        <div className="atk-head"><p className="atk-eyebrow">So the talent gets opened</p><h2 className="atk-serif">Submit smarter, not more.</h2></div>
-        <div className="atk-g3">{submit.map(([h,p],i)=>(
-          <div key={h} className="atk-tip4"><span className="atk-n">{i+1}</span><div><h3>{h}</h3><p>{p}</p></div></div>
-        ))}</div>
-      </div></div></section>
-
-      <section className="atk-s" id="atk-material"><div className="atk-wrap">
-        <div className="atk-head"><p className="atk-eyebrow">So the talent has something to say</p><h2 className="atk-serif">Prepare with strong material.</h2></div>
-        <div className="atk-g3">{material.map(([ic,h,p])=>(
-          <div key={h} className="atk-card atk-step"><div className="atk-step-row"><div className="atk-tile"><Ico n={ic} s={22}/></div></div><h3>{h}</h3><p>{p}</p></div>
-        ))}</div>
-        <div className="atk-card atk-shop">
-          <div className="atk-tile"><Ico n="books" s={22}/></div>
-          <h3>The Drama Book Shop</h3>
-          <p>A long-running New York theater bookstore for plays, monologues, scripts, and acting books.</p>
-          <a className="atk-btn atk-btn-ink" href="https://www.dramabookshop.com" target="_blank" rel="noopener noreferrer">Visit the shop <Ico n="external-link" s={18}/></a>
-        </div>
-        <p className="atk-disc">Independent resource. CastSlate is not affiliated with The Drama Book Shop.</p>
-      </div></section>
-
-      <section className="atk-cta" id="atk-final"><div className="atk-wrap"><div className="atk-cta-in">
-        <div className="atk-cta-logo"><LogoMark/></div>
-        {!loggedIn?(<>
-          <h2 className="atk-serif">Bring the talent. We'll handle the rest.</h2>
-          <p>Build a profile casting teams can actually review.</p>
-          <button className="atk-btn atk-btn-sand" style={{fontSize:17,padding:"17px 34px"}} onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
-          <small>Free. No credit card required.</small>
-        </>):(<>
-          <h2 className="atk-serif">Put it to work.</h2>
-          <p>{isFreeTalent?"Your free account includes one submission. Premium makes it unlimited.":"Find a casting that genuinely fits you."}</p>
-          <button className="atk-btn atk-btn-sand" style={{fontSize:17,padding:"17px 34px"}} onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
-          {isFreeTalent&&<small><a onClick={()=>onNavigate("membership")}>Compare plans</a></small>}
-          {isPremium&&<small>Unlimited submissions are on your plan.</small>}
-        </>)}
-      </div></div></section>
 
       <Footer onNavigate={onNavigate}/>
     </div>
