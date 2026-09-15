@@ -5937,13 +5937,29 @@ function PlanSummaryPage({session,myProfile,planKey,onNavigate,onActivated,onRel
 
 // ─── Payment success page — shown when user returns from Stripe with
 //     ?session_id=...&type=premium. Polls for webhook activation (up to 60s).
+// Google Ads: Premium purchase conversion — the ONLY conversion ads optimize
+// toward (free signups earn nothing). No-ops unless the head tag loaded, i.e. a
+// GADS_ID/label is set in build-html.py and the visitor hasn't opted out of
+// marketing. Deduped per Stripe session (sessionStorage + transaction_id).
+function trackGoogleAdsPurchase(planType){
+  try{
+    if(!window.gtag||!window.SC_GADS_PURCHASE)return;
+    const sid=sessionStorage.getItem("sc_checkout_session")||"";
+    const guard="sc_gads_purchase_fired:"+sid;
+    if(sessionStorage.getItem(guard))return;
+    sessionStorage.setItem(guard,"1");
+    const plan=MEMBERSHIP_PLANS[planType]||MEMBERSHIP_PLANS.monthly;
+    window.gtag("event","conversion",{send_to:window.SC_GADS_PURCHASE,value:plan.total,currency:"USD",transaction_id:sid});
+  }catch(_){}
+}
+
 function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType}){
   const [activating,setActivating]=useState(successType==="premium");
   const [isPremium,setIsPremium]=useState(myProfile?.membership_status==="active");
 
   useEffect(()=>{
     if(successType!=="premium")return;
-    if(myProfile?.membership_status==="active"){setActivating(false);setIsPremium(true);return;}
+    if(myProfile?.membership_status==="active"){trackGoogleAdsPurchase(myProfile?.plan_type);setActivating(false);setIsPremium(true);return;}
     let attempts=0;
     const maxAttempts=12; // 60s total at 5s intervals
     const userId=session?.user?.id;
@@ -5951,8 +5967,9 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
     const poll=async()=>{
       attempts++;
       try{
-        const{data}=await window.sb.from("profiles").select("membership_status").eq("id",userId).single();
+        const{data}=await window.sb.from("profiles").select("membership_status,plan_type").eq("id",userId).single();
         if(data?.membership_status==="active"){
+          trackGoogleAdsPurchase(data?.plan_type||myProfile?.plan_type);
           // Meta Pixel: subscription confirmed active after Stripe checkout.
           // sessionStorage guard prevents double-firing on page revisits/reloads.
           try{
@@ -40469,6 +40486,10 @@ function App(){
     }
     // Detect return from Stripe Checkout
     if(qs.includes("session_id=")&&qs.includes("type=premium")){
+      // Keep the Stripe session id: the URL is rewritten to /success below, and
+      // the Google Ads purchase conversion uses it as transaction_id so a reload
+      // or revisit can never count the same sale twice.
+      try{const _sid=new URLSearchParams(qs).get("session_id");if(_sid)sessionStorage.setItem("sc_checkout_session",_sid);}catch(_){}
       setPaymentSuccessType("premium");
       setPage("success");
       try{window.history.replaceState({swipecast:true,page:"success"},"","/success");}catch(_){}

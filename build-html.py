@@ -269,6 +269,36 @@ def render_page(title, desc, canonical, extra_preload=""):
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=771635836224410&amp;ev=PageView&amp;noscript=1"/></noscript>
   <!-- End Meta Pixel Code -->
+  <!-- Google Ads tag — conversion tracking for Premium purchases only.
+       Same opt-out gate as the Meta pixel above (CPRA: loads unless the visitor
+       explicitly opted out of "do not sell" or marketing). Loading it on every
+       page matters: it stores the ad click id (gclid) when someone lands from an
+       ad, so a Premium purchase days later is still credited to that click.
+       Empty GADS_ID = tag not loaded at all; the purchase event in the app then
+       no-ops because window.gtag is never defined. -->
+  <script>
+  (function(){{
+    var GADS_ID='AW-18251715235';
+    var GADS_PURCHASE_LABEL='TvbMCOupivkcEKOljP9D';
+    if(!GADS_ID)return;
+    try{{
+      var raw=localStorage.getItem('sc_cookie_prefs_v1');
+      if(raw){{
+        var p=JSON.parse(raw)||{{}};
+        if(p.doNotSell===true||p.marketing===false)return;
+      }}
+    }}catch(e){{}}
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=function(){{dataLayer.push(arguments);}};
+    gtag('js',new Date());
+    gtag('config',GADS_ID);
+    if(GADS_PURCHASE_LABEL)window.SC_GADS_PURCHASE=GADS_ID+'/'+GADS_PURCHASE_LABEL;
+    var t=document.createElement('script');t.async=true;
+    t.src='https://www.googletagmanager.com/gtag/js?id='+GADS_ID;
+    document.head.appendChild(t);
+  }})();
+  </script>
+  <!-- End Google Ads tag -->
   <link rel="canonical" href="{canonical}"/>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>

@@ -42,6 +42,36 @@
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=771635836224410&amp;ev=PageView&amp;noscript=1"/></noscript>
   <!-- End Meta Pixel Code -->
+  <!-- Google Ads tag — conversion tracking for Premium purchases only.
+       Same opt-out gate as the Meta pixel above (CPRA: loads unless the visitor
+       explicitly opted out of "do not sell" or marketing). Loading it on every
+       page matters: it stores the ad click id (gclid) when someone lands from an
+       ad, so a Premium purchase days later is still credited to that click.
+       Empty GADS_ID = tag not loaded at all; the purchase event in the app then
+       no-ops because window.gtag is never defined. -->
+  <script>
+  (function(){
+    var GADS_ID='AW-18251715235';
+    var GADS_PURCHASE_LABEL='TvbMCOupivkcEKOljP9D';
+    if(!GADS_ID)return;
+    try{
+      var raw=localStorage.getItem('sc_cookie_prefs_v1');
+      if(raw){
+        var p=JSON.parse(raw)||{};
+        if(p.doNotSell===true||p.marketing===false)return;
+      }
+    }catch(e){}
+    window.dataLayer=window.dataLayer||[];
+    window.gtag=function(){dataLayer.push(arguments);};
+    gtag('js',new Date());
+    gtag('config',GADS_ID);
+    if(GADS_PURCHASE_LABEL)window.SC_GADS_PURCHASE=GADS_ID+'/'+GADS_PURCHASE_LABEL;
+    var t=document.createElement('script');t.async=true;
+    t.src='https://www.googletagmanager.com/gtag/js?id='+GADS_ID;
+    document.head.appendChild(t);
+  })();
+  </script>
+  <!-- End Google Ads tag -->
   <link rel="canonical" href="https://www.castslate.com/pay-talent"/>
   <!-- Open Graph -->
   <meta property="og:site_name" content="CastSlate"/>
@@ -95,18 +125,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260915-052126"/>
+  <link rel="preload" as="script" href="/app.js?v=20260915-214028"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260915-052126 -->
-  <meta name="build-version" content="20260915-052126"/>
+  <!-- BUILD: 20260915-214028 -->
+  <meta name="build-version" content="20260915-214028"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260915-052126";
+        var B="20260915-214028";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -544,7 +574,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260915-052126"
+        "/app.js?v=20260915-214028"
       ];
       function step(){
         var it=STEPS.shift();
@@ -585,7 +615,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260915-052126';
+      s.src='/castoria.js?v=20260915-214028';
       s.async=true;
       document.body.appendChild(s);
     }
