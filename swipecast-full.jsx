@@ -10134,7 +10134,8 @@ function PayTalentPage({onNavigate}){
 // ═══════════════════════════════════════════
 // Soft-navy toolkit (demo C4, approved 2026-09-15): "no toolkit" paradox hero + one card whose 3 lines
 // point at real features (Agency Directory, castings, Manager Mode) + "Talent." Do not re-add tip sections,
-// tickable checklists, or "stop chasing agents" copy (the site sells an agency directory).
+// tickable checklists, "stop chasing agents" or "be your own manager" copy (the site sells an
+// agency directory and Manager Mode; card copy must point toward them, never contradict them).
 function ActorToolkitPage({onNavigate,session,myProfile}){
   const loggedIn=!!session;
   const isPremium=myProfile?.membership_status==="active";
@@ -10142,7 +10143,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
   const paradox=[
     {n:"01",stop:"Stop guessing agencies.",go:"Know who to ask.",icon:"address-book",tag:"Agency Directory",premium:true,to:"agency-directory"},
     {n:"02",stop:"Stop applying to all.",go:"Fit, then apply.",icon:"movie",tag:"Browse Castings",premium:false,to:"search"},
-    {n:"03",stop:"Stop needing managers.",go:"Be your own.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
+    {n:"03",stop:"Stop going it alone.",go:"Check in weekly.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
   ];
 
   return(
