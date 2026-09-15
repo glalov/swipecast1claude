@@ -10136,14 +10136,16 @@ function PayTalentPage({onNavigate}){
 // point at real features (Agency Directory, castings, Manager Mode) + "Talent." Do not re-add tip sections,
 // tickable checklists, "stop chasing agents" or "be your own manager" copy (the site sells an
 // agency directory and Manager Mode; card copy must point toward them, never contradict them).
+// Card 02 "Know they did." relies on the site-wide "every submission gets seen — guaranteed" promise;
+// if that guarantee ever changes, change this card. Keep every line to one line at 1000px+ width.
 function ActorToolkitPage({onNavigate,session,myProfile}){
   const loggedIn=!!session;
   const isPremium=myProfile?.membership_status==="active";
   const jump=(id)=>(e)=>{e.preventDefault();const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
   const paradox=[
-    {n:"01",stop:"Stop guessing agencies.",go:"Know who to ask.",icon:"address-book",tag:"Agency Directory",premium:true,to:"agency-directory"},
-    {n:"02",stop:"Stop applying to all.",go:"Fit, then apply.",icon:"movie",tag:"Browse Castings",premium:false,to:"search"},
-    {n:"03",stop:"Stop going it alone.",go:"Check in weekly.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
+    {n:"01",stop:"Stop emailing everyone.",go:"Find your fit.",icon:"address-book",tag:"Agency Directory",premium:true,to:"agency-directory"},
+    {n:"02",stop:"Stop hoping they saw.",go:"Know they did.",icon:"movie",tag:"Browse Castings",premium:false,to:"search"},
+    {n:"03",stop:"Stop feeling stuck.",go:"Move every week.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
   ];
 
   return(
