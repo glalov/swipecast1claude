@@ -319,6 +319,9 @@ check(7,"pronoun_gender","Pronouns contradict the role's gender",L=>{
     const she=/(?:^|[.;!?]\s+)(She|Her)\b/.test(d),he=/(?:^|[.;!?]\s+)(He|His|Him)\b/.test(d);
     const anyG=/any gender|open on gender|without a fixed gender/i.test(d)||/^(All genders|Any|Non-binary|Nonbinary)$/i.test(g);
     if(/^Male$/i.test(g)&&she)out.push({detail:`${r.name} Male + she`});
+    const anyShe=/\b(she|her|herself)\b/i.test(d),anyHe=/\b(he|him|his|himself)\b/i.test(d);
+    if(/^Male$/i.test(g)&&anyShe&&!anyHe)out.push({detail:`${r.name} Male, description only says she`});
+    if(/^Female$/i.test(g)&&anyHe&&!anyShe)out.push({detail:`${r.name} Female, description only says he`});
     if(/^Female$/i.test(g)&&he)out.push({detail:`${r.name} Female + he`});
     if(anyG&&(she||he)&&!(she&&he))out.push({detail:`${r.name} any-gender + ${she?"she":"he"}`});
     if(/any gender|open on gender|without a fixed gender/i.test(d)&&/^(Male|Female)$/i.test(g))out.push({detail:`${r.name} "any gender" but gender=${g}`});
@@ -403,6 +406,7 @@ check(7,"parent_age","Parent younger than 17 years older than the child in the c
 });
 check(7,"odd_caps","Stray capitals mid-sentence in the synopsis (\"for lighting Double for the Office\")",L=>{const m=String(L.synopsis).match(/\b[a-z]+ (?:Double|Background|Performer|Driver) for the [A-Z]/);return m?[{detail:m[0]}]:[];});
 check(7,"era_now","\"It is set in the now\"",L=>/set in the (now|present|today)\b/i.test(L.synopsis)?[{detail:L.synopsis.slice(-60)}]:[]);
+check(7,"twist_fragment","Twist sentence is a bare noun-phrase fragment",L=>{const s2=sentences(L.synopsis)[1]||"";return /^(One|A|An|The|Every|Each) [a-z ]+ (carried|shot|filmed|photographed|built|told|made|cast|set|played|done|seen|recorded|used) /.test(s2)&&!/\b(is|are|was|were|has|have|gets|runs|ends|starts|plays|turns|takes|comes|goes)\b/.test(s2)?[{detail:s2}]:[];});
 check(7,"group_given_person","Plural/group role given a single person's name",L=>L.roles.filter(r=>!isGroup(r)&&/^(the )?(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|family members|shoppers|voices)\b/i.test(String(r.description||"").replace(/^[A-Z][a-z]+, /,"").replace(/^[A-Z][a-z]+ — /,""))).map(r=>({detail:r.name+": "+r.description.slice(0,60)})));
 check(7,"family_mismatch","Parent/child/siblings with clashing name heritage",null);
 

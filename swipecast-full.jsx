@@ -30142,7 +30142,12 @@ const ACG = (()=>{
     return null;
   }
   function slotGender(s){
-    return labelGender(s&&s.s)||sketchGender(s&&s.x)||null;
+    // v3: a sketch that only ever says "she" (or only "he") pins the part, even
+    // when the pronoun is mid-sentence ("wishes she did not").
+    const x=String(s&&s.x||"");
+    const onlyF=/\b(she|her|herself)\b/i.test(x)&&!/\b(he|him|his|himself)\b/i.test(x);
+    const onlyM=/\b(he|him|his|himself)\b/i.test(x)&&!/\b(she|her|herself)\b/i.test(x);
+    return labelGender(s&&s.s)||sketchGender(x)||(onlyF?"Female":onlyM?"Male":null);
   }
   function seedGenders(slots){
     const out=slots.map(s=>s.r==="Background"?"All genders":s.g==="F"?"Female":s.g==="M"?"Male":slotGender(s));
@@ -31831,7 +31836,7 @@ const ACG = (()=>{
     return String(text||"")
       .replace(/\bgenuinely\s+/gi,"").replace(/\s*,?\s*genuinely\b/gi,"")
       .replace(/\bhonestly stated\b/gi,"stated plainly").replace(/\bplayed honestly\b/gi,"played for real").replace(/\bhonestly\b/gi,"truly")
-      .replace(/\bstraightforward\b/gi,"simple").replace(/\bcar park\b/gi,"parking lot").replace(/\bcouncil officer\b/gi,"city council officer")
+      .replace(/\bstraightforward\b/gi,"simple").replace(/\bcar park\b/gi,"parking lot").replace(/\bcentre\b/g,"center").replace(/\bCentre\b/g,"Center").replace(/\bcouncil officer\b/gi,"city council officer")
       .replace(/\bDeadpan\b/g,"Dry and straight-faced").replace(/\bdeadpan\b/g,"dry and straight-faced")
       .replace(/\bnot like models\b/gi,"like real people")
       .replace(/\s{2,}/g," ").trim();
@@ -31899,13 +31904,16 @@ const ACG = (()=>{
       playful:[t=>`The catch is that ${t.t}.`,t=>`But ${t.t}.`],
       serious:[t=>`But ${t.t}.`,t=>`The trouble is that ${t.t}.`]
     },
+    // Brief twists are sometimes clauses and sometimes noun phrases ("one
+    // running joke carried across four cuts"), so every lead-in is a colon
+    // label that reads correctly in front of either.
     brief:{
-      matter:[t=>`${capFirst(t.t)}.`,t=>`The idea is that ${t.t}.`],
-      warm:[t=>`The idea is simple: ${t.t}.`,t=>`${capFirst(t.t)}.`],
-      dry:[t=>`${capFirst(t.t)}.`,t=>`The twist is that ${t.t}.`],
-      punchy:[t=>`${capFirst(t.t)}.`,t=>`One rule: ${t.t}.`],
-      playful:[t=>`The fun part is that ${t.t}.`,t=>`The twist is that ${t.t}.`],
-      serious:[t=>`What makes it different is that ${t.t}.`,t=>`${capFirst(t.t)}.`]
+      matter:[t=>`The idea: ${t.t}.`,t=>`The plan: ${t.t}.`],
+      warm:[t=>`The idea is simple: ${t.t}.`,t=>`What we love about it: ${t.t}.`],
+      dry:[t=>`The twist: ${t.t}.`,t=>`The one rule: ${t.t}.`],
+      punchy:[t=>`The hook: ${t.t}.`,t=>`One rule: ${t.t}.`],
+      playful:[t=>`The fun part: ${t.t}.`,t=>`The twist: ${t.t}.`],
+      serious:[t=>`What makes it different: ${t.t}.`,t=>`The approach: ${t.t}.`]
     }
   };
   function v3S3(voice,c){
@@ -32022,7 +32030,8 @@ const ACG = (()=>{
     if(need==="soundstage")return {venue:pick(["a soundstage with a built set","a film studio with a built set"]),need:"industrial",placeNP:""};
     const fits=need?places.filter(p=>V3_NEED[need].test(p)):[];
     const GENERIC={rural:["a farmhouse on a country road","a small-town main street","a roadside diner"],water:["a waterfront pier","a marina parking lot","a harbor walkway"],industrial:["a warehouse","an industrial garage"],beach:["a beach boardwalk"],"":["a rented house","a storefront on a main street","an apartment building"]};
-    const venue=fits.length?pick(fits):places.length&&!need?pick(places):fam==="photo"?"a daylight photo studio":pick(GENERIC[need]||GENERIC[""]);
+    const venue0=fits.length?pick(fits):places.length&&!need?pick(places):fam==="photo"?"a daylight photo studio":pick(GENERIC[need]||GENERIC[""]);
+    const venue=v3Scrub(venue0);
     if(!need)need=v3Need(venue);
     return {venue,need,placeNP:venue};
   }
@@ -32617,6 +32626,9 @@ const ACG = (()=>{
     roles.forEach(r=>{
       const d=String(r.description||""),g=String(r.gender||"");
       const she=/(?:^|[.;!?]\s+)(She|Her)\b/.test(d),he=/(?:^|[.;!?]\s+)(He|His|Him)\b/.test(d);
+      const anyShe=/\b(she|her|herself)\b/i.test(d),anyHe=/\b(he|him|his|himself)\b/i.test(d);
+      if(g==="Male"&&anyShe&&!anyHe)out.push("only-she description on male role");
+      if(g==="Female"&&anyHe&&!anyShe)out.push("only-he description on female role");
       if(g==="Male"&&she&&!he)out.push("pronoun she on male role");
       if(g==="Female"&&he&&!she)out.push("pronoun he on female role");
       if(/any gender|open on gender|without a fixed gender/i.test(d)&&(/^(Male|Female)$/.test(g)||/\b(she|he)\b/i.test(d)))out.push("any-gender note contradicts");
