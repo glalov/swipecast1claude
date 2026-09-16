@@ -25031,24 +25031,40 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 
 // ── Generation data: city weights, listing types, copy templates ──
 const ACG = (()=>{
-  // Weighted so roughly 85% of listings are New York (460 of a 542 total),
-  // which is where the talent base is. The other markets stay in the mix so the
-  // board is not literally one city, but they are a garnish, not a second home. `areas` gives the shoot location a neighborhood, so a
-  // listing says "Greenpoint, Brooklyn (New York, NY)" instead of repeating the
-  // city name in two fields.
+  // New York carries about 60% of the board (weight 60 of ~100), which is where
+  // most of the talent base is. The other markets carry the rest. Every city has
+  // at least eight areas, and a neighborhood is not used again until every area
+  // in that city has had a turn (see v3PickPlace). AREA_TAGS marks waterfront,
+  // beach, rural and industrial areas, so a story is only shot somewhere it fits.
   const CITIES=[
-    {name:"New York, NY",short:"NYC",w:460,areas:["Greenpoint, Brooklyn","Bushwick, Brooklyn","Red Hook, Brooklyn","Sunset Park, Brooklyn","Gowanus, Brooklyn","Bay Ridge, Brooklyn","Flatbush, Brooklyn","Astoria, Queens","Long Island City, Queens","Jackson Heights, Queens","Ridgewood, Queens","Washington Heights, Manhattan","Inwood, Manhattan","Harlem, Manhattan","the Lower East Side, Manhattan","Hell's Kitchen, Manhattan","Mott Haven, the Bronx","Stapleton, Staten Island"]},
-    {name:"Los Angeles, CA",short:"LA",w:22,areas:["Highland Park","Echo Park","Boyle Heights","Culver City","North Hollywood","Inglewood","San Pedro","Van Nuys","Glendale","Koreatown"]},
-    {name:"Chicago, IL",short:"Chicago",w:14,areas:["Pilsen","Logan Square","Bronzeville","Rogers Park","Humboldt Park","Bridgeport","Albany Park","Uptown"]},
-    {name:"Boston, MA",short:"Boston",w:10,areas:["Somerville","Dorchester","East Boston","Jamaica Plain","Allston","Quincy","Cambridge"]},
-    {name:"Philadelphia, PA",short:"Philly",w:7,areas:["Fishtown","Kensington","South Philadelphia","Germantown","West Philadelphia"]},
-    {name:"Atlanta, GA",short:"Atlanta",w:6,areas:["East Atlanta","the West End","Decatur","Old Fourth Ward","College Park"]},
-    {name:"Newark, NJ",short:"Newark",w:5,areas:["the Ironbound","Jersey City Heights","Hoboken","Bayonne"]},
-    {name:"New Orleans, LA",short:"New Orleans",w:4,areas:["Bywater","Mid-City","Algiers Point","the Marigny"]},
-    {name:"Pittsburgh, PA",short:"Pittsburgh",w:4,areas:["Lawrenceville","Bloomfield","the North Side","Braddock"]},
-    {name:"Austin, TX",short:"Austin",w:4,areas:["East Austin","South Congress","Hyde Park","Montopolis"]},
-    {name:"Detroit, MI",short:"Detroit",w:3,areas:["Corktown","Hamtramck","Midtown","Southwest Detroit"]},
-    {name:"Baltimore, MD",short:"Baltimore",w:3,areas:["Hampden","Highlandtown","Fells Point","Pigtown"]}
+    {name:"New York, NY",short:"NYC",w:68,areas:["Greenpoint, Brooklyn","Williamsburg, Brooklyn","Bushwick, Brooklyn","Bedford-Stuyvesant, Brooklyn","Crown Heights, Brooklyn","Flatbush, Brooklyn","Prospect Lefferts Gardens, Brooklyn","Park Slope, Brooklyn","Gowanus, Brooklyn","Red Hook, Brooklyn","Carroll Gardens, Brooklyn","Sunset Park, Brooklyn","Bay Ridge, Brooklyn","Bensonhurst, Brooklyn","Borough Park, Brooklyn","Coney Island, Brooklyn","Brighton Beach, Brooklyn","Sheepshead Bay, Brooklyn","Canarsie, Brooklyn","East New York, Brooklyn","Brownsville, Brooklyn","Fort Greene, Brooklyn","DUMBO, Brooklyn","Clinton Hill, Brooklyn","Astoria, Queens","Long Island City, Queens","Sunnyside, Queens","Woodside, Queens","Jackson Heights, Queens","Elmhurst, Queens","Corona, Queens","Flushing, Queens","Forest Hills, Queens","Ridgewood, Queens","Richmond Hill, Queens","Jamaica, Queens","the Rockaways, Queens","Howard Beach, Queens","Bayside, Queens","Harlem, Manhattan","East Harlem, Manhattan","Washington Heights, Manhattan","Inwood, Manhattan","the Upper West Side, Manhattan","Hell's Kitchen, Manhattan","Chelsea, Manhattan","the Lower East Side, Manhattan","Chinatown, Manhattan","the East Village, Manhattan","Tribeca, Manhattan","the Financial District, Manhattan","Two Bridges, Manhattan","Mott Haven, the Bronx","Hunts Point, the Bronx","Fordham, the Bronx","Belmont, the Bronx","Riverdale, the Bronx","City Island, the Bronx","Kingsbridge, the Bronx","Throggs Neck, the Bronx","St. George, Staten Island","Stapleton, Staten Island","Tottenville, Staten Island","Port Richmond, Staten Island","New Dorp, Staten Island"]},
+    {name:"Los Angeles, CA",short:"LA",w:5,areas:["Highland Park","Echo Park","Boyle Heights","Culver City","North Hollywood","Inglewood","San Pedro","Van Nuys","Glendale","Koreatown","Venice","Long Beach, CA","Silver Lake","Burbank","Santa Monica"]},
+    {name:"Chicago, IL",short:"Chicago",w:3,areas:["Pilsen","Logan Square","Bronzeville","Rogers Park","Humboldt Park","Bridgeport","Albany Park","Uptown","Hyde Park, Chicago","Wicker Park","the South Loop"]},
+    {name:"Boston, MA",short:"Boston",w:2,areas:["Somerville","Dorchester","East Boston","Jamaica Plain","Allston","Quincy","Cambridge","Charlestown","South Boston","Roxbury"]},
+    {name:"Philadelphia, PA",short:"Philly",w:2,areas:["Fishtown","Kensington","South Philadelphia","Germantown","West Philadelphia","Port Richmond, Philadelphia","Manayunk","Old City","Point Breeze"]},
+    {name:"Atlanta, GA",short:"Atlanta",w:2,areas:["East Atlanta","the West End","Decatur","Old Fourth Ward","College Park","Kirkwood","Grant Park","Inman Park","Adair Park"]},
+    {name:"Newark, NJ",short:"Newark",w:1,areas:["the Ironbound","Forest Hill","the North Ward","Weequahic","University Heights","Vailsburg","the Central Ward","the Newark Riverfront"]},
+    {name:"Jersey City, NJ",short:"Jersey City",w:1,areas:["Journal Square","the Heights","Paulus Hook","Greenville","Bergen-Lafayette","Downtown Jersey City","Liberty State Park","McGinley Square"]},
+    {name:"New Orleans, LA",short:"New Orleans",w:1.5,areas:["Bywater","Mid-City","Algiers Point","the Marigny","Tremé","the Irish Channel","Gentilly","Holy Cross"]},
+    {name:"Pittsburgh, PA",short:"Pittsburgh",w:1,areas:["Lawrenceville","Bloomfield","the North Side","Braddock","Polish Hill","the Strip District","Squirrel Hill","Millvale"]},
+    {name:"Austin, TX",short:"Austin",w:1.5,areas:["East Austin","South Congress","Hyde Park, Austin","Montopolis","Zilker","Mueller","Bouldin Creek","Riverside, Austin","Dripping Springs"]},
+    {name:"Detroit, MI",short:"Detroit",w:1,areas:["Corktown","Hamtramck","Midtown Detroit","Southwest Detroit","Jefferson-Chalmers","Rivertown","Eastern Market","the North End","Delray"]},
+    {name:"Baltimore, MD",short:"Baltimore",w:1,areas:["Hampden","Highlandtown","Fells Point","Pigtown","Canton","Locust Point","Remington","Station North","Sandtown"]},
+    {name:"Nashville, TN",short:"Nashville",w:1.5,areas:["East Nashville","the Gulch","Germantown, Nashville","Wedgewood-Houston","Sylvan Park","12 South","Bordeaux","Madison","Shelby Park"]},
+    {name:"Miami, FL",short:"Miami",w:1.5,areas:["Little Havana","Wynwood","Allapattah","Little Haiti","Coconut Grove","Overtown","Miami Beach","Coral Gables","Key Biscayne"]},
+    {name:"Seattle, WA",short:"Seattle",w:1.5,areas:["Ballard","Capitol Hill, Seattle","Georgetown, Seattle","the Central District","Fremont","Columbia City","West Seattle","the International District","Beacon Hill"]},
+    {name:"Portland, OR",short:"Portland",w:1,areas:["the Alberta Arts District","St. Johns","Sellwood","Hawthorne","Montavilla","the Pearl District","Foster-Powell","Kenton","the Central Eastside"]},
+    {name:"Denver, CO",short:"Denver",w:1,areas:["Five Points","RiNo","Highland","Baker","Capitol Hill, Denver","Globeville","Sunnyside, Denver","Washington Park","Golden"]},
+    {name:"Minneapolis, MN",short:"Minneapolis",w:1,areas:["Northeast Minneapolis","Uptown, Minneapolis","Powderhorn","Longfellow","Cedar-Riverside","North Loop","Seward","Whittier","Lake Nokomis"]},
+    {name:"San Diego, CA",short:"San Diego",w:1,areas:["Barrio Logan","North Park","Ocean Beach","Chula Vista","Logan Heights","Pacific Beach","City Heights","Point Loma","National City"]},
+    {name:"Albuquerque, NM",short:"Albuquerque",w:1,areas:["Nob Hill","Barelas","the South Valley","Old Town","Downtown Albuquerque","Los Ranchos","the International District, Albuquerque","Corrales"]},
+    {name:"Savannah, GA",short:"Savannah",w:1,areas:["the Historic District","Thunderbolt","the Starland District","Tybee Island","Pooler","the Victorian District","Midtown Savannah","Isle of Hope"]},
+    {name:"Charlotte, NC",short:"Charlotte",w:1,areas:["NoDa","Plaza Midwood","South End","West End Charlotte","Dilworth","Camp North End","Belmont, Charlotte","Elizabeth"]},
+    {name:"Providence, RI",short:"Providence",w:1,areas:["Federal Hill","Fox Point","Olneyville","the West End, Providence","Wayland Square","Elmwood","Pawtucket","Downcity"]},
+    {name:"Hudson Valley, NY",short:"Hudson Valley",w:1.5,areas:["Kingston","Beacon","Newburgh","Poughkeepsie","Hudson","Catskill","Woodstock","New Paltz","Rhinebeck"]},
+    {name:"Long Island, NY",short:"Long Island",w:1.5,areas:["Long Beach, NY","Montauk","Riverhead","Hempstead","Port Jefferson","Freeport","Patchogue","Huntington","Greenport","North Fork farmland"]},
+    {name:"Westchester, NY",short:"Westchester",w:1,areas:["Yonkers","New Rochelle","Peekskill","White Plains","Mount Vernon","Port Chester","Tarrytown","Ossining"]},
+    {name:"New Haven, CT",short:"New Haven",w:1,areas:["Wooster Square","Fair Haven","the Hill","East Rock","Westville","Dixwell","City Point","Long Wharf"]}
   ];
   function pickCity(){const total=CITIES.reduce((s,c)=>s+(c.w||1),0);let r=Math.random()*total;for(const c of CITIES){r-=c.w||1;if(r<=0)return c;}return CITIES[0];}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
@@ -29921,9 +29937,9 @@ const ACG = (()=>{
     if(want.has("resume"))bits.push(pick(["your résumé","a résumé or credit list","your CV","a short credit list"]));
     if(want.has("reel"))bits.push(anyVoice
       ? pick(["a voiceover demo of up to three minutes","a VO demo reel","a demo showing your range"])
-      : pick(["a reel or a link to recent footage","a reel","a link to anything you have shot recently","reel or footage — whatever is most recent"]));
+      : pick(["a reel or a link to recent footage","a reel","a link to anything you have shot recently","your most recent reel or footage"]));
     if(anyVoice)bits.push(pick(["a short voice sample reading any two lines from the breakdown","a quick voice memo of the character in your own words","thirty seconds of you reading anything from the role"]));
-    else if(anyPre)bits.push(pick(["a self-tape of up to 90 seconds","a self-tape under 90 seconds","a short self-tape, 90 seconds maximum","one self-tape — 90 seconds is plenty"]));
+    else if(anyPre)bits.push(pick(["a self-tape of up to 90 seconds","a self-tape under 90 seconds","a short self-tape of 90 seconds or less","one self-tape of up to 90 seconds"]));
     const list=bits.length>1?bits.slice(0,-1).join(", ")+" and "+bits[bits.length-1]:bits[0]||"a current headshot";
     return`${pick(["Please submit","Send","We need","Submissions should include","To be considered, send","What we need from you:"])} ${list}.`;
   }
@@ -30005,7 +30021,7 @@ const ACG = (()=>{
     return roleName({name:"Crew",gender:gender||pick(["Female","Male","All genders"]),role_type:"Crew",ethnicity:"Any ethnicity",_keepDescription:true},h,res);
   }
   function titleCase(s){
-    return String(s||"").replace(/^(a|an|the)\s+/i,"").split(/\s+/).map(w=>w?w.charAt(0).toUpperCase()+w.slice(1):w).join(" ");
+    return String(s||"").replace(/^(a|an|the)\s+/i,"").split(/\s+/).map((w,i)=>!w?w:(i>0&&/^(a|an|the|of|on|in|at|for|and|or|to|with|by|from)$/i.test(w))?w.toLowerCase():w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
   }
   // Several PROJECT_TYPE_OPTIONS values are category names rather than things
   // you can say "a ___" about ("Modeling", "Branded Content", "Animation"), so
@@ -30095,7 +30111,7 @@ const ACG = (()=>{
   // and the description now prints the character's NAME right next to the
   // label — so a miss reads as an outright mistake rather than a quirk.
   const LABEL_F=/\b(daughter|mother|wife|sister|aunt|niece|grandmother|granddaughter|widow|girl|woman|actress|waitress|bride|mom|hostess|queen|businesswoman|saleswoman)\b/i;
-  const LABEL_M=/\b(son|father|husband|brother|uncle|nephew|grandfather|grandson|widower|boy|man|dad|groom|king|businessman|salesman|gentleman)\b/i;
+  const LABEL_M=/\b(son|father|husband|brother|uncle|nephew|grandfather|grandson|widower|boy|man|dad|groom|king|businessman|salesman|gentleman|fisherman|doorman|repairman|cameraman|deliveryman|foreman|chairman|policeman|fireman|workman|handyman|milkman|ferryman|lineman|mailman|watchman|nobleman|horseman)\b/i;
   function labelGender(label){
     const t=String(label||"");
     if(/\bor\b/i.test(t))return null;
@@ -30136,7 +30152,7 @@ const ACG = (()=>{
     // produced "Bartholomew Ashworth" cast as the daughter.
     const free=[];
     out.forEach((v,i)=>{if(v===null)free.push(i);});
-    free.forEach(i=>{out[i]=Math.random()<0.07?"Non-Binary":pick(["Female","Male"]);});
+    free.forEach(i=>{out[i]=Math.random()<0.07&&!/child|teen/.test(slots[i].a||"")?"Non-Binary":pick(["Female","Male"]);});
     if(free.length){
       const has=g=>out.some((v,i)=>slots[i].r!=="Background"&&v===g);
       if(!has("Female"))out[free[0]]="Female";
@@ -30167,11 +30183,16 @@ const ACG = (()=>{
     // Most named roles carry a specific ethnicity; one or two per listing stay
     // open so nothing is closed off unnecessarily.
     const openRate=named<=2?0.26:0.18;
-    return slots.map(s=>{
+    const out=slots.map(s=>{
       if(s.r==="Background")return OPEN_ETHNICITY;
       if(s.fam)return fam[s.fam]||(fam[s.fam]=next());
       return Math.random()<openRate?OPEN_ETHNICITY:next();
     });
+    // v3: blood relatives named in the labels share one heritage, even when the
+    // seed forgot to group them.
+    const kin=slots.map((s,i)=>i).filter(i=>slots[i].r!=="Background"&&/\b(mother|father|mom|dad|son|daughter|brother|sister|grand(mother|father|son|daughter|parent)|twin|aunt|uncle|niece|nephew|cousin)\b/i.test(String(slots[i].s||"")));
+    if(kin.length>1){const e=out[kin[0]];kin.forEach(i=>{out[i]=e;});}
+    return out;
   }
   // A seed slot becomes a fully specified role: character name (assigned later
   // by roleName so it is unique for life), rank-appropriate role type, its own
@@ -30211,27 +30232,31 @@ const ACG = (()=>{
     return w[0][0];
   }
   const EXTRA_SLOTS=[
-    {s:"featured background — street",r:"Background",a:"adult",tracks:["film","tv","spot","other"],x:"Pedestrians, commuters and sidewalk traffic in exterior scenes. Real behavior, no waving at camera, and patience with resets."},
-    {s:"featured background — interior",r:"Background",a:"adult",tracks:["film","tv","spot"],x:"Bar, cafe and lobby atmosphere in the main locations. Several featured close passes; must be able to hold a silent conversation."},
-    {s:"stand-in",r:"Background",a:"adult",tracks:["film","tv","spot"],x:"Stand-in for camera and lighting setups. Similar height and build to a principal; prior set experience preferred and a full day on your feet."},
-    {s:"photo double",r:"Background",a:"adult",tracks:["film","tv"],x:"Over-the-shoulder framing, hands, and simple movement matched to a principal. General look confirmed after booking."},
+    {s:"passersby on the street",r:"Background",a:"adult",tracks:["film","tv","spot","other"],x:"Pedestrians, commuters and sidewalk traffic in exterior scenes. Real behavior, no waving at camera, and patience with resets."},
+    {s:"customers in the main location",r:"Background",a:"adult",tracks:["film","tv","spot"],x:"Bar, cafe and lobby atmosphere in the main locations. Several featured close passes; must be able to hold a silent conversation."},
+    {s:"lighting double for the lead",r:"Background",a:"adult",tracks:["film","tv","spot"],x:"Stand-in for camera and lighting setups. Similar height and build to a principal; prior set experience preferred and a full day on your feet."},
+    {s:"hand and shoulder double for the lead",r:"Background",a:"adult",tracks:["film","tv"],x:"Over-the-shoulder framing, hands, and simple movement matched to a principal. General look confirmed after booking."},
     {s:"the uniformed officer",r:"Day Player",a:"midCareer",tracks:["film","tv"],x:"One by-the-book scene played completely straight. No cop-show delivery; calm authority and nothing else."},
     {s:"the delivery driver",r:"Day Player",a:"youngAdult",tracks:["film","tv","spot"],x:"In and out of one scene with a package and an opinion. Small, funny, and gone."},
     {s:"the bartender",r:"Day Player",a:"midCareer",tracks:["film","tv","stage"],x:"Pours, listens, and says one thing that lands. Real bar experience is genuinely useful here."},
     {s:"the receptionist",r:"Day Player",a:"youngAdult",tracks:["film","tv","spot"],x:"Guards one door with total politeness. The comedy is in how impossible they are to move."},
-    {s:"the ensemble",r:"Supporting",a:"adult",tracks:["stage"],x:"Covers several smaller roles across the piece, plus chorus and scene changes. Strong cold readers who move well."},
+    {s:"the ensemble players",r:"Supporting",a:"adult",tracks:["stage"],x:"Covers several smaller roles across the piece, plus chorus and scene changes. Strong cold readers who move well."},
     {s:"the understudy track",r:"Supporting",a:"adult",tracks:["stage"],x:"Covers two principal roles and performs a scheduled number of shows. Quick study, generous in a room, and paid for every call."},
     {s:"the audience plant",r:"Day Player",a:"adult",tracks:["stage"],x:"Seated in the house and drawn into the action once. Must be able to hold an ordinary face for an hour."},
     {s:"product hands",r:"Background",a:"adult",tracks:["spot","print"],x:"Close-up hand work for product and packaging. Steady hands, well-kept nails, and comfort repeating a small movement forty times."},
     {s:"the lifestyle group",r:"Background",a:"adult",tracks:["spot","print"],x:"Friends, family and coworkers in wide frames. Genuine ease with each other matters more than any individual look."},
-    {s:"the crowd",r:"Background",a:"adult",tracks:["other","spot"],x:"Full-day crowd work with real energy across repeated passes. All ages, all looks; comfortable being filmed for hours."},
+    {s:"the audience at the event",r:"Background",a:"adult",tracks:["other","spot"],x:"Full-day crowd work with real energy across repeated passes. All ages, all looks; comfortable being filmed for hours."},
     {s:"additional voices",r:"Supporting",a:"adult",tracks:["other"],x:"Several smaller characters across the sessions — range is the whole job, not one impressive voice."},
-    {s:"the movement ensemble",r:"Background",a:"adult",tracks:["other"],x:"Group sequences; must pick up choreography quickly and hold formation across takes."}
+    {s:"the backup dancers",r:"Background",a:"adult",tracks:["other"],x:"Group sequences; must pick up choreography quickly and hold formation across takes."}
   ];
-  function padCast(slots,track,target,h,res){
+  // v3: a padded part must belong to the medium, not only the track — no
+  // "additional voices" on a live event, no lighting double on a podcast.
+  const V3_EXTRA_FAMS={"passersby on the street":"film tv ad job","customers in the main location":"film tv ad","lighting double for the lead":"film tv","hand and shoulder double for the lead":"film tv","the uniformed officer":"film tv","the delivery driver":"film tv ad","the bartender":"film tv stage","the receptionist":"film tv ad corp","the ensemble players":"stage","the understudy track":"stage","the audience plant":"stage","product hands":"ad photo","the lifestyle group":"ad photo","the audience at the event":"live music","additional voices":"audio anim","the backup dancers":"music move"};
+  function padCast(slots,track,target,h,res,type){
     const out=slots.slice(0,target);
     if(out.length>=target)return out;
-    const fits=EXTRA_SLOTS.filter(e=>(e.tracks||[]).indexOf(track)>-1);
+    const fam=type?v3Fam(type):"";
+    const fits=EXTRA_SLOTS.filter(e=>(e.tracks||[]).indexOf(track)>-1&&(!fam||!V3_EXTRA_FAMS[e.s]||V3_EXTRA_FAMS[e.s].split(" ").indexOf(fam)>-1));
     const used=e=>(h&&h.traits.has(clean("extra "+e.s)))||(res&&res.traits.has(clean("extra "+e.s)));
     // Prefer a padded category nobody has used yet, so two listings do not both
     // carry the same background line.
@@ -30272,22 +30297,17 @@ const ACG = (()=>{
   // phrase — "Cal is the counter manager." works, "Cal is additional voices."
   // does not. A plural or article-less label falls back to a frame that fits
   // anything, so the rotation can never produce a broken sentence.
+  // Every frame names the part FIRST — the character's name or the role —
+  // and only then describes it. Sketch-first shapes ("…That is the new
+  // driver.") and "Looking for someone to play…" were removed (v3).
   const ROLE_FRAMES=[
-    // Label first — the classic breakdown shapes. Kept, but no longer the
-    // whole bank.
-    {sing:false,f:(n,l,b,s)=>`${capFirst(l)} — ${s}`},
-    {sing:false,f:(n,l,b,s)=>`${capFirst(b)}. ${s}`},
-    {sing:false,f:(n,l,b,s)=>`Plays ${l}. ${s}`},
-    {sing:true, f:(n,l,b,s)=>`This is ${l}. ${s}`},
-    // Name first — how most character breakdowns actually read.
+    {sing:false,f:(n,l,b,s)=>`${capFirst(l)}. ${s}`},
     {sing:true, f:(n,l,b,s)=>`${n} is ${l}. ${s}`},
+    {sing:false,f:(n,l,b,s)=>`Plays ${l}. ${s}`},
     {sing:true, f:(n,l,b,s)=>`${n}, ${l}. ${s}`},
     {sing:true, f:(n,l,b,s)=>`${n} — ${b}. ${s}`},
-    // Sketch first — the person before the job title.
-    {sing:true, f:(n,l,b,s)=>`${s} ${n} is ${l}.`},
-    {sing:true, f:(n,l,b,s)=>`${s} That is ${l}.`},
-    // Casting-side, the way a breakdown asks for someone.
-    {sing:false,f:(n,l,b,s)=>`Looking for someone to play ${l}. ${s}`}
+    {sing:false,f:(n,l,b,s)=>`${capFirst(b)}: ${s}`},
+    {sing:true, f:(n,l,b,s)=>`${n} plays ${l}. ${s}`}
   ];
   const ROLE_FRAMES_ANY=ROLE_FRAMES.filter(z=>!z.sing);
   function singularLabel(l){
@@ -30455,7 +30475,7 @@ const ACG = (()=>{
     return out;
   }
   function seedRoles(seed,track,type,plan,tier,castSize,h,res){
-    const slots=padCast(seed.c||[],track,castSize||(seed.c||[]).length,h,res);
+    const slots=padCast(seed.c||[],track,castSize||(seed.c||[]).length,h,res,type);
     const frameIdx=nextRoleFrameIndex();
     const genders=seedGenders(slots);
     const eths=seedEthnicities(slots,res);
@@ -30483,10 +30503,13 @@ const ACG = (()=>{
       // track, and then the track alone does not tell you it is stills work.
       const stills=track==="print"||/photo shoot|print campaign|modeling|ugc/i.test(type);
       const labelled=isFormatSeed(seed)&&(stills||rank==="Background"||/model|talent|crowd|atmosphere|group|ensemble|creator|face|runner|passer|shopper|guest/i.test(s.s));
+      // v3: every add-on note is checked against the role and the medium before
+      // it can be used (no product line on a portrait, no face line on a voice job).
+      const nctx={fam:v3Fam(type),type,rank,slot:s.s,sketch:s.x,gender:genders[i],group:labelled||rank==="Background"||v3PluralSlot(s.s),minors:slots.some(z=>z.a==="child"||z.a==="teen"),sentUsed:k=>v3SentUsed(k,h,res)};
       return{
         name:titleCase(s.s),
         role_type:roleTypeFor(track,rank,type),
-        _group:labelled||rank==="Background",
+        _group:labelled||rank==="Background"||v3PluralSlot(s.s),
         _groupName:titleCase(s.s),
         // The description is stored UNFRAMED here. The character name that
         // replaces this slot is invented a stage later (uniqueRoles), and the
@@ -30499,10 +30522,10 @@ const ACG = (()=>{
         // day. Everything else keeps the film/TV/stage banks.
         description:mediumSwap(
           (track==="spot"||track==="print"||/commercial|branded|social media ad|promo|product demo|ad campaign|public service|print campaign|photo shoot|modeling|ugc|corporate|industrial/i.test(type))
-            ? uniqueDescription(s.x,SPOT_ROLE_NOTES.concat(rank==="Background"?ATMOS_NOTES:rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES),h,res,usedNotes)
+            ? uniqueDescription(s.x,v3Fit(SPOT_ROLE_NOTES.concat(rank==="Background"?ATMOS_NOTES:rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES),nctx),h,res,usedNotes)
             : rank==="Background"
-              ? uniqueDescription(s.x,ATMOS_NOTES,h,res,usedNotes)
-              : uniqueDescription(s.x,rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,h,res,usedNotes),
+              ? uniqueDescription(s.x,v3Fit(ATMOS_NOTES,nctx),h,res,usedNotes)
+              : uniqueDescription(s.x,v3Fit(rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,nctx),h,res,usedNotes),
           track,type),
         _slot:s.s,
         _pad:!!s._pad,
@@ -31087,6 +31110,1787 @@ const ACG = (()=>{
     }
     return null;
   }
+  // ════════════════════════════════════════════════════════════════════════
+  // v3 (2026-09-16) — clarity, originality, fit and durable no-repeat.
+  // Everything below replaces the old summary/tagline/schedule/company/location
+  // writers. Test harness: tools/acg-harness/run.cjs (node). Every rule the
+  // listing validator enforces there is also enforced here, before a draft is
+  // accepted — a draft that breaks one is thrown away and regenerated.
+  // ════════════════════════════════════════════════════════════════════════
+
+  // Water / beach / rural / industrial tags for areas, so a ferry story is
+  // shot near the water and a farmhouse story is not shot in Hell's Kitchen.
+  const AREA_TAGS={
+    "Greenpoint, Brooklyn":"water industrial","Williamsburg, Brooklyn":"water","Bushwick, Brooklyn":"industrial","Red Hook, Brooklyn":"water industrial",
+    "Sunset Park, Brooklyn":"water industrial","Gowanus, Brooklyn":"industrial","Bay Ridge, Brooklyn":"water","Coney Island, Brooklyn":"water beach",
+    "Brighton Beach, Brooklyn":"water beach","Sheepshead Bay, Brooklyn":"water","Canarsie, Brooklyn":"water","East New York, Brooklyn":"industrial",
+    "DUMBO, Brooklyn":"water","Long Island City, Queens":"water industrial","Astoria, Queens":"water","Ridgewood, Queens":"industrial",
+    "the Rockaways, Queens":"water beach","Howard Beach, Queens":"water","Bayside, Queens":"water","Inwood, Manhattan":"water",
+    "Chelsea, Manhattan":"water","Tribeca, Manhattan":"water","Two Bridges, Manhattan":"water","the Financial District, Manhattan":"water",
+    "Mott Haven, the Bronx":"industrial water","Hunts Point, the Bronx":"industrial water","City Island, the Bronx":"water","Throggs Neck, the Bronx":"water",
+    "St. George, Staten Island":"water","Stapleton, Staten Island":"water","Tottenville, Staten Island":"water rural","Port Richmond, Staten Island":"water industrial",
+    "San Pedro":"water industrial","Venice":"water beach","Long Beach, CA":"water beach","Santa Monica":"water beach",
+    "Rogers Park":"water","Uptown":"water","Hyde Park, Chicago":"water","the South Loop":"water",
+    "Dorchester":"water","East Boston":"water","Quincy":"water","Charlestown":"water","South Boston":"water",
+    "Fishtown":"water","Old City":"water","Port Richmond, Philadelphia":"water industrial",
+    "the Newark Riverfront":"water","Paulus Hook":"water","Downtown Jersey City":"water","Liberty State Park":"water",
+    "Bywater":"water","Algiers Point":"water","the Irish Channel":"water","Holy Cross":"water",
+    "Lawrenceville":"water","the North Side":"water","Braddock":"water industrial","the Strip District":"water industrial","Millvale":"water",
+    "Zilker":"water","Riverside, Austin":"water","Dripping Springs":"rural",
+    "Southwest Detroit":"industrial","Jefferson-Chalmers":"water","Rivertown":"water","Eastern Market":"industrial","Delray":"water industrial",
+    "Fells Point":"water","Canton":"water","Locust Point":"water industrial",
+    "Wedgewood-Houston":"industrial","Shelby Park":"water","Bordeaux":"rural",
+    "Coconut Grove":"water","Miami Beach":"water beach","Key Biscayne":"water",
+    "Ballard":"water","Georgetown, Seattle":"industrial","Fremont":"water","West Seattle":"water",
+    "St. Johns":"water","Sellwood":"water","the Central Eastside":"industrial",
+    "RiNo":"industrial","Globeville":"industrial","Golden":"rural",
+    "Uptown, Minneapolis":"water","Longfellow":"water","Cedar-Riverside":"water","North Loop":"industrial","Lake Nokomis":"water",
+    "Barrio Logan":"water industrial","Ocean Beach":"water beach","Pacific Beach":"water beach","Point Loma":"water","National City":"water",
+    "the South Valley":"rural","Los Ranchos":"rural","Corrales":"rural",
+    "Thunderbolt":"water","Tybee Island":"water beach rural","Isle of Hope":"water",
+    "Camp North End":"industrial","Fox Point":"water","Olneyville":"industrial","Pawtucket":"water industrial",
+    "Kingston":"water","Beacon":"water","Newburgh":"water","Poughkeepsie":"water","Hudson":"water rural","Catskill":"water rural",
+    "Woodstock":"rural","New Paltz":"rural","Rhinebeck":"rural",
+    "Long Beach, NY":"water beach","Montauk":"water rural","Riverhead":"rural","Port Jefferson":"water","Freeport":"water",
+    "Patchogue":"water","Greenport":"water rural","North Fork farmland":"rural",
+    "Yonkers":"water","New Rochelle":"water","Peekskill":"water","Port Chester":"water","Tarrytown":"water","Ossining":"water",
+    "Fair Haven":"water","City Point":"water","Long Wharf":"water industrial"
+  };
+  function areaTags(a){return AREA_TAGS[a]||"";}
+
+  // Company names. The unit that must never repeat is the CORE ("Copper
+  // Lantern"), not the whole name — "Third Floor Motion" and "Third Floor
+  // Pictures" read as the same company. Neither list holds a word that is also
+  // a company-type ending (House, Works, Studio, Media…).
+  const CORE_A=["Amber","Arrow","Ashgrove","Bayberry","Birchwood","Black Rock","Blue Heron","Bramble","Brass","Briar","Bright Water","Cardinal","Cedar","Chestnut","Cinder","Clover","Cobalt","Copper","Coral","Cottonwood","Crane","Crescent","Cypress","Driftwood","Dusk","Ember","Evergreen","Fern","Fieldstone","Firefly","Flint","Foxglove","Garnet","Golden Hour","Granite","Graywater","Hawthorn","Hazel","Hickory","Honeybee","Indigo","Iron","Ivy","Jasper","Juniper","Kestrel","Lamplight","Larkspur","Laurel","Linden","Lodestar","Magnolia","Maple","Marigold","Meadowlark","Midnight","Millrace","Moonrise","Mulberry","North Star","Nutmeg","Oakhurst","Obsidian","Ochre","Osprey","Paper Moon","Pinewood","Plum","Quarry","Quill","Raven","Red Clay","Redwing","Rook","Rosewood","Rust","Saffron","Sage","Salt Marsh","Sandpiper","Scarlet","Silverbell","Slate","Sparrow","Spruce","Starling","Sugar Maple","Sycamore","Tamarack","Teal","Thistle","Timber","Topaz","Tupelo","Umber","Velvet","Walnut","Willow","Winterberry","Wren","Yarrow","Zinnia","Bluebird","Cobblestone","Dogwood","Emberly","Goldfinch","Heather","Kingfisher","Lilac","Mariner","Nightjar","Poppy","Rainfall","Sweetgrass","Tidewater","Violet","Whistler"];
+  const CORE_B=["Lantern","Harbor","Bridge","Ferry","Signal","Window","Ladder","Kite","Anchor","Lighthouse","Porch","Stairwell","Rooftop","Alley","Avenue","Crossing","Junction","Mill","Forge","Loom","Needle","Thread","Button","Ribbon","Key","Gate","Fence","Garden","Field","Meadow","Hollow","Ridge","Canyon","Creek","River","Tide","Current","Shore","Island","Reef","Comet","Moon","Orbit","Echo","Chorus","Verse","Ballad","Fiddle","Drum","Bell","Whistle","Clock","Ledger","Postcard","Letter","Envelope","Suitcase","Bicycle","Streetcar","Trolley","Caboose","Parade","Carousel","Kettle","Teacup","Skillet","Pantry","Cupboard","Attic","Cellar","Hearth","Chimney","Weathervane","Barn","Silo","Tractor","Compass","Hammock","Canoe","Paddle","Sail","Mast","Harpoon","Almanac","Atlas","Pocketknife","Matchbook","Typewriter","Jukebox","Marquee","Balcony","Courtyard","Fountain","Orchard","Vineyard","Quarry Pond","Wishbone","Birdhouse","Thimble"];
+  const COMPANY_TAILS={
+    film:["Pictures","Films","Productions","Film Company","Motion Pictures"],
+    tv:["Television","Productions","Entertainment","Pictures"],
+    stage:["Theater Company","Stage Company","Playhouse","Theater Project","Repertory"],
+    ad:["Creative","Content","Commercial Productions","Agency"],
+    corp:["Content","Productions","Creative"],
+    photo:["Photo Studio","Photography","Studios"],
+    audio:["Audio","Sound"],
+    anim:["Animation","Games"],
+    live:["Live","Events","Experiences"],
+    move:["Movement Lab","Dance Company","Productions"],
+    music:["Productions","Films"],
+    unscripted:["Entertainment","Productions","Television"],
+    job:["Pictures","Productions","Films"]
+  };
+
+  // Extra surnames, so a board of hundreds of listings is not the same fifty
+  // families over and over. Real, common surnames only.
+  const EXTRA_SURNAMES={
+    "Black / African descent":["Abernathy","Alston","Ashby","Battle","Blackwell","Bolden","Boykin","Brickhouse","Byrd","Calloway","Cheatham","Council","Dandridge","Dukes","Easley","Epps","Faison","Frazier","Gatling","Goins","Greenlee","Hairston","Hargrove","Hightower","Hinton","Jeter","Lathan","Lockett","Mabry","McCray","Mims","Mosley","Nesbitt","Oliver","Peebles","Pettiford","Ransom","Rountree","Sessoms","Spruill","Staton","Tate","Toney","Upshaw","Whitaker","Womack","Yancey","Okonkwo","Mensah","Diallo"],
+    "White / European descent":["Abbott","Albright","Beckett","Blakely","Brennan","Calder","Carrick","Conley","Dempsey","Dunleavy","Easton","Fairchild","Galloway","Garrity","Hadley","Harlow","Hendricks","Hollister","Keating","Kessler","Lindqvist","Lowry","Mahler","Marston","McAllister","Merritt","Nygaard","Oakley","Pemberton","Prescott","Quimby","Radcliffe","Sheffield","Sorensen","Stroud","Thackeray","Townsend","Underhill","Vandermeer","Wakefield","Wendt","Whitcomb","Winslow","Yardley","Zimmer","Kowalczyk","Horvath","Novotny","Brandt","Lindgren"],
+    "Hispanic / Latino":["Aceves","Arellano","Barrientos","Becerra","Cabrera","Camacho","Cardenas","Cisneros","Corona","Delgado","Echeverria","Espinoza","Figueroa","Galindo","Guerrero","Ibarra","Jaramillo","Lozano","Maldonado","Menendez","Montalvo","Nieves","Ocampo","Olivares","Pacheco","Quiroga","Rangel","Robles","Salazar","Santiago","Solis","Tapia","Urena","Valdez","Villalobos","Zavala","Bustamante","Carrasco","Duran","Fajardo"],
+    "Asian":["Aoki","Bae","Cheng","Chiang","Choi","Dang","Fong","Fujimoto","Han","Hoang","Hsu","Huang","Inoue","Jang","Kang","Kwon","Lau","Lee","Liang","Lim","Luong","Matsuda","Nakano","Ng","Ong","Pham","Quach","Seo","Shim","Tanaka","Tsai","Uchida","Vu","Wong","Xu","Yamada","Yeung","Zhao","Hirano","Oh"],
+    "South Asian":["Agarwal","Ahuja","Bhattacharya","Chaudhry","Das","Dutta","Ghosh","Gill","Iyer","Jain","Joshi","Kulkarni","Mahajan","Malhotra","Mehta","Menon","Mishra","Nair","Pillai","Rao","Reddy","Saxena","Sen","Shetty","Sinha","Subramanian","Thakur","Trivedi","Varma","Chopra","Bose","Dhillon","Grewal","Hussain","Khatri","Bajwa","Sandhu","Ranganathan","Prasad","Qureshi"],
+    "Middle Eastern / North African":["Abboud","Aziz","Bakri","Bishara","Daher","Darwish","Farah","Ghanem","Habib","Hijazi","Issa","Jaber","Karam","Khoury","Maalouf","Nasser","Odeh","Qasim","Rahal","Saab","Salem","Shadid","Taha","Yousef","Zogby","Amin","Boutros","Chahine","Fakhoury","Haddadin","Kassab","Mansour","Najjar","Rizk","Sabbagh","Tamimi","Zaki","Bennani","Cherkaoui","Mahfouz"],
+    "Native American / Indigenous":["Attakai","Begaye","Bitsui","Blackhorse","Cornsilk","Deschenie","Grass","Harjo","Lente","Manuelito","Nakai","Pino","Quetawki","Runningwater","Shorty","Silversmith","Tohee","Whitehorse","Yazzie","Zah","Bowman","Tallbull","Lonewolf","Redhouse","Sandoval","Tsosie","Chee","Etsitty","Hoskie","Lameman","Peshlakai","Skenandore","Wauneka","Arviso","Benally","Charley","Watchman"],
+    "Pacific Islander":["Aiona","Akana","Alapati","Fonoti","Fuimaono","Kahale","Kaleo","Kamai","Kanahele","Kapaona","Keawe","Lealaimatafao","Mahoe","Mataafa","Naone","Palakiko","Pua","Sapolu","Taufa","Tuiasosopo","Tupou","Vaifanua","Vainikolo","Kealoha","Kahananui","Leota","Nakoa","Faleolo","Tafuna","Seumalo","Moeai","Salave'a","Hopoate","Fifita","Lolo","Mapu","Niumatalolo","Paopao","Sua","Toleafoa"]
+  };
+
+  // A seed's premise names a medium half the time ("a music video that…"),
+  // which is how a Dance Project ended up described as a music video. For every
+  // brief-style seed the story is restated here without a medium, as a noun
+  // phrase that reads after "about" — plus the product category an ad title may
+  // name, and the project types the seed genuinely fits. Types a brief does not
+  // fit were removed from its list (a movement library is not a Performance Art
+  // piece; a portrait series is not a Corporate Video).
+  const SEED_V3={
+    "spot-insurance-whatif":{cat:"Insurance",only:["Commercial","Spec Commercial","Social Media Ad"],about:"the ordinary moment just before something goes wrong at home"},
+    "spot-hardware-neighbors":{cat:"Hardware",only:["Commercial","Spec Commercial","Social Media Ad","Product Demo"],about:"neighbors who borrow tools and never give them back"},
+    "spot-pharmacy-counter":{cat:"Pharmacy",only:["Commercial","Branded Content","Public Service Announcement"],about:"one long day at a pharmacy pick-up counter"},
+    "spot-rideshare-night":{cat:"Rideshare",only:["Branded Content","Commercial","Promo Video"],about:"a rideshare driver's last three rides of the night"},
+    "spot-urgent-care":{cat:"Urgent Care",only:["Commercial","Public Service Announcement"],about:"how long an ordinary afternoon at a walk-in clinic really takes"},
+    "spot-gym-january":{cat:"Gym",only:["Commercial","Spec Commercial","Social Media Ad"],about:"the first three weeks of a new gym membership"},
+    "print-workwear-trades":{cat:"Workwear",only:["Print Campaign","Photo Shoot","Modeling"],about:"people who work with their hands, wearing work clothes in their own workshops"},
+    "print-skincare-real-people":{cat:"Skin Care",only:["Print Campaign","Photo Shoot","Influencer / UGC Content"],about:"everyday faces with almost no retouching"},
+    "print-hotel-lifestyle":{cat:"Hotel",only:["Print Campaign","Photo Shoot","Influencer / UGC Content"],about:"made-up guests moving through one hotel over a single day"},
+    "print-running-city":{cat:"Running Gear",only:["Print Campaign","Photo Shoot","Modeling"],about:"real runners on one city route at sunrise"},
+    "print-eyewear-editorial":{cat:"Eyewear",only:["Print Campaign","Photo Shoot","Modeling"],about:"glasses worn by four made-up characters with four different jobs"},
+    "print-annual-report":{cat:"",only:["Print Campaign","Photo Shoot"],about:"the people who keep a very ordinary business running"},
+    "mv-late-shift":{cat:"",only:["Music Video"],about:"one worker's closing shift and the walk home afterwards"},
+    "mv-block-party":{cat:"",only:["Music Video"],about:"a summer block party on one closed-off street"},
+    "audio-missing-persons":{cat:"",only:["Podcast / Audio Drama"],about:"a set of recordings from a missing-person case that was never solved"},
+    "animation-neighborhood":{cat:"",only:["Animation","Voiceover"],about:"the people living in one small apartment building"},
+    "training-safety-scenario":{cat:"",only:["Industrial / Training Video","Corporate Video"],about:"the moment a worker decides whether to report a safety problem"},
+    "docuseries-block":{cat:"",only:["Reality / Docu-Series"],about:"one street of small businesses and the people who run them"},
+    "live-event-brand-activation":{cat:"",only:["Live Event"],about:"performers running the same short show for the public all day"},
+    "dance-warehouse-piece":{cat:"",only:["Dance Project"],about:"dancers moving through one huge empty warehouse"},
+    "subway-busker":{cat:"",only:["Musical Theater","Workshop / Staged Reading"],about:"street musicians who fight over the best spot on a subway platform and end up forming a band",p:"street musicians who fight over the best spot on a subway platform end up forming a band"},
+    "choir-split":{cat:"",only:["Musical Theater","Theater","Workshop / Staged Reading"],about:"a church choir that splits in two over who gets the Christmas solo"},
+    "doc-video-store":{cat:"",only:["Documentary","Reality / Docu-Series"],about:"the last video rental store in a small city and the people who still go in"},
+    "doc-boxing-gym":{cat:"",only:["Documentary","Reality / Docu-Series"],about:"a neighborhood boxing gym that keeps local teenagers off a rough block"},
+    "doc-night-bakery":{cat:"",only:["Documentary","Reality / Docu-Series"],about:"a family bakery between two and six in the morning"},
+    "anim-city-pigeons":{cat:"",only:["Animation","Voiceover"],about:"a gang of city pigeons who run the sky over one block"},
+    "anim-lost-things":{cat:"",only:["Animation","Voiceover"],about:"the huge warehouse where everything anyone loses ends up"},
+    "spot-first-paycheck":{cat:"Bank",only:["Commercial","Branded Content","Social Media Ad","Spec Commercial"],about:"what people do with the very first money they earn"},
+    "spot-airline-delay":{cat:"Airline",only:["Commercial","Branded Content","Spec Commercial"],about:"strangers stuck at one airport gate during a four-hour delay"},
+    "spot-morning-ritual":{cat:"Coffee",only:["Commercial","Branded Content","Social Media Ad"],about:"five people getting through the same fifteen minutes of their morning"},
+    "spot-laundromat-hours":{cat:"Detergent",only:["Commercial","Spec Commercial","Social Media Ad"],about:"two busy hours in one laundromat"},
+    "spot-bike-shop-fix":{cat:"Bike Shop",only:["Commercial","Product Demo","Promo Video"],about:"the small bike repairs people are too shy to ask for"},
+    "spot-grocery-list":{cat:"Grocery",only:["Commercial","Social Media Ad","Spec Commercial","Ad Campaign"],about:"one person shopping from somebody else's handwritten list"},
+    "spot-first-apartment":{cat:"Furniture",only:["Commercial","Social Media Ad","Promo Video"],about:"the first night in an empty first apartment"},
+    "spot-taxi-airport-run":{cat:"Travel App",only:["Commercial","Spec Commercial","Promo Video"],about:"a family racing to the airport with no time left"},
+    "spot-barber-chair":{cat:"Men's Health",only:["Commercial","Public Service Announcement"],about:"four conversations in a barber's chair"},
+    "spot-food-truck-lunch":{cat:"Food Truck",only:["Commercial","Social Media Ad","Product Demo"],about:"one food truck getting through a single lunch rush"},
+    "spot-library-card":{cat:"",only:["Public Service Announcement","Social Media Ad"],about:"everything a public library offers that is not a book"},
+    "spot-moving-day":{cat:"Moving Company",only:["Commercial","Spec Commercial","Ad Campaign"],about:"getting one very large couch up a narrow staircase"},
+    "spot-night-shift-diner":{cat:"",only:["Branded Content","Promo Video"],about:"the three quiet hours when an all-night diner is nearly empty"},
+    "spot-school-run":{cat:"",only:["Commercial","Social Media Ad","Public Service Announcement"],about:"the twelve minutes between waking up late and reaching the school gate"},
+    "spot-plant-shop":{cat:"Plant Shop",only:["Commercial","Social Media Ad","Influencer / UGC Content","Product Demo"],about:"people who have killed every plant they have ever owned"},
+    "spot-swim-lesson":{cat:"",only:["Public Service Announcement","Branded Content"],about:"adults learning to swim for the first time"},
+    "spot-tool-library":{cat:"",only:["Branded Content","Promo Video","Corporate Video"],about:"a neighborhood tool library where people share tools instead of buying them"},
+    "spot-shoe-repair":{cat:"",only:["Branded Content","Promo Video","Ad Campaign"],about:"the things people bring to a repair shop that are not worth repairing"},
+    "spot-community-garden":{cat:"",only:["Branded Content","Social Media Ad","Public Service Announcement"],about:"one shared garden plot over a whole summer"},
+    "print-swim-team-portraits":{cat:"Swimwear",only:["Print Campaign","Photo Shoot","Modeling"],about:"a swim team photographed in the seconds before and after a race"},
+    "print-bookshop-people":{cat:"Bookshop",only:["Print Campaign","Photo Shoot","Influencer / UGC Content"],about:"regular customers holding the book they keep coming back for"},
+    "print-denim-generations":{cat:"Denim",only:["Print Campaign","Photo Shoot","Modeling"],about:"pairs of people who share the same clothes"},
+    "print-hands-craft":{cat:"",only:["Print Campaign","Photo Shoot"],about:"close-ups of skilled hands at work"},
+    "print-uniform-shift":{cat:"",only:["Print Campaign","Photo Shoot"],about:"workers photographed at the end of a long shift"},
+    "print-market-vendors":{cat:"Produce",only:["Print Campaign","Photo Shoot","Influencer / UGC Content"],about:"the market traders who grow and sell the food"},
+    "print-back-to-school":{cat:"School Clothing",only:["Print Campaign","Photo Shoot","Modeling","Ad Campaign"],about:"real classmates wearing next year's school clothes"},
+    "print-winter-coats":{cat:"Winter Coat",only:["Print Campaign","Photo Shoot","Modeling"],about:"people wearing winter coats outdoors on a truly cold day"},
+    "print-pet-adoption":{cat:"",only:["Print Campaign","Photo Shoot","Public Service Announcement"],about:"people in their first week with an adopted pet"},
+    "vo-transit-announcements":{cat:"",only:["Voiceover","Podcast / Audio Drama","Animation"],about:"the woman whose recorded voice announces every stop on a city train line"},
+    "vo-helpline-nights":{cat:"",only:["Podcast / Audio Drama","Voiceover"],about:"one night on an overnight helpline"},
+    "game-harbor-town":{cat:"",only:["Video Game","Motion Capture"],about:"a player who fixes things for the people of a small harbor town"},
+    "mocap-crowd-study":{cat:"",only:["Motion Capture","Video Game"],about:"ordinary people walking, waiting and standing, recorded for a video game"},
+    "dance-stairwell-piece":{cat:"",only:["Dance Project","Experimental Film"],about:"three dancers moving down the stairwell of one building"},
+    "live-event-host-market":{cat:"",only:["Live Event","Hosting / Presenter"],about:"a weekend market that needs a host to keep its stage running for six hours"},
+    "educational-first-job":{cat:"",only:["Educational Video","Industrial / Training Video"],about:"everything nobody explains on your first day at a new job"},
+    "music-video-block-party":{cat:"",only:["Music Video","Dance Project"],about:"a whole street performing one song, house by house"},
+    "performance-art-waiting-room":{cat:"",only:["Performance Art","Live Event"],about:"a real waiting room where the audience does not know the show has started"},
+    // Narrative seeds whose premise was a noun phrase rather than a sentence.
+    "community-garden":{p:"a community garden with forty plots has a waiting list nine years long"},
+    "barbershop-block":{p:"everyone on the block finds out what happened at the same barbershop"}
+  };
+  // Formats that had one or no brief of their own.
+  const NEW_SEEDS=[
+    {k:"v3-lifestyle-first-kitchen",era:"n/a",genre:"lifestyle series",tracks:["tv"],only:["Lifestyle / Unscripted"],ttl:["First Kitchen","Cook It Once","Dinner for Nine"],
+      about:"people cooking a family recipe for the first time with the relative who taught it",p:"people cook a family recipe for the first time with the relative who taught it",
+      h:"the relative is not allowed to touch the pan, only give directions",h2:"each episode ends with the whole family eating what was made, good or bad",
+      w:["a real family kitchen","a small apartment kitchen with one counter","a community center kitchen"],
+      c:[{s:"the home cook",r:"Lead",a:"adult",x:"Nervous in a kitchen and honest about it. Talks while cooking without needing a script."},{s:"the relative who taught it",r:"Lead",a:"senior",x:"Knows the recipe by heart and cannot explain it in measurements. Warm, bossy and funny."},{s:"the family at the table",r:"Background",a:"adult",x:"Real reactions at the end of the meal. No lines."}]},
+    {k:"v3-lifestyle-thrift-flip",era:"n/a",genre:"lifestyle series",tracks:["tv"],only:["Lifestyle / Unscripted"],ttl:["Second Hand, First Place","Ten Dollar Room","The Flip"],
+      about:"two friends who furnish a room using only thrift-store finds and a small budget",p:"two friends furnish a room using only thrift-store finds and a small budget",
+      h:"the person who lives in the room is not allowed to see it until the end",h2:"every piece has to come from a store within walking distance",
+      w:["a thrift store and a walk-up apartment","a flea market and a small studio apartment","a donation warehouse and a shared house"],
+      c:[{s:"the first friend",r:"Lead",a:"youngAdult",x:"Loves a bargain and says so out loud. Comfortable talking to camera while carrying furniture."},{s:"the second friend",r:"Lead",a:"adult",x:"The practical one with the tape measure. Dry, calm and quick with a joke."},{s:"the room owner",r:"Supporting",a:"adult",x:"Reacts to the finished room. Real surprise, no rehearsed lines."}]},
+    {k:"v3-lifestyle-new-in-town",era:"n/a",genre:"lifestyle series",tracks:["tv"],only:["Lifestyle / Unscripted","Hosting / Presenter"],ttl:["New in Town","One Week Local","Ask a Neighbor"],
+      about:"a newcomer who spends one week learning a neighborhood from the people who live there",p:"a newcomer spends one week learning a neighborhood from the people who live there",
+      h:"every stop is chosen by the last person the newcomer met",h2:"the newcomer has to cook a meal for everyone they met on the final night",
+      w:["a neighborhood main street","a local market and two family shops","a corner bakery and a park"],
+      c:[{s:"the newcomer",r:"Lead",a:"youngAdult",x:"Curious, easy to talk to and happy to look lost on camera. Some hosting or interview experience helps."},{s:"the neighbor who knows everyone",r:"Supporting",a:"mature",x:"Has lived on the block for years and has an opinion about every shop."},{s:"the shop owners",r:"Background",a:"adult",x:"Local business owners talking about their day. No scripts."}]},
+    {k:"v3-host-cooking-demo",era:"n/a",genre:"hosted segment",tracks:["tv","other"],only:["Hosting / Presenter"],ttl:["Ten Minute Dinner","Fridge Rescue","The Quick Plate"],
+      about:"a host who turns whatever is left in a guest's fridge into a meal in ten minutes",p:"a host turns whatever is left in a guest's fridge into a meal in ten minutes",
+      h:"the host does not see the ingredients until the clock starts",h2:"the guest has to cook the second half while the host only talks them through it",
+      w:["a small studio kitchen","a guest's apartment kitchen","a demo kitchen at a food market"],
+      c:[{s:"the host",r:"Lead",a:"adult",x:"Talks to camera easily, cooks well and stays relaxed when things go wrong. Real cooking skill is needed."},{s:"the guest cook",r:"Supporting",a:"adult",x:"A home cook with a messy fridge and a good sense of humor."}]},
+    {k:"v3-host-local-sports",era:"n/a",genre:"hosted segment",tracks:["tv","other"],only:["Hosting / Presenter","Promo Video"],ttl:["Rec League","Sunday Sidelines","Home Court"],
+      about:"a host who visits a different amateur sports league every week",p:"a host visits a different amateur sports league every week",
+      h:"the host has to play one game with the team before the interviews",h2:"the players pick the question the host has to ask their captain",
+      w:["a public basketball court","a softball field in a city park","a bowling alley on league night"],
+      c:[{s:"the host",r:"Lead",a:"youngAdult",x:"Quick on their feet, good with strangers and not afraid to look bad at a sport. Hosting reel preferred."},{s:"the team captain",r:"Supporting",a:"adult",x:"Proud of the team and happy to be teased about it on camera."},{s:"the players",r:"Background",a:"adult",x:"Playing a real game. Some players get short interviews."}]},
+    {k:"v3-training-forklift",era:"n/a",genre:"workplace training",tracks:["spot","other"],only:["Industrial / Training Video"],ttl:["Clear the Aisle","Before You Lift","Two Seconds Early"],
+      about:"warehouse workers learning the safety checks that stop accidents",p:"warehouse workers learn the safety checks that stop accidents",
+      h:"each lesson shows the same shift twice, once with the check skipped and once with it done",h2:"the new worker is the one who spots the problem the experienced crew keeps missing",
+      w:["a working warehouse aisle","a loading dock and a break room","a distribution center floor"],
+      c:[{s:"the new warehouse worker",r:"Lead",a:"youngAdult",x:"Careful, a little nervous and quick to learn. Speaks the safety lines clearly and naturally."},{s:"the shift supervisor",r:"Supporting",a:"midCareer",x:"Busy, fair and under pressure to hit the numbers."},{s:"the experienced driver",r:"Supporting",a:"mature",x:"Has done the job for years and has started cutting corners."},{s:"the warehouse crew",r:"Background",a:"adult",x:"Moving boxes and working in the aisles behind the main scenes."}]},
+    {k:"v3-training-customer-service",era:"n/a",genre:"workplace training",tracks:["spot","other"],only:["Industrial / Training Video","Corporate Video"],ttl:["The Hard Call","Calm at the Counter","Let Them Finish"],
+      about:"front desk staff learning how to calm an upset customer",p:"front desk staff learn how to calm an upset customer",
+      h:"every scene is played once badly and once well, with the same actors",h2:"the customer turns out to be right, and the lesson is how to say so",
+      w:["a hotel front desk","a bank branch counter","a clinic reception desk"],
+      c:[{s:"the front desk worker",r:"Lead",a:"youngAdult",x:"Friendly and clear. Has to play the same scene two ways, badly and well."},{s:"the upset customer",r:"Supporting",a:"mature",x:"Frustrated, not a villain. The anger has to feel fair."},{s:"the manager",r:"Supporting",a:"midCareer",x:"Steps in once and shows how it is done."}]},
+    {k:"v3-edu-money-basics",era:"n/a",genre:"educational series",tracks:["other"],only:["Educational Video"],ttl:["Money Basics","The First Budget","Rent, Food, Phone"],
+      about:"a teenager learning to handle their first paycheck",p:"a teenager learns to handle their first paycheck",
+      h:"each lesson is one small mistake and how to fix it",h2:"the teenager ends up teaching the lesson to their own parent",
+      w:["a kitchen table and a bank branch","a high school classroom and a corner store","a bedroom and a cell phone store"],
+      c:[{s:"the teenager",r:"Lead",a:"teen",x:"Bright and easily distracted. Reads short lines naturally to camera."},{s:"the parent",r:"Supporting",a:"midCareer",x:"Means well and is not great with money either."},{s:"the bank worker",r:"Supporting",a:"adult",x:"Patient and clear. Explains one idea per scene."}]},
+    {k:"v3-doc-ferry-captain",era:"n/a",genre:"documentary",tracks:["film","tv"],only:["Documentary"],ttl:["Last Crossing","The Morning Boat","Slack Tide"],
+      about:"a small ferry captain in her final season before the route is shut down",p:"a small ferry captain works her final season before the route is shut down",
+      h:"the town votes on a plan that could save the route, and the captain is not sure she wants it saved",h2:"her deckhand, who is nineteen, asks to take over the boat",
+      w:["a small ferry and its dock","a ferry terminal and the town beside it","a harbor with one working boat"],
+      c:[{s:"the captain (re-creations)",r:"Lead",a:"mature",g:"F",x:"For short re-created scenes only. Calm, weathered and at home on a boat."},{s:"the deckhand (re-creations)",r:"Supporting",a:"youngAdult",x:"Young, eager and good with rope. Short re-created scenes, no dialogue."},{s:"the passengers",r:"Background",a:"adult",x:"Riding the ferry in wide shots."}]},
+    {k:"v3-live-museum-night",era:"n/a",genre:"live event",tracks:["other"],only:["Live Event","Performance Art"],ttl:["After Hours at the Museum","Night Guides","The Late Tour"],
+      about:"actors playing historical characters who give tours of a museum after dark",p:"actors play historical characters who give tours of a museum after dark",
+      h:"visitors can ask the characters anything, so every tour goes somewhere different",h2:"two characters from different centuries argue in front of the same painting",
+      w:["a history museum's main hall","a small city museum with three galleries","a historic house museum"],
+      c:[{s:"the lead guide",r:"Lead",a:"midCareer",x:"Strong improviser who stays in character while answering questions from the public."},{s:"the second guide",r:"Lead",a:"adult",x:"Quick, funny and comfortable with history. Improv training needed."},{s:"the gallery characters",r:"Supporting",a:"adult",x:"Short scenes performed on a loop in the side rooms."}]},
+    {k:"v3-mocap-sports-game",era:"n/a",genre:"movement capture",tracks:["other"],only:["Motion Capture","Video Game"],ttl:["Full Court","Game Day Moves","Clutch"],
+      about:"real basketball players recording moves for a sports video game",p:"real basketball players record moves for a sports video game",
+      h:"every move is recorded ten times so the game can pick a different one each play",h2:"the players have to act out celebrations and arguments with the referee",
+      w:["a motion-capture stage with a basketball court marked out","a capture studio with a half court","a warehouse set up as a capture stage"],
+      c:[{s:"the point guard",r:"Lead",a:"youngAdult",x:"A strong basketball player with quick hands and fast feet. College or high-level club play needed."},{s:"the center",r:"Lead",a:"youngAdult",x:"Tall, strong under the basket and able to repeat the same move many times."},{s:"the referee",r:"Supporting",a:"midCareer",x:"Knows the rules and the signals. Some acting for arguments with players."}]},
+    {k:"v3-mocap-fantasy-creatures",era:"n/a",genre:"movement capture",tracks:["other"],only:["Motion Capture"],ttl:["Creature Work","Four Legs","The Beast Walk"],
+      about:"performers creating how the creatures in a fantasy video game move",p:"performers create how the creatures in a fantasy video game move",
+      h:"each creature has to move like a real animal, not like a person in a suit",h2:"the biggest creature is played by two performers working together",
+      w:["a motion-capture stage","a capture studio with padded floors","a stunt gym set up for capture"],
+      c:[{s:"the lead creature performer",r:"Lead",a:"adult",x:"Strong movement or dance background. Comfortable working on all fours for long periods."},{s:"the second creature performer",r:"Lead",a:"adult",x:"Physical theater or stunt training. Good stamina and control."},{s:"the movement coach",r:"Supporting",a:"midCareer",x:"Helps the team build each creature's walk. Teaching experience needed."}]},
+    // ── New premises, 2026-09-16 ──
+    {k:"v3-tow-truck-race",era:"now",genre:"crime comedy",tracks:["film","tv"],ttl:["First on Scene","Hook and Chain","Scanner Night"],
+      p:"two rival tow truck drivers race each other to car crashes across the city every night",
+      h:"one of them starts arriving at crashes before they have even happened",h2:"they both get called to the same wreck, and the driver inside is the owner of their company",
+      w:["a tow yard behind a gas station","an all-night auto body garage","a highway service road at night"],
+      c:[{s:"the older driver",r:"Lead",a:"mature",x:"Has driven a tow truck for twenty years and knows every shortcut. Grumpy, fair and very funny without meaning to be."},
+         {s:"the younger driver",r:"Lead",a:"youngAdult",x:"New to the job and much too fast. Wants to buy their own truck by the end of the year."},
+         {s:"the dispatcher",r:"Supporting",a:"midCareer",x:"Runs the radio for both companies and plays them against each other."},
+         {s:"the body shop owner",r:"Supporting",a:"senior",x:"Pays for every car that comes through the gate and asks no questions."},
+         {s:"the night cop",r:"Day Player",a:"adult",x:"Has one scene at a crash and is tired of seeing the same two trucks."}]},
+    {k:"v3-wedding-caterer",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Plus One Hundred","Table Nineteen","The Late Buffet"],
+      p:"a small family catering company takes on a wedding three times bigger than anything it has done",
+      h:"the bride's mother has hired a second caterer as a backup and not told anyone",h2:"the walk-in fridge breaks at noon on the wedding day",
+      w:["a rented wedding hall kitchen","a banquet hall with a small back kitchen","a catering kitchen behind a restaurant"],
+      c:[{s:"the head cook",r:"Lead",a:"midCareer",x:"Started the company in her own kitchen and does not delegate. Calm in a crisis and terrible at hiding it when she is angry."},
+         {s:"the head cook's son",r:"Lead",a:"youngAdult",g:"M",x:"Runs the front of house and wants to change everything about the business."},
+         {s:"the bride's mother",r:"Supporting",a:"mature",g:"F",x:"Very polite, very rich and never happy with anything."},
+         {s:"the rival caterer",r:"Supporting",a:"midCareer",x:"Smooth, well-dressed and always one step ahead."},
+         {s:"the dishwasher",r:"Day Player",a:"youngAdult",x:"Says almost nothing all day and saves the dinner in the last scene."}]},
+    {k:"v3-night-school-english",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Present Tense","Level Two","Tuesday and Thursday"],
+      p:"a night-school English class for adults gets a new teacher who has never taught before",
+      h:"the class finds out the teacher is only there to pass a course of her own",h2:"the final exam is moved up two weeks and half the class is working double shifts",
+      w:["a public school classroom at night","a community college classroom","a library meeting room"],
+      c:[{s:"the new teacher",r:"Lead",a:"youngAdult",g:"F",x:"Smart, nervous and trying too hard. Gets more from the class than she gives at first."},
+         {s:"the oldest student",r:"Supporting",a:"senior",x:"A retired engineer who corrects the teacher's grammar. Proud and kind."},
+         {s:"the student who works nights",r:"Supporting",a:"adult",x:"Falls asleep in class and still gets every answer right."},
+         {s:"the class clown",r:"Supporting",a:"youngAdult",x:"Makes every lesson about food. Very funny and secretly the hardest worker."},
+         {s:"the school janitor",r:"Day Player",a:"mature",x:"Locks up at nine and gives the teacher the best advice she gets all year."}]},
+    {k:"v3-snow-plow-driver",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Plow Route Nine","Whiteout Shift","The Last Road Cleared"],
+      p:"a snow plow driver works a sixty-hour storm clearing roads in a small town",
+      h:"a family is stuck at the end of a road the town told him to skip",h2:"his plow breaks down outside the house of the woman who left him",
+      w:["a town highway garage","a snow plow cab on a country road","a truck stop diner"],
+      c:[{s:"the plow driver",r:"Lead",a:"mature",g:"M",x:"Quiet and steady, and has driven the same route for years. Does not like to be told where not to go."},
+         {s:"the road supervisor",r:"Supporting",a:"midCareer",x:"Has too few trucks and too many roads. Makes hard calls over the radio."},
+         {s:"the stranded mother",r:"Supporting",a:"adult",g:"F",x:"Trying to keep two kids calm in a cold house."},
+         {s:"the diner owner",r:"Day Player",a:"senior",x:"Keeps the coffee going for every driver all night."}]},
+    {k:"v3-thrift-store-volunteers",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Donations Welcome","Everything Must Go","The Back Room"],
+      p:"the volunteers who sort donations at a church thrift store find a painting that might be worth a fortune",
+      h:"the person who donated it comes back to ask for it",h2:"each volunteer secretly takes it home for one night to have it checked",
+      w:["a church thrift store","a thrift store sorting room","a church basement"],
+      c:[{s:"the store manager",r:"Lead",a:"mature",x:"Runs the store like a small army and follows every rule, until now."},
+         {s:"the youngest volunteer",r:"Lead",a:"youngAdult",x:"Only there for school service hours. The first to look up what the painting is worth."},
+         {s:"the retired art teacher",r:"Supporting",a:"senior",x:"Sure the painting is fake and much too sure about it."},
+         {s:"the pastor",r:"Supporting",a:"midCareer",x:"Wants the money for a new roof and feels bad about wanting it."}]},
+    {k:"v3-bus-driver-last-route",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["End of the Line","Route 44","Last Stop Before the Depot"],
+      p:"a city bus driver works her last shift before retirement on the route she has driven for thirty years",
+      h:"a boy she used to drive to school gets on as an adult and asks her to keep driving past the depot",h2:"the regular riders have planned a surprise, and she hates surprises",
+      w:["a city bus and its depot","a bus depot break room","a bus stop outside a hospital"],
+      c:[{s:"the bus driver",r:"Lead",a:"senior",g:"F",x:"Strict about the rules and soft about the people. Knows every rider by their stop."},
+         {s:"the grown-up passenger",r:"Lead",a:"adult",g:"M",x:"Came back to the city for one day and is not saying why."},
+         {s:"the depot supervisor",r:"Supporting",a:"midCareer",x:"Wants her to finish on time so he can go home."},
+         {s:"the regular rider",r:"Supporting",a:"mature",x:"Has been riding the same bus for fifteen years and organized the surprise."},
+         {s:"the new driver",r:"Day Player",a:"youngAdult",x:"Rides along to learn the route and asks too many questions."}]},
+    {k:"v3-roller-rink-sale",era:"1990s",genre:"comedy",tracks:["film","tv"],ttl:["Couples Skate","All Skate","Last Song of the Night"],
+      p:"a family roller rink has one summer to pay off its debts before the bank sells the building",
+      h:"the owner's teenage daughter enters the rink in a televised skating contest",h2:"the bank manager turns out to be the best skater in town",
+      w:["a roller rink with a snack bar","a roller rink parking lot","a skate rental counter"],
+      c:[{s:"the rink owner",r:"Lead",a:"mature",x:"Loves the rink more than money and is bad with both."},
+         {s:"the owner's daughter",r:"Lead",a:"teen",g:"F",x:"Sixteen, a very good skater and embarrassed by her father. Guardian required."},
+         {s:"the DJ",r:"Supporting",a:"youngAdult",x:"Plays the same ten songs every night and has big plans he never follows."},
+         {s:"the bank manager",r:"Supporting",a:"midCareer",x:"Nice to everyone and still has to do his job."}]},
+    {k:"v3-hearing-aid-shop",era:"now",genre:"romance",tracks:["film","tv","stage"],ttl:["Turn It Up","Say That Again","Clear as a Bell"],
+      p:"two widowed customers at a hearing aid shop keep booking fitting appointments just to see each other",
+      h:"their grown children find out and try to stop it",h2:"one of them can hear perfectly well and has been pretending for months",
+      w:["a hearing aid shop on a main street","a small medical office waiting room","a diner across the street from a clinic"],
+      c:[{s:"the widow",r:"Lead",a:"senior",g:"F",x:"Sharp, funny and not ready to be done with life."},
+         {s:"the widower",r:"Lead",a:"senior",g:"M",x:"Shy and a terrible liar. Buys a new tie for every appointment."},
+         {s:"the shop technician",r:"Supporting",a:"youngAdult",x:"Sees exactly what is going on and quietly helps."},
+         {s:"the worried daughter",r:"Supporting",a:"midCareer",g:"F",x:"Loves her mother and thinks she knows what is best for her."}]},
+    {k:"v3-small-town-radio-contest",era:"1980s",genre:"comedy",tracks:["film","tv","stage"],ttl:["Caller Number Nine","Stay Tuned","The Big Giveaway"],
+      p:"a small-town radio station runs a contest where the prize is a car the station cannot afford",
+      h:"the winner is the station owner's worst enemy",h2:"the whole town figures out the contest is rigged, and plays along",
+      w:["a small radio station studio","a car dealership lot","a radio station front office"],
+      c:[{s:"the station owner",r:"Lead",a:"mature",x:"Always has a plan and the plan always costs more than he has."},
+         {s:"the morning host",r:"Lead",a:"adult",x:"The most famous voice in town and a nervous wreck off the air."},
+         {s:"the contest winner",r:"Supporting",a:"mature",x:"Won fair and square and will not let anyone forget it."},
+         {s:"the car dealer",r:"Supporting",a:"midCareer",x:"Loaned the car on a handshake and wants it back."}]},
+    {k:"v3-crossword-editor",era:"now",genre:"mystery",tracks:["film","tv","stage"],ttl:["Seven Down","Across and Down","The Puzzle Page"],
+      p:"a newspaper crossword editor starts receiving puzzles from a stranger that describe crimes before they happen",
+      h:"the next puzzle has the editor's own address in the answers",h2:"the puzzles are coming from inside the newsroom",
+      w:["a small newspaper office","a crossword editor's apartment","a police station waiting room"],
+      c:[{s:"the crossword editor",r:"Lead",a:"midCareer",x:"Careful, private and very good at noticing patterns. Does not like people much."},
+         {s:"the police detective",r:"Lead",a:"adult",x:"Thinks crosswords are a waste of time and needs this one solved."},
+         {s:"the newsroom intern",r:"Supporting",a:"youngAdult",x:"Helpful, curious and always in the wrong place."},
+         {s:"the managing editor",r:"Supporting",a:"mature",x:"Wants the story on the front page before anyone else gets it."}]},
+    {k:"v3-ice-cream-truck-war",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Two Trucks, One Park","Soft Serve","The Jingle"],
+      p:"two ice cream truck drivers fight over the same city park for one hot summer",
+      h:"the park is closing for repairs in August and only one of them can get the new spot",h2:"their kids become best friends at summer camp",
+      w:["an ice cream truck parked by a city park","a public park playground","a truck garage in an industrial lot"],
+      c:[{s:"the first ice cream driver",r:"Lead",a:"midCareer",x:"Has worked the park for ten years and knows every family by name."},
+         {s:"the second ice cream driver",r:"Lead",a:"adult",x:"New to the business, with a brand new truck and a louder song."},
+         {s:"the park manager",r:"Supporting",a:"mature",x:"Hates both trucks and loves ice cream."},
+         {s:"the first driver's kid",r:"Supporting",a:"child",x:"Ten years old and running a secret trading business on the side. Guardian required."}]},
+    {k:"v3-museum-night-cleaner",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["After the Visitors Leave","Gallery Four","The Night Crew"],
+      p:"a cleaner at an art museum is secretly painting copies of the paintings she cleans around every night",
+      h:"a famous art dealer sees one of her copies and wants to buy it as an original",h2:"one of the real paintings goes missing and her copy is the only one left",
+      w:["an art museum gallery at night","a small studio apartment","a museum loading dock"],
+      c:[{s:"the night cleaner",r:"Lead",a:"adult",g:"F",x:"Trained as a painter back home and never got the chance to show her work."},
+         {s:"the art dealer",r:"Supporting",a:"mature",x:"Charming, rich and willing to bend the rules."},
+         {s:"the night guard",r:"Supporting",a:"midCareer",x:"Knows what she does at night and has never said a word."},
+         {s:"the museum curator",r:"Supporting",a:"midCareer",x:"Very serious about the art and never notices the staff."}]},
+    {k:"v3-food-cart-license",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["The Permit","Corner Rights","Cart Number 212"],
+      p:"a street food vendor has thirty days to replace the cart license his late father left him",
+      h:"the only license for sale belongs to the man who reported his father to the city",h2:"his sister wants to sell the cart and use the money for school",
+      w:["a food cart on a busy corner","a city licensing office","a family apartment kitchen"],
+      c:[{s:"the vendor",r:"Lead",a:"youngAdult",g:"M",x:"Took over the cart at nineteen. Works hard and trusts almost no one."},
+         {s:"his sister",r:"Lead",a:"youngAdult",g:"F",x:"The first in the family to go to college and not sure she wants to."},
+         {s:"the older vendor",r:"Supporting",a:"senior",x:"Owns the license everyone wants and knows it."},
+         {s:"the city clerk",r:"Day Player",a:"midCareer",x:"Follows the rules exactly and feels bad about it."}]},
+    {k:"v3-apartment-super-tenants",era:"now",genre:"comedy",tracks:["tv","film","stage"],ttl:["Call the Super","Unit 3B","Boiler Room"],
+      p:"a building superintendent tries to fix every problem in a forty-unit building during one heat wave",
+      h:"the new owner wants to sell the building and needs the super to help empty it",h2:"the super's own apartment floods and he has to move in with the tenant who complains the most",
+      w:["an apartment building basement","an old apartment building hallway","a building rooftop"],
+      c:[{s:"the super",r:"Lead",a:"mature",x:"Can fix anything with tape and patience. Knows every tenant's secrets."},
+         {s:"the tenant who complains the most",r:"Lead",a:"senior",x:"Writes a letter to the owner every week and has kept copies of all of them."},
+         {s:"the new owner",r:"Supporting",a:"adult",x:"Young, friendly and only interested in money."},
+         {s:"the super's helper",r:"Supporting",a:"youngAdult",x:"Learning the job and much better with phones than pipes."}]},
+    {k:"v3-driving-school-sisters",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Mirror, Signal, Turn","Parallel Parking","Learner's Permit"],
+      p:"two sisters who have not spoken in years inherit their mother's driving school",
+      h:"the school's only car fails its safety test the week they take over",h2:"their first student is the man their mother was secretly engaged to",
+      w:["a driving school office in a strip mall","a student driver car on a quiet street","an empty parking lot for practice"],
+      c:[{s:"the older sister",r:"Lead",a:"midCareer",g:"F",x:"Organized, bossy and sure she knows how to run the business."},
+         {s:"the younger sister",r:"Lead",a:"adult",g:"F",x:"Easygoing, broke and a much better teacher than she thinks."},
+         {s:"the first student",r:"Supporting",a:"senior",g:"M",x:"Seventy years old and learning to drive for the first time."},
+         {s:"the driving examiner",r:"Day Player",a:"mature",x:"Has failed hundreds of drivers and enjoys it a little."}]},
+    {k:"v3-hospital-radio",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["Ward Requests","On Air, Floor Six","The Night Shift Hour"],
+      p:"a volunteer runs a tiny radio station that plays requests for patients in a children's hospital",
+      h:"the station is going to be shut down to make room for a gift shop",h2:"one patient's request is for a song nobody can find",
+      w:["a small radio booth inside a hospital","a hospital hallway","a hospital family lounge"],
+      c:[{s:"the volunteer DJ",r:"Lead",a:"mature",x:"Retired, cheerful on air and lonely off it."},
+         {s:"the patient who makes requests",r:"Lead",a:"child",x:"Eleven years old, very funny and bossy about music. Guardian required."},
+         {s:"the patient's father",r:"Supporting",a:"midCareer",g:"M",x:"Tired, worried and trying to stay cheerful for his kid."},
+         {s:"the hospital administrator",r:"Supporting",a:"adult",x:"Likes the station and still has a budget to cut."}]},
+    {k:"v3-marching-band-bus",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Band Bus","Halftime","Brass Section"],
+      p:"a high school marching band rides a broken-down bus to a state competition four hundred miles away",
+      h:"the bus driver quits halfway there and the band teacher has to drive",h2:"the drum major has been secretly accepted to a school in another state and has not told anyone",
+      w:["a school bus on a highway","a roadside motel parking lot","a high school football field"],
+      c:[{s:"the band teacher",r:"Lead",a:"midCareer",x:"Loves the band, hates buses and has not slept in two days."},
+         {s:"the drum major",r:"Lead",a:"teen",x:"Seventeen, the leader of the band and hiding a big decision. Guardian required."},
+         {s:"the bus driver",r:"Supporting",a:"senior",x:"Has driven school buses for thirty years and has had enough."},
+         {s:"the parent chaperone",r:"Supporting",a:"adult",x:"Volunteered to help and is the most excited person on the bus."}]},
+    {k:"v3-locksmith-apprentice",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["Pins and Tumblers","Emergency Call","The Master Key"],
+      p:"a young woman just out of prison gets an apprenticeship with a locksmith who does not trust her",
+      h:"a customer asks her to open a door that is not his",h2:"the locksmith's shop is robbed and the police look at her first",
+      w:["a small locksmith shop","an apartment building front door","a key-cutting counter in a hardware store"],
+      c:[{s:"the apprentice",r:"Lead",a:"youngAdult",g:"F",x:"Wants a normal life badly and is very good with her hands."},
+         {s:"the locksmith",r:"Lead",a:"senior",g:"M",x:"Grumpy, fair and still taught her everything he knows."},
+         {s:"the parole officer",r:"Supporting",a:"midCareer",x:"Overworked and on her side, most days."},
+         {s:"the customer",r:"Supporting",a:"adult",x:"Friendly and in a big hurry."}]},
+    {k:"v3-community-pool-lessons",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Deep End","Shallow Water","Lane Three"],
+      p:"a retired Olympic swimmer ends up teaching toddler swim lessons at a community pool",
+      h:"one of the toddlers' parents is the swimmer who beat him at the Olympics",h2:"the pool is closing and the lessons are the only thing keeping it open",
+      w:["an indoor community pool","a rec center front desk","a pool locker room"],
+      c:[{s:"the retired swimmer",r:"Lead",a:"mature",g:"M",x:"Famous once and very bad at small talk. Takes toddler lessons far too seriously."},
+         {s:"the rival parent",r:"Lead",a:"mature",x:"Friendly, successful and still a little competitive."},
+         {s:"the pool manager",r:"Supporting",a:"adult",x:"Keeps the pool running on almost no money."},
+         {s:"the lifeguard",r:"Day Player",a:"youngAdult",x:"Bored, sarcastic and a very good swimmer."}]},
+    {k:"v3-late-night-pharmacy",era:"now",genre:"thriller",tracks:["film","tv"],ttl:["Refill","Open Till Midnight","Prescription"],
+      p:"a pharmacist working the overnight shift notices the same doctor's name on dozens of strange prescriptions",
+      h:"the doctor turns out to be dead",h2:"the store manager tells her to fill them and stop asking questions",
+      w:["a 24-hour pharmacy counter","a pharmacy stock room","a store parking lot at night"],
+      c:[{s:"the pharmacist",r:"Lead",a:"adult",x:"Careful, honest and working nights to pay off school loans."},
+         {s:"the store manager",r:"Supporting",a:"midCareer",x:"Friendly, stressed and hiding something."},
+         {s:"the night customer",r:"Supporting",a:"mature",x:"Comes in every night at two and always pays in cash."},
+         {s:"the security guard",r:"Day Player",a:"adult",x:"Watches the cameras and notices more than anyone thinks."}]},
+    {k:"v3-bakery-contest-town",era:"now",genre:"comedy",tracks:["tv","film","stage"],ttl:["Blue Ribbon","Best in Show","The County Pie"],
+      p:"the owner of a failing bakery enters the county fair pie contest to save her business",
+      h:"the judge is the ex-husband who taught her to bake",h2:"her secret recipe turns out to belong to the woman who runs the bakery across the street",
+      w:["a small town bakery","a county fairground tent","a bakery kitchen before dawn"],
+      c:[{s:"the baker",r:"Lead",a:"midCareer",g:"F",x:"Very good at pie and very bad at business. Stubborn and funny."},
+         {s:"the judge",r:"Supporting",a:"mature",g:"M",x:"The best baker in the county and too proud to say sorry."},
+         {s:"the rival baker",r:"Supporting",a:"senior",g:"F",x:"Sweet in public and ruthless at the fair."},
+         {s:"the bakery helper",r:"Supporting",a:"youngAdult",x:"Works for free pastries and has a plan to put the bakery online."}]},
+    {k:"v3-subway-lost-and-found",era:"now",genre:"romance",tracks:["film","tv","stage"],ttl:["Claim Ticket","Lost Umbrellas","Found on the Train"],
+      p:"a clerk at the subway lost and found tries to return a diary to the stranger who wrote it",
+      h:"the diary is full of letters to someone the clerk knows",h2:"the writer comes in to claim it on the clerk's last day at work",
+      w:["a subway lost and found office","a subway platform","a coffee shop near a train station"],
+      c:[{s:"the clerk",r:"Lead",a:"adult",x:"Organized, shy and more curious than the job allows."},
+         {s:"the diary writer",r:"Lead",a:"adult",x:"Warm, forgetful and has lost many things over the years."},
+         {s:"the clerk's coworker",r:"Supporting",a:"mature",x:"Has worked there for twenty years and reads everything people leave behind."},
+         {s:"the station manager",r:"Day Player",a:"midCareer",x:"Wants the office cleaned out by Friday."}]},
+    {k:"v3-mountain-rescue-team",era:"now",genre:"action",tracks:["film","tv"],ttl:["Above the Tree Line","Ridge Call","Search Grid"],
+      p:"a volunteer mountain rescue team searches for two hikers lost in a spring snowstorm",
+      h:"one of the missing hikers is the team leader's son",h2:"the helicopter cannot fly, so the team has to go up on foot overnight",
+      w:["a mountain rescue station","a trailhead parking lot","a ranger cabin in the woods"],
+      c:[{s:"the team leader",r:"Lead",a:"mature",x:"Has led a hundred rescues and never lost anyone. Calm until this call."},
+         {s:"the new volunteer",r:"Lead",a:"youngAdult",x:"A strong climber on her first real search and scared of getting it wrong."},
+         {s:"the park ranger",r:"Supporting",a:"midCareer",x:"Knows the mountain best and wants to wait for better weather."},
+         {s:"the lost hiker",r:"Supporting",a:"youngAdult",x:"Stuck on a ledge, cold, and trying to keep his friend awake."}]},
+    {k:"v3-barbershop-quartet",era:"1960s",genre:"musical comedy",tracks:["stage","film"],ttl:["Four-Part Harmony","The Barbershop Four","Close Harmony"],
+      p:"four men who work at the same car plant form a barbershop quartet to win a national contest",
+      h:"the plant is closing the week of the contest",h2:"their lead singer can only sing when he is angry",
+      w:["a car plant break room","a church hall used for rehearsals","a contest stage in a big hotel ballroom"],
+      c:[{s:"the lead singer",r:"Lead",a:"midCareer",g:"M",x:"Has a beautiful voice and a short temper. Must sing well."},
+         {s:"the bass singer",r:"Lead",a:"mature",g:"M",x:"The oldest of the four and the one holding the group together. Must sing well."},
+         {s:"the plant manager",r:"Supporting",a:"mature",x:"Has to announce the closing and secretly loves the quartet."},
+         {s:"the singer's wife",r:"Supporting",a:"midCareer",g:"F",x:"Thinks the quartet is a waste of time until she hears them sing."}]},
+    {k:"v3-hotel-elevator-operator",era:"1950s",genre:"drama",tracks:["film","tv","stage"],ttl:["Going Up","The Eleventh Floor","Hold the Door"],
+      p:"the last elevator operator in a grand old hotel hears every guest's secrets on the ride up",
+      h:"the hotel installs automatic elevators and gives him one month",h2:"a guest asks him to lie to the police about which floor she went to",
+      w:["a grand hotel lobby","a hotel elevator","a hotel staff locker room"],
+      c:[{s:"the elevator operator",r:"Lead",a:"senior",g:"M",x:"Polite, careful and has worked in the same elevator for forty years."},
+         {s:"the hotel guest",r:"Lead",a:"adult",g:"F",x:"Rich, charming and in a lot of trouble."},
+         {s:"the hotel manager",r:"Supporting",a:"midCareer",x:"Wants the hotel to look modern and feels bad about the operator."},
+         {s:"the detective",r:"Supporting",a:"mature",x:"Patient and friendly, and he never stops asking questions."}]},
+    {k:"v3-kids-soccer-coach",era:"now",genre:"family comedy",tracks:["film","tv"],ttl:["Under Nines","The Orange Slice League","Kick Off"],
+      p:"a professional soccer player who got kicked off his team has to coach a kids' soccer team as community service",
+      h:"the kids are the worst team in the league and happy about it",h2:"his old team's owner comes to watch the final game",
+      w:["a public soccer field","a park district office","a pizza place after a game"],
+      c:[{s:"the soccer player",r:"Lead",a:"adult",g:"M",x:"Talented, rude and not used to hearing no. Some real soccer skill needed."},
+         {s:"the team captain",r:"Lead",a:"child",x:"Nine years old and much wiser than the coach. Guardian required."},
+         {s:"the league organizer",r:"Supporting",a:"midCareer",x:"A tough mom who runs the league and has no time for famous people."},
+         {s:"the assistant coach",r:"Supporting",a:"mature",x:"A grandfather who has coached for years and knows nothing about soccer."}]},
+    {k:"v3-radio-tower-climber",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Two Thousand Feet","Tower Crew","The Climb"],
+      p:"two tower climbers fix a broken radio tower two thousand feet in the air before a hurricane arrives",
+      h:"one of them is afraid of heights and has hidden it for years",h2:"the company tells them to keep climbing after the wind gets too strong",
+      w:["a radio tower field in the country","a work truck at the base of a tower","a motel near a highway"],
+      c:[{s:"the lead climber",r:"Lead",a:"midCareer",x:"The best climber in the company and the one who takes the biggest risks."},
+         {s:"the second climber",r:"Lead",a:"adult",x:"Careful, funny and hiding a fear that could get them both killed."},
+         {s:"the ground boss",r:"Supporting",a:"mature",x:"Stays on the radio at the bottom and makes the hard calls."}]},
+    {k:"v3-bodega-cat",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["The Store Cat","Open Twenty-Four Hours","Behind the Counter"],
+      p:"a corner store owner goes to war with the city inspector who wants to take away the store's cat",
+      h:"the whole neighborhood signs a petition to make the cat a city employee",h2:"the inspector falls in love with the cat",
+      w:["a corner bodega","a city office hearing room","a neighborhood street corner"],
+      c:[{s:"the store owner",r:"Lead",a:"mature",x:"Runs the store twenty hours a day and will not give up the cat."},
+         {s:"the city inspector",r:"Lead",a:"adult",x:"Follows every rule and is allergic to cats."},
+         {s:"the owner's niece",r:"Supporting",a:"youngAdult",x:"Starts a social media page for the cat that gets very popular."},
+         {s:"the regular customer",r:"Day Player",a:"senior",x:"Comes in every morning for coffee and a lottery ticket."}]},
+    {k:"v3-spelling-bee-parents",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Spell It Out","The Final Round","Bee Season"],
+      p:"the parents at a regional spelling bee get far more competitive than their kids",
+      h:"two of the parents used to date and still have not forgiven each other",h2:"the kids secretly agree to lose on purpose",
+      w:["a middle school auditorium","a hotel conference room","a school parking lot"],
+      c:[{s:"the competitive mother",r:"Lead",a:"midCareer",g:"F",x:"Has made flash cards for eight years and is proud of it."},
+         {s:"the relaxed father",r:"Lead",a:"midCareer",g:"M",x:"Came for the free snacks and is starting to care."},
+         {s:"the speller",r:"Supporting",a:"child",x:"Twelve years old and tired of spelling. Guardian required."},
+         {s:"the bee host",r:"Supporting",a:"mature",x:"Has hosted the bee for twenty years and takes it very seriously."}]},
+    {k:"v3-ferry-snack-bar",era:"now",genre:"romance",tracks:["film","tv","stage"],ttl:["Twenty-Minute Crossing","Snack Bar, Lower Deck","The 6:15 Boat"],
+      p:"the woman who runs the snack bar on a commuter ferry falls for a passenger she only sees for twenty minutes a day",
+      h:"his company is moving him to another city in two weeks",h2:"she finds out he takes the ferry only to see her",
+      w:["a commuter ferry snack bar","a ferry terminal waiting room","a harbor walkway"],
+      c:[{s:"the snack bar worker",r:"Lead",a:"adult",g:"F",x:"Quick, funny and too busy to think about her own life."},
+         {s:"the commuter",r:"Lead",a:"adult",g:"M",x:"Shy, polite and always buys the same muffin."},
+         {s:"the ferry deckhand",r:"Supporting",a:"youngAdult",x:"Notices everything on the boat and loves to gossip."},
+         {s:"the ferry captain",r:"Day Player",a:"senior",x:"Has one scene and gives very bad romantic advice."}]},
+    {k:"v3-debate-prison-team",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["Resolved","Rebuttal","The Other Side"],
+      p:"a debate team made up of prison inmates prepares to face a top college team",
+      h:"the topic they are given is whether prisons should exist",h2:"their best debater is up for parole the day of the match",
+      w:["a prison classroom","a college lecture hall","a prison visiting room"],
+      c:[{s:"the debate coach",r:"Lead",a:"mature",x:"A retired professor who thinks everyone can learn to argue well."},
+         {s:"the best debater",r:"Lead",a:"adult",x:"Smart, patient and careful about hope."},
+         {s:"the new team member",r:"Supporting",a:"youngAdult",x:"Angry, quick and the most natural speaker on the team."},
+         {s:"the college team captain",r:"Supporting",a:"youngAdult",x:"Has never lost a debate and did not want this one."}]},
+    {k:"v3-grandma-food-blog",era:"now",genre:"comedy",tracks:["tv","film"],ttl:["Nana Cooks","Viral Recipes","Stir Slowly"],
+      p:"a seventy-year-old grandmother becomes famous online after her grandson films her cooking",
+      h:"a TV network offers her a show, but only without her grandson",h2:"her most famous recipe was actually her late sister's",
+      w:["a family kitchen in a row house","a TV studio kitchen","a neighborhood grocery store"],
+      c:[{s:"the grandmother",r:"Lead",a:"senior",g:"F",x:"Blunt, loving and totally unimpressed by fame."},
+         {s:"the grandson",r:"Lead",a:"youngAdult",g:"M",x:"Out of work, good with a camera and needs this to succeed."},
+         {s:"the TV producer",r:"Supporting",a:"midCareer",x:"Fast-talking and full of promises."},
+         {s:"the grandmother's neighbor",r:"Supporting",a:"senior",x:"Her oldest friend and her toughest critic."}]},
+    {k:"v3-last-drive-in",era:"1970s",genre:"drama",tracks:["film","tv","stage"],ttl:["Double Feature","Intermission","The Last Picture Night"],
+      p:"the family that runs a drive-in movie theater has one last summer before the land is sold",
+      h:"the projectionist has been showing a different movie than the one on the sign",h2:"the buyer turns out to be the owner's old business partner",
+      w:["a drive-in movie theater lot","a projection booth","a drive-in snack bar"],
+      c:[{s:"the owner",r:"Lead",a:"mature",x:"Stubborn and proud, and loves the drive-in more than his own house."},
+         {s:"the projectionist",r:"Supporting",a:"senior",x:"Quiet, strange and the heart of the place."},
+         {s:"the owner's daughter",r:"Lead",a:"youngAdult",g:"F",x:"Wants to leave town and cannot make herself do it."},
+         {s:"the land buyer",r:"Supporting",a:"mature",x:"Friendly and fair, which makes him harder to hate."}]},
+    {k:"v3-fishing-derby",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["The Big One","Derby Day","Catch and Release"],
+      p:"a small lake town's annual fishing derby gets out of hand when the prize money doubles",
+      h:"someone is stocking the lake at night with giant store-bought fish",h2:"the winning fish is caught by a nine-year-old who wants to throw it back",
+      w:["a lake dock with a bait shop","a small town marina","a lakeside picnic pavilion"],
+      c:[{s:"the bait shop owner",r:"Lead",a:"mature",x:"Runs the derby and has never won it."},
+         {s:"the town sheriff",r:"Supporting",a:"midCareer",x:"Has to judge the contest and wants nothing to do with it."},
+         {s:"the out-of-town fisherman",r:"Lead",a:"adult",x:"Has a fancy boat, a fancy rod and no idea how to fish."},
+         {s:"the young angler",r:"Supporting",a:"child",x:"Nine years old, patient and the best fisher in town. Guardian required."}]},
+    {k:"v3-wedding-dj",era:"now",genre:"romance",tracks:["film","tv"],ttl:["First Dance","Last Song Request","Play Our Song"],
+      p:"a wedding DJ who has played three hundred weddings ends up booked for his ex-girlfriend's",
+      h:"the groom asks him to play the song that was theirs",h2:"the bride asks him to stop the wedding",
+      w:["a wedding reception hall","a hotel ballroom","a DJ booth by a dance floor"],
+      c:[{s:"the wedding DJ",r:"Lead",a:"adult",g:"M",x:"Great at reading a room and terrible at reading himself."},
+         {s:"the bride",r:"Lead",a:"adult",g:"F",x:"Happy, sure of her choice and surprised to see him."},
+         {s:"the groom",r:"Supporting",a:"adult",g:"M",x:"Kind, clueless and very excited about the playlist."},
+         {s:"the wedding planner",r:"Supporting",a:"midCareer",x:"Keeps the whole day on schedule and sees the problem early."}]},
+    {k:"v3-snow-day-teachers",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Snow Day","Teachers' Lounge","Early Dismissal"],
+      p:"six teachers get snowed in at their school for a night with no students",
+      h:"the principal is stuck with them and has to announce which teacher is being let go",h2:"one teacher has been secretly living at the school",
+      w:["a school teachers' lounge","a school gym at night","a school cafeteria"],
+      c:[{s:"the gym teacher",r:"Lead",a:"midCareer",x:"Loud, kind and the one who keeps everyone's spirits up."},
+         {s:"the new science teacher",r:"Lead",a:"youngAdult",x:"First year teaching and sure she is the one being let go."},
+         {s:"the principal",r:"Supporting",a:"mature",x:"Hates bad news and has the worst news of all."},
+         {s:"the art teacher",r:"Supporting",a:"senior",x:"Has taught for forty years and has seen every principal come and go."}]},
+    {k:"v3-kite-festival",era:"now",genre:"family drama",tracks:["film","tv"],ttl:["High Wind","Kite Day","String and Sky"],
+      p:"a grandfather and granddaughter build a kite to enter a beach kite festival he used to win",
+      h:"his hands are shaking too much to hold the string",h2:"the festival is canceled for wind, and they fly it anyway",
+      w:["a windy beach","a garage workshop","a beach boardwalk"],
+      c:[{s:"the grandfather",r:"Lead",a:"senior",g:"M",x:"A retired kite maker who is losing his memory and hiding it."},
+         {s:"the granddaughter",r:"Lead",a:"child",g:"F",x:"Eleven, patient and a very quick learner. Guardian required."},
+         {s:"the granddaughter's mother",r:"Supporting",a:"midCareer",g:"F",x:"Worried about her father and about her kid."},
+         {s:"the festival organizer",r:"Day Player",a:"mature",x:"Remembers the grandfather's winning kites."}]},
+    {k:"v3-street-piano",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["Play Me","The Street Piano","Public Keys"],
+      p:"a public piano placed in a train station changes the lives of the people who stop to play it",
+      h:"the city decides to remove it at the end of the month",h2:"a famous pianist who disappeared years ago starts playing it at night",
+      w:["a busy train station hall","a coffee cart inside a station","a station platform"],
+      c:[{s:"the station cleaner",r:"Lead",a:"mature",x:"Has always wanted to learn piano and never had the time."},
+         {s:"the missing pianist",r:"Lead",a:"senior",x:"Was very famous and walked away from it. Must play piano well."},
+         {s:"the commuter",r:"Supporting",a:"adult",x:"Always late, always running, and stops one day to listen."},
+         {s:"the station manager",r:"Supporting",a:"midCareer",x:"Has to move the piano and wishes she did not."}]},
+    {k:"v3-tax-office-april",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Filing Season","April Fifteenth","Deductions"],
+      p:"a small tax preparation office tries to get through the last three days before the tax deadline",
+      h:"one client brings in twelve years of receipts in grocery bags",h2:"the owner finds out she forgot to file her own taxes",
+      w:["a small tax office in a strip mall","a crowded waiting area","an office break room"],
+      c:[{s:"the office owner",r:"Lead",a:"midCareer",x:"Very organized for everyone except herself."},
+         {s:"the seasonal worker",r:"Lead",a:"youngAdult",x:"Hired for the busy season and better at math than people."},
+         {s:"the client with the bags",r:"Supporting",a:"senior",x:"Friendly, chatty and completely disorganized."},
+         {s:"the other tax preparer",r:"Supporting",a:"mature",x:"Has worked there for years and is quietly planning to quit."}]},
+    {k:"v3-moving-truck-country",era:"now",genre:"road comedy",tracks:["film","tv"],ttl:["Two Days to Oakland","Rental Truck","Everything We Own"],
+      p:"a father and his adult daughter drive a rental moving truck across the country to her new job",
+      h:"the truck is carrying the wrong family's furniture",h2:"she has not actually gotten the job yet",
+      w:["a moving truck cab","a highway rest stop","a roadside motel"],
+      c:[{s:"the father",r:"Lead",a:"mature",g:"M",x:"Insists on driving, refuses to use a map app and loves road food."},
+         {s:"the daughter",r:"Lead",a:"adult",g:"F",x:"Nervous about her future and very tired of her father's jokes."},
+         {s:"the truck rental clerk",r:"Day Player",a:"youngAdult",x:"Makes the mistake that starts the whole trip."},
+         {s:"the other family's mother",r:"Supporting",a:"midCareer",g:"F",x:"Very angry on the phone and very kind in person."}]},
+    // ── New briefs for thin formats ──
+    {k:"v3-edu-science-kitchen",era:"n/a",genre:"educational series",tracks:["other"],only:["Educational Video"],ttl:["Kitchen Science","Why It Rises","Boil, Melt, Freeze"],
+      about:"science experiments kids can do in their own kitchen",p:"a host shows science experiments kids can do in their own kitchen",
+      h:"every experiment uses only things already in the fridge",h2:"one experiment in each episode goes wrong on purpose so kids see what to fix",
+      w:["a home kitchen set","a small studio kitchen","a school science classroom"],
+      c:[{s:"the host",r:"Lead",a:"adult",x:"Friendly, clear and good at explaining one idea at a time. Comfortable talking to camera."},
+         {s:"the kid helper",r:"Supporting",a:"child",x:"Ten or eleven, curious and not afraid to ask questions. Guardian required."},
+         {s:"the neighbor who drops by",r:"Day Player",a:"senior",x:"Shows up with a question in each episode."}]},
+    {k:"v3-edu-first-aid",era:"n/a",genre:"educational series",tracks:["other","spot"],only:["Educational Video","Corporate Video","Public Service Announcement"],ttl:["Two Minutes Matter","First Aid Basics","Before Help Arrives"],
+      about:"what to do in the first two minutes of a medical emergency",p:"ordinary people learn what to do in the first two minutes of a medical emergency",
+      h:"each lesson is shown in real time with a clock on screen",h2:"the person helping is always a bystander, never a doctor",
+      w:["an office break room","a busy grocery store aisle","a community center gym"],
+      c:[{s:"the bystander",r:"Lead",a:"adult",x:"An everyday person who stays calm and follows the steps. Clear speaking voice."},
+         {s:"the person who needs help",r:"Supporting",a:"mature",x:"Plays the patient in several short scenes. Comfortable lying still on the floor."},
+         {s:"the instructor",r:"Supporting",a:"midCareer",x:"Explains each step to camera in plain words."}]},
+    {k:"v3-perf-art-laundromat",era:"n/a",genre:"performance art",tracks:["other","stage"],only:["Performance Art","Live Event"],ttl:["Spin Cycle","Wash and Fold","Rinse"],
+      about:"performers doing their own laundry in a real laundromat while the public watches",p:"performers do their own laundry in a real laundromat while the public watches",
+      h:"each performer folds the clothes of a stranger from the audience",h2:"the piece lasts exactly as long as one wash and dry cycle",
+      w:["a working laundromat","a laundromat after closing","a storefront laundromat"],
+      c:[{s:"the lead performer",r:"Lead",a:"adult",x:"Comfortable being watched up close for an hour. Movement or dance training helps."},
+         {s:"the second performer",r:"Lead",a:"mature",x:"Calm, patient and good at quiet moments with strangers."},
+         {s:"the attendant",r:"Supporting",a:"senior",x:"Plays the laundromat attendant and talks to the audience."}]},
+    {k:"v3-perf-art-bus-stop",era:"n/a",genre:"performance art",tracks:["other"],only:["Performance Art","Dance Project"],ttl:["Next Bus","Waiting Pieces","Stop Request"],
+      about:"dancers performing small movements at a real bus stop for people waiting for the bus",p:"dancers perform small movements at a real bus stop for people waiting for the bus",
+      h:"the piece starts and stops with each bus that arrives",h2:"the audience does not know it is a performance until the end",
+      w:["a busy bus stop","a bus shelter on a main street","a transit plaza"],
+      c:[{s:"the first dancer",r:"Lead",a:"youngAdult",x:"Strong dance training and comfortable performing close to strangers."},
+         {s:"the second dancer",r:"Lead",a:"adult",x:"Contemporary dance background and good at small, quiet movement."},
+         {s:"the older mover",r:"Supporting",a:"senior",x:"Movement experience welcome. Plays a commuter who joins the dance."}]},
+    {k:"v3-host-pet-adoption",era:"n/a",genre:"hosted segment",tracks:["tv","other"],only:["Hosting / Presenter","Social Media Ad"],ttl:["Adopt This Week","Forever Home","Shelter Spotlight"],
+      about:"a weekly segment where a host introduces animals waiting for adoption",p:"a host introduces animals waiting for adoption in a weekly segment",
+      h:"the host fosters one of the animals at home each week",h2:"each segment ends with the family who adopted last week's animal",
+      w:["an animal shelter lobby","a shelter play yard","a small studio set"],
+      c:[{s:"the host",r:"Lead",a:"adult",x:"Warm, quick and very comfortable with animals. Hosting experience needed."},
+         {s:"the shelter worker",r:"Supporting",a:"midCareer",x:"Knows every animal and talks about them clearly on camera."}]},
+    {k:"v3-live-food-festival",era:"n/a",genre:"live event",tracks:["other"],only:["Live Event","Hosting / Presenter"],ttl:["Taste Stage","Festival Kitchen","The Main Tent"],
+      about:"a food festival stage where hosts run cooking contests for the crowd",p:"hosts run cooking contests for the crowd on a food festival stage",
+      h:"the audience picks the secret ingredient for every round",h2:"the final round pits the two hosts against each other",
+      w:["an outdoor food festival tent","a waterfront festival stage","a fairground main stage"],
+      c:[{s:"the main host",r:"Lead",a:"adult",x:"High energy, quick with jokes and good at talking to crowds. Live hosting experience needed."},
+         {s:"the second host",r:"Lead",a:"youngAdult",x:"Loves food, loves people and can keep a crowd laughing."},
+         {s:"the guest judge",r:"Supporting",a:"mature",x:"A friendly chef who tastes every dish on stage."}]},
+    {k:"v3-corp-onboarding-hospital",era:"n/a",genre:"workplace training",tracks:["spot","other"],only:["Corporate Video","Industrial / Training Video"],ttl:["Welcome to the Floor","Day One on the Ward","New Badge"],
+      about:"new hospital staff learning how a busy ward really works",p:"new hospital staff learn how a busy ward really works",
+      h:"each scene follows the same new nurse through a different hour of the shift",h2:"the experienced staff explain what they wish someone had told them",
+      w:["a hospital ward hallway","a nurses' station","a hospital supply room"],
+      c:[{s:"the new nurse",r:"Lead",a:"youngAdult",x:"Friendly, focused and easy to follow. Reads short lines naturally."},
+         {s:"the charge nurse",r:"Supporting",a:"midCareer",x:"Busy, kind and very clear about the rules."},
+         {s:"the patient",r:"Supporting",a:"senior",x:"Plays a patient in two short scenes."}]},
+    {k:"v3-ugc-grocery-haul",era:"n/a",genre:"creator campaign",tracks:["print","spot"],only:["Influencer / UGC Content","Social Media Ad"],ttl:["Week of Dinners","The Grocery Haul","Fifty Dollars, Five Meals"],
+      about:"creators showing how they feed a family for a week on a small grocery budget",p:"creators show how they feed a family for a week on a small grocery budget",
+      h:"every video is filmed on the creator's own phone in their own kitchen",h2:"each creator swaps shopping lists with another creator halfway through",
+      w:["a home kitchen","a grocery store aisle","a family dining table"],
+      c:[{s:"the first creator",r:"Lead",a:"adult",x:"Talks to camera like a friend and cooks every day. Comfortable filming yourself."},
+         {s:"the second creator",r:"Lead",a:"midCareer",x:"Practical, funny and good at explaining prices."},
+         {s:"the family at the table",r:"Background",a:"adult",x:"Real reactions at dinner. No lines."}]}
+  ];
+
+  FILM_SEEDS.forEach(s=>{
+    const o=SEED_V3[s.k];
+    if(!o)return;
+    if(o.p)s.p=o.p;
+    if(o.only)s.only=o.only;
+    if(o.about)s.about=o.about;
+    if(o.cat!==undefined)s.cat=o.cat;
+  });
+  NEW_SEEDS.forEach(s=>{if(!FILM_SEEDS.some(x=>x.k===s.k))FILM_SEEDS.push(s);});
+
+  // ── Project types ────────────────────────────────────────────────────────
+  // Every PROJECT_TYPE_OPTIONS value except "Other". `fam` decides what the
+  // listing is allowed to say (no "film" on a play, no dialogue on a photo
+  // shoot, no face lines on a voice job); `mode` decides which seeds can carry
+  // it: "story" = narrative premises on that track, "brief" = only seeds written
+  // for that format, "both" = either, "job" = a crew-side booking (background,
+  // stand-ins, doubles, stunts) on a narrative film or TV premise.
+  const V3_TYPE={
+    "Feature Film":{fam:"film",track:"film",mode:"story",labels:["feature film","feature-length film"]},
+    "Short Film":{fam:"film",track:"film",mode:"story",labels:["short film"]},
+    "Student Film":{fam:"film",track:"film",mode:"story",labels:["student film","student short"]},
+    "Independent Film":{fam:"film",track:"film",mode:"story",labels:["independent film","indie feature"]},
+    "Experimental Film":{fam:"film",track:"film",mode:"both",labels:["experimental film","experimental short"]},
+    "Proof of Concept":{fam:"film",track:"film",mode:"story",labels:["proof-of-concept short","proof-of-concept film"]},
+    "Documentary":{fam:"unscripted",track:"film",mode:"brief",labels:["documentary","documentary feature"]},
+    "TV Series":{fam:"tv",track:"tv",mode:"story",labels:["TV series","television series"]},
+    "TV Pilot":{fam:"tv",track:"tv",mode:"story",labels:["TV pilot","pilot episode"]},
+    "Streaming Series":{fam:"tv",track:"tv",mode:"story",labels:["streaming series","streaming show"]},
+    "Web Series":{fam:"tv",track:"tv",mode:"story",labels:["web series","online series"]},
+    "Sizzle Reel":{fam:"tv",track:"tv",mode:"story",labels:["sizzle reel"]},
+    "Pitch Trailer":{fam:"tv",track:"tv",mode:"story",labels:["pitch trailer"]},
+    "Limited Series":{fam:"tv",track:"tv",mode:"story",labels:["limited series"]},
+    "Miniseries":{fam:"tv",track:"tv",mode:"story",labels:["miniseries"]},
+    "Vertical Series":{fam:"tv",track:"tv",mode:"story",labels:["vertical series","vertical drama series"]},
+    "Pilot Presentation":{fam:"tv",track:"tv",mode:"story",labels:["pilot presentation"]},
+    "Reality / Docu-Series":{fam:"unscripted",track:"tv",mode:"brief",labels:["docu-series","reality series"]},
+    "Lifestyle / Unscripted":{fam:"unscripted",track:"tv",mode:"brief",labels:["unscripted series","lifestyle show"]},
+    "Hosting / Presenter":{fam:"unscripted",track:"tv",mode:"brief",labels:["hosted show","hosted series"]},
+    "Theater":{fam:"stage",track:"stage",mode:"story",labels:["stage play","theater production"]},
+    "Off-Broadway Theater":{fam:"stage",track:"stage",mode:"story",labels:["Off-Broadway play","Off-Broadway production"]},
+    "Off-Off-Broadway Theater":{fam:"stage",track:"stage",mode:"story",labels:["Off-Off-Broadway play","Off-Off-Broadway production"]},
+    "Musical Theater":{fam:"stage",track:"stage",mode:"story",labels:["stage musical","new musical"]},
+    "Workshop / Staged Reading":{fam:"stage",track:"stage",mode:"story",labels:["staged reading","workshop reading"]},
+    "Table Read":{fam:"stage",track:"stage",mode:"story",labels:["table read"]},
+    "Commercial":{fam:"ad",track:"spot",mode:"brief",labels:["commercial"]},
+    "Social Media Ad":{fam:"ad",track:"spot",mode:"brief",labels:["social media ad"]},
+    "Branded Content":{fam:"ad",track:"spot",mode:"brief",labels:["branded video","branded short"]},
+    "Promo Video":{fam:"ad",track:"spot",mode:"brief",labels:["promo video"]},
+    "Product Demo":{fam:"ad",track:"spot",mode:"brief",labels:["product demo video"]},
+    "Spec Commercial":{fam:"ad",track:"spot",mode:"brief",labels:["spec commercial","spec ad"]},
+    "Ad Campaign":{fam:"ad",track:"spot",mode:"brief",labels:["ad campaign"]},
+    "Public Service Announcement":{fam:"ad",track:"spot",mode:"brief",labels:["public service announcement","PSA"]},
+    "Influencer / UGC Content":{fam:"ad",track:"print",mode:"brief",labels:["UGC creator campaign","influencer campaign"]},
+    "Corporate Video":{fam:"corp",track:"spot",mode:"brief",labels:["corporate video","company video"]},
+    "Industrial / Training Video":{fam:"corp",track:"spot",mode:"brief",labels:["training video"]},
+    "Educational Video":{fam:"corp",track:"other",mode:"brief",labels:["educational video series","educational video"]},
+    "Print Campaign":{fam:"photo",track:"print",mode:"brief",labels:["print campaign","print ad campaign"]},
+    "Photo Shoot":{fam:"photo",track:"print",mode:"brief",labels:["photo shoot"]},
+    "Modeling":{fam:"photo",track:"print",mode:"brief",labels:["modeling shoot","modeling campaign"]},
+    "Voiceover":{fam:"audio",track:"other",mode:"brief",labels:["voiceover project","voiceover job"]},
+    "Podcast / Audio Drama":{fam:"audio",track:"other",mode:"both",labels:["audio drama","scripted podcast"]},
+    "Animation":{fam:"anim",track:"other",mode:"both",labels:["animated series","animated short"]},
+    "Video Game":{fam:"anim",track:"other",mode:"both",labels:["video game","story-driven video game"]},
+    "Music Video":{fam:"music",track:"other",mode:"both",labels:["music video"]},
+    "Dance Project":{fam:"move",track:"other",mode:"brief",labels:["dance film","dance piece"]},
+    "Performance Art":{fam:"move",track:"other",mode:"brief",labels:["performance art piece"]},
+    "Motion Capture":{fam:"move",track:"other",mode:"brief",labels:["motion-capture project","motion-capture shoot"]},
+    "Live Event":{fam:"live",track:"other",mode:"brief",labels:["live event","live show"]},
+    "Background / Extras":{fam:"job",track:"film",mode:"job",labels:["background actors","background performers"]},
+    "Stand-In":{fam:"job",track:"film",mode:"job",labels:["stand-ins"]},
+    "Body Double":{fam:"job",track:"film",mode:"job",labels:["a body double"]},
+    "Stunts":{fam:"job",track:"film",mode:"job",labels:["stunt performers"]}
+  };
+  const V3_TYPES=Object.keys(V3_TYPE);
+  function v3Fam(type){return (V3_TYPE[type]||{}).fam||"film";}
+  // Seeds whose story is violent, criminal or frightening. Minor roles are
+  // taken out of these before casting, never flagged afterwards.
+  const V3_MATURE=/\b(horror|crime|noir|thriller|robbery|robbing|hostage|blackmail|morgue|body|gun|kill|murder|drug|overdose|chop shop|prison|violence|informant|heist|armored|stunt double|dangerous|explicit|scenes staged)\b/i;
+  function v3IsBrief(seed){return !!seed.about&&!!seed.only;}
+  function v3SeedsFor(type){
+    const t=V3_TYPE[type];
+    if(!t)return [];
+    return FILM_SEEDS.filter(s=>{
+      if(s.only)return s.only.indexOf(type)>-1;
+      if(t.mode==="brief")return false;
+      const tracks=s.tracks||[];
+      if(t.mode==="job"){
+        if(!tracks.some(x=>x==="film"||x==="tv"))return false;
+        if(type==="Stunts")return /action|thriller|crime|adventure|survival|sports|horror/i.test(s.genre||"");
+        return true;
+      }
+      return tracks.indexOf(t.track)>-1;
+    });
+  }
+
+  // ── Plain words ──────────────────────────────────────────────────────────
+  const V3_GENRE_PLAIN=[
+    [/horror/,"horror"],[/science fiction/,"science fiction"],[/thriller|suspense|noir|paranoid/,"thriller"],[/mystery/,"mystery"],
+    [/crime comedy|comic thriller/,"crime comedy"],[/crime/,"crime"],[/action/,"action"],[/adventure|survival/,"adventure"],
+    [/romance|romantic/,"romantic"],[/musical/,"musical"],[/sports/,"sports"],[/comedy|comic|deadpan/,"comedy"],
+    [/period|frontier/,"period"],[/family|domestic/,"family"],[/documentary/,"documentary"]
+  ];
+  function v3Genre(seed){
+    const g=String(seed.genre||"").toLowerCase();
+    for(const [re,v] of V3_GENRE_PLAIN)if(re.test(g))return v;
+    return "drama";
+  }
+  // Words and phrases no listing may contain. The first group are the
+  // literary habits of the old banks; the second, words that could read as an
+  // insult to an actor; the third, filler the owner banned outright.
+  const V3_LITERARY=/like scripture|enormous|stillness|the whole instrument|has to (be )?earn|allergic to|with a blade|moral (position|engine|brake|center|spine)|devastat|tragedy|played as light comedy|close to the bone|nowhere to hide|the size comes from|signpost|the thinking, not the finish|the silences are not|the whole trick|near enough that it should be|closely watched|comic engine|incurious|unfooled|changing shape|at speed|menace|underneath|mistakes chaos for genius|glimpsed|lives in the|a locked door|politeness as|efficiency as|in reserve|\bengine\b|\bspine\b|knife work|liability streak|made out of paperwork|collapsing into|snapping into|expiry date|arm's length|red tape|in a cold film|presence over polish|without commentary|playing as irritation|kindness that stops|goes sour|authority built|love language|as defen[cs]e|used as cover|carrying every decision|stillness|weight rather than|at ninety miles an hour|entirely not on the inside/i;
+  const V3_INSULT=/\b(regular-looking|ordinary-looking|normal-looking|average-looking|plain-looking|average (face|build|looks?|person|people)|plain (face|looks?|people)|unattractive|ugly|frumpy|homely|not like models)\b/i;
+  const V3_BANNED=/\b(genuinely|honestly|straightforward)\b/i;
+  function v3Scrub(text){
+    return String(text||"")
+      .replace(/\bgenuinely\s+/gi,"").replace(/\s*,?\s*genuinely\b/gi,"")
+      .replace(/\bhonestly stated\b/gi,"stated plainly").replace(/\bplayed honestly\b/gi,"played for real").replace(/\bhonestly\b/gi,"truly")
+      .replace(/\bstraightforward\b/gi,"simple").replace(/\bcar park\b/gi,"parking lot").replace(/\bcouncil officer\b/gi,"city council officer")
+      .replace(/\bDeadpan\b/g,"Dry and straight-faced").replace(/\bdeadpan\b/g,"dry and straight-faced")
+      .replace(/\bnot like models\b/gi,"like real people")
+      .replace(/\s{2,}/g," ").trim();
+  }
+  // A seed sketch keeps every sentence that is plain. Literary sentences are
+  // dropped as long as something is left to describe the part.
+  function v3CleanSketch(x){
+    const parts=(String(x||"").match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[]).map(s=>v3Scrub(s.trim())).filter(Boolean);
+    const keep=parts.filter(s=>!V3_LITERARY.test(s)&&!V3_INSULT.test(s));
+    return keep.join(" ");
+  }
+  const V3_NUM=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
+  function v3Words(n){return V3_NUM[n]||String(n);}
+  function v3Short(clause,min){
+    const c=String(clause||"").trim().replace(/[.]+$/,"");
+    const m=c.match(/^(.{12,}?)(?:, and |, but |, so | — |; |: )/);
+    if(m&&m[1].split(/\s+/).length>=(min||5))return m[1];
+    return c;
+  }
+  function v3Aa(phrase){return aArt(phrase)+" "+phrase;}
+  function v3Join(list){
+    const l=list.filter(Boolean);
+    if(l.length<=1)return l[0]||"";
+    return l.slice(0,-1).join(", ")+" and "+l[l.length-1];
+  }
+
+  // ── Voices ───────────────────────────────────────────────────────────────
+  // Six registers. Every one still opens on the project and the story, in
+  // that order — only the wording around the facts changes.
+  const V3_VOICES=["matter","warm","dry","punchy","playful","serious"];
+  const V3_S1={
+    story:[
+      {id:"N1",v:"matter serious",f:c=>`${capFirst(v3Aa(c.L))} about how ${c.p}.`},
+      {id:"N2",v:"matter punchy",f:c=>`${capFirst(v3Aa(c.L))} where ${c.p}.`},
+      {id:"N3",v:"dry punchy",f:c=>`In this ${c.L}, ${c.p}.`},
+      {id:"N4",v:"dry playful",f:c=>`${capFirst(v3Aa(c.L))} about what happens when ${c.p}.`},
+      {id:"N5",v:"serious warm",need:c=>c.G&&c.G!=="drama",f:c=>`${capFirst(v3Aa(c.G+" "+c.L))} about how ${c.p}.`},
+      {id:"N6",v:"serious matter",f:c=>`This ${c.L} tells the story of how ${c.p}.`},
+      {id:"N7",v:"warm playful",f:c=>`We are making ${v3Aa(c.L)} about how ${c.p}.`},
+      {id:"N8",v:"serious matter",f:c=>`${capFirst(v3Aa(c.L))} in which ${c.p}.`},
+      {id:"N9",v:"warm playful",f:c=>`The ${c.L} we are casting is about how ${c.p}.`},
+      {id:"N10",v:"punchy dry",need:c=>c.G&&c.G!=="drama",f:c=>`${capFirst(v3Aa(c.G+" "+c.L))} where ${c.p}.`}
+    ],
+    brief:[
+      {id:"B1",v:"matter punchy playful",f:c=>`${capFirst(v3Aa(c.L))} about ${c.about}.`},
+      {id:"B2",v:"dry serious warm",f:c=>`This ${c.L} is about ${c.about}.`},
+      {id:"B3",v:"warm playful",f:c=>`Our team is making ${v3Aa(c.L)} about ${c.about}.`},
+      {id:"B4",v:"matter serious playful",f:c=>`This ${c.L} shows ${c.about}.`},
+      {id:"B5",v:"playful warm",f:c=>`Our new ${c.L} is all about ${c.about}.`},
+      {id:"B6",v:"punchy dry",f:c=>`${capFirst(v3Aa(c.L))} built around ${c.about}.`},
+      {id:"B7",v:"warm matter",f:c=>`This is ${v3Aa(c.L)} about ${c.about}.`}
+    ],
+    job:[
+      {id:"J1",v:"matter serious warm",f:c=>`We need ${c.L} for ${v3Aa(c.base)} about how ${c.p}.`},
+      {id:"J2",v:"punchy dry",f:c=>`${capFirst(c.L)} wanted for ${v3Aa(c.base)} where ${c.p}.`},
+      {id:"J3",v:"playful warm dry",f:c=>`Now hiring ${c.L} for ${v3Aa(c.base)} in which ${c.p}.`}
+    ]
+  };
+  const V3_S2={
+    story:{
+      matter:[t=>`${capFirst(t.t)}.`,t=>`The problem is that ${t.t}.`],
+      warm:[t=>`But ${t.t}.`,t=>`And ${t.t}.`],
+      dry:[t=>`${capFirst(t.t)}.`,t=>`Of course, ${t.t}.`],
+      punchy:[t=>`${capFirst(t.t)}.`,t=>`Here's the problem: ${t.t}.`],
+      playful:[t=>`The catch is that ${t.t}.`,t=>`But ${t.t}.`],
+      serious:[t=>`But ${t.t}.`,t=>`The trouble is that ${t.t}.`]
+    },
+    brief:{
+      matter:[t=>`${capFirst(t.t)}.`,t=>`The idea is that ${t.t}.`],
+      warm:[t=>`The idea is simple: ${t.t}.`,t=>`${capFirst(t.t)}.`],
+      dry:[t=>`${capFirst(t.t)}.`,t=>`The twist is that ${t.t}.`],
+      punchy:[t=>`${capFirst(t.t)}.`,t=>`One rule: ${t.t}.`],
+      playful:[t=>`The fun part is that ${t.t}.`,t=>`The twist is that ${t.t}.`],
+      serious:[t=>`What makes it different is that ${t.t}.`,t=>`${capFirst(t.t)}.`]
+    }
+  };
+  function v3S3(voice,c){
+    const n=c.n,nw=v3Words(n),who=c.who;
+    const l=c.labels;
+    if(!l.length)return `We are casting ${nw} ${n===1?who.one:who.many}.`;
+    if(n===1)return {matter:`We are casting one role: ${l[0]}.`,warm:`We are looking for one ${who.one} to play ${l[0]}.`,dry:`There is one part to cast: ${l[0]}.`,punchy:`One role is open: ${l[0]}.`,playful:`We need one ${who.one}, and that is ${l[0]}.`,serious:`We are casting a single role, ${l[0]}.`}[voice];
+    const two=v3Join(l.slice(0,2));
+    const rest=n>2?` and ${v3Words(n-2)} more`:"";
+    return {
+      matter:`We are casting ${nw} roles, including ${two}.`,
+      warm:n<=3?`We are looking for ${nw} ${who.many} to play ${v3Join(l.slice(0,n))}.`:`We are looking for ${nw} ${who.many} to play ${l.slice(0,2).join(", ")}${rest}.`,
+      dry:`There are ${nw} parts to cast, and ${l[0]} is the biggest.`,
+      punchy:`${capFirst(nw)} roles are open, led by ${two}.`,
+      playful:`We need ${nw} ${who.many}, starting with ${two}.`,
+      serious:`The cast is ${nw} ${who.many}, led by ${two}.`
+    }[voice];
+  }
+  // One optional detail sentence, built from facts this listing actually has.
+  function v3Detail(c){
+    const t=c.type,f=c.fam,opts=[];
+    if(/^(Short Film|Student Film|Experimental Film|Proof of Concept)$/.test(t))opts.push(`The finished film will run about ${rand(7,18,1)} minutes.`);
+    if(/^(Feature Film|Independent Film)$/.test(t))opts.push(`The finished film will run about ${rand(85,110,5)} minutes.`);
+    if(/^(TV Series|Streaming Series)$/.test(t))opts.push(`The first season is ${v3Words(rand(6,10,1))} episodes of about ${pick([30,45])} minutes.`);
+    if(/^(Limited Series|Miniseries)$/.test(t))opts.push(`It is ${v3Words(rand(4,8,1))} episodes of about an hour each.`);
+    if(t==="Web Series")opts.push(`The season is ${v3Words(rand(6,10,1))} episodes of about ${rand(8,15,1)} minutes.`);
+    if(t==="Vertical Series")opts.push(`It is ${rand(20,40,5)} episodes of one to two minutes, made to watch on a phone.`);
+    if(t==="TV Pilot")opts.push(`The pilot runs about ${pick([30,45,60])} minutes.`);
+    if(/^(Sizzle Reel|Pitch Trailer|Pilot Presentation)$/.test(t))opts.push(`It will be shown to studios and streamers to sell the full show.`);
+    if(f==="stage"&&t!=="Table Read")opts.push(`The show runs about ${pick([75,90,100,120])} minutes${Math.random()<0.5?" with no intermission":" with one intermission"}.`);
+    if(t==="Table Read")opts.push(`The writers will use the read to decide what to rewrite.`);
+    if(f==="ad")opts.push(pick([`The finished ad will run online for one year.`,`The ads will run on social media for ${pick(["six","nine","twelve"])} months.`,`The finished spots run ${pick(["15","30"])} and 60 seconds long.`]));
+    if(f==="photo")opts.push(`Expect ${v3Words(rand(3,6,1))} outfit changes during the day.`);
+    if(f==="audio"||(f==="anim"&&t==="Animation")||f==="unscripted")opts.push(`Each episode is about ${pick([12,15,20,22,25,30])} minutes long.`);
+    if(t==="Video Game")opts.push(`The game has about ${rand(12,40,2)} speaking characters.`);
+    if(f==="music")opts.push(`The song is about ${v3Words(rand(3,4,1))} minutes long, and the video uses all of it.`);
+    if(f==="move"&&t!=="Motion Capture")opts.push(`The finished piece runs about ${rand(6,20,1)} minutes.`);
+    if(t==="Motion Capture")opts.push(`The recordings will be used to animate characters in a video game.`);
+    if(f==="corp")opts.push(`Each video is about ${v3Words(rand(3,8,1))} minutes long.`);
+    if(f==="live")opts.push(`Guests come and go all day, so the show repeats.`);
+    if(c.era&&(f==="film"||f==="tv"||f==="stage"||f==="job"))opts.push(`It is set in the ${c.era}.`);
+    if(c.placeNP&&(f==="film"||f==="tv"||f==="job"))opts.push(`Most scenes take place in ${c.placeNP}.`);
+    return cgShuffle(opts);
+  }
+  function v3Tagline(c,h,res){
+    const cands=[];
+    const words=s=>String(s).split(/\s+/).length;
+    const T=v3Short(c.turn),P=v3Short(c.premise);
+    if(c.brief){
+      cands.push(`${capFirst(c.about)}.`);
+      if(words(c.about)+words(T)<=28)cands.push(`${capFirst(c.about)}, and ${T}.`);
+      cands.push(`${capFirst(T)}.`);
+      if(words(c.about)+words(T)<=30)cands.push(`${capFirst(c.about)}. ${capFirst(T)}.`);
+    }else{
+      const shapes=[
+        ()=>c.turnLeads?`${capFirst(T)}.`:null,
+        ()=>words(P)+words(T)<=24?`${capFirst(P)}, and ${T}.`:null,
+        ()=>c.turnLeads&&words(P)+words(T)<=26?`${capFirst(P)}. ${capFirst(T)}.`:null
+      ];
+      cgShuffle(shapes).forEach(fn=>{const v=fn();if(v)cands.push(v);});
+      cands.push(`${capFirst(P)}.`);
+      if(words(P)+words(T)<=32)cands.push(`${capFirst(P)}, but ${T}.`);
+      if(c.turnLeads)cands.push(`${capFirst(String(c.turn).replace(/[.]+$/,""))}.`);
+      const T3=v3Short(c.turn,3);
+      if(c.turnLeads&&T3!==T)cands.push(`${capFirst(T3)}.`);
+      if(words(P)<=24)cands.push(`What happens when ${P}?`);
+      if(words(P)+words(T3)<=30)cands.push(`${capFirst(P)}, until ${T3}.`);
+    }
+    const syn=clean(c.synopsis||"");
+    const open=cands.filter(x=>{const k=clean(x);return !h.tags.has(k)&&!res.tags.has(k);});
+    return open.find(x=>syn.indexOf(clean(x))<0)||open[0]||null;
+  }
+
+  // ── Location ─────────────────────────────────────────────────────────────
+  const V3_STAGE_VENUES={
+    "Theater":["a 120-seat community theater","a 150-seat theater in a converted church","a 99-seat storefront theater","a 140-seat theater above a library"],
+    "Off-Broadway Theater":["a 199-seat Off-Broadway theater","a 180-seat theater with a thrust stage","a 160-seat Off-Broadway house"],
+    "Off-Off-Broadway Theater":["a 60-seat black box theater","a 74-seat basement theater","a second-floor black box studio"],
+    "Musical Theater":["a 299-seat theater with an orchestra pit","a 250-seat theater with a full fly system","a 220-seat theater built for musicals"],
+    "Workshop / Staged Reading":["a rehearsal studio with seats for a small audience","a church hall set up for readings","a studio theater with music stands"],
+    "Table Read":["a rehearsal room with one long table","a writers' room with a long table","a production office conference room"]
+  };
+  const V3_NEED={
+    soundstage:/far from Earth|relay station|ice survey|cave system|container ship|wagon crossing|sleeper cabin|overnight train|island lighthouse|remote light|between floors|tunnel through a hillside|dance marathon/i,
+    beach:/boardwalk|\bbeach\b|seaside/i,
+    water:/ferry|harbou?r|\briver\b|\bboat\b|salvage|\bpier\b|\bdocks?\b|waterfront|open water|canal|lighthouse|fish market|marina|\bship\b|\bflood/i,
+    rural:/farmhouse|\bfarm\b|\branch\b|small town|river town|lake town|highway motel|motel strip|two-lane|summer camp|travell?ing fair|two hours from anywhere|\bdig\b|eclipse|storm-chasing|fire line|in a field|wagon|country road|mountain|hikers?|\btrail|woods|forest|snowstorm|ranger|\bdesert\b|county fair/i,
+    industrial:/warehouse|factory|body shop|loading dock|parking (structure|garage)|depot|capture (volume|stage)/i
+  };
+  function v3Need(text){
+    for(const k of ["soundstage","beach","rural","water","industrial"])if(V3_NEED[k].test(text))return k;
+    return "";
+  }
+  const V3_VENUE_NOUN=/\b(diner|storefront|shop|store|room|office|apartment|house|bar|garage|kitchen|station|depot|hall|church|chapel|theater|gym|pool|rink|school|library|hospital|clinic|ward|market|warehouse|factory|yard|dock|pier|ferry|boat|terminal|airport|gate|motel|hotel|inn|lobby|rooftop|roof|laundromat|laundry|bodega|parking|park|garden|courtyard|stairwell|stair|staircase|basement|studio|counter|booth|cafe|restaurant|bakery|bakehouse|salon|barbershop|center|centre|court|courthouse|farmhouse|cabin|camp|arcade|boardwalk|beach|field|lot|alley|bridge|precinct|morgue|museum|gallery|lighthouse|highway|truck|cart|stall|bookshop|pharmacy|tower|floor|site|harbor|port|marina|club|lounge|annex|branch|exchange|stage|volume|set|workshop|mill|plant|base|precinct|shelter|home|flat|building|walk-up|block|street|stoop|hallway|kitchen|dispensary|lanes?|alley)\b/i;
+  function v3VenuePhrase(w){
+    let s=String(w||"").trim();
+    if(!/^(a|an|the)\s/i.test(s))return "";
+    const m=s.match(/^(.+?)(?:,| during | where | with | that | which | on the | in the | across | between | at the | near | off a | for | and its | and the | and a | and two | and three | above | below | behind | outside | inside | used as | shot across| next to | closed | converted | rigged | set up | dressed | at )/i);
+    if(m&&m[1].split(/\s+/).length>=2)s=m[1];
+    for(let i=0;i<3;i++)s=s.replace(/\s+(in|on|at|a|an|the|of|with|for|and|to|by|from)$/i,"");
+    if(s.split(/\s+/).length>2)s=s.replace(/\s+\w+ed$/i,"");
+    const ws=s.split(/\s+/);
+    if(ws.length>7||!V3_VENUE_NOUN.test(s))return "";
+    return s;
+  }
+  function v3Venue(seed,type,fam){
+    if(fam==="stage")return {venue:pick(V3_STAGE_VENUES[type]||V3_STAGE_VENUES.Theater),need:"",placeNP:""};
+    if(fam==="audio"||type==="Animation"||type==="Voiceover")return {venue:pick(["a recording studio","a voiceover booth","a small audio studio"]),need:"",placeNP:""};
+    if(type==="Video Game"&&!/capture/i.test((seed.w||[]).join(" ")))return {venue:pick(["a recording studio","a game audio studio"]),need:"",placeNP:""};
+    const story=`${seed.p||""} ${seed.h||""} ${seed.h2||""}`;
+    let need=v3Need(story);
+    const places=(seed.w||[]).map(v3VenuePhrase).filter(Boolean);
+    if(type==="Motion Capture"){const cap=places.filter(p=>/capture/i.test(p));return {venue:cap.length?pick(cap):"a motion-capture stage",need:"industrial",placeNP:""};}
+    if(need==="soundstage")return {venue:pick(["a soundstage with a built set","a film studio with a built set"]),need:"industrial",placeNP:""};
+    const fits=need?places.filter(p=>V3_NEED[need].test(p)):[];
+    const GENERIC={rural:["a farmhouse on a country road","a small-town main street","a roadside diner"],water:["a waterfront pier","a marina parking lot","a harbor walkway"],industrial:["a warehouse","an industrial garage"],beach:["a beach boardwalk"],"":["a rented house","a storefront on a main street","an apartment building"]};
+    const venue=fits.length?pick(fits):places.length&&!need?pick(places):fam==="photo"?"a daylight photo studio":pick(GENERIC[need]||GENERIC[""]);
+    if(!need)need=v3Need(venue);
+    return {venue,need,placeNP:venue};
+  }
+  function v3AreaKey(city,area){return `${city}|${area}`;}
+  function v3PickPlace(need,h,res){
+    const count=(c,a)=>((h.areaUse&&h.areaUse[v3AreaKey(c.name,a)])||0)+((res.areaUse&&res.areaUse[v3AreaKey(c.name,a)])||0);
+    const fits=a=>!need||need==="industrial"&&!/beach/.test(areaTags(a))?true:areaTags(a).split(" ").indexOf(need)>-1;
+    const strictFits=a=>!need||areaTags(a).split(" ").indexOf(need)>-1;
+    const options=[];
+    CITIES.forEach(c=>{
+      const min=Math.min(...c.areas.map(a=>count(c,a)));
+      const open=c.areas.filter(a=>count(c,a)===min);
+      const ok=open.filter(need==="industrial"?fits:strictFits);
+      if(ok.length)options.push({c,areas:ok});
+    });
+    let pool=options;
+    if(!pool.length){
+      CITIES.forEach(c=>{const ok=c.areas.filter(strictFits);if(ok.length)pool.push({c,areas:ok.sort((a,b)=>count(c,a)-count(c,b)).slice(0,1)});});
+    }
+    if(!pool.length)CITIES.forEach(c=>pool.push({c,areas:c.areas}));
+    // Keep New York near 60% of the board: its weight is nudged up or down by
+    // how far the recent listings have drifted from that.
+    const nyN=(h.nycRecent||0)+(res.nycCount||0),nyT=(h.recentTotal||0)+(res.placeCount||0);
+    const share=nyT?nyN/nyT:0.6;
+    const wOf=o=>o.c.short!=="NYC"?(o.c.w||1):(o.c.w||1)*(share<0.55?2.2:share>0.66?0.45:1);
+    const total=pool.reduce((s,o)=>s+wOf(o),0);
+    let r=Math.random()*total;
+    let chosen=pool[0];
+    for(const o of pool){r-=wOf(o);if(r<=0){chosen=o;break;}}
+    return {city:chosen.c,area:pick(chosen.areas)};
+  }
+
+  // ── Companies and crew ───────────────────────────────────────────────────
+  const V3_TAIL_RE=new RegExp("\\s+(?:"+Object.values(COMPANY_TAILS).reduce((a,b)=>a.concat(b),[]).concat(["Pictures","Films","Productions","Creative Studio","Content Lab","Theatre Lab","New Works","Motion","Workshop Collective","Capstone Unit","Media Works","Independent Pictures","Commercial Unit","Cinema","Story Lab","Stage Company","Film Group","Development Lab","Project Studio","Advertising Works","Brand Studio","Studio","Image Lab","Casting Studio","Theatre Company","Theatre Project","Picture Company","Features"]).sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")$","i");
+  function v3CoreOf(prod){
+    let s=String(prod||"").split(/ — | · /)[0].replace(/^.* Casting for /,"").trim();
+    for(let i=0;i<2;i++)s=s.replace(V3_TAIL_RE,"");
+    s=s.replace(/^(NYC|LA|Chicago|Boston|Philly|Atlanta|Newark|New Orleans|Pittsburgh|Austin|Detroit|Baltimore|North|South|East|West|Lower|Upper|Downtown|Uptown)\s+/,"");
+    return clean(s);
+  }
+  function v3Company(fam,h,res){
+    const tails=COMPANY_TAILS[fam]||COMPANY_TAILS.film;
+    const usedWord=w=>(h.coreWords&&h.coreWords.has(clean(w)))||(res.coreWords&&res.coreWords.has(clean(w)));
+    const free=core=>!h.cores.has(clean(core))&&!res.cores.has(clean(core));
+    let core="";
+    for(let tier=0;tier<3&&!core;tier++){
+      for(let i=0;i<80;i++){
+        const a=pick(CORE_A),b=pick(CORE_B);
+        if(clean(a)===clean(b))continue;
+        const cand=`${a} ${b}`;
+        if(!free(cand))continue;
+        if(tier===0&&(usedWord(a)||usedWord(b)))continue;
+        if(tier===1&&usedWord(a)&&usedWord(b))continue;
+        core=cand;break;
+      }
+    }
+    if(!core){for(let i=0;i<500&&!core;i++){const cand=`${pick(CORE_A)} ${pick(CORE_B)} ${pick(CORE_B)}`;if(free(cand))core=cand;}}
+    res.cores.add(clean(core));
+    res.coreWords=res.coreWords||new Set();
+    core.split(" ").forEach(w=>res.coreWords.add(clean(w)));
+    return {company:`${core} ${pick(tails)}`,core};
+  }
+  function v3CrewJobs(fam,type){
+    if(fam==="stage")return /Musical/.test(type)?["Director","Choreographer","Music Director","Producer"]:["Director","Producer"];
+    if(fam==="photo")return ["Photographer","Producer"];
+    if(fam==="audio"||fam==="anim")return ["Voice Director","Producer"];
+    if(fam==="move")return type==="Motion Capture"?["Capture Director","Producer"]:["Choreographer","Director"];
+    if(fam==="live")return ["Show Director","Producer"];
+    if(fam==="unscripted")return ["Showrunner","Producer"];
+    if(fam==="ad"||fam==="corp")return ["Director","Producer","Creative Director"];
+    return ["Director","Producer","Writer"];
+  }
+  function v3Person(h,res){
+    return roleName({name:"Crew",gender:pick(["Female","Male"]),role_type:"Crew",ethnicity:pick(SEED_ETHNICITIES.concat([OPEN_ETHNICITY])),_keepDescription:true,_crew:true},h,res);
+  }
+
+  // ── Union and pay ────────────────────────────────────────────────────────
+  // Minimum day (or week, for Equity) rates per contract, by rank. Checked
+  // against published scale: SAG-AFTRA theatrical day performer ~$1,200,
+  // Modified Low Budget ~$450, Ultra Low Budget ~$250, background ~$230,
+  // commercial session ~$800, Equity LOA/Off-Broadway weekly ~$600–$900.
+  const V3_FLOORS={
+    "SAG-AFTRA":{Lead:1250,Supporting:1200,"Day Player":1150,Background:230,unit:"day"},
+    "SAG-AFTRA Modified Low Budget":{Lead:475,Supporting:450,"Day Player":450,Background:230,unit:"day"},
+    "SAG-AFTRA Ultra Low Budget":{Lead:275,Supporting:250,"Day Player":250,Background:225,unit:"day"},
+    "SAG-AFTRA Short Project Agreement":{Lead:300,Supporting:275,"Day Player":260,Background:225,unit:"day"},
+    "SAG-AFTRA Student Film":{Lead:250,Supporting:225,"Day Player":200,Background:200,unit:"day"},
+    "SAG-AFTRA New Media":{Lead:300,Supporting:275,"Day Player":250,Background:225,unit:"day"},
+    "SAG-AFTRA Commercial":{Lead:850,Supporting:825,"Day Player":800,Background:375,unit:"day"},
+    "SAG-AFTRA Corporate/Educational":{Lead:600,Supporting:550,"Day Player":500,Background:300,unit:"day"},
+    "SAG-AFTRA Interactive":{Lead:950,Supporting:900,"Day Player":850,Background:400,unit:"session"},
+    "SAG-AFTRA Audio":{Lead:500,Supporting:450,"Day Player":400,Background:300,unit:"session"},
+    "AEA":{Lead:900,Supporting:800,"Day Player":700,Background:650,unit:"week"}
+  };
+  // Non-union ceilings, per day (sessions for voice, weeks for stage).
+  const V3_CAPS={film:650,tv:900,unscripted:650,stage:900,ad:1500,corp:1200,photo:2000,audio:900,anim:900,music:600,move:900,live:900,job:900};
+  function v3Union(type,fam){
+    const t=type;
+    if(fam==="stage")return /^(Off-Broadway Theater|Musical Theater)$/.test(t)?pick(["AEA","AEA","Non-Union"]):pick(["Non-Union","Non-Union","AEA Showcase Code"]);
+    if(fam==="photo")return "Non-Union";
+    if(fam==="ad")return /^(Commercial|Ad Campaign)$/.test(t)?pick(["Non-Union","Non-Union","SAG-AFTRA Commercial"]):"Non-Union";
+    if(fam==="corp")return pick(["Non-Union","Non-Union","SAG-AFTRA Corporate/Educational"]);
+    if(fam==="audio"||t==="Animation")return pick(["Non-Union","SAG-AFTRA Audio"]);
+    if(t==="Video Game"||t==="Motion Capture")return pick(["Non-Union","SAG-AFTRA Interactive"]);
+    if(fam==="music"||fam==="move"||fam==="live"||fam==="unscripted")return "Non-Union";
+    if(t==="Student Film")return pick(["Non-Union","Non-Union","SAG-AFTRA Student Film"]);
+    if(/^(Short Film|Experimental Film|Proof of Concept)$/.test(t))return pick(["Non-Union","Non-Union","SAG-AFTRA Short Project Agreement"]);
+    if(/^(Feature Film|Independent Film)$/.test(t))return pick(["SAG-AFTRA Ultra Low Budget","SAG-AFTRA Modified Low Budget","Non-Union","SAG-AFTRA"]);
+    if(/^(Web Series|Vertical Series|Sizzle Reel|Pitch Trailer|Pilot Presentation)$/.test(t))return pick(["Non-Union","SAG-AFTRA New Media"]);
+    if(fam==="tv")return pick(["SAG-AFTRA","SAG-AFTRA","Non-Union"]);
+    if(fam==="job")return pick(["SAG-AFTRA","Non-Union"]);
+    return "Non-Union";
+  }
+  function v3RankOf(r){
+    const t=String(r.role_type||"");
+    if(/^(Lead|Principal|Principal Voice)$/i.test(t))return "Lead";
+    if(/background|ensemble/i.test(t))return "Background";
+    if(/day player|featured/i.test(t))return "Day Player";
+    return "Supporting";
+  }
+  function v3Round(n,step){return Math.round(n/step)*step;}
+  function v3SetPay(roles,union,fam,type,track){
+    const fl=V3_FLOORS[union];
+    const cap=V3_CAPS[fam]||900;
+    const unit=fam==="stage"?"week":(fam==="audio"||fam==="anim")?"session":"day";
+    const order=["Lead","Supporting","Day Player","Background"];
+    let prev=Infinity;
+    const byRank={};
+    roles.slice().sort((a,b)=>order.indexOf(v3RankOf(a))-order.indexOf(v3RankOf(b))).forEach(r=>{
+      const rank=v3RankOf(r);
+      const cur=parseRoleRate(r.pay);
+      let amt=cur?cur.rate_amount:0;
+      if(fam==="stage"&&cur&&cur.rate_unit!=="week")amt=amt*4;
+      const step=amt>=500?50:25;
+      if(fl){
+        const floor=fl[rank]||fl.Supporting;
+        if(amt<floor)amt=v3Round(floor*(1+Math.random()*0.18),step);
+      }else if(!/Showcase/.test(union)){
+        if(amt>cap)amt=v3Round(cap*(0.8+Math.random()*0.2),step);
+        // Paid ad, stills and corporate work has a floor in the real market.
+        const minNU={ad:175,photo:250,corp:175,live:150,film:/^(Student Film|Experimental Film)$/.test(type)?75:100,tv:125,stage:0,music:100,move:100,unscripted:125,audio:100,anim:100}[fam];
+        if(amt>0&&minNU&&amt<minNU)amt=v3Round(minNU*(1+Math.random()*0.25),25);
+        if(/^(Student Film|Experimental Film|Table Read)$/.test(type)&&unit==="day"&&amt>300)amt=v3Round(150+Math.random()*125,25);
+      }
+      if(amt>prev)amt=prev;
+      if(!byRank[rank])byRank[rank]=amt;
+      prev=amt;
+      r._amt=amt;
+    });
+    // Pay spread: two rates within 15% of each other read as invented, so
+    // near-identical rates are levelled to one figure.
+    const amts=roles.map(r=>r._amt).filter(a=>a>0);
+    if(amts.length){
+      const hi=Math.max(...amts),lo=Math.min(...amts);
+      if(hi>lo&&(hi-lo)/lo<0.15)roles.forEach(r=>{if(r._amt>0)r._amt=hi;});
+    }
+    roles.forEach(r=>{
+      if(/Showcase/.test(union)){const rk=v3RankOf(r);r.pay=`$${rk==="Lead"?200:rk==="Supporting"?150:100} stipend for the run`;return;}
+      if(!(r._amt>0)){return;}
+      if(/^Table Read$/.test(type)){r.pay=`${money(Math.max(100,v3Round(r._amt/4,25)))} for the read`;return;}
+      r.pay=unit==="week"?`${money(r._amt)}/week (rehearsal and performance)`:unit==="session"?`${money(r._amt)} per session`:fam==="photo"?`${money(r._amt)} per day`:`${money(r._amt)}/day`;
+    });
+    return roles;
+  }
+
+  // ── Schedule note ────────────────────────────────────────────────────────
+  // Built from this project's facts. Two sentences, each joining two facts,
+  // so the space of possible notes is large, and every sentence is checked
+  // against every note the generator has ever written (numbers ignored).
+  // Sentence identity for the no-reuse rule: case, punctuation and numbers
+  // ignored, so "a 7am call" and "a 9am call" count as one sentence.
+  function v3Skeleton(s1,label){
+    const x=String(s1||"").replace(label,"TYPE");
+    return x.split(/\s+/).slice(0,4).map(w=>/^(a|an|the|this|in|about|we|our|it|is|are|TYPE|set|for|on|at|with|when|what|how|who|here|there|story|follows|film|series)$/i.test(w.replace(/[^\w]/g,""))?w.toLowerCase():"_").join(" ");
+  }
+  function v3SentKey(s){return clean(s).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#");}
+  function v3SentUsed(k,h,res){return (h.sentKeys&&h.sentKeys.has(k))||(res.sentKeys&&res.sentKeys.has(k));}
+  function v3ListingSentences(item,roles){
+    return v3Sentences(item.synopsis).concat([item.tagline],(roles||[]).reduce((a,r)=>a.concat(v3Sentences(r.description)),[])).filter(x=>String(x||"").split(/\s+/).length>=6);
+  }
+  // The story itself (sentences one and two) as a set of content words, for
+  // the "same story with swapped nouns" check against every saved listing.
+  const V3_STORY_STOP=/^(about|where|which|makes|different|there|campaign|series|project|video|shows?|built|around|whole|photographed|subject|subjects|people|every|person)$/;
+  function v3StoryWords(syn){return new Set(clean(v3Sentences(syn).slice(0,2).join(" ")).split(" ").filter(w=>w.length>4&&!V3_STORY_STOP.test(w)));}
+  function v3TooClose(a,list){
+    for(const b of list){const u=Math.min(a.size,b.size);if(u<8)continue;let n=0;a.forEach(w=>{if(b.has(w))n++;});if(n/u>=0.5)return true;}
+    return false;
+  }
+  function v3NormSched(s){return clean(s).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#");}
+  const V3_WEEKDAY=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  function v3Times(night){return night?pick(["2pm","3pm","4pm","5pm","6pm"]):pick(["6am","6:30am","7am","7:30am","8am","8:30am","9am","10am","noon"]);}
+  function v3SchedFacts(c){
+    const d=c.days,w=v3Words(d),F=[];
+    const first=V3_WEEKDAY[new Date(c.start+"T12:00:00Z").getUTCDay()];
+    const fam=c.fam;
+    const win=c.windowDays;
+    const unit=fam==="audio"||fam==="anim"?"recording session":fam==="move"&&c.type==="Motion Capture"?"capture day":fam==="live"?"event day":"shoot day";
+    const units=d===1?unit:unit+"s";
+    const A=[];
+    if(fam==="stage"){
+      if(c.type==="Table Read"){A.push(`the read is one sitting of about ${v3Words(rand(3,4,1))} hours`,`it is a single ${pick(["afternoon","evening","morning"])} around a table`,`the whole job is one read that starts at ${pick(["11am","1pm","2pm","6pm"])}`);}
+      else{
+        const wk=c.weeks,pf=c.perfs;
+        A.push(`rehearsals run ${v3Words(wk)} week${wk===1?"":"s"} before ${v3Words(pf)} performance${pf===1?"":"s"}`,
+          `there ${wk===1?"is":"are"} ${v3Words(wk)} week${wk===1?"":"s"} of rehearsal, then ${v3Words(pf)} show${pf===1?"":"s"}`,
+          `the company rehearses for ${v3Words(wk)} week${wk===1?"":"s"} and performs ${v3Words(pf)} time${pf===1?"":"s"}`);
+      }
+    }else if(d===1){
+      A.push(`it is one ${unit} starting at ${v3Times(c.night)}`,`you are needed for a single ${unit}, a ${first}`,`the job is one ${unit} with a ${v3Times(c.night)} call`);
+    }else if(d<=win&&d<=6&&c.consecutive){
+      A.push(`the ${w} ${units} run back to back, starting on a ${first}`,`it is a block of ${w} ${units} in a row`,`${d===2?"both":"all "+w} ${units} are consecutive, beginning on a ${first}`);
+    }else{
+      A.push(`the ${w} ${units} are spread across the window`,d>=4?`there are ${w} ${units}, split into ${v3Words(Math.min(d-2,rand(2,3,1)))} blocks`:`the ${w} ${units} are not back to back`,`the ${w} ${units} are mostly weekdays, starting on a ${first}`);
+    }
+    if(/^(TV Series|Streaming Series|Limited Series|Miniseries|Web Series|Vertical Series)$/.test(c.type)&&fam!=="stage")A.push(`the ${w} shoot days cover ${v3Words(c.episodes||6)} episodes, filmed in ${v3Words(rand(2,3,1))} blocks`);
+    const B=[];
+    // Each fact belongs to a topic; a note never states two facts on one topic.
+    const addB=(topic,...texts)=>texts.forEach(t=>B.push({t,topic}));
+    if(c.night&&fam!=="stage"&&fam!=="audio")addB("t1",`some calls run overnight, with a full twelve hours off before the next one`,`night scenes wrap by ${pick(["4am","5am","3am"])} at the latest`,`expect ${pick(["two","a few"])} late nights, with a rest day after them`);
+    if(c.minors)addB("t2",`minors work shorter days and school hours are kept free`,`a set teacher is on site for anyone under eighteen`,`younger cast members finish by ${pick(["6pm","7pm"])} on school nights`);
+    if(/^(film|tv|ad|photo|music|job|unscripted)$/.test(fam))addB("t3",`there is a paid wardrobe fitting ${v3Words(rand(2,6,1))} days before`,`your paid fitting takes ${pick(["a short visit","about an hour","under an hour"])} the week before`);
+    if(/^(film|tv)$/.test(fam)&&c.hasLeads)addB("t4",`the leads get ${pick(["one rehearsal day","an afternoon of rehearsal"])} before filming starts`,`leads rehearse ${pick(["the day before","two days before"])} the first shoot day`);
+    if(c.rural)addB("t5",`a van leaves from a pickup point at ${pick(["5am","5:30am","6am"])} each day`,`transport from the train station is provided`);
+    if(fam==="audio"||fam==="anim")addB("t6",`you can record from home if you have a quiet space`,`the director joins every session by video call`,`sessions are booked in ${pick(["two-hour","three-hour","four-hour"])} blocks`);
+    if(fam==="stage"&&c.type!=="Table Read")addB("t7",`${pick(["Mondays","Tuesdays"])} are dark`,`tech week takes the ${pick(["three","four"])} evenings before opening`,`the room is booked ${pick(["weekday evenings plus Saturdays","daytime, Tuesday to Saturday","on weeknights only"])}`);
+    if(fam==="photo")addB("t8",`hair and makeup start at ${pick(["7am","8am","9am"])}`,`you will do about ${v3Words(rand(3,6,1))} looks`,`the photographer shoots in natural light, so the day ends ${pick(["before sunset","by 5pm","by mid-afternoon"])}`);
+    if(fam==="live")addB("t9",`performers take a ${pick(["15-minute","20-minute"])} break every hour`,`the doors open to the public at ${pick(["10am","11am","noon"])}`);
+    if(c.type==="Motion Capture"||c.type==="Video Game")addB("t10",`the capture suit fitting takes about ${pick(["30 minutes","45 minutes","an hour"])} on the first morning`,`each capture block is ${pick(["90 minutes","two hours"])} with a break after`);
+    if(fam==="ad"||fam==="corp")addB("t11",`the call is ${v3Times(c.night)} and the day wraps within ten hours`,`lunch is served on set around ${pick(["noon","1pm"])}`);
+    if(fam==="unscripted")addB("t12",`filming follows real opening hours, so days can start early`,`nothing is scripted, but each day has a plan`);
+    if(fam==="job")addB("t13",`check-in is at ${v3Times(c.night)} at the base camp`,`bring ${pick(["two","three"])} changes of your own clothes`);
+    if(fam==="film"||fam==="tv")addB("t14",`most days are ${pick(["ten","eleven","twelve"])} hours including lunch`,`the call sheet goes out ${pick(["the evening before","by 7pm the night before"])}`);
+    return {A,B};
+  }
+  function v3Schedule(c,h,res){
+    const {A,B}=v3SchedFacts(c);
+    const join=[(a,b)=>`${capFirst(a)}, and ${b}.`,(a,b)=>`${capFirst(a)}; ${b}.`,(a,b)=>`${capFirst(a)}, and ${b}.`,(a,b)=>`${capFirst(a)}. ${capFirst(b)}.`];
+    const used=k=>h.schedKeys.has(k)||res.schedKeys.has(k);
+    for(let i=0;i<60;i++){
+      const a=pick(A);const bs=cgShuffle(B);
+      const b1=bs[0]&&bs[0].t,b2=(bs.find(z=>bs[0]&&z.topic!==bs[0].topic)||{}).t;
+      const s1=b1?pick(join)(a,b1):`${capFirst(a)}.`;
+      const s2=b2&&Math.random()<0.55&&!used(v3NormSched(b2))?`${capFirst(b2)}.`:"";
+      const note=[s1,s2].filter(Boolean).join(" ");
+      const sents=(note.match(/[^.!?]+[.!?]+/g)||[note]).map(x=>v3NormSched(x)).filter(x=>x.split(" ").length>=3).concat(["note "+v3NormSched(note)]);
+      if(sents.some(used))continue;
+      sents.forEach(k=>res.schedKeys.add(k));
+      return note;
+    }
+    return null;
+  }
+
+  // ── Hooks used by the older role code ────────────────────────────────────
+  const V3_SKILL=/\b(?:danc|skat|music|athlet|chef|cook|stunt|rider|climb|drum|sing|guitar|box|fight|barber|swim|juggl|acrobat|runner|player|mechanic|baker|welder|carpenter|tailor|pianist|violin|skill|craft|lifeguard|pilot|maker)/i;
+  // "the kids on the block" is a group, "the man in cuffs" is one person: the
+  // head noun (before any preposition) decides.
+  function v3PluralSlot(s){
+    const t=stripArticle(String(s||"")).toLowerCase();
+    if(/^(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|shoppers|voices|gardeners|players|team|class|family|people|workers|staff|crew|volunteers|passengers|runners|traders|members|locals|onlookers|early customers|late customers|additional voices|utility voices|archive voices)\b/.test(t))return true;
+    const head=t.split(/\s+(?:in|on|at|with|who|from|of|by|for|and|to|under|behind|outside|inside)\s+/)[0].split(/\s+/).pop()||"";
+    return /s$/.test(head)&&!/(ss|us|is|'s|’s)$/.test(head);
+  }
+  function v3NoteFits(t,c){
+    const s=String(t||"");
+    if(!s)return false;
+    if(V3_BANNED.test(s)||V3_LITERARY.test(s)||V3_INSULT.test(s))return false;
+    if(c.sentUsed&&v3Sentences(s).some(x=>x.split(/\s+/).length>=4&&c.sentUsed(v3SentKey(x))))return false;
+    const f=c.fam,slot=`${c.slot||""} ${c.sketch||""}`;
+    if(/product|thing being sold/i.test(s)&&!/^(Commercial|Product Demo|Social Media Ad|Spec Commercial|Ad Campaign|Promo Video|Influencer \/ UGC Content|Print Campaign)$/.test(c.type))return false;
+    if(/cast on the skill|how long you have been doing it|really be able to do this|not a mime/i.test(s)&&!V3_SKILL.test(slot))return false;
+    if(/makeup app|filters|smoothed/i.test(s)&&!/^(photo|ad)$/.test(f))return false;
+    if(/\b(camera|close-ups?|on set|filmed|filming|shoot|shot|takes?|lens|frames?|cutdowns?)\b/i.test(s)&&/^(audio|stage)$/.test(f))return false;
+    if(/\b(filmed|filming|films?|footage|takes?|on camera|down the barrel|lens)\b/i.test(s)&&f==="photo")return false;
+    if(/\b(face|smile|looks?|photos?|wardrobe|clothes|outfits?|fitting|try-on|makeup|hair|on your feet|walking)\b/i.test(s)&&(f==="audio"||c.type==="Animation"||c.type==="Voiceover"))return false;
+    if(/\b(speak|talk|lines|dialogue|words|say|says|read with|chemistry|callback|improvis|scenes?)\b/i.test(s)&&f==="photo")return false;
+    if(/do not speak|no lines|no dialogue|nobody in this spot talks|without words/i.test(s)&&(f==="audio"||c.rank==="Lead"&&f!=="ad"))return false;
+    if(/any gender|open on gender|without a fixed gender/i.test(s)&&!/Non-Binary|All genders/i.test(c.gender||""))return false;
+    if(/chemistry read|paired at callback|read with the other|at the callback|at callback/i.test(s)&&(c.rank==="Background"||c.group))return false;
+    if(/under-18s|family bookings|school hours/i.test(s)&&!c.minors)return false;
+    if(/finished ad|ad is allowed|used online and in shops|brand can use|not going on television/i.test(s)&&f!=="ad")return false;
+    if(/\bparent\b|family group|as part of a family/i.test(s)&&!/parent|mother|father|mom|dad|family|child/i.test(slot))return false;
+    if(/half of a couple|one of a pair|with one other actor/i.test(s)&&!/couple|\bpair\b|partner|wife|husband|\bdate\b/i.test(slot))return false;
+    if(/opposite the lead|scenes with the lead|against the lead/i.test(s)&&c.rank==="Lead")return false;
+    if(/rehears/i.test(s)&&/^(photo|ad|corp)$/.test(f))return false;
+    if(/talk straight into the camera|speak to the lens|down the barrel/i.test(s)&&!/^(ad|corp|unscripted|live)$/.test(f))return false;
+    if(/ten hours|full working day|long day|full day on location|long call/i.test(s)&&/^(audio|stage)$/.test(f))return false;
+    if(/local hire|travel day/i.test(s)&&(f==="audio"||c.type==="Animation"))return false;
+    if(/\bthe spot\b|\bthis spot\b|\badvert\b/i.test(s)&&f!=="ad")return false;
+    if(/humor|funny|laugh|comic/i.test(s)&&/\b(grief|funeral|abuse|hostage)\b/i.test(slot))return false;
+    // Stills work: no acting-craft notes about scenes, lines, listening or volume.
+    if(f==="photo"&&/\b(loud|scene|lines?|listening|reacting|reactions|note|callback|tape|accent|rehears|improvis|authority|the room|beat|surprise|type|writing)\b/i.test(s))return false;
+    if(/your face is what sells|cast almost entirely on the face|choosing on the face/i.test(s)&&/\bhands?\b/i.test(slot))return false;
+    if(/speak|talk straight|to the lens|down the barrel|lines|words are short/i.test(s)&&/without dialogue|no dialogue|no lines|says nothing|never speaks|silent/i.test(slot))return false;
+    if(/in the background of the story|one of the people in the room|fill the world around the main actors/i.test(s)&&!(c.rank==="Background"||c.group))return false;
+    return true;
+  }
+  // Plain part descriptions for a returning premise whose original lines are
+  // spent. Built from the role's own label and rank; checked for reuse.
+  const V3_SKETCH_A=["Steady and practical","Quick to joke and slow to trust","Warm with strangers and short with family","Careful, tired and still trying","Loud in a room and quiet on the phone","Stubborn, kind and bad at asking for help","Friendly, nosy and hard to fool","Calm on the outside and worried underneath it all","Proud of the job and tired of the hours","New to all of this and learning fast","Sure of themselves until the plan breaks","Polite, tense and watching everyone"];
+  const V3_SKETCH_B=["Has one scene where everything they have been holding back comes out.","Wants the day to end without anyone getting hurt.","Knows more than they say and says it at the worst moment.","Is the only one who notices when things start to go wrong.","Keeps the others moving when they want to stop.","Makes one choice that changes how the others see them.","Tries to fix things and makes them a little worse first.","Has a good reason for every bad decision.","Is funny without trying and serious when it counts.","Says very little and means all of it."];
+  function v3FreshSketch(slot,h,res){
+    for(let i=0;i<30;i++){
+      const x=`${pick(V3_SKETCH_A)}. ${pick(V3_SKETCH_B)}`;
+      if(!v3Sentences(x).some(z=>v3SentUsed(v3SentKey(z),h,res)))return x;
+    }
+    return "";
+  }
+  function v3Fit(bank,ctx){return bank.map(fn=>x=>{const t=fn(x);return v3NoteFits(t,ctx)?t:"";});}
+  const V3_AGE_WORDS={six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,seventy:70,sixty:60};
+  function v3StatedAgeAny(d){
+    const t=String(d||"");
+    const m=t.match(/(?:^|[.;—:]\s*)(Six|Seven|Eight|Nine|Ten|Eleven|Twelve|Thirteen|Fourteen|Fifteen|Sixteen|Seventeen|Eighteen|Nineteen|Twenty)\b(?: years old)?[,.]/)||t.match(/\b(six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|\d{1,2}) years old\b/i);
+    if(!m)return null;
+    return V3_AGE_WORDS[m[1].toLowerCase()]||+m[1]||null;
+  }
+  function v3StatedAge(d,band){
+    const v=v3StatedAgeAny(d);
+    return v&&bandHolds(band,v)?v:null;
+  }
+  const V3_JOB_PREFIX=/^(?:Voice |Capture |Show |Music |Creative |Session |Stage )?(?:Director|Producer|Writer|Photographer|Showrunner|Choreographer|Casting Director|Casting|Manager|Prod\.|Dir\.)\s+/;
+  function v3CrewNamesIn(c){
+    const out=[];
+    const credits=(String(c.submission_requirements||"").match(/Credits: ([^\n]*?)\.?$/)||[])[1]||"";
+    credits.split(" · ").forEach(p=>out.push(p.trim().replace(V3_JOB_PREFIX,"")));
+    const tail=String(c.prod||"").split(" — ")[1]||"";
+    tail.split(" · ").forEach(p=>out.push(p.trim().replace(V3_JOB_PREFIX,"").replace(/,.*$/,"")));
+    const lead=String(c.prod||"").match(/^(.+?) (?:Casting for|— (?:Producer|Director|Casting Director|Independent Producer))/);
+    if(lead)out.push(lead[1]);
+    if(c.casting_director_name&&/^[A-Z][A-Za-z'’.-]+( [A-Z]\.)? [A-Z][A-Za-z'’-]+$/.test(c.casting_director_name))out.push(c.casting_director_name);
+    return out.filter(n=>/^[A-Z][A-Za-z'’.-]+( [A-Z]\.)? [A-Z][A-Za-z'’-]+(-[A-Z][A-Za-z'’-]+)?$/.test(n));
+  }
+  // Loads the durable log (casting_generator_seen) and the saved listings into
+  // the history the v3 writers check against. Rows are plain keys; the prefix
+  // says what they are: name| crew| company| sched| area|. Anything without a
+  // prefix is a story key, exactly as before.
+  function v3HistoryInit(h,existing,seenKeys){
+    h.cores=new Set();h.coreWords=new Set();h.schedKeys=new Set();h.areaUse={};h.lastCount={};h.typeRecent={};h.prevLasts=new Set();h.sentKeys=new Set();h.lastOpen4="";
+    const areaSeen={},areaList={};
+    (seenKeys||[]).forEach(row=>{
+      const k=typeof row==="string"?row:(row&&row.key)||"";
+      if(!k)return;
+      const bar=k.indexOf("|");
+      const kind=bar>0?k.slice(0,bar):"";
+      const v=bar>0?k.slice(bar+1):"";
+      if(kind==="name"||kind==="crew")h.roles.add(v);
+      else if(kind==="company"){h.cores.add(v);}
+      else if(kind==="sched")h.schedKeys.add(v);
+      else if(kind==="area"){const p=v.split("|");const key=p[0]+"|"+p[1];areaSeen[key]=(areaSeen[key]||0)+1;}
+      else addUsed(h.traits,k);
+    });
+    const list=existing||[];
+    const ordered=list.filter(c=>!c.created_at).reverse().concat(list.filter(c=>c.created_at).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))));
+    ordered.forEach((c,i)=>{
+      if(i<110&&c.type)h.typeRecent[c.type]=(h.typeRecent[c.type]||0)+1;
+      if(i<120){h.recentTotal=(h.recentTotal||0)+1;if(c.location==="New York, NY")h.nycRecent=(h.nycRecent||0)+1;}
+      if(i===0)h.lastOpen4=clean(c.synopsis).split(" ").slice(0,4).join(" ");
+      if(i<120){h.skeletons=h.skeletons||{};const sk=v3Skeleton(v3Sentences(c.synopsis)[0],"");h.skeletons[sk]=(h.skeletons[sk]||0)+1;}
+      v3ListingSentences(c,c.roles).forEach(x=>h.sentKeys.add(v3SentKey(x)));
+      if(i<150){
+        (h.storyWords=h.storyWords||[]).push(v3StoryWords(c.synopsis));
+        h.recentSeeds=h.recentSeeds||new Set();
+        mineStoryKeys(clean(`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`)).filter(k=>k.indexOf("seed ")===0).forEach(k=>h.recentSeeds.add(k));
+      }
+      const core=v3CoreOf(c.prod||c.posted_by_label);
+      if(core){h.cores.add(core);if(i<40)core.split(" ").forEach(w=>h.coreWords.add(w));}
+      v3Sentences(c.schedule_note).map(v3NormSched).filter(k=>k.split(" ").length>=3).concat(c.schedule_note?["note "+v3NormSched(c.schedule_note)]:[]).forEach(k=>h.schedKeys.add(k));
+      const city=CITIES.find(x=>x.name===c.location);
+      if(city){
+        const loc=String(c.shoot_location||"").replace(/\s*\([^()]*\)\s*$/,"");
+        const a=city.areas.filter(z=>loc===z||loc.endsWith(", "+z)).sort((x,y)=>y.length-x.length)[0];
+        if(a){const key=city.name+"|"+a;areaList[key]=(areaList[key]||0)+1;}
+      }
+      const people=(c.roles||[]).map(r=>r&&r.name).filter(n=>n&&nameParts(n)&&!/\(/.test(n)).concat(v3CrewNamesIn(c));
+      people.forEach(n=>{
+        h.roles.add(clean(n));
+        const p=nameParts(n);
+        if(p){const l=clean(p.last);h.lastCount[l]=(h.lastCount[l]||0)+1;if(i===0)h.prevLasts.add(l);}
+      });
+    });
+    Object.keys(areaList).concat(Object.keys(areaSeen)).forEach(k=>{h.areaUse[k]=Math.max(areaList[k]||0,areaSeen[k]||0);});
+  }
+
+  // Twists for brief-style seeds, by medium. A photo shoot cannot be "one long
+  // shot with no cuts" and a voice job cannot be "shot in the hour before
+  // sunrise", so the shared format bank is split.
+  const V3_TWISTS={
+    photo:["every picture is taken in natural light, with no studio lights","nobody looks at the camera in any of the pictures","each person is photographed in the same pose in two different places","the whole set is photographed in one afternoon while the light changes","every picture is taken where the person really works or lives","people are photographed in pairs, never alone","each portrait takes under two minutes, so nothing looks posed","the pictures will be printed very large on bus shelters"],
+    audio:["the actors record together in one room instead of separately","each episode is under fifteen minutes","there is no narrator, only the characters talking","the sound effects are recorded live with the actors"],
+    anim:["the voices are recorded before any animation is drawn","one actor voices the same character at three different ages","the actors record together so the jokes can overlap"],
+    move:["the whole piece is performed in one take","every movement starts from something ordinary, like waiting for a bus","the performers move in silence and the music is added later"],
+    live:["the show repeats every hour with a slightly different ending","the audience can talk back to the performers","the performers stay in character for the whole day"],
+    unscripted:["nothing is scripted, but every day has a plan","the people on camera are real, not actors playing a part","filming follows real opening hours"],
+    corp:["every scene is played once the wrong way and once the right way","the people on screen are actors playing real staff","each lesson is short enough to watch on a break"],
+    video:FORMAT_TURNS.filter(t=>!/sound off|backwards|clock on screen|real person doing that real job|everyone on camera is a real/i.test(t))
+  };
+  function v3Twists(fam){
+    if(fam==="photo")return V3_TWISTS.photo;
+    if(fam==="audio")return V3_TWISTS.audio;
+    if(fam==="anim")return V3_TWISTS.anim;
+    if(fam==="move")return V3_TWISTS.move;
+    if(fam==="live")return V3_TWISTS.live;
+    if(fam==="unscripted")return V3_TWISTS.unscripted;
+    if(fam==="corp")return V3_TWISTS.corp;
+    return V3_TWISTS.video;
+  }
+  function v3PickVoice(res){
+    res._voiceCount=res._voiceCount||{};
+    const v=leastUsed(V3_VOICES,k=>res._voiceCount[k]||0,new Set([res._lastVoice]))[0];
+    return v;
+  }
+  function v3Money(a,b){return rand(a,b,a>=500?50:25);}
+  // Crew-side bookings on a narrative project. These are labelled parts, not
+  // characters, and never carry a person's name.
+  const V3_PEOPLE_WORD=/\b(people|customers|regulars|neighbors|passersby|patrons|guests|shoppers|riders|students|kids|children|crowd|audience|onlookers|workers|staff|crew|team|class|family|families|dancers|players|gardeners|volunteers|traders|members|visitors|diners|commuters|passengers|voices|ensemble|group|atmosphere|double|model|hands|lead|friends|coworkers|parents|fans|runners|swimmers|drivers|band|choir|chorus|congregation|tenants|mourners|guards|officers|nurses|patients|travelers|spectators|bidders|campers|queue|line)\b/i;
+  function v3PeopleLabel(label){const t=titleCase(stripArticle(label));return V3_PEOPLE_WORD.test(t)?t:`People on the ${t}`;}
+  function v3JobRoles(type,seed,slots,union,plan,h,res,venue){
+    const sag=/SAG/.test(union);
+    const named=slots.filter(s=>s.r!=="Background");
+    // Doubles and stunt work are adult bookings only.
+    const adults=named.filter(s=>s.a!=="child"&&s.a!=="teen");
+    const leads=adults.filter(s=>s.r==="Lead").concat(adults.filter(s=>s.r!=="Lead"));
+    const genders=seedGenders(slots);
+    const gOf=s=>{const g=genders[slots.indexOf(s)];return g==="Non-Binary"||!g?"All genders":g;};
+    const place=venue||v3VenuePhrase(pick(seed.w||[]))||"the main location";
+    const who=s=>stripArticle(String(s.s||"")).split(/\s+/).slice(0,5).join(" ");
+    // Every sentence is drawn so that no two parts in this listing, and no two
+    // listings on the board, describe a crew booking with the same line.
+    const usedHere=new Set();
+    const line=opts=>{const o=cgShuffle(opts).find(x=>!usedHere.has(v3SentKey(x))&&!(h&&res&&v3SentUsed(v3SentKey(x),h,res)));if(o)usedHere.add(v3SentKey(o));return o||"";};
+    const mk=(name,rank,description,gender,age,pay,days,media)=>({name,role_type:rank,_group:true,_groupName:name,description:description.replace(/\s+/g," ").trim(),_slot:name.toLowerCase(),gender,age_range:age,ethnicity:OPEN_ETHNICITY,pay,est_days:Math.max(1,Math.min(days,plan.days)),required_media:media||["headshot","fullbody"],prescreen:null,_keepDescription:true,_job:true});
+    const out=[];
+    if(type==="Background / Extras"){
+      const bgSlots=slots.filter(s=>s.r==="Background");
+      bgSlots.slice(0,2).forEach(s=>{const n=stripArticle(s.s);out.push(mk(`${v3PeopleLabel(n)} (Background)`,"Background",`${capFirst(n)} in the background of the main scenes. ${line([`No lines, and you will be placed by the assistant director.`,`There is no dialogue for the ${n}.`,`You will be moved around the set between takes.`,`Expect to repeat the same walk or task many times.`])} ${line([`Wear your own everyday clothes and bring a second outfit.`,`Bring two outfits in plain colors.`,`Wardrobe checks your clothes when you arrive.`])}`,"All genders",pick(["18-65","21-70","18-60"]),"",rand(1,3,1)));});
+      out.push(mk(`People at the ${titleCase(stripArticle(place))} (Background)`,"Background",`People going about their day at ${place} while the main scenes play. ${line([`Nobody speaks, so natural behavior is the whole job.`,`You might be a customer, a worker or someone passing through.`,`A few of you will be moved closer to camera on the day.`])}`,"All genders",pick(["18-70","20-65","18-55"]),"",rand(1,2,1)));
+      if(out.length<3)out.push(mk("Passersby on the Street (Background)","Background",`People walking past ${place} in the outdoor scenes. ${line([`Comfortable shoes matter, because there is a lot of walking.`,`Expect a lot of walking up and down the same block.`,`You will cross the frame many times.`])}`,"All genders",pick(["18-75","18-65"]),"",1));
+      const bgPay=`${money(sag?v3Money(225,275):v3Money(150,200))}/day`;
+      out.forEach(r=>{r.pay=bgPay;});
+    }else if(type==="Stand-In"){
+      leads.slice(0,rand(2,3,1)).forEach(s=>{const n=who(s);out.push(mk(`Lighting Double for the ${titleCase(n)}`,"Day Player",`Lighting double for the actor playing the ${n}. ${line([`You stand on the ${n}'s marks while camera and lights are set up.`,`While the crew lights each scene, you take the ${n}'s place.`,`You walk the ${n}'s moves slowly so the camera team can plan the shot.`])} ${line([`A similar height, build and skin tone to that actor matters most.`,`Being close in height and build to the ${n} matters more than anything.`,`No acting is needed, but you need to be patient and on time.`,`Expect long days on your feet between setups.`])}`,gOf(s),seedAge(youngerGroup(s.a||"adult",s),new Set(),null),`${money(sag?v3Money(250,300):v3Money(200,250))}/day`,Math.max(2,Math.round(plan.days*0.8))));});
+    }else if(type==="Body Double"){
+      leads.slice(0,rand(1,2,1)).forEach(s=>{const n=who(s);out.push(mk(`Body Double for the ${titleCase(n)}`,"Day Player",`Body double for the actor playing the ${n}. ${line([`You appear in wide shots and shots filmed from behind.`,`You take the ${n}'s place in the shots where their face is not seen.`,`You double the ${n} in the wide walking shots.`])} ${line([`There is no nudity.`,`There is no nudity in any of these scenes.`])} ${line([`A similar height, build and hair color matters most.`,`Matching the actor's build and hair is the main thing.`,`We will match hair and wardrobe to the actor on the day.`])}`,gOf(s),seedAge(youngerGroup(s.a||"adult",s),new Set(),null),`${money(sag?v3Money(1150,1250):v3Money(300,450))}/day`,rand(1,3,1)));});
+    }else{
+      const drive=/driv|car|truck|cab|bike|courier|highway/i.test(`${seed.p} ${seed.h} ${seed.h2}`);
+      leads.slice(0,2).forEach(s=>{const n=who(s);out.push(mk(`Stunt Double for the ${titleCase(n)}`,"Supporting",`Stunt double for the actor playing the ${n}. ${line([`You handle the falls and the rough physical moments for the ${n}.`,`The hardest day for the ${n}'s double is one planned fall onto pads.`,`Every move for the ${n} is rehearsed on mats before it is filmed.`,`You take over from the ${n} for the running and the fall.`])} ${line([`Stunt training and a stunt reel are required.`,`A current stunt reel is required.`,`Please send a stunt reel and list your training.`,`Real stunt credits are required for this part.`])}`,gOf(s),seedAge(youngerGroup(s.a||"adult",s),new Set(),null),"",rand(1,3,1),["headshot","fullbody","reel"]));});
+      out.push(drive
+        ?mk("Precision Stunt Driver","Supporting",`Drives the picture cars in the chase and near-miss scenes near ${place}. ${line([`A clean license and proven stunt driving work are required.`,`Precision driving credits are required.`,`You must have stunt driving experience on film or TV sets.`])}`,"All genders",pick(["25-55","28-60"]),"",rand(1,2,1),["headshot","reel","resume"])
+        :mk("Fight and Fall Performer","Supporting",`Takes part in one scuffle and one fall at ${place}. ${line([`Both moments are planned with the stunt coordinator.`,`Fight or stunt training is required.`,`Every move is rehearsed slowly before it is filmed.`])}`,"All genders",pick(["21-45","22-50"]),"",1,["headshot","fullbody","reel"]));
+      out.forEach(r=>{r.pay=`${money(sag?v3Money(1250,1400):v3Money(450,800))}/day`;});
+    }
+    return out;
+  }
+  function v3Media(roles,fam,type){
+    roles.forEach(r=>{
+      if(r._job)return;
+      const rank=v3RankOf(r);
+      if(fam==="photo"){r.required_media=["headshot","fullbody"];r.prescreen=rank==="Lead"&&Math.random()<0.4?"call":null;}
+      else if(fam==="audio"||type==="Animation"||type==="Voiceover"||(type==="Video Game"&&!r._capture)){r.required_media=["headshot","reel"];r.prescreen="voice";}
+      else if(fam==="move"){r.required_media=["headshot","fullbody","reel"];r.prescreen=null;}
+      else if(fam==="stage"){r.required_media=rank==="Background"?["headshot"]:["headshot","resume"];r.prescreen=rank==="Lead"||rank==="Supporting"?"selftape":null;}
+    });
+  }
+  const V3_REQ_EXTRA={
+    film:["Tell us about any conflicts with the shoot dates.","A self-tape filmed on a phone is fine.","Let us know if you are local."],
+    tv:["Tell us about any series you are already committed to.","A self-tape filmed on a phone is fine.","Note any conflicts with the shoot dates."],
+    job:["Recent photos are more useful than polished headshots.","Tell us your height and clothing sizes.","Note any conflicts with the dates."],
+    stage:["A contemporary monologue under two minutes is welcome.","Tell us about any conflicts with the rehearsal weeks.","Local actors only, please."],
+    ad:["Include your clothing sizes.","Tell us about any competing ads you have appeared in over the last year.","Recent photos work better than old headshots."],
+    corp:["Clear, natural line reading matters more than credits.","Tell us if you are comfortable reading from a teleprompter."],
+    photo:["Please send unretouched photos taken in daylight.","Include your clothing and shoe sizes.","Photos taken on a phone are fine."],
+    audio:["A short voice demo is enough, and it does not need to be professionally made.","Tell us if you can record from home."],
+    anim:["A short voice demo is enough, and it does not need to be professionally made.","Tell us if you can record from home."],
+    move:["A short movement clip helps more than a headshot.","Tell us about your training."],
+    music:["A short clip of you moving or dancing helps.","Tell us your clothing sizes."],
+    live:["A short video of you talking to people or performing helps.","Tell us about any live or improv experience."],
+    unscripted:["A short video of you talking to camera helps.","Tell us a little about yourself in your own words."]
+  };
+  const V3_AD_FORM={"Commercial":"Commercial","Social Media Ad":"Social Ad","Branded Content":"Branded Video","Promo Video":"Promo","Product Demo":"Product Demo","Spec Commercial":"Spec Ad","Ad Campaign":"Ad Campaign","Public Service Announcement":"PSA","Influencer / UGC Content":"UGC Campaign","Print Campaign":"Print Campaign","Photo Shoot":"Photo Shoot","Modeling":"Campaign"};
+  const V3_TYPE_WORDS=/\b(podcast|music video|commercial|photo ?shoot|feature film|short film|musical|web series|tv series|documentary|training video|public service announcement|PSA|dance film|audio drama|video game|animated)\b/i;
+  function v3Title(seed,type,fam,city,h,res){
+    const stems=seedTitleStems(seed).filter(t=>!V3_TYPE_WORDS.test(t)&&!/\bbrand\b/i.test(t));
+    const form=V3_AD_FORM[type];
+    const cands=[];
+    const catOk=s=>!clean(s).split(" ").some(w=>w.length>3&&clean(seed.cat).indexOf(w)>-1);
+    if(form&&seed.cat&&Math.random()<0.65)stems.filter(catOk).forEach(s=>cands.push(`${s} — ${seed.cat} ${form}`));
+    stems.forEach(s=>cands.push(s));
+    if(form&&seed.cat)stems.filter(catOk).forEach(s=>cands.push(`${s} — ${seed.cat} ${form}`));
+    if(!form&&(fam==="film"||fam==="tv"||fam==="stage")&&stems[0])cands.push(`${stems[0]} (Working Title)`);
+    const tails=["Working Title","Part One","Season One","New Pages","Revised","Take Two","Chapter One"];
+    return candidateUnique(cands.length?cands:["Untitled Project"],h.titles,res.titles,i=>`${stems[i%Math.max(1,stems.length)]||"Untitled"} (${tails[i%tails.length]})`);
+  }
+  function v3Plan(type,fam,track){
+    const plan=shootPlan(type,track);
+    const DAYS={"Limited Series":[14,24],"Miniseries":[14,24],"Vertical Series":[4,8],"Pilot Presentation":[3,6],"TV Series":[12,20],"Streaming Series":[12,20],"TV Pilot":[6,12],"Documentary":[6,14],"Reality / Docu-Series":[6,12],"Lifestyle / Unscripted":[4,8],"Hosting / Presenter":[1,4],"Background / Extras":[1,3],"Stand-In":[4,12],"Body Double":[1,4],"Stunts":[2,5],"Feature Film":[15,24],"Independent Film":[12,20]};
+    if(DAYS[type]&&fam!=="stage"){
+      const d=rand(DAYS[type][0],DAYS[type][1],1);
+      plan.days=d;plan.span=Math.max(d+2,Math.round(d*(d>8?1.45:1.8))+2);
+      const u=plan.unit||"shoot day";
+      plan.line=`${d<=12?v3Words(d):d} ${u}${d===1?"":"s"}`;
+      plan.cap=capFirst(plan.line);
+    }
+    return plan;
+  }
+  function v3CastSize(fam,n){
+    const want={film:[3,6],tv:[3,6],stage:[3,6],ad:[2,4],corp:[2,4],photo:[2,4],audio:[2,4],anim:[2,4],move:[2,4],music:[2,4],live:[2,4],unscripted:[2,3]}[fam]||[2,5];
+    return Math.max(1,Math.min(n+1,rand(want[0],want[1],1)));
+  }
+
+  // ── The listing validator ────────────────────────────────────────────────
+  // Everything the harness tests per listing. A draft with any problem is
+  // discarded and regenerated.
+  const V3_INVERTED=/everything worth knowing|before any of that|\bup to then\b|follows from one thing|we join it late|it begins simply enough|\bhere is the\b|described out loud|the setup behind it|where it starts:|underneath it,|the story follows|wind back|rewind a little|the easy half|the simple part:|the other half:|the hinge of it|one detail carries|it all comes back to|all of it traces|everything points back|drop in halfway|open on the middle|start in the wrong place|we come in after|picks up mid-fall|damage already done|is the one this lands on/i;
+  function v3Sentences(t){return (String(t||"").match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[]).map(x=>x.trim()).filter(Boolean);}
+  function v3Problems(item,c){
+    const out=[];
+    const roles=item._roles||[];
+    const fam=c.fam,type=item.type;
+    const txt=[item.title,item.tagline,item.synopsis,item.pay,item.submission_requirements,item.schedule_note,...roles.map(r=>`${r.description} ${r.pay}`)].join("\n");
+    const syn=String(item.synopsis||"");
+    const s1=v3Sentences(syn)[0]||"";
+    // Step 1
+    if(s1.toLowerCase().indexOf(String(c.L).toLowerCase())<0)out.push("sentence one does not name the project");
+    const kw=clean(c.setup).split(" ").filter(w=>w.length>3);
+    if(kw.length>=3&&kw.filter(w=>clean(s1).indexOf(w)>-1).length/kw.length<0.5)out.push("sentence one does not say the story");
+    if(s1.split(/\s+/).length<7)out.push("fragment opener");
+    if(V3_INVERTED.test(syn))out.push("inverted opener");
+    if(V3_LITERARY.test(txt))out.push("literary phrasing: "+(txt.match(V3_LITERARY)||[""])[0]);
+    if(V3_BANNED.test(txt))out.push("banned word");
+    if(V3_INSULT.test(txt))out.push("insulting word");
+    if(/\b(ad|spot|film|video|campaign|show|project) is for (people|anyone|those) who\b/i.test(txt))out.push("ambiguous sentence");
+    const tg=String(item.tagline||"");
+    if(!tg||tg.split(/\s+/).length<5||/\b\d+ (roles?|parts?)\b|submissions close|\bdeadline (is )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d)|now casting|breakdown|non-union|sag-aftra|\baea\b/i.test(tg)||/\b(jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\s+\d/i.test(tg)||tg.indexOf(item.location)>-1||clean(tg).indexOf(clean(type))===0)out.push("tagline is metadata");
+    roles.forEach(r=>{const d=String(r.description||"");if(/\bThat is (the|a|an)\b|^Looking for someone to play/.test(d))out.push("role named at the end");});
+    // Step 2/3 fit
+    roles.forEach(r=>{
+      const d=String(r.description||"");
+      if(/hold the product|product (stays )?in your hands|use the thing being sold/i.test(d)&&!/^(Commercial|Product Demo|Social Media Ad|Spec Commercial|Ad Campaign|Promo Video|Influencer \/ UGC Content|Print Campaign)$/.test(type))out.push("product line on "+type);
+      if(/how long you have been doing it|cast on the skill/i.test(d)&&!V3_SKILL.test(`${r._slot||""} ${d.split(/[:;—]/)[0]}`))out.push("skill line on acting role");
+      if(/makeup app|filters/i.test(d)&&!/^(photo|ad)$/.test(fam))out.push("makeup-app line");
+    });
+    const person=[item.tagline,syn,item.pay,item.submission_requirements,item.schedule_note,...roles.map(r=>`${r.description} ${r.pay}`)].join("\n");
+    if(/^(stage|photo|audio)$/.test(fam)&&/\bfilms?\b|\bfilmed\b|\bfilming\b|on camera/i.test(person))out.push("film word on "+type);
+    if(/\bbrand\b/i.test(item.title))out.push("generic brand title");
+    // The project noun sits in the first words of sentence one and in the
+    // title; a story that merely mentions a podcast is not a podcast listing.
+    const blob=`${item.title} ${s1.split(/\s+/).slice(0,6).join(" ")}`;
+    const m=blob.match(V3_TYPE_WORDS);
+    if(m&&clean(c.L+" "+(c.base||"")).indexOf(clean(m[0]))<0&&clean(type).indexOf(clean(m[0]))<0)out.push(`says "${m[0]}" on a ${type}`);
+    const cat=String(item.title).match(/ — ([A-Z][\w']+(?: [A-Z][\w']+)?) (Commercial|Social Ad|Branded Video|Promo|Product Demo|Spec Ad|Ad Campaign|PSA|UGC Campaign|Print Campaign|Photo Shoot|Campaign)$/);
+    if(cat&&clean(syn+" "+tg).indexOf(clean(cat[1]).split(" ")[0].slice(0,5))<0)out.push("title category not in story");
+    if(fam==="photo"){
+      if(/\b(lines?|dialogue|speak|says|talk(s|ing)? (straight )?(in)?to the camera)\b/i.test(roles.map(r=>r.description).join(" ")))out.push("dialogue on photo shoot");
+      if(/\breel\b|self-tape/i.test(item.submission_requirements)||roles.some(r=>(r.required_media||[]).indexOf("reel")>-1||r.prescreen==="selftape"))out.push("reel on photo shoot");
+    }
+    if(fam==="audio"){
+      if(/\byour face\b|\bon camera\b|close-?ups?|cast (almost entirely )?on the face|looks? like/i.test(person))out.push("face line on audio");
+      if(!/voice|demo|audio|sample|recording/i.test(item.submission_requirements))out.push("no voice sample");
+    }
+    if(fam==="stage"&&/\b(shoot(s|ing)?|shoot days?|on set|call sheet)\b/i.test(person))out.push("shoot words on stage");
+    // Step 4
+    if(!/^(A|An|The)\b[^,]*,/.test(String(item.shoot_location||"")))out.push("no venue");
+    // Step 5
+    const note=String(item.schedule_note||"");
+    if(!note)out.push("no schedule note");
+    if(/back to back|block shoot|in a row|consecutive/i.test(note)&&(c.days<2||c.days>c.windowDays))out.push("block shoot logic");
+    if(/^(ad|photo|corp)$/.test(fam)&&/read-?through|table read/i.test(note+" "+roles.map(r=>r.description).join(" ")))out.push("read-through on "+type);
+    if(fam!=="stage"&&c.days>c.windowDays)out.push("days exceed window");
+    roles.forEach(r=>{if(fam!=="stage"&&+r.est_days>c.days)out.push("role days exceed shoot days");});
+    if(!(item.deadline<item.shoot_start))out.push("deadline after start");
+    // Step 6
+    if(!/^[A-Z][A-Za-z'’.-]+( [A-Z]\.)? [A-Z][A-Za-z'’-]+( [A-Z][A-Za-z'’-]+)?$/.test(String(item.casting_director_name||""))||item.casting_director_name===item.prod)out.push("casting director is not a person");
+    if(/ — |Casting for|\bProd\.|\bDir\./.test(String(item.prod||"")))out.push("person in company field");
+    roles.forEach(r=>{if(/\bFeatured\b|\bStand-?in\b|\bCrowd\b|\((Featured|Group [A-Z]|Day 1|Wide Frames)\)|(^|\s)[A-Z]\)|\d\)|\b\w+ \d+$/.test(r.name))out.push("vague role label "+r.name);});
+    // Step 7
+    roles.forEach(r=>{
+      const rt=parseRoleRate(r.pay);
+      if(/SAG/.test(item.union_status)&&(!rt||rt.rate_amount<200))out.push("SAG-AFTRA role under $200");
+      if(/^AEA$/.test(item.union_status)&&(!rt||(rt.rate_unit==="week"&&rt.rate_amount<600)))out.push("AEA under minimum");
+      if(!/SAG|AEA/.test(item.union_status)&&rt&&rt.rate_unit==="day"&&rt.rate_amount>(V3_CAPS[fam]||900)*1.25)out.push("non-union rate too high for type");
+    });
+    ([item.pay].concat(roles.map(r=>r.pay)).join(" | ").match(/\$[\d,]+\s*(?:–|-|to)\s*\$?[\d,]+/g)||[]).forEach(x=>{const [a,b]=x.match(/[\d,]+/g).map(v=>+v.replace(/,/g,""));if(b>a&&(b-a)/a<0.15)out.push("narrow pay range "+x);});
+    if(fam!=="stage"&&c.days<=5&&/\bweekly\b|per week|a week\b|\/week|each week/i.test(item.pay+" "+roles.map(r=>r.pay).join(" ")))out.push("weekly pay on short job");
+    if(/cannot pay the union minimum/i.test(item.pay)&&/SAG|AEA/.test(item.union_status))out.push("pay line contradicts union");
+    if(/stipend for the run/i.test(roles.map(r=>r.pay).join(" "))&&/\bweek(ly)?\b|a week|per week/i.test(item.pay)&&!/no weekly salary/i.test(item.pay))out.push("weekly pay line on stipend roles");
+    const rankAmt=rk=>roles.filter(r=>v3RankOf(r)===rk).map(r=>(parseRoleRate(r.pay)||{}).rate_amount).filter(Boolean);
+    const ord=["Lead","Supporting","Day Player","Background"];
+    for(let i=0;i<ord.length;i++)for(let j=i+1;j<ord.length;j++){const a=rankAmt(ord[i]),b=rankAmt(ord[j]);if(a.length&&b.length&&Math.min(...a)<Math.max(...b))out.push(`${ord[j]} paid more than ${ord[i]}`);}
+    if(/\b(one|single) (shoot|recording|event|capture) (day|session)\b/i.test(note)&&/\b\d{1,2}(:\d\d)?am call|starting at \d{1,2}(:\d\d)?am/i.test(note)&&/wrap by [1-5]am|overnight/i.test(note))out.push("one-day call and overnight wrap");
+    const cons=note.match(/\b(\w+) (?:shoot days|days) (?:run back to back|are consecutive|in a row)|block of (\w+) shoot days in a row/i);
+    if(cons){const n=({two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12})[String(cons[1]||cons[2]).toLowerCase()]||+(cons[1]||cons[2]);if(n>6)out.push("more than six consecutive shoot days");}
+    roles.forEach(r=>{const d=String(r.description||"");if(/to the lens|talk straight into the camera|down the barrel/i.test(d)&&/without dialogue|no dialogue|no lines|says nothing/i.test(d))out.push("speaking note on silent part");});
+    roles.forEach(r=>{
+      const d=String(r.description||""),g=String(r.gender||"");
+      const she=/(?:^|[.;!?]\s+)(She|Her)\b/.test(d),he=/(?:^|[.;!?]\s+)(He|His|Him)\b/.test(d);
+      if(g==="Male"&&she&&!he)out.push("pronoun she on male role");
+      if(g==="Female"&&he&&!she)out.push("pronoun he on female role");
+      if(/any gender|open on gender|without a fixed gender/i.test(d)&&(/^(Male|Female)$/.test(g)||/\b(she|he)\b/i.test(d)))out.push("any-gender note contradicts");
+      const lo=parseInt(String(r.age_range).split("-")[0],10),hi=parseInt(String(r.age_range).split("-")[1],10);
+      if(isFinite(hi)){
+        if(/\bveteran\b|\bretired\b|\bdecades\b|\bgrand(mother|father|parent)\b|\bwidow(er)?\b/i.test(d)&&hi<35)out.push("age vs veteran");
+        const y=d.match(/\b(\d+|ten|twelve|fifteen|twenty|thirty|forty|fifty)\s+years\b(?! old| from| ago| later| younger| older| apart| earlier| before)/i);
+        if(y){const n=({ten:10,twelve:12,fifteen:15,twenty:20,thirty:30,forty:40,fifty:50})[y[1].toLowerCase()]||+y[1];if(n+16>hi)out.push("age vs years of experience");}
+        if(/\b(teen(age|ager)?|high school)\b/i.test(d.split(/[.;]/)[0])&&lo>=21)out.push("age vs teen");
+        const play=d.match(/To play (\d+)\./);
+        if(play&&(+play[1]<lo||+play[1]>hi))out.push("playing age outside range");
+        const sv=v3StatedAgeAny(d);
+        if(sv&&play&&sv!==+play[1])out.push("stated age differs from playing age");
+        if(sv&&(sv<lo||sv>hi))out.push("stated age outside range");
+        if(g==="Female"&&LABEL_M.test(String(r._slot||""))&&!LABEL_F.test(String(r._slot||"")))out.push("male-coded label on female role");
+        if(g==="Male"&&LABEL_F.test(String(r._slot||""))&&!LABEL_M.test(String(r._slot||"")))out.push("female-coded label on male role");
+      }
+    });
+    const minor=roles.some(r=>parseInt(String(r.age_range).split("-")[0],10)<18);
+    const mnote=/minor|guardian|child performer/i.test(item.submission_requirements);
+    if(minor!==mnote)out.push("minor note mismatch");
+    if(minor&&(item.has_nudity||c.mature))out.push("minor in mature material");
+    const names=new Set(roles.map(r=>r.name));
+    roles.forEach(r=>{(String(r.description).match(/(?:opposite|scenes (?:are )?with|against|with) ((?:[A-Z][A-Za-z'’-]+ ){1,2}[A-Z][A-Za-z'’-]+)/g)||[]).forEach(x=>{const n=x.replace(/^(opposite|scenes (are )?with|against|with) /i,"");if(/^[A-Z][a-z]+ [A-Z]/.test(n)&&!names.has(n)&&roles.some(o=>o.name.split(" ")[0]===n.split(" ")[0]))out.push("scene partner missing");});});
+    const req=String(item.submission_requirements||"");
+    if(fam==="photo"&&/\breel\b|self-tape/i.test(req))out.push("reel asked on photo");
+    if(type==="Musical Theater"&&!/sing|song|bars/i.test(req))out.push("musical without song");
+    if(type==="Dance Project"&&!/movement|dance|footage/i.test(req))out.push("dance without movement clip");
+    ["title","type","prod","casting_director_name","tagline","synopsis","location","pay","union_status","submission_requirements","shoot_start","shoot_end","shoot_location","schedule_note","deadline"].forEach(k=>{if(!String(item[k]||"").trim())out.push("blank "+k);});
+    if(!roles.length)out.push("no roles");
+    roles.forEach(r=>["name","description","gender","age_range","pay"].forEach(k=>{if(!String(r[k]||"").trim())out.push("blank role "+k);}));
+    if(/undefined|\bnull\b|\[object|\{\{|\$\{|\bTBD\b/i.test(txt)||/\bNaN\b/.test(txt))out.push("placeholder");
+    const dbl=txt.match(/\b([a-z]+)\s+\1\b/i);if(dbl&&!/^(that|had|very|no)$/i.test(dbl[1]))out.push("doubled word "+dbl[0]);
+    if(/\b(a|an|the)\s+(a|an|the)\b|\s[,.;:]|\.\.(?!\.)|,,|\(\s*\)/i.test(txt))out.push("broken punctuation");
+    if(/(^|[^\w'’])a [aeiou]\w/i.test(txt.replace(/\ba (one|uni|use|usu|euro|eu|ubi|uti)/gi,"")))out.push("a/an");
+    roles.forEach(r=>{if(!r._group&&/^(the )?(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|shoppers|voices|gardeners|players|team|class|family)\b/i.test(stripArticle(r._slot||"")))out.push("group given a person's name");});
+    v3Sentences(syn).forEach(s=>{if(s.split(/\s+/).length>32)out.push("sentence too long");});
+    if(c.h&&c.res&&v3TooClose(v3StoryWords(syn),(c.h.storyWords||[]).concat(c.res.storyWords||[])))out.push("story too close to a saved listing");
+    if(c.h&&c.res){const seenHere=new Set();v3ListingSentences(item,roles).forEach(x=>{const k=v3SentKey(x);if((seenHere.has(k)&&x!==item.tagline)||v3SentUsed(k,c.h,c.res))out.push("reused sentence: "+x.slice(0,60));if(x!==item.tagline)seenHere.add(k);});}
+    return out;
+  }
+
+  // ── The concept builder ──────────────────────────────────────────────────
+  function v3PickType(h,res){
+    res.typeCounts=res.typeCounts||{};
+    res._deadTypes=res._deadTypes||new Set();
+    let list=V3_TYPES.filter(t=>!res._deadTypes.has(t));
+    // Every type has run out of unused premises: only now may a premise come
+    // back, and only with a twist it has never carried.
+    if(!list.length&&!res._allowRevive){res._allowRevive=true;res._deadTypes.clear();list=V3_TYPES.slice();}
+    if(!list.length)return null;
+    const recent=h.typeRecent||{};
+    return leastUsed(list,t=>(recent[t]||0)+(res.typeCounts[t]||0),new Set(res._lastTypes||[]))[0];
+  }
+  function buildConceptV3(adminUserId,h,res){
+    const why=k=>{res._why=res._why||{};res._why[k]=(res._why[k]||0)+1;};
+    // `spin` counts every pass, `attempt` only passes that got as far as a
+    // real premise — marking a spent type dead must not use up the budget.
+    let attempt=-1;
+    for(let spin=0;spin<600&&attempt<80;spin++){
+      const type=v3PickType(h,res);
+      if(!type)return null;
+      const T=V3_TYPE[type],fam=T.fam;
+      const pool=v3SeedsFor(type);
+      const pairUsed=(s,t)=>h.traits.has(clean("story "+s.k+" "+t))||res.traits.has(clean("story "+s.k+" "+t));
+      const seedUnused=s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k));
+      const turnsOf=s=>{const own=[s.h,s.h2].filter(Boolean);const bank=v3IsBrief(s)?v3Twists(fam):turnBank(s,T.track==="film"||T.track==="tv"||T.track==="stage"?T.track:"film");return own.concat(bank.filter(x=>own.indexOf(x)<0));};
+      let choices=pool.filter(seedUnused);
+      const revived=!choices.length;
+      // A premise the board has already told may come back only when this type
+      // has nothing unused left, never while it is among the last 150 listings,
+      // and only with a twist it has never carried.
+      if(revived)choices=pool.filter(s=>!(h.recentSeeds&&h.recentSeeds.has(clean("seed "+s.k)))&&!res.traits.has(clean("seed "+s.k))&&turnsOf(s).some(t=>!pairUsed(s,t)));
+      if(!choices.length){res._deadTypes.add(type);why('no seeds '+type);continue;}
+      if(revived&&!res._allowRevive){res._deadTypes.add(type);why('revived');continue;}
+      attempt++;
+      const strict=attempt<50;
+      const famOk=!res.lastFamily&&((res.famCount||0)*4)<=(res.storyCount||0);
+      const spaced=famOk?choices:choices.filter(z=>!familySeed(z));
+      const seed=pick(spaced.length?spaced:choices);
+      const brief=v3IsBrief(seed);
+      const own=[seed.h,seed.h2].filter(Boolean);
+      const turnOpts=turnsOf(seed).filter(t=>!pairUsed(seed,t));
+      const freeTurn=t=>!h.traits.has(clean("turn "+t))&&!res.traits.has(clean("turn "+t));
+      const tierA=turnOpts.filter(freeTurn);
+      const tier=tierA.length?tierA:revived?turnOpts:turnOpts.filter(t=>own.indexOf(t)>-1);
+      const ownAv=tier.filter(t=>own.indexOf(t)>-1);
+      const turn=pickPlain(ownAv.length?ownAv:tier);
+      if(!turn){why('no turn');continue;}
+      const storyText=`${type} ${seed.about||seed.p} ${turn}`;
+      // A returning premise is similar to its first telling by definition; it is
+      // held to the recent-board check in the validator instead.
+      if(strict&&!revived&&(tooSimilarStory(storyText,h.storyTexts)||tooSimilarStory(storyText,res.storyTexts))){why('similar');continue;}
+
+      const track=fam==="job"?pick((seed.tracks||[]).filter(x=>x==="film"||x==="tv"))||"film":(T.track==="print"?"print":T.track);
+      const mature=V3_MATURE.test(`${seed.genre} ${seed.p} ${turn} ${(seed.c||[]).map(z=>z.x).join(" ")}`);
+      // A returning premise must not return with the same character lines:
+      // any sketch sentence the board has printed before is dropped, and a
+      // part left with nothing gets a plain description built for it.
+      const slots=(seed.c||[]).filter(s=>!(mature&&(s.a==="child"||s.a==="teen"))).map(s=>{
+        let x=v3CleanSketch(s.x);
+        if(!/^(film|job)$/.test(fam))x=x.replace(/\b(the|this|whole|entire) film\b/gi,(m0,w)=>`${w} ${mediumNoun(type)}`).replace(/\bthe film's\b/gi,`the ${mediumNoun(type)}'s`);
+        if(/^(photo|audio|stage)$/.test(fam))x=v3Sentences(x).filter(z=>!/\bfilms?\b|\bfilmed\b|\bfilming\b|on camera|close-ups?/i.test(z)).join(" ");
+        if(!x)x=v3FreshSketch(s,h,res);
+        if(revived){
+          x=v3Sentences(x).filter(z=>z.split(/\s+/).length<4||!v3SentUsed(v3SentKey(z),h,res)).join(" ");
+          if(!x)x=v3FreshSketch(s,h,res);
+        }
+        return {...s,x};
+      }).filter(s=>s.x);
+      if(!slots.length){why('no slots');continue;}
+      // "…asks him to end the search": the story fixes the lead's gender.
+      const storyTxt=` ${seed.p} ${turn} `;
+      const heS=/\b(he|him|his|himself)\b/i.test(storyTxt),sheS=/\b(she|her|hers|herself)\b/i.test(storyTxt);
+      const lead0=slots.find(z=>z.r==="Lead");
+      if(lead0&&!lead0.g&&heS!==sheS){const i=slots.indexOf(lead0);slots[i]={...lead0,g:heS?"M":"F"};}
+      const plan=v3Plan(type,fam,track);
+      const union=v3Union(type,fam);
+      res._lastsHere=new Set();
+      const V=v3Venue(seed,type,fam);
+      let roles;
+      if(fam==="job"){
+        roles=v3JobRoles(type,seed,slots,union,plan,h,res,V.venue);
+        const ja=roles.map(r=>(parseRoleRate(r.pay)||{}).rate_amount).filter(Boolean);
+        if(ja.length){const hi=Math.max(...ja),lo=Math.min(...ja);if(hi>lo&&(hi-lo)/lo<0.2)roles.forEach(r=>{r.pay=`${money(hi)}/day`;});}
+      }else{
+        const tier=budgetTier(type,track);
+        roles=seedRoles({...seed,c:slots},track,type,plan,tier,v3CastSize(fam,slots.length),h,res);
+        roles=roles.filter(r=>!r._pad||!v3Sentences(r.description).some(x=>x.split(/\s+/).length>=4&&v3SentUsed(v3SentKey(x),h,res)));
+        roles.forEach(r=>{if(fam==="stage")r.est_days=plan.days;else r.est_days=Math.max(1,Math.min(+r.est_days||1,plan.days));});
+        roles.forEach(r=>{if(r._group&&v3PluralSlot(r._slot)){r.gender="All genders";r.ethnicity=OPEN_ETHNICITY;}});
+        v3SetPay(roles,union,fam,type,track);
+        v3Media(roles,fam,type);
+      }
+      const named=uniqueRoles(roles,h,res,type,{role:""},false);
+      const minors=named.some(r=>parseInt(String(r.age_range).split("-")[0],10)<18);
+
+      // Company, crew and casting director.
+      const co=v3Company(fam,h,res);
+      const castingName=v3Person(h,res);
+      const jobs=cgShuffle(v3CrewJobs(fam,type)).slice(0,rand(1,2,1));
+      const credits=jobs.map(j=>[j,v3Person(h,res)]);
+
+      // Where.
+      const P=v3PickPlace(V.need,h,res);
+      const city=P.city,area=P.area;
+
+      // When. Submissions close first; the shoot opens one to three weeks later.
+      const openDays=rand(30,62,1);
+      const expires=expiresAtDays(openDays);
+      const dl=new Date(expires);
+      const start=new Date(dl.getTime()+(7+Math.floor(Math.random()*15))*86400000);
+      const end=new Date(start.getTime()+plan.span*86400000);
+      const startS=start.toISOString().slice(0,10),endS=end.toISOString().slice(0,10);
+      const windowDays=plan.span+1;
+
+      // The words.
+      const voice=v3PickVoice(res);
+      let L=pick(T.labels);
+      // The product category goes in front of a label only where English puts
+      // it ("a coffee commercial", "a swimwear print campaign").
+      const catFront=brief&&seed.cat&&/^(Commercial|Social Media Ad|Spec Commercial|Ad Campaign|Public Service Announcement|Print Campaign|Photo Shoot|Modeling)$/.test(type);
+      if(catFront)L=`${seed.cat.toLowerCase()} ${L}`;
+      const G=v3Genre(seed);
+      const ctx={type,fam,L,G:(fam==="film"||fam==="tv"||fam==="stage")&&G!=="documentary"&&G!=="musical"?G:"",p:seed.p,about:seed.about,base:"",setup:brief?seed.about:seed.p};
+      if(fam==="job"){
+        ctx.base=pick(V3_TYPE[track==="tv"?pick(["TV Series","Streaming Series","Limited Series"]):pick(["Feature Film","Independent Film","Short Film"])].labels);
+      }
+      const mode=fam==="job"?"job":brief?"brief":"story";
+      const shapes=V3_S1[mode].filter(s=>s.v.indexOf(voice)>-1&&(!s.need||s.need(ctx)));
+      res._s1Count=res._s1Count||{};
+      // Opening structure: the shape whose first words (project noun masked)
+      // the board has used least wins, so no one sentence frame dominates.
+      const skel=t=>v3Skeleton(t,ctx.L);
+      const shapePool=(shapes.length?shapes:V3_S1[mode]);
+      const shape=leastUsed(shapePool,z=>((h.skeletons&&h.skeletons[skel(z.f(ctx))])||0)+((res.skeletons&&res.skeletons[skel(z.f(ctx))])||0)*6+(res._s1Count[z.id]||0),new Set(shapePool.filter(z=>z.id===res._lastS1)))[0];
+      let s1=shape.f(ctx);
+      if(v3SentUsed(v3SentKey(s1),h,res)){
+        const fresh=shapePool.concat(V3_S1[mode]).map(z=>z.f(ctx)).filter(t=>!v3SentUsed(v3SentKey(t),h,res));
+        if(!fresh.length){why("s1 used");continue;}
+        s1=pick(fresh);
+      }
+      const open4=x=>clean(x).split(" ").slice(0,4).join(" ");
+      const lastOpen=res._lastOpen4||h.lastOpen4;
+      if(lastOpen&&open4(s1)===lastOpen){
+        const alt=(shapes.length?shapes:V3_S1[mode]).map(z=>({z,t:z.f(ctx)})).filter(o=>open4(o.t)!==lastOpen);
+        if(alt.length){const o=pick(alt);s1=o.t;shape.id=shape.id;}
+      }
+      const tt=mediumSwap(String(turn).replace(/[.]+$/,""),track==="print"?"print":track,type);
+      const s2fns=(V3_S2[brief?"brief":"story"][voice]||[]).map(fn=>fn({t:tt,ev:turnIsPastEvent(turn)})).filter(Boolean);
+      const s2all=s2fns.concat(Object.values(V3_S2[brief?"brief":"story"]).reduce((a,l)=>a.concat(l.map(fn=>fn({t:tt,ev:turnIsPastEvent(turn)}))),[]).filter(Boolean));
+      let s2=s2fns.concat(s2all).find(x=>!v3SentUsed(v3SentKey(x),h,res))||"";
+      if(!s2){why("s2 used");continue;}
+      if(s2.split(/\s+/).length>26)s2=s2.replace(/, and /," . And ").replace(" . And ",". And ");
+      const labels=named.filter(r=>!r._group).map(r=>String(r._slot||"").split(/\s+/).slice(0,6).join(" ")).filter(Boolean);
+      const groupLabels=named.filter(r=>r._group).map(r=>String(r.name).replace(/\s*\(Background\)$/,"").toLowerCase());
+      const who=fam==="audio"||type==="Animation"||type==="Voiceover"?{one:"voice actor",many:"voice actors"}
+        :/^(photo|unscripted|live)$/.test(fam)?{one:"person",many:"people"}
+        :/^(move|job|music)$/.test(fam)?{one:"performer",many:"performers"}:{one:"actor",many:"actors"};
+      const s3=fam==="job"?`The booking${named.length>1?"s are":" is"} for ${v3Join(named.map(r=>String(r.name).replace(/\s*\(Background\)$/,"").replace(/^(\w)/,m=>m.toLowerCase()).replace(/^(people|passersby)/i,x=>x.toLowerCase()))).replace(/\b(Lighting|Body|Stunt|Precision|Fight|Hand)\b/g,m=>m.toLowerCase())}.`:v3S3(voice,{n:named.length,labels:(labels.length?labels:groupLabels).map(l=>/^(the|a|an)\s/i.test(l)||/^[A-Z]/.test(l)?l:"the "+l),who});
+      const s4=Math.random()<0.6?(v3Detail({type,fam,era:(seed.era&&!/^n\/a$/i.test(seed.era))?seed.era:"",placeNP:V.placeNP}).find(x=>!v3SentUsed(v3SentKey(x),h,res))||""):"";
+      const synopsis=plainify(v3Scrub([s1,s2,s3,s4].filter(Boolean).join(" ")));
+      const tagline=v3Tagline({synopsis,brief,about:seed.about||"",turn:tt,premise:seed.p,turnLeads:turnCanLead(turn)},h,res);
+      if(!tagline){why('no tagline '+type);res._typeFails[type]=(res._typeFails[type]||0)+1;if(res._typeFails[type]>4)res._deadTypes.add(type);continue;}
+      const title=v3Title(catFront?seed:{...seed,cat:""},type,fam,city,h,res);
+      const schedule=v3Schedule({fam,type,days:plan.days,windowDays,consecutive:plan.days>=2&&Math.random()<0.5,start:startS,weeks:plan.weeks||0,perfs:plan.perfs||0,episodes:rand(6,10,1),night:/\bnight|overnight|after closing|midnight|before dawn|4 ?a\.?m/i.test(`${seed.p} ${turn}`),minors,hasLeads:named.some(r=>/lead|principal/i.test(r.role_type||"")),rural:V.need==="rural"},h,res);
+      if(!schedule){why('no schedule '+type);res._typeFails[type]=(res._typeFails[type]||0)+1;if(res._typeFails[type]>4)res._deadTypes.add(type);continue;}
+      let payStr="";
+      if(/Showcase/.test(union)){
+        const st=named.map(r=>(parseRoleRate(r.pay)||{}).rate_amount).filter(Boolean);
+        payStr=pick([`This is an Equity Showcase Code production, so there is no weekly salary. Every actor gets a transportation stipend of ${money(Math.min(...st))}–${money(Math.max(...st))} for the run.`,`Showcase Code rules apply: no salary, and a stipend of ${money(Math.min(...st))} to ${money(Math.max(...st))} for the whole run to cover travel.`,`Actors receive a stipend for the run, from ${money(Math.min(...st))} to ${money(Math.max(...st))} depending on the part. This is an Equity Showcase Code production.`]);
+        if(Math.min(...st)===Math.max(...st))payStr=`This is an Equity Showcase Code production. Every actor gets the same ${money(st[0])} transportation stipend for the run.`;
+      }
+      let lastCand="";
+      if(fam==="job"){
+        const am=named.map(r=>(parseRoleRate(r.pay)||{}).rate_amount).filter(Boolean);
+        const lo=money(Math.min(...am)),hi=money(Math.max(...am));
+        const what=type==="Background / Extras"?"Background":type==="Stand-In"?"Lighting doubles":type==="Body Double"?"The body double":"Stunt work";
+        const rng=lo===hi?`${hi} a day`:`${lo} to ${hi} a day`;
+        payStr=pick([`${what} pays ${rng}${/SAG/.test(union)?" under the SAG-AFTRA contract":""}.`,`${capFirst(rng)}, paid for every day you are booked.`,`The rate is ${rng}, with meals on set.`]);
+      }
+      for(let i=0;i<12&&!payStr;i++){
+        const cand=v3Scrub(seedPayLine(named,plan,track,type,h,res));
+        lastCand=cand;
+        if(fam!=="stage"&&plan.days<=5&&/weekly|a week|per week/i.test(cand))continue;
+        if(/SAG|AEA/.test(union)&&/union minimum|unpaid|no fee|copy, credit/i.test(cand))continue;
+        if(/^(photo|audio|stage|live|move)$/.test(fam)&&/\bfilms?\b|footage|on camera/i.test(cand))continue;
+        payStr=cand;
+      }
+      if(!payStr)payStr=lastCand;
+      const extra=pick(V3_REQ_EXTRA[fam]||V3_REQ_EXTRA.film);
+      const creditLine=` Credits: ${credits.map(([j,n])=>`${j} ${n}`).concat([`Casting ${castingName}`]).join(" · ")}.`;
+      const reqStr=v3Scrub(`${mediaSentence(named)} ${extra}${craftNote(type)}${minorsNote(named)}${creditLine}`);
+
+      const item={
+        cd_id:adminUserId,title,type,prod:co.company,posted_by_label:co.company,casting_director_name:castingName,
+        tagline,synopsis,location:city.name,pay:payStr,union_status:union,status:"draft",published:false,is_admin_created:true,
+        submission_requirements:reqStr,
+        expires_at:expires,deadline:new Date(expires).toISOString().slice(0,10),shoot_start:startS,shoot_end:endS,
+        shoot_location:`${capFirst(V.venue)}, ${area} (${city.name})`,
+        schedule_note:schedule,
+        talent_scope:fam==="stage"?"Local — shoot city only":/^(ad|photo|audio|anim|corp)$/.test(fam)?"United States — Nationwide":"Local + self-report (within driving distance)",
+        _roles:named,_areaName:area,_voiceKey:voice,_shootDays:plan.days,
+        _setupText:ctx.setup,_turnText:turn,_baseKey:fp(seed.k+" "+turn),_storyKey:fp(seed.k+" "+turn+" "+type),
+        _storyTextKey:`${title} ${type} ${synopsis}`.slice(0,1200),_traitKey:fp([type,city.short,seed.k,turn].join("|")),
+        _ageKey:fp(named.map(r=>r.age_range).join("|")),_roleCountKey:String(named.length),_creatorKind:fam,
+        _settingKey:clean("story "+seed.k+" "+turn),_seedOnlyKey:"seed "+seed.k,_turnKey:clean("turn "+turn),_catalystKey:null,
+        _crewNames:credits.map(x=>x[1]).concat([castingName]),_core:co.core,
+        _lines:splitLines(synopsis).concat([tagline],named.map(r=>r.description)).filter(Boolean)
+      };
+      const c={fam,L,base:ctx.base,setup:ctx.setup,days:plan.days,windowDays,mature,h,res};
+      const probs=v3Problems(item,c);
+      item._problems=probs;
+      item._v3ctx={fam,L,setup:ctx.setup,days:plan.days,windowDays,mature};
+      addUsed(res.traits,"type "+type);
+      res.typeCounts[type]=(res.typeCounts[type]||0)+0;
+      return {item,probs,shape:shape.id,voice,type,seed};
+    }
+    return null;
+  }
+  // Durable rows for casting_generator_seen. Story keys retire the premise and
+  // twist; the rest retire every name, company core, schedule sentence and
+  // neighborhood this listing used, for every browser and device.
+  function seenRowsFor(item){
+    const rows=[];
+    [item._seedOnlyKey,item._settingKey,item._turnKey].filter(Boolean).map(k=>clean(k)).filter(Boolean).forEach(k=>rows.push({key:k,kind:"story"}));
+    (item._roles||[]).forEach(r=>{if(!r._group&&nameParts(r.name))rows.push({key:"name|"+clean(r.name),kind:"character_name"});});
+    (item._crewNames||[]).forEach(n=>rows.push({key:"crew|"+clean(n),kind:"crew_name"}));
+    if(item._core)rows.push({key:"company|"+clean(item._core),kind:"company"});
+    v3Sentences(item.schedule_note).map(v3NormSched).filter(k=>k.split(" ").length>=3).concat(["note "+v3NormSched(item.schedule_note)]).forEach(k=>rows.push({key:"sched|"+k,kind:"schedule_note"}));
+    if(item._areaName&&item.location)rows.push({key:`area|${item.location}|${item._areaName}|${Date.now().toString(36)}${Math.floor(Math.random()*1e6).toString(36)}`,kind:"area"});
+    const seen=new Set();
+    return rows.filter(r=>seen.has(r.key)?false:(seen.add(r.key),true));
+  }
+
   // A listing prints its premise sentence in the synopsis, which is what makes
   // the story recoverable from a listing generated on another device or in an
   // earlier session. Exact text is not enough on its own: rewording a premise
@@ -31105,10 +32909,16 @@ const ACG = (()=>{
   }
   // Every history key a saved listing implies: its premise, the turn it used,
   // and the pair of the two — the pair being the thing that must never repeat.
+  // Mining is the slow part of history (every premise against every twist),
+  // so each blob is mined once per page load.
+  const _mineCache=new Map();
   function mineStoryKeys(storyBlob){
+    if(_mineCache.has(storyBlob))return _mineCache.get(storyBlob);
+    if(_mineCache.size>3000)_mineCache.clear();
     const keys=[];
+    _mineCache.set(storyBlob,keys);
     FILM_SEEDS.forEach(s=>{
-      if(!phraseMatch(storyBlob,s.p))return;
+      if(!phraseMatch(storyBlob,s.p)&&!(s.about&&phraseMatch(storyBlob,s.about)))return;
       keys.push(clean("seed "+s.k));
       const own=[s.h,s.h2].filter(Boolean);
       own.concat(ALL_TURNS).forEach(t=>{
@@ -31123,6 +32933,10 @@ const ACG = (()=>{
     const out=new Set();
     (existing||[]).forEach(c=>{
       mineStoryKeys(clean(`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`)).forEach(k=>out.add(k));
+      // v3: names and company cores already on the board are retired for good.
+      (c.roles||[]).forEach(r=>{if(r&&nameParts(r.name)&&!/\(/.test(r.name))out.add("name|"+clean(r.name));});
+      v3CrewNamesIn(c).forEach(n=>out.add("crew|"+clean(n)));
+      const core=v3CoreOf(c.prod||c.posted_by_label);if(core)out.add("company|"+core);
     });
     return [...out];
   }
@@ -31133,7 +32947,7 @@ const ACG = (()=>{
   // that log remembers the site.
   function buildHistory(existing=[],seenKeys=[]){
     const h={titles:localSet(LS_KEYS.titles),prods:localSet(LS_KEYS.prods),roles:localSet(LS_KEYS.roles),stories:localSet(LS_KEYS.stories),pays:localSet(LS_KEYS.pays),firsts:localSet(LS_KEYS.firsts),lasts:localSet(LS_KEYS.lasts),storyTexts:localSet(LS_KEYS.storyTexts),traits:localSet(LS_KEYS.traits),ages:localSet(LS_KEYS.ages),roleCounts:localSet(LS_KEYS.roleCounts),creatorKinds:localSet(LS_KEYS.creatorKinds),tags:localSet(LS_KEYS.tags),lines:localSet(LS_KEYS.lines)};
-    (seenKeys||[]).forEach(k=>addUsed(h.traits,k));
+    v3HistoryInit(h,existing,seenKeys);
     (existing||[]).forEach(c=>{
       addUsed(h.titles,c.title);addUsed(h.prods,c.prod);addUsed(h.prods,c.posted_by_label);addUsed(h.pays,c.pay);addUsed(h.tags,c.tagline);splitLines(c.synopsis).forEach(s=>addUsed(h.lines,s));(c.roles||[]).forEach(r=>{if(r&&r.description)addUsed(h.lines,r.description);});
       addUsed(h.storyTexts,`${c.title||""} ${c.tagline||""} ${c.synopsis||""}`.slice(0,1200));
@@ -31389,17 +33203,17 @@ const ACG = (()=>{
       const uni=b.f.concat(b.m).filter(n=>UNISEX_HINT.test(n));
       return uni.length>=4?uni:b.f.concat(b.m);
     };
-    if(direct)return{first:take(direct),last:direct.l};
+    if(direct)return{first:take(direct),last:direct.l,key:bankKeyFor(eth)};
     if(/mixed/i.test(eth||"")){
-      const a=NAME_BANKS[pick(ETH_KEYS)],b=NAME_BANKS[pick(ETH_KEYS)];
-      return{first:take(a),last:b.l};
+      const a=NAME_BANKS[pick(ETH_KEYS)],bk=pick(ETH_KEYS),b=NAME_BANKS[bk];
+      return{first:take(a),last:b.l,key:bk};
     }
     // An OPEN role still needs an internally coherent name. Merging every bank
     // produced "Kenji Sheridan" and "Mahmoud Okada" — names that fight
     // themselves. So one heritage is chosen at random per name and both halves
     // come from it; variety happens across the board, not inside one name.
-    const one=NAME_BANKS[pick(ETH_KEYS)];
-    return{first:take(one),last:one.l};
+    const ok=pick(ETH_KEYS),one=NAME_BANKS[ok];
+    return{first:take(one),last:one.l,key:ok};
   }
   function roleName(r,h,res){
     // A name the summary already used. It was minted through this same
@@ -31411,8 +33225,14 @@ const ACG = (()=>{
     // descriptive label ("Block Party Crowd") rather than being handed a
     // character name, and are still deduped so two listings never share one.
     if(r._group){
-      const base=r._groupName||r.name||"Background";
-      return candidateUnique([base,`${base} (${pick(["Day 1","Featured","Group A","Group B","Wide Frames"])})`],h.roles,res.roles,i=>`${base} (Group ${String.fromCharCode(65+(i%26))}${i>25?i:""})`);
+      // A group is a descriptive label, never a vague one: no "(Featured)",
+      // "Crowd", "Stand-in" or "Group A" (v3).
+      const rawBase=String(r._groupName||r.name||"Background");
+      // A background label must name people: "Shop" becomes "People at the Shop".
+      const peopleWord=V3_PEOPLE_WORD||/\b(people|customers|regulars|neighbors|passersby|patrons|guests|shoppers|riders|students|kids|children|crowd|audience|onlookers|workers|staff|crew|team|class|family|families|dancers|players|gardeners|volunteers|traders|members|visitors|diners|commuters|passengers|voices|ensemble|group|atmosphere|double|model|hands|lead|friends|coworkers|parents|fans|runners|swimmers|drivers|band|choir|chorus|congregation|tenants|mourners|guards|officers|nurses|patients|travelers|spectators|bidders|campers|members)\b/i;
+      const base0=r._job||peopleWord.test(rawBase)||/\b(queue|line|rush|performer|driver|double|voices?)\b/i.test(rawBase)?rawBase:`People at the ${titleCase(stripArticle(rawBase))}`;
+      const base=base0.replace(/\bFeatured\b/g,"Principal").replace(/\bCrowd\b/g,"Onlookers").replace(/\bStand-?[Ii]n\b/g,"Lighting Double");
+      return r._job||/background/i.test(base)||!/background/i.test(r.role_type||"")?base:`${base} (Background)`;
     }
     const generic=!r._keepDescription&&/background|ensemble|customers|students|crew|passenger|reader|group|patron|neighbor/i.test(r.name+" "+r.role_type);
     // The pools follow the role's ethnicity, so the name a talent reads always
@@ -31435,42 +33255,41 @@ const ACG = (()=>{
     // retries are fine while names are plentiful and pathological once they are
     // not: with the banks nearly exhausted the old version burned thousands of
     // misses per name and generation slowed to seconds per listing.
+    // v3 surname rules. The full name never repeats (checked against every
+    // saved listing and the durable log). The surname is the least-used one
+    // available, never one already in this listing, and never one used in the
+    // listing just before it.
+    const lastsHere=res._lastsHere||(res._lastsHere=new Set());
+    const prevLasts=res._prevLasts||h.prevLasts||new Set();
+    const lc=k=>((h.lastCount&&h.lastCount[k])||0)+((res.lastCount&&res.lastCount[k])||0);
+    const allLast=surnames.concat(EXTRA_SURNAMES[banks.key]||[]).filter((v,i,a)=>a.indexOf(v)===i);
+    const okLast=allLast.filter(l=>!lastsHere.has(clean(l))&&!prevLasts.has(clean(l))&&!h.roles.has(clean(l)));
+    const lastPool=okLast.length?okLast:allLast.filter(l=>!lastsHere.has(clean(l)));
+    const taken=full=>h.roles.has(clean(full))||res.roles.has(clean(full));
     const take=(first,last)=>{
-      const full=`${first} ${last}`;
-      res.roles.add(clean(full));res.firsts.add(clean(first));res.lasts.add(clean(last));
+      const full=`${first} ${last}`;const k=clean(last);
+      res.roles.add(clean(full));res.firsts.add(clean(first));res.lasts.add(k);lastsHere.add(k);
+      res.lastCount=res.lastCount||{};res.lastCount[k]=(res.lastCount[k]||0)+1;
       return full;
     };
-    const freeFull=(first,last)=>{const f=clean(`${first} ${last}`);return !h.roles.has(f)&&!res.roles.has(f);};
-    const unusedFirst=pool.filter(n=>!h.firsts.has(clean(n))&&!res.firsts.has(clean(n)));
-    const unusedLast=surnames.filter(n=>!h.lasts.has(clean(n))&&!res.lasts.has(clean(n)));
-    if(unusedFirst.length&&unusedLast.length){
-      const first=pick(unusedFirst),last=pick(unusedLast);
-      if(freeFull(first,last))return take(first,last);
-    }
-    // Surnames repeat across a long-running board the way they do in life; only
-    // require that no two characters in the SAME batch share one.
-    const batchFirst=pool.filter(n=>!res.firsts.has(clean(n)));
-    const batchLast=surnames.filter(n=>!res.lasts.has(clean(n)));
-    for(let i=0;i<40&&batchFirst.length&&batchLast.length;i++){
-      const first=pick(batchFirst),last=pick(batchLast);
-      if(freeFull(first,last))return take(first,last);
-    }
-    for(let i=0;i<200;i++){
-      const first=pick(pool),last=pick(surnames);
-      if(freeFull(first,last))return take(first,last);
-    }
-    // Still nothing free: add a middle initial rather than invent a language.
-    for(let i=0;i<200;i++){
-      const first=pick(pool),last=pick(surnames);
-      const mid=String.fromCharCode(65+Math.floor(Math.random()*26));
-      const full=`${first} ${mid}. ${last}`;
-      if(!h.roles.has(clean(full))&&!res.roles.has(clean(full))){
-        res.roles.add(clean(full));res.firsts.add(clean(first));res.lasts.add(clean(last));
-        return full;
+    const tiers=[...new Set(lastPool.map(l=>lc(clean(l))))].sort((x,y)=>x-y);
+    for(const t of tiers){
+      const lasts=cgShuffle(lastPool.filter(l=>lc(clean(l))===t)).slice(0,40);
+      for(const last of lasts){
+        for(const first of cgShuffle(pool).slice(0,25)){
+          if(clean(first)!==clean(last)&&!taken(`${first} ${last}`))return take(first,last);
+        }
       }
     }
-    return candidateUnique([`${pick(pool)} ${pick(surnames)}`],h.roles,res.roles,i=>`${pick(pool)} ${pick(surnames)}-${pick(surnames)}`);
+    for(let i=0;i<400;i++){
+      const first=pick(pool),last=pick(lastPool.length?lastPool:allLast);
+      const mid=String.fromCharCode(65+Math.floor(Math.random()*26));
+      const full=`${first} ${mid}. ${last}`;
+      if(!taken(full)){res.roles.add(clean(full));lastsHere.add(clean(last));return full;}
+    }
+    return candidateUnique([`${pick(pool)} ${pick(allLast)}`],h.roles,res.roles,i=>`${pick(pool)} ${pick(allLast)}-${pick(allLast)}`);
   }
+
   function varyRoleDescription(r,original,voice,charName){
     const base=String(r.description||"").trim();
     // Seed slots arrive as finished character sketches — passing them through
@@ -31478,6 +33297,7 @@ const ACG = (()=>{
     // framed here instead, because this is the first point at which the
     // character's real name exists.
     if(r._full)return frameSeedDescription({...r,description:base},charName);
+    if(r._job)return base;
     if(r._keepDescription)return sent(base,1)||base;
     // A lead described in four words tells an actor nothing. Bigger parts draw
     // from the longer end of the scale; only the small parts can come out tiny.
@@ -31554,7 +33374,11 @@ const ACG = (()=>{
   // line takes the medium from the project type.
   function mediumNoun(type){
     const t=String(type||"");
-    if(/theater|theatre|musical|staged reading|workshop|table read|performance art/i.test(t))return "play";
+    if(/live event|hosting|performance art/i.test(t))return "show";
+    if(/music video/i.test(t))return "video";
+    if(/dance project|motion capture/i.test(t))return "piece";
+    if(/reality|lifestyle/i.test(t))return "series";
+    if(/theater|theatre|musical|staged reading|workshop|table read/i.test(t))return "play";
     if(/print campaign|photo shoot|modeling/i.test(t))return "campaign";
     if(/commercial|branded|social media ad|promo|product demo|ad campaign|public service/i.test(t))return "spot";
     if(/voiceover|podcast|audio drama|animation|video game/i.test(t))return "series";
@@ -31565,21 +33389,26 @@ const ACG = (()=>{
     const medium=mediumNoun(type);
     const named=roles.filter(r=>!r._group);
     const leads=named.filter(r=>/lead|principal/i.test(r.role_type||""));
+    const usedPartners=new Set();
     return roles.map((r,i)=>{
       if(r._group)return r;
       let d=String(r.description||"").trim();
       // Playing age, stated the way a breakdown states it.
       const lo=parseInt(String(r.age_range||"").split("-")[0],10);
       if(isFinite(lo)&&lo<22){
-        const play=midOfBand(r.age_range);
+        const play=v3StatedAge(d,r.age_range)||midOfBand(r.age_range);
         if(play)d+=` To play ${play}.`;
       }
       // Name a scene partner. Only ever states who they play against, which is
       // true by construction — it never invents a family relationship.
       const others=named.filter(o=>o!==r).map(o=>o.name);
       if(others.length&&Math.random()<0.6){
-        const partner=pick(leads.length&&!leads.includes(r)?leads.map(o=>o.name).filter(n=>n!==r.name):others);
+        // v3: each partner is named once per listing, so two roles never carry
+        // the same line about the same person.
+        const partnerPool=(leads.length&&!leads.includes(r)?leads.map(o=>o.name).filter(n=>n!==r.name):others).filter(n=>!usedPartners.has(n));
+        const partner=partnerPool.length?pick(partnerPool):null;
         if(partner){
+          usedPartners.add(partner);
           const second=pick(others.filter(n=>n!==partner));
           d+=" "+pick([
             `Most of their scenes are with ${partner}.`,
@@ -31587,7 +33416,7 @@ const ACG = (()=>{
             `Shares the bulk of the ${medium} with ${partner}.`,
             second?`Scenes with ${partner} and ${second}.`:`Plays opposite ${partner}.`,
             `Every scene they have is against ${partner}.`,
-            `Their scenes are with ${partner}; they never meet the rest of the cast.`
+            `Most of their scenes are opposite ${partner}.`
           ]);
         }
       }
@@ -32349,43 +34178,47 @@ const ACG = (()=>{
   function generateBatch(adminUserId,existing=[],targetCount=5,seenKeys=[]){
     const count=Math.max(1,Math.floor(Number(targetCount)||5));
     const h=buildHistory(existing,seenKeys);
-    const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set(),storyTexts:new Set(),traits:new Set(),ages:new Set(),roleCounts:new Set(),creatorKinds:new Set(),tags:new Set(),lines:new Set()};
+    const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set(),storyTexts:new Set(),traits:new Set(),ages:new Set(),roleCounts:new Set(),creatorKinds:new Set(),tags:new Set(),lines:new Set(),cores:new Set(),coreWords:new Set(),schedKeys:new Set(),areaUse:{},lastCount:{},typeCounts:{},_voiceCount:{},_s1Count:{},_typeFails:{}};
     const out=[];
     let attempts=0;
-    while(out.length<count&&attempts<260){
+    while(out.length<count&&attempts<400){
       attempts++;
-      const item=generateOne(adminUserId,h,res);
-      const key=clean(item.type+"|"+item.location+"|"+item.title);
-      // The soundness rules are relaxed only in the very last attempts, and
-      // even then the two that produce nonsense — broken grammar and a
-      // sentence nobody can read — still apply.
-      const probs=summaryProblems(item);
-      const blocking=attempts<200?probs:probs.filter(v=>v==="broken grammar"||v==="sentence too long"||v==="empty");
-      if(blocking.length)continue;
-      if(itemFreshEnough(item,h,res,attempts<90)&&!res.stories.has(key)){
-        res.stories.add(key);
-        addUsed(res.storyTexts,item._storyTextKey);
-        addUsed(res.traits,item._traitKey);
-        addUsed(res.traits,item._settingKey);
-        addUsed(res.traits,item._seedOnlyKey);
-        addUsed(res.traits,item._turnKey);
-        addUsed(res.traits,item._catalystKey);
-        addUsed(res.roleCounts,item._roleCountKey);
-        addUsed(res.creatorKinds,item._creatorKind);
-        if(item._areaName){
-          res._areaBatch=(res._areaBatch||[]).concat([item._areaName]);
-        }
-        (item._roles||[]).forEach(r=>{
-          addUsed(res.ages,r.age_range);
-          if(r.ethnicity&&r.ethnicity!==OPEN_ETHNICITY){
-            res._ethBatch=res._ethBatch||{};
-            res._ethBatch[r.ethnicity]=(res._ethBatch[r.ethnicity]||0)+1;
-          }
-        });
-        out.push(item);
+      const built=buildConceptV3(adminUserId,h,res);
+      if(!built)break;
+      const {item,probs}=built;
+      // v3 listing rules plus the original summary soundness check. Any
+      // failure throws the draft away; nothing is patched after the fact.
+      const all=probs.concat(summaryProblems(item));
+      if(all.length||!itemFreshEnough(item,h,res,attempts<250)){
+        res._rejected=(res._rejected||0)+1;
+        (res._rejectLog=res._rejectLog||[]).push({type:item.type,problems:all,tagline:item.tagline});
+        res._typeFails[item.type]=(res._typeFails[item.type]||0)+1;
+        if(res._typeFails[item.type]>12)res._deadTypes.add(item.type);
+        continue;
       }
+      res.typeCounts[item.type]=(res.typeCounts[item.type]||0)+1;
+      res._lastTypes=[item.type];
+      res._voiceCount[built.voice]=(res._voiceCount[built.voice]||0)+1;res._lastVoice=built.voice;
+      res._s1Count[built.shape]=(res._s1Count[built.shape]||0)+1;res._lastS1=built.shape;
+      const ak=`${item.location}|${item._areaName}`;res.areaUse[ak]=(res.areaUse[ak]||0)+1;
+      res.placeCount=(res.placeCount||0)+1;if(item.location==="New York, NY")res.nycCount=(res.nycCount||0)+1;
+      res.tags.add(clean(item.tagline));
+      res._prevLasts=new Set((item._roles||[]).filter(r=>!r._group).map(r=>r.name).concat(item._crewNames||[]).map(nameParts).filter(Boolean).map(p=>clean(p.last)));
+      addUsed(res.storyTexts,item._storyTextKey);
+      [item._settingKey,item._seedOnlyKey,item._turnKey].forEach(k=>addUsed(res.traits,k));
+      (res.storyWords=res.storyWords||[]).push(v3StoryWords(item.synopsis));
+      res.sentKeys=res.sentKeys||new Set();
+      v3ListingSentences(item,item._roles).forEach(x=>res.sentKeys.add(v3SentKey(x)));
+      res._lastOpen4=clean(item.synopsis).split(" ").slice(0,4).join(" ");
+      res.skeletons=res.skeletons||{};
+      const sk=v3Skeleton(v3Sentences(item.synopsis)[0],item._v3ctx.L);res.skeletons[sk]=(res.skeletons[sk]||0)+1;
+      res.storyCount=(res.storyCount||0)+1;
+      res.lastFamily=familySeed(built.seed);
+      if(res.lastFamily)res.famCount=(res.famCount||0)+1;
+      out.push(item);
     }
     rememberGenerated(out);
+    if(typeof window!=="undefined")window.__acgLastRun={attempts,why:res._why||{},rejected:res._rejected||0,rejectLog:(res._rejectLog||[]).slice(-40)};
     return out;
   }
   // The keys a saved listing retires for good. Written to the database so the
@@ -32393,7 +34226,7 @@ const ACG = (()=>{
   function seenKeysFor(item){
     return [item._seedOnlyKey,item._settingKey,item._turnKey].filter(Boolean).map(k=>clean(k)).filter(Boolean);
   }
-  return{generateBatch,seenKeysFor,historyKeysFor};
+  return{generateBatch,seenKeysFor,seenRowsFor,historyKeysFor,listingProblems:(item)=>v3Problems(item,item._v3ctx||{})};
 })();
 
 // ─── News Controls: show/hide the landing section, refresh the feed, manage
@@ -32640,8 +34473,13 @@ function AdminCastingGenerator({session}){
     const missing=mined.filter(k=>logged.indexOf(k)===-1);
     setSeenKeys([...logged,...missing]);
     if(missing.length){
-      window.sb.from("casting_generator_seen").upsert(missing.map(k=>({key:k,kind:"backfill"})),{onConflict:"key",ignoreDuplicates:true})
-        .then(({error})=>{if(error)console.warn("[ACG] story log backfill failed",error);});
+      // v3: names, crew and company cores on existing listings are retired too.
+      // Written in chunks — the first backfill is a few thousand rows.
+      const kindOf=k=>k.indexOf("name|")===0?"character_name":k.indexOf("crew|")===0?"crew_name":k.indexOf("company|")===0?"company":"backfill";
+      for(let i=0;i<missing.length;i+=500){
+        window.sb.from("casting_generator_seen").upsert(missing.slice(i,i+500).map(k=>({key:k,kind:kindOf(k)})),{onConflict:"key",ignoreDuplicates:true})
+          .then(({error})=>{if(error)console.warn("[ACG] story log backfill failed",error);});
+      }
     }
     const byCasting={};
     (rs||[]).forEach(r=>{(byCasting[r.casting_id]||(byCasting[r.casting_id]=[])).push(r);});
@@ -32711,11 +34549,14 @@ function AdminCastingGenerator({session}){
           seenThisRun.push({...raw,id:cData.id,roles});
           // Retire this story permanently. A failure here is logged, not fatal —
           // the listing itself saved fine and local history still covers it.
-          const usedKeys=ACG.seenKeysFor(raw);
-          keysThisRun.push(...usedKeys);
-          if(usedKeys.length){
-            const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(usedKeys.map(k=>({key:k,kind:"story"})),{onConflict:"key",ignoreDuplicates:true});
-            if(kErr)console.warn("[ACG] story log write failed",kErr);
+          // v3: every story key, character and crew name, company core,
+          // schedule sentence and neighborhood this listing used, so no other
+          // browser or device can hand any of them out again.
+          const usedRows=ACG.seenRowsFor(raw);
+          keysThisRun.push(...usedRows.map(r=>r.key));
+          if(usedRows.length){
+            const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(usedRows,{onConflict:"key",ignoreDuplicates:true});
+            if(kErr)console.warn("[ACG] generator log write failed",kErr);
           }
         }
       }
@@ -32786,16 +34627,17 @@ function AdminCastingGenerator({session}){
     const key=c.id+":regen";setBusy(key);
     const batch=ACG.generateBatch(adminId,listings.filter(x=>x.id!==c.id),1,seenKeys);
     const fresh=batch[0];
+    if(!fresh){setBusy(null);showMsg("Regenerate failed: no draft passed the checks. Try again.");return;}
     const freshRoles=fresh._roles||[];
-    const regenKeys=ACG.seenKeysFor(fresh);
-    if(regenKeys.length){
-      setSeenKeys(prev=>[...prev,...regenKeys]);
-      const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(regenKeys.map(k=>({key:k,kind:"story"})),{onConflict:"key",ignoreDuplicates:true});
-      if(kErr)console.warn("[ACG] story log write failed",kErr);
+    const regenRows=ACG.seenRowsFor(fresh);
+    if(regenRows.length){
+      setSeenKeys(prev=>[...prev,...regenRows.map(r=>r.key)]);
+      const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(regenRows,{onConflict:"key",ignoreDuplicates:true});
+      if(kErr)console.warn("[ACG] generator log write failed",kErr);
     }
     Object.keys(fresh).forEach(k=>{if(k[0]==="_")delete fresh[k];});
     const {error}=await window.sb.from("castings").update({
-      title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,casting_director_name:fresh.casting_director_name||fresh.posted_by_label||fresh.prod,
+      title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,casting_director_name:fresh.casting_director_name||null,
       tagline:fresh.tagline||null,synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
       submission_requirements:fresh.submission_requirements,expires_at:fresh.expires_at,deadline:fresh.deadline||null,
       // Regenerate rewrites the story AND the city, so the Where & When block has
@@ -32832,7 +34674,10 @@ function AdminCastingGenerator({session}){
     // "posted by" line and prod stay in sync, matching how CD castings display.
     const postedBy=updated.prod||updated.posted_by_label||null;
     const patch={
-      title:updated.title,type:updated.type,prod:postedBy,posted_by_label:postedBy,casting_director_name:postedBy,
+      // casting_director_name holds a PERSON. Keep the one the listing has
+      // unless it was only ever a copy of the old company string.
+      title:updated.title,type:updated.type,prod:postedBy,posted_by_label:postedBy,
+      casting_director_name:(updated.casting_director_name&&updated.casting_director_name!==updated.prod&&updated.casting_director_name!==updated.posted_by_label&&!/ — /.test(updated.casting_director_name))?updated.casting_director_name:postedBy,
       tagline:updated.tagline||null,synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
       submission_requirements:updated.submission_requirements,casting_website_url:updated.casting_website_url||null,
       casting_image_url:updated.casting_image_url||null,casting_image_path:updated.casting_image_path||null,
@@ -33157,6 +35002,10 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     title:listing.title||"",
     type:listing.type||"Film & TV",
     prod:listing.prod||listing.posted_by_label||"",
+    // Carried through untouched so a save never overwrites the casting
+    // director's name with the company (there is no field for it in this form).
+    posted_by_label:listing.posted_by_label||"",
+    casting_director_name:listing.casting_director_name||"",
     tagline:listing.tagline||"",
     synopsis:listing.synopsis||"",
     location:listing.location||"",
