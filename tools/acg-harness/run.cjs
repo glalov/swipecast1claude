@@ -398,7 +398,7 @@ check(7,"gendered_label","Male-coded part (fisherman, son…) cast female or the
   const M=/\b(son|father|husband|brother|uncle|nephew|grandfather|grandson|widower|boy|man|dad|groom|businessman|salesman|fisherman|doorman|repairman|foreman|policeman|fireman|handyman|watchman)\b/i,F=/\b(daughter|mother|wife|sister|aunt|niece|grandmother|granddaughter|widow|girl|woman|actress|waitress|bride|mom|hostess)\b/i;
   return L.roles.filter(r=>{const d=String(r.description||"").split(/[.:]/)[0];return (r.gender==="Female"&&M.test(d)&&!F.test(d))||(r.gender==="Male"&&F.test(d)&&!M.test(d));}).map(r=>({detail:`${r.name} ${r.gender}: ${String(r.description).split(/[.:]/)[0]}`}));
 });
-check(7,"silent_part_speaks","Speaking note on a part written with no dialogue",L=>L.roles.filter(r=>/to the lens|talk straight into the camera|down the barrel/i.test(r.description)&&/without dialogue|no dialogue|no lines|says nothing/i.test(r.description)).map(r=>({detail:r.name})));
+check(7,"silent_part_speaks","Speaking note on a silent part, or a no-talking note on a part that talks",L=>L.roles.filter(r=>(/to the lens|talk straight into the camera|down the barrel/i.test(r.description)&&/without dialogue|no dialogue|no lines|says nothing/i.test(r.description))||(/nobody in this spot talks|you do not speak|there are no lines for this part|no dialogue at all/i.test(r.description)&&/\b(advice|talks?|says|speaks|explains|asks|argues|chats)\b/i.test(sentences(r.description).filter(x=>!/nobody in this spot talks|you do not speak|no lines|no dialogue/i.test(x)).join(" ")))).map(r=>({detail:r.name+": "+r.description.slice(0,90)})));
 check(7,"parent_age","Parent younger than 17 years older than the child in the cast",L=>{
   const raw=L._raw._roles||[];const kid=raw.filter(r=>/\b(child|kid|son|daughter|teen|teenager|student|youngest)\b/i.test(r._slot||""));
   if(!kid.length)return[];const km=Math.max(...kid.map(maxAge));
@@ -407,6 +407,12 @@ check(7,"parent_age","Parent younger than 17 years older than the child in the c
 check(7,"odd_caps","Stray capitals mid-sentence in the synopsis (\"for lighting Double for the Office\")",L=>{const m=String(L.synopsis).match(/\b[a-z]+ (?:Double|Background|Performer|Driver) for the [A-Z]/);return m?[{detail:m[0]}]:[];});
 check(7,"era_now","\"It is set in the now\"",L=>/set in the (now|present|today)\b/i.test(L.synopsis)?[{detail:L.synopsis.slice(-60)}]:[]);
 check(7,"twist_fragment","Twist sentence is a bare noun-phrase fragment",L=>{const s2=sentences(L.synopsis)[1]||"";return /^(One|A|An|The|Every|Each) [a-z ]+ (carried|shot|filmed|photographed|built|told|made|cast|set|played|done|seen|recorded|used) /.test(s2)&&!/\b(is|are|was|were|has|have|gets|runs|ends|starts|plays|turns|takes|comes|goes)\b/.test(s2)?[{detail:s2}]:[];});
+check(7,"ad_run_length","How long the ad runs is stated two different ways",L=>{
+  const t=allText(L);const set=new Set((t.match(/\b(six|twelve|nine|6|12|9)[- ]months?\b|\b(one|a) year\b|\btwelve-month\b|\bsix-month\b/gi)||[]).map(x=>/six|6/i.test(x)?6:/nine|9/i.test(x)?9:12));
+  return set.size>1?[{detail:[...set].join(" vs ")+" months"}]:[];
+});
+check(5,"two_call_times","Schedule note gives two different call/start times",L=>{const n=String(L.schedule_note||"");const t=new Set(n.match(/\b\d{1,2}(:\d\d)?(am|pm)\b/gi)||[]);return (n.match(/starting at \d|\bcall is\b|\bcall\b/gi)||[]).length>1&&t.size>1?[{detail:n}]:[];});
+check(6,"people_label_on_person","\"People at the …\" label on a non-background part",L=>L.roles.filter(r=>/^People at the /.test(r.name)&&!/background/i.test(r.role_type)).map(r=>({detail:r.name})));
 check(7,"group_given_person","Plural/group role given a single person's name",L=>L.roles.filter(r=>!isGroup(r)&&/^(the )?(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|family members|shoppers|voices)\b/i.test(String(r.description||"").replace(/^[A-Z][a-z]+, /,"").replace(/^[A-Z][a-z]+ — /,""))).map(r=>({detail:r.name+": "+r.description.slice(0,60)})));
 check(7,"family_mismatch","Parent/child/siblings with clashing name heritage",null);
 

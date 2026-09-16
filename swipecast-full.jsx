@@ -30510,7 +30510,7 @@ const ACG = (()=>{
       const labelled=isFormatSeed(seed)&&(stills||rank==="Background"||/model|talent|crowd|atmosphere|group|ensemble|creator|face|runner|passer|shopper|guest/i.test(s.s));
       // v3: every add-on note is checked against the role and the medium before
       // it can be used (no product line on a portrait, no face line on a voice job).
-      const nctx={fam:v3Fam(type),type,rank,slot:s.s,sketch:s.x,gender:genders[i],group:labelled||rank==="Background"||v3PluralSlot(s.s),minors:slots.some(z=>z.a==="child"||z.a==="teen"),sentUsed:k=>v3SentUsed(k,h,res)};
+      const nctx={fam:v3Fam(type),type,rank,slot:s.s,sketch:s.x,gender:genders[i],group:labelled||rank==="Background"||v3PluralSlot(s.s),minors:slots.some(z=>z.a==="child"||z.a==="teen"),sentUsed:k=>v3SentUsed(k,h,res),usage:res&&res._usage};
       return{
         name:titleCase(s.s),
         role_type:roleTypeFor(track,rank,type),
@@ -31944,7 +31944,7 @@ const ACG = (()=>{
     if(/^(Sizzle Reel|Pitch Trailer|Pilot Presentation)$/.test(t))opts.push(`It will be shown to studios and streamers to sell the full show.`);
     if(f==="stage"&&t!=="Table Read")opts.push(`The show runs about ${pick([75,90,100,120])} minutes${Math.random()<0.5?" with no intermission":" with one intermission"}.`);
     if(t==="Table Read")opts.push(`The writers will use the read to decide what to rewrite.`);
-    if(f==="ad")opts.push(pick([`The finished ad will run online for one year.`,`The ads will run on social media for ${pick(["six","nine","twelve"])} months.`,`The finished spots run ${pick(["15","30"])} and 60 seconds long.`]));
+    if(f==="ad")opts.push(c.usage===6?`The ads will run on social media for six months.`:pick([`The finished ad will run online for one year.`,`The ads will run on social media for twelve months.`]),`The finished spots run ${pick(["15","30"])} and 60 seconds long.`);
     if(f==="photo")opts.push(`Expect ${v3Words(rand(3,6,1))} outfit changes during the day.`);
     if(f==="audio"||(f==="anim"&&t==="Animation")||f==="unscripted")opts.push(`Each episode is about ${pick([12,15,20,22,25,30])} minutes long.`);
     if(t==="Video Game")opts.push(`The game has about ${rand(12,40,2)} speaking characters.`);
@@ -32259,7 +32259,7 @@ const ACG = (()=>{
     if(fam==="photo")addB("t8",`hair and makeup start at ${pick(["7am","8am","9am"])}`,`you will do about ${v3Words(rand(3,6,1))} looks`,`the photographer shoots in natural light, so the day ends ${pick(["before sunset","by 5pm","by mid-afternoon"])}`);
     if(fam==="live")addB("t9",`performers take a ${pick(["15-minute","20-minute"])} break every hour`,`the doors open to the public at ${pick(["10am","11am","noon"])}`);
     if(c.type==="Motion Capture"||c.type==="Video Game")addB("t10",`the capture suit fitting takes about ${pick(["30 minutes","45 minutes","an hour"])} on the first morning`,`each capture block is ${pick(["90 minutes","two hours"])} with a break after`);
-    if(fam==="ad"||fam==="corp")addB("t11",`the call is ${v3Times(c.night)} and the day wraps within ten hours`,`lunch is served on set around ${pick(["noon","1pm"])}`);
+    if(fam==="ad"||fam==="corp")addB("t11",`the day wraps within ten hours`,`lunch is served on set around ${pick(["noon","1pm"])}`);
     if(fam==="unscripted")addB("t12",`filming follows real opening hours, so days can start early`,`nothing is scripted, but each day has a plan`);
     if(fam==="job")addB("t13",`check-in is at ${v3Times(c.night)} at the base camp`,`bring ${pick(["two","three"])} changes of your own clothes`);
     if(fam==="film"||fam==="tv")addB("t14",`most days are ${pick(["ten","eleven","twelve"])} hours including lunch`,`the call sheet goes out ${pick(["the evening before","by 7pm the night before"])}`);
@@ -32299,6 +32299,7 @@ const ACG = (()=>{
     if(V3_BANNED.test(s)||V3_LITERARY.test(s)||V3_INSULT.test(s))return false;
     if(c.sentUsed&&v3Sentences(s).some(x=>x.split(/\s+/).length>=4&&c.sentUsed(v3SentKey(x))))return false;
     const f=c.fam,slot=`${c.slot||""} ${c.sketch||""}`;
+    if(v3UsageOf(s)&&v3UsageOf(s)!==(c.usage||12))return false;
     if(/product|thing being sold/i.test(s)&&!/^(Commercial|Product Demo|Social Media Ad|Spec Commercial|Ad Campaign|Promo Video|Influencer \/ UGC Content|Print Campaign)$/.test(c.type))return false;
     if(/cast on the skill|how long you have been doing it|really be able to do this|not a mime/i.test(s)&&!V3_SKILL.test(slot))return false;
     if(/makeup app|filters|smoothed/i.test(s)&&!/^(photo|ad)$/.test(f))return false;
@@ -32307,6 +32308,7 @@ const ACG = (()=>{
     if(/\b(face|smile|looks?|photos?|wardrobe|clothes|outfits?|fitting|try-on|makeup|hair|on your feet|walking)\b/i.test(s)&&(f==="audio"||c.type==="Animation"||c.type==="Voiceover"))return false;
     if(/\b(speak|talk|lines|dialogue|words|say|says|read with|chemistry|callback|improvis|scenes?)\b/i.test(s)&&f==="photo")return false;
     if(/do not speak|no lines|no dialogue|nobody in this spot talks|without words/i.test(s)&&(f==="audio"||c.rank==="Lead"&&f!=="ad"))return false;
+    if(/do not speak|no lines|no dialogue|nobody in this spot talks|without words|has no dialogue/i.test(s)&&/\b(advice|talks?|says|speaks|conversations?|lines?|explains|asks|argues|jokes|chats|calls)\b/i.test(slot))return false;
     if(/any gender|open on gender|without a fixed gender/i.test(s)&&!/Non-Binary|All genders/i.test(c.gender||""))return false;
     if(/chemistry read|paired at callback|read with the other|at the callback|at callback/i.test(s)&&(c.rank==="Background"||c.group))return false;
     if(/under-18s|family bookings|school hours/i.test(s)&&!c.minors)return false;
@@ -32337,6 +32339,11 @@ const ACG = (()=>{
       if(!v3Sentences(x).some(z=>v3SentUsed(v3SentKey(z),h,res)))return x;
     }
     return "";
+  }
+  function v3UsageOf(t){
+    const m=String(t||"").match(/\b(six|twelve|nine|6|12|9)[- ]months?\b|\b(one|a) year\b|\btwelve-month\b|\bsix-month\b/i);
+    if(!m)return 0;
+    return /six|6/i.test(m[0])?6:/nine|9/i.test(m[0])?9:12;
   }
   function v3Fit(bank,ctx){return bank.map(fn=>x=>{const t=fn(x);return v3NoteFits(t,ctx)?t:"";});}
   const V3_AGE_WORDS={six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,seventy:70,sixty:60};
@@ -32614,6 +32621,10 @@ const ACG = (()=>{
     ([item.pay].concat(roles.map(r=>r.pay)).join(" | ").match(/\$[\d,]+\s*(?:–|-|to)\s*\$?[\d,]+/g)||[]).forEach(x=>{const [a,b]=x.match(/[\d,]+/g).map(v=>+v.replace(/,/g,""));if(b>a&&(b-a)/a<0.15)out.push("narrow pay range "+x);});
     if(fam!=="stage"&&c.days<=5&&/\bweekly\b|per week|a week\b|\/week|each week/i.test(item.pay+" "+roles.map(r=>r.pay).join(" ")))out.push("weekly pay on short job");
     if(/cannot pay the union minimum/i.test(item.pay)&&/SAG|AEA/.test(item.union_status))out.push("pay line contradicts union");
+    const terms=new Set((txt.match(/\b(six|twelve|nine|6|12|9)[- ]months?\b|\b(one|a) year\b|\btwelve-month\b|\bsix-month\b/gi)||[]).map(t=>/six|6/i.test(t)?6:/nine|9/i.test(t)?9:12));
+    if(terms.size>1)out.push("ad run length stated two ways");
+    const times=(note.match(/\b\d{1,2}(:\d\d)?(am|pm)\b/gi)||[]);
+    if(/starting at|call/i.test(note)&&(note.match(/starting at \d|\bcall\b/gi)||[]).length>1&&new Set(times).size>1)out.push("two different call times");
     if(/stipend for the run/i.test(roles.map(r=>r.pay).join(" "))&&/\bweek(ly)?\b|a week|per week/i.test(item.pay)&&!/no weekly salary/i.test(item.pay))out.push("weekly pay line on stipend roles");
     const rankAmt=rk=>roles.filter(r=>v3RankOf(r)===rk).map(r=>(parseRoleRate(r.pay)||{}).rate_amount).filter(Boolean);
     const ord=["Lead","Supporting","Day Player","Background"];
@@ -32748,6 +32759,10 @@ const ACG = (()=>{
       if(lead0&&!lead0.g&&heS!==sheS){const i=slots.indexOf(lead0);slots[i]={...lead0,g:heS?"M":"F"};}
       const plan=v3Plan(type,fam,track);
       const union=v3Union(type,fam);
+      // One ad-usage term per listing; every line that mentions how long the
+      // ad runs has to agree with it.
+      const usage=fam==="ad"?pick([6,12]):0;
+      res._usage=usage;
       res._lastsHere=new Set();
       const V=v3Venue(seed,type,fam);
       let roles;
@@ -32833,7 +32848,7 @@ const ACG = (()=>{
         :/^(photo|unscripted|live)$/.test(fam)?{one:"person",many:"people"}
         :/^(move|job|music)$/.test(fam)?{one:"performer",many:"performers"}:{one:"actor",many:"actors"};
       const s3=fam==="job"?`The booking${named.length>1?"s are":" is"} for ${v3Join(named.map(r=>String(r.name).replace(/\s*\(Background\)$/,"").toLowerCase()))}.`:v3S3(voice,{n:named.length,labels:(labels.length?labels:groupLabels).map(l=>/^(the|a|an)\s/i.test(l)||/^[A-Z]/.test(l)?l:"the "+l),who});
-      const s4=Math.random()<0.6?(v3Detail({type,fam,era:(seed.era&&!/^n\/a$/i.test(seed.era))?seed.era:"",placeNP:V.placeNP}).find(x=>!v3SentUsed(v3SentKey(x),h,res))||""):"";
+      const s4=Math.random()<0.6?(v3Detail({usage,type,fam,era:(seed.era&&!/^n\/a$/i.test(seed.era))?seed.era:"",placeNP:V.placeNP}).find(x=>!v3SentUsed(v3SentKey(x),h,res))||""):"";
       const synopsis=plainify(v3Scrub([s1,s2,s3,s4].filter(Boolean).join(" ")));
       const tagline=v3Tagline({synopsis,brief,about:seed.about||"",turn:tt,premise:seed.p,turnLeads:turnCanLead(turn)},h,res);
       if(!tagline){why('no tagline '+type);res._typeFails[type]=(res._typeFails[type]||0)+1;if(res._typeFails[type]>4)res._deadTypes.add(type);continue;}
@@ -32860,6 +32875,7 @@ const ACG = (()=>{
         if(fam!=="stage"&&plan.days<=5&&/weekly|a week|per week/i.test(cand))continue;
         if(/SAG|AEA/.test(union)&&/union minimum|unpaid|no fee|copy, credit/i.test(cand))continue;
         if(/^(photo|audio|stage|live|move)$/.test(fam)&&/\bfilms?\b|footage|on camera/i.test(cand))continue;
+        if(v3UsageOf(cand)&&v3UsageOf(cand)!==(usage||12))continue;
         payStr=cand;
       }
       if(!payStr)payStr=lastCand;
@@ -33247,7 +33263,7 @@ const ACG = (()=>{
       const rawBase=String(r._groupName||r.name||"Background");
       // A background label must name people: "Shop" becomes "People at the Shop".
       const peopleWord=V3_PEOPLE_WORD||/\b(people|customers|regulars|neighbors|passersby|patrons|guests|shoppers|riders|students|kids|children|crowd|audience|onlookers|workers|staff|crew|team|class|family|families|dancers|players|gardeners|volunteers|traders|members|visitors|diners|commuters|passengers|voices|ensemble|group|atmosphere|double|model|hands|lead|friends|coworkers|parents|fans|runners|swimmers|drivers|band|choir|chorus|congregation|tenants|mourners|guards|officers|nurses|patients|travelers|spectators|bidders|campers|members)\b/i;
-      const base0=r._job||peopleWord.test(rawBase)||/\b(queue|line|rush|performer|driver|double|voices?)\b/i.test(rawBase)?rawBase:`People at the ${titleCase(stripArticle(rawBase))}`;
+      const base0=r._job||!/background/i.test(r.role_type||"")||peopleWord.test(rawBase)||/\b(queue|line|rush|performer|driver|double|voices?)\b/i.test(rawBase)?rawBase:`People at the ${titleCase(stripArticle(rawBase))}`;
       const base=base0.replace(/\bFeatured\b/g,"Principal").replace(/\bCrowd\b/g,"Onlookers").replace(/\bStand-?[Ii]n\b/g,"Lighting Double");
       return r._job||/background/i.test(base)||!/background/i.test(r.role_type||"")?base:`${base} (Background)`;
     }
