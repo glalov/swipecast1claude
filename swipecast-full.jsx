@@ -30706,7 +30706,6 @@ const ACG = (()=>{
     y=>`Rate range ${y.lo}–${y.hi} ${y.per}. Checks go out weekly, not at the end.`,
     y=>`You will know your number before you say yes: ${y.lo} to ${y.hi} ${y.per}, written into the offer.`,
     y=>`${y.lo}–${y.hi} ${y.per} across ${y.sched}. Multiply your rate by your days and that is the job.`,
-    y=>`This one cannot pay the union minimum, but the money is honest: ${y.lo} to ${y.hi} ${y.per}, plus meals.`,
     y=>`${y.hi} ${y.per} maximum. ${y.lo} ${y.per} minimum. Nothing in between is a surprise.`
   ];
   // Commercial, corporate and print work is bought differently — usage, buyout
@@ -32851,7 +32850,7 @@ const ACG = (()=>{
       if(fam==="job"){
         const am=named.map(r=>(parseRoleRate(r.pay)||{}).rate_amount).filter(Boolean);
         const lo=money(Math.min(...am)),hi=money(Math.max(...am));
-        const what=type==="Background / Extras"?"Background":type==="Stand-In"?"Lighting doubles":type==="Body Double"?"The body double":"Stunt work";
+        const what=type==="Background / Extras"?"Background work":type==="Stand-In"?"Lighting double work":type==="Body Double"?"The body double booking":"Stunt work";
         const rng=lo===hi?`${hi} a day`:`${lo} to ${hi} a day`;
         payStr=pick([`${what} pays ${rng}${/SAG/.test(union)?" under the SAG-AFTRA contract":""}.`,`${capFirst(rng)}, paid for every day you are booked.`,`The rate is ${rng}, with meals on set.`]);
       }
