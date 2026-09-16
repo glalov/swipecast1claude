@@ -36851,6 +36851,10 @@ function AdminPremiumUpsell({session}){
     evening:{received:0,failed:0,unsub:0},
     optouts:0
   });
+  // Engagement tiers (public.email_engagement, re-sorted nightly by
+  // recompute_email_tiers()). Read-only here — nothing on this page changes a
+  // tier, the nightly job owns it.
+  const[tiers,setTiers]=useState(null);
 
   const showFeedback=(m)=>{setMsg(m);setTimeout(()=>setMsg(""),6000);};
 
@@ -36878,6 +36882,12 @@ function AdminPremiumUpsell({session}){
       });
     }
     setLogs(lRes.data||[]);
+    // Best-effort: the tier strip is informational, so a failure here must not
+    // stop the rest of the page from rendering.
+    try{
+      const{data:tc}=await window.sb.rpc("get_email_tier_counts");
+      setTiers(tc||null);
+    }catch(_){ setTiers(null); }
     setStats({
       noon:{received:nRecv,failed:nFail,unsub:nUnsub},
       evening:{received:eRecv,failed:eFail,unsub:eUnsub},
@@ -37044,9 +37054,33 @@ function AdminPremiumUpsell({session}){
       </div>
     </div>
 
-    {/* Stats — noon vs evening */}
+    {/* Who gets how many — set by the nightly job, not by anything on this page. */}
+    {tiers&&<div className="card" style={{padding:18,marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4,flexWrap:"wrap",gap:8}}>
+        <div style={{fontWeight:800,fontSize:15}}>Sending frequency</div>
+        <span style={{fontSize:11,color:"var(--t3)",fontWeight:600}}>
+          {tiers.first_event?`sorted nightly · ${tiers.opens_7d||0} opens, ${tiers.clicks_7d||0} clicks in 7d`:"collecting open data — nobody is paused yet"}
+        </span>
+      </div>
+      <div style={{fontSize:12,color:"var(--t2)",marginBottom:14}}>Each person's tier is recalculated every night from opens, clicks and logins. Opening an email moves someone back up immediately.</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:10}}>
+        {[
+          {k:"warm",   n:"Both sends",   c:"var(--grn)", bg:"rgba(27,135,62,0.07)"},
+          {k:"cooling",n:"Morning only", c:"var(--acc)", bg:"rgba(224,135,59,0.07)"},
+          {k:"cold",   n:"Weekly",       c:"var(--t2)",  bg:"rgba(141,141,160,0.07)"},
+          {k:"paused", n:"Not emailed",  c:"var(--t3)",  bg:"rgba(141,141,160,0.05)"},
+        ].map(t=>(
+          <div key={t.k} style={{textAlign:"center",padding:"10px 6px",borderRadius:10,background:t.bg,minWidth:0}}>
+            <div style={{fontSize:26,fontWeight:800,color:t.c,lineHeight:1}}>{tiers[t.k]||0}</div>
+            <div style={{fontSize:11,color:"var(--t2)",marginTop:5}}>{t.n}</div>
+          </div>
+        ))}
+      </div>
+    </div>}
+
+    {/* Stats — morning vs evening */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12,marginBottom:8}}>
-      <SlotCard title="☀️ Noon" time="16:00 UTC" d={stats.noon}/>
+      <SlotCard title="☀️ Morning" time="13:00 UTC" d={stats.noon}/>
       <SlotCard title="🌙 Evening" time="22:00 UTC" d={stats.evening}/>
     </div>
     <div style={{fontSize:12,color:"var(--t3)",marginBottom:16,textAlign:"center"}}>

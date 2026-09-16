@@ -36,6 +36,8 @@ const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.
 // email, day2-getnoticed, premium-upsell, process-digest-queue, weekly-upsell,
 // winback-run and member-announce. Change one, change all seven. Each email
 // passes its own "why you got this" sentence, accent colour and unsubscribe URL.
+// (The noon/evening upsell moved to its own full-width footer band on
+// 2026-09-11; these helpers stay here so the family stays in step.)
 const CS_CREAM = "#F3EEE6";
 function csFooterStripe(accent: string): string {
   return `<tr><td style="height:6px;line-height:6px;font-size:0;background:${accent};background:linear-gradient(90deg,${accent},${accent} 55%,${accent}55)">&nbsp;</td></tr>`;
@@ -86,7 +88,7 @@ function esc(s: unknown): string {
   return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-interface SendEmailArgs { from:string; to:string[]; subject:string; html:string; text?:string; replyTo?:string; headers?:Record<string,string>; }
+interface SendEmailArgs { from:string; to:string[]; subject:string; html:string; text?:string; replyTo?:string; headers?:Record<string,string>; tags?:{name:string;value:string}[]; }
 interface SendEmailResult { ok:boolean; id:string|null; err:string|null; status:number; }
 
 async function sendEmail(a: SendEmailArgs): Promise<SendEmailResult> {
@@ -111,6 +113,10 @@ async function sendBatch(items: SendEmailArgs[]): Promise<SendEmailResult[]> {
     const o:any = { from:a.from, to:a.to, subject:a.subject, html:a.html };
     if (a.replyTo) o.reply_to = a.replyTo;
     if (a.headers) o.headers = a.headers;
+    // Tags ride along to Resend and come back on every open/click webhook, which
+    // is how an event is attributed to this campaign, this slot and this user.
+    // Resend only accepts ASCII letters, digits, "_" and "-" in tag values.
+    if (a.tags) o.tags = a.tags;
     return o;
   });
   try {
@@ -189,6 +195,9 @@ function castingAgeOk(c: any, age: number|null|undefined): boolean {
 //   evening = Sage & Clay (deep sage masthead, sand paper, clay CTAs)
 // The studio marquee sits UP TOP, under the masthead and above the still, with
 // the logos at 30px — it used to be a small strip at the bottom.
+// The shell caps at 1400px so it fills a desktop Gmail reading pane edge to
+// edge (1000px left cream gutters down both sides). The masthead is sized for
+// desktop (54px mark, 40px wordmark) and scaled back down under 620px.
 interface Palette {
   paper:string; ink:string; body:string; line:string; rule:string; kicker:string; alert:string;
   mastBg:string; mastInk:string; mastSub:string;
@@ -318,6 +327,9 @@ function typeIconUrl(raw: unknown): string {
 
 // One casting = one wide row: category / pay / button on the left, the role
 // details on the right. Stacks to a single column under 620px.
+// Everything below is free text a casting director typed, so every field is
+// escaped, trimmed, length-clamped and given a fallback — this email builds
+// itself twice a day with no one watching.
 function castingRow(c: any, p: Palette): string {
   const roles = c.roles || [];
   const r = roles[0];
@@ -329,9 +341,6 @@ function castingRow(c: any, p: Palette): string {
     : "Open casting call";
   const title = esc(String(c.title ?? "").trim()) || "Open casting";
   const href  = c.slug ? `${APP_URL}/casting/${encodeURIComponent(String(c.slug))}` : `${APP_URL}/browse-castings`;
-  // The pay field is free text a CD typed: "Paid", "$2,500/week", "Unpaid",
-  // "Deferred". Only prefix "Paid —" when the value is an amount, or we end up
-  // printing "Paid — Paid." to every recipient.
   const rawPay = String(c.pay ?? "").trim();
   // Only prefix "Paid —" when the value is an actual amount. Otherwise we print
   // "Paid — Paid." or, worse, "Paid — Unpaid" to every recipient.
@@ -342,7 +351,7 @@ function castingRow(c: any, p: Palette): string {
   // ONE LINE, always. Casting directors write anything from "Paid" to a
   // 180-character paragraph; letting it wrap made the left column taller on
   // some rows than others, so the three casting rows stopped lining up.
-  const payLine = esc(payFull.length > 46 ? `${payFull.slice(0, 46).trim()}\u2026` : payFull);
+  const payLine = esc(payFull.length > 46 ? `${payFull.slice(0, 46).trim()}…` : payFull);
   let deadline: string | null = null;
   if (c.deadline) {
     const raw = String(c.deadline);
@@ -409,6 +418,19 @@ function marquee(p: Palette): string {
 }
 
 interface Hero { image_url: string; caption: string; subject_hook: string; style: string; accent: string; title: string; year: number | null; }
+
+// Stamps every link back to the site with UTM parameters. Without this a click
+// from the campaign lands as untagged direct traffic, which is why the admin
+// traffic counter could show 74 visitors on a day that sent 1,387 emails and
+// nobody could tell whether those were the same people. mailto:, the unsubscribe
+// endpoint and anything already carrying a query string are left alone.
+function addUtm(html: string, slot: string): string {
+  const campaign = `premium_upsell_${slot === "evening" ? "evening" : "morning"}`;
+  return html.replace(/href="([^"?#]+)"/g, (whole, url: string) => {
+    if (!url.startsWith(APP_URL)) return whole;          // mailto:, unsub endpoint, absolute others
+    return `href="${url}?utm_source=email&utm_medium=upsell&utm_campaign=${campaign}"`;
+  });
+}
 
 function buildEmail(firstName: string, castings: any[], userId: string, slot: string, hero: Hero | null = null): string {
   const p     = PALETTES[slot === "evening" ? "evening" : "noon"];
@@ -618,7 +640,7 @@ serve(async (req) => {
       }
       const preview=(cs||[]).map((c:any)=>({...c,posted_at:c.created_at,roles:trb[c.id]||[]}));
       if(!preview.length) preview.push({id:"preview",title:'Indie Feature — "The Long Winter"',type:"Film",location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/week",synopsis:"A character-driven drama about a Brooklyn ceramicist navigating her first gallery show.",slug:"sample",posted_at:new Date().toISOString(),roles:[{name:"NADIA",age_range:"28–38",gender:"Female",pay:"$2,500/week"}]});
-      const html=buildEmail("there",preview,"test",slot,thero);
+      const html=addUtm(buildEmail("there",preview,"test",slot,thero),slot);
       const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(slot,preview.length,thero),html});
       if(!r.ok) return res({error:r.err},500);
       return res({ok:true,test:true,slot,to:to_email,provider_id:r.id});
@@ -676,6 +698,32 @@ serve(async (req) => {
         (data||[]).forEach((r:any)=>{ if(r?.id&&r?.email) emailMap[r.id]=r.email; });
       }
     }
+
+    // ── Engagement tier per user (public.email_engagement, refreshed nightly by
+    //    recompute_email_tiers()). This is what stopped the campaign mailing
+    //    everybody twice a day: 'warm' keeps both slots, everyone quieter gets
+    //    less. A user with no row yet is treated as 'cooling' — one a day — so a
+    //    missing row can never silently escalate someone to the full cadence.
+    const tierMap:Record<string,string>={};
+    {
+      const CH=300;
+      for(let i=0;i<uids.length;i+=CH){
+        const{data,error}=await sb.from("email_engagement").select("user_id,tier").in("user_id",uids.slice(i,i+CH));
+        if(error){ console.error("[premium-upsell] tier load error",error); continue; }
+        (data||[]).forEach((r:any)=>{ if(r?.user_id) tierMap[r.user_id]=String(r.tier||"cooling"); });
+      }
+    }
+    // Cold users get one email a WEEK, and the day is derived from their own id
+    // so the cold cohort spreads across all seven days instead of landing as one
+    // spike every Tuesday.
+    const coldDay=(id:string)=>{ let h=0; for(let i=0;i<id.length;i++) h=(h*31+id.charCodeAt(i))>>>0; return h%7; };
+    const todayDow=new Date().getUTCDay();
+    const tierAllows=(tier:string,userId:string):boolean=>{
+      if(tier==="warm")    return true;                                    // both slots
+      if(tier==="cooling") return slot!=="evening";                        // morning only
+      if(tier==="cold")    return slot!=="evening" && coldDay(userId)===todayDow;
+      return false;                                                        // paused
+    };
 
     // ── Suppression list (hard bounces + complaints + manual unsubs). ──
     const suppressed=new Set<string>();
@@ -746,6 +794,15 @@ serve(async (req) => {
       else if(suppressed.has(String(email).trim().toLowerCase())) skipReason="suppressed";
       if(skipReason){ skipped++; bump(skipReason); logs.push({user_id:p.id,email,slot,status:"skipped",reason:skipReason}); continue; }
 
+      // Frequency gate. Logged as its own skip reason per tier so the admin page
+      // shows exactly how much volume the tiering is saving on each run.
+      const tier=tierMap[p.id]??"cooling";
+      if(!tierAllows(tier,p.id)){
+        skipped++; bump(`tier_${tier}`);
+        logs.push({user_id:p.id,email,slot,status:"skipped",reason:`tier_${tier}`});
+        continue;
+      }
+
       // Personalized job cards (best-effort; email still sends with 0 matches).
       const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
       // NEWEST-FIRST GUARANTEE. A pure shuffle means a casting posted an hour ago
@@ -758,14 +815,14 @@ serve(async (req) => {
       const batch=(newest?[newest,...rest]:rest).slice(0,JOB_CAP)
         .sort((a:any,b:any)=>String(b.created_at||b.posted_at||"").localeCompare(String(a.created_at||a.posted_at||"")));
       const first=(p.display_name??"").split(" ")[0].trim()||"there";
-      outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:buildEmail(first,batch,p.id,slot,runHero) });
+      outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:addUtm(buildEmail(first,batch,p.id,slot,runHero),slot) });
     }
 
     // ── Phase 2: send in batches of 100 via Resend, log each result. ──
     const BATCH=100;
     for(let i=0;i<outbox.length;i+=BATCH){
       const group=outbox.slice(i,i+BATCH);
-      const results=await sendBatch(group.map((o)=>({from:FROM_EMAIL,to:[o.email],replyTo:CONTACT_EMAIL,subject:o.subject,html:o.html,headers:{"List-Unsubscribe":`<${UNSUB_BASE}?action=unsubscribe&uid=${o.userId}&slot=${slot}>`,"List-Unsubscribe-Post":"List-Unsubscribe=One-Click"}})));
+      const results=await sendBatch(group.map((o)=>({from:FROM_EMAIL,to:[o.email],replyTo:CONTACT_EMAIL,subject:o.subject,html:o.html,headers:{"List-Unsubscribe":`<${UNSUB_BASE}?action=unsubscribe&uid=${o.userId}&slot=${slot}>`,"List-Unsubscribe-Post":"List-Unsubscribe=One-Click"},tags:[{name:"campaign",value:"premium_upsell"},{name:"slot",value:slot==="evening"?"evening":"morning"},{name:"uid",value:o.userId}]})));
       group.forEach((o,idx)=>{
         const r=results[idx];
         if(r?.ok){ sent++; logs.push({user_id:o.userId,email:o.email,slot,status:"sent",provider_message_id:r.id}); }

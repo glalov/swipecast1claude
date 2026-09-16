@@ -6,7 +6,13 @@
 //   1. Supabase secret RESEND_WEBHOOK_SECRET = the signing secret Resend shows
 //      when you create the webhook (starts with "whsec_").
 //   2. In the Resend dashboard, add a webhook pointing at this function URL and
-//      subscribe to at least: email.bounced, email.complained.
+//      subscribe to at least: email.bounced, email.complained,
+//      email.opened, email.clicked  (the last two also need Open/Click
+//      tracking switched on for the domain, or they are never emitted).
+//
+// Opens and clicks are recorded, not suppressed: they feed public.email_engagement,
+// which is what decides how often the premium upsell mails each person. Before
+// this the campaign had no idea who read it and mailed everyone twice a day.
 //
 // Signature is verified (Svix scheme) when RESEND_WEBHOOK_SECRET is set. If the
 // secret is absent the event is still processed but logged as UNVERIFIED, so the
@@ -61,6 +67,24 @@ function extractEmails(data: unknown): string[] {
     .filter((e: string) => e.includes("@"));
 }
 
+// Tags travel with the send (premium-upsell sets campaign + slot + uid) and come
+// back on every event. Resend has shipped them both as an array of {name,value}
+// and as a flat object, so accept either rather than silently losing the slot.
+function readTags(data: unknown): Record<string, string> {
+  // deno-lint-ignore no-explicit-any
+  const raw = ((data ?? {}) as any).tags;
+  const out: Record<string, string> = {};
+  if (Array.isArray(raw)) {
+    for (const t of raw) {
+      const n = String(t?.name ?? "").trim();
+      if (n) out[n] = String(t?.value ?? "");
+    }
+  } else if (raw && typeof raw === "object") {
+    for (const [k, v] of Object.entries(raw as Record<string, unknown>)) out[k] = String(v ?? "");
+  }
+  return out;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   const json = (b: unknown, s = 200) =>
@@ -83,6 +107,37 @@ serve(async (req) => {
   try { evt = JSON.parse(payload); } catch { return json({ error: "bad json" }, 400); }
 
   const type = String(evt?.type ?? "");
+
+  // ── Engagement events. Recorded and returned early: an open is not a
+  //    suppression signal, it is the opposite, and record_email_engagement()
+  //    lifts the sender straight back to the 'warm' tier.
+  if (type === "email.opened" || type === "email.clicked" || type === "email.delivered") {
+    const event = type.slice("email.".length);      // opened | clicked | delivered
+    const emails = extractEmails(evt?.data);
+    if (!emails.length) return json({ ok: true, note: "no recipient in payload" });
+    const tags = readTags(evt?.data);
+    // deno-lint-ignore no-explicit-any
+    const d = (evt?.data ?? {}) as any;
+    const link = event === "clicked" ? String(d?.click?.link ?? d?.link ?? "") || null : null;
+    const occurred = String(d?.created_at ?? evt?.created_at ?? "") || new Date().toISOString();
+    const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    let recorded = 0;
+    for (const email of emails) {
+      const { error } = await sb.rpc("record_email_engagement", {
+        p_email: email,
+        p_event: event,
+        p_message_id: d?.email_id ?? d?.id ?? null,
+        p_campaign: tags.campaign ?? null,
+        p_slot: tags.slot ?? null,
+        p_url: link,
+        p_occurred: occurred,
+      });
+      if (error) console.error("[resend-webhook] engagement record failed", email, error.message);
+      else recorded++;
+    }
+    return json({ ok: true, event, recorded });
+  }
+
   // Complaints ALWAYS mean "never email this address again". Bounces only when
   // PERMANENT (hard) — transient/undetermined bounces are temporary (full mailbox,
   // server busy, greylisting) and must NOT permanently suppress a valid address.
