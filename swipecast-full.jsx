@@ -31175,6 +31175,7 @@ const ACG = (()=>{
     anim:["Animation","Games"],
     live:["Live","Events","Experiences"],
     move:["Movement Lab","Dance Company","Productions"],
+    capture:["Capture Studios","Interactive","Productions"],
     music:["Productions","Films"],
     unscripted:["Entertainment","Productions","Television"],
     job:["Pictures","Productions","Films"]
@@ -31945,8 +31946,8 @@ const ACG = (()=>{
     if(t==="Motion Capture")opts.push(`The recordings will be used to animate characters in a video game.`);
     if(f==="corp")opts.push(`Each video is about ${v3Words(rand(3,8,1))} minutes long.`);
     if(f==="live")opts.push(`Guests come and go all day, so the show repeats.`);
-    if(c.era&&(f==="film"||f==="tv"||f==="stage"||f==="job"))opts.push(`It is set in the ${c.era}.`);
-    if(c.placeNP&&(f==="film"||f==="tv"||f==="job"))opts.push(`Most scenes take place in ${c.placeNP}.`);
+    if(c.era&&!/^(now|present|today|contemporary)$/i.test(c.era)&&(f==="film"||f==="tv"||f==="stage"||f==="job"))opts.push(`It is set in the ${c.era}.`);
+    if(c.placeNP&&(f==="film"||f==="tv"||f==="job"))opts.push(`Most scenes are filmed ${placePrep(c.placeNP)} ${c.placeNP}.`);
     return cgShuffle(opts);
   }
   function v3Tagline(c,h,res){
@@ -32634,6 +32635,8 @@ const ACG = (()=>{
         if(g==="Male"&&LABEL_F.test(String(r._slot||""))&&!LABEL_M.test(String(r._slot||"")))out.push("female-coded label on male role");
       }
     });
+    const kidMaxV=Math.max(0,...roles.filter(r=>/\b(child|kid|son|daughter|teen|teenager|student|youngest)\b/i.test(r._slot||"")).map(r=>parseInt(String(r.age_range).split("-")[1],10)||0));
+    roles.forEach(r=>{if(kidMaxV&&/\b(parent|mother|father|mom|dad)\b/i.test(r._slot||"")&&!/\b(child|son|daughter)\b/i.test(r._slot||"")&&parseInt(String(r.age_range).split("-")[0],10)<kidMaxV+17)out.push("parent too young for child");});
     const minor=roles.some(r=>parseInt(String(r.age_range).split("-")[0],10)<18);
     const mnote=/minor|guardian|child performer/i.test(item.submission_requirements);
     if(minor!==mnote)out.push("minor note mismatch");
@@ -32750,11 +32753,14 @@ const ACG = (()=>{
         v3SetPay(roles,union,fam,type,track);
         v3Media(roles,fam,type);
       }
+      // A parent must be old enough for the child in the same cast.
+      const kidMax=Math.max(0,...roles.filter(r=>/\b(child|kid|son|daughter|teen|teenager|student|youngest)\b/i.test(r._slot||"")).map(r=>parseInt(String(r.age_range).split("-")[1],10)||0));
+      if(kidMax)roles.forEach(r=>{if(/\b(parent|mother|father|mom|dad)\b/i.test(r._slot||"")&&!/\b(child|son|daughter)\b/i.test(r._slot||"")){const lo=parseInt(String(r.age_range).split("-")[0],10);if(lo<kidMax+17){const nlo=kidMax+17;r.age_range=`${nlo}-${nlo+rand(10,14,1)}`;}}});
       const named=uniqueRoles(roles,h,res,type,{role:""},false);
       const minors=named.some(r=>parseInt(String(r.age_range).split("-")[0],10)<18);
 
       // Company, crew and casting director.
-      const co=v3Company(fam,h,res);
+      const co=v3Company(type==="Motion Capture"||type==="Video Game"?"capture":fam==="move"&&type!=="Dance Project"?"music":fam,h,res);
       const castingName=v3Person(h,res);
       const jobs=cgShuffle(v3CrewJobs(fam,type)).slice(0,rand(1,2,1));
       const credits=jobs.map(j=>[j,v3Person(h,res)]);
@@ -32815,7 +32821,7 @@ const ACG = (()=>{
       const who=fam==="audio"||type==="Animation"||type==="Voiceover"?{one:"voice actor",many:"voice actors"}
         :/^(photo|unscripted|live)$/.test(fam)?{one:"person",many:"people"}
         :/^(move|job|music)$/.test(fam)?{one:"performer",many:"performers"}:{one:"actor",many:"actors"};
-      const s3=fam==="job"?`The booking${named.length>1?"s are":" is"} for ${v3Join(named.map(r=>String(r.name).replace(/\s*\(Background\)$/,"").replace(/^(\w)/,m=>m.toLowerCase()).replace(/^(people|passersby)/i,x=>x.toLowerCase()))).replace(/\b(Lighting|Body|Stunt|Precision|Fight|Hand)\b/g,m=>m.toLowerCase())}.`:v3S3(voice,{n:named.length,labels:(labels.length?labels:groupLabels).map(l=>/^(the|a|an)\s/i.test(l)||/^[A-Z]/.test(l)?l:"the "+l),who});
+      const s3=fam==="job"?`The booking${named.length>1?"s are":" is"} for ${v3Join(named.map(r=>String(r.name).replace(/\s*\(Background\)$/,"").toLowerCase()))}.`:v3S3(voice,{n:named.length,labels:(labels.length?labels:groupLabels).map(l=>/^(the|a|an)\s/i.test(l)||/^[A-Z]/.test(l)?l:"the "+l),who});
       const s4=Math.random()<0.6?(v3Detail({type,fam,era:(seed.era&&!/^n\/a$/i.test(seed.era))?seed.era:"",placeNP:V.placeNP}).find(x=>!v3SentUsed(v3SentKey(x),h,res))||""):"";
       const synopsis=plainify(v3Scrub([s1,s2,s3,s4].filter(Boolean).join(" ")));
       const tagline=v3Tagline({synopsis,brief,about:seed.about||"",turn:tt,premise:seed.p,turnLeads:turnCanLead(turn)},h,res);
@@ -34818,7 +34824,7 @@ function AdminCastingGenerator({session}){
             {todayGenerated
               ?"Today's drafts have already been generated. You can generate more if needed."
               :"Today's drafts have not been generated yet."}
-            {" "}Generates 5 New York-leaning film, TV, and theater draft listings for review.
+            {" "}Generates 5 draft listings for review, rotating through every project type, with about 60% in New York.
           </div>
         </div>
         <button

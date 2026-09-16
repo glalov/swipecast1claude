@@ -396,6 +396,13 @@ check(7,"gendered_label","Male-coded part (fisherman, son…) cast female or the
   return L.roles.filter(r=>{const d=String(r.description||"").split(/[.:]/)[0];return (r.gender==="Female"&&M.test(d)&&!F.test(d))||(r.gender==="Male"&&F.test(d)&&!M.test(d));}).map(r=>({detail:`${r.name} ${r.gender}: ${String(r.description).split(/[.:]/)[0]}`}));
 });
 check(7,"silent_part_speaks","Speaking note on a part written with no dialogue",L=>L.roles.filter(r=>/to the lens|talk straight into the camera|down the barrel/i.test(r.description)&&/without dialogue|no dialogue|no lines|says nothing/i.test(r.description)).map(r=>({detail:r.name})));
+check(7,"parent_age","Parent younger than 17 years older than the child in the cast",L=>{
+  const raw=L._raw._roles||[];const kid=raw.filter(r=>/\b(child|kid|son|daughter|teen|teenager|student|youngest)\b/i.test(r._slot||""));
+  if(!kid.length)return[];const km=Math.max(...kid.map(maxAge));
+  return raw.filter(r=>/\b(parent|mother|father|mom|dad)\b/i.test(r._slot||"")&&!/\b(child|son|daughter)\b/i.test(r._slot||"")&&minAge(r)<km+17).map(r=>({detail:`${r.name} ${r.age_range} vs child up to ${km}`}));
+});
+check(7,"odd_caps","Stray capitals mid-sentence in the synopsis (\"for lighting Double for the Office\")",L=>{const m=String(L.synopsis).match(/\b[a-z]+ (?:Double|Background|Performer|Driver) for the [A-Z]/);return m?[{detail:m[0]}]:[];});
+check(7,"era_now","\"It is set in the now\"",L=>/set in the (now|present|today)\b/i.test(L.synopsis)?[{detail:L.synopsis.slice(-60)}]:[]);
 check(7,"group_given_person","Plural/group role given a single person's name",L=>L.roles.filter(r=>!isGroup(r)&&/^(the )?(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|family members|shoppers|voices)\b/i.test(String(r.description||"").replace(/^[A-Z][a-z]+, /,"").replace(/^[A-Z][a-z]+ — /,""))).map(r=>({detail:r.name+": "+r.description.slice(0,60)})));
 check(7,"family_mismatch","Parent/child/siblings with clashing name heritage",null);
 
@@ -475,7 +482,7 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
     prev=L;
   });
   // company cores
-  const TAIL=/\b(film company|motion pictures|television|entertainment|theater company|stage company|theater project|repertory|commercial productions|photo studio|studios|photography|events|experiences|live|movement lab|dance company|animation|games|content|pictures|films?|productions?|creative studio|content lab|theatre lab|theatre company|theater company|stage company|new works|motion|workshop collective|capstone unit|media works|independent pictures|commercial unit|cinema|story lab|film group|development lab|project studio|advertising works|brand studio|studio|photography studio|image lab|casting studio|playhouse|theatre project|picture company|features|pictures co|creative|media|agency|collective|audio|sound|works|house|company|co)\b/gi;
+  const TAIL=/\b(capture studios|interactive|film company|motion pictures|television|entertainment|theater company|stage company|theater project|repertory|commercial productions|photo studio|studios|photography|events|experiences|live|movement lab|dance company|animation|games|content|pictures|films?|productions?|creative studio|content lab|theatre lab|theatre company|theater company|stage company|new works|motion|workshop collective|capstone unit|media works|independent pictures|commercial unit|cinema|story lab|film group|development lab|project studio|advertising works|brand studio|studio|photography studio|image lab|casting studio|playhouse|theatre project|picture company|features|pictures co|creative|media|agency|collective|audio|sound|works|house|company|co)\b/gi;
   const core=L=>clean(String(L.prod||"").split(" — ")[0].replace(/^.* Casting for /,"").replace(TAIL,"").replace(/^(NYC|LA|Chicago|Boston|Philly|Atlanta|Newark|New Orleans|Pittsburgh|Austin|Detroit|Baltimore|North|South|East|West|Lower|Upper|Downtown|Uptown) /,""));
   const cores=new Map();
   listings.forEach(L=>{const c=core(L);if(!c)return;if(cores.has(c))add("company_core_repeat",L.id,`"${c}" (also ${cores.get(c)})`);else cores.set(c,L.id);});
