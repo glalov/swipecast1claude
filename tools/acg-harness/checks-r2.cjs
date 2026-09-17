@@ -105,6 +105,8 @@ module.exports=function register({check,addBoard,sentences,clean,minAge,maxAge,i
 
   check(8,"odd_label_or_caps","'People at the <people>' labels or a capital article mid-sentence ('at A mountain…')",L=>{const out=[];L.roles.forEach(r=>{if(/^People at the \w+ (Owners|Vendors|Workers|Regulars|Customers|Staff)\b/i.test(r.name))out.push({detail:r.name});if(/[a-z,] (A|An|The) [a-z]/.test(r.description))out.push({detail:r.name+": "+(r.description.match(/.{0,20}[a-z,] (A|An|The) [a-z].{0,20}/)||[""])[0]});});return out;});
 
+  check(8,"lead_without_name","A Lead or Supporting story character with no person name",L=>{if(/^(ad|photo)$/.test(famOf(L.type)))return[];const raw=L._raw._roles||[];return L.roles.filter(r=>/^(Lead|Supporting|Principal)$/.test(r.role_type)&&!/^[A-Z][A-Za-z'’.-]+( [A-Z]\.)? [A-Z][A-Za-z'’-]+$/.test(r.name)&&!(raw.find(x=>x.name===r.name)||{})._job&&!/\b(ensemble|voices|players|double|performer|driver|dancers|face|model|lead|second|third|fourth|maker|character|runner|swimmer|subject|trader|worker|regular|group|crew|team|family|creator|kids|children|neighbors|regulars|students|staff|volunteers|guides|characters)\b/i.test(r.name)).map(r=>({detail:`${r.name} (${r.role_type})`}));});
+
   // 8. Placeholder leaks.
   check(8,"placeholder_leak","Untitled/Working Title titles, (Group N), Group A, 1) labels",L=>{
     const out=[];

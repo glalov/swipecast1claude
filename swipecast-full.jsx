@@ -32315,8 +32315,11 @@ const ACG = (()=>{
   // head noun (before any preposition) decides.
   function v3PluralSlot(s){
     const t=stripArticle(String(s||"")).toLowerCase();
-    if(/^(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|shoppers|voices|gardeners|players|team|class|family|people|workers|staff|crew|volunteers|passengers|runners|traders|members|locals|onlookers|early customers|late customers|additional voices|utility voices|archive voices)\b/.test(t))return true;
-    const head=t.split(/\s+(?:in|on|at|with|who|from|of|by|for|and|to|under|behind|outside|inside)\s+/)[0].split(/\s+/).pop()||"";
+    // The HEAD noun decides: "the team captain" is one person, "the team" and
+    // "the kids on the block" are groups.
+    if(/^(one|man|woman|person|boy|girl|guy|lady|kid|child|someone)\b/.test(t))return false;
+    const head=t.split(/\s+(?:in|on|at|with|who|from|of|by|for|and|to|under|behind|outside|inside|asking|counting|carrying|holding|waiting|watching|selling|looking|trying)\s+/)[0].split(/\s+/).pop()||"";
+    if(/^(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|shoppers|voices|gardeners|players|team|class|family|people|workers|staff|crew|volunteers|passengers|runners|traders|members|locals|onlookers|atmosphere|group|chorus|choir|band)$/.test(head))return true;
     return /s$/.test(head)&&!/(ss|us|is|'s|’s)$/.test(head);
   }
   function v3NoteFits(t,c){
@@ -32733,7 +32736,7 @@ const ACG = (()=>{
     const dbl=txt.match(/\b([a-z]+)\s+\1\b/i);if(dbl&&!/^(that|had|very|no)$/i.test(dbl[1]))out.push("doubled word "+dbl[0]);
     if(/\b(a|an|the)\s+(a|an|the)\b|\s[,.;:]|\.\.(?!\.)|,,|\(\s*\)/i.test(txt))out.push("broken punctuation");
     if(/(^|[^\w'’])a [aeiou]\w/i.test(txt.replace(/\ba (one|uni|use|usu|euro|eu|ubi|uti)/gi,"")))out.push("a/an");
-    roles.forEach(r=>{if(!r._group&&/^(the )?(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|shoppers|voices|gardeners|players|team|class|family)\b/i.test(stripArticle(r._slot||"")))out.push("group given a person's name");});
+    roles.forEach(r=>{if(!r._group&&!r._job&&v3PluralSlot(r._slot||""))out.push("group given a person's name");});
     v3Sentences(syn).forEach(s=>{if(s.split(/\s+/).length>32)out.push("sentence too long");});
     v4RoleProblems(item,c).forEach(x=>out.push(x));
     if(c.h&&c.res&&v3TooClose(v3StoryWords(syn),(c.h.storyWords||[]).concat(c.res.storyWords||[])))out.push("story too close to a saved listing");

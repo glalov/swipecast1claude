@@ -376,7 +376,7 @@ check(7,"blanks_grammar","Blank fields, placeholders, doubled words, broken gram
   return out;
 });
 check(7,"film_word_nonfilm","\"the film\" on a live, music, dance or motion-capture listing",L=>/^(Live Event|Hosting \/ Presenter|Music Video|Dance Project|Performance Art|Motion Capture)$/.test(L.type)&&/\b(the|this|whole) film\b/i.test(personText(L))?[{detail:(personText(L).match(/[^.]*\b(the|this|whole) film\b[^.]*\./i)||[""])[0].slice(0,100)}]:[]);
-check(7,"group_one_gender","A group part (ensemble, regulars…) cast as a single gender",L=>L.roles.filter(r=>/\b(Ensemble|Regulars|Players|Neighbors|Customers|Patrons|Riders|Guests|Shoppers|Onlookers|Voices|Kids|Students|Dancers|Passersby|Crew|Team|Class)\b/.test(String(r.name).split(/ for | \(/)[0])&&/^(Male|Female)$/.test(r.gender)).map(r=>({detail:`${r.name} ${r.gender}`})));
+check(7,"group_one_gender","A group part (ensemble, regulars…) cast as a single gender",L=>L.roles.filter(r=>/\b(Ensemble|Regulars|Players|Neighbors|Customers|Patrons|Riders|Guests|Shoppers|Onlookers|Voices|Kids|Students|Dancers|Passersby|Crew|Team|Class)$/.test(String(r.name).split(/ for | \(/)[0])&&/^(Male|Female)$/.test(r.gender)).map(r=>({detail:`${r.name} ${r.gender}`})));
 check(7,"pay_rank_order","A smaller part paid more than a bigger one",L=>{
   const rk=r=>/^(Lead|Principal|Principal Voice)$/i.test(r.role_type)?0:/background|ensemble/i.test(r.role_type)?3:/day player|featured/i.test(r.role_type)?2:1;
   const out=[];L.roles.forEach(a=>L.roles.forEach(b=>{const ra=parseRoleRate(a.pay),rb=parseRoleRate(b.pay);if(ra&&rb&&ra.rate_unit===rb.rate_unit&&rk(a)<rk(b)&&ra.rate_amount<rb.rate_amount)out.push({detail:`${a.role_type} ${a.pay} < ${b.role_type} ${b.pay}`});}));
