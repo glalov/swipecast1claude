@@ -10162,8 +10162,8 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
   const jump=(id)=>(e)=>{e.preventDefault();const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
   const paradox=[
     {n:"01",stop:"Stop emailing everyone.",go:"Find your fit.",icon:"address-book",tag:"Agency Directory",premium:true,to:"agency-directory"},
-    {n:"02",stop:"Stop hoping they saw.",go:"Know they did.",note:"Every submission is seen, guaranteed.",icon:"movie",tag:"Browse Castings",premium:false,to:"search"},
-    {n:"03",stop:"Stop feeling stuck.",go:"Move every week.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
+    {n:"02",stop:"Stop hoping they saw.",go:"Know they did.",note:"Every submission is seen, guaranteed.",icon:"movie",tag:"Apply to Castings",premium:false,to:"search"},
+    {n:"03",stop:"Stop guessing what's next.",go:"Know what's next.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
   ];
 
   return(
@@ -10255,7 +10255,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
       <section className="atk-s atk-last" id="atk-talent"><div className="atk-wrap">
         <div className="atk-card atk-talent">
           <p className="atk-eyebrow">Where to be found</p>
-          <h2 className="atk-serif atk-q">Stop chasing. Start being found.</h2>
+          <h2 className="atk-serif atk-q">Stop chasing blindly. Start being found.</h2>
           <div className="atk-px">{paradox.map(p=>(
             <div key={p.n} className="atk-px-c">
               <span className="atk-px-n">{p.n}</span>
