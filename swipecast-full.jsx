@@ -10149,7 +10149,8 @@ function PayTalentPage({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: ACTOR TOOLKIT
 // ═══════════════════════════════════════════
-// Soft-navy toolkit (demo C4, approved 2026-09-15): "no toolkit" paradox hero + one card whose 3 lines
+// Soft-navy toolkit (demo C4, approved 2026-09-15; copy logic pass 2026-09-16): "no secret toolkit" hero —
+// talent is the one thing you bring, the cards are WHERE to be found (not a toolkit) + "Talent." One card whose 3 lines
 // point at real features (Agency Directory, castings, Manager Mode) + "Talent." Do not re-add tip sections,
 // tickable checklists, "stop chasing agents" or "be your own manager" copy (the site sells an
 // agency directory and Manager Mode; card copy must point toward them, never contradict them).
@@ -10161,7 +10162,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
   const jump=(id)=>(e)=>{e.preventDefault();const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
   const paradox=[
     {n:"01",stop:"Stop emailing everyone.",go:"Find your fit.",icon:"address-book",tag:"Agency Directory",premium:true,to:"agency-directory"},
-    {n:"02",stop:"Stop hoping they saw.",go:"Know they did.",icon:"movie",tag:"Browse Castings",premium:false,to:"search"},
+    {n:"02",stop:"Stop hoping they saw.",go:"Know they did.",note:"Every submission is seen, guaranteed.",icon:"movie",tag:"Browse Castings",premium:false,to:"search"},
     {n:"03",stop:"Stop feeling stuck.",go:"Move every week.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
   ];
 
@@ -10204,6 +10205,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         .atk-px-n{font-family:'Source Serif 4',Georgia,serif;font-size:22px;font-weight:700;color:#D9C9A8;margin-bottom:10px;}
         .atk-px-stop{min-height:2.7em;display:flex;align-items:center;justify-content:center;text-align:center;margin:0;font-size:19px;font-weight:700;color:var(--t2);text-decoration:line-through;text-decoration-color:#D63B3B;text-decoration-thickness:3px;line-height:1.3;}
         .atk-px-go{min-height:2.3em;display:flex;align-items:center;justify-content:center;text-align:center;margin:6px 0 16px;font-size:clamp(24px,2.5vw,31px);font-weight:700;color:var(--t1);line-height:1.1;}
+        .atk-px-note{margin:-8px 0 16px;font-size:13.5px;line-height:1.4;color:var(--t2);text-align:center;}
         .atk-px-tag{margin-top:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;font:700 13px 'DM Sans',sans-serif;color:#2E3050;background:#F3F1F8;border:1px solid #DEDAEA;border-radius:100px;padding:6px 12px;cursor:pointer;transition:border-color .15s;}
         .atk-px-tag:hover{border-color:#F0B860;}
         .atk-px-tag i{color:#8A5A12;}
@@ -10232,15 +10234,15 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         }
       `}</style>
 
-      {isPremium&&<div className="atk-prem"><div><Ico n="crown" s={20} style={{color:"#C8761B"}}/><span><b>You're on Premium.</b> Everything below is already on your plan.</span></div></div>}
+      {isPremium&&<div className="atk-prem"><div><Ico n="crown" s={20} style={{color:"#C8761B"}}/><span><b>You're on Premium.</b> Every tool below is already on your plan.</span></div></div>}
 
       <div className="atk-hero-wrap"><div className="atk-wrap"><header className="atk-hero">
         <div>
           <p className="atk-eyebrow"><i className="atk-dot"/>Actor Toolkit</p>
-          <h1 className="atk-serif">The best actor toolkit is not having one.</h1>
-          <p>No formula, no shortcut, no one handing you anything. Sounds bleak. It's actually the best news in the industry.</p>
+          <h1 className="atk-serif">There's no secret actor toolkit.</h1>
+          <p>Talent is the one thing nobody can sell you. That's good news: you already bring the hard part. The rest is just being where casting can find you.</p>
           <div className="atk-hero-btns">
-            <a className="atk-btn atk-btn-sand" href="#atk-talent" onClick={jump("atk-talent")}>Explain yourself <Tri/></a>
+            <a className="atk-btn atk-btn-sand" href="#atk-talent" onClick={jump("atk-talent")}>Show me <Tri/></a>
             <a className="atk-btn atk-btn-line" href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate("search");}}>Browse Castings</a>
           </div>
         </div>
@@ -10252,17 +10254,18 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
 
       <section className="atk-s atk-last" id="atk-talent"><div className="atk-wrap">
         <div className="atk-card atk-talent">
-          <p className="atk-eyebrow">The paradox</p>
-          <h2 className="atk-serif atk-q">The less you chase, the more you're found.</h2>
+          <p className="atk-eyebrow">Where to be found</p>
+          <h2 className="atk-serif atk-q">Stop chasing. Start being found.</h2>
           <div className="atk-px">{paradox.map(p=>(
             <div key={p.n} className="atk-px-c">
               <span className="atk-px-n">{p.n}</span>
               <p className="atk-px-stop">{p.stop}</p>
               <p className="atk-serif atk-px-go">{p.go}</p>
+              {p.note&&<p className="atk-px-note">{p.note}</p>}
               <button type="button" className="atk-px-tag" onClick={()=>onNavigate(p.to)}><Ico n={p.icon} s={16}/>{p.tag}{p.premium&&<em>Premium</em>}</button>
             </div>
           ))}</div>
-          <div className="atk-kit"><span>The whole toolkit:</span><div className="atk-serif atk-answer">Talent<span>.</span></div><small>Nobody can give it to you. Nobody can take it either.</small></div>
+          <div className="atk-kit"><span>What you bring:</span><div className="atk-serif atk-answer">Talent<span>.</span></div><small>Nobody can give it to you. Nobody can take it either.</small></div>
           {loggedIn
             ?<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
             :<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("register-talent")}>Start Being Found <Tri/></button>}
