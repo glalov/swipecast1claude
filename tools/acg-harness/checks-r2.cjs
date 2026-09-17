@@ -100,6 +100,9 @@ module.exports=function register({check,addBoard,sentences,clean,minAge,maxAge,i
   check(8,"generic_sketch","Generic stand-in character lines instead of the character's own",L=>L.roles.filter(r=>/Sure of themselves until the plan breaks|Sure of (him|her)self until the plan breaks|funny without trying and serious when it counts|has a good reason for every bad decision|tries to fix things and makes them a little worse first|keeps the others moving when they want to stop|makes one choice that changes how the others see|is the only one who notices when things start to go wrong|knows more than (they say|he says|she says) and says it at the worst moment|wants the day to end without anyone getting hurt|says very little and means all of it|has one scene where everything/i.test(r.description)).map(r=>({detail:r.name+": "+r.description.slice(0,80)})));
   check(8,"duplicate_request","The same request twice in the submission text (e.g. two movement clips)",L=>{const s=String(L.submission_requirements||"");return sentences(s).filter(x=>/movement clip|movement reel/i.test(x)).length>1||sentences(s).filter(x=>/sung cut|32 bars|hear you sing/i.test(x)).length>1?[{detail:s.slice(0,120)}]:[];});
 
+  check(8,"pronoun_plural_group","A plural group pronoun turned singular ('all of her', 'neither of him')",L=>L.roles.filter(r=>/\b(all|neither|both|each|some|none|most|either|several) of (her|him)(?=\s*[.,;!?]|\s*$)/i.test(r.description)).map(r=>({detail:r.name+": "+(r.description.match(/[^.]*\b(all|neither|both|each|some|none|most|either|several) of (her|him)\b[^.]*\./i)||[""])[0]})));
+  check(8,"off_broadway_city","Off-Broadway / Off-Off-Broadway listing outside New York",L=>/^Off-(Off-)?Broadway Theater$/.test(L.type)&&L.location!=="New York, NY"?[{detail:L.location}]:[]);
+
   // 8. Placeholder leaks.
   check(8,"placeholder_leak","Untitled/Working Title titles, (Group N), Group A, 1) labels",L=>{
     const out=[];

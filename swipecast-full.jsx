@@ -32055,6 +32055,12 @@ const ACG = (()=>{
     return {venue,need,placeNP:venue};
   }
   function v3AreaKey(city,area){return `${city}|${area}`;}
+  function v3PickPlaceIn(cityName,need,h,res){
+    const c=CITIES.find(x=>x.name===cityName)||CITIES[0];
+    const count=a=>((h.areaUse&&h.areaUse[v3AreaKey(c.name,a)])||0)+((res.areaUse&&res.areaUse[v3AreaKey(c.name,a)])||0);
+    const min=Math.min(...c.areas.map(count));
+    return {city:c,area:pick(c.areas.filter(a=>count(a)===min))};
+  }
   function v3PickPlace(need,h,res){
     const count=(c,a)=>((h.areaUse&&h.areaUse[v3AreaKey(c.name,a)])||0)+((res.areaUse&&res.areaUse[v3AreaKey(c.name,a)])||0);
     const fits=a=>!need||need==="industrial"&&!/beach/.test(areaTags(a))?true:areaTags(a).split(" ").indexOf(need)>-1;
@@ -32888,7 +32894,8 @@ const ACG = (()=>{
       if(res._nameShortage||!castingName||credits.some(c=>!c[1])){why('names');continue;}
 
       // Where.
-      const P=v3PickPlace(V.need,h,res);
+      // Off-Broadway and Off-Off-Broadway only exist in New York.
+      const P=/^Off-(Off-)?Broadway Theater$/.test(type)?v3PickPlaceIn("New York, NY",V.need,h,res):v3PickPlace(V.need,h,res);
       const city=P.city,area=P.area;
 
       // When. Submissions close first; the shoot opens one to three weeks later.
@@ -33270,7 +33277,10 @@ const ACG = (()=>{
     t=t.replace(/\bthemselves\b/gi,m=>he?"himself":"herself");
     t=t.replace(/\btheirs\b/gi,m=>he?"his":"hers");
     t=t.replace(/\btheir\b/g,he?"his":"her").replace(/\bTheir\b/g,he?"His":"Her");
+    // "all of them", "neither of them" point at a group and stay plural.
+    t=t.replace(/\b(all|neither|both|each|some|none|one|most|any|either|two|three|few|many|several) of them\b/gi,"$1 of \u0000THEM");
     t=t.replace(/\bthem\b/g,he?"him":"her");
+    t=t.replace(/\u0000THEM/g,"them");
     t=t.replace(/\b(They|they)(?:'re|'ve)?\s+((?:\w+\s+)?)(\w+'?\w*)/g,(m,they,adv,verb)=>{
       const P=they==="They"?(he?"He":"She"):(he?"he":"she");
       if(/'re$/.test(m.split(/\s/)[0]))return `${P}'s ${adv}${verb}`;
