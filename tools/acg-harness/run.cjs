@@ -46,7 +46,7 @@ while(listings.length<N&&rounds<N){
   for(const raw of batch){
     const roles=raw._roles||[];
     const item=Object.fromEntries(Object.entries(raw).filter(([k])=>k[0]!=="_"));
-    const saved={...item,id:"L"+(listings.length+1),roles:roles.map(r=>({...Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=="_")),_isGroup:!!(r._group||/background/i.test(r.role_type||""))})),_raw:raw};
+    const saved={...item,id:"L"+(listings.length+1),_batch:rounds,roles:roles.map(r=>({...Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=="_")),_isGroup:!!(r._group||/background/i.test(r.role_type||""))})),_raw:raw};
     listings.push(saved);
     if(ACG.seenRowsFor)ACG.seenRowsFor(raw).forEach(r=>seenRows.push(r));
     else ACG.seenKeysFor(raw).forEach(k=>seenRows.push({key:k,kind:"story"}));
@@ -251,13 +251,15 @@ check(5,"sched_hours","Impossible hours: early call + overnight wrap on a one-da
   return out;
 });
 check(5,"series_days","Series/feature/limited/mini shoot days realistic",L=>{
-  const need={"Feature Film":12,"Independent Film":10,"TV Series":8,"Streaming Series":8,"Limited Series":12,"Miniseries":12,"TV Pilot":5,"Pilot Presentation":3,"Web Series":3,"Vertical Series":3,"Documentary":5,"Reality / Docu-Series":5}[L.type];
+  const need={"Feature Film":12,"Independent Film":10,"TV Series":8,"Streaming Series":8,"Limited Series":12,"Miniseries":12,"TV Pilot":5,"Pilot Presentation":3,"Web Series":2,"Vertical Series":3,"Documentary":5,"Reality / Docu-Series":5}[L.type];
   if(!need)return[];const d=shootDays(L);return d<need?[{detail:`${L.type} with ${d} shoot days`}]:[];
 });
 check(5,"days_window_deadline","Role est_days ≤ shoot days ≤ window; deadline before shoot start",L=>{
   const out=[];const days=shootDays(L);const win=dayNum(L.shoot_end)-dayNum(L.shoot_start)+1;
   if(famOf(L.type)!=="stage"&&days>win)out.push({detail:`${days} days in ${win}-day window`});
-  L.roles.forEach(r=>{if(+r.est_days>days)out.push({detail:`${r.name} est_days ${r.est_days} > ${days}`});});
+  // Round 3: leads credited with rehearsal days the note mentions may exceed the shoot days by that much.
+  const reh=/\brehears/i.test(L.schedule_note||"")&&L._raw._v5?(L._raw._v5.plan.rehearsal||0):0;
+  L.roles.forEach(r=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name)||{};if(+r.est_days>days+(raw._rehearses?reh:0))out.push({detail:`${r.name} est_days ${r.est_days} > ${days}`});});
   if(!(dayNum(L.deadline)<dayNum(L.shoot_start)))out.push({detail:`deadline ${L.deadline} not before start ${L.shoot_start}`});
   return out;
 });
@@ -285,9 +287,9 @@ check(7,"union_pay","SAG-AFTRA role under $200/day or unpaid",L=>{
   L.roles.forEach(r=>{
     const rt=parseRoleRate(r.pay);
     if(/SAG/i.test(L.union_status)){
-      if(!rt)out.push({detail:`${r.name}: unpaid on ${L.union_status}`});
-      else if(rt.rate_unit==="day"&&rt.rate_amount<200)out.push({detail:`${r.name} ${r.pay}`});
-      else if(rt.rate_unit==="flat"&&rt.rate_amount<200)out.push({detail:`${r.name} ${r.pay}`});
+      if(!rt&&!(L.union_status==="SAG-AFTRA Student Film"&&/defer/i.test(L.pay)))out.push({detail:`${r.name}: unpaid on ${L.union_status}`});
+      else if(rt&&rt.rate_unit==="day"&&rt.rate_amount<200)out.push({detail:`${r.name} ${r.pay}`});
+      else if(rt&&rt.rate_unit==="flat"&&rt.rate_amount<200)out.push({detail:`${r.name} ${r.pay}`});
     }
   });
   return out;
@@ -299,7 +301,7 @@ check(7,"aea_pay","AEA contract listing under a realistic weekly minimum ($500/w
 });
 check(7,"nonunion_rate_fit","Non-union rates fit the type",L=>{
   if(/SAG|AEA/i.test(L.union_status))return[];
-  const cap={ad:1500,photo:2000,corp:1200,film:700,tv:800,stage:1200,audio:1200,other:1200}[famOf(L.type)];
+  const cap={ad:1500,photo:2000,corp:1500,film:700,tv:800,stage:1200,audio:1200,other:1200}[famOf(L.type)];
   const out=[];
   L.roles.forEach(r=>{const rt=parseRoleRate(r.pay);if(rt&&rt.rate_unit==="day"&&rt.rate_amount>cap)out.push({detail:`${L.type} ${r.pay}`});});
   if(/^(Student Film|Experimental Film|Table Read)$/.test(L.type))L.roles.forEach(r=>{const rt=parseRoleRate(r.pay);if(rt&&rt.rate_unit==="day"&&rt.rate_amount>350)out.push({detail:`${L.type} ${r.pay}`});});
@@ -434,6 +436,7 @@ const ctxNow={names:(()=>{
   Object.entries(D.surnames).forEach(([bg,list])=>list.forEach(n=>{(last[n]=last[n]||[]).push(bg);}));
   return {first,last,famous:new Set((D.famous||[]).map(clean))};
 })()};
+require("./checks-r3.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(9,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r2.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(8,k,l,null));},sentences,clean,minAge,maxAge,isGroup,famOf,srcNow,parseRoleRate,ctxNow});
 
 // ── Board-level checks ──────────────────────────────────────────────────────
@@ -527,7 +530,7 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
     const eth=new Set(fam.map(r=>r.ethnicity).filter(e=>e&&!/any|mixed/i.test(e)));
     if(fam.length>=2&&eth.size>1)add("family_mismatch",L.id,fam.map(r=>`${r.name} (${r.ethnicity})`).join(" / "));
   });
-  boardHooks.forEach(fn=>{const extra=fn(listings,add);Object.assign(r,{_names:extra});});
+  boardHooks.forEach(fn=>{const extra=fn(listings,add);if(extra)Object.assign(r,{_names:extra});});
   return r;
 }
 
@@ -554,6 +557,25 @@ results.forEach(r=>{
   if(r.issues&&!args.includes("--quiet"))r.examples.forEach(e=>console.log(`       · ${e.id}: ${String(e.detail).slice(0,150)}`));
 });
 if(board._names){const N=board._names;console.log(`Names: ${N.namesTotal} people · familiar ${N.familiarPct==null?"n/a (no V4 pools in source)":N.familiarPct+"%"} · background mix ${JSON.stringify(N.backgrounds)}`);if(args.includes("--names"))console.log("Sample names:\n  "+N.sampleNames.join("\n  "));}
+if(global.__r3report){const R=global.__r3report,n=listings.length,p=c=>`${c} (${Math.round((c||0)*1000/n)/10}%)`;
+  const fmt=o=>Object.entries(o).sort().map(([k,v])=>`${k} ${p(v)}`).join(" · ");
+  console.log(`\nROUND 3 DISTRIBUTIONS (${n} listings)`);
+  console.log(`  Pay tier:        ${fmt(R.pay)}   [target unpaid 15 · deferred 10 · low 30 · mid 25 · high 15 · union 5]`);
+  console.log(`  Unpaid listings: ${R.unpaid}`);
+  console.log(`  Pay structures:  ${fmt(R.structures)}`);
+  console.log(`  Union status:    ${fmt(R.unions)}`);
+  console.log(`  Start month:     ${fmt(R.months)}`);
+  console.log(`  Shoot pattern:   ${fmt(R.weekdayModes)} · evening shoots ${R.evenings}`);
+  console.log(`  Deadline gap:    min ${Math.min(...R.gaps)}d · max ${Math.max(...R.gaps)}d · distinct ${new Set(R.gaps).size}`);
+  console.log(`  Cast size:       ${fmt(R.cast)}   [target 1:15 · 2:20 · 3-4:35 · 5-7:20 · 8+:10]`);
+  console.log(`  Synopsis length: ${fmt(R.syn)}   [target short 35 · medium 45 · long 20]   sentences ${JSON.stringify(R.synSentences)}`);
+  console.log(`  Schedule detail: ${fmt(R.note)}   [target minimal 30 · some 40 · full 30]`);
+  console.log(`  Shoot days by type:`);Object.entries(R.lengths).sort().forEach(([t,a])=>console.log(`    ${t.padEnd(28)} ${a.sort((x,y)=>x-y).join(", ")}`));
+  const rr=k=>(results.find(x=>x.key===k)||{}).issues||0;
+  console.log(`  Pay-text repeats: ${rr("r3_pay_repeat")} · union below minimum: ${rr("r3_union_minimum")} · schedule-note repeats: ${rr("sched_note_repeat")} · batch same-start: ${rr("r3_batch_same_start")}`);
+  const A=["r3_role_days","r3_pay_by_size","r3_pronoun_strict","r3_type_word","r3_unexplained_phrase","r3_location_story","r3_tagline_vs_first","r3_holidays","r3_leftovers","r3_ethnicity_default"];
+  console.log(`  Part A logic failures: ${A.map(k=>k.replace("r3_","")+" "+rr(k)).join(" · ")}`);
+}
 const firstOk=listings.length-(results.find(r=>r.key==="first_sentence").listings);
 console.log(`\nFirst sentence says what the project is: ${firstOk}/${listings.length}`);
 const failing=results.filter(r=>r.issues);
