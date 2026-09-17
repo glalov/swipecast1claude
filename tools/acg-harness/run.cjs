@@ -430,7 +430,7 @@ const ctxNow={names:(()=>{
   Object.entries(D.unisexByEra||{}).forEach(([era,list])=>list.forEach(n=>{(first[n]=first[n]||{bg:"general",eras:[]}).eras.push(D.eraYears[era]);}));
   // A heritage name that is also on a general era list keeps the general eras
   // (and reads as general); otherwise it spans 1950–2012 and is heritage.
-  Object.entries(D.heritageFirst).forEach(([bg,gs])=>Object.values(gs).forEach(list=>list.forEach(n=>{if(!first[n])first[n]={bg,eras:[[1950,2012]]};})));
+  Object.entries(D.heritageFirst).forEach(([bg,gs])=>Object.values(gs).forEach(list=>list.forEach(n=>{if(!first[n])first[n]={bg,eras:[(D.heritageOld||[]).indexOf(n)>-1?[1950,2008]:[1970,2008]]};})));
   Object.entries(D.surnames).forEach(([bg,list])=>list.forEach(n=>{(last[n]=last[n]||[]).push(bg);}));
   return {first,last,famous:new Set((D.famous||[]).map(clean))};
 })()};
