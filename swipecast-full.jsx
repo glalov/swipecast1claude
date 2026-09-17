@@ -10163,7 +10163,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
   const paradox=[
     {n:"01",stop:"Stop emailing everyone.",go:"Find your fit.",icon:"address-book",tag:"Agency Directory",premium:true,to:"agency-directory"},
     {n:"02",stop:"Stop hoping they saw.",go:"Know they did.",note:"Every submission is seen, guaranteed.",icon:"movie",tag:"Apply to Castings",premium:false,to:"search"},
-    {n:"03",stop:"Stop guessing what's next.",go:"Know what's next.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
+    {n:"03",stop:"Stop guessing what's next.",go:"Your next step.",icon:"calendar-check",tag:"Manager Mode",premium:true,to:"manager-mode"},
   ];
 
   return(
