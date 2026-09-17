@@ -30276,7 +30276,7 @@ const ACG = (()=>{
     {s:"the front desk receptionist",r:"Day Player",a:"youngAdult",tracks:["film","tv"],big:true,v:/office|clinic|hospital|hotel|lobby|agency|firm|gym|salon/i,x:""},
     {s:"the night security guard",r:"Day Player",a:"midCareer",tracks:["film","tv"],big:true,v:/museum|mall|bank|office|building|hospital|warehouse|lobby|garage|depot|terminal/i,x:""},
     {s:"the delivery driver",r:"Day Player",a:"youngAdult",tracks:["film","tv"],big:true,v:/apartment|shop|store|restaurant|kitchen|office|house|building|diner|bakery/i,x:""},
-    {s:"neighbors in the building",r:"Background",a:"adult",tracks:["film","tv"],v:/apartment|house|building|walk-up|stoop|block|flat|home|hallway|stairwell|courtyard|rooftop/i,x:"The people next door and down the hall. Passing on the stairs, collecting mail, glancing in when voices get loud."},
+    {s:"neighbors in the building",r:"Background",a:"adult",tracks:["film","tv"],v:/apartment|building|walk-up|stoop|hallway|stairwell|courtyard|tenement/i,x:"The people next door and down the hall. Passing on the stairs, collecting mail, glancing in when voices get loud."},
     {s:"the swing",r:"Supporting",a:"adult",tracks:["stage"],x:"Covers several ensemble tracks and goes on whenever someone is out. Learns fast, sings well, and is paid for every performance."},
     {s:"regulars in the background",r:"Background",a:"adult",tracks:["film","tv"],v:/diner|bar\b|cafe|restaurant|shop|store|bakery|laundromat|bodega|salon|barber|counter|lounge|club/i,x:"The faces that are always there. Seated through the main scenes, reacting quietly, and back the next day in the same seats."},
     {s:"workers on the floor",r:"Background",a:"adult",tracks:["film","tv"],v:/warehouse|factory|plant|kitchen|office|depot|yard|mill|workshop|garage|dock|site|newsroom/i,x:"People doing the real work behind the main scenes. Simple, repeated tasks, done the same way take after take."},
@@ -33311,15 +33311,16 @@ const ACG = (()=>{
     if(!P)return null;
     // One sentence, anchored to this location, so it never repeats.
     const semi=B&&!job;
-    return `${pick(P[0])} ${pick(P[1]).replace(/\.$/,"")}${semi?"; ":" "}${semi?v5LowerFirst(pick(P[2])):pick(P[2])}`.replace(/\s*;\s*/,"; ").replace(/\.?$/,".");
+    return `${pick(P[0])} ${pick(P[1]).replace(/\.$/,"")}${semi?"; ":" "}${semi?pick(P[2]).replace(/^(A|You'll|Bring|Some|Simple|We'll|Patient|Steady|Continuity|Small|Natural|No|Quiet|Comfortable|Expect)\b/,w=>w.toLowerCase()):pick(P[2])}`.replace(/\s*;\s*/,"; ").replace(/\.?$/,".");
   }
   const V5_BIG_TYPES=/^(Feature Film|Independent Film|TV Series|Streaming Series|Limited Series|Miniseries|TV Pilot|Web Series)$/;
   function v5PadFits(e,type,venue){
     if(!type)return true;
     if(e.s==="the ensemble players")return /^(Musical Theater|Off-Broadway Theater|Theater)$/.test(type);
     if(e.s==="the understudy track")return /^(Musical Theater|Off-Broadway Theater)$/.test(type);
-    if(e.s==="passersby on the street")return !/^(film|tv)$/.test(v3Fam(type))||V5_BIG_TYPES.test(type)||V5_PUBLIC_VENUE.test(venue||"");
-    if(e.s==="customers in the main location")return !/^(film|tv)$/.test(v3Fam(type))||V5_BIG_TYPES.test(type)||V5_PUBLIC_VENUE.test(venue||"");
+    // Background only where this location actually has people in it.
+    if(e.s==="passersby on the street")return !/^(film|tv)$/.test(v3Fam(type))||/street|avenue|block|sidewalk|corner|market|station|park|boardwalk|bus|downtown|main street/i.test(venue||"");
+    if(e.s==="customers in the main location")return /store|shop|diner|restaurant|cafe|bar\b|market|bakery|laundromat|bodega|salon|counter|pharmacy|mall|arcade/i.test(venue||"");
     if(e.s==="the swing")return type==="Musical Theater";
     if(e.big&&!V5_BIG_TYPES.test(type))return false;
     if(e.v)return e.v.test(venue||"");
