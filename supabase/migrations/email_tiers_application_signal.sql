@@ -66,12 +66,13 @@ begin
        and (p.membership_status is null or p.membership_status <> 'active')
   ),
   scored as (
-    select pool.*, greatest(ee.last_open_at, ee.last_click_at) as last_engaged
+    select pool.*, ee.last_open_at, ee.last_click_at,
+           greatest(ee.last_open_at, ee.last_click_at) as last_engaged
       from pool
       left join public.email_engagement ee on ee.user_id = pool.user_id
   ),
   decided as (
-    select user_id, email, last_sign_in_at, last_engaged, created_at, has_applied,
+    select user_id, email, last_sign_in_at, last_engaged, last_open_at, last_click_at, created_at, has_applied,
       case
         when created_at   > now() - interval '14 days' then 'warm'
         when last_engaged > now() - interval '30 days' then 'warm'
@@ -98,9 +99,13 @@ begin
         -- Never applied, and here long enough to have had the chance.
         when not has_applied and created_at < now() - interval '30 days' then
           case
+            -- Engagement outranks the cap: someone reading the email is who it is for.
+            -- A click keeps both sends; an open keeps the morning send (a third of
+            -- opens are machine auto-opens, so an open alone does not earn both).
+            when last_click_at > now() - interval '30 days' then 'warm'
+            when last_open_at  > now() - interval '30 days' then 'cooling'
             when v_bootstrap then 'cold'          -- weekly ceiling, never silence, until open data exists
-            when coalesce(last_engaged, '-infinity'::timestamptz)   < now() - interval '30 days'
-             and coalesce(last_sign_in_at,'-infinity'::timestamptz) < now() - interval '30 days'
+            when coalesce(last_sign_in_at,'-infinity'::timestamptz) < now() - interval '30 days'
               then 'paused'
             when want = 'paused' then 'paused'   -- already paused on engagement grounds
             else 'cold'                          -- weekly ceiling regardless of login recency
@@ -109,8 +114,12 @@ begin
         else want
       end as final_tier,
       case
-        when not has_applied and created_at < now() - interval '30 days'
-          then 'never_applied_30d+/' || why || case when v_bootstrap then '+bootstrap_floor' else '' end
+        when not has_applied and created_at < now() - interval '30 days' then
+          case
+            when last_click_at > now() - interval '30 days' then 'never_applied_30d+/recent_click'
+            when last_open_at  > now() - interval '30 days' then 'never_applied_30d+/recent_open'
+            else 'never_applied_30d+/' || why || case when v_bootstrap then '+bootstrap_floor' else '' end
+          end
         when v_bootstrap and want in ('cold','paused') then why || '+bootstrap_floor'
         else why
       end as final_why

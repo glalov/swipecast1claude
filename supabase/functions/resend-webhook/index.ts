@@ -119,7 +119,11 @@ serve(async (req) => {
     // deno-lint-ignore no-explicit-any
     const d = (evt?.data ?? {}) as any;
     const link = event === "clicked" ? String(d?.click?.link ?? d?.link ?? "") || null : null;
-    const occurred = String(d?.created_at ?? evt?.created_at ?? "") || new Date().toISOString();
+    // The EVENT's time lives on the envelope (evt.created_at). data.created_at is
+    // when the EMAIL was created, i.e. the send time -- reading that first stamped
+    // every open of 2026-09-16 at 13:00/22:00 sharp, when they really arrived
+    // anywhere up to 12h later, and made genuine readers look like instant bots.
+    const occurred = String(evt?.created_at ?? "") || new Date().toISOString();
     const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     let recorded = 0;
     for (const email of emails) {
