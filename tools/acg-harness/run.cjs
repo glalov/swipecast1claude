@@ -100,7 +100,8 @@ const TYPE_WORDS={
 // ── Checks ──────────────────────────────────────────────────────────────────
 // Each check returns [{id, detail}] of failures. `unit` says what a count means.
 const checks=[];
-const check=(step,key,label,fn)=>checks.push({step,key,label,fn});
+const check=(step,key,label,fn,opt)=>checks.push({step,key,label,fn,once:!!(opt&&opt.once)});
+const boardHooks=[];const boardLabels=[];
 
 const INVERTED=[/everything worth knowing before that/i,/before any of that/i,/\bup to then\b/i,/everything after this follows from one thing/i,/we join it late/i,/it begins simply enough/i,/\bhere is the\b/i,/described out loud/i,/the setup behind it/i,/where it starts:/i,/underneath it,/i,/the story follows/i,/wind back/i,/rewind a little/i,/the easy half|the simple part:|the half that is actually the story|the other half:/i,/one detail carries the rest|the hinge of it/i,/it all comes back to one|all of it traces to|everything points back/i,/drop in halfway|open on the middle|start in the wrong place/i,/we come in after the worst|picks up mid-fall|damage already done/i,/is the one this lands on/i,/\bmeet [A-Z][a-z]+\./,/\bstart with [A-Z][a-z]+\./,/^[A-Z][a-z]+ first\./];
 const LITERARY=[/like scripture/i,/enormous stillness/i,/played as light comedy/i,/has to be earned/i,/stillness is the whole instrument/i,/close to the bone/i,/sweetness with a blade/i,/allergic to sentiment/i,/the whole instrument/i,/a moral position/i,/nowhere to hide/i,/the size comes from/i,/signpost/i,/the thinking, not the finish/i,/the silences are not/i,/that is the whole trick/i,/near enough that it should be/i,/bad week, closely watched/i];
@@ -264,7 +265,7 @@ check(5,"days_window_deadline","Role est_days ≤ shoot days ≤ window; deadlin
 check(6,"char_name_repeat","Character full names reused",null);
 check(6,"crew_name_repeat","Crew full names reused (incl. crew = a character)",null);
 check(6,"company_core_repeat","Company name core reused",null);
-check(6,"surname_3plus","Surnames used 3+ times across all people",null);
+check(6,"surname_3plus","Surname used 3+ times within any 50-listing window",null);
 check(6,"surname_same_listing","Two people with the same surname in one listing or adjacent listings",null);
 check(6,"person_as_company","A person's name in the company / posted-by field",L=>{
   const crew=(L._raw._crewNames||[]);
@@ -416,6 +417,25 @@ check(6,"people_label_on_person","\"People at the …\" label on a non-backgroun
 check(7,"group_given_person","Plural/group role given a single person's name",L=>L.roles.filter(r=>!isGroup(r)&&/^(the )?(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|family members|shoppers|voices)\b/i.test(String(r.description||"").replace(/^[A-Z][a-z]+, /,"").replace(/^[A-Z][a-z]+ — /,""))).map(r=>({detail:r.name+": "+r.description.slice(0,60)})));
 check(7,"family_mismatch","Parent/child/siblings with clashing name heritage",null);
 
+// ── Round 2 checks (role logic, cross-field logic, names) ─────────────────
+const srcNow=fs.readFileSync(path.join(__dirname,"..","..","swipecast-full.jsx"),"utf8");
+const ctxNow={names:(()=>{
+  // Familiar-name pools read from the CURRENT source, so a "before" run is
+  // measured against the same pools as the "after" run.
+  const m=srcNow.match(/const V4_NAME_DATA=(\{[\s\S]*?\n  \});/);
+  if(!m)return null;
+  const D=Function("return "+m[1])();
+  const first={},last={};
+  Object.entries(D.firstByEra).forEach(([g,eras])=>Object.entries(eras).forEach(([era,list])=>list.forEach(n=>{const e=D.eraYears[era];(first[n]=first[n]||{bg:"general",eras:[]}).eras.push(e);})));
+  Object.entries(D.unisexByEra||{}).forEach(([era,list])=>list.forEach(n=>{(first[n]=first[n]||{bg:"general",eras:[]}).eras.push(D.eraYears[era]);}));
+  // A heritage name that is also on a general era list keeps the general eras
+  // (and reads as general); otherwise it spans 1950–2012 and is heritage.
+  Object.entries(D.heritageFirst).forEach(([bg,gs])=>Object.values(gs).forEach(list=>list.forEach(n=>{if(!first[n])first[n]={bg,eras:[[1950,2012]]};})));
+  Object.entries(D.surnames).forEach(([bg,list])=>list.forEach(n=>{(last[n]=last[n]||[]).push(bg);}));
+  return {first,last,famous:new Set((D.famous||[]).map(clean))};
+})()};
+require("./checks-r2.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(8,k,l,null));},sentences,clean,minAge,maxAge,isGroup,famOf,srcNow,parseRoleRate,ctxNow});
+
 // ── Board-level checks ──────────────────────────────────────────────────────
 function boardChecks(){
   const r={};
@@ -473,20 +493,25 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
     sentences(L.schedule_note).forEach(s=>{const c=clean(s).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#");if(c.split(" ").length<4)return;if(sns.has(c)&&sns.get(c)!==L.id)add("sched_note_repeat",L.id,`"${c.slice(0,70)}" = ${sns.get(c)}`);else sns.set(c,L.id);});});
   // names
   const chars=new Map(),crew=new Map(),surnames={};
-  const people=L=>L.roles.filter(r=>!isGroup(r)).map(r=>({n:r.name,k:"char"})).concat((L._raw._crewNames||[]).map(n=>({n,k:"crew"})));
+  // Relatives share a surname on purpose (round 2), so a family counts once.
+  const famOfRole=(L,name)=>{const raw=(L._raw._roles||[]).find(x=>x.name===name);return raw&&raw._familyId||null;};
+  const people=L=>L.roles.filter(r=>!isGroup(r)).map(r=>({n:r.name,k:"char",fam:famOfRole(L,r.name)})).concat((L._raw._crewNames||[]).map(n=>({n,k:"crew",fam:null})));
   listings.forEach(L=>{
     people(L).forEach(p=>{
       const m=p.k==="char"?chars:crew;const other=p.k==="char"?crew:chars;
       if(m.has(p.n))add(p.k==="char"?"char_name_repeat":"crew_name_repeat",L.id,`${p.n} (also ${m.get(p.n)})`);else m.set(p.n,L.id);
       if(p.k==="crew"&&other.has(p.n))add("crew_name_repeat",L.id,`${p.n} is also a character in ${other.get(p.n)}`);
-      const s=p.n.split(" ").pop();surnames[s]=(surnames[s]||0)+1;
     });
+    new Set(people(L).map(p=>p.n.split(" ").pop())).forEach(s=>{surnames[s]=(surnames[s]||0)+1;});
   });
-  Object.entries(surnames).filter(([s,n])=>n>=3).forEach(([s,n])=>add("surname_3plus","board",`${s} ×${n}`));
+  // Round 2 replaced "never 3+ times" with a 50-project cooldown, so this now
+  // flags a surname used 3+ times inside any 50-listing window.
+  const lastIdx={};listings.forEach((L,i)=>new Set(people(L).map(p=>p.n.split(" ").pop())).forEach(s=>{(lastIdx[s]=lastIdx[s]||[]).push(i);}));
+  Object.entries(lastIdx).forEach(([s,ix])=>{for(let k=2;k<ix.length;k++)if(ix[k]-ix[k-2]<50){add("surname_3plus","board",`${s} ×3 within 50 listings`);break;}});
   let prev=null;
   listings.forEach(L=>{
-    const sn=people(L).map(p=>p.n.split(" ").pop());
-    const dup=sn.find((s,i)=>sn.indexOf(s)!==i);
+    const pl=people(L);const sn=pl.map(p=>p.n.split(" ").pop());
+    const dup=sn.find((s,i)=>{const j=sn.indexOf(s);return j!==i&&!(pl[i].fam&&pl[i].fam===pl[j].fam);});
     if(dup)add("surname_same_listing",L.id,`${dup} twice in listing`);
     if(prev){const ps=new Set(people(prev).map(p=>p.n.split(" ").pop()));const hit=sn.find(s=>ps.has(s));if(hit)add("surname_same_listing",L.id,`${hit} also in adjacent ${prev.id}`);}
     prev=L;
@@ -502,6 +527,7 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
     const eth=new Set(fam.map(r=>r.ethnicity).filter(e=>e&&!/any|mixed/i.test(e)));
     if(fam.length>=2&&eth.size>1)add("family_mismatch",L.id,fam.map(r=>`${r.name} (${r.ethnicity})`).join(" / "));
   });
+  boardHooks.forEach(fn=>{const extra=fn(listings,add);Object.assign(r,{_names:extra});});
   return r;
 }
 
@@ -509,7 +535,8 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
 const board=boardChecks();
 const results=checks.map(c=>{
   let fails=[];
-  if(c.fn)listings.forEach(L=>{let f=[];try{f=c.fn(L)||[];}catch(e){f=[{detail:"CHECK ERROR "+e.message}];}f.forEach(x=>fails.push({id:L.id,detail:x.detail}));});
+  if(c.fn&&c.once){let f=[];try{f=c.fn()||[];}catch(e){f=[{detail:"CHECK ERROR "+e.message}];}f.forEach(x=>fails.push({id:"board",detail:x.detail}));}
+  else if(c.fn)listings.forEach(L=>{let f=[];try{f=c.fn(L)||[];}catch(e){f=[{detail:"CHECK ERROR "+e.message}];}f.forEach(x=>fails.push({id:L.id,detail:x.detail}));});
   else fails=board[c.key]||[];
   const listingsHit=new Set(fails.map(f=>f.id).filter(id=>id!=="board")).size;
   return{step:c.step,key:c.key,label:c.label,listings:listingsHit,issues:fails.length,examples:fails.slice(0,4)};
@@ -526,12 +553,13 @@ results.forEach(r=>{
   console.log(`  ${r.issues?"✗":"✓"} ${pad(r.key,24)} listings:${pad(r.listings,4)} issues:${pad(r.issues,4)} ${r.label}`);
   if(r.issues&&!args.includes("--quiet"))r.examples.forEach(e=>console.log(`       · ${e.id}: ${String(e.detail).slice(0,150)}`));
 });
+if(board._names){const N=board._names;console.log(`Names: ${N.namesTotal} people · familiar ${N.familiarPct==null?"n/a (no V4 pools in source)":N.familiarPct+"%"} · background mix ${JSON.stringify(N.backgrounds)}`);if(args.includes("--names"))console.log("Sample names:\n  "+N.sampleNames.join("\n  "));}
 const firstOk=listings.length-(results.find(r=>r.key==="first_sentence").listings);
 console.log(`\nFirst sentence says what the project is: ${firstOk}/${listings.length}`);
 const failing=results.filter(r=>r.issues);
 if(args.includes("--why"))console.log("Rejections by reason (last 40 per batch):",JSON.stringify(Object.entries(WHY).sort((a,b)=>b[1]-a[1]).slice(0,25)),`attempts ${ATTEMPTS}, rejected ${REJECTED}`);
 console.log(`Checks passing: ${results.length-failing.length}/${results.length}\n`);
-if(JSON_OUT)fs.writeFileSync(JSON_OUT,JSON.stringify({n:listings.length,ms,nyc:board._nyc,areaMax:board._areaMax,types:tc,results},null,1));
+if(JSON_OUT)fs.writeFileSync(JSON_OUT,JSON.stringify({n:listings.length,ms,nyc:board._nyc,areaMax:board._areaMax,types:tc,names:board._names,results},null,1));
 if(SAMPLES_OUT){
   const fmt=L=>[`══ ${L.title}  [${L.type}]`,`Posted by: ${L.prod}   Casting director: ${L.casting_director_name}`,`Tagline: ${L.tagline}`,`Location: ${L.location}   Shoot location: ${L.shoot_location}`,`Union: ${L.union_status}   Deadline: ${L.deadline}   Shoot: ${L.shoot_start} → ${L.shoot_end}`,`Schedule: ${L.schedule_note}`,``,L.synopsis,``,`Pay: ${L.pay}`,`Submit: ${L.submission_requirements}`,``,...L.roles.map(r=>`  • ${r.name} — ${r.role_type}, ${r.gender}, ${r.age_range}, ${r.ethnicity}, ${r.pay}, ${r.est_days} day(s)\n    ${r.description}`),``].join("\n");
   fs.writeFileSync(SAMPLES_OUT,listings.map(fmt).join("\n"));

@@ -731,6 +731,21 @@ function roleTotalPay(r){
   if(unit==="hour")return rate*8*days;   // estimate at an 8-hour day
   return rate*days;                       // per day
 }
+// The highest PER-UNIT rate on a casting (per day beats per session beats per
+// week beats flat, so the chip compares like with like). Never a multi-day
+// total — that is roleTotalPay, shown only with its own "Top role total" label.
+function roleTopRate(roles){
+  const order=["day","session","hour","week","flat"];
+  let best=null;
+  (Array.isArray(roles)?roles:[]).forEach(r=>{
+    const amt=parseFloat(r&&r.rate_amount);
+    if(!isFinite(amt)||amt<=0)return;
+    const unit=(r.rate_unit||"day").toLowerCase();
+    if(!best||order.indexOf(unit)<order.indexOf(best.unit)||(unit===best.unit&&amt>best.amount))best={amount:amt,unit};
+  });
+  return best;
+}
+function fmtTopRate(t){return t?`${fmtMoney(t.amount)}${t.unit==="flat"?" flat":"/"+t.unit}`:"";}
 // Top rate + full-cast budget across a casting's roles. `top` is null when no
 // role carries a structured rate, so callers can fall back to the legacy
 // free-text `pay` string instead of showing "$0".
@@ -12095,6 +12110,7 @@ Free submission used
     <section style={{marginBottom:40}}>
       <div className="section-label" style={{marginBottom:12}}>{t(isNarrativeProject(casting.type)?'casting.story':'casting.synopsis')}</div>
       <p style={{color:"#3C4A52",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
+      {casting.crew_credits&&<p style={{color:"var(--t3)",fontSize:13,lineHeight:1.6,maxWidth:720,marginTop:10}}>{casting.crew_credits}</p>}
     </section>
 
     <section id="roles-section" style={{marginBottom:40,scrollMarginTop:90}}>
@@ -20593,7 +20609,8 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
           if(roll.top==null)return <p style={{fontSize:11,color:"var(--t3)",marginTop:8,lineHeight:1.5}}>Add a rate to any role below and the “paid roles up to” line is calculated for you.</p>;
           return(
           <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}}>
-            <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)"}}>Top rate {fmtMoney(roll.top)}</span>
+            <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)"}}>Top rate {fmtTopRate(roleTopRate(roles))}</span>
+            <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>Top role total {fmtMoney(roll.top)}</span>
             <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>Full cast budget {fmtMoney(roll.sum)}</span>
             <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>{roll.priced} of {roll.count} roles priced</span>
           </div>);
@@ -20811,7 +20828,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           // Scheduled publishing: exclude castings whose go-live time hasn't arrived yet.
           .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
@@ -26266,7 +26283,7 @@ const ACG = (()=>{
         {s:"the sibling who stayed",r:"Lead",a:"midCareer",fam:"a",x:"Did the looking-after and expects that to count. So capable it lands like an accusation."},
         {s:"the sibling who arranged the sale",r:"Lead",a:"mature",fam:"a",x:"Practical, careful, entirely correct and completely unforgivable."},
         {s:"the parent",r:"Supporting",a:"senior",fam:"a",x:"Sharper than either child believes. Two scenes that reset the whole argument."},
-        {s:"the partner",r:"Supporting",a:"midCareer",x:"Married in and refusing to take a side, until."},
+        {s:"the partner",r:"Supporting",a:"midCareer",x:"Married in and refusing to take a side, until the storm forces one."},
         {s:"the neighbor with the plow",r:"Day Player",a:"mature",x:"Arrives twice; both times the family has to behave."}
       ]},
     {k:"paramedic-ride",era:"2000s",genre:"night-shift drama",tracks:["film","tv"],
@@ -29251,7 +29268,6 @@ const ACG = (()=>{
     "the clock on screen is the real clock, with no cheating",
     "every shot is a portrait, and nobody looks at the camera",
     "the whole thing is shot in the hour before sunrise",
-    "each short version ends on a different person and the long one ends on all of them",
     "it never leaves one room",
     "the same actor plays the part at three different ages",
     "it is filmed like a documentary, two cameras, no marks on the floor",
@@ -30259,7 +30275,7 @@ const ACG = (()=>{
   ];
   // v3: a padded part must belong to the medium, not only the track — no
   // "additional voices" on a live event, no lighting double on a podcast.
-  const V3_EXTRA_FAMS={"passersby on the street":"film tv ad job","customers in the main location":"film tv ad","lighting double for the lead":"film tv","hand and shoulder double for the lead":"film tv","the uniformed officer":"film tv","the delivery driver":"film tv ad","the bartender":"film tv stage","the receptionist":"film tv ad corp","the ensemble players":"stage","the understudy track":"stage","the audience plant":"stage","product hands":"ad photo","the lifestyle group":"ad photo","the audience at the event":"live music","additional voices":"audio anim","the backup dancers":"music move"};
+  const V3_EXTRA_FAMS={"passersby on the street":"film tv ad job","customers in the main location":"film tv ad","lighting double for the lead":"none","hand and shoulder double for the lead":"none","the uniformed officer":"none","the delivery driver":"none","the bartender":"none","the receptionist":"none","the ensemble players":"stage","the understudy track":"stage","the audience plant":"none","product hands":"ad photo","the lifestyle group":"ad photo","the audience at the event":"live music","additional voices":"audio anim","the backup dancers":"music move"};
   function padCast(slots,track,target,h,res,type){
     const out=slots.slice(0,target);
     if(out.length>=target)return out;
@@ -30515,10 +30531,10 @@ const ACG = (()=>{
       // it can be used (no product line on a portrait, no face line on a voice job).
       const nctx={fam:v3Fam(type),type,rank,slot:s.s,sketch:s.x,gender:genders[i],group:labelled||rank==="Background"||v3PluralSlot(s.s),minors:slots.some(z=>z.a==="child"||z.a==="teen"),sentUsed:k=>v3SentUsed(k,h,res),usage:res&&res._usage};
       return{
-        name:titleCase(s.s),
+        name:titleCase(s.s==="customers in the main location"&&res&&res._venue?`customers at ${res._venue}`:s.s),
         role_type:roleTypeFor(track,rank,type),
         _group:labelled||rank==="Background"||v3PluralSlot(s.s),
-        _groupName:titleCase(s.s),
+        _groupName:titleCase(s.s==="customers in the main location"&&res&&res._venue?`customers at ${res._venue}`:s.s),
         // The description is stored UNFRAMED here. The character name that
         // replaces this slot is invented a stage later (uniqueRoles), and the
         // opening of a breakdown line is worth much more when it can use that
@@ -30528,26 +30544,25 @@ const ACG = (()=>{
         // Ad and stills work draws from its own bank. A commercial part is not
         // a small dramatic part — the job is the day, so the note explains the
         // day. Everything else keeps the film/TV/stage banks.
-        description:mediumSwap(
-          (track==="spot"||track==="print"||/commercial|branded|social media ad|promo|product demo|ad campaign|public service|print campaign|photo shoot|modeling|ugc|corporate|industrial/i.test(type))
-            ? uniqueDescription(s.x,v3Fit(SPOT_ROLE_NOTES.concat(rank==="Background"?ATMOS_NOTES:rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES),nctx),h,res,usedNotes)
-            : rank==="Background"
-              ? uniqueDescription(s.x,v3Fit(ATMOS_NOTES,nctx),h,res,usedNotes)
-              : uniqueDescription(s.x,v3Fit(rank==="Lead"?DIRECTION_NOTES:SUPPORT_NOTES,nctx),h,res,usedNotes),
-          track,type),
+        // v4: the description is the character's own sketch. Generic coaching
+        // add-ons were removed; only ad and stills parts may take one practical
+        // line about the day (product, wardrobe, usage), and never a filler one.
+        description:mediumSwap(s.x,track,type),
+        _rawDesc:true,
+        _fam:s.fam||null,
         _slot:s.s,
         _pad:!!s._pad,
         _frameBase:frameIdx,
         _frameSlot:i,
         gender:genders[i],
         age_range:seedAge(youngerGroup(s.a||"adult",s),usedAges,sketchAge(s.x)),
-        ethnicity:eths[i],
+        // v4: "Any ethnicity" unless the story makes it matter.
+        ethnicity:OPEN_ETHNICITY,
         pay:noFee?pick(["Copy, credit and meals","Unpaid — copy, credit and meals","No fee. Copy, credit, meals"]):rolePayString(amount,rank,track,type,days),
         est_days:days,
         required_media:media,
         prescreen:rolePrescreen(rank,type,track),
-        _keepDescription:true,
-        _full:true
+        _keepDescription:true
       };
     });
   }
@@ -31841,7 +31856,9 @@ const ACG = (()=>{
       .replace(/\bstraightforward\b/gi,"simple").replace(/\bcar park\b/gi,"parking lot").replace(/\bcentre\b/g,"center").replace(/\bCentre\b/g,"Center").replace(/\bcouncil officer\b/gi,"city council officer")
       .replace(/\bDeadpan\b/g,"Dry and straight-faced").replace(/\bdeadpan\b/g,"dry and straight-faced")
       .replace(/\bnot like models\b/gi,"like real people")
-      .replace(/\s{2,}/g," ").trim();
+      .replace(/\s{2,}/g," ").trim()
+      // A removed word can leave a sentence starting lowercase.
+      .replace(/(^|[.!?]\s+)([a-z])/g,(m,a,b)=>a+b.toUpperCase());
   }
   // A seed sketch keeps every sentence that is plain. Literary sentences are
   // dropped as long as something is left to describe the part.
@@ -32246,7 +32263,7 @@ const ACG = (()=>{
     }else if(d<=win&&d<=6&&c.consecutive){
       A.push(`the ${w} ${units} run back to back, starting on a ${first}`,`it is a block of ${w} ${units} in a row`,`${d===2?"both":"all "+w} ${units} are consecutive, beginning on a ${first}`);
     }else{
-      A.push(`the ${w} ${units} are spread across the window`,d>=4?`there are ${w} ${units}, split into ${v3Words(Math.min(d-2,rand(2,3,1)))} blocks`:`the ${w} ${units} are not back to back`,`the ${w} ${units} are mostly weekdays, starting on a ${first}`);
+      A.push(`the ${w} ${units} are spread across the window`,d>=4?`there are ${w} ${units}, split into ${v3Words(Math.min(d-2,rand(2,3,1)))} blocks`:`the ${w} ${units} are not back to back`,d>=4?`the ${w} ${units} are mostly weekdays, starting on a ${first}`:`the ${w} ${units} start on a ${first}`);
     }
     if(/^(TV Series|Streaming Series|Limited Series|Miniseries|Web Series|Vertical Series)$/.test(c.type)&&fam!=="stage")A.push(`the ${w} shoot days cover ${v3Words(c.episodes||6)} episodes, filmed in ${v3Words(rand(2,3,1))} blocks`);
     const B=[];
@@ -32363,6 +32380,7 @@ const ACG = (()=>{
   const V3_JOB_PREFIX=/^(?:Voice |Capture |Show |Music |Creative |Session |Stage )?(?:Director|Producer|Writer|Photographer|Showrunner|Choreographer|Casting Director|Casting|Manager|Prod\.|Dir\.)\s+/;
   function v3CrewNamesIn(c){
     const out=[];
+    String(c.crew_credits||"").split(" · ").forEach(x=>{const n=x.replace(/^[^:]+:\s*/,"").trim();if(n)out.push(n);});
     const credits=(String(c.submission_requirements||"").match(/Credits: ([^\n]*?)\.?$/)||[])[1]||"";
     credits.split(" · ").forEach(p=>out.push(p.trim().replace(V3_JOB_PREFIX,"")));
     const tail=String(c.prod||"").split(" — ")[1]||"";
@@ -32386,6 +32404,7 @@ const ACG = (()=>{
       const kind=bar>0?k.slice(0,bar):"";
       const v=bar>0?k.slice(bar+1):"";
       if(kind==="name"||kind==="crew")h.roles.add(v);
+      else if(kind==="person"){h.v4Full=h.v4Full||new Set();h.v4Full.add(v);h.roles.add(clean(v));if(row&&row.meta&&row.meta.project){(h._v4Proj=h._v4Proj||{});const pr=h._v4Proj[row.meta.project]||(h._v4Proj[row.meta.project]={at:0,f:[],l:[]});pr.at=Math.max(pr.at,+new Date(row.created_at||row.meta.at||0)||+row.meta.at||0);pr.f.push(row.meta.first);pr.l.push(row.meta.last);}}
       else if(kind==="company"){h.cores.add(v);}
       else if(kind==="sched")h.schedKeys.add(v);
       else if(kind==="area"){const p=v.split("|");const key=p[0]+"|"+p[1];areaSeen[key]=(areaSeen[key]||0)+1;}
@@ -32421,6 +32440,17 @@ const ACG = (()=>{
       });
     });
     Object.keys(areaList).concat(Object.keys(areaSeen)).forEach(k=>{h.areaUse[k]=Math.max(areaList[k]||0,areaSeen[k]||0);});
+    // v4 name cooldown: every first name and surname from the 50 most recent
+    // projects — from the durable log (so a deleted draft still counts) and
+    // from the saved listings themselves.
+    h.v4Full=h.v4Full||new Set();h.v4CoolF=new Set();h.v4CoolL=new Set();
+    const projs=Object.values(h._v4Proj||{}).sort((a,b)=>b.at-a.at).slice(0,V4_COOLDOWN);
+    projs.forEach(pr=>{pr.f.forEach(x=>h.v4CoolF.add(v4Norm(x)));pr.l.forEach(x=>h.v4CoolL.add(v4Norm(x)));});
+    ordered.forEach((c,i)=>{
+      const ppl=(c.roles||[]).map(r=>r&&r.name).filter(n=>n&&nameParts(n)&&!/\(/.test(n)).concat(v3CrewNamesIn(c));
+      ppl.forEach(n=>{h.v4Full.add(v4Norm(n));if(i<V4_COOLDOWN){const parts=String(n).trim().split(/\s+/);h.v4CoolF.add(v4Norm(parts[0]));h.v4CoolL.add(v4Norm(parts.slice(1).join(" ")));}});
+      if(i<V4_COOLDOWN&&c.crew_credits)String(c.crew_credits).split(" · ").forEach(x=>{const n=x.replace(/^[^:]+:\s*/,"").trim();const parts=n.split(/\s+/);if(parts.length>1){h.v4Full.add(v4Norm(n));h.v4CoolF.add(v4Norm(parts[0]));h.v4CoolL.add(v4Norm(parts.slice(1).join(" ")));}});
+    });
   }
 
   // Twists for brief-style seeds, by medium. A photo shoot cannot be "one long
@@ -32460,7 +32490,7 @@ const ACG = (()=>{
     const sag=/SAG/.test(union);
     const named=slots.filter(s=>s.r!=="Background");
     // Doubles and stunt work are adult bookings only.
-    const adults=named.filter(s=>s.a!=="child"&&s.a!=="teen");
+    const adults=named.filter(s=>s.a!=="child"&&s.a!=="teen"&&!/^(his|her|their)\s/i.test(String(s.s||"")));
     const leads=adults.filter(s=>s.r==="Lead").concat(adults.filter(s=>s.r!=="Lead"));
     const genders=seedGenders(slots);
     const gOf=s=>{const g=genders[slots.indexOf(s)];return g==="Non-Binary"||!g?"All genders":g;};
@@ -32521,16 +32551,34 @@ const ACG = (()=>{
   const V3_AD_FORM={"Commercial":"Commercial","Social Media Ad":"Social Ad","Branded Content":"Branded Video","Promo Video":"Promo","Product Demo":"Product Demo","Spec Commercial":"Spec Ad","Ad Campaign":"Ad Campaign","Public Service Announcement":"PSA","Influencer / UGC Content":"UGC Campaign","Print Campaign":"Print Campaign","Photo Shoot":"Photo Shoot","Modeling":"Campaign"};
   const V3_TYPE_WORDS=/\b(podcast|music video|commercial|photo ?shoot|feature film|short film|musical|web series|tv series|documentary|training video|public service announcement|PSA|dance film|audio drama|video game|animated)\b/i;
   function v3Title(seed,type,fam,city,h,res){
-    const stems=seedTitleStems(seed).filter(t=>!V3_TYPE_WORDS.test(t)&&!/\bbrand\b/i.test(t));
+    const stems=seedTitleStems(seed).filter(t=>!V3_TYPE_WORDS.test(t)&&!/\bbrand\b/i.test(t)&&!/^Untitled\b/i.test(t));
     const form=V3_AD_FORM[type];
     const cands=[];
     const catOk=s=>!clean(s).split(" ").some(w=>w.length>3&&clean(seed.cat).indexOf(w)>-1);
     if(form&&seed.cat&&Math.random()<0.65)stems.filter(catOk).forEach(s=>cands.push(`${s} — ${seed.cat} ${form}`));
     stems.forEach(s=>cands.push(s));
     if(form&&seed.cat)stems.filter(catOk).forEach(s=>cands.push(`${s} — ${seed.cat} ${form}`));
-    if(!form&&(fam==="film"||fam==="tv"||fam==="stage")&&stems[0])cands.push(`${stems[0]} (Working Title)`);
-    const tails=["Working Title","Part One","Season One","New Pages","Revised","Take Two","Chapter One"];
-    return candidateUnique(cands.length?cands:["Untitled Project"],h.titles,res.titles,i=>`${stems[i%Math.max(1,stems.length)]||"Untitled"} (${tails[i%tails.length]})`);
+    // v4: real titles only — no "Untitled … Project", "(Working Title)" or
+    // "(Part One)" fallbacks. Out of titles means out of this premise.
+    [phraseTitle(seed.about||""),phraseTitle(seed.p||""),phraseTitle(seed.h||""),phraseTitle(seed.h2||"")].concat((seed.w||[]).map(phraseTitle),(seed.c||[]).filter(z=>z.r==="Lead").map(z=>`The ${titleCase(stripArticle(z.s))}`).filter(t=>t.split(" ").length<=4)).forEach(t=>{if(t&&!V3_TYPE_WORDS.test(t))cands.push(t);});
+    // Short noun phrases lifted from the premise and both twists ("The Lining
+    // of a Coat", "Twelve Years of Receipts") — real titles, specific to this
+    // story, and many of them.
+    const NOUNISH=new RegExp("\\b("+[...V4_STORY_NOUNS].join("|")+"|"+String(V3_VENUE_NOUN.source).replace(/^\\b\(|\)\\b$/g,"")+"|night|morning|week|summer|winter|shift|line|door|window|table|voice|song|name|list|clock|light|street|corner|floor|roof|dream|promise|mistake|plan|chance|favor|visit|call|order|bill|night|hour|minutes|days|years)$","i");
+    const STOP=/^(a|an|the|and|or|but|to|of|in|on|at|for|with|by|from|that|who|which|when|where|is|are|was|were|has|have|had|be|it|its|his|her|their|they|he|she|one|every|each|some|any|no|not|so|as|if|than|then|into|over|after|before|about|just|only|also|very|too)$/i;
+    [seed.p,seed.h,seed.h2,seed.about].filter(Boolean).forEach(txt=>{
+      const ws=String(txt).replace(/[^A-Za-z' -]/g," ").split(/\s+/).filter(Boolean);
+      for(let i=0;i<ws.length;i++)for(let n=2;n<=4;n++){
+        const w=ws.slice(i,i+n);if(w.length<n)break;
+        if(STOP.test(w[0])||STOP.test(w[w.length-1])||!NOUNISH.test(w[w.length-1]))continue;
+        if(w.some(x=>/^(he|she|they|him|her|them|is|are|was|were|has|have|had|does|do|did|will|would|can|could|should)$/i.test(x)))continue;
+        const t=titleCase(w.join(" "));
+        cands.push(t);cands.push(`The ${t}`);
+      }
+    });
+    (seed.w||[]).map(w=>v3VenuePhrase(w)).filter(Boolean).forEach(v=>{const t=titleCase(stripArticle(v));["Tuesday at the","Last Night at the","Closing Time at the","Mornings at the"].forEach(pre=>{const c=`${pre} ${t}`;if(c.split(" ").length<=6)cands.push(c);});});
+    for(const c of cands.filter((v,i,a)=>v&&a.indexOf(v)===i)){const n=clean(c);if(!h.titles.has(n)&&!res.titles.has(n)){res.titles.add(n);return c;}}
+    return null;
   }
   function v3Plan(type,fam,track){
     const plan=shootPlan(type,track);
@@ -32681,6 +32729,7 @@ const ACG = (()=>{
     if(/(^|[^\w'’])a [aeiou]\w/i.test(txt.replace(/\ba (one|uni|use|usu|euro|eu|ubi|uti)/gi,"")))out.push("a/an");
     roles.forEach(r=>{if(!r._group&&/^(the )?(kids|crowd|regulars|neighbors|students|customers|dancers|patrons|riders|guests|ensemble|shoppers|voices|gardeners|players|team|class|family)\b/i.test(stripArticle(r._slot||"")))out.push("group given a person's name");});
     v3Sentences(syn).forEach(s=>{if(s.split(/\s+/).length>32)out.push("sentence too long");});
+    v4RoleProblems(item,c).forEach(x=>out.push(x));
     if(c.h&&c.res&&v3TooClose(v3StoryWords(syn),(c.h.storyWords||[]).concat(c.res.storyWords||[])))out.push("story too close to a saved listing");
     if(c.h&&c.res){const seenHere=new Set();v3ListingSentences(item,roles).forEach(x=>{const k=v3SentKey(x);if((seenHere.has(k)&&x!==item.tagline)||v3SentUsed(k,c.h,c.res))out.push("reused sentence: "+x.slice(0,60));if(x!==item.tagline)seenHere.add(k);});}
     return out;
@@ -32754,12 +32803,36 @@ const ACG = (()=>{
         }
         return {...s,x};
       }).filter(s=>s.x);
+      // v4: a role may only refer to what the story sets up. Sketch sentences
+      // that mention an object, place, person or event the premise, twist,
+      // venue and cast list never introduce are dropped; police parts need a
+      // reason in the premise or twist; two parts with the same job need a
+      // difference in the label.
+      const storyHay=[seed.p,seed.about||"",turn,(seed.w||[]).join(" "),(seed.c||[]).map(z=>z.s).join(" ")].join(" ");
+      const hayStems=v4HayStems(storyHay);
+      const policeOk=V4_POLICE_WHY.test(`${seed.p} ${seed.about||""} ${turn}`);
+      // One character played at two ages is one part here: the older-self slot
+      // is dropped, so a listing can never cast the same person as two genders
+      // under two different names.
+      for(let i=slots.length-1;i>=0;i--)if(/\b(same person|same character|older self|younger self|as an adult|grown up|older version|younger version)\b/i.test(slots[i].s))slots.splice(i,1);
+      const seenJob={};
+      for(let i=slots.length-1;i>=0;i--)slots[i]._order=i;
+      const slotsOk=slots.filter(s=>!(V4_POLICE.test(s.s)&&!policeOk)).filter(s=>{const k=v4FuncKey(s.s);if(!k)return true;const lab=String(s.s).toLowerCase();if(seenJob[k]&&!V4_QUAL.test(lab+" "+seenJob[k]))return false;seenJob[k]=lab;return true;}).map(s=>{
+        let x=v3Sentences(s.x).filter(z=>!v4UnsetRefs(z,hayStems).length&&!v4ItWithoutObject(z,storyHay)&&!(V4_POLICE.test(z)&&!policeOk)&&!V4_FILLER.test(z)).join(" ");
+        if(!x)x=v3FreshSketch(s,h,res);
+        return {...s,x};
+      }).filter(s=>s.x);
+      slots.length=0;slotsOk.forEach(z=>slots.push(z));
       if(!slots.length){why('no slots');continue;}
       // "…asks him to end the search": the story fixes the lead's gender.
       const storyTxt=` ${seed.p} ${turn} `;
       const heS=/\b(he|him|his|himself)\b/i.test(storyTxt),sheS=/\b(she|her|hers|herself)\b/i.test(storyTxt);
       const lead0=slots.find(z=>z.r==="Lead");
       if(lead0&&!lead0.g&&heS!==sheS){const i=slots.indexOf(lead0);slots[i]={...lead0,g:heS?"M":"F"};}
+      // A men's (or women's) campaign casts men (or women) in the parts the
+      // product is for; staff parts stay open.
+      const forWho=/\bmen's\b/i.test(`${seed.cat||""} ${seed.about||""}`)?"M":/\bwomen's\b/i.test(`${seed.cat||""} ${seed.about||""}`)?"F":"";
+      if(forWho)slots.forEach((z,i)=>{if(!z.g&&!/\b(barber|staff|apprentice|clerk|associate|attendant|doctor|nurse|host)\b/i.test(z.s))slots[i]={...z,g:forWho};});
       const plan=v3Plan(type,fam,track);
       const union=v3Union(type,fam);
       // One ad-usage term per listing; every line that mentions how long the
@@ -32767,7 +32840,9 @@ const ACG = (()=>{
       const usage=fam==="ad"?pick([6,12]):0;
       res._usage=usage;
       res._lastsHere=new Set();
+      res._v4L=null;res._nameShortage=false;
       const V=v3Venue(seed,type,fam);
+      res._venue=V.venue;
       let roles;
       if(fam==="job"){
         roles=v3JobRoles(type,seed,slots,union,plan,h,res,V.venue);
@@ -32782,10 +32857,27 @@ const ACG = (()=>{
         v3SetPay(roles,union,fam,type,track);
         v3Media(roles,fam,type);
       }
-      // A parent must be old enough for the child in the same cast.
-      const kidMax=Math.max(0,...roles.filter(r=>/\b(child|kid|son|daughter|teen|teenager|student|youngest)\b/i.test(r._slot||"")).map(r=>parseInt(String(r.age_range).split("-")[1],10)||0));
-      if(kidMax)roles.forEach(r=>{if(/\b(parent|mother|father|mom|dad)\b/i.test(r._slot||"")&&!/\b(child|son|daughter)\b/i.test(r._slot||"")){const lo=parseInt(String(r.age_range).split("-")[0],10);if(lo<kidMax+17){const nlo=kidMax+17;r.age_range=`${nlo}-${nlo+rand(10,14,1)}`;}}});
+      // v4: scene counts written in a sketch set the role's days.
+      if(fam!=="stage")roles.forEach(r=>{const sc=v4SceneCounts(r.description);if(sc.has(1))r.est_days=1;else if(sc.has(2))r.est_days=Math.min(+r.est_days||1,2);});
+      // v4: relatives are grouped (shared surname) and parents are made at
+      // least 18 years older than their children across both ranges.
+      v4Families(roles);
+      v4FixAges(roles);
       const named=uniqueRoles(roles,h,res,type,{role:""},false);
+      if(res._nameShortage||named.some(r=>!r.name)){why('names');continue;}
+      // uniqueRoles returns copies, so family references are re-pointed at the
+      // named copies before labels like "his sister" become "Victor's sister".
+      named.forEach(r=>{if(r._refRole){const i=roles.indexOf(r._refRole);if(i>-1)r._refRole=named[i];}});
+      v4ResolveLabels(named);
+      named.forEach(r=>{
+        // "The audience should keep liking them…": a "they" that points at a
+        // group cannot be turned into he/she, so that sentence goes.
+        if(/^(Male|Female)$/.test(r.gender)&&!r._group&&!r._job){
+          const keep=v3Sentences(r.description).filter(z=>!(/\b(they|them|their)\b/i.test(z)&&/\b(audience|people|everyone|everybody|others|kids|children|family|team|crew|cast|customers|guests|neighbors|parents|friends|both|the two|all of them|anyone)\b/i.test(z)));
+          if(keep.length)r.description=keep.join(" ");
+        }
+        r.description=v4Pronouns((r._group||r._job)?r.description:v4Frame(r),r.gender);
+      });
       const minors=named.some(r=>parseInt(String(r.age_range).split("-")[0],10)<18);
 
       // Company, crew and casting director.
@@ -32793,6 +32885,7 @@ const ACG = (()=>{
       const castingName=v3Person(h,res);
       const jobs=cgShuffle(v3CrewJobs(fam,type)).slice(0,rand(1,2,1));
       const credits=jobs.map(j=>[j,v3Person(h,res)]);
+      if(res._nameShortage||!castingName||credits.some(c=>!c[1])){why('names');continue;}
 
       // Where.
       const P=v3PickPlace(V.need,h,res);
@@ -32856,6 +32949,7 @@ const ACG = (()=>{
       const tagline=v3Tagline({synopsis,brief,about:seed.about||"",turn:tt,premise:seed.p,turnLeads:turnCanLead(turn)},h,res);
       if(!tagline){why('no tagline '+type);res._typeFails[type]=(res._typeFails[type]||0)+1;if(res._typeFails[type]>4)res._deadTypes.add(type);continue;}
       const title=v3Title(catFront?seed:{...seed,cat:""},type,fam,city,h,res);
+      if(!title){why('no title');continue;}
       const schedule=v3Schedule({fam,type,days:plan.days,windowDays,consecutive:plan.days>=2&&Math.random()<0.5,start:startS,weeks:plan.weeks||0,perfs:plan.perfs||0,episodes:rand(6,10,1),night:/\bnight|overnight|after closing|midnight|before dawn|4 ?a\.?m/i.test(`${seed.p} ${turn}`),minors,hasLeads:named.some(r=>/lead|principal/i.test(r.role_type||"")),rural:V.need==="rural"},h,res);
       if(!schedule){why('no schedule '+type);res._typeFails[type]=(res._typeFails[type]||0)+1;if(res._typeFails[type]>4)res._deadTypes.add(type);continue;}
       let payStr="";
@@ -32882,12 +32976,18 @@ const ACG = (()=>{
         payStr=cand;
       }
       if(!payStr)payStr=lastCand;
-      const extra=pick(V3_REQ_EXTRA[fam]||V3_REQ_EXTRA.film);
-      const creditLine=` Credits: ${credits.map(([j,n])=>`${j} ${n}`).concat([`Casting ${castingName}`]).join(" · ")}.`;
-      const reqStr=v3Scrub(`${mediaSentence(named)} ${extra}${craftNote(type)}${minorsNote(named)}${creditLine}`);
+      // v4: the listing only asks for what at least one role requires.
+      const needReel=named.some(r=>(r.required_media||[]).indexOf("reel")>-1),needSelf=named.some(r=>r.prescreen==="selftape"),needResume=named.some(r=>(r.required_media||[]).indexOf("resume")>-1),needFull=named.some(r=>(r.required_media||[]).indexOf("fullbody")>-1);
+      const extras=(V3_REQ_EXTRA[fam]||V3_REQ_EXTRA.film).filter(x=>!(/self-tape/i.test(x)&&!needSelf)&&!(/\breel\b|recent footage|shot recently|demo/i.test(x)&&!needReel)&&!(/résumé|resume|\bCV\b|credit list/i.test(x)&&!needResume)&&!(/full-body|full-length/i.test(x)&&!needFull));
+      const extra=extras.length?pick(extras):"";
+      const reqStr=v3Scrub(`${mediaSentence(named)} ${extra}${craftNote(type)}${minorsNote(named)}`);
+      const crewCredits=credits.map(([j,n])=>`${j}: ${n}`).concat([`Casting: ${castingName}`]).join(" · ");
 
       const item={
         cd_id:adminUserId,title,type,prod:co.company,posted_by_label:co.company,casting_director_name:castingName,
+        crew_credits:crewCredits,
+        // No production identity exists to verify, so no badge.
+        admin_verified:null,
         tagline,synopsis,location:city.name,pay:payStr,union_status:union,status:"draft",published:false,is_admin_created:true,
         submission_requirements:reqStr,
         expires_at:expires,deadline:new Date(expires).toISOString().slice(0,10),shoot_start:startS,shoot_end:endS,
@@ -32900,6 +33000,7 @@ const ACG = (()=>{
         _ageKey:fp(named.map(r=>r.age_range).join("|")),_roleCountKey:String(named.length),_creatorKind:fam,
         _settingKey:clean("story "+seed.k+" "+turn),_seedOnlyKey:"seed "+seed.k,_turnKey:clean("turn "+turn),_catalystKey:null,
         _crewNames:credits.map(x=>x[1]).concat([castingName]),_core:co.core,
+        _projectId:Date.now().toString(36)+Math.random().toString(36).slice(2,8),
         _lines:splitLines(synopsis).concat([tagline],named.map(r=>r.description)).filter(Boolean)
       };
       const c={fam,L,base:ctx.base,setup:ctx.setup,days:plan.days,windowDays,mature,h,res};
@@ -32918,13 +33019,380 @@ const ACG = (()=>{
   function seenRowsFor(item){
     const rows=[];
     [item._seedOnlyKey,item._settingKey,item._turnKey].filter(Boolean).map(k=>clean(k)).filter(Boolean).forEach(k=>rows.push({key:k,kind:"story"}));
-    (item._roles||[]).forEach(r=>{if(!r._group&&nameParts(r.name))rows.push({key:"name|"+clean(r.name),kind:"character_name"});});
-    (item._crewNames||[]).forEach(n=>rows.push({key:"crew|"+clean(n),kind:"crew_name"}));
+    // v4: one person_name row per character and crew member — the durable,
+    // cross-device record that a full name is spent, plus the first name,
+    // surname and project for the 50-project cooldown.
+    const at=Date.now();
+    (item._roles||[]).filter(r=>!r._group&&!r._job&&nameParts(r.name)).map(r=>r.name).concat(item._crewNames||[]).forEach((n,i)=>{
+      const parts=String(n).trim().split(/\s+/);
+      rows.push({key:"person|"+v4Norm(n),kind:"person_name",meta:{first:parts[0],last:parts.slice(1).join(" "),project:item._projectId||"",at:at+i}});
+    });
     if(item._core)rows.push({key:"company|"+clean(item._core),kind:"company"});
     v3Sentences(item.schedule_note).map(v3NormSched).filter(k=>k.split(" ").length>=3).concat(["note "+v3NormSched(item.schedule_note)]).forEach(k=>rows.push({key:"sched|"+k,kind:"schedule_note"}));
     if(item._areaName&&item.location)rows.push({key:`area|${item.location}|${item._areaName}|${Date.now().toString(36)}${Math.floor(Math.random()*1e6).toString(36)}`,kind:"area"});
     const seen=new Set();
     return rows.filter(r=>seen.has(r.key)?false:(seen.add(r.key),true));
+  }
+
+  // ── v4 names (2026-09-16): familiar to a U.S. audience ──────────────────
+  // First names are the most-used U.S. baby names of each era (SSA lists), so
+  // a 55-year-old is a Karen or a Tony and a 22-year-old is a Madison or a
+  // Tyler. Surnames are common U.S. surnames (Census), grouped by the
+  // background they are most associated with. Heritage first names are only
+  // ever paired with a surname from the same background; general American
+  // first names go with any surname (Kevin Nguyen, Michelle Park).
+  const V4_NAME_DATA={
+    eraYears:{kid:[2008,2020],young:[1994,2007],mid:[1979,1993],older:[1964,1978],senior:[1940,1963]},
+    firstByEra:{
+      F:{
+        kid:["Emma","Olivia","Ava","Sophia","Isabella","Mia","Charlotte","Amelia","Harper","Evelyn","Abigail","Ella","Aria","Scarlett","Chloe","Lily","Zoe","Layla","Nora","Riley","Stella","Hazel","Violet","Aubrey","Brooklyn","Ellie","Addison","Natalie","Claire","Lucy","Audrey","Sadie","Ruby","Paisley","Leah","Savannah","Anna","Caroline","Genesis","Kinsley","Piper","Quinn","Sarah","Skylar","Allison","Gabriella","Madelyn","Naomi","Aaliyah","Alice"],
+        young:["Madison","Hannah","Emily","Alexis","Olivia","Taylor","Kaitlyn","Brianna","Hailey","Morgan","Destiny","Jasmine","Sydney","Kayla","Makayla","Chloe","Grace","Alyssa","Savannah","Paige","Victoria","Gabrielle","Kennedy","Trinity","Jada","Mackenzie","Sierra","Brooke","Maya","Natalia","Jordan","Kylie","Mariah","Alexandra","Haley","Katherine","Faith","Julia","Megan","Rachel","Jenna","Autumn","Bailey","Caitlin","Erin","Kelsey","Lauren","Molly","Shelby","Tiana"],
+        mid:["Jessica","Jennifer","Ashley","Amanda","Sarah","Nicole","Stephanie","Brittany","Samantha","Lauren","Megan","Rachel","Danielle","Crystal","Courtney","Tiffany","Christina","Erica","Vanessa","Natalie","Allison","Kristen","Lindsay","Alicia","Monique","Katie","Heather","Amber","Chelsea","Candace","Tanya","Melissa","Andrea","Kelly","Leslie","Diana","Emily","Julie","Laura","Holly","Whitney","Jillian","Meghan","Brandi","Kristin","April","Veronica","Bianca","Kara","Renee"],
+        older:["Lisa","Kimberly","Michelle","Amy","Angela","Melissa","Tammy","Stephanie","Tina","Julie","Dawn","Laura","Christine","Wendy","Tracy","Kelly","Shannon","Heather","Rebecca","Andrea","Monica","Lori","Renee","Stacy","Jill","Yolanda","Sonya","Tonya","Valerie","Jacqueline","Wanda","Sheila","Robin","Denise","Karen","Theresa","Colleen","Kathleen","Pamela","Lynn","Carrie","Tara","Anne","Maria","Rhonda","Regina","Victoria","Elizabeth","Sandra","Cheryl"],
+        senior:["Linda","Patricia","Barbara","Susan","Mary","Deborah","Nancy","Karen","Donna","Carol","Sandra","Sharon","Cynthia","Diane","Brenda","Pamela","Debra","Janet","Carolyn","Kathy","Joyce","Judy","Cheryl","Gloria","Denise","Teresa","Beverly","Theresa","Rita","Joan","Peggy","Martha","Ellen","Paula","Gail","Maureen","Marilyn","Shirley","Frances","Evelyn","Judith","Ruth","Dorothy","Elaine","Annette","Loretta","Vivian","Bonnie","Jean","Connie"]
+      },
+      M:{
+        kid:["Liam","Noah","Oliver","Elijah","Lucas","Mason","Logan","James","Ethan","Aiden","Jackson","Sebastian","Henry","Owen","Leo","Wyatt","Jayden","Carter","Grayson","Jack","Luke","Levi","Gabriel","Isaac","Lincoln","Hudson","Asher","Theo","Miles","Ezra","Caleb","Nolan","Ryan","Dylan","Hunter","Eli","Landon","Adrian","Cooper","Easton","Jaxon","Micah","Parker","Wesley","Brody","Colton","Declan","Graham","Max","Xavier"],
+        young:["Tyler","Austin","Jacob","Ethan","Noah","Dylan","Logan","Caleb","Connor","Jordan","Hunter","Isaiah","Elijah","Gavin","Evan","Jalen","Mason","Chase","Cameron","Trevor","Devin","Xavier","Isaac","Owen","Luke","Miles","Julian","Adrian","Dominic","Carter","Josiah","Garrett","Brandon","Christian","Cole","Blake","Bryce","Colin","Darius","Grant","Ian","Jake","Kyle","Malik","Nathan","Seth","Spencer","Tanner","Trent","Zachary"],
+        mid:["Christopher","Matthew","Joshua","Daniel","Andrew","Justin","Ryan","Brandon","Jason","Nicholas","Jonathan","Kyle","Adam","Aaron","Anthony","Jeremy","Zachary","Nathan","Derrick","Marcus","Andre","Corey","Dustin","Patrick","Jared","Ian","Cody","Benjamin","Samuel","Alex","Eric","Travis","Kevin","Brian","Jeffrey","Joseph","Robert","Steven","Timothy","Sean","Chad","Jamal","Terrell","Lamar","Victor","Mario","Omar","Raymond","Shane","Wesley"],
+        older:["Mark","Scott","Jeffrey","Brian","Timothy","Kevin","Todd","Troy","Keith","Eric","Greg","Tony","Sean","Chris","Darren","Derek","Shawn","Rodney","Curtis","Vincent","Travis","Craig","Randy","Dale","Russell","Jay","Lance","Glenn","Terrence","Reggie","Bryan","Dean","Neil","Michael","David","Paul","Steve","Mike","Jim","Tom","Joe","Rick","Bill","Ron","Frank","Pete","Ken","Doug","Phil","Carl"],
+        senior:["James","Robert","John","Michael","William","David","Richard","Charles","Thomas","Gary","Larry","Donald","Kenneth","Ronald","Steven","Dennis","Jerry","Frank","Raymond","Walter","Roger","Gerald","Harold","Carl","Ralph","Wayne","Roy","Bruce","Eugene","Stanley","Leonard","Howard","Arthur","Earl","Douglas","George","Joseph","Edward","Peter","Henry","Albert","Louis","Victor","Marvin","Philip","Alan","Lawrence","Dale","Floyd","Clarence"]
+      }
+    },
+    // Names used for all genders, by era, so a 60-year-old is a Robin or a
+    // Leslie and a 20-year-old is a Riley or a Rowan.
+    unisexByEra:{kid:["Riley","Avery","Quinn","Rowan","Emerson","Finley","Parker","Hayden","Charlie","Sage"],young:["Jordan","Taylor","Riley","Avery","Peyton","Skyler","Dakota","Morgan","Cameron","Reese","Rowan","Quinn"],mid:["Jordan","Taylor","Alex","Casey","Jamie","Morgan","Cameron","Drew","Blake","Kendall","Jesse","Sam"],older:["Jamie","Casey","Kelly","Robin","Jesse","Dana","Chris","Terry","Alex","Lee","Sam"],senior:["Robin","Leslie","Terry","Dana","Pat","Kelly","Lee","Jean"]},
+    heritageFirst:{
+      hispanic:{F:["Maria","Ana","Rosa","Carmen","Elena","Gabriela","Daniela","Sofia","Camila","Valeria","Adriana","Marisol","Lucia","Isabel","Veronica","Leticia","Yesenia","Alejandra","Paola","Lorena"],M:["Carlos","Jose","Luis","Juan","Jorge","Miguel","Diego","Javier","Alejandro","Mateo","Ricardo","Eduardo","Antonio","Rafael","Hector","Manuel","Oscar","Fernando","Sergio","Andres"]},
+      black:{F:["Aaliyah","Imani","Keisha","Latoya","Tanisha","Ebony","Deja","Kiara","Nia","Tamika","Shanice","Aisha"],M:["Andre","Jamal","Darnell","Malik","Terrence","DeShawn","Jalen","Tyrell","Darius","Rashad","Jermaine","Cedric"]},
+      southasian:{F:["Priya","Anjali","Neha","Deepa","Asha","Sunita","Pooja","Nisha","Kavita","Divya"],M:["Raj","Arjun","Rohan","Sanjay","Ravi","Anil","Nikhil","Vikram","Amit","Rahul"]},
+      eastasian:{F:[],M:[]},
+      middleeastern:{F:["Layla","Nadia","Yasmin","Leila","Dina","Rania","Mariam","Noor"],M:["Omar","Karim","Rami","Tariq","Samir","Amir","Hassan","Ali","Nabil","Fadi"]}
+    },
+    surnames:{
+      white:["Smith","Johnson","Miller","Davis","Wilson","Anderson","Taylor","Thomas","Moore","Martin","Thompson","White","Clark","Lewis","Walker","Hall","Allen","Young","King","Wright","Hill","Scott","Green","Adams","Baker","Nelson","Carter","Mitchell","Roberts","Turner","Phillips","Campbell","Parker","Evans","Edwards","Collins","Stewart","Morris","Murphy","Cook","Rogers","Morgan","Peterson","Cooper","Reed","Bailey","Bell","Kelly","Howard","Ward","Cox","Richardson","Wood","Watson","Brooks","Bennett","Gray","Hughes","Price","Sanders","Myers","Long","Ross","Foster","Powell","Perry","Russell","Sullivan","Fisher","Henderson","Patterson","Reynolds","Hamilton","Graham","Wallace","West","Cole","Hayes","Gibson","Ellis","Stevens","Murray","Ford","Marshall","Owens","McDonald","Harrison","Kennedy","Wells","Hunt","Palmer","Robertson","Holmes","Stone","Meyer","Boyd","Mills","Warren","Fox","Rose","Rice","Schmidt","Hunter","Hicks","Crawford","Henry","Porter","Burns","Gordon","Shaw","Holland","Webb","Tucker","Olson","Carlson","Larson","Hansen","Schultz","Weber","Becker","Hoffman","Wagner","Keller","Fischer","Walsh","Ryan","O'Brien","Brennan","Flynn","Doyle","Quinn","Burke","Nolan","Kowalski","Nowak","Novak","Russo","Romano","Rizzo","Marino","Esposito","Ricci","Costa","Greco","Moretti","Fitzgerald","Barrett","Lawson","Hudson","Fleming","Harper","Chambers","Lowe","Hart","Dunn","Lane","Pierce","Wheeler","Snyder","Hawkins","Arnold","Dean","Andrews","Lynch","Berry","Carroll","Duncan","Armstrong","Elliott","Knight","Bradley","Riley","Austin","Chapman","Webster","Fowler","Burton","Hale","Newman","Bishop","Spencer","Weaver","Lambert","Norris","Sherman","Cohen","Levine","Friedman","Klein","Katz","Goldberg","Rosen","Shapiro","Kaplan","Stein","Hartman","Pearson","Barker","Hopkins","Watts","Bates","Page","Holt","Lucas","Caldwell","Lindsey","Chandler","Hanson","Sharp","Bowman","Ramsey","Walters","Gilbert","Harmon","Hobbs","McCarthy","Donovan","Callahan","Gallagher","Kramer","Stanley","Lawrence","Neal","Buchanan","Fuller","Swanson","Jensen","Peters","Brady","Schneider","Mueller","Lang","Horton","Maxwell","Sutton","Reeves","Cunningham","Coleman","Simmons","Jordan","Butler","Barnes","Griffin"],
+      black:["Washington","Jefferson","Jackson","Williams","Johnson","Brown","Jones","Davis","Harris","Robinson","Thomas","Moore","Taylor","Wilson","Walker","Young","Allen","King","Wright","Scott","Green","Carter","Mitchell","Coleman","Simmons","Bryant","Alexander","Hayes","Banks","Freeman","Grant","Holmes","Mack","Owens","Porter","Warren","Dixon","Gaines","Graves","Hawkins","Jenkins","Sims","Tucker","Wallace","Bradley","Barnes","Butler","Reed","Stewart","Russell","Griffin","Hamilton","Henderson","Howard","Pierce","Rivers","Booker","Charles","Joseph","Lewis","Wade","Bell","Brooks","Marshall","Watkins","Terry","Mosley","Woods","Carpenter","Glover","Hudson","Webb","Fields","Payne","Daniels","Franklin","Lawrence","Nichols","Stephens","Ware","Pugh","Randall","Dorsey","Whitfield","McCoy","Oliver","Harper","Sanders","Foster","Powell","Perry","Bailey","Cooper","Gibson","Ellis","Hunt","Singleton","Merritt","Battle","Tate"],
+      hispanic:["Garcia","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Perez","Sanchez","Ramirez","Torres","Flores","Rivera","Gomez","Diaz","Reyes","Morales","Cruz","Ortiz","Gutierrez","Chavez","Ramos","Ruiz","Alvarez","Mendoza","Castillo","Jimenez","Moreno","Romero","Herrera","Medina","Aguilar","Vargas","Castro","Guzman","Fernandez","Munoz","Mendez","Salazar","Soto","Delgado","Pena","Rios","Vasquez","Sandoval","Contreras","Espinoza","Silva","Navarro","Valdez","Cortez","Luna","Ortega","Dominguez","Figueroa","Estrada","Guerrero","Juarez","Santiago","Campos","Vega","Nunez","Rojas","Molina","Acosta","Suarez","Padilla","Maldonado","Rosales","Cabrera","Fuentes","Carrillo","Miranda","Serrano","Marquez","Cardenas","Ibarra","Trujillo","Zamora","Velasquez","Pacheco","Avila","Camacho","Solis","Montoya","Duran","Rangel","Bautista","Villanueva","Lozano","Orozco","Beltran","Salinas","Galvan","Mejia","Arroyo","Leon","Barrera","Cervantes","Esquivel","Osorio"],
+      eastasian:["Chen","Wang","Zhang","Liu","Lin","Huang","Wu","Yang","Lee","Kim","Park","Choi","Kang","Cho","Yoon","Han","Shin","Jung","Tanaka","Nakamura","Yamamoto","Sato","Suzuki","Watanabe","Wong","Chang","Ho","Lam","Chan","Leung","Tang","Tsai","Chung","Kwon","Liang","Ma","Zhao","Yu","Moon","Song","Hong","Kato","Ito","Kobayashi","Mori","Ogawa","Fujita","Hayashi","Chow","Fong"],
+      seasian:["Nguyen","Tran","Le","Pham","Hoang","Vu","Dang","Bui","Do","Huynh","Truong","Phan","Vo","Ly","Santos","Reyes","Bautista","Villanueva","Aquino","Mendoza","Ramos","Dizon","Pascual","Castillo","Tan","Lim","Sy","Soriano","Manalo","Gonzales"],
+      southasian:["Patel","Shah","Singh","Kumar","Sharma","Gupta","Mehta","Desai","Joshi","Reddy","Rao","Iyer","Nair","Chopra","Kapoor","Malhotra","Bhatt","Chaudhry","Das","Khan","Ahmed","Hussain","Rahman","Menon","Agarwal","Verma","Mishra","Jain","Trivedi","Sethi","Bose","Banerjee","Ghosh","Dutta","Naidu","Pillai","Dhillon","Gill","Sandhu","Grewal"],
+      middleeastern:["Haddad","Hassan","Khalil","Saleh","Nasser","Mansour","Aziz","Farah","Khoury","Ahmed","Ali","Hamdan","Karam","Awad","Habib","Najjar","Yousef","Ibrahim","Abboud","Shaheen","Darwish","Issa","Nassar","Hakim","Amin","Said","Jaber","Kassem","Saad","Othman","Mustafa","Rashid","Salem","Hamad","Barakat","Bitar","Elias","Mattar","Sabbagh","Zaher"]
+    },
+    // Real public figures a reader would recognize. Never generated.
+    famous:["Tom Hanks","Michael Jordan","Taylor Swift","Will Smith","Tom Cruise","Brad Pitt","Julia Roberts","Jennifer Lopez","Michael Jackson","Kevin Hart","Chris Evans","Chris Pratt","Emma Stone","Emma Watson","Ryan Reynolds","Ryan Gosling","John Legend","Mary J Blige","Kevin Bacon","Jennifer Hudson","Jennifer Garner","Jessica Alba","Jessica Simpson","Justin Timberlake","Justin Bieber","Selena Gomez","Denzel Washington","Morgan Freeman","Samuel Jackson","Jamie Foxx","Chris Rock","Adam Sandler","Matt Damon","Ben Affleck","George Clooney","Robert Downey","Scarlett Johansson","Natalie Portman","Anne Hathaway","Kate Hudson","Oliver Stone","Sandra Bullock","Halle Berry","Kerry Washington","Viola Davis","Lucy Liu","Priyanka Chopra","Mindy Kaling","Kim Kardashian","Paris Hilton","Michelle Obama","Barack Obama","Joe Biden","Donald Trump","Bill Clinton","Hillary Clinton","George Bush","Tiger Woods","Serena Williams","Venus Williams","LeBron James","Kobe Bryant","Tom Brady","Peyton Manning","Drew Brees","Derek Jeter","Babe Ruth","Mike Tyson","Muhammad Ali","Bruce Lee","Jackie Chan","Steve Jobs","Bill Gates","Elon Musk","Jeff Bezos","Mark Zuckerberg","Oprah Winfrey","Ellen DeGeneres","Martha Stewart","John Lennon","Paul McCartney","Elvis Presley","Frank Sinatra","Bruce Springsteen","Billy Joel","Stevie Wonder","Aretha Franklin","Whitney Houston","Mariah Carey","Katy Perry","Lady Gaga","Harry Styles","Johnny Depp","Johnny Cash","Dolly Parton","Carrie Underwood","Blake Shelton","Luke Bryan","John Wayne","Jack Nicholson","Robert De Niro","Al Pacino","Meryl Streep","Julia Child","Martin Luther King","Rosa Parks","Amy Adams","Amy Schumer","Kristen Bell","Kristen Stewart","Jake Paul","Logan Paul","Chris Brown","Jason Kidd","Michael Phelps","Simone Biles","Paul Rudd","Seth Rogen","Jonah Hill","Andrew Garfield","Zendaya Coleman","Lucas Hedges","Josh Brolin","James Franco","Tom Holland","Zac Efron","Amanda Seyfried","Rachel McAdams","Jennifer Lawrence","Jennifer Aniston","Courteney Cox","Lisa Kudrow","Matthew Perry","Matt LeBlanc","David Schwimmer","Kevin James","Kevin Costner","Nicole Kidman","Keith Urban","Bruce Willis","Demi Moore","Ashton Kutcher","Mila Kunis","Jim Carrey","Steve Martin","Martin Short","Tina Fey","Amy Poehler","Maya Rudolph","Will Ferrell","Jack Black","Owen Wilson","Luke Wilson","Ben Stiller","Chris Hemsworth","Mark Wahlberg","Dwayne Johnson","Vin Diesel","Michelle Rodriguez","Eva Mendes","Cameron Diaz","Drew Barrymore","Sarah Jessica Parker","Grace Kelly","Marilyn Monroe","James Dean","Tony Hawk","Carlos Santana","Ricky Martin","Marc Anthony","Gloria Estefan","Pedro Pascal","Oscar Isaac","Sofia Vergara","Eva Longoria","America Ferrera","Diego Luna","Gael Garcia","Salma Hayek","George Lopez","Jimmy Smits","Ken Jeong","John Cho","Randall Park","Daniel Kim","Steven Yeun","Sandra Oh","Ali Wong","Awkwafina Nora","Aziz Ansari","Kal Penn","Hasan Minhaj","Rami Malek","Ramy Youssef","Omar Epps","Mahershala Ali","Riz Ahmed","Dev Patel","Anna Kendrick","Jason Bateman","Paul Walker","Taylor Lautner","Robert Pattinson","Jason Momoa","Michael B Jordan","Donald Glover","Sterling Brown","Lupita Nyongo","Tiffany Haddish","Leslie Jones","Wanda Sykes","Keegan Key","Jordan Peele","Ice Cube","Kevin Garnett","Stephen Curry","Kevin Durant","James Harden","Chris Paul","Anthony Davis","Tony Parker","Magic Johnson","Larry Bird","Shaquille Neal","Dennis Rodman","Charles Barkley"]
+  };
+  // Blood relatives and spouses share a surname unless the story says otherwise.
+  const V4_FAMILY=/\b(mother|father|mom|dad|son|daughter|brother|sister|wife|husband|grandmother|grandfather|grandson|granddaughter|grandparent|twin|parent|child|kid|stepson|stepdaughter|stepmother|stepfather|uncle|aunt|nephew|niece|cousin|widow|widower|family)\b/i;
+  const V4_BG_WEIGHTS=[["white",52],["hispanic",19],["black",13],["eastasian",4],["seasian",3],["southasian",4],["middleeastern",3],["mixed",2]];
+
+  // ════════════════════════════════════════════════════════════════════════
+  // v4 roles and names (2026-09-16, round 2).
+  // ════════════════════════════════════════════════════════════════════════
+  function v4Norm(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
+  const V4_FAMOUS=new Set(V4_NAME_DATA.famous.map(v4Norm));
+  const V4_COOLDOWN=50;
+  function v4Mid(r){const m=String(r&&r.age_range||"").match(/(\d+)\s*-\s*(\d+)/);return m?(+m[1]+ +m[2])/2:35;}
+  // Every era whose birth years sit within five years of this age.
+  function v4Eras(age){
+    const born=2026-age;
+    return Object.keys(V4_NAME_DATA.eraYears).filter(e=>{const y=V4_NAME_DATA.eraYears[e];return born>=y[0]-5&&born<=y[1]+5;});
+  }
+  function v4FirstPool(gender,age,bg){
+    if(!/^(Male|Female)$/.test(gender))return v4Eras(age).reduce((a,e)=>a.concat(V4_NAME_DATA.unisexByEra[e]||[]),[]).filter((v,i,a)=>a.indexOf(v)===i);
+    const g=gender==="Female"?"F":"M";
+    const eras=v4Eras(age);
+    let pool=[];
+    eras.forEach(e=>{pool=pool.concat(V4_NAME_DATA.firstByEra[g][e]||[]);});
+    // Heritage first names only for people born 1950–2012, and only with a
+    // surname from the same background (the caller guarantees that). A name
+    // that is also on a general era list (Aaliyah, Terrence) keeps that era.
+    const born=2026-age;
+    const her=((V4_NAME_DATA.heritageFirst[bg]||{})[g]||[]).filter(n=>{const gen=Object.keys(V4_NAME_DATA.firstByEra[g]).filter(e=>V4_NAME_DATA.firstByEra[g][e].indexOf(n)>-1);return gen.length?gen.some(e=>eras.indexOf(e)>-1):true;});
+    if(her.length&&born>=1950&&born<=2012)pool=pool.concat(her,her);
+    return pool.filter((v,i,a)=>a.indexOf(v)===i||her.indexOf(v)>-1);
+  }
+  function v4PickBg(ctx){
+    const used=ctx.bgUse||{};
+    const total=V4_BG_WEIGHTS.reduce((s,[k,w])=>s+w/(1+2*(used[k]||0)),0);
+    let r=Math.random()*total;
+    for(const [k,w] of V4_BG_WEIGHTS){r-=w/(1+2*(used[k]||0));if(r<=0)return k;}
+    return "white";
+  }
+  function v4Surnames(bg){
+    if(bg!=="mixed")return V4_NAME_DATA.surnames[bg]||V4_NAME_DATA.surnames.white;
+    return Object.values(V4_NAME_DATA.surnames).reduce((a,b)=>a.concat(b),[]);
+  }
+  // Picks a first+last pair nobody has ever had, that fits the age, shares no
+  // first name or (unless family) surname with anyone else in this listing,
+  // and whose first name and surname are both outside the 50-project cooldown.
+  // Returns null rather than ever falling back to a reused or unfamiliar name.
+  function v4PickName(r,h,res){
+    const L=res._v4L||(res._v4L={firsts:new Set(),lasts:new Set(),bgUse:{},families:{}});
+    const coolF=h.v4CoolF||new Set(),coolL=h.v4CoolL||new Set();
+    const bCoolF=res.v4CoolF||new Set(),bCoolL=res.v4CoolL||new Set();
+    const usedFull=k=>(h.v4Full&&h.v4Full.has(k))||(res.v4Full&&res.v4Full.has(k))||h.roles.has(clean(k))||res.roles.has(clean(k));
+    const age=r._crew?rand(30,60,1):v4Mid(r);
+    const fam=r._familyId?L.families[r._familyId]:null;
+    const tryBg=(bg,surnameFixed)=>{
+      const lasts=surnameFixed?[surnameFixed]:cgShuffle(v4Surnames(bg)).filter(l=>!L.lasts.has(l)&&!coolL.has(v4Norm(l))&&!bCoolL.has(v4Norm(l))&&!(res._prevLasts&&res._prevLasts.has(clean(l))));
+      const firsts=cgShuffle(v4FirstPool(r.gender,age,bg)).filter(f=>!L.firsts.has(f)&&!coolF.has(v4Norm(f))&&!bCoolF.has(v4Norm(f)));
+      for(const last of lasts.slice(0,40)){
+        for(const first of firsts.slice(0,40)){
+          if(v4Norm(first)===v4Norm(last))continue;
+          const full=`${first} ${last}`;const k=v4Norm(full);
+          if(usedFull(k)||V4_FAMOUS.has(k))continue;
+          return {first,last,full,bg};
+        }
+      }
+      return null;
+    };
+    let got=null;
+    if(fam)got=tryBg(fam.bg,fam.last);
+    for(let i=0;i<6&&!got;i++)got=tryBg(fam?fam.bg:v4PickBg(L),null);
+    if(!got){res._nameShortage=true;return null;}
+    L.firsts.add(got.first);if(!fam)L.lasts.add(got.last);
+    L.bgUse[got.bg]=(L.bgUse[got.bg]||0)+1;
+    if(r._familyId&&!fam)L.families[r._familyId]={bg:got.bg,last:got.last};
+    res.v4Full=res.v4Full||new Set();res.v4Full.add(v4Norm(got.full));
+    res.roles.add(clean(got.full));
+    return got.full;
+  }
+  // How many first names and surnames are still usable right now.
+  function v4PoolStatus(h){
+    const coolF=h.v4CoolF||new Set(),coolL=h.v4CoolL||new Set();
+    const cnt=list=>list.filter((v,i,a)=>a.indexOf(v)===i&&!coolF.has(v4Norm(v))).length;
+    const F=cnt(Object.values(V4_NAME_DATA.firstByEra.F).reduce((a,b)=>a.concat(b),[]));
+    const M=cnt(Object.values(V4_NAME_DATA.firstByEra.M).reduce((a,b)=>a.concat(b),[]));
+    const allL=Object.values(V4_NAME_DATA.surnames).reduce((a,b)=>a.concat(b),[]).filter((v,i,a)=>a.indexOf(v)===i);
+    const Lc=allL.filter(v=>!coolL.has(v4Norm(v))).length;
+    const low=F<80||M<80||Lc<200;
+    return {female:F,male:M,surnames:Lc,low};
+  }
+
+  // ── Family, possessive labels, ages ─────────────────────────────────────
+  // Brothers, sisters and siblings count as children when a parent is in the cast.
+  const V4_CHILD=/\b(son|daughter|child|kid|boy|girl|grandson|granddaughter|grandchild|stepson|stepdaughter|sibling|brother|sister)\b/i;
+  const V4_PARENT=/\b(mother|father|mom|dad|parent|stepmother|stepfather)\b/i;
+  const V4_GRAND=/\bgrand(mother|father|parent|ma|pa)\b/i;
+  // Groups relatives: "her son" belongs with the female lead, "the owner's
+  // daughter" with the owner, and plain family labels in one story with each
+  // other. Seeds that already name a family group (`fam`) keep it.
+  function v4Families(roles){
+    const named=roles.filter(r=>!r._group);
+    named.forEach(r=>{if(r._fam)r._familyId="f"+r._fam;});
+    named.forEach(r=>{
+      const s=String(r._slot||"");
+      let ref=null;
+      const pm=s.match(/\b(her|his)\s+(son|daughter|child|kid|mother|father|wife|husband|brother|sister|grandson|granddaughter|grandmother|grandfather)\b/i);
+      if(pm){const g=pm[1].toLowerCase()==="her"?"Female":"Male";ref=named.find(x=>x!==r&&x.gender===g&&/lead/i.test(x.role_type||""))||named.find(x=>x!==r&&x.gender===g);r._refWord=pm[0];}
+      const om=s.match(/\b(?:the\s+)?([a-z-]+(?:\s[a-z-]+)?)['’]s\s+(son|daughter|child|kid|mother|father|wife|husband|brother|sister|grandson|granddaughter|grandmother|grandfather|partner)\b/i);
+      if(!ref&&om){const w=om[1].toLowerCase().split(" ").pop();ref=named.find(x=>x!==r&&new RegExp("\\b"+w+"\\b","i").test(String(x._slot||"")));r._refWord=om[0];}
+      if(ref){r._refRole=ref;const id=ref._familyId||r._familyId||("f"+Math.random().toString(36).slice(2,7));ref._familyId=id;r._familyId=id;}
+    });
+    const plain=named.filter(r=>!r._familyId&&(V4_CHILD.test(r._slot||"")||V4_PARENT.test(r._slot||"")||V4_GRAND.test(r._slot||"")));
+    if(plain.length>1){const id="fplain";plain.forEach(r=>{r._familyId=id;});}
+    // Spouses and siblings written as "the wife", "the brother" join a family
+    // only through a reference; otherwise they stay independent.
+  }
+  function v4NumWord(w){
+    const u={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50};
+    const t=String(w).toLowerCase();
+    if(/^\d+$/.test(t))return +t;
+    return t.split("-").reduce((a,x)=>a+(u[x]||0),0);
+  }
+  function v4Band(r){const m=String(r.age_range||"").match(/(\d+)\s*-\s*(\d+)/);return m?[+m[1],+m[2]]:[25,35];}
+  function v4SetBand(r,lo,hi){r.age_range=`${Math.max(1,Math.round(lo))}-${Math.max(Math.round(lo)+2,Math.round(hi))}`;}
+  // Parents are at least 18 years older than their children at every point of
+  // both ranges (36 for grandparents); an "N years" claim needs an age that
+  // could have lived it. Parents move up first; children move down only when
+  // a parent would pass 85.
+  function v4FixAges(roles){
+    const named=roles.filter(r=>!r._group);
+    const kids=named.filter(r=>V4_CHILD.test(r._slot||""));
+    // Every parent- or grandparent-labelled role counts against every child-
+    // labelled role in the listing, plus the role a "her son" label points at.
+    const parentsOf=k=>{
+      const list=[];
+      if(k._refRole&&/\b(son|daughter|child|kid|grandson|granddaughter)\b/i.test(k._refWord||"")&&!V4_CHILD.test(k._refRole._slot||""))list.push([k._refRole,/grand/i.test(k._refWord||"")?36:18]);
+      named.forEach(p=>{if(p===k||list.some(x=>x[0]===p))return;const s=String(p._slot||"");if(V4_GRAND.test(s)&&!/grand/i.test(k._slot||""))list.push([p,36]);else if(V4_PARENT.test(s)&&!V4_CHILD.test(s)&&!V4_GRAND.test(s))list.push([p,18]);});
+      return list;
+    };
+    for(let pass=0;pass<3;pass++){
+      kids.forEach(k=>{
+        parentsOf(k).forEach(([p,gap])=>{
+          const [klo,khi]=v4Band(k),[plo,phi]=v4Band(p);
+          if(plo-khi>=gap)return;
+          const width=Math.max(8,phi-plo);
+          let nlo=khi+gap;
+          if(nlo+width>85){const shift=nlo+width-85;v4SetBand(k,Math.max(1,klo-shift),khi-shift);nlo=v4Band(k)[1]+gap;}
+          v4SetBand(p,nlo,Math.min(90,nlo+width));
+        });
+      });
+    }
+    named.forEach(r=>{
+      const d=String(r.description||"");
+      const y=d.match(/\b(\d+|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|(?:twenty|thirty|forty|fifty)(?:-(?:one|two|three|four|five|six|seven|eight|nine))?)\s+years\b(?! old| from| ago| later| younger| older| apart| earlier| before| after)/i);
+      const [lo,hi]=v4Band(r);
+      if(y){const n=v4NumWord(y[1]);if(lo<n+18)v4SetBand(r,n+18,Math.max(n+26,hi+(n+18-lo)));}
+      if(/\bveteran\b|\bretired\b|\bdecades\b/i.test(d)){const [l2,h2]=v4Band(r);if(l2<35)v4SetBand(r,Math.max(35,l2),Math.max(45,h2+(35-l2)));}
+    });
+  }
+  // "her son" → "Naomi's son", "the owner's daughter" → "Naomi's daughter".
+  function v4ResolveLabels(roles){
+    roles.forEach(r=>{
+      if(r._group||!r._refRole||!r._refWord)return;
+      const refFirst=String(r._refRole.name||"").split(" ")[0];
+      if(!refFirst)return;
+      const rel=r._refWord.split(/\s+/).pop();
+      r._slot=String(r._slot).replace(r._refWord,`${refFirst}'s ${rel}`).replace(/^the\s+(\w+'s)/i,"$1");
+    });
+  }
+
+  // ── Pronouns ─────────────────────────────────────────────────────────────
+  const V4_ADVERBS=new Set("never always still just only also really finally slowly quietly both actually even already often rarely usually quickly suddenly clearly simply barely secretly openly".split(" "));
+  const V4_MODALS=new Set("can cannot can't will won't would wouldn't could couldn't should shouldn't must might may did didn't had hadn't".split(" "));
+  const V4_PAST=new Set("said told made left took came went knew thought found got gave saw felt kept lost met paid ran sat stood understood wrote had did was began brought bought caught fought held heard meant sent spent won became grew hid built led read put set let hit cut quit".split(" "));
+  function v4Verb3(v){
+    const irr={are:"is",were:"was",have:"has",do:"does","don't":"doesn't","aren't":"isn't","weren't":"wasn't","haven't":"hasn't","'re":"'s",go:"goes"};
+    if(irr[v])return irr[v];
+    if(/ed$/.test(v)||V4_PAST.has(v.toLowerCase()))return v;
+    if(/(s|sh|ch|x|z|o)$/.test(v))return v+"es";
+    if(/[^aeiou]y$/.test(v))return v.slice(0,-1)+"ies";
+    return v+"s";
+  }
+  // Rewrites singular "they" for a Male or Female role. Only All genders and
+  // Non-binary roles keep "they".
+  function v4Pronouns(text,gender){
+    if(!/^(Male|Female)$/.test(gender))return text;
+    const he=gender==="Male";
+    let t=String(text||"");
+    t=t.replace(/\bthemselves\b/gi,m=>he?"himself":"herself");
+    t=t.replace(/\btheirs\b/gi,m=>he?"his":"hers");
+    t=t.replace(/\btheir\b/g,he?"his":"her").replace(/\bTheir\b/g,he?"His":"Her");
+    t=t.replace(/\bthem\b/g,he?"him":"her");
+    t=t.replace(/\b(They|they)(?:'re|'ve)?\s+((?:\w+\s+)?)(\w+'?\w*)/g,(m,they,adv,verb)=>{
+      const P=they==="They"?(he?"He":"She"):(he?"he":"she");
+      if(/'re$/.test(m.split(/\s/)[0]))return `${P}'s ${adv}${verb}`;
+      if(/'ve$/.test(m.split(/\s/)[0]))return `${P}'s ${adv}${verb}`;
+      const a=adv.trim().toLowerCase();
+      if(a&&!V4_ADVERBS.has(a)){ // "they want to" — the first word is the verb
+        const v=adv.trim();return `${P} ${V4_MODALS.has(v.toLowerCase())?v:v4Verb3(v)} ${verb}`;
+      }
+      if(V4_MODALS.has(verb.toLowerCase()))return `${P} ${adv}${verb}`;
+      return `${P} ${adv}${v4Verb3(verb)}`;
+    });
+    return t;
+  }
+
+  // ── The story a role is allowed to refer to ─────────────────────────────
+  const V4_STORY_NOUNS=new Set("report address shop store coat jacket suit bag box envelope letter note tape recording money cash check debt loan painting ring key keys car van truck bike boat phone gun knife body file files list contract deal sale vote election meeting contest race fight crash fire flood storm accident robbery trial case house apartment building school hospital church bar restaurant diner kitchen office warehouse garage station gym farm lake river bridge road block neighborhood town company business plant factory camp court jail prison lawyer doctor landlord husband wife son daughter mother father brother sister baby dog cat package delivery photo photograph picture video diary will inheritance secret affair test exam audition interview wedding funeral party trip hotel motel bus train plane ferry map ticket lottery prize award grant scholarship tournament match game season team band choir show concert recital boss owner partner uncle aunt grandmother grandfather cousin nephew niece girlfriend boyfriend fiance ex".split(" "));
+  const V4_POLICE=/\b(police|officer|detective|cop|cops|sheriff|deputy|patrol)\b/i;
+  const V4_POLICE_WHY=/\b(police|officer|detective|cop|sheriff|deputy|crime|robbery|rob|theft|stolen|steal|missing|murder|body|dead|death|investigat|arrest|court|prison|evidence|case|report|accident|crash|break-in|burglar|fraud|scam|smuggl|drug|gun|attack|assault|kidnap|hostage|precinct|patrol)\b/i;
+  function v4Stem(w){return String(w).replace(/(ies)$/,"y").replace(/(es|s)$/,"").slice(0,6);}
+  function v4HayStems(text){return new Set(clean(text).split(" ").map(v4Stem));}
+  function v4UnsetRefs(text,stems){
+    const out=[];
+    (String(text||"").match(/\b(the|that|this|those|these|his|her|their)\s+([a-z]+)/gi)||[]).forEach(m=>{const w=m.split(/\s+/)[1].toLowerCase();if(V4_STORY_NOUNS.has(w)&&!stems.has(v4Stem(w)))out.push(m);});
+    return out;
+  }
+  function v4ItWithoutObject(text,hay){return /\b(open|find|hide|return|deliver|keep|sell|read|burn|steal)\s+it\b/i.test(text)&&!/\b(something|coat|package|envelope|box|bag|letter|note|tape|money|ring|key|painting|file|diary|phone|map|ticket)\b/i.test(hay);}
+
+  // ── Filler add-ons ───────────────────────────────────────────────────────
+  const V4_FILLER=/room to make things up|needs real weight|behaves differently around them|a fitting beforehand|ideally a local hire|one or two calls, close together|every scene (they have|he has|she has) is against|shares the bulk of|most of (their|his|her) scenes are|plays opposite|scenes with [A-Z]|should feel like they had a life|play the day around it|expect notes|turn on a note|chemistry read|paired at (the )?callback|bring an idea|come in with a choice|play it small|keep it quiet|do not push it|no need to push|keep it real|play it straight|anything bigger fights|the writing carries|holds pressure|under strain for a long time|turns on a dime|changes twice in one scene|changes on a single line|long stretches with no lines|whole scenes on listening|much of this part is reacting|funny helps here|the humor is dry|comic timing matters|there is real physical work|the body does a lot|plenty of moving around|there is rehearsal on this|we rehearse before we shoot|expect rehearsal time|the whole part turns on one scene|one scene decides this role|we are casting this on a single scene|no accent needed|play it in your own voice|use your own accent|presence matters more|casting for authority|this one is mostly listening|built out of reactions|while someone else talks|age is a guide|read the age range loosely|flexible on the age|we work fast|direction comes in small pieces|\bfew scenes,|not a big part|a handful of scenes,|good with interruptions|comfortable talking over|able to talk over|local hire preferred|local casting for this part|some improvising likely|play with this in rehearsal|anchors one sequence|owns a single scene|runs one whole scene|needs a life outside this|has somewhere to be afterwards|handles props through|lots of business with the hands|works close to the crew|one hard beat|one difficult moment|a single sharp turn|could be any gender|open on gender for this one|without a fixed gender|needs one wardrobe call|there is a separate fitting|written very specific|close to the bone|a real person in this writing/i;
+  const V4_SCENES={"one scene":1,"a single scene":1,"single scene":1,"two scenes":2,"two or three scenes":2.5,"three scenes":3,"a handful of scenes":4,"few scenes":3,"four scenes":4};
+  function v4SceneCounts(text){const d=String(text||"").toLowerCase();const f=new Set();Object.keys(V4_SCENES).forEach(k=>{if(new RegExp("\\b"+k+"\\b").test(d))f.add(V4_SCENES[k]);});if(f.has(2.5)){f.delete(2);f.delete(3);}return f;}
+  const V4_FUNCS=/\b(officer|cop|detective|manager|driver|nurse|doctor|lawyer|waiter|waitress|bartender|guard|clerk|receptionist|customer|teacher|coach|agent|dispatcher|supervisor|owner|chef|cook|host|reporter|pastor|priest|judge|inspector)\b/i;
+  const V4_QUAL=/\b(first|second|third|new|old|older|younger|rival|other|head|night|day|senior|junior|regular|last|co)\b/;
+  function v4FuncKey(slot){const m=String(slot||"").toLowerCase().replace(/\b\w+['’]s\b/g,"").match(V4_FUNCS);if(!m)return "";return /cop|officer|detective|deputy/.test(m[1])?"police":m[1];}
+
+  // Frames a finished role: "Naomi, the dry cleaner who owns the shop. …"
+  function v4Frame(r){
+    if(r._group||r._job)return r.description;
+    const first=String(r.name||"").split(" ")[0];
+    let label=String(r._slot||"").trim();
+    if(!label)return r.description;
+    const bare=/^[A-Z][a-z]+'s\s/.test(label)||/^(the|a|an)\s/i.test(label)?label:`the ${label}`;
+    const body=String(r.description||"").trim();
+    return Math.random()<0.5?`${first}, ${bare}. ${body}`:`${first} is ${bare}. ${body}`;
+  }
+
+  // Role-level and cross-field rules. Every one also runs in the harness.
+  function v4RoleProblems(item,c){
+    const out=[];
+    const roles=item._roles||[];
+    const named=roles.filter(r=>!r._group);
+    const syn=String(item.synopsis||"");
+    const hay=[item.title,item.tagline,syn,item.shoot_location,...roles.map(r=>`${r._slot||""} ${r.name||""}`)].join(" ");
+    const stems=v4HayStems(hay);
+    // 1. family ages
+    named.forEach(k=>{
+      if(!V4_CHILD.test(k._slot||""))return;
+      const khi=v4Band(k)[1];
+      named.forEach(p=>{
+        if(p===k)return;
+        const s=String(p._slot||"");
+        const refKid=k._refRole===p&&/\b(son|daughter|child|kid|grandson|granddaughter)\b/i.test(k._refWord||"");
+        const isParent=(V4_PARENT.test(s)&&!V4_CHILD.test(s)&&!V4_GRAND.test(s))||(refKid&&!/grand/i.test(k._refWord||""));
+        const isGrand=V4_GRAND.test(s)||(refKid&&/grand/i.test(k._refWord||""));
+        if(isParent&&v4Band(p)[0]-khi<18)out.push("parent not 18+ years older than child");
+        if(isGrand&&!/grand/i.test(k._slot||"")&&v4Band(p)[0]-khi<36)out.push("grandparent not 36+ years older");
+      });
+    });
+    roles.forEach(r=>{
+      const d=String(r.description||"");const lo=v4Band(r)[0];
+      const y=d.match(/\b(\d+|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|(?:twenty|thirty|forty|fifty)(?:-(?:one|two|three|four|five|six|seven|eight|nine))?)\s+years\b(?! old| from| ago| later| younger| older| apart| earlier| before| after)/i);
+      if(y){const n=v4NumWord(y[1]);if(n+18>lo)out.push("years of experience vs age");}
+      if(/\bveteran\b|\bretired\b|\bdecades\b/i.test(d)&&lo<35)out.push("veteran too young");
+      // 2. story references
+      const un=v4UnsetRefs(d,stems);if(un.length)out.push("role refers to something the story never sets up: "+un[0]);
+      if(v4ItWithoutObject(d,hay))out.push("role says 'it' with no object in the story");
+      if(V4_POLICE.test(`${r._slot||""} ${d}`)&&!V4_POLICE_WHY.test(`${v3Sentences(syn).slice(0,2).join(" ")} ${item.tagline||""}`))out.push("police in a role with no reason in the synopsis");
+      // 4. scene counts
+      const sc=v4SceneCounts(d);
+      if(sc.size>1)out.push("two scene counts in one role");
+      if(sc.has(1)&&+r.est_days>2&&c.fam!=="stage")out.push("one scene over several shoot days");
+      // 5/6/7
+      if(!r._group&&!r._job){
+        const first=String(r.name).split(" ")[0];
+        if(!(d.indexOf(first+", ")===0||d.indexOf(first+" is ")===0))out.push("description does not open with the name");
+        if(/^[^.]*\b(her|his|their)\s+(son|daughter|mother|father|wife|husband|brother|sister|boss|partner)\b/i.test(d))out.push("possessive label instead of a name");
+        if(/^(Male|Female)$/.test(r.gender)&&/\b(they|them|their|theirs|themselves)\b/i.test(d))out.push("they on a gendered role");
+      }
+      if(V4_FILLER.test(d))out.push("filler add-on line");
+      if(v3Sentences(d).some(z=>/\b(until|and|but|or|because|the|a|an|of)\.$/i.test(z)))out.push("sentence cut off");
+      if(!r._group&&/\b(a few of you|one of the people in the room|you fill the world)\b/i.test(d))out.push("group line on a single part");
+      if(r.ethnicity&&!/^any/i.test(r.ethnicity)&&!/\b(heritage|family from|immigrant|grew up in|speaks|language|culture|community|background|born in|first-generation|mixed-race|biracial)\b/i.test(d))out.push("unexplained ethnicity");
+      if(/\(Group|\bGroup [A-Z0-9]\b|(^|\s)\d\)|(^|\s)[A-Z]\)/.test(r.name))out.push("placeholder role label");
+    });
+    // 3. duplicate functions
+    const seen={};
+    named.forEach(r=>{const k=v4FuncKey(r._slot);if(!k)return;const s=String(r._slot).toLowerCase();if(seen[k]&&!V4_QUAL.test(s+" "+seen[k]))out.push("two roles with the same job");seen[k]=s;});
+    // 5. names within listing
+    const people=named.map(r=>r.name).concat(item._crewNames||[]);
+    const firsts=people.map(n=>String(n).split(" ")[0]);
+    if(new Set(firsts).size!==firsts.length)out.push("two people share a first name");
+    const lastOf=n=>String(n).split(" ").slice(1).join(" ");
+    const byLast={};
+    named.forEach(r=>{const l=lastOf(r.name);(byLast[l]=byLast[l]||[]).push(r);});
+    Object.values(byLast).forEach(list=>{if(list.length>1&&!list.every(x=>x._familyId&&x._familyId===list[0]._familyId))out.push("two unrelated people share a surname");});
+    (item._crewNames||[]).forEach(n=>{if(byLast[lastOf(n)])out.push("crew member shares a surname with the cast");});
+    people.forEach(n=>{if(V4_FAMOUS.has(v4Norm(n)))out.push("celebrity name");});
+    // 8. titles
+    if(/^Untitled\b|\((Working Title|Part One|Season One|New Pages|Revised|Take Two|Chapter One)\)/i.test(item.title||""))out.push("placeholder title");
+    // 10. submissions vs roles
+    const s=String(item.submission_requirements||"");
+    const anyReel=roles.some(r=>(r.required_media||[]).indexOf("reel")>-1),anySelf=roles.some(r=>r.prescreen==="selftape"),anyVoice=roles.some(r=>r.prescreen==="voice"),anyResume=roles.some(r=>(r.required_media||[]).indexOf("resume")>-1),anyFull=roles.some(r=>(r.required_media||[]).indexOf("fullbody")>-1);
+    if(/self-tape|selftape/i.test(s)&&!anySelf)out.push("self-tape asked, none required");
+    if(/\breel\b|recent footage|shot recently|demo/i.test(s)&&!anyReel)out.push("reel asked, none required");
+    if(/voice memo|voice sample|reading any two lines|thirty seconds of you reading/i.test(s)&&!anyVoice)out.push("voice sample asked, none required");
+    if(/résumé|resume|\bCV\b|credit list/i.test(s)&&!anyResume)out.push("résumé asked, none required");
+    if(/full-body|full-length|full body/i.test(s)&&!anyFull)out.push("full-body asked, none required");
+    if(/union status|union standing/i.test(s)&&/non-union/i.test(item.union_status||""))out.push("union status on Non-Union");
+    // 13/14/15
+    if(/Credits:/.test(s)||!String(item.crew_credits||"").trim())out.push("crew credits not in their own field");
+    if(item.admin_verified!==null)out.push("badge not defaulted to No Badge");
+    if(/one neighborhood|one or two days move/i.test(item.schedule_note||""))out.push("schedule wording");
+    return out;
   }
 
   // A listing prints its premise sentence in the synopsis, which is what makes
@@ -33270,60 +33738,10 @@ const ACG = (()=>{
       const base=base0.replace(/\bFeatured\b/g,"Principal").replace(/\bCrowd\b/g,"Onlookers").replace(/\bStand-?[Ii]n\b/g,"Lighting Double");
       return r._job||/background/i.test(base)||!/background/i.test(r.role_type||"")?base:`${base} (Background)`;
     }
-    const generic=!r._keepDescription&&/background|ensemble|customers|students|crew|passenger|reader|group|patron|neighbor/i.test(r.name+" "+r.role_type);
-    // The pools follow the role's ethnicity, so the name a talent reads always
-    // matches the breakdown they are reading it in.
-    const banks=namePools(r.ethnicity,r.gender);
-    const pool=banks.first.length?banks.first:(r.gender==="Female"?FIRST_F:r.gender==="Male"?FIRST_M:FIRST_N.concat(FIRST_F,FIRST_M));
-    const surnames=banks.last.length?banks.last:LAST_NAMES;
-    if(generic){
-      const cands=[`${pick(["Lobby","Market","Transit","Campus","Workshop","Street","Office","Neighborhood","Theater","Location"])} ${pick(["Ensemble","Regulars","Patrons","Background","Guests","Crew","Neighbors","Riders"])}`];
-      return candidateUnique(cands,h.roles,res.roles,()=>`${pick(["Late-Night","Opening-Night","Field-Trip","Corner-Store","Workshop","Holding-Area","Bus-Stop","Storefront"])} ${pick(["Ensemble","Background","Patrons","Crew","Regulars","Audience"])}`);
-    }
-    // Name selection degrades in stages instead of falling off a cliff. The
-    // ideal is a full name whose given name AND surname have both never been
-    // used; that can only be satisfied a few hundred times before the banks are
-    // spent, and the original version then synthesised syllable names that read
-    // as obviously machine-made. It now relaxes one constraint at a time,
-    // always keeping the FULL name unique — that is the promise that matters.
-    //
-    // Each tier FILTERS the pool rather than sampling it at random. Random
-    // retries are fine while names are plentiful and pathological once they are
-    // not: with the banks nearly exhausted the old version burned thousands of
-    // misses per name and generation slowed to seconds per listing.
-    // v3 surname rules. The full name never repeats (checked against every
-    // saved listing and the durable log). The surname is the least-used one
-    // available, never one already in this listing, and never one used in the
-    // listing just before it.
-    const lastsHere=res._lastsHere||(res._lastsHere=new Set());
-    const prevLasts=res._prevLasts||h.prevLasts||new Set();
-    const lc=k=>((h.lastCount&&h.lastCount[k])||0)+((res.lastCount&&res.lastCount[k])||0);
-    const allLast=surnames.concat(EXTRA_SURNAMES[banks.key]||[]).filter((v,i,a)=>a.indexOf(v)===i);
-    const okLast=allLast.filter(l=>!lastsHere.has(clean(l))&&!prevLasts.has(clean(l))&&!h.roles.has(clean(l)));
-    const lastPool=okLast.length?okLast:allLast.filter(l=>!lastsHere.has(clean(l)));
-    const taken=full=>h.roles.has(clean(full))||res.roles.has(clean(full));
-    const take=(first,last)=>{
-      const full=`${first} ${last}`;const k=clean(last);
-      res.roles.add(clean(full));res.firsts.add(clean(first));res.lasts.add(k);lastsHere.add(k);
-      res.lastCount=res.lastCount||{};res.lastCount[k]=(res.lastCount[k]||0)+1;
-      return full;
-    };
-    const tiers=[...new Set(lastPool.map(l=>lc(clean(l))))].sort((x,y)=>x-y);
-    for(const t of tiers){
-      const lasts=cgShuffle(lastPool.filter(l=>lc(clean(l))===t)).slice(0,40);
-      for(const last of lasts){
-        for(const first of cgShuffle(pool).slice(0,25)){
-          if(clean(first)!==clean(last)&&!taken(`${first} ${last}`))return take(first,last);
-        }
-      }
-    }
-    for(let i=0;i<400;i++){
-      const first=pick(pool),last=pick(lastPool.length?lastPool:allLast);
-      const mid=String.fromCharCode(65+Math.floor(Math.random()*26));
-      const full=`${first} ${mid}. ${last}`;
-      if(!taken(full)){res.roles.add(clean(full));lastsHere.add(clean(last));return full;}
-    }
-    return candidateUnique([`${pick(pool)} ${pick(allLast)}`],h.roles,res.roles,i=>`${pick(pool)} ${pick(allLast)}-${pick(allLast)}`);
+    // v4: every person — character or crew — gets a familiar U.S. name from
+    // v4PickName, which never reuses a full name, respects the 50-project
+    // cooldown and returns nothing rather than a reused or unfamiliar name.
+    return v4PickName(r,h,res)||"";
   }
 
   function varyRoleDescription(r,original,voice,charName){
@@ -33333,7 +33751,7 @@ const ACG = (()=>{
     // framed here instead, because this is the first point at which the
     // character's real name exists.
     if(r._full)return frameSeedDescription({...r,description:base},charName);
-    if(r._job)return base;
+    if(r._job||r._rawDesc)return base;
     if(r._keepDescription)return sent(base,1)||base;
     // A lead described in four words tells an actor nothing. Bigger parts draw
     // from the longer end of the scale; only the small parts can come out tiny.
@@ -33438,7 +33856,9 @@ const ACG = (()=>{
       // Name a scene partner. Only ever states who they play against, which is
       // true by construction — it never invents a family relationship.
       const others=named.filter(o=>o!==r).map(o=>o.name);
-      if(others.length&&Math.random()<0.6){
+      // v4: no invented scene-partner lines ("Every scene they have is
+      // against X") — who works with whom must come from the story.
+      if(false&&others.length){
         // v3: each partner is named once per listing, so two roles never carry
         // the same line about the same person.
         const partnerPool=(leads.length&&!leads.includes(r)?leads.map(o=>o.name).filter(n=>n!==r.name):others).filter(n=>!usedPartners.has(n));
@@ -34227,7 +34647,7 @@ const ACG = (()=>{
       const all=probs.concat(summaryProblems(item));
       if(all.length||!itemFreshEnough(item,h,res,attempts<250)){
         res._rejected=(res._rejected||0)+1;
-        (res._rejectLog=res._rejectLog||[]).push({type:item.type,problems:all,tagline:item.tagline});
+        (res._rejectLog=res._rejectLog||[]).push({type:item.type,problems:all,tagline:item.tagline,roles:(item._roles||[]).map(r=>`${r.name} ${r.age_range} [${r._slot||""}]: ${r.description}`)});
         res._typeFails[item.type]=(res._typeFails[item.type]||0)+1;
         if(res._typeFails[item.type]>12)res._deadTypes.add(item.type);
         continue;
@@ -34239,6 +34659,8 @@ const ACG = (()=>{
       const ak=`${item.location}|${item._areaName}`;res.areaUse[ak]=(res.areaUse[ak]||0)+1;
       res.placeCount=(res.placeCount||0)+1;if(item.location==="New York, NY")res.nycCount=(res.nycCount||0)+1;
       res.tags.add(clean(item.tagline));
+      res.v4CoolF=res.v4CoolF||new Set();res.v4CoolL=res.v4CoolL||new Set();
+      (item._roles||[]).filter(r=>!r._group&&!r._job).map(r=>r.name).concat(item._crewNames||[]).forEach(n=>{const parts=String(n).trim().split(/\s+/);res.v4CoolF.add(v4Norm(parts[0]));res.v4CoolL.add(v4Norm(parts.slice(1).join(" ")));});
       res._prevLasts=new Set((item._roles||[]).filter(r=>!r._group).map(r=>r.name).concat(item._crewNames||[]).map(nameParts).filter(Boolean).map(p=>clean(p.last)));
       addUsed(res.storyTexts,item._storyTextKey);
       [item._settingKey,item._seedOnlyKey,item._turnKey].forEach(k=>addUsed(res.traits,k));
@@ -34254,7 +34676,12 @@ const ACG = (()=>{
       out.push(item);
     }
     rememberGenerated(out);
-    if(typeof window!=="undefined")window.__acgLastRun={attempts,why:res._why||{},rejected:res._rejected||0,rejectLog:(res._rejectLog||[]).slice(-40)};
+    // Tells the admin page when the familiar-name pools are running low
+    // (or already ran out this batch). Never silently falls back.
+    const pool=v4PoolStatus(h);
+    if(res._nameShortage&&out.length<count)pool.low=true;
+    out._pool=pool;
+    if(typeof window!=="undefined")window.__acgLastRun={pool,attempts,why:res._why||{},rejected:res._rejected||0,rejectLog:(res._rejectLog||[]).slice(-40)};
     return out;
   }
   // The keys a saved listing retires for good. Written to the database so the
@@ -34479,6 +34906,7 @@ function AdminCastingGenerator({session}){
   // and neither must generating from a different browser — so the log, not the
   // casting list, is what a premise is checked against.
   const [seenKeys,setSeenKeys]=useState([]);
+  const [poolWarn,setPoolWarn]=useState(null);
 
   const showMsg=(m,dur=4000)=>{setMsg(m);if(dur)setTimeout(()=>setMsg(m2=>m2===m?"":m2),dur);};
 
@@ -34493,25 +34921,28 @@ function AdminCastingGenerator({session}){
       // selected here, or the form loads it as undefined, renders blank, and the
       // next save writes NULL over good data. The editor also re-fetches its own
       // full row on open as a backstop, but keep this list complete regardless.
-      fetchAllRows(()=>window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope").order("created_at",{ascending:false})).then(data=>({data})).catch(error=>({error})),
+      fetchAllRows(()=>window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits").order("created_at",{ascending:false})).then(data=>({data})).catch(error=>({error})),
       fetchAllRows(()=>window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay")).then(data=>({data})).catch(error=>({error})),
-      fetchAllRows(()=>window.sb.from("casting_generator_seen").select("key"),{key:"key"}).then(data=>({data})).catch(error=>({error}))
+      fetchAllRows(()=>window.sb.from("casting_generator_seen").select("key,kind,meta,created_at"),{key:"key"}).then(data=>({data})).catch(error=>({error}))
     ]);
     if(ss){setGenEnabled(!!ss.casting_generator_enabled);setLastRun(ss.casting_generator_last_run);}
     if(ce)showMsg("Failed to load castings: "+ce.message);
     if(re)console.warn("[ACG] role history unavailable",re);
     if(se)console.warn("[ACG] story log unavailable",se);
     const logged=(sk||[]).map(r=>r.key).filter(Boolean);
+    // person_name rows carry first/last/project for the 50-project cooldown,
+    // so they are passed through whole; everything else is a plain key.
+    const personRows=(sk||[]).filter(r=>r&&r.kind==="person_name");
     // Listings that pre-date the log still count as told stories, so mine them
     // and write anything missing back. Runs once in practice — after the first
     // visit the log already holds them.
     const mined=ACG.historyKeysFor(cs||[]);
     const missing=mined.filter(k=>logged.indexOf(k)===-1);
-    setSeenKeys([...logged,...missing]);
+    setSeenKeys([...logged.filter(k=>k.indexOf("person|")!==0),...personRows,...missing]);
     if(missing.length){
       // v3: names, crew and company cores on existing listings are retired too.
       // Written in chunks — the first backfill is a few thousand rows.
-      const kindOf=k=>k.indexOf("name|")===0?"character_name":k.indexOf("crew|")===0?"crew_name":k.indexOf("company|")===0?"company":"backfill";
+      const kindOf=k=>k.indexOf("name|")===0?"character_name":k.indexOf("crew|")===0?"crew_name":k.indexOf("company|")===0?"company":k.indexOf("person|")===0?"person_name":"backfill";
       for(let i=0;i<missing.length;i+=500){
         window.sb.from("casting_generator_seen").upsert(missing.slice(i,i+500).map(k=>({key:k,kind:kindOf(k)})),{onConflict:"key",ignoreDuplicates:true})
           .then(({error})=>{if(error)console.warn("[ACG] story log backfill failed",error);});
@@ -34548,11 +34979,24 @@ function AdminCastingGenerator({session}){
       while(ok<target&&rounds<5){
         rounds++;
         const batch=ACG.generateBatch(adminId,seenThisRun,target-ok,keysThisRun);
+        if(batch._pool&&batch._pool.low)setPoolWarn(batch._pool);
         if(!batch.length)break;
         for(const raw of batch){
           if(ok>=target)break;
           const roles=raw._roles||[];
           const item=Object.fromEntries(Object.entries(raw).filter(([k])=>k[0]!=="_"));
+          // Reserve every character and crew name BEFORE the casting exists.
+          // casting_generator_seen.key is unique, so if another admin took a
+          // name a moment ago this insert fails and the draft is discarded
+          // (the loop generates a replacement). A reserved name stays spent
+          // even if the draft is later deleted.
+          const allRows=ACG.seenRowsFor(raw);
+          const nameRows=allRows.filter(r=>r.kind==="person_name");
+          if(nameRows.length){
+            const {error:nErr}=await window.sb.from("casting_generator_seen").insert(nameRows);
+            if(nErr){fail++;errors.push(nErr.code==="23505"?"a name was taken by another generator run":nErr.message);console.warn("[ACG] name reservation failed",nErr);keysThisRun.push(...nameRows.map(r=>r.key));continue;}
+            keysThisRun.push(...nameRows);
+          }
           const {data:cData,error:cErr}=await window.sb.from("castings").insert(item).select("id").single();
           if(cErr){fail++;errors.push(cErr.message);console.warn("[ACG] casting insert failed",cErr,item);continue;}
           const roleRows=roles.map(r=>{
@@ -34588,7 +35032,7 @@ function AdminCastingGenerator({session}){
           // v3: every story key, character and crew name, company core,
           // schedule sentence and neighborhood this listing used, so no other
           // browser or device can hand any of them out again.
-          const usedRows=ACG.seenRowsFor(raw);
+          const usedRows=allRows.filter(r=>r.kind!=="person_name");
           keysThisRun.push(...usedRows.map(r=>r.key));
           if(usedRows.length){
             const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(usedRows,{onConflict:"key",ignoreDuplicates:true});
@@ -34666,14 +35110,20 @@ function AdminCastingGenerator({session}){
     if(!fresh){setBusy(null);showMsg("Regenerate failed: no draft passed the checks. Try again.");return;}
     const freshRoles=fresh._roles||[];
     const regenRows=ACG.seenRowsFor(fresh);
+    const regenNames=regenRows.filter(r=>r.kind==="person_name");
+    if(regenNames.length){
+      const {error:nErr}=await window.sb.from("casting_generator_seen").insert(regenNames);
+      if(nErr){setBusy(null);showMsg("Regenerate failed: a name was just taken. Try again.");return;}
+    }
     if(regenRows.length){
       setSeenKeys(prev=>[...prev,...regenRows.map(r=>r.key)]);
-      const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(regenRows,{onConflict:"key",ignoreDuplicates:true});
+      const {error:kErr}=await window.sb.from("casting_generator_seen").upsert(regenRows.filter(r=>r.kind!=="person_name"),{onConflict:"key",ignoreDuplicates:true});
       if(kErr)console.warn("[ACG] generator log write failed",kErr);
     }
     Object.keys(fresh).forEach(k=>{if(k[0]==="_")delete fresh[k];});
     const {error}=await window.sb.from("castings").update({
       title:fresh.title,type:fresh.type,prod:fresh.prod,posted_by_label:fresh.posted_by_label,casting_director_name:fresh.casting_director_name||null,
+      crew_credits:fresh.crew_credits||null,admin_verified:null,
       tagline:fresh.tagline||null,synopsis:fresh.synopsis,location:fresh.location,pay:fresh.pay,union_status:fresh.union_status,
       submission_requirements:fresh.submission_requirements,expires_at:fresh.expires_at,deadline:fresh.deadline||null,
       // Regenerate rewrites the story AND the city, so the Where & When block has
@@ -34715,6 +35165,7 @@ function AdminCastingGenerator({session}){
       title:updated.title,type:updated.type,prod:postedBy,posted_by_label:postedBy,
       casting_director_name:(updated.casting_director_name&&updated.casting_director_name!==updated.prod&&updated.casting_director_name!==updated.posted_by_label&&!/ — /.test(updated.casting_director_name))?updated.casting_director_name:postedBy,
       tagline:updated.tagline||null,synopsis:updated.synopsis,location:updated.location,pay:updated.pay,union_status:updated.union_status,
+      crew_credits:(updated.crew_credits||"").trim()||null,
       submission_requirements:updated.submission_requirements,casting_website_url:updated.casting_website_url||null,
       casting_image_url:updated.casting_image_url||null,casting_image_path:updated.casting_image_path||null,
       casting_images:updated.casting_images||[],
@@ -34818,6 +35269,9 @@ function AdminCastingGenerator({session}){
     <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Generate platform-led casting opportunities posted by CastSlate. Drafts appear here for review before going live. Nothing auto-publishes.</p>
 
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
+    {poolWarn&&<div style={{background:"rgba(200,137,0,0.10)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid #c88900"}}>
+      <b>Name pools are running low.</b> Available right now: {poolWarn.female} women's first names, {poolWarn.male} men's first names, {poolWarn.surnames} surnames (after the 50-project cooldown). The generator will not reuse or invent names — add more familiar names to V4_NAME_DATA before generating many more drafts.
+    </div>}
 
     {/* Generator controls card */}
     <div className="card" style={{padding:20,marginBottom:20}}>
@@ -35042,6 +35496,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     // director's name with the company (there is no field for it in this form).
     posted_by_label:listing.posted_by_label||"",
     casting_director_name:listing.casting_director_name||"",
+    crew_credits:listing.crew_credits||"",
     tagline:listing.tagline||"",
     synopsis:listing.synopsis||"",
     location:listing.location||"",
@@ -35280,11 +35735,15 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
       {(()=>{const roll=castingPayRollup(roles.map(r=>({rate_amount:r.rate_amount,rate_unit:r.rate_unit,est_days:r.est_days})));
         if(roll.top==null)return null;
         return <div style={{display:"flex",gap:8,flexWrap:"wrap",marginTop:10}}>
-          <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)"}}>Top rate {fmtMoney(roll.top)}</span>
+          <span className="badge" style={{background:"rgba(21,128,61,0.10)",color:"#15803d",border:"1px solid rgba(21,128,61,0.25)"}}>Top rate {fmtTopRate(roleTopRate(roles))}</span>
+          <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>Top role total {fmtMoney(roll.top)}</span>
           <span className="badge" style={{background:"var(--s2)",color:"var(--t2)"}}>Full cast budget {fmtMoney(roll.sum)}</span>
         </div>;})()}
     </div>
 
+    <div className="form-group"><label className="label">Crew credits</label>
+      <input className="input" value={form.crew_credits||""} onChange={e=>set("crew_credits",e.target.value)} placeholder="Director: Name · Producer: Name · Casting: Name"/>
+    </div>
     <div className="form-group"><label className="label">Submission Requirements</label>
       <textarea className="textarea" rows={3} value={form.submission_requirements} onChange={e=>set("submission_requirements",e.target.value)} style={{resize:"vertical"}}/>
       <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>Use honest language. Do not promise payment unless it is confirmed.</p></div>
@@ -42836,7 +43295,7 @@ function App(){
     if(!castingId)return null;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return null;
       const c={
@@ -42852,7 +43311,7 @@ function App(){
         casting_images:Array.isArray(data.casting_images)?data.casting_images:[],
         casting_website_url:data.casting_website_url||null,
         shoot_start:data.shoot_start||null,shoot_end:data.shoot_end||null,
-        shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,
+        shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,crew_credits:data.crew_credits||null,
         talent_scope:data.talent_scope||null,
         roles:(data.roles||[]).map(r=>({
           id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
@@ -43109,7 +43568,7 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         // Guard: hide pending/unpublished AND not-yet-live (scheduled) castings from
@@ -43140,7 +43599,7 @@ function App(){
           // a shared post, so this mapper has to carry the same fields as the
           // browse-list one or At a Glance / Where & When silently vanish there.
           shoot_start:data.shoot_start||null,shoot_end:data.shoot_end||null,
-          shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,
+          shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,crew_credits:data.crew_credits||null,
           talent_scope:data.talent_scope||null,
           roles:(data.roles||[]).map(r=>({
             id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
