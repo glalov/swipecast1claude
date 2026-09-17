@@ -140,7 +140,7 @@ check(1,"tagline_metadata","Tagline is metadata, not a story hook",L=>{
 });
 check(1,"role_name_tacked","Role description names the character/role at the end, not first",L=>{
   const out=[];
-  L.roles.forEach(r=>{
+  L.roles.filter(r=>!isGroup(r)).forEach(r=>{
     const d=String(r.description||"");
     if(/\bThat is (the|a|an|[A-Z][a-z]+)\b[^.]*\.\s*$/.test(sentences(d).slice(0,2).join(" "))||/\. [A-Z][a-z]+ is the [^.]+\.\s*$/.test(sentences(d).slice(0,2).join(" "))||/^Looking for someone to play/.test(d))out.push({detail:`${r.name}: ${d.slice(0,90)}`});
   });

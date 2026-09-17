@@ -31846,7 +31846,7 @@ const ACG = (()=>{
   // Words and phrases no listing may contain. The first group are the
   // literary habits of the old banks; the second, words that could read as an
   // insult to an actor; the third, filler the owner banned outright.
-  const V3_LITERARY=/like scripture|enormous|stillness|the whole instrument|has to (be )?earn|allergic to|with a blade|moral (position|engine|brake|center|spine)|devastat|tragedy|played as light comedy|close to the bone|nowhere to hide|the size comes from|signpost|the thinking, not the finish|the silences are not|the whole trick|near enough that it should be|closely watched|comic engine|incurious|unfooled|changing shape|at speed|menace|underneath|mistakes chaos for genius|glimpsed|lives in the|a locked door|politeness as|efficiency as|in reserve|\bengine\b|\bspine\b|knife work|liability streak|made out of paperwork|collapsing into|snapping into|expiry date|arm's length|red tape|in a cold film|presence over polish|without commentary|playing as irritation|kindness that stops|goes sour|authority built|love language|as defen[cs]e|used as cover|carrying every decision|stillness|weight rather than|at ninety miles an hour|entirely not on the inside/i;
+  const V3_LITERARY=/like scripture|enormous|stillness|the whole instrument|has to (be )?earn|allergic to sentiment|with a blade|moral (position|engine|brake|center|spine)|devastat|tragedy|played as light comedy|close to the bone|nowhere to hide|the size comes from|signpost|the thinking, not the finish|the silences are not|the whole trick|near enough that it should be|closely watched|comic engine|incurious|unfooled|changing shape|at speed|menace|underneath|mistakes chaos for genius|glimpsed|lives in the|a locked door|politeness as|efficiency as|in reserve|\bengine\b|\bspine\b|knife work|liability streak|made out of paperwork|collapsing into|snapping into|expiry date|arm's length|red tape|in a cold film|presence over polish|without commentary|playing as irritation|kindness that stops|goes sour|authority built|love language|as defen[cs]e|used as cover|carrying every decision|stillness|weight rather than|at ninety miles an hour|entirely not on the inside/i;
   const V3_INSULT=/\b(regular-looking|ordinary-looking|normal-looking|average-looking|plain-looking|average (face|build|looks?|person|people)|plain (face|looks?|people)|unattractive|ugly|frumpy|homely|not like models)\b/i;
   const V3_BANNED=/\b(genuinely|honestly|straightforward)\b/i;
   function v3Scrub(text){
@@ -31944,7 +31944,7 @@ const ACG = (()=>{
     const rest=n>2?` and ${v3Words(n-2)} more`:"";
     return {
       matter:`We are casting ${nw} roles, including ${two}.`,
-      warm:n<=3?`We are looking for ${nw} ${who.many} to play ${v3Join(l.slice(0,n))}.`:`We are looking for ${nw} ${who.many} to play ${l.slice(0,2).join(", ")}${rest}.`,
+      warm:n<=3&&l.length>=n?`We are looking for ${nw} ${who.many} to play ${v3Join(l.slice(0,n))}.`:`We are looking for ${nw} ${who.many}, including ${two}.`,
       dry:`There are ${nw} parts to cast, and ${l[0]} is the biggest.`,
       punchy:`${capFirst(nw)} roles are open, led by ${two}.`,
       playful:`We need ${nw} ${who.many}, starting with ${two}.`,
@@ -32796,13 +32796,14 @@ const ACG = (()=>{
         let x=v3CleanSketch(s.x);
         if(!/^(film|job)$/.test(fam))x=x.replace(/\b(the|this|whole|entire) film\b/gi,(m0,w)=>`${w} ${mediumNoun(type)}`).replace(/\bthe film's\b/gi,`the ${mediumNoun(type)}'s`);
         if(/^(photo|audio|stage)$/.test(fam))x=v3Sentences(x).filter(z=>!/\bfilms?\b|\bfilmed\b|\bfilming\b|on camera|close-ups?/i.test(z)).join(" ");
-        if(!x)x=v3FreshSketch(s,h,res);
         if(revived){
           x=v3Sentences(x).filter(z=>z.split(/\s+/).length<4||!v3SentUsed(v3SentKey(z),h,res)).join(" ");
-          if(!x)x=v3FreshSketch(s,h,res);
         }
         return {...s,x};
       }).filter(s=>s.x);
+      // v4: no generic stand-in sketches. A part whose own lines are all gone
+      // is dropped; losing a lead means this premise is not used this time.
+      if((seed.c||[]).some(z=>z.r==="Lead")&&!slots.some(z=>z.r==="Lead")){why('lead lines spent');continue;}
       // v4: a role may only refer to what the story sets up. Sketch sentences
       // that mention an object, place, person or event the premise, twist,
       // venue and cast list never introduce are dropped; police parts need a
@@ -32818,8 +32819,7 @@ const ACG = (()=>{
       const seenJob={};
       for(let i=slots.length-1;i>=0;i--)slots[i]._order=i;
       const slotsOk=slots.filter(s=>!(V4_POLICE.test(s.s)&&!policeOk)).filter(s=>{const k=v4FuncKey(s.s);if(!k)return true;const lab=String(s.s).toLowerCase();if(seenJob[k]&&!V4_QUAL.test(lab+" "+seenJob[k]))return false;seenJob[k]=lab;return true;}).map(s=>{
-        let x=v3Sentences(s.x).filter(z=>!v4UnsetRefs(z,hayStems).length&&!v4ItWithoutObject(z,storyHay)&&!(V4_POLICE.test(z)&&!policeOk)&&!V4_FILLER.test(z)).join(" ");
-        if(!x)x=v3FreshSketch(s,h,res);
+        const x=v3Sentences(s.x).filter(z=>!v4UnsetRefs(z,hayStems).length&&!v4ItWithoutObject(z,storyHay)&&!(V4_POLICE.test(z)&&!policeOk)&&!V4_FILLER.test(z)).join(" ");
         return {...s,x};
       }).filter(s=>s.x);
       slots.length=0;slotsOk.forEach(z=>slots.push(z));
@@ -32876,7 +32876,7 @@ const ACG = (()=>{
           const keep=v3Sentences(r.description).filter(z=>!(/\b(they|them|their)\b/i.test(z)&&/\b(audience|people|everyone|everybody|others|kids|children|family|team|crew|cast|customers|guests|neighbors|parents|friends|both|the two|all of them|anyone)\b/i.test(z)));
           if(keep.length)r.description=keep.join(" ");
         }
-        r.description=v4Pronouns((r._group||r._job)?r.description:v4Frame(r),r.gender);
+        r.description=v4Pronouns((r._group||r._job)?r.description:v4Frame(r),r.gender).replace(/(^|[.!?]\s+)([a-z])/g,(m,a,b)=>a+b.toUpperCase());
       });
       const minors=named.some(r=>parseInt(String(r.age_range).split("-")[0],10)<18);
 
@@ -32979,8 +32979,9 @@ const ACG = (()=>{
       // v4: the listing only asks for what at least one role requires.
       const needReel=named.some(r=>(r.required_media||[]).indexOf("reel")>-1),needSelf=named.some(r=>r.prescreen==="selftape"),needResume=named.some(r=>(r.required_media||[]).indexOf("resume")>-1),needFull=named.some(r=>(r.required_media||[]).indexOf("fullbody")>-1);
       const extras=(V3_REQ_EXTRA[fam]||V3_REQ_EXTRA.film).filter(x=>!(/self-tape/i.test(x)&&!needSelf)&&!(/\breel\b|recent footage|shot recently|demo/i.test(x)&&!needReel)&&!(/résumé|resume|\bCV\b|credit list/i.test(x)&&!needResume)&&!(/full-body|full-length/i.test(x)&&!needFull));
-      const extra=extras.length?pick(extras):"";
-      const reqStr=v3Scrub(`${mediaSentence(named)} ${extra}${craftNote(type)}${minorsNote(named)}`);
+      const cn=craftNote(type);
+      const extra=extras.filter(x=>!(cn&&/movement|footage|dance|sing|song/i.test(x)&&/movement|footage|dance|sing|song/i.test(cn))).concat([]).slice(0).sort(()=>Math.random()-0.5)[0]||"";
+      const reqStr=v3Scrub(`${mediaSentence(named)} ${extra}${cn}${minorsNote(named)}`);
       const crewCredits=credits.map(([j,n])=>`${j}: ${n}`).concat([`Casting: ${castingName}`]).join(" · ");
 
       const item={
