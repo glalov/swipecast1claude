@@ -103,6 +103,8 @@ module.exports=function register({check,addBoard,sentences,clean,minAge,maxAge,i
   check(8,"pronoun_plural_group","A plural group pronoun turned singular ('all of her', 'neither of him')",L=>L.roles.filter(r=>/\b(all|neither|both|each|some|none|most|either|several) of (her|him)(?=\s*[.,;!?]|\s*$)/i.test(r.description)).map(r=>({detail:r.name+": "+(r.description.match(/[^.]*\b(all|neither|both|each|some|none|most|either|several) of (her|him)\b[^.]*\./i)||[""])[0]})));
   check(8,"off_broadway_city","Off-Broadway / Off-Off-Broadway listing outside New York",L=>/^Off-(Off-)?Broadway Theater$/.test(L.type)&&L.location!=="New York, NY"?[{detail:L.location}]:[]);
 
+  check(8,"odd_label_or_caps","'People at the <people>' labels or a capital article mid-sentence ('at A mountain…')",L=>{const out=[];L.roles.forEach(r=>{if(/^People at the \w+ (Owners|Vendors|Workers|Regulars|Customers|Staff)\b/i.test(r.name))out.push({detail:r.name});if(/[a-z,] (A|An|The) [a-z]/.test(r.description))out.push({detail:r.name+": "+(r.description.match(/.{0,20}[a-z,] (A|An|The) [a-z].{0,20}/)||[""])[0]});});return out;});
+
   // 8. Placeholder leaks.
   check(8,"placeholder_leak","Untitled/Working Title titles, (Group N), Group A, 1) labels",L=>{
     const out=[];

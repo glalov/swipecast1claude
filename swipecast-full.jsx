@@ -32490,7 +32490,7 @@ const ACG = (()=>{
   function v3Money(a,b){return rand(a,b,a>=500?50:25);}
   // Crew-side bookings on a narrative project. These are labelled parts, not
   // characters, and never carry a person's name.
-  const V3_PEOPLE_WORD=/\b(people|customers|regulars|neighbors|passersby|patrons|guests|shoppers|riders|students|kids|children|crowd|audience|onlookers|workers|staff|crew|team|class|family|families|dancers|players|gardeners|volunteers|traders|members|visitors|diners|commuters|passengers|voices|ensemble|group|atmosphere|double|model|hands|lead|friends|coworkers|parents|fans|runners|swimmers|drivers|band|choir|chorus|congregation|tenants|mourners|guards|officers|nurses|patients|travelers|spectators|bidders|campers|queue|line)\b/i;
+  const V3_PEOPLE_WORD=/\b(people|customers|regulars|neighbors|passersby|patrons|guests|shoppers|riders|students|kids|children|crowd|audience|onlookers|workers|staff|crew|team|class|family|families|dancers|players|gardeners|volunteers|traders|members|visitors|diners|commuters|passengers|voices|ensemble|group|atmosphere|double|model|hands|lead|friends|coworkers|parents|fans|runners|swimmers|drivers|band|choir|chorus|congregation|tenants|mourners|guards|officers|nurses|patients|travelers|spectators|bidders|campers|queue|line|owners|vendors|sellers|buyers|residents|locals)\b/i;
   function v3PeopleLabel(label){const t=titleCase(stripArticle(label));return V3_PEOPLE_WORD.test(t)?t:`People on the ${t}`;}
   function v3JobRoles(type,seed,slots,union,plan,h,res,venue){
     const sag=/SAG/.test(union);
@@ -32500,7 +32500,7 @@ const ACG = (()=>{
     const leads=adults.filter(s=>s.r==="Lead").concat(adults.filter(s=>s.r!=="Lead"));
     const genders=seedGenders(slots);
     const gOf=s=>{const g=genders[slots.indexOf(s)];return g==="Non-Binary"||!g?"All genders":g;};
-    const place=venue||v3VenuePhrase(pick(seed.w||[]))||"the main location";
+    const place=String(venue||v3VenuePhrase(pick(seed.w||[]))||"the main location").replace(/^(A|An|The)\s/,m=>m.toLowerCase());
     const who=s=>stripArticle(String(s.s||"")).split(/\s+/).slice(0,5).join(" ");
     // Every sentence is drawn so that no two parts in this listing, and no two
     // listings on the board, describe a crew booking with the same line.
