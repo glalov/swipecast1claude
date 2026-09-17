@@ -39424,7 +39424,7 @@ function AdminPremiumUpsell({session}){
           {tiers.first_event?`sorted nightly · ${tiers.opens_7d||0} opens, ${tiers.clicks_7d||0} clicks in 7d`:"collecting open data — nobody is paused yet"}
         </span>
       </div>
-      <div style={{fontSize:12,color:"var(--t2)",marginBottom:14}}>Only people active in the last 30 days get this email — opened or clicked one, logged in, viewed a casting, applied, or signed up. Everyone else is not emailed until they come back. Recalculated every night; logging in, viewing a casting or applying puts someone back on the list at the next run.</div>
+      <div style={{fontSize:12,color:"var(--t2)",marginBottom:14}}>Only people active in the last 30 days stay on this email — opened or clicked one, logged in, viewed a casting, applied, or signed up. Open tracking began Sept 16, so until Oct 16 inactive people get one email a week as a fair chance to open; from Oct 16 on, anyone still inactive is automatically not emailed. Recalculated every night; opening an email, logging in, viewing a casting or applying puts someone back on.</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:10}}>
         {[
           {k:"warm",   n:"Both sends",   c:"var(--grn)", bg:"rgba(27,135,62,0.07)"},
