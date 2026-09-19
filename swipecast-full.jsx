@@ -13681,6 +13681,62 @@ function castingIsScheduled(casting){
 // publishes as soon as the casting is approved / published.
 function defaultGoLiveNYLocal(){return utcISOToNYLocal(new Date().toISOString());}
 
+// ─── A schedule must point forward ──────────────────────────────────────────
+// A go_live_at in the past does not merely fail to schedule — it does two wrong
+// things at once. castingIsScheduled() hides a casting only while the instant is
+// still ahead, so a past one publishes the moment it is saved; and
+// castingPostedAt() shows go_live_at in preference to created_at, so the same
+// past instant back-dates the stamp. "Closing Shift" was saved at 6:48 PM on
+// Sep 19 2026 with a 6:00 AM go-live the SAME morning and went out reading
+// "Posted 13 hours ago". Nothing in four write paths ever checked the sign.
+//
+// A little past is not the same mistake as a lot. Press "Right now", spend ten
+// minutes finishing the form, and the stored minute is honestly behind by the
+// time you hit save — that one is clamped to the actual save instant, which is
+// what the button meant. Anything older than the grace window is a wrong DATE,
+// and is refused rather than quietly published.
+const GO_LIVE_PAST_GRACE_MS=2*60*60*1000;
+// Returns {iso} to store (null for "no schedule") or {err} to show the user.
+// `previous` is the value the form was opened with — editing the synopsis of a
+// casting that legitimately went live three weeks ago must not be blocked by its
+// own history, so an untouched go-live is passed straight through.
+function resolveGoLive(localStr,previous){
+  const cur=String(localStr||"");
+  if(!cur)return {iso:null};
+  const iso=nyLocalToUTCISO(cur);
+  if(!iso)return {err:"Go Live Date & Time is invalid."};
+  if(previous!==undefined&&String(previous||"")===cur)return {iso};
+  const t=Date.parse(iso),now=Date.now();
+  if(t>=now)return {iso};
+  if(now-t<=GO_LIVE_PAST_GRACE_MS)return {iso:new Date(now).toISOString()};
+  return {err:`Go-live is in the past — ${formatNYDateTime(iso)}. A scheduled casting would publish instantly and be stamped as already posted. Pick a future date and time, or press "Right now" to publish immediately.`};
+}
+// True when the value currently in the picker is meaningfully behind now, i.e.
+// the field is about to be refused. Drives the inline warning.
+function goLiveLooksPast(localStr){
+  if(!localStr)return false;
+  const iso=nyLocalToUTCISO(String(localStr));
+  if(!iso)return false;
+  return Date.now()-Date.parse(iso)>GO_LIVE_PAST_GRACE_MS;
+}
+// A preset chip picks an HOUR, not a day: it keeps whatever date is in the date
+// input. Tapping "6:00 AM" at 6 PM meaning "tomorrow morning" therefore saved a
+// time twelve hours gone — exactly how Closing Shift happened. An explicitly
+// chosen future date still wins; otherwise land on the next day that hour
+// actually occurs.
+function nextFutureNYDateForTime(datePart,time){
+  if(datePart){
+    const chosen=nyLocalToUTCISO(`${datePart}T${time}`);
+    if(chosen&&Date.parse(chosen)>Date.now())return datePart;
+  }
+  const todayNY=defaultGoLiveNYLocal().slice(0,10);
+  const todayAt=nyLocalToUTCISO(`${todayNY}T${time}`);
+  if(todayAt&&Date.parse(todayAt)>Date.now())return todayNY;
+  const d=new Date(`${todayNY}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate()+1);
+  return d.toISOString().slice(0,10);
+}
+
 // Go-live picker. A single <input type="datetime-local"> looks different in every
 // browser: Chrome's popup carries a time list, Firefox's popup is a calendar only
 // and the time has to be typed into the greyed "--:-- --" half of the same field,
@@ -13711,13 +13767,19 @@ function GoLiveField({value,onChange,allowClear}){
       </div>
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
         {GO_LIVE_PRESETS.map(([lbl,t])=>(
-          <button type="button" key={t} onClick={()=>set(datePart,t)}
+          <button type="button" key={t} onClick={()=>set(nextFutureNYDateForTime(datePart,t),t)}
             style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,
                     background:timePart===t?"var(--acc)":"var(--s2)",color:timePart===t?"#fff":"var(--t2)"}}>{lbl}</button>
         ))}
         <button type="button" onClick={()=>onChange(defaultGoLiveNYLocal())}
           style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:"var(--s2)",color:"var(--t2)"}}>Right now</button>
       </div>
+      {goLiveLooksPast(v)&&(
+        <div style={{marginTop:8,fontSize:12,fontWeight:600,color:"var(--red)",display:"flex",gap:6,alignItems:"flex-start"}}>
+          <Ico n="alert-triangle" s={14}/>
+          <span>This go-live has already passed. Saving it would publish the casting immediately and stamp it as posted {formatNYDateTime(nyLocalToUTCISO(v))}.</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -20149,8 +20211,9 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     // Go-live is optional when EDITING — older/already-published posts have no
     // schedule, so a blank field just means "live now / keep as-is". Only validate
     // if the user actually entered a value.
-    let goLiveISO=null;
-    if(f.go_live_at){goLiveISO=nyLocalToUTCISO(f.go_live_at);if(!goLiveISO){setErr("Go Live Date & Time is invalid.");return;}}
+    const goLive=resolveGoLive(f.go_live_at,utcISOToNYLocal(casting.go_live_at));
+    if(goLive.err){setErr(goLive.err);return;}
+    const goLiveISO=goLive.iso;
     setBusy(true);
     try{
       // Determine new status: open → open; pending_review → pending_review; rejected + resubmit → pending_review
@@ -20527,8 +20590,9 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     if(!roles.length||!roles[0].name.trim()){setErr("At least one role with a name is required.");return;}
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     if(!f.go_live_at){setErr("Go Live Date & Time is required.");return;}
-    const goLiveISO=nyLocalToUTCISO(f.go_live_at);
-    if(!goLiveISO){setErr("Go Live Date & Time is invalid.");return;}
+    const goLive=resolveGoLive(f.go_live_at);
+    if(goLive.err){setErr(goLive.err);return;}
+    const goLiveISO=goLive.iso;
     setBusy(true);
     try{
       const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,go_live_at:goLiveISO,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages,
@@ -37008,7 +37072,9 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     return {...form,roles:computedRoles,
       expires_at:form.expires_at?new Date(form.expires_at).toISOString():null,
       // Go-live is picked in New York wall time → store as an absolute UTC instant.
-      go_live_at:nyLocalToUTCISO(form.go_live_at),
+      // checkGoLive() has already refused anything meaningfully past, so this
+      // resolve only clamps a just-expired "Right now" to the real save instant.
+      go_live_at:resolveGoLive(form.go_live_at,utcISOToNYLocal(listing.go_live_at)).iso,
       // Posted date (created_at) — anchor at noon UTC so the displayed day doesn't
       // shift across timezones. Empty input leaves the original timestamp untouched.
       created_at:form.created_at?new Date(form.created_at+"T12:00:00Z").toISOString():null,
@@ -37016,8 +37082,16 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
       casting_image_path:castingImages[0]?.path||null,
       casting_images:castingImages};
   };
+  // Guard shared by Save and Publish: a past go-live publishes instantly and
+  // back-dates the posted stamp, so neither path may write one.
+  const checkGoLive=()=>{
+    const r=resolveGoLive(form.go_live_at,utcISOToNYLocal(listing.go_live_at));
+    if(r.err){setErr(r.err);return false;}
+    return true;
+  };
   const handleSave=async()=>{
     if(form.casting_website_url.trim()&&!/^https?:\/\//i.test(form.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
+    if(!checkGoLive())return;
     setBusy(true);setErr("");
     await onSave(buildPayload());
     clearSavedDraft();
@@ -37025,6 +37099,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
   };
   const handlePublish=async()=>{
     if(form.casting_website_url.trim()&&!/^https?:\/\//i.test(form.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
+    if(!checkGoLive())return;
     setBusy(true);setErr("");
     await onSave(buildPayload());
     await onPublish({id:form.id});
@@ -42680,9 +42755,11 @@ function EditCastingModal({casting,onClose,onSaved}){
     setErr("");
     if(!f.title.trim()){setErr("Title is required.");return;}
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
+    const goLive=resolveGoLive(f.go_live_at,utcISOToNYLocal(casting.go_live_at));
+    if(goLive.err){setErr(goLive.err);return;}
     setBusy(true);
     try{
-      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,go_live_at:nyLocalToUTCISO(f.go_live_at),created_at:f.created_at?new Date(f.created_at+"T12:00:00Z").toISOString():casting.created_at,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
+      const patch={title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,pay:f.pay||null,union_status:f.union_status||null,deadline:f.deadline||null,go_live_at:goLive.iso,created_at:f.created_at?new Date(f.created_at+"T12:00:00Z").toISOString():casting.created_at,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,tagline:f.tagline||null,synopsis:f.synopsis||null,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages};
       const {error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
       if(cErr)throw cErr;
       // Diff roles: update existing, insert new, delete removed
