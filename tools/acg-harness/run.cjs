@@ -226,7 +226,7 @@ check(5,"block_shoot_logic","'Block shoot / back to back' with <2 days or days t
   const n=String(L.schedule_note||"");
   if(!/back to back|block shoot|consecutive/i.test(n))return[];
   const days=shootDays(L);const win=dayNum(L.shoot_end)-dayNum(L.shoot_start)+1;
-  return days<2||days>win||/\bone (shoot )?day\b/i.test(n)?[{detail:`${days} days / ${win}-day window: ${n}`}]:[];
+  return days<2||days>win||/\bone (shoot|session|capture|event) day\b/i.test(n)?[{detail:`${days} days / ${win}-day window: ${n}`}]:[];
 });
 check(5,"readthrough_wrong_type","Read-through promised on a commercial/photo shoot",L=>/^(ad|photo|corp)$/.test(famOf(L.type))&&/read-?through|table read/i.test(L.schedule_note+" "+L.roles.map(r=>r.description).join(" "))?[{detail:L.schedule_note}]:[]);
 function shootDays(L){
@@ -436,6 +436,7 @@ const ctxNow={names:(()=>{
   Object.entries(D.surnames).forEach(([bg,list])=>list.forEach(n=>{(last[n]=last[n]||[]).push(bg);}));
   return {first,last,famous:new Set((D.famous||[]).map(clean))};
 })()};
+require("./checks-r4.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(10,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r3.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(9,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r2.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(8,k,l,null));},sentences,clean,minAge,maxAge,isGroup,famOf,srcNow,parseRoleRate,ctxNow});
 

@@ -114,8 +114,9 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     const allow=/saturdays/i.test(note)||plan(L).mode==="saturdays"?n*7:Math.max(n*3+1,Math.ceil(n/5)*7,Math.ceil(n/2)*7);
     return win>allow?[{detail:`${n} days in ${win}-day window`}]:[];
   });
-  check(9,"r3_deadline_gap","Deadline not 5 days to 6 weeks before the shoot",L=>{const g=Math.round((d(L.shoot_start)-d(L.deadline))/DAY);return g<5||g>42?[{detail:`${g} days`}]:[];});
+  check(9,"r3_deadline_gap","Deadline not 5 days to 10 weeks before the shoot (round 4 caps the expiration at 3 months, so far-out shoots close earlier)",L=>{const g=Math.round((d(L.shoot_start)-d(L.deadline))/DAY);return g<5||g>70?[{detail:`${g} days`}]:[];});
   check(9,"r3_start_1_6_months","Start date not 1–6 months out",L=>{const now=new Date();now.setUTCHours(12,0,0,0);const g=Math.round((d(L.shoot_start)-now)/DAY);return g<28||g>186?[{detail:`${L.shoot_start} (${g} days)`}]:[];});
+  check(9,"r3_month_spread_note","Months covered by the board",null);
   check(9,"r3_batch_same_start","Two listings in one batch share a start date",null);
   check(9,"r3_month_cluster","Board clusters in one month (>30% of listings)",null);
 
