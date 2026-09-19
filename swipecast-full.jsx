@@ -2112,6 +2112,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
 .btn-teal{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-teal:hover{background:var(--teal-dk);transform:translateY(-1px);}
+/* The two primary Apply buttons ran the full width of their column at 13-14px,
+   which read as a long bar with small letters. Capped width + 16px label: the
+   button hugs the action, the label carries the weight. Full width on a phone,
+   where a hug-width primary sits stranded in an empty row. */
+.apply-cta{width:100%;max-width:190px;display:inline-flex;align-items:center;justify-content:center;padding:13px 24px;font-size:16px;font-weight:700;letter-spacing:-.2px;line-height:1.2;border-radius:9px;}
 .btn-amber-hover{transition:background .2s,color .2s,border-color .2s;}
 .btn-amber-hover:hover{background:var(--amber)!important;color:#fff!important;border-color:var(--amber)!important;}
 .btn-sm{padding:8px 16px;font-size:12px;border-radius:6px;}
@@ -3077,6 +3082,7 @@ body.sheet-push .b2t-cube{display:none;}
 .cd-side{background:var(--s2);border-left:1px solid var(--bdr);padding:20px 22px;display:flex;
   flex-direction:column;justify-content:center;gap:10px;}
 .cd-side h3{font-size:15px;font-weight:800;}
+.cd-side .apply-cta{margin-top:2px;}
 .cd-side .hint{font-size:12px;color:var(--t2);line-height:1.5;}
 @media(max-width:768px){
   .cd-grid{grid-template-columns:1fr;}
@@ -3084,6 +3090,7 @@ body.sheet-push .b2t-cube{display:none;}
   .cd-rows{grid-template-columns:1fr;}
   .cd-main{padding:18px 18px 20px;}
   .cd-side{padding:18px;}
+  .cd-side .apply-cta{max-width:none;}
 }
 @media(max-width:768px){
   .cc-title{font-size:21px;}
@@ -4186,7 +4193,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-row.rl-open .rl-cols>*:nth-child(2){transition-delay:.18s;}
 .rl-desc{font-size:16.5px;color:#0E1A22;line-height:1.66;max-width:62ch;}
 .rl-side{border-left:1px solid #e2e0d8;padding-left:30px;}
-.rl-side .btn-teal{width:100%;padding:14px 22px;font-size:14px;border-radius:9px;}
+.rl-side .btn-teal{width:100%;max-width:190px;display:inline-flex;align-items:center;justify-content:center;padding:13px 24px;font-size:16px;letter-spacing:-.2px;line-height:1.2;border-radius:9px;}
 .rl-side .tag{display:block;text-align:center;}
 /* What accompanies the role, as objects rather than a sentence: four pills read
    in a glance where a line of prose has to be read to the end to find the
@@ -4199,7 +4206,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rl-cols{grid-template-columns:1fr;gap:0;}
   .rl-desc{max-width:none;}
   .rl-side{border-left:none;padding-left:0;margin-top:22px;padding-top:20px;border-top:1px solid #e2e0d8;}
-  .rl-side .btn-teal{width:auto;}
+  .rl-side .btn-teal{width:100%;max-width:none;}
 }
 @media (prefers-reduced-motion: reduce){
   .rl-row::before,.rl-top,.rl-body,.rl-chev,.rl-inner>*,.rl-cols>*{transition:none !important;}
@@ -12098,7 +12105,7 @@ Free submission used
               <option value="">Select a role…</option>
               {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
             </select>
-            <button className="btn-teal" style={{width:"100%"}} onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply"}</button>
+            <button className="btn-teal apply-cta" onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply now"}</button>
             {/* The closing date is above the card, said once. */}
           </div>}
         </div>
@@ -12131,11 +12138,13 @@ Free submission used
           return {instr,hasInstructions:instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes)};
         };
         const unitSfx=(u,long)=>u==="flat"?" flat":u==="week"?(long?" / week":"/wk"):u==="hour"?(long?" / hour":"/hr"):(long?" / day":"/day");
-        const applyCtl=(r,i,hasInstructions)=>applicationsClosed
+        const applyCtl=(r,i,hasInstructions,big)=>applicationsClosed
           ? <span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>
           : applied.has(i)
             ? <span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>
-            : <button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition":"Apply"}</button>;
+            : big
+              ? <button className="btn-teal apply-cta" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition now":"Apply now"}</button>
+              : <button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition":"Apply"}</button>;
         const submitChips=(r,hasInstructions)=>{
           const media=Array.isArray(r.required_media)?r.required_media.filter(Boolean):[];
           const pre=prescreenLabel(r.prescreen);
@@ -12311,7 +12320,7 @@ Free submission used
               <div className="rl-cols">
                 <div className="rl-desc">{r.desc}</div>
                 <div className="rl-side" onClick={(e)=>e.stopPropagation()} onKeyDown={(e)=>e.stopPropagation()}>
-                  {applyCtl(r,i,hasInstructions)}
+                  {applyCtl(r,i,hasInstructions,true)}
                   {items}
                 </div>
               </div>
