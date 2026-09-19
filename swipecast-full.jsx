@@ -32978,6 +32978,7 @@ const ACG = (()=>{
       const drop=r==="Supporting"?pick([0,1,1]):1;
       cur=Math.max(0,cur-drop);
       if(r==="Day Player"&&cur>=li)cur=Math.max(0,li-1);
+      if(cur===li&&li>0)cur=li-1;
       out[r]=list[cur];
     });
     return out;
@@ -33031,7 +33032,7 @@ const ACG = (()=>{
     if(type==="Stunts"&&band==="high")list=[450,500,600,750,800];
     // Round 4: one rate for everyone is the exception — short shoots, tiny
     // casts and background-heavy calls, not a 20-day scripted shoot.
-    P.flatAll=roles.length>1&&v6FlatAllowed(type,fam,plan.days,roles)&&Math.random()<0.11;
+    P.flatAll=roles.length>1&&v6FlatAllowed(type,fam,plan.days,roles)&&Math.random()<0.07;
     const rungs=P.flatAll?(()=>{const v=pick(list);return {Lead:v,Supporting:v,"Day Player":v,Background:v};})():v5Rungs(list,ranks);
     const fmt={day:a=>`${money(a)}/day`,buyout:a=>`${money(a)}/day`,flat:a=>`${money(a)} flat`,hour:a=>`${money(a)}/hour`,ep:a=>`${money(a)} per episode`,session:a=>`${money(a)} per session`,week:a=>`${money(a)}/week`,stipendDay:a=>`${money(a)}/day stipend`,stipendFlat:a=>`${money(a)} stipend`}[st];
     setAll((r,rk)=>fmt(rungs[rk]||rungs.Lead));
