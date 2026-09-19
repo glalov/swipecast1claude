@@ -33487,7 +33487,8 @@ const ACG = (()=>{
     // Three topics; a two-sentence note never uses one twice.
     const T={
       flex:[
-        ()=>`${capFirst(pick(["dates","our dates","the dates","exact dates"]))} ${pick(["are flexible","are still loose","aren't locked yet","can move a little","depend on who we cast","get set once the cast is in place","are open to some changes"])}${pick(["",", and we'll work around the cast",", within reason"," for now",", so tell us what works"])}.`,
+        ()=>{const pr=pick(["are flexible","are still loose","aren't locked yet","can move a little","depend on who we cast","get set once the cast is in place","are open to some changes"]);
+          return `${capFirst(pick(["dates","our dates","the dates","exact dates"]))} ${pr}${/cast|who we/.test(pr)?pick(["",", so tell us what works"]):pick(["",", and we'll work around the cast",", within reason"," for now",", so tell us what works"])}.`;},
         ()=>`${capFirst(pick(["timing","the calendar","the schedule"]))} ${pick(["is flexible","is still being worked out","isn't final","can bend for the right person","gets set with the final cast","won't move much"])}${pick(["",", and we'll work around day jobs",", within reason"," at this point"])}.`,
         ()=>`We'll ${pick(["build","set","plan","lock"])} ${noun} around ${pick(["the cast","whoever we book","people's day jobs","your availability","everyone's work schedules"])}${pick(["",", as much as we can",", within reason"])}.`,
         ()=>`${pick(["Nothing is locked in yet","No fixed days yet","Flexible on timing","Days to be set with the cast"])}${pick(["."," for now.",", but it won't be long."])}`,
@@ -33495,7 +33496,7 @@ const ACG = (()=>{
       ],
       detail:[
         ()=>`${capFirst(pick(["exact","final","specific"]))} ${pick(["days","times","call times"])} ${pick(["come with the offer","are shared at callbacks","go out after casting","follow callbacks","arrive with the booking"])}.`,
-        ()=>`${capFirst(pick(["schedule","details","times","the full calendar"]))} ${pick(["shared at callbacks","to follow","sent with the offer","confirmed at booking"])}.`,
+        ()=>`${pick(["The schedule is","The details are","Call times are","The full calendar is"])} ${pick(["shared at callbacks","sent with the offer","confirmed at booking","sent once we book you"])}.`,
         ()=>`${pick(["You'll see","You'll get","We'll send"])} ${pick(["the full schedule","every call time","the calendar"])} ${pick(["before you say yes","with the offer","after callbacks"])}.`
       ],
       conflicts:[
@@ -33538,7 +33539,8 @@ const ACG = (()=>{
       X.push(pick([`The run is ${v3Words(plan.runWeeks)||"one"} week${plan.runWeeks===1?"":"s"} long.`,`${capFirst(v3Words(plan.perfs))} performances in all.`,`Tech takes the last few days before opening.`]));
       return X;
     }
-    if(plan.evening&&!c.read)X.push(pick([`Evenings only, after ${pick(["5pm","6pm","6:30pm"])}.`,`All calls are in the evening.`,`Evening calls, so day jobs are fine.`,`Everything happens after ${pick(["5pm","6pm"])}.`]));
+    // A full note already prints a call time, so it says the evening a different way.
+    if(plan.evening&&!c.read)X.push(full?pick([`Day jobs are fine — nothing starts before the evening.`,`No daytime calls at all.`]):pick([`Evenings only, after ${pick(["5pm","6pm","6:30pm"])}.`,`All calls are in the evening.`,`Evening calls, so day jobs are fine.`,`Everything happens after ${pick(["5pm","6pm"])}.`]));
     if(c.leadRehearse)X.push(pick([`Leads rehearse ${v3Words(plan.rehearsal)} ${plan.rehearsal===1?"day":"days"} before.`,`There ${plan.rehearsal===1?"is one rehearsal day":"are two rehearsal days"} for the leads first.`,`The leads get ${plan.rehearsal===1?"a rehearsal day":"two rehearsal days"} beforehand.`]));
     if(plan.sessions)X.push(pick(["Remote recording is fine with a quiet space.","You can record from home if your setup is clean.","In-studio, but home setups are considered.","Sessions can be remote."]));
     if(full&&!plan.sessions&&!c.read)X.push(v5Logistics());
@@ -33588,20 +33590,35 @@ const ACG = (()=>{
       `Rehearsals start on a ${wd} at ${plan.evening?pick(["6pm","7pm"]):pick(["10am","11am"])}; ${v3Words(plan.perfs)} performance${plan.perfs===1?"":"s"} follow.`,
       `${capFirst(wks(plan.weeks||1))} weeks in the room, ${plan.evening?"weeknights":"daytimes"}, before ${v3Words(plan.perfs)} performance${plan.perfs===1?"":"s"}.`]);
     else{
-      const count=pick([`${capFirst(W)} ${units}`,`${capFirst(v3Aa(`${W}-day ${plan.sessions?"recording":"shoot"}`))}`,`${capFirst(W)} days of work`,`${capFirst(W)} ${units} in total`,`It is ${W} ${units}`]);
+      // Count phrase and pattern have to agree: "a three-day shoot" already
+      // says it runs continuously, so it never also says "in a row", and a
+      // one-day job never says "days of work".
+      const noun=plan.sessions?(d===1?"session":"sessions"):units;
+      const blockWord=plan.sessions?"recording block":plan.unit==="capture day"?"capture block":"shoot";
+      const countPlain=pick([`${capFirst(W)} ${noun}`].concat(d>1?[`${capFirst(W)} ${noun} in total`]:[],[`${capFirst(W)} ${d===1?"day":"days"} of work`,`It is ${W} ${noun}`]));
+      const CONT={weekdays:0,sixday:0,consecutive:1,spread:0,one:0,flex1:0,saturdays:0,weekends:0};
+      const mode=plan.mode||"consecutive";
       const PAT={
-        saturdays:[`on Saturdays`,`Saturdays only`,`one Saturday at a time`],
-        weekends:[`weekends only`,`across ${wks(d/2)} weekends`,`Saturdays and Sundays`,`weekend days only, starting on a ${wd}`],
+        saturdays:[`on Saturdays`,`Saturdays only`,`on ${W} separate Saturdays`],
+        weekends:[`weekends only`,`across ${wks(d/2)} weekends`,`on Saturdays and Sundays`,`on weekend days only, starting on a ${wd}`],
         flex1:[`inside a short window, with the day confirmed at booking`,`on a day we agree once you are booked`],
-        one:[`on a ${wd}`,`in a single day`,`start to finish in one go`],
+        one:[`on a ${wd}`,`start to finish in one go`,`in a single stretch`],
         spread:[`spread across the window, never two in a row`,`with gaps between them`,`not back to back`,`a few days apart, starting on a ${wd}`],
         weekdays:[`Monday to Friday`,`on weekdays only, starting on a ${wd}`,`across about ${wks(d/5)} working weeks`],
         sixday:[`on six-day weeks with Sundays off`,`six days a week`,`across ${wks(d/6)} weeks at six days each`],
         consecutive:[`back to back`,`in a row from a ${wd}`,`straight through`,`one after another, starting on a ${wd}`,`consecutively`]
       };
-      const pat=pick(PAT[plan.mode]||PAT.consecutive);
-      const callp=pick([`call at ${call}`,`${call} calls`,`calls around ${call}`,`we start at ${call}`,`first call is ${call}`,`${call} start each day`,`the day begins at ${call}`]);
-      core=pick([`${count} ${pat}, ${callp}.`,`${count} ${pat}. ${capFirst(callp)}.`,`${capFirst(callp)}: ${count.replace(/^It is /,"").toLowerCase()} ${pat}.`]);
+      // The block phrase ("a four-day shoot") only pairs with patterns that do
+      // not themselves describe continuity.
+      // Only the week-shaped patterns read correctly after a singular block
+      // phrase ("a twelve-day shoot Monday to Friday").
+      const useBlock=d>1&&/^(weekdays|sixday)$/.test(mode)&&Math.random()<0.5;
+      const count=useBlock?`${capFirst(v3Aa(`${W}-day ${blockWord}`))}`:countPlain;
+      const pat=pick(PAT[mode]||PAT.consecutive);
+      const callp=pick([`call at ${call}`,`${call} calls`,`calls around ${call}`,`we start at ${call}`,`first call is ${call}`,`${call} starts each day`,`the day begins at ${call}`]);
+      // Only some call phrases work as an opener.
+      const opener=pick([`Call is ${call}`,`First call is ${call}`,`We start at ${call}`,`The day begins at ${call}`]);
+      core=pick([`${count} ${pat}, ${callp}.`,`${count} ${pat}. ${capFirst(callp)}.`,`${opener}, ${count.replace(/^It is /,"").replace(/^([A-Z])/,m=>m.toLowerCase())} ${pat}.`]);
     }
     const X=cgShuffle(v5Extras(c,true));
     const reh=X.find(x=>/rehears/i.test(x));
