@@ -191,7 +191,13 @@ function castingAgeOk(c: any, age: number|null|undefined): boolean {
 // Edge-to-edge colour bands instead of one narrow card, modelled on how the
 // big casting sites lay their promos out. Two palettes, keyed to the slot so
 // noon and evening never look like duplicate mail in the same inbox:
-//   noon    = Golden Hour (sunset masthead, ivory paper, gold Premium band)
+//   noon    = Navy Dawn (soft-navy masthead with an amber sunrise rising from
+//             the lower-left, neutral off-white paper, Honey Sand accents).
+//             Demo "B", approved 2026-09-19, replacing Golden Hour: the ivory
+//             paper and sunset masthead read as too warm/cream next to the rest
+//             of the site, and the navy is the same family as /actor-toolkit's
+//             --atk-navy. Keep the warmth as LIGHT in the masthead, not as a
+//             cream page tint.
 //   evening = Sage & Clay (deep sage masthead, sand paper, clay CTAs)
 // The studio marquee sits UP TOP, under the masthead and above the still, with
 // the logos at 30px — it used to be a small strip at the bottom.
@@ -209,14 +215,15 @@ interface Palette {
 }
 const PALETTES: Record<string, Palette> = {
   noon: {
-    paper:"#FFF9F0", ink:"#25170F", body:"#6B5847", line:"#EEDFC9", rule:"#E0873B", kicker:"#B4531C", alert:"#C2432C",
-    mastBg:"linear-gradient(115deg,#7A2E1E 0%,#C05A25 55%,#E0873B 100%)", mastInk:"#FFF3E2", mastSub:"#F2C79B",
-    cta:"#C05A25", ctaInk:"#FFFFFF", radius:"999px",
-    permBg:"radial-gradient(ellipse 520px 320px at 50% 0%,rgba(232,185,106,.28) 0%,rgba(43,26,18,0) 70%),#2B1A12",
-    permInk:"#FBEEDC", permBody:"#C6AE93", permAccent:"#E8B96A",
-    permCta:"linear-gradient(90deg,#F4D987,#D9A92E)", permCtaInk:"#2B1A12",
-    stripBg:"#FFF3E2", stripInk:"#A9825C", stripLine:"#EBD6BA", stripDot:"#E0873B",
-    foot:"#25170F", footInk:"#FFF3E2", footSub:"#B5967A", footLink:"#E8B96A",
+    paper:"#FAF9F7", ink:"#221F2E", body:"#605C6B", line:"#E6E4E0", rule:"#EAC080", kicker:"#45476E", alert:"#C2432C",
+    mastBg:"radial-gradient(ellipse 72% 125% at 12% 100%,rgba(242,179,96,.46) 0%,rgba(240,176,96,.13) 46%,rgba(240,176,96,0) 72%),linear-gradient(118deg,#26273F 0%,#33355A 52%,#3E4168 100%)",
+    mastInk:"#FFF8EE", mastSub:"#EAC080",
+    cta:"#3E4168", ctaInk:"#FFFFFF", radius:"999px",
+    permBg:"radial-gradient(ellipse 540px 320px at 50% 0%,rgba(234,192,128,.26) 0%,rgba(34,31,46,0) 70%),#221F2E",
+    permInk:"#F8F3EC", permBody:"#B0A9B8", permAccent:"#EAC080",
+    permCta:"linear-gradient(90deg,#F4D9A6,#E0AE63)", permCtaInk:"#221F2E",
+    stripBg:"#F2F1EE", stripInk:"#8B8794", stripLine:"#E2E0DB", stripDot:"#EAC080",
+    foot:"#221F2E", footInk:"#F8F3EC", footSub:"#9C96A5", footLink:"#EAC080",
     fallbackStill:"https://image.tmdb.org/t/p/w1280/7HR38hMBl23lf38MAN63y4pKsHz.jpg",
   },
   evening: {
@@ -387,22 +394,29 @@ function marquee(p: Palette): string {
   // Desktop (approved 2026-09-12, demo "B"): three equal columns across a
   // 1000px band with hairline dividers, so each studio owns its own space —
   // the old single row read as one clump in a wide Gmail pane.
+  // Height: this band supports the masthead, so it must never be taller than
+  // it. At 1400px it measured 201px against a 159px masthead (owner report
+  // 2026-09-19); the padding, margins and logo size below bring it to 122px.
   // Phones keep the original single row with dots: .mq-desk / .mq-mob swap in
   // the 620px media query. On a phone the three logos live in ONE table row so
   // they can never wrap, and each has a mobile width that keeps its aspect ratio.
-  const logo = (f: string, cls: string, w: number) =>
-    `<img class="${cls}" src="${APP_URL}/logos/${f}" width="${w}" height="30" style="width:${w}px;height:30px;vertical-align:middle;border:0;" alt=""/>`;
+  // 26px tall, widths scaled from the original 30px so every logo keeps its
+  // aspect ratio — part of bringing the band under the masthead's height.
+  const logo = (f: string, cls: string, w: number) => {
+    const h = 26, ww = Math.round(w * h / 30);
+    return `<img class="${cls}" src="${APP_URL}/logos/${f}" width="${ww}" height="${h}" style="width:${ww}px;height:${h}px;vertical-align:middle;border:0;" alt=""/>`;
+  };
   const col = (f: string, w: number, last: boolean) =>
-    `<td width="33%" style="width:33.33%;text-align:center;vertical-align:middle;padding:10px 0;${last ? "" : `border-right:1px solid ${p.stripLine};`}">${logo(f, "", w)}</td>`;
+    `<td width="33%" style="width:33.33%;text-align:center;vertical-align:middle;padding:4px 0;${last ? "" : `border-right:1px solid ${p.stripLine};`}">${logo(f, "", w)}</td>`;
   const cell = (f: string, cls: string, w: number) =>
     `<td style="vertical-align:middle;">${logo(f, cls, w)}</td>`;
   const dot =
     `<td class="sep" style="vertical-align:middle;padding:0 26px;"><span style="display:inline-block;width:5px;height:5px;border-radius:5px;background:${p.stripDot};"></span></td>`;
   return `
-    <tr><td class="strip-pad" style="background:${p.stripBg};padding:38px 40px 34px;text-align:center;border-bottom:1px solid ${p.stripLine};">
-      <table class="mq-label" cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 26px;"><tr>
+    <tr><td class="strip-pad" style="background:${p.stripBg};padding:20px 40px 18px;text-align:center;border-bottom:1px solid ${p.stripLine};">
+      <table class="mq-label" cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 12px;"><tr>
         <td class="mq-rule" style="width:120px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
-        <td class="strip-label" style="padding:0 14px;font-size:11px;font-weight:800;letter-spacing:3.4px;text-transform:uppercase;color:${p.stripInk};white-space:nowrap;">Casting across every format</td>
+        <td class="strip-label" style="padding:0 14px;font-size:10.5px;font-weight:800;letter-spacing:3.2px;text-transform:uppercase;color:${p.stripInk};white-space:nowrap;">Casting across every format</td>
         <td class="mq-rule" style="width:120px;height:1px;background:${p.stripLine};font-size:0;line-height:0;">&nbsp;</td>
       </tr></table>
       <table class="mq-desk" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center" style="width:100%;max-width:1000px;margin:0 auto;"><tr>
@@ -413,7 +427,7 @@ function marquee(p: Palette): string {
         ${cell("a24-black.png","l-a24",72)}${dot}${cell("neon-black.png","l-neon",106)}${dot}${cell("netflix-red.png","l-nflx",111)}
       </tr></table>
       <!--<![endif]-->
-      <div class="mq-sub" style="margin-top:26px;font-size:11.5px;letter-spacing:.4px;color:${p.stripInk};">Indie features to streaming series &mdash; the same inbox.</div>
+      <div class="mq-sub" style="margin-top:12px;font-size:11px;letter-spacing:.4px;color:${p.stripInk};">Indie features to streaming series &mdash; the same inbox.</div>
     </td></tr>`;
 }
 
@@ -438,7 +452,7 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   const unsub = `${UNSUB_BASE}?action=unsubscribe&uid=${userId}&slot=${slot}`;
   const still = hero?.image_url || p.fallbackStill;
 
-  const slotLabel = slot === "evening" ? "Evening castings" : "Noon castings";
+  const slotLabel = slot === "evening" ? "Evening castings" : "Morning castings";
   const kicker    = slot === "evening" ? "Before the day's out" : "Fresh for you today";
   const headline  = slot === "evening"
     ? (count ? "Still open tonight" : "Still open tonight")
@@ -476,17 +490,17 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
   .mast-word{font-size:26px!important;letter-spacing:3px!important;margin-left:12px!important;}
   .mast-sub{font-size:11px!important;letter-spacing:3px!important;margin-top:12px!important;}
   .hl{font-size:28px!important;} .hl2{font-size:25px!important;}
-  .l-a24{width:44px!important;height:18px!important;}
-  .l-neon{width:64px!important;height:18px!important;}
-  .l-nflx{width:67px!important;height:18px!important;}
+  .l-a24{width:38px!important;height:16px!important;}
+  .l-neon{width:56px!important;height:16px!important;}
+  .l-nflx{width:58px!important;height:16px!important;}
   .sep{padding:0 11px!important;}
   .strip-label{font-size:9.5px!important;letter-spacing:2.2px!important;padding:0 8px!important;}
   .mq-desk{display:none!important;}
   .mq-mob{display:table!important;}
-  .strip-pad{padding-top:30px!important;padding-bottom:28px!important;}
-  .mq-label{margin-bottom:16px!important;}
+  .strip-pad{padding-top:16px!important;padding-bottom:14px!important;}
+  .mq-label{margin-bottom:10px!important;}
   .mq-rule{width:44px!important;}
-  .mq-sub{margin-top:16px!important;}
+  .mq-sub{margin-top:10px!important;}
 }
 </style></head>
 <body style="margin:0;padding:0;background:${p.paper};-webkit-text-size-adjust:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
