@@ -23,9 +23,17 @@ from PIL import Image, ImageDraw
 
 SIZE = 156                 # 3x of the 52px the email renders them at
 SS   = 4                   # supersampling factor
-TINT = (226, 238, 238)     # #E2EEEE soft teal tile
-INK  = (55, 105, 106)      # #37696A CastSlate teal
 OUT  = os.path.join(os.path.dirname(__file__), "..", "email", "step-icons")
+
+# Palettes. "" is the original teal set; the others were added 2026-09-20 when
+# the owner asked for colours that read as acceptance rather than as a brand
+# colour. Add a palette here and re-run rather than recolouring the PNGs.
+PALETTES = {
+    "":          ((226, 238, 238), ( 55, 105, 106)),   # teal    #E2EEEE / #37696A
+    "-clay":     ((247, 226, 216), (154,  65,  39)),   # F: terracotta #F7E2D8 / #9A4127
+    "-sand":     ((244, 234, 223), (156, 114,  80)),   # G: sand+clay  #F4EADF / #9C7250
+}
+TINT, INK = PALETTES[""]
 
 S = SIZE * SS
 G = round(SIZE * 0.54) * SS          # glyph box
@@ -86,17 +94,24 @@ ICONS = {
 }
 
 
-def main():
-    os.makedirs(OUT, exist_ok=True)
+def build(suffix):
+    global TINT, INK
+    TINT, INK = PALETTES[suffix]
     for name, draw_glyph in ICONS.items():
         im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
         d = ImageDraw.Draw(im)
         d.rounded_rectangle([0, 0, S - 1, S - 1], radius=SIZE * 0.29 * SS, fill=TINT)
         draw_glyph(d)
         im = im.resize((SIZE, SIZE), Image.LANCZOS)
-        path = os.path.normpath(os.path.join(OUT, name + ".png"))
+        path = os.path.normpath(os.path.join(OUT, name + suffix + ".png"))
         im.save(path, optimize=True)
-        print(f"{name+'.png':22} {os.path.getsize(path):6} bytes  {im.size}")
+        print(f"{name+suffix+'.png':30} {os.path.getsize(path):6} bytes  {im.size}")
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    for suffix in PALETTES:
+        build(suffix)
 
 
 if __name__ == "__main__":
