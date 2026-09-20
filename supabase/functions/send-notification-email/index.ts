@@ -434,22 +434,51 @@ function premiumWelcomeHtml(firstName: string): string {
 }
 
 function newActorWelcomeHtml(firstName: string): string {
-  const step = (emoji: string, title: string, body: string) =>
-    `<tr><td style="background:#f1f7f7;border:1px solid #d9e9e9;border-radius:12px;padding:16px 18px">
+  // Scheme "F", approved 2026-09-20. Terracotta is not an arbitrary warm colour:
+  // it is the exact SHORTLIST_TONE band, the colour this platform already uses
+  // for the best news an actor gets, so meeting it on day one is consistent
+  // rather than decorative. The navy masthead carries the same honey glow as
+  // the morning upsell. Step icons are PNGs (email/step-icons/*-clay.png)
+  // because emoji are a font and render differently, or as a tofu box, across
+  // clients; regenerate with tools/make-step-icons.py, never edit the PNGs.
+  const step = (icon: string, n: number, title: string, body: string) => `
+    <tr><td class="stp" height="112" style="height:112px;${n === 1 ? "" : "border-top:1px solid #F1D6C8;"}padding:0">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td width="34" valign="top" style="font-size:20px;line-height:1">${emoji}</td>
-        <td valign="top">
-          <div style="font-size:15px;font-weight:800;color:#1A1A2E;margin:0 0 3px">${title}</div>
-          <div style="font-size:14px;line-height:1.6;color:#555">${body}</div>
+        <td class="stp-i" width="86" valign="middle" style="width:86px">
+          <img src="${APP_URL}/email/step-icons/${icon}.png" width="66" height="66" alt="" style="display:block;width:66px;height:66px;border:0"/>
+        </td>
+        <td valign="middle" style="padding-left:6px">
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#A8472A;margin:0 0 4px">Step ${n}</div>
+          <div class="stp-t" style="font-size:16px;font-weight:800;color:#1A1A2E;margin:0 0 3px">${title}</div>
+          <div class="stp-b" style="font-size:13.5px;line-height:1.55;color:#555">${body}</div>
         </td>
       </tr></table>
     </td></tr>`;
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+@media only screen and (max-width:480px){
+  /* The "Get started" pill shared a row with the mark and the wordmark. Under
+     about 430px there was no width left for it, so it broke onto two lines and
+     collided with the tagline. It is decoration, so it goes on small screens. */
+  .mast-pill{display:none!important}
+  .mast-pad{padding:24px 18px!important}
+  .mast-word{font-size:19px!important}
+  .mast-sub{font-size:10px!important;letter-spacing:1.4px!important}
+  /* A narrower column wraps more, so the desktop row height stops fitting all
+     three steps. A taller floor on mobile keeps them level. */
+  .stp{height:150px!important}
+  .stp-i{width:66px!important}
+  .stp-t{font-size:15px!important}
+  .stp-b{font-size:13px!important}
+  .row-pad{padding-left:20px!important;padding-right:20px!important}
+}
+</style></head>
 <body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM};padding:40px 20px"><tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
 
-      <tr><td style="background:#4F8A8B;background:linear-gradient(135deg,#2f5f60 0%,#4F8A8B 55%,#5fa0a1 100%);border-top:3px solid #6fb0b1;padding:34px 36px 32px">
+      <tr><td class="mast-pad" style="background:#2E3050;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(242,179,96,.36) 0%,rgba(240,176,96,.11) 46%,rgba(240,176,96,0) 72%),linear-gradient(118deg,#26273F 0%,#33355A 52%,#3E4168 100%);border-top:3px solid #4A4C74;padding:34px 36px 32px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td valign="middle" style="width:52px">
             <span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20)">
@@ -457,46 +486,46 @@ function newActorWelcomeHtml(firstName: string): string {
             </span>
           </td>
           <td valign="middle" style="padding-left:14px">
-            <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1">CastSlate</div>
-            <div style="margin-top:4px;font-size:11px;font-weight:600;color:#dff1f1;letter-spacing:2px;text-transform:uppercase">Get seen. Get cast.</div>
+            <div class="mast-word" style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.1">CastSlate</div>
+            <div class="mast-sub" style="margin-top:4px;font-size:11px;font-weight:600;color:#CFCFE4;letter-spacing:2px;text-transform:uppercase">Get seen. Get cast.</div>
           </td>
-          <td valign="middle" align="right">
-            <span style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#f2fbfb;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase">Get started</span>
+          <td class="mast-pill" valign="middle" align="right" style="padding-left:12px">
+            <span style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#f2fbfb;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase;white-space:nowrap">Get started</span>
           </td>
         </tr></table>
       </td></tr>
 
-      ${heroStill(WELCOME_STILL, "#8aa0a0", "#1A1A2E")}
+      ${heroStill(WELCOME_STILL, "#A8472A", "#1A1A2E")}
 
-      <tr><td style="padding:36px 36px 8px">
+      <tr><td class="row-pad" style="padding:36px 36px 8px">
         <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate, ${firstName} 🎬</h1>
-        <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">Your account is live. You're about <strong>two minutes</strong> from being ready to apply to real castings — here's all it takes.</p>
+        <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">Your account is live. You&rsquo;re about <strong>two minutes</strong> from being ready to apply to real castings — here&rsquo;s all it takes.</p>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#555">Follow these three steps in order:</p>
       </td></tr>
 
-      <tr><td style="padding:0 36px 8px">
-        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 10px">
-          ${step("📸", `1 &middot; Add your headshot <span style="font-weight:700;color:#37696A">(required to apply)</span>`, "This is the one thing you need before you can submit to a casting. A clean, well-lit photo — even from your phone — works. You can add more later.")}
-          ${step("✍️", "2 &middot; Fill in your basics", "Add your stats and a short bio so a casting director knows who they're looking at the moment they open your profile.")}
-          ${step("🎬", "3 &middot; Browse castings &amp; send your first submission", "Your <strong>first submission is free</strong>. Find a role that fits and apply — every submission is reviewed by the casting director individually.")}
+      <tr><td class="row-pad" style="padding:0 36px 8px">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${step("step-headshot-clay", 1, "Add your headshot", "Required before you can submit. A clean, well-lit phone photo works — add more later.")}
+          ${step("step-basics-clay", 2, "Fill in your basics", "Your stats and a short bio, so a casting director knows who they&rsquo;re looking at.")}
+          ${step("step-submission-clay", 3, "Send your first submission", "Your first one is free. Find a role that fits — every submission is reviewed individually.")}
         </table>
       </td></tr>
 
-      <tr><td style="padding:18px 36px 26px" align="center">
-        <a href="${APP_URL}/my-profile" style="display:inline-block;background:linear-gradient(90deg,#4F8A8B,#37696A);color:#fff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">Add my headshot →</a>
+      <tr><td class="row-pad" style="padding:22px 36px 26px" align="center">
+        <a href="${APP_URL}/my-profile" style="display:inline-block;background:#9A4127;background:linear-gradient(90deg,#C4623F,#9A4127);color:#fff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">Add my headshot &rarr;</a>
       </td></tr>
 
-      <tr><td style="padding:0 36px 30px">
-        <div style="background:#f4f9f9;border:1px dashed #bfdcdc;border-radius:12px;padding:16px 18px">
+      <tr><td class="row-pad" style="padding:0 36px 30px">
+        <div style="background:#FBEEE7;border:1px dashed #F1D6C8;border-radius:12px;padding:16px 18px">
           <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Want to move faster?</div>
-          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium is <strong>$129 a year ($10.75/month)</strong>, or $17.99/month — it unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor's Slate, an Actor Business Card with a QR code, and the <strong>Talent Agency &amp; Manager Directory</strong> — 650+ agencies and management companies across LA and New York, with the submission route each one actually accepts. Start free — upgrade whenever you're ready.</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium is <strong>$129 a year ($10.75/month)</strong>, or $17.99/month — it unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor&rsquo;s Slate, an Actor Business Card with a QR code, and the <strong>Talent Agency &amp; Manager Directory</strong> — 650+ agencies and management companies across LA and New York. Start free — upgrade whenever you&rsquo;re ready.</div>
         </div>
       </td></tr>
 
-      ${csFooterStripe("#37696A")}
+      ${csFooterStripe("#9A4127")}
 
     </table>
-    ${csFooterA("You're receiving this because you created a CastSlate account.", "#37696A", `${APP_URL}/account-settings`)}
+    ${csFooterA("You're receiving this because you created a CastSlate account.", "#9A4127", `${APP_URL}/account-settings`)}
   </td></tr></table>
 </body></html>`;
 }
