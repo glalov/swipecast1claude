@@ -70,7 +70,13 @@ const CONTACT_EMAIL        = Deno.env.get("CONTACT_EMAIL") ?? "team@castslate.co
 const UNSUB_BASE           = `${SUPABASE_URL}/functions/v1/premium-upsell`;
 
 // Auth: service-role key or the shared admin campaign secret (mirrors send-campaign).
-const ADMIN_SECRET         = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "cmpn_9e872b254fab6297129ac7ee95c021831a2163dd1f7a9906";
+// NO hardcoded fallback. The old one was a literal in this file, and this repo is
+// public — it authorised anyone to POST action:"run" and mail the whole free list.
+// Rotated 2026-09-20; the value now lives only in the ADMIN_CAMPAIGN_SECRET
+// project secret. If that secret is ever missing this FAILS CLOSED (nothing can
+// authenticate by secret) rather than silently accepting a published key.
+// See [castslate-supabase-security-hardening] in memory.
+const ADMIN_SECRET         = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "";
 
 // ── Email provider — Resend (pinned, like the digest). ──
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -191,8 +197,8 @@ function castingAgeOk(c: any, age: number|null|undefined): boolean {
 // Edge-to-edge colour bands instead of one narrow card, modelled on how the
 // big casting sites lay their promos out. Two palettes, keyed to the slot so
 // noon and evening never look like duplicate mail in the same inbox:
-//   noon    = Navy Dawn (soft-navy masthead with an amber sunrise rising from
-//             the lower-left, neutral off-white paper, Honey Sand accents).
+//   noon    = Navy Dawn (soft-navy masthead with a warm glow rising from the
+//             bottom centre, neutral off-white paper, Honey Sand accents).
 //             Demo "B", approved 2026-09-19, replacing Golden Hour: the ivory
 //             paper and sunset masthead read as too warm/cream next to the rest
 //             of the site, and the navy is the same family as /actor-toolkit's
@@ -200,15 +206,19 @@ function castingAgeOk(c: any, age: number|null|undefined): boolean {
 //             cream page tint.
 //   evening = Sage & Clay, restyled to the same STRUCTURE as noon on 2026-09-20
 //             (owner approved). The sage stays exactly as it was; the flat
-//             120deg ramp gained the identical rising glow (72% 125% at 12%
-//             100%, 118deg base) in clay instead of honey — dusk off the
-//             horizon rather than dawn. The clay needed a HIGHER alpha (.54 vs
-//             the noon .46): honey over near-black navy is high contrast, warm
-//             orange over sage is not, and at the noon value the glow vanished.
+//             120deg ramp gained the identical rising glow in clay instead of
+//             honey.
 //             Paper #FAF4EC → #F8F9F7 and the sand strip #F1EAE0 → #EFF1EE, so
 //             the cream is gone here too. Clay CTAs and the 10px radius are
 //             KEPT against noon's navy + pill — with the structure now shared,
 //             those are what stop the two reading as duplicate mail.
+// GLOW GEOMETRY — both slots share it exactly: ellipse 72% 125% at 50% 102%,
+// core alpha .36, mid alpha .11 at 46%, transparent by 72%. Dialled in by the
+// owner on 2026-09-20 with tools/castslate-upsell-gold-tuner.html and applied
+// as measured. It sits at 50% 102% so the source is just BELOW the bottom edge,
+// centred — light coming up into frame rather than a lamp inside the banner.
+// The earlier lower-left placement (12% 100%) at .46/.54 read as too much gold.
+// If you change one slot, change the other: they are meant to match.
 // The studio marquee sits UP TOP, under the masthead and above the still, with
 // the logos at 30px — it used to be a small strip at the bottom.
 // The shell caps at 1400px so it fills a desktop Gmail reading pane edge to
@@ -226,7 +236,7 @@ interface Palette {
 const PALETTES: Record<string, Palette> = {
   noon: {
     paper:"#FAF9F7", ink:"#221F2E", body:"#605C6B", line:"#E6E4E0", rule:"#EAC080", kicker:"#45476E", alert:"#C2432C",
-    mastBg:"radial-gradient(ellipse 72% 125% at 12% 100%,rgba(242,179,96,.46) 0%,rgba(240,176,96,.13) 46%,rgba(240,176,96,0) 72%),linear-gradient(118deg,#26273F 0%,#33355A 52%,#3E4168 100%)",
+    mastBg:"radial-gradient(ellipse 72% 125% at 50% 102%,rgba(242,179,96,.36) 0%,rgba(240,176,96,.11) 46%,rgba(240,176,96,0) 72%),linear-gradient(118deg,#26273F 0%,#33355A 52%,#3E4168 100%)",
     mastInk:"#FFF8EE", mastSub:"#EAC080",
     cta:"#3E4168", ctaInk:"#FFFFFF", radius:"999px",
     permBg:"radial-gradient(ellipse 540px 320px at 50% 0%,rgba(234,192,128,.26) 0%,rgba(34,31,46,0) 70%),#221F2E",
@@ -238,7 +248,7 @@ const PALETTES: Record<string, Palette> = {
   },
   evening: {
     paper:"#F8F9F7", ink:"#22322E", body:"#5F7069", line:"#E3E8E4", rule:"#C3653F", kicker:"#2F5B52", alert:"#C3653F",
-    mastBg:"radial-gradient(ellipse 72% 125% at 12% 100%,rgba(238,152,96,.54) 0%,rgba(232,168,124,.16) 46%,rgba(232,168,124,0) 72%),linear-gradient(118deg,#24453E 0%,#2F5B52 52%,#3C7065 100%)",
+    mastBg:"radial-gradient(ellipse 72% 125% at 50% 102%,rgba(238,152,96,.36) 0%,rgba(232,168,124,.11) 46%,rgba(232,168,124,0) 72%),linear-gradient(118deg,#24453E 0%,#2F5B52 52%,#3C7065 100%)",
     mastInk:"#F4FAF6", mastSub:"#E8A87C",
     cta:"#C3653F", ctaInk:"#FFFFFF", radius:"10px",
     permBg:"radial-gradient(ellipse 540px 320px at 50% 0%,rgba(232,168,124,.26) 0%,rgba(31,58,53,0) 70%),#1F3A35",
@@ -628,7 +638,7 @@ serve(async (req) => {
     const slot=(body.slot==="evening")?"evening":"noon";
 
     // Auth: service-role/admin secret OR an admin user JWT.
-    let authorized = !!secret && (secret===SUPABASE_SERVICE_KEY || (ADMIN_SECRET && secret===ADMIN_SECRET));
+    let authorized = !!secret && (secret===SUPABASE_SERVICE_KEY || (!!ADMIN_SECRET && secret===ADMIN_SECRET));
     if(!authorized){
       const authz=req.headers.get("Authorization")||"";
       if(authz.startsWith("Bearer ")){
