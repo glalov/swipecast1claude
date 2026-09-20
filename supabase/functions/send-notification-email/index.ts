@@ -40,6 +40,33 @@ const APP_URL              = (Deno.env.get("APP_URL") ?? "https://www.castslate.
 // winback-run and member-announce. Change one, change all seven. Each email
 // passes its own "why you got this" sentence, accent colour and unsubscribe URL.
 const CS_CREAM = "#F3EEE6";
+
+// ── Fixed welcome heroes (owner-chosen 2026-09-20, NOT the rotation) ───────
+// A welcome email fires once and is a first impression, so it gets one chosen
+// frame with a recognisable face rather than whatever email_hero_images serves
+// that day. Candidates were rejected for faces that could not be read at a
+// glance (sunglasses and shadow, a flight helmet and oxygen mask), so if you
+// swap either of these, look at the face first.
+const WELCOME_STILL = {
+  url: "https://image.tmdb.org/t/p/w1280/vtTl849UKBVQ0Lr796Krjr90y0J.jpg",
+  film: "Dune: Part Two", year: 2024,
+  line: "Zendaya came up on the Disney Channel. Chalamet was doing off-Broadway. Nobody starts where they end up.",
+};
+const PREMIUM_STILL = {
+  url: "https://image.tmdb.org/t/p/w1280/oRiUKwDpcqDdoLwPoA4FIRh3hqY.jpg",
+  film: "Once Upon a Time in Hollywood", year: 2019,
+  line: "A fading star and his stunt double. The whole film is about the unglamorous part of the job \u2014 the auditions, the day rates, the work between the work.",
+};
+// One full-width still plus its line. A plain <img> at natural 16:9 on purpose:
+// a shorter crop would need a CSS background-image, which Outlook on Windows
+// drops entirely and some Gmail setups strip.
+function heroStill(st: {url:string;film:string;year:number;line:string}, capCol: string, inkCol: string): string {
+  return `<tr><td style="padding:0;line-height:0"><img src="${st.url}" width="600" alt="" style="display:block;width:100%;height:auto;border:0"/></td></tr>
+      <tr><td style="padding:14px 36px 0;text-align:center">
+        <div style="font-size:10px;letter-spacing:.4px;color:${capCol};margin-bottom:6px">Still: <em>${st.film}</em> (${st.year})</div>
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:15.5px;line-height:1.45;font-weight:700;color:${inkCol}">${st.line}</div>
+      </td></tr>`;
+}
 function csFooterStripe(accent: string): string {
   return `<tr><td style="height:6px;line-height:6px;font-size:0;background:${accent};background:linear-gradient(90deg,${accent},${accent} 55%,${accent}55)">&nbsp;</td></tr>`;
 }
@@ -328,6 +355,7 @@ function premiumWelcomeHtml(firstName: string): string {
           </td>
         </tr></table>
       </td></tr>
+      ${heroStill(PREMIUM_STILL, "#9b8bb5", "#1a0533")}
       <tr><td class="pw-pad" style="padding:36px 36px 8px">
         <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1a0533;letter-spacing:-0.5px">Welcome to CastSlate Premium, ${firstName} 🎬</h1>
         <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">You're all set. Premium unlocks everything you need to get seen — and the more complete your profile, the more castable you become.</p>
@@ -437,6 +465,8 @@ function newActorWelcomeHtml(firstName: string): string {
           </td>
         </tr></table>
       </td></tr>
+
+      ${heroStill(WELCOME_STILL, "#8aa0a0", "#1A1A2E")}
 
       <tr><td style="padding:36px 36px 8px">
         <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate, ${firstName} 🎬</h1>
