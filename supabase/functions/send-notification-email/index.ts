@@ -55,7 +55,7 @@ const WELCOME_STILL = {
 const PREMIUM_STILL = {
   url: "https://image.tmdb.org/t/p/w1280/oRiUKwDpcqDdoLwPoA4FIRh3hqY.jpg",
   film: "Once Upon a Time in Hollywood", year: 2019,
-  line: "A fading star and his stunt double. The whole film is about the unglamorous part of the job \u2014 the auditions, the day rates, the work between the work.",
+  line: "A fading star and his stunt double. The whole film is about the unglamorous part of the job — the auditions, the day rates, the work between the work.",
 };
 // One full-width still plus its line. A plain <img> at natural 16:9 on purpose:
 // a shorter crop would need a CSS background-image, which Outlook on Windows
