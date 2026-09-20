@@ -198,7 +198,17 @@ function castingAgeOk(c: any, age: number|null|undefined): boolean {
 //             of the site, and the navy is the same family as /actor-toolkit's
 //             --atk-navy. Keep the warmth as LIGHT in the masthead, not as a
 //             cream page tint.
-//   evening = Sage & Clay (deep sage masthead, sand paper, clay CTAs)
+//   evening = Sage & Clay, restyled to the same STRUCTURE as noon on 2026-09-20
+//             (owner approved). The sage stays exactly as it was; the flat
+//             120deg ramp gained the identical rising glow (72% 125% at 12%
+//             100%, 118deg base) in clay instead of honey — dusk off the
+//             horizon rather than dawn. The clay needed a HIGHER alpha (.54 vs
+//             the noon .46): honey over near-black navy is high contrast, warm
+//             orange over sage is not, and at the noon value the glow vanished.
+//             Paper #FAF4EC → #F8F9F7 and the sand strip #F1EAE0 → #EFF1EE, so
+//             the cream is gone here too. Clay CTAs and the 10px radius are
+//             KEPT against noon's navy + pill — with the structure now shared,
+//             those are what stop the two reading as duplicate mail.
 // The studio marquee sits UP TOP, under the masthead and above the still, with
 // the logos at 30px — it used to be a small strip at the bottom.
 // The shell caps at 1400px so it fills a desktop Gmail reading pane edge to
@@ -227,13 +237,14 @@ const PALETTES: Record<string, Palette> = {
     fallbackStill:"https://image.tmdb.org/t/p/w1280/7HR38hMBl23lf38MAN63y4pKsHz.jpg",
   },
   evening: {
-    paper:"#FAF4EC", ink:"#22322E", body:"#5F7069", line:"#DCE6DF", rule:"#C3653F", kicker:"#2F5B52", alert:"#C3653F",
-    mastBg:"linear-gradient(120deg,#24453E 0%,#2F5B52 60%,#3C7065 100%)", mastInk:"#F4FAF6", mastSub:"#AFCBC0",
+    paper:"#F8F9F7", ink:"#22322E", body:"#5F7069", line:"#E3E8E4", rule:"#C3653F", kicker:"#2F5B52", alert:"#C3653F",
+    mastBg:"radial-gradient(ellipse 72% 125% at 12% 100%,rgba(238,152,96,.54) 0%,rgba(232,168,124,.16) 46%,rgba(232,168,124,0) 72%),linear-gradient(118deg,#24453E 0%,#2F5B52 52%,#3C7065 100%)",
+    mastInk:"#F4FAF6", mastSub:"#E8A87C",
     cta:"#C3653F", ctaInk:"#FFFFFF", radius:"10px",
-    permBg:"radial-gradient(ellipse 520px 300px at 50% 0%,rgba(195,101,63,.30) 0%,rgba(31,58,53,0) 70%),#1F3A35",
+    permBg:"radial-gradient(ellipse 540px 320px at 50% 0%,rgba(232,168,124,.26) 0%,rgba(31,58,53,0) 70%),#1F3A35",
     permInk:"#F2F8F4", permBody:"#A9C2B8", permAccent:"#E8A87C",
     permCta:"#E08A57", permCtaInk:"#221208",
-    stripBg:"#F1EAE0", stripInk:"#8D9A91", stripLine:"#DED3C4", stripDot:"#C3653F",
+    stripBg:"#EFF1EE", stripInk:"#8A9791", stripLine:"#DFE4E0", stripDot:"#C3653F",
     foot:"#22322E", footInk:"#F4FAF6", footSub:"#9DB3A9", footLink:"#E8A87C",
     fallbackStill:"https://image.tmdb.org/t/p/w1280/bKCpRjjTKcr3KAITmwjVMobbBYg.jpg",
   },
