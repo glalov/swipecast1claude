@@ -318,13 +318,29 @@ function weeklyCheckinHtml(firstName: string, task?: string): string {
 }
 
 function premiumWelcomeHtml(firstName: string): string {
-  const card = (emoji: string, title: string, body: string) =>
-    `<tr><td class="pw-card" height="84" style="height:84px;background:#f7f4fd;border:1px solid #e6ddf8;border-radius:13px;padding:0 18px">
+  // Scheme "B" (Foil Edition), approved 2026-09-20. The six features used to be
+  // boxed lavender cards; they are now open rows with hairline rules, exactly
+  // like the three steps in newActorWelcomeHtml — one family, and the paid mail
+  // is the dressed-up sibling rather than a different email. Premium reads as
+  // premium through materials, not layout: champagne icon tiles with a gold
+  // foil ring, serif feature titles, a gold section rule and 01–06 numerals.
+  // Icons are PNGs (email/step-icons/pw-*-foil.png) for the same reason the
+  // free welcome's are: emoji are a font and render differently, or as a tofu
+  // box, across clients. Regenerate with tools/make-step-icons.py, never edit
+  // the PNGs by hand.
+  const row = (icon: string, n: number, title: string, body: string) => `
+    <tr><td class="pw-row" height="104" style="height:104px;${n === 1 ? "" : "border-top:1px solid #EADFC8;"}padding:0">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td width="54" valign="middle" class="pw-ico">
-          <span style="display:inline-block;width:40px;height:40px;line-height:40px;text-align:center;font-size:19px;border-radius:11px;background:linear-gradient(135deg,#6b3ecb,#8b5cf6)">${emoji}</span>
+        <td class="pw-ico" width="86" valign="middle" style="width:86px">
+          <img src="${APP_URL}/email/step-icons/${icon}-foil.png" width="66" height="66" alt="" style="display:block;width:66px;height:66px;border:0"/>
         </td>
-        <td valign="middle" class="pw-body" style="padding-left:12px"><div style="font-size:15px;font-weight:800;color:#2d1052;margin:0 0 3px;line-height:1.3">${title}</div><div style="font-size:14px;line-height:1.55;color:#555">${body}</div></td>
+        <td valign="middle" style="padding-left:6px">
+          <div class="pw-t" style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#1A1A2E;margin:0 0 4px;letter-spacing:-0.2px">${title}</div>
+          <div class="pw-b" style="font-size:13.5px;line-height:1.55;color:#555">${body}</div>
+        </td>
+        <td class="pw-n" width="42" valign="middle" align="right" style="width:42px">
+          <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#D6AA60;letter-spacing:0.5px">${String(n).padStart(2, "0")}</div>
+        </td>
       </tr></table>
     </td></tr>`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
@@ -332,59 +348,77 @@ function premiumWelcomeHtml(firstName: string): string {
 <style>
 @media only screen and (max-width:480px){
   .pw-outer{padding:12px 4px!important}
-  .pw-pad{padding-left:12px!important;padding-right:12px!important}
-  .pw-note{padding-left:14px!important;padding-right:14px!important}
-  .pw-card{padding:10px 12px!important;height:85px!important}
-  .pw-ico{width:44px!important}
-  .pw-ico span{width:34px!important;height:34px!important;line-height:34px!important;font-size:17px!important}
-  .pw-body{padding-left:10px!important}
+  .mast-pad{padding:24px 18px!important}
+  .mast-pill{display:none!important}
+  .mast-word{font-size:19px!important}
+  .mast-sub{font-size:10px!important;letter-spacing:1.4px!important}
+  .pw-pad{padding-left:20px!important;padding-right:20px!important}
+  .pw-note{padding-left:16px!important;padding-right:16px!important}
+  /* A narrower column wraps more, so the desktop row height stops fitting the
+     body copy. A taller floor keeps all six rows level. The 01–06 numerals are
+     decoration and there is no width for them, so they go. */
+  .pw-row{height:132px!important}
+  .pw-ico{width:66px!important}
+  .pw-n{display:none!important}
+  .pw-t{font-size:16.5px!important}
+  .pw-b{font-size:13px!important}
 }
 </style></head><body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM}"><tr><td class="pw-outer" align="center" style="padding:40px 20px">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
-      <tr><td style="background:#dfd6f2;background:linear-gradient(110deg,#bcd0f0 0%,#c7bdea 26%,#d9bce6 46%,#f2c0cf 66%,#f8ccb6 85%,#f6d6ac 100%);padding:34px 36px 32px">
+      <tr><td class="mast-pad" style="background:#2E3050;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(242,179,96,.36) 0%,rgba(240,176,96,.11) 46%,rgba(240,176,96,0) 72%),linear-gradient(118deg,#26273F 0%,#33355A 52%,#3E4168 100%);border-top:3px solid #C9A227;padding:34px 36px 32px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
-          <td valign="middle" style="width:54px">
-            <span style="display:inline-block;background:#ffffff;border-radius:13px;padding:10px;line-height:0;box-shadow:0 6px 18px rgba(60,26,110,0.22)">
+          <td valign="middle" style="width:52px">
+            <span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20)">
               <img src="${APP_URL}/logo-email.png" alt="CastSlate" width="30" height="30" style="display:block"/>
             </span>
           </td>
           <td valign="middle" style="padding-left:14px">
-            <div style="font-size:22px;font-weight:800;color:#1a0533;letter-spacing:-0.5px;line-height:1">CastSlate</div>
-            <div style="margin-top:5px;font-size:11px;font-weight:700;color:#5a3aa0;letter-spacing:2.5px;text-transform:uppercase">Premium membership</div>
+            <div class="mast-word" style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.1">CastSlate</div>
+            <div class="mast-sub" style="margin-top:4px;font-size:11px;font-weight:600;color:#CFCFE4;letter-spacing:2px;text-transform:uppercase">Premium membership</div>
+          </td>
+          <td class="mast-pill" valign="middle" align="right" style="padding-left:12px">
+            <span style="display:inline-block;background:#D9B65C;background:linear-gradient(135deg,#F0D79B,#C9A227);border:1px solid #E6C77E;color:#3A2A08;font-size:11px;font-weight:800;letter-spacing:1px;padding:6px 14px;border-radius:20px;text-transform:uppercase;white-space:nowrap">Premium member</span>
           </td>
         </tr></table>
       </td></tr>
-      ${heroStill(PREMIUM_STILL, "#9b8bb5", "#1a0533")}
+      ${heroStill(PREMIUM_STILL, "#A8472A", "#1A1A2E")}
       <tr><td class="pw-pad" style="padding:36px 36px 8px">
-        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1a0533;letter-spacing:-0.5px">Welcome to CastSlate Premium, ${firstName} 🎬</h1>
+        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate Premium, ${firstName} 🎬</h1>
         <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">You're all set. Premium unlocks everything you need to get seen — and the more complete your profile, the more castable you become.</p>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#555">Here's how to get the most out of it:</p>
       </td></tr>
-      <tr><td class="pw-pad" style="padding:0 36px 8px">
-        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 10px">
-          ${card("📅", "Manager Mode — your weekly check-in", "One focused task every week (Mon–Wed), waiting in your CastSlate inbox.")}
-          ${card("📸", "Upload everything you can", "Photos, all your stats, <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>.")}
-          ${card("🎞️", "Unlimited storage", "Demo reels, video clips and photos with no limits. Show your full range.")}
-          ${card("💬", "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
-          ${card("🏛️", "Agency &amp; Manager Directory", "<strong>650+</strong> agencies and managers in LA &amp; NY, with how each one takes submissions.")}
-          ${card("🪪", "Actor Business Card + QR code", "One scan opens your full profile, reels, slate and stats for any industry pro.")}
+      <tr><td class="pw-pad" style="padding:4px 36px 8px">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:0 0 14px">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td width="30" style="width:30px"><div style="height:1px;line-height:1px;font-size:0;background:#D6AA60">&nbsp;</div></td>
+              <td style="padding:0 10px;white-space:nowrap;font-size:10.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#9A7B2E">Your membership includes</td>
+              <td><div style="height:1px;line-height:1px;font-size:0;background:#EADFC8">&nbsp;</div></td>
+            </tr></table>
+          </td></tr>
+          ${row("pw-calendar", 1, "Manager Mode &mdash; your weekly check-in", "One focused task every week (Mon&ndash;Wed), waiting in your CastSlate inbox.")}
+          ${row("pw-upload", 2, "Upload everything you can", "Photos, all your stats, <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>.")}
+          ${row("pw-reel", 3, "Unlimited storage", "Demo reels, video clips and photos with no limits. Show your full range.")}
+          ${row("pw-message", 4, "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
+          ${row("pw-directory", 5, "Agency &amp; Manager Directory", "<strong>650+</strong> agencies and managers in LA &amp; NY, with how each one takes submissions.")}
+          ${row("pw-bizcard", 6, "Actor Business Card + QR code", "One scan opens your full profile, reels, slate and stats for any industry pro.")}
         </table>
       </td></tr>
       <!-- "How to waste your membership" note -->
       <tr><td class="pw-pad" style="padding:18px 36px 6px">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8f1;border:1px solid #f3dcc6;border-radius:16px">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FBEEE7;border:1px solid #F1D6C8;border-radius:16px">
           <tr><td class="pw-note" style="padding:26px 26px 8px">
-            <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#c4622d;margin:0 0 8px">If you're just starting out</div>
-            <div style="font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;color:#1a0533;letter-spacing:-0.3px;line-height:1.2;margin:0 0 10px">How to waste your membership 🙃</div>
+            <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#A8472A;margin:0 0 8px">If you're just starting out</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:25px;font-weight:700;color:#1A1A2E;letter-spacing:-0.3px;line-height:1.2;margin:0 0 10px">How to waste your membership 🙃</div>
             <div style="font-size:15px;line-height:1.7;color:#5a4a44">We've seen a lot of Premium profiles, and there are two tried-and-true ways to get absolutely nothing out of yours. Please don't try either of them.</div>
           </td></tr>
 
           <!-- Waste #1 -->
           <tr><td class="pw-note" style="padding:18px 26px 4px">
             <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px"><tr>
-              <td width="40" valign="middle" style="width:40px"><span style="display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:15px;background:#e0784a;color:#ffffff;font-size:14px;font-weight:800">1</span></td>
-              <td valign="middle" style="font-size:16px;font-weight:800;color:#2d1052;line-height:1.35">Upload one or two photos… and call it a day</td>
+              <td width="40" valign="middle" style="width:40px"><span style="display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:15px;background:#9A4127;color:#ffffff;font-size:14px;font-weight:800">1</span></td>
+              <td valign="middle" style="font-size:16px;font-weight:800;color:#1A1A2E;line-height:1.35">Upload one or two photos… and call it a day</td>
             </tr></table>
             <div style="font-size:14.5px;line-height:1.7;color:#555;margin:0 0 10px">It's the classic move: one lonely headshot, maybe a second, and not a single video. Your storage is <strong>unlimited</strong>, so you can upload literally <strong>hundreds</strong> of photos and videos. Fill it up and your profile becomes your own personal website.</div>
             <div style="font-size:14.5px;line-height:1.7;color:#555">Casting directors, agents and managers today want to see you <strong>on video</strong>. No professional footage? No problem. Grab your phone and record a monologue, or shoot a scene with a friend. Nobody in the industry cares whether it was shot on an ARRI Alexa or an iPhone. They care about <strong>the acting</strong>.</div>
@@ -393,8 +427,8 @@ function premiumWelcomeHtml(firstName: string): string {
           <!-- Waste #2 -->
           <tr><td class="pw-note" style="padding:20px 26px 4px">
             <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px"><tr>
-              <td width="40" valign="middle" style="width:40px"><span style="display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:15px;background:#e0784a;color:#ffffff;font-size:14px;font-weight:800">2</span></td>
-              <td valign="middle" style="font-size:16px;font-weight:800;color:#2d1052;line-height:1.35">Never print a single business card</td>
+              <td width="40" valign="middle" style="width:40px"><span style="display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;border-radius:15px;background:#9A4127;color:#ffffff;font-size:14px;font-weight:800">2</span></td>
+              <td valign="middle" style="font-size:16px;font-weight:800;color:#1A1A2E;line-height:1.35">Never print a single business card</td>
             </tr></table>
             <div style="font-size:14.5px;line-height:1.7;color:#555;margin:0 0 10px">The runner-up: ignore the built-in <strong>Business Card builder</strong> and its <strong>three printable mailing cards</strong>, and never open the <strong>Talent Agency &amp; Manager Directory</strong>.</div>
             <div style="font-size:14.5px;line-height:1.7;color:#555">Do the opposite. Print your cards and start mailing agents and managers now. In this industry you never know whose desk your card will land on, and you might be exactly the face and energy they're looking for. Nobody is going to knock on your door. You have to go out there and let them know you exist.</div>
@@ -402,8 +436,8 @@ function premiumWelcomeHtml(firstName: string): string {
 
           <!-- What they actually care about -->
           <tr><td class="pw-note" style="padding:22px 26px 4px">
-            <div style="border-top:1px dashed #efcfb3;padding-top:20px">
-              <div style="font-size:16px;font-weight:800;color:#2d1052;margin:0 0 6px">What they actually care about</div>
+            <div style="border-top:1px dashed #F1D6C8;padding-top:20px">
+              <div style="font-size:16px;font-weight:800;color:#1A1A2E;margin:0 0 6px">What they actually care about</div>
               <div style="font-size:14.5px;line-height:1.7;color:#555">Fill out your whole profile: write your bio and add your measurements and credits. No credits yet? That's completely fine. Filmmakers aren't reading long résumés. They care about two things: <strong>do you have basic acting ability</strong>, and <strong>are you the right person for the part?</strong> If you are, they'll cast you and coach you through the rest. They know the tricks.</div>
             </div>
           </td></tr>
@@ -411,24 +445,24 @@ function premiumWelcomeHtml(firstName: string): string {
           <!-- Johnny Depp story -->
           <tr><td class="pw-note" style="padding:18px 26px 6px">
             <table width="100%" cellpadding="0" cellspacing="0"><tr>
-              <td style="background:#ffffff;border:1px solid #efe3f9;border-left:3px solid #8b5cf6;border-radius:10px;padding:16px 18px">
-                <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#6b3ecb;margin:0 0 7px">Case in point</div>
-                <div style="font-family:Georgia,'Times New Roman',serif;font-size:15.5px;line-height:1.65;color:#2d1052">Johnny Depp never planned to be an actor. He came to Los Angeles chasing a music career, and when the band wasn't paying the rent, a friend introduced him to an agent. He walked into his first audition with no acting experience at all, and his look caught the director's eye on the spot. That role was <em>A Nightmare on Elm Street</em>, and the rest is history.</div>
+              <td style="background:#ffffff;border:1px solid #F1D6C8;border-left:3px solid #C4623F;border-radius:10px;padding:16px 18px">
+                <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#A8472A;margin:0 0 7px">Case in point</div>
+                <div style="font-family:Georgia,'Times New Roman',serif;font-size:15.5px;line-height:1.65;color:#1A1A2E">Johnny Depp never planned to be an actor. He came to Los Angeles chasing a music career, and when the band wasn't paying the rent, a friend introduced him to an agent. He walked into his first audition with no acting experience at all, and his look caught the director's eye on the spot. That role was <em>A Nightmare on Elm Street</em>, and the rest is history.</div>
               </td>
             </tr></table>
           </td></tr>
 
           <tr><td class="pw-note" style="padding:16px 26px 24px">
-            <div style="font-size:15px;line-height:1.7;color:#5a4a44">So don't waste it. Upload the videos, print the cards, send the mail, and make them aware you exist. We'll be cheering you on every step of the way. 💜</div>
+            <div style="font-size:15px;line-height:1.7;color:#5a4a44">So don't waste it. Upload the videos, print the cards, send the mail, and make them aware you exist. We'll be cheering you on every step of the way. 🧡</div>
           </td></tr>
         </table>
       </td></tr>
       <tr><td class="pw-pad" style="padding:22px 36px 36px" align="center">
-        <a href="${APP_URL}/talent-dashboard" style="display:inline-block;background:linear-gradient(90deg,#6b3ecb,#8b5cf6);color:#fff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">Complete Your Profile →</a>
+        <a href="${APP_URL}/talent-dashboard" style="display:inline-block;background:#9A4127;background:linear-gradient(90deg,#C4623F,#9A4127);color:#fff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px;border:1px solid #E0BE7A">Complete Your Profile →</a>
       </td></tr>
-      ${csFooterStripe("#6b3ecb")}
+      ${csFooterStripe("#9A4127")}
     </table>
-    ${csFooterA("You're receiving this because you upgraded to CastSlate Premium.", "#6b3ecb", `${APP_URL}/account-settings`)}
+    ${csFooterA("You're receiving this because you upgraded to CastSlate Premium.", "#9A4127", `${APP_URL}/account-settings`)}
   </td></tr></table>
 </body></html>`;
 }
