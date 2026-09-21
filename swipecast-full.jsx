@@ -4001,9 +4001,13 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    slide stays perfectly smooth while every video keeps decoding/playing. */
 .fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 52s linear infinite;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
-.fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;transition:transform .45s cubic-bezier(.2,.7,.2,1);outline:none;}
-.fmt-card:hover,.fmt-card:focus-visible{transform:translateY(-8px);}
+.fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;outline:none;}
+/* No hover lift. Moving the card re-layered the playing video and made it (and
+   its neighbours) flash lighter in Safari/Chrome. Cards stay perfectly still
+   under the cursor; the reel keeps sliding. */
 .fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
+.fmt-video{opacity:0;transition:opacity .4s ease;background:transparent;}
+.fmt-video.is-on{opacity:1;}
 .fmt-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
 /* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
    stay readable on every device even if .fmt-shade ever fails to paint.
@@ -4028,7 +4032,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
   .fmt-title{font-size:19px;}
   .fmt-desc{font-size:12.5px;color:rgba(255,255,255,.92)!important;}
 }
-@media (prefers-reduced-motion: reduce){.fmt-track{animation:none;}.fmt-card{transition:none;}.fmt-card:hover,.fmt-card:focus-visible{transform:none;}}
+@media (prefers-reduced-motion: reduce){.fmt-track{animation:none;}}
 /* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
 .news-block{margin-bottom:42px;}
@@ -4743,6 +4747,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    corners. Copy sits on the right, centered. */
 .cinema-feature-img{line-height:0;position:relative;overflow:hidden;border-radius:14px;background:var(--s3);}
 .cinema-feature-img video{width:100%;aspect-ratio:16/9;height:auto;display:block;object-fit:cover;border-radius:14px;}
+/* BufferedLoopVideo wrapper: carries the poster (the clip's own first frame);
+   the video fades in over it once it is really playing. */
+.slv-wrap{display:block;line-height:0;border-radius:14px;overflow:hidden;background-color:var(--s3);background-size:cover;background-position:center;background-repeat:no-repeat;}
+.slv-wrap video.slv{opacity:0;transition:opacity .4s ease;background:transparent;}
+.slv-wrap video.slv.is-on{opacity:1;}
 .cinema-feature-copy{padding:6px clamp(4px,1vw,14px) 6px 0;display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .cinema-feature-copy .cf-label{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--acc);font-weight:700;font-family:'DM Sans',sans-serif;margin:0;}
 .cinema-feature-copy h2{font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-0.8px;line-height:1.15;margin:0;}
@@ -21649,8 +21658,8 @@ function NewsArticlePage({slug,onNavigate}){
 // ═══════════════════════════════════════════
 // CASTING ACROSS EVERY FORMAT — premium video-card carousel
 // Real production footage (Pexels + Coverr · free commercial license · no AI),
-// optimised to 720p and served from /video-formats/. Slow auto-slide, hover to
-// pause, drag/swipe to scroll; every clip autoplays muted/looping continuously.
+// pre-cropped 3:4 loops served from /video-formats/loop/. Slow auto-slide (never
+// pauses on hover); every clip autoplays muted/looping from page load.
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
@@ -21668,184 +21677,132 @@ const FORMAT_ICONS={
   mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
   star:'<path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/>',
 };
-// Decorative loop that only starts once it's fully buffered (canplaythrough):
-// on slow connections the poster frame holds — a clean still, never a
-// stuttering half-loaded video. Same file, same quality, it just waits until
-// it can play perfectly. preload="auto" starts the download immediately.
+// ── Landing loop videos: start at page load, never blink ──
+// Shared by the format reel and the two landing clips. Earlier versions made
+// each clip wait for "canplaythrough" and only loaded/played cards once they
+// slid into view (the reel's overflow clips its IntersectionObserver, so the
+// rootMargin never helped) — on busy or slow Wi-Fi some cards sat on a still
+// for many seconds. Now every clip carries the autoplay attribute, so the
+// browser starts it the moment it has a few frames, and this only (a) keeps it
+// playing if something pauses it while on screen, (b) retries on the first tap
+// or key press (Low Power Mode blocks autoplay until a gesture), and (c) fades
+// the video in over its poster once a real frame is moving. Each poster is the
+// clip's own first frame, so the fade and every loop seam are invisible — no
+// grey box, no jump to a different shot, no "light up".
+function csArmLoopVideo(v){
+  let visible=true, gone=false;
+  try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); }catch(_){}
+  const kick=function(force){
+    if(gone||document.hidden||!v.getAttribute('src')||!v.paused)return;
+    if(!force&&window.__csScrolling)return; // resumed on cs:scroll-idle
+    const p=v.play(); if(p&&p.catch)p.catch(function(){});
+  };
+  const reveal=function(){ if(!v.classList.contains('is-on')) v.classList.add('is-on'); };
+  const onPlaying=function(){ if(typeof v.requestVideoFrameCallback==='function'){ try{ v.requestVideoFrameCallback(reveal); }catch(_){} } };
+  const onTime=function(){ if(v.currentTime>0.04&&!v.paused) reveal(); };
+  const onReady=function(){ kick(false); };
+  const onPause=function(){ if(visible) setTimeout(function(){ kick(false); },200); };
+  const onVis=function(){ if(!document.hidden) kick(false); };
+  const onIdle=function(){ if(visible) kick(false); };
+  const unlock=function(){ kick(true); };
+  v.addEventListener('playing',onPlaying);
+  v.addEventListener('timeupdate',onTime);
+  v.addEventListener('loadeddata',onReady);
+  v.addEventListener('canplay',onReady);
+  v.addEventListener('pause',onPause);
+  document.addEventListener('visibilitychange',onVis);
+  window.addEventListener('cs:scroll-idle',onIdle);
+  window.addEventListener('sc:glide-end',onIdle);
+  const GESTURES=['pointerdown','touchstart','keydown'];
+  GESTURES.forEach(function(t){ document.addEventListener(t,unlock,{passive:true}); });
+  // Visibility only decides whether WE nudge a paused clip. We never pause
+  // anything ourselves; the browser's own off-screen pausing of autoplay video
+  // resumes instantly from buffer when the card comes back.
+  let io=null;
+  if(typeof IntersectionObserver!=='undefined'){
+    io=new IntersectionObserver(function(es){ es.forEach(function(e){ visible=e.isIntersecting; if(visible) kick(false); }); },{threshold:0});
+    io.observe(v);
+  }
+  const guard=setInterval(function(){ if(visible) kick(false); },2500);
+  kick(false);
+  return function(){
+    gone=true; clearInterval(guard); if(io) io.disconnect();
+    v.removeEventListener('playing',onPlaying); v.removeEventListener('timeupdate',onTime);
+    v.removeEventListener('loadeddata',onReady); v.removeEventListener('canplay',onReady);
+    v.removeEventListener('pause',onPause);
+    document.removeEventListener('visibilitychange',onVis);
+    window.removeEventListener('cs:scroll-idle',onIdle); window.removeEventListener('sc:glide-end',onIdle);
+    GESTURES.forEach(function(t){ document.removeEventListener(t,unlock); });
+  };
+}
+
+// The two big landing clips ("From submission to set", For Casting Directors).
+// They start downloading ~1s after the page opens (after the reel has a head
+// start) or as soon as they come within 3000px, whichever is first, so they are
+// already rolling by the time anyone scrolls to them. The poster sits on the
+// wrapper and the video fades in over it (see csArmLoopVideo).
 function BufferedLoopVideo(props){
+  const{src,poster,onError,...rest}=props;
   const ref=React.useRef(null);
   React.useEffect(function(){
     const v=ref.current; if(!v) return;
-    // iOS/Android muted-inline autoplay needs the muted PROPERTY set on the
-    // element, not just the attribute — React doesn't reliably reflect it, so
-    // set it explicitly or mobile silently refuses to autoplay.
-    try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); }catch(_){}
-    // Touch devices defer video buffering until a play() attempt and frequently
-    // never fire canplaythrough, so the desktop buffer-gate would hold the
-    // poster forever. On touch/coarse-pointer devices, treat the clip as ready
-    // and let the browser start buffering the moment it scrolls into view.
-    const isTouch=(typeof matchMedia!=='undefined'&&matchMedia('(hover:none),(pointer:coarse)').matches)||/iP(hone|ad|od)|Android/i.test((navigator&&navigator.userAgent)||'');
-    // Play only when BOTH are true: fully buffered (canplaythrough) and near
-    // the viewport. Buffer-gating means slow wifi holds the clean poster frame
-    // instead of a stuttering half-loaded video; the visibility gate is needed
-    // because Chrome pauses offscreen script-started muted videos and won't
-    // resume them itself (it only does that for the autoplay attribute).
-    let buffered=isTouch||v.readyState>=4, visible=false, fbT=0;
-    const sync=function(){ if(buffered&&visible&&!window.__scGliding&&!window.__csScrolling){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } else if(!visible){ try{v.pause();}catch(_){} } };
-    const onBuf=function(){ buffered=true; sync(); };
-    v.addEventListener('canplaythrough',onBuf);
-    // Fallback: some mobile browsers withhold canplaythrough under data-saver;
-    // after 10s accept solid forward buffer (canplay) instead.
-    if(!buffered) fbT=setTimeout(function(){ if(v.readyState>=3) onBuf(); else v.addEventListener('canplay',onBuf); },10000);
-    // Buffering starts on APPROACH instead of at page load. The clip used to
-    // download in full the moment the page opened, even for visitors who never
-    // scrolled this far; now it starts about a screen and a half early, which
-    // gives the buffer gate above the same head start it had before while
-    // costing nothing for people who never reach this section. NOTE: preload
-    // must be flipped to 'auto' here — the gate waits for canplaythrough, and
-    // with preload left at 'none' nothing would ever buffer and the poster
-    // would hold forever on desktop.
-    const startLoad=function(){ if(v.preload!=='auto'){ v.preload='auto'; try{ v.load(); }catch(_){} } };
-    let io=null, loadIo=null;
+    const off=csArmLoopVideo(v);
+    let started=false, io=null;
+    const start=function(){
+      if(started)return; started=true;
+      if(io){ io.disconnect(); io=null; }
+      v.preload='auto'; v.setAttribute('src',src); try{ v.load(); }catch(_){}
+    };
+    const t=setTimeout(start,1000);
     if(typeof IntersectionObserver!=='undefined'){
-      io=new IntersectionObserver(function(entries){ entries.forEach(function(e){ visible=e.isIntersecting; sync(); }); },{rootMargin:'100px 0px',threshold:0.01});
+      io=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) start(); },{rootMargin:'3000px 0px',threshold:0});
       io.observe(v);
-      // 2600px, not 1200px. These clips are 4.0MB and 8.3MB, so on a ~10Mbps
-      // phone connection they need 3-7s of runway. At 1200px the download only
-      // began about a screen and a half out, which on the landing page is
-      // roughly when the visitor is already looking at the card — so they sat
-      // watching the poster wait for the mp4. 2600px starts the first clip
-      // essentially at page load (it sits 3404px down, viewport ~812px) and the
-      // second one around the time they are half way, which is enough runway to
-      // hide the wait entirely at normal speeds. Still lazy: someone who never
-      // scrolls past the hero downloads neither.
-      loadIo=new IntersectionObserver(function(entries){
-        if(entries.some(function(e){ return e.isIntersecting; })){ startLoad(); if(loadIo){ loadIo.disconnect(); loadIo=null; } }
-      },{rootMargin:'2600px 0px',threshold:0});
-      loadIo.observe(v);
-    } else { startLoad(); visible=true; sync(); }
-    // Chrome pauses the video while the tab is hidden and won't restart a
-    // script-played loop on return — resume it ourselves.
-    const onVis=function(){ if(!document.hidden) sync(); };
-    document.addEventListener('visibilitychange',onVis);
-    window.addEventListener('sc:glide-end',sync); // resume after a back-to-top flight froze video starts
-    window.addEventListener('cs:scroll-idle',sync); // start a clip that came into view mid-scroll
-    // Self-healing: browsers quietly pause loops on their own (memory/power
-    // pressure, brief tab switches). Any pause we didn't cause gets resumed,
-    // so the loop never sits frozen while the user is looking at it.
-    const onPause=function(){ if(visible&&buffered&&!window.__scGliding&&!document.hidden) setTimeout(sync,150); };
-    v.addEventListener('pause',onPause);
-    const guard=setInterval(function(){ if(visible&&buffered&&v.paused&&!window.__scGliding&&!document.hidden) sync(); },4000);
-    return function(){ v.removeEventListener('canplaythrough',onBuf); v.removeEventListener('canplay',onBuf); v.removeEventListener('pause',onPause); clearTimeout(fbT); clearInterval(guard); if(io)io.disconnect(); if(loadIo)loadIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',sync);window.removeEventListener('cs:scroll-idle',sync); };
-  },[]);
-  // iOS Safari will not paint the `poster` attribute while preload="none" — it
-  // waits for a load to be initiated, so the box sits EMPTY until the mp4 itself
-  // has enough data to show a frame. On a slow phone connection that is ten-plus
-  // seconds of blank space where the whole point was a sharp still.
-  // Painting the same still as a CSS background on the element sidesteps it: the
-  // browser fetches it as an ordinary image (57-101KB, versus a 4-8MB mp4), so
-  // something correct is on screen almost immediately and the video fades in over
-  // the top of it once buffered. Keeps `poster` too, for browsers that honour it.
-  const{poster}=props;
-  const style=poster
-    ?{backgroundImage:'url("'+poster+'")',backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat',...(props.style||{})}
-    :props.style;
-  return <video ref={ref} muted loop playsInline preload="none" {...props} style={style}/>;
+    } else start();
+    return function(){ off(); clearTimeout(t); if(io) io.disconnect(); };
+  },[src]);
+  return (
+    <span className="slv-wrap" style={poster?{backgroundImage:'url("'+poster+'")'}:undefined}>
+      <video ref={ref} className="slv" muted loop playsInline autoPlay preload="none" onError={onError} {...rest}/>
+    </span>
+  );
 }
 
 function FormatReel(){
   const reelRef=React.useRef(null);
   React.useEffect(function(){
     const reel=reelRef.current; if(!reel) return;
-    // Motion is pure CSS (GPU compositor) — the slide never stutters and never
-    // pauses on hover. Videos are lazy-loaded and only the ones near the screen
-    // play, so phones decode only a few at a time (the rest show a sharp poster
-    // frame, behind the edge fade). Every card you can see is always playing.
+    // Motion is pure CSS (GPU compositor) and never pauses. Every clip is one
+    // short 3:4 loop (~0.45-1.3MB, 4.4MB for all six) that starts at page load.
     const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
-    function attach(v){
-      if(!v.getAttribute('src') && v.dataset.src){ v.setAttribute('src', v.dataset.src); v.preload='auto'; try{v.load();}catch(_){} }
-    }
-    function play(v){
-      attach(v);
-      if(window.__scGliding)return; // back-to-top flight: don't spin up decoders mid-ascent; resynced on sc:glide-end
-      v._csWanted=true;
-      if(window.__csScrolling)return; // started on cs:scroll-idle
-      // Never start a clip until the browser can play it through without
-      // stalling — on slow wifi the card holds its sharp poster instead of
-      // showing a stuttering half-buffered video. Once buffered it loops
-      // from cache forever, so it never hiccups again.
-      if(v.readyState>=4){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); return; }
-      if(!v._csArmed){
-        v._csArmed=true;
-        v.addEventListener('canplaythrough',function(){ if(v._csWanted&&!window.__csScrolling){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } });
-      }
-    }
-    let io=null;
-    if(typeof IntersectionObserver!=='undefined'){
-      io=new IntersectionObserver(function(entries){
-        entries.forEach(function(e){
-          if(e.isIntersecting){ play(e.target); }
-          else { e.target._csWanted=false; try{ e.target.pause(); }catch(_){} }
-        });
-      },{root:null,rootMargin:'200px 600px',threshold:0.01});
-      vids.forEach(function(v){ io.observe(v); });
-    } else {
-      vids.forEach(play); // very old browsers: just play them all
-    }
-    const onVis=function(){ if(!document.hidden) vids.forEach(function(v){ if(v.getAttribute('src')&&v._csWanted) play(v); }); };
-    document.addEventListener('visibilitychange',onVis);
-    // After a back-to-top flight, re-run the observer on every clip so whichever
-    // cards are actually in view resume playing.
-    const onGlideEnd=function(){ if(io) vids.forEach(function(v){ io.unobserve(v); io.observe(v); }); };
-    window.addEventListener('sc:glide-end',onGlideEnd);
-    const onIdle=function(){ vids.forEach(function(v){ if(v._csWanted&&v.paused) play(v); }); };
-    window.addEventListener('cs:scroll-idle',onIdle);
-    // Self-healing: our own pauses clear _csWanted first, so a pause event with
-    // the flag still set is the BROWSER quietly stopping a clip (memory/power
-    // pressure). Resume it — visible cards must never sit frozen.
-    const onPause=function(ev){ const v=ev.target; if(v._csWanted&&!window.__scGliding&&!document.hidden) setTimeout(function(){ if(v._csWanted&&v.paused) play(v); },150); };
-    vids.forEach(function(v){ v.addEventListener('pause',onPause); });
-    const guard=setInterval(function(){ if(window.__scGliding||document.hidden)return; vids.forEach(function(v){ if(v._csWanted&&v.paused) play(v); }); },4000);
-    // Warm every clip together so each card is fully buffered before it slides
-    // in — but trigger that on APPROACH (about a screen and a half above the
-    // reel) rather than on a page-load timer. Anyone scrolling toward the reel
-    // still gets the identical instant-playback behaviour, while visitors who
-    // never reach this section stop downloading ~24MB of video they never see.
-    let warmed=false;
-    const warm=function(){
-      if(warmed)return; warmed=true;
-      if(typeof requestIdleCallback!=='undefined') requestIdleCallback(function(){ vids.forEach(attach); },{timeout:4000});
-      else vids.forEach(attach);
-    };
-    let warmIo=null;
-    if(typeof IntersectionObserver!=='undefined'){
-      warmIo=new IntersectionObserver(function(entries){
-        if(entries.some(function(e){ return e.isIntersecting; })){ warm(); if(warmIo){ warmIo.disconnect(); warmIo=null; } }
-      },{root:null,rootMargin:'1200px 0px',threshold:0});
-      warmIo.observe(reel);
-    } else {
-      warm(); // no IntersectionObserver: behave exactly as before
-    }
-    return function(){ if(io)io.disconnect(); if(warmIo)warmIo.disconnect(); document.removeEventListener('visibilitychange',onVis); window.removeEventListener('sc:glide-end',onGlideEnd);window.removeEventListener('cs:scroll-idle',onIdle); vids.forEach(function(v){ v.removeEventListener('pause',onPause); }); clearInterval(guard); };
+    const offs=vids.map(csArmLoopVideo);
+    // The second copy of the row (needed for the seamless wrap) reuses the same
+    // files. Give each copy its src once the first copy has buffered, so both
+    // don't split the bandwidth at load — unless that copy is already on screen
+    // (very wide monitors), in which case it starts right away.
+    const n=FORMAT_CARDS.length, timers=[], unhooks=[];
+    vids.slice(n).forEach(function(dup,i){
+      const orig=vids[i];
+      const go=function(){ if(!dup.getAttribute('src')){ dup.setAttribute('src',dup.dataset.src); try{ dup.load(); }catch(_){} } };
+      if(orig.readyState>=4||dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
+      orig.addEventListener('canplaythrough',go);
+      unhooks.push(function(){ orig.removeEventListener('canplaythrough',go); });
+      timers.push(setTimeout(go,2500));
+    });
+    return function(){ offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
-  // Phones load the smaller mobile encode (.m.mp4 ~60–460KB); desktop gets the
-  // crisper .mp4 (~180KB–1.3MB). Both are a fraction of the old multi-MB files,
-  // so even weak Wi-Fi streams them smoothly with no freezing or black frames.
-  // Mobile previously loaded a small .m.mp4 encode that looked blurry when
-  // upscaled on high-DPR phones (card is up to 300px CSS ≈ 900px on a 3x screen,
-  // but the mobile file was only ~480px wide). Serve the sharp desktop .mp4 on
-  // all viewports so mobile matches desktop quality. Clips are lazy-loaded and
-  // only the visible ones play, so this stays smooth.
-  const vsuf='.mp4';
+  // Clips live in /video-formats/loop/: one cycle of each shot, pre-cropped to
+  // the card's 3:4 frame at full source resolution. The old files were the same
+  // 8s shot repeated to 60s at 16:9 (25MB total, most of it cropped away).
+  // New folder = new URLs, so nobody is served the old immutable-cached files.
   return (
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
         <div className="fmt-track">
-          {doubled.map(function(c,i){ return (
-            <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={i>=FORMAT_CARDS.length?'true':undefined}>
-              <img className="fmt-poster" src={'/video-formats/'+c.file+'.jpg'} alt={c.cat+' — production footage'} loading="lazy" decoding="async"/>
-              <video className="fmt-video" data-src={'/video-formats/'+c.file+vsuf+'?v=60hq'} poster={'/video-formats/'+c.file+'.jpg'} muted loop playsInline preload="none" aria-hidden="true"/>
+          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/loop/'+c.file+'.mp4'; return (
+            <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
+              <img className="fmt-poster" src={'/video-formats/loop/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+              <video className="fmt-video" src={first?url:undefined} data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
                 <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
@@ -22223,7 +22180,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <BufferedLoopVideo src="/assets/video/actor-journey-set-v2.mp4" poster="/assets/video/actor-journey-set-poster.jpg" aria-label="Real film set footage showing crew preparing a camera setup"/>
+          <BufferedLoopVideo src="/assets/video/actor-journey-set-v2.mp4" poster="/assets/video/actor-journey-set-poster-v2.jpg" aria-label="Real film set footage showing crew preparing a camera setup"/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
@@ -22299,7 +22256,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <BufferedLoopVideo src="/assets/video/casting-director-set-v2.mp4" poster="/assets/video/casting-director-set-poster.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <BufferedLoopVideo src="/assets/video/casting-director-set-v2.mp4" poster="/assets/video/casting-director-set-poster-v2.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
