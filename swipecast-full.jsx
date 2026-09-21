@@ -12003,13 +12003,30 @@ Free submission used
     })()}
     <h1 style={{fontSize:42,fontWeight:800,letterSpacing:-1.5,marginBottom:8,color:"var(--t1)"}}>{c.title}</h1>
     <p style={{color:"var(--t2)",fontSize:17,marginBottom:4}}>{c.tagline}</p>
-    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:28}}>
-      <p style={{color:"var(--t1)",fontSize:13,margin:0,fontWeight:600}}>Produced by {c.prod} {c.director?`· Directed by ${c.director}`:""}</p>
-      {c.is_admin_created
+    {/* Company Details — replaces the old "Produced by {prod}" line, which read
+        wrong whenever the box held a person or a list of credits. A neutral
+        heading works for whatever was entered: the company/poster, the
+        verification badges, then the crew credits. */}
+    {(()=>{
+      const who=String(c.prod||"").trim()||(!c.is_admin_created&&cdProfile?String(cdProfile.company_name||cdProfile.display_name||"").trim():"");
+      const crew=[c.director?`Director: ${c.director}`:"",String(casting.crew_credits||"").trim()].filter(Boolean).join(" · ");
+      const badges=c.is_admin_created
         ? (adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge/>:null)
-        : (cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>)}
-      {!c.is_admin_created&&cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
-    </div>
+        : <>
+            {cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>}
+            {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
+          </>;
+      if(!who&&!crew)return <div style={{marginBottom:28}}/>;
+      return(
+        <section style={{margin:"18px 0 28px"}}>
+          <div className="section-label" style={{marginBottom:8}}>Company Details</div>
+          {who&&<div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <p style={{color:"var(--t1)",fontSize:15,margin:0,fontWeight:600}}>{who}</p>
+            {badges}
+          </div>}
+          {crew&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,margin:who?"6px 0 0":0,maxWidth:720}}>{crew}</p>}
+        </section>);
+    })()}
 
     {(castingArchived||castingExpired)&&<div style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:20,marginTop:-4,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12}}>
       {castingArchived&&<span className="cs-archived-stamp" style={{position:"static",transform:"rotate(-6deg)",fontSize:18,padding:"3px 13px 5px",opacity:1,flex:"none"}} aria-hidden="true">Archived</span>}
@@ -12128,7 +12145,6 @@ Free submission used
     <section style={{marginBottom:40}}>
       <div className="section-label" style={{marginBottom:12}}>{t(isNarrativeProject(casting.type)?'casting.story':'casting.synopsis')}</div>
       <p style={{color:"#3C4A52",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
-      {casting.crew_credits&&<p style={{color:"var(--t3)",fontSize:13,lineHeight:1.6,maxWidth:720,marginTop:10}}>{casting.crew_credits}</p>}
     </section>
 
     <section id="roles-section" style={{marginBottom:40,scrollMarginTop:90}}>
@@ -14298,12 +14314,15 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                       <span className="cc-badge">{c.union}</span>
                       {isExpiredCasting&&!isArchived&&<span className="cc-badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
                       {isLive&&<LiveCastingBadge/>}
+                      {/* Verification sits with the chips. The names (company,
+                          people) are no longer on the card — they live in
+                          Company Details on the casting page, like Backstage. */}
+                      {c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}
                     </div>
                   </div>
                   {(c.tagline&&c.tagline!==c.prod)
                     ?<p className="cc-tagline">{c.tagline}</p>
                     :c.type?<p className="cc-tagline">{translateCastingType(c.type,lang)}</p>:null}
-                  {c.prod&&<p className="cc-prod">{c.prod}{c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}</p>}
                   {/* The facts an actor decides on, in the order they decide in:
                       how many parts, what it pays, how long it is open, where,
                       how fresh. The deadline is the only loud one — it is a real
@@ -21226,19 +21245,17 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                     <span className="cc-badge">{castingTypeLabel(sc.type||"Film")}</span>
                     {sc.union&&<span className="cc-badge">{sc.union}</span>}
                     {(!sCdn||!sCdn.expired)&&<LiveCastingBadge/>}
+                    {/* Verification with the chips; names live in Company Details on the casting page. */}
+                    {sc.is_admin_created
+                      ? (adminBadgeState(sc.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(sc.admin_verified)===false?<UnverifiedBadge size="xs"/>:null)
+                      : <>
+                          {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
+                          {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
+                          {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<UnverifiedBadge size="xs"/>}
+                        </>}
                   </div>
                 </div>
                 {sc.tagline&&<p className="cc-tagline">{sc.tagline}</p>}
-                {(sCdName||sc.prod)&&<p className="cc-prod">
-                  <span>{sCdName?`Posted by ${sCdName}`:""}{sCdName&&sc.prod?" · ":""}{sc.prod||""}</span>
-                  {sc.is_admin_created
-                    ? (adminBadgeState(sc.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(sc.admin_verified)===false?<UnverifiedBadge size="xs"/>:null)
-                    : <>
-                        {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
-                        {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
-                        {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<UnverifiedBadge size="xs"/>}
-                      </>}
-                </p>}
                 {/* Same fact strip as Browse: parts, pay, deadline, place, freshness.
                     The countdown chip stays hidden above CARD_COUNTDOWN_MAX_DAYS —
                     see the card-countdown note on the Browse card. */}
