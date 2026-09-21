@@ -2043,7 +2043,7 @@ const BLOG_POSTS = [
 // ═══════════════════════════════════════════
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#5F574C;--t3:#948B7C;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2D8587;--teal-dk:#226365;--amber:#E8902A;--amber-dk:#C8761B;}
+:root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#5F574C;--t3:#948B7C;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2A8472;--teal-dk:#206557;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#1B1C20;}
 *{box-sizing:border-box;}
 html{width:100%;max-width:100%;}
@@ -2478,7 +2478,7 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-body{padding:18px 26px 34px;}
 .tad-tier{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:5px;}
 .tad-cityb{font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);border:1px solid var(--bdr);padding:3px 7px;border-radius:5px;}
-.tad-t-small{background:rgba(79,138,139,.14);color:#3C6E6F;}
+.tad-t-small{background:rgba(79,139,127,.14);color:#3C6F65;}
 .tad-t-medium{background:rgba(232,144,42,.16);color:#B96C12;}
 .tad-t-large{background:rgba(26,26,46,.09);color:#42425C;}
 .tad-t-mgmt{background:rgba(107,62,203,.13);color:#5B32AE;}
@@ -2634,20 +2634,20 @@ body.sheet-push .b2t-cube{display:none;}
 .crt-h{text-align:center;margin-bottom:16px;}
 .crt-h h4{font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--t1);margin-bottom:6px;}
 .crt-h p{font-size:13px;color:#3E4350;line-height:1.55;max-width:380px;margin:0 auto;}
-.crt-pill{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--teal-dk);background:rgba(79,138,139,.12);border:1px solid rgba(79,138,139,.3);padding:7px 16px 7px 8px;border-radius:999px;margin-bottom:11px;}
-.crt-disc{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid rgba(79,138,139,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;perspective:90px;}
+.crt-pill{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--teal-dk);background:rgba(79,139,127,.12);border:1px solid rgba(79,139,127,.3);padding:7px 16px 7px 8px;border-radius:999px;margin-bottom:11px;}
+.crt-disc{width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid rgba(79,139,127,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;perspective:90px;}
 .crt-env{position:relative;width:20px;height:14px;transform-style:preserve-3d;color:var(--teal-dk);animation:crtspin 5.6s cubic-bezier(.6,.02,.3,1) infinite;}
 .crt-env .bd{position:absolute;top:0;left:0;right:0;bottom:0;border:1.6px solid currentColor;border-radius:3px;background:#fff;}
-.crt-env .paper{position:absolute;left:2.6px;right:2.6px;bottom:1.6px;height:10px;border:1.4px solid currentColor;border-bottom:none;border-radius:1.5px 1.5px 0 0;background:linear-gradient(#fff 0 2.4px,rgba(55,105,106,.42) 2.4px 3.4px,#fff 3.4px 5px,rgba(55,105,106,.42) 5px 6px,#fff 6px 100%);}
+.crt-env .paper{position:absolute;left:2.6px;right:2.6px;bottom:1.6px;height:10px;border:1.4px solid currentColor;border-bottom:none;border-radius:1.5px 1.5px 0 0;background:linear-gradient(#fff 0 2.4px,rgba(55,106,96,.42) 2.4px 3.4px,#fff 3.4px 5px,rgba(55,106,96,.42) 5px 6px,#fff 6px 100%);}
 .crt-env .flap{position:absolute;left:-.5px;top:-.5px;width:21px;height:9.5px;background:currentColor;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top center;animation:crtflap 5.6s ease-in-out infinite;}
 @keyframes crtflap{0%,9%{transform:rotateX(0deg);}22%,38%{transform:rotateX(-168deg);}52%,100%{transform:rotateX(0deg);}}
 @keyframes crtspin{0%,56%{transform:rotate(0deg) scale(1);}72%{transform:rotate(180deg) scale(.88);}86%,100%{transform:rotate(360deg) scale(1);}}
 .crt-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
 .crt-step{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:13px 12px;text-align:center;}
-.crt-step .ic{width:32px;height:32px;border-radius:9px;background:rgba(79,138,139,.12);color:var(--teal-dk);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
+.crt-step .ic{width:32px;height:32px;border-radius:9px;background:rgba(79,139,127,.12);color:var(--teal-dk);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;}
 .crt-step .t{font-size:13px;font-weight:800;letter-spacing:-.1px;color:var(--t1);}
 .crt-step .s{font-size:11.5px;color:#5F6573;line-height:1.45;margin-top:3px;font-weight:500;}
-.crt-foot{display:flex;align-items:flex-start;gap:9px;background:rgba(79,138,139,.09);border:1px solid rgba(79,138,139,.16);border-radius:10px;padding:12px;font-size:12.5px;line-height:1.55;color:#3E4350;}
+.crt-foot{display:flex;align-items:flex-start;gap:9px;background:rgba(79,139,127,.09);border:1px solid rgba(79,139,127,.16);border-radius:10px;padding:12px;font-size:12.5px;line-height:1.55;color:#3E4350;}
 .crt-foot b{color:var(--t1);font-weight:800;}
 .crt-foot .ic{color:var(--teal-dk);flex-shrink:0;margin-top:1px;}
 @media(max-width:540px){.crt-steps{grid-template-columns:1fr;}}
@@ -2837,8 +2837,8 @@ body.sheet-push .b2t-cube{display:none;}
   42%{transform:scale(1);opacity:1;}
   75%,100%{transform:scale(1.02);opacity:0;}
 }
-.join-free-soft{position:relative;box-shadow:0 4px 12px rgba(55,105,106,.16);animation:joinFreeSoftInvitation 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;transform-origin:center;}
-.join-free-soft::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 7px 19px rgba(55,105,106,.10),0 0 0 9px rgba(79,138,139,.11);opacity:0;animation:joinFreeSoftHalo 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;}
+.join-free-soft{position:relative;box-shadow:0 4px 12px rgba(55,106,96,.16);animation:joinFreeSoftInvitation 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;transform-origin:center;}
+.join-free-soft::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 7px 19px rgba(55,106,96,.10),0 0 0 9px rgba(79,139,127,.11);opacity:0;animation:joinFreeSoftHalo 2.9s cubic-bezier(.22,.7,.3,1) 5s 1 both;}
 @media(prefers-reduced-motion:reduce){.join-free-soft,.join-free-soft::after{animation:none;}}
 @keyframes ddFadeIn{from{opacity:0;transform:translateX(-50%) translateY(-6px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
 .join-dd-menu{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--bdr);border-radius:12px;box-shadow:0 8px 32px rgba(26,26,46,0.14);padding:6px;min-width:260px;z-index:300;animation:ddFadeIn .15s ease;}
@@ -2929,7 +2929,7 @@ body.sheet-push .b2t-cube{display:none;}
 .cfoot-c:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 6px 18px -10px rgba(26,26,46,.3);}
 .cfoot-c:focus-visible{outline:2px solid var(--teal);outline-offset:3px;}
 .cfoot-c-mt{display:flex;gap:7px;align-items:center;margin-bottom:9px;flex-wrap:wrap;}
-.cfoot-pill{font-size:9.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(45,133,135,.11);color:var(--teal-dk);}
+.cfoot-pill{font-size:9.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(42,132,114,.11);color:var(--teal-dk);}
 .cfoot-pill.warm{background:rgba(232,144,42,.13);color:var(--amber-dk);}
 .cfoot-c h4{font-size:14.5px;font-weight:700;letter-spacing:-.2px;margin:0 0 5px;line-height:1.3;}
 .cfoot-c-meta{font-size:11.8px;color:var(--t2);line-height:1.55;}
@@ -2943,15 +2943,15 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-title-link{cursor:pointer;transition:color .15s ease,text-decoration-color .15s ease;}
 .cc-title-link:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
 @media (hover:hover) and (pointer:fine){
-  .cc-title-link:hover{color:#226365;text-decoration:underline;text-decoration-thickness:2px;
-    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2D8587;}
+  .cc-title-link:hover{color:#206557;text-decoration:underline;text-decoration-thickness:2px;
+    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2A8472;}
 }
 /* Featured Castings: only the CENTRED card opens a casting on click, so only its
    title gets the same answer. A side card recentres the slider instead, and a
    title that looked clickable there would be lying. */
 @media (hover:hover) and (pointer:fine){
-  .fcs-card-center:hover .cc-title{color:#226365;text-decoration:underline;text-decoration-thickness:2px;
-    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2D8587;}
+  .fcs-card-center:hover .cc-title{color:#206557;text-decoration:underline;text-decoration-thickness:2px;
+    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2A8472;}
 }
 .fcs-card-center .cc-title{transition:color .15s ease,text-decoration-color .15s ease;}
 /* The type badges sit on the title's baseline instead of owning a band above
@@ -3363,7 +3363,7 @@ body.sheet-push .b2t-cube{display:none;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
 .footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
-.footer-cookie-card{min-height:50px;gap:10px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#4f8a8b 0%,#596bd8 52%,#d76a87 100%);color:#fff;box-shadow:0 16px 30px -24px rgba(91,106,216,.9),inset 0 1px 0 rgba(255,255,255,.28);animation:footerCardFloat 3.2s ease-in-out infinite;}
+.footer-cookie-card{min-height:50px;gap:10px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#4F8B7F 0%,#596bd8 52%,#d76a87 100%);color:#fff;box-shadow:0 16px 30px -24px rgba(91,106,216,.9),inset 0 1px 0 rgba(255,255,255,.28);animation:footerCardFloat 3.2s ease-in-out infinite;}
 .footer-cookie-card::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
 .footer-cookie-icon{position:relative;flex:0 0 auto;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.18);}
 .footer-cookie-icon svg{width:18px;height:18px;}
@@ -4156,9 +4156,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-row:last-child{border-bottom:none;}
 /* Teal spine. Grows from the middle of the row outward as it opens, so the
    motion reads as the row unfolding rather than as content being appended. */
-.rl-row::before{content:"";position:absolute;left:0;top:50%;bottom:50%;width:3px;background:#4F8A8B;transition:top .42s cubic-bezier(.22,.9,.28,1),bottom .42s cubic-bezier(.22,.9,.28,1);}
+.rl-row::before{content:"";position:absolute;left:0;top:50%;bottom:50%;width:3px;background:#4F8B7F;transition:top .42s cubic-bezier(.22,.9,.28,1),bottom .42s cubic-bezier(.22,.9,.28,1);}
 .rl-row.rl-open::before{top:0;bottom:0;}
-.rl-row.rl-open{background:#FBFDFD;border-bottom-color:#E4EDEC;}
+.rl-row.rl-open{background:#FBFDFD;border-bottom-color:#E4EDEA;}
 /* The whole header is the hit target, not a small chevron: on a phone the
    chevron alone is a 30px tap area inside a 120px row, which is exactly the
    miss everyone makes. Apply stops the click so the two never fight. */
@@ -4166,7 +4166,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-top.rl-clickable{cursor:pointer;}
 .rl-top.rl-clickable:hover{background:#fafcfc;}
 .rl-row.rl-open .rl-top{background:#fbfdfd;}
-.rl-top:focus-visible{outline:2px solid #37696A;outline-offset:-3px;}
+.rl-top:focus-visible{outline:2px solid #376A60;outline-offset:-3px;}
 /* Type is set for readability first — a working actor reads these on a phone in
    bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
    far past the 4.5:1 AA floor. The meta sits at weight 500 rather than 600 —
@@ -4180,8 +4180,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-mt{font-size:14.5px;font-weight:500;color:#3D3E58;margin-top:6px;line-height:1.5;}
 .rl-mt .sep{color:#AFADBA;font-weight:500;margin:0 6px;}
 .rl-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid #e2e0d8;background:#fff;color:#37696A;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
-.rl-row.rl-open .rl-chev{transform:rotate(180deg);background:#eaf4f4;border-color:#cfe0e0;}
+.rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid #e2e0d8;background:#fff;color:#376A60;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
+.rl-row.rl-open .rl-chev{transform:rotate(180deg);background:#EAF4F2;border-color:#CFE0DC;}
 /* 0fr -> 1fr animates to the content's real height with no JS measuring, so a
    two-line brief and a ten-line one both open at the same speed. */
 .rl-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .44s cubic-bezier(.22,.9,.28,1);}
@@ -4218,7 +4218,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-lead{font-size:12.5px;font-weight:700;color:#4A5560;margin-top:18px;padding-top:16px;border-top:1px solid #EFEDE6;}
 .rl-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;}
 .rl-pills .badge{font-size:13px;padding:7px 13px;gap:6px;font-weight:700;background:#EDE8DC;color:#14161F;border:1px solid #DFD8C8;}
-.rl-pills .badge-tape{background:#EAF3F3;border-color:#CFE1E1;color:#173A3B;}
+.rl-pills .badge-tape{background:#EAF3F1;border-color:#CFE1DD;color:#173B34;}
 @media (max-width:900px){
   .rl-cols{grid-template-columns:1fr;gap:0;}
   .rl-desc{max-width:none;}
@@ -4245,8 +4245,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-coin{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;flex:none;}
 /* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
    so an actor can compare every rate without losing their place. */
-.rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #d9e9e9;border-radius:14px;overflow:hidden;background:#fff;}
-.rb-rail{background:#f1f7f7;border-right:1px solid #d9e9e9;padding:9px;}
+.rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #D9E9E6;border-radius:14px;overflow:hidden;background:#fff;}
+.rb-rail{background:#f1f7f7;border-right:1px solid #D9E9E6;padding:9px;}
 /* A grid row is as tall as its tallest cell, so an 8-role rail was setting the
    height of the whole board and leaving a screen of dead space beside a short
    role. Taking the rail OUT of flow makes the PANE define the height and the
@@ -4264,19 +4264,19 @@ html,body{overflow-x:hidden;overflow-x:clip;}
      a panel with a footer rather than as a void. The rule above only PUSHED the
      row down; without a line above it the gap still read as unfinished, so the
      footer is drawn as one — the space then belongs to the panel by design. */
-  .rb-actions{margin-top:auto;padding-top:18px;border-top:1px solid #e4efef;}
+  .rb-actions{margin-top:auto;padding-top:18px;border-top:1px solid #E4EFED;}
 }
 .rb-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
 /* The one chip that ranks the part, so the only filled one. */
 .rb-type{background:#1A1A2E;color:#fff;font-weight:700;}
 .rb-item{padding:11px 13px;border-radius:9px;cursor:pointer;margin-bottom:4px;transition:background .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit;display:block;}
-.rb-item:hover{background:#e3efef;}
+.rb-item:hover{background:#E3EFEC;}
 .rb-item.on{background:#1A1A2E;}
 .rb-item .nm{font-size:13.5px;font-weight:800;color:#1A1A2E;}
 .rb-item .mt{font-size:11px;color:#8ba4a4;margin-top:2px;}
 .rb-item .amt{font-size:11px;font-weight:800;color:#15803d;margin-top:3px;}
 .rb-item.on .nm{color:#fff;}
-.rb-item.on .mt{color:#9fc2c2;}
+.rb-item.on .mt{color:#9FC2BA;}
 .rb-item.on .amt{color:#7fd6a0;}
 .rb-pane{padding:22px 24px;}
 .rb-fade{animation:rbFade .3s ease;}
@@ -4285,7 +4285,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* Base state for the phone pager. MUST be declared before the media query that
    turns it on — same specificity means source order decides, and a base rule
    sitting after the query silently wins and the pager never appears. */
-.rb-nav{display:none;align-items:center;justify-content:center;gap:14px;padding:11px 14px;border-top:1px solid #d9e9e9;background:#f7fbfb;}
+.rb-nav{display:none;align-items:center;justify-content:center;gap:14px;padding:11px 14px;border-top:1px solid #D9E9E6;background:#f7fbfb;}
 @media (max-width:660px){
   /* The rail becomes a horizontal scroller. It must clip LOCALLY — iOS Safari
      ignores overflow-x on the root, so a wide track here would blow out the
@@ -4297,7 +4297,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
      while the strip stayed put and the highlighted role sat off-screen. The
      slide is done in JS instead, from a measured target offset, which is
      deterministic and testable. */
-  .rb-rail{border-right:none;border-bottom:1px solid #d9e9e9;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;scrollbar-width:none;}
+  .rb-rail{border-right:none;border-bottom:1px solid #D9E9E6;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;contain:inline-size;scrollbar-width:none;}
   .rb-rail::-webkit-scrollbar{display:none;}
   .rb-item{flex:none;min-width:132px;margin-bottom:0;}
   .rb-pane{padding:18px 18px;}
@@ -4319,8 +4319,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    existed; the counter states it outright and the arrows step through them,
    scrolling the rail to match so the two never disagree. Phone-only — on
    desktop the whole list is already visible. */
-.rb-navbtn{width:40px;height:40px;border-radius:50%;border:1px solid #cfe0e0;background:#fff;color:#37696A;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0;transition:background .15s,opacity .15s;}
-.rb-navbtn:hover:not(:disabled){background:#e3efef;}
+.rb-navbtn{width:40px;height:40px;border-radius:50%;border:1px solid #CFE0DC;background:#fff;color:#376A60;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0;transition:background .15s,opacity .15s;}
+.rb-navbtn:hover:not(:disabled){background:#E3EFEC;}
 .rb-navbtn:disabled{opacity:.3;cursor:default;}
 .rb-count{font-size:12.5px;font-weight:700;color:#5f7373;min-width:78px;text-align:center;letter-spacing:.2px;}
 .cls-card-img{width:250px;min-width:250px;position:relative;overflow:hidden;background:#F4F1EA;flex-shrink:0;}
@@ -4808,7 +4808,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 
 /* ── Landing: home CTA card (warm teal block, promise-first; plans live on /pricing) ── */
 .home-cta{max-width:1900px;margin:0 auto;padding:clamp(40px,6vw,56px) clamp(16px,4vw,40px);}
-.home-cta-inner{position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);text-align:center;background:linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
+.home-cta-inner{position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);text-align:center;background:linear-gradient(135deg,#5CA092 0%,#4F8B7F 45%,#3B6F65 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
 .home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
 .home-cta-inner h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(36px,6vw,64px);letter-spacing:-0.5px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
@@ -4881,7 +4881,7 @@ button:disabled:hover .cs-tri{transform:none;}
 /* ── Login: split layout — hero face stripe (left) + form (right) ── */
 .login-shell{padding:clamp(28px,4vw,56px) clamp(16px,4vw,40px);display:flex;justify-content:center;}
 .login-split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:600px;}
-.login-hero{position:relative;overflow:hidden;background:#3B6E6F;}
+.login-hero{position:relative;overflow:hidden;background:#3B6F65;}
 .login-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;}
 .login-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
 .login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,3vw,44px);color:#fff;}
@@ -4898,7 +4898,7 @@ button:disabled:hover .cs-tri{transform:none;}
   .login-form-side{padding:34px 22px 38px;}
 }
 /* Industry/CD signup: teal info panel (left side of the split card) */
-.cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5C9FA0 0%,#4F8A8B 48%,#3B6E6F 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
+.cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5CA092 0%,#4F8B7F 48%,#3B6F65 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
 @media(max-width:820px){.cd-panel{padding:30px 24px;}}
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
@@ -9785,13 +9785,13 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
       <div className="agd-map">
             <svg viewBox="0 0 420 132" role="img" aria-label="Talent agencies in Los Angeles, Beverly Hills and New York">
               <path className="agd-route" d={AGD_ROUTE}/>
-              <circle className="agd-halo" cx="64" cy="96" r="12" fill="#4F8A8B" opacity=".38"/>
-              <circle cx="64" cy="96" r="6.5" fill="#4F8A8B"/>
+              <circle className="agd-halo" cx="64" cy="96" r="12" fill="#4F8B7F" opacity=".38"/>
+              <circle cx="64" cy="96" r="6.5" fill="#4F8B7F"/>
               <circle className="agd-halo b" cx="352" cy="66" r="12" fill="#1A1A2E" opacity=".28"/>
               <circle cx="352" cy="66" r="6.5" fill="#1A1A2E"/>
               <circle cx="92" cy="79" r="5.5" fill="#E8902A"/>
               <path className="agd-plane" d="M13,0 L6.5,1.7 L2,1.7 L-3,9.5 L-5.8,9.5 L-3.6,1.7 L-8.4,1.7 L-11,5.2 L-12.6,5.2 L-11.4,1.5 L-13.6,0 L-11.4,-1.5 L-12.6,-5.2 L-11,-5.2 L-8.4,-1.7 L-3.6,-1.7 L-5.8,-9.5 L-3,-9.5 L2,-1.7 L6.5,-1.7 Z" fill="#1A1A2E" style={{offsetPath:`path('${AGD_ROUTE}')`}}/>
-              <text x="64" y="122" textAnchor="middle" fontFamily="DM Sans" fontSize="10.5" fontWeight="800" fill="#37696A">LOS ANGELES</text>
+              <text x="64" y="122" textAnchor="middle" fontFamily="DM Sans" fontSize="10.5" fontWeight="800" fill="#376A60">LOS ANGELES</text>
               <text x="152" y="112" textAnchor="middle" fontFamily="DM Sans" fontSize="9.5" fontWeight="800" fill="#B96F16">BEVERLY HILLS</text>
               <path d="M96 84 L 132 106" stroke="#B96F16" strokeWidth="1" opacity=".5"/>
               <text x="352" y="93" textAnchor="middle" fontFamily="DM Sans" fontSize="10.5" fontWeight="800" fill="#1A1A2E">NEW YORK</text>
@@ -11940,7 +11940,7 @@ Free submission used
       <h2 style={{color:"var(--t1)",fontSize:22,fontWeight:800,letterSpacing:-.5,lineHeight:1.15,margin:"0 0 8px"}}>Don't let this one get away.</h2>
       <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.55,margin:"0 0 18px"}}>You've used your one free submission. The role you were about to apply to is still open:</p>
       <div style={{display:"flex",gap:13,alignItems:"center",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:13,padding:13,marginBottom:16}}>
-        <span style={{width:52,height:52,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Ico n="star" s={24}/></span>
+        <span style={{width:52,height:52,borderRadius:10,flexShrink:0,background:"linear-gradient(135deg,#5CA092,#3B6F65)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}><Ico n="star" s={24}/></span>
         <div style={{minWidth:0}}>
           <div style={{color:"var(--t1)",fontSize:13.5,fontWeight:700}}>{casting?.title||"This casting"}</div>
           <div style={{color:"var(--t3)",fontSize:11.5,marginTop:2}}>{(()=>{const cdn=castingCountdown(casting?.deadline);const bits=[upgradeRole,casting?.type,casting?.location].filter(Boolean);if(cdn&&!cdn.expired&&cdn.days>=0)bits.push(cdn.days===0?"closes today":cdn.days===1?"1 day left":`${cdn.days} days left`);return bits.join(" · ")||"Still accepting submissions";})()}</div>
@@ -13311,7 +13311,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:selfRecText?14:0}}>
           {[["Driver's License",licenseText],["Passport",passportText]].filter(([,v])=>v).map(([l,v])=>{
             const yes=v==="Yes";
-            return(<span key={l} className="badge" style={{gap:6,background:yes?"rgba(79,138,139,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
+            return(<span key={l} className="badge" style={{gap:6,background:yes?"rgba(79,139,127,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
               <Ico n={yes?"check":"x"} s={13}/> {l}
             </span>);
           })}
@@ -16441,9 +16441,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 {cta("Unlock with Premium →","#6b3ecb")}
               </div>
             ):rmLoading?(
-              <div style={box({bd:"#cfe3e3"})}>{lab("Role matcher","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding today's match…</div></div>
+              <div style={box({bd:"#CFE3DF"})}>{lab("Role matcher","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding today's match…</div></div>
             ):dailyMatch?(
-              <div onClick={()=>onViewCastingById&&onViewCastingById(dailyMatch.id)} style={box({bd:"#cfe3e3",click:true})}>
+              <div onClick={()=>onViewCastingById&&onViewCastingById(dailyMatch.id)} style={box({bd:"#CFE3DF",click:true})}>
                 {lab("Role matcher","var(--teal)")}
                 <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{dmTitle}</div>
                 <div style={{fontSize:11.5,color:"var(--t3)"}}>{dmMeta||"Open now"}</div>
@@ -16468,7 +16468,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <div style={{fontSize:11,color:"var(--t3)"}}>in casting directors' hands</div>
             </div>
             {nextStep?(
-              <div onClick={slideToEditor} style={box({bd:"#cfe3e3",click:true})}>
+              <div onClick={slideToEditor} style={box({bd:"#CFE3DF",click:true})}>
                 {lab("Your next step","var(--teal)")}
                 <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{nextStep.label}{nextStep.premium?" (Premium)":""}</div>
                 <div style={{fontSize:11.5,color:"var(--t3)"}}>a quick win for your profile</div>
@@ -16608,21 +16608,21 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         {cls?.instructor_name&&(
                           <span style={{
                             background:"rgba(30,65,60,0.1)",border:"1px solid rgba(30,65,60,0.15)",
-                            color:"#1e4140",fontSize:11,fontWeight:600,
+                            color:"#1E4138",fontSize:11,fontWeight:600,
                             padding:"4px 10px",borderRadius:20,
                           }}><Ico n="user" s={22}/> {cls.instructor_name}</span>
                         )}
                         {cls?.level&&(
                           <span style={{
                             background:"rgba(30,65,60,0.1)",border:"1px solid rgba(30,65,60,0.15)",
-                            color:"#1e4140",fontSize:11,fontWeight:600,
+                            color:"#1E4138",fontSize:11,fontWeight:600,
                             padding:"4px 10px",borderRadius:20,
                           }}>{cls.level}</span>
                         )}
                         {cls?.category&&(
                           <span style={{
                             background:"rgba(30,65,60,0.1)",border:"1px solid rgba(30,65,60,0.15)",
-                            color:"#1e4140",fontSize:11,fontWeight:600,
+                            color:"#1E4138",fontSize:11,fontWeight:600,
                             padding:"4px 10px",borderRadius:20,
                           }}>{cls.category}</span>
                         )}
@@ -17007,7 +17007,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           )}
 
           {/* Actor Business Card shortcut — teal/amber treatment to match the landing-page CTA */}
-          <div className="abc-prem" style={{position:'relative',overflow:'hidden',borderRadius:16,padding:20,background:'linear-gradient(135deg,#5C9FA0 0%,#4F8A8B 45%,#3B6E6F 100%)',color:'#fff'}}>
+          <div className="abc-prem" style={{position:'relative',overflow:'hidden',borderRadius:16,padding:20,background:'linear-gradient(135deg,#5CA092 0%,#4F8B7F 45%,#3B6F65 100%)',color:'#fff'}}>
             <span className="abc-glow-o" style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:180,height:180,background:'radial-gradient(circle,rgba(232,144,42,.32),transparent 70%)',top:-60,right:-40}}/>
             <span style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:140,height:140,background:'radial-gradient(circle,rgba(255,255,255,.14),transparent 70%)',bottom:-50,left:-30}}/>
             <p style={{position:'relative',display:'inline-flex',alignItems:'center',gap:6,fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:'uppercase',color:'#FFE6C2',margin:'0 0 8px',fontFamily:"'DM Sans',sans-serif"}}>
@@ -22237,17 +22237,17 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"24px auto 64px",padding:"0 24px"}}>
       <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
         {/* colorful glow blobs */}
-        <span className="guarantee-glow-left" style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,138,139,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
+        <span className="guarantee-glow-left" style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,139,127,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
         <span className="guarantee-glow-right" style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.20),transparent 70%)",bottom:-100,right:-40,pointerEvents:"none"}}/>
-        <div className="guarantee-badge" style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5C9FA0,#3B6E6F)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,138,139,.6)"}}>
+        <div className="guarantee-badge" style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5CA092,#3B6F65)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,139,127,.6)"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
           THE CASTSLATE GUARANTEE
         </div>
         <h3 className="guarantee-title" style={{position:"relative",fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:"clamp(30px,4.8vw,48px)",letterSpacing:-0.5,lineHeight:1.08,margin:0}}>Your headshot gets <span style={{background:"linear-gradient(90deg,var(--teal),var(--amber))",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent"}}>seen.</span> Period.</h3>
         <div className="guarantee-rule" style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
-          <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,138,139,0) 0%,rgba(79,138,139,.55) 100%)"}}/>
+          <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,139,127,0) 0%,rgba(79,139,127,.55) 100%)"}}/>
           <span style={{flexShrink:0,display:"inline-flex"}}>
-            <svg width="40" height="40" viewBox="0 0 24 24"><defs><linearGradient id="guarantee-shield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4F8A8B"/><stop offset="1" stopColor="#E8902A"/></linearGradient></defs><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="url(#guarantee-shield)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <svg width="40" height="40" viewBox="0 0 24 24"><defs><linearGradient id="guarantee-shield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4F8B7F"/><stop offset="1" stopColor="#E8902A"/></linearGradient></defs><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="url(#guarantee-shield)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </span>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(232,144,42,.55) 0%,rgba(232,144,42,0) 100%)"}}/>
         </div>
@@ -22266,7 +22266,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           {q:"I like that I can submit without feeling pushed into an upgrade. The casting details are clear and the process feels straightforward.",n:"Ethan Cole",r:"Actor · LA · Non-Union",chip:"Working actor",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=160&q=80",imgPos:"center 10%"}
         ].map((t,i)=>
           <div key={i} className="card" style={{padding:28,display:"flex",flexDirection:"column"}}>
-            <span style={{display:"inline-flex",alignItems:"center",gap:6,alignSelf:"flex-start",background:"rgba(79,138,139,.1)",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:.3,padding:"5px 11px",borderRadius:999,marginBottom:16}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:6,alignSelf:"flex-start",background:"rgba(79,139,127,.1)",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:.3,padding:"5px 11px",borderRadius:999,marginBottom:16}}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
               User feedback
             </span>
