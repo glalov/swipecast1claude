@@ -791,6 +791,19 @@ function shootLocationForLine(c){
   if(m&&m[1].trim()&&sameLocality(m[2],c.location))return m[1].trim();
   return loc;
 }
+// Short, uniform shoot-dates chip for casting cards ("Shoots Dec 1 – 19",
+// "Shoots Nov 30 – Dec 2", "Shoots Dec 10"). Built only from shoot_start /
+// shoot_end, never the free-text schedule note, so every card reads the same.
+// Castings with no stored dates get no chip.
+function cardShootChip(c){
+  if(!c)return "";
+  const s=String(c.shoot_start||"").slice(0,10),e=String(c.shoot_end||"").slice(0,10);
+  const a=fmtShootDay(s||e);
+  if(!a)return "";
+  const b=(s&&e&&e!==s)?fmtShootDay(e):"";
+  if(!b)return "Shoots "+a;
+  return "Shoots "+a+" – "+(s.slice(0,7)===e.slice(0,7)?String(+e.slice(8,10)):b);
+}
 function whereWhenLine(c){
   if(!c)return "";
   const start=fmtShootDay(c.shoot_start),end=fmtShootDay(c.shoot_end);
@@ -14342,6 +14355,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                               :<span className={"cc-chip "+(cdn.urgent?"urgent":"soon")}>{cdn.label}</span>)
                             :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
                         {c.location&&<span className="cc-chip">{c.location}</span>}
+                        {cardShootChip(c)&&<span className="cc-chip">{cardShootChip(c)}</span>}
                         {castingPostedAt(c)&&<span className="cc-chip quiet">Posted {fmtPostedAgo(castingPostedAt(c),{dayOnly:castingPostedIsDayOnly(c)})}</span>}
                       </div>
                     );
@@ -21266,6 +21280,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                     ?(sCdn.days>CARD_COUNTDOWN_MAX_DAYS?null:<span className={"cc-chip "+(sCdn.urgent?"urgent":"soon")}>{sCdn.label}</span>)
                     :sCdn?<span className="cc-chip soon">Applications closed</span>:null}
                   {sc.location&&<span className="cc-chip">{sc.location}</span>}
+                  {cardShootChip(sc)&&<span className="cc-chip">{cardShootChip(sc)}</span>}
                   {sPosted&&<span className="cc-chip quiet">Posted {fmtPostedAgo(sPosted,{dayOnly:castingPostedIsDayOnly(sc)})}</span>}
                 </div>
                 {/* Role pills + CTA share the foot row, exactly as on Browse. The
