@@ -33567,7 +33567,17 @@ const ACG = (()=>{
     const dlN=k=>((h.v7Deadlines||{})[k]||0)+((res.v7Deadlines||{})[k]||0)+((res._v7DlBatch||{})[k]||0);
     const days=[];for(let t=lo.getTime();t<=hi.getTime();t+=V5_DAY)days.push(new Date(t));
     // Least-used start dates first, so starts spread across the window.
-    const order=cgShuffle(days).filter(x=>startN(v5Iso(x))<2).sort((a,b)=>startN(v5Iso(a))-startN(v5Iso(b)));
+    //
+    // The two-per-date cap is a preference, not a wall. The window holds 19
+    // days and counts EVERY upcoming casting, live ones included, so once the
+    // board fills every date carries two or more and a hard filter leaves the
+    // generator no date at all — v5Dates returns null, every attempt is
+    // rejected with "no dates", and Generate Drafts produces nothing. That is
+    // what happened on 2026-09-22, when all 19 dates held 2 to 9 listings.
+    // So when nothing is under the cap, fall back to the emptiest dates.
+    const byUse=cgShuffle(days).sort((a,b)=>startN(v5Iso(a))-startN(v5Iso(b)));
+    const under=byUse.filter(x=>startN(v5Iso(x))<2);
+    const order=under.length?under:byUse;
     for(const s of order){
       if(plan.stage&&!plan.read&&[1,2].indexOf(s.getUTCDay())<0)continue;
       if(plan.mode==="weekends"&&s.getUTCDay()!==6)continue;
@@ -33595,13 +33605,18 @@ const ACG = (()=>{
       // Deadline 7–28 days before the start, at least a week after posting,
       // two listings per date at most; expiration 0–3 days after it.
       const dLo=new Date(Math.max(s.getTime()-28*V5_DAY,now.getTime()+7*V5_DAY)),dHi=new Date(s.getTime()-7*V5_DAY);
-      const cands=[];for(let t=dLo.getTime();t<=dHi.getTime();t+=V5_DAY){if(dlN(v5Iso(new Date(t)))<2)cands.push(new Date(t));}
-      if(!cands.length)continue;
+      const all=[];for(let t=dLo.getTime();t<=dHi.getTime();t+=V5_DAY)all.push(new Date(t));
+      if(!all.length)continue;
+      // Same cap, same fallback: prefer a date under two, else the emptiest.
+      const free=all.filter(x=>dlN(v5Iso(x))<2);
+      const cands=free.length?free:[all.slice().sort((a,b)=>dlN(v5Iso(a))-dlN(v5Iso(b)))[0]];
       const dl=pick(cands);
       const gap=Math.round((s-dl)/V5_DAY);
       const expN=k=>((h.v7Expires||{})[k]||0)+((res.v7Expires||{})[k]||0);
-      const offs=cgShuffle([0,1,2,3].filter(x=>x<gap&&expN(v5Iso(new Date(dl.getTime()+x*V5_DAY)))<2));
-      if(!offs.length)continue;
+      const inGap=cgShuffle([0,1,2,3].filter(x=>x<gap));
+      if(!inGap.length)continue;
+      const freeOffs=inGap.filter(x=>expN(v5Iso(new Date(dl.getTime()+x*V5_DAY)))<2);
+      const offs=freeOffs.length?freeOffs:inGap.sort((a,b)=>expN(v5Iso(new Date(dl.getTime()+a*V5_DAY)))-expN(v5Iso(new Date(dl.getTime()+b*V5_DAY))));
       const exp=new Date(dl.getTime()+offs[0]*V5_DAY);
       const mk=iso.slice(0,7);
       return {start:s,end,work,deadline:dl,expires:exp,monthKey:mk};
