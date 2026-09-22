@@ -36,7 +36,9 @@ const ok = (cond, name, detail) => { if (cond) pass++; else { fail++; failures.p
    is the castoria.js closure, which exposes nothing — so on live we drive the
    shadow DOM only; on the prototype we can also read st/TRACE directly. */
 async function boot(page) {
-  await page.addInitScript(() => {
+  /* Timers are sped up on the prototype only; the real site polls on timers
+     and a 10x clock starves its main thread. */
+  if (!LIVE || LIVE.startsWith('file:')) await page.addInitScript(() => {
     const o = window.setTimeout; window.setTimeout = (f, d, ...a) => o(f, Math.min(d || 0, 2000) / 10, ...a);
   });
   await page.goto(LIVE || DEMO, { waitUntil: 'domcontentloaded' });
@@ -57,8 +59,8 @@ async function fresh(page) {
 async function settle(page) {
   /* quiet = no typing dots for 3 consecutive polls */
   let q = 0;
-  for (let i = 0; i < 80 && q < 3; i++) {
-    await page.waitForTimeout(90);
+  for (let i = 0; i < 120 && q < 3; i++) {
+    await page.waitForTimeout(LIVE && !LIVE.startsWith('file:') ? 400 : 90);
     const busy = await page.evaluate(`!!(${R}).querySelector('#thread .typing')`);
     q = busy ? 0 : q + 1;
   }
