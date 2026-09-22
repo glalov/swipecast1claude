@@ -121,7 +121,9 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   check(9,"r3_month_cluster","Board clusters in one month (>30% of listings)",null);
 
   // ── Part D: synopsis ──────────────────────────────────────────────────────
-  check(9,"r3_synopsis_production_info","Casting or production info in the synopsis ('The cast is five actors', 'shown to studios')",L=>{const m=String(L.synopsis).match(/[^.]*\b(the cast is|we are casting|we are looking for|roles? (are|is) open|parts? to cast|shown to studios|streamers|sell the (full )?show|minutes long|will run (about|online|on)|episodes of about|filmed (at|in)|scenes are filmed)\b[^.]*/i);return m?[{detail:m[0].trim()}]:[];});
+  // Round 5 asks for runtime, scale and usage in the summary; only
+  // casting-process sentences stay banned.
+  check(9,"r3_synopsis_production_info","Casting-process info in the synopsis ('The cast is five actors', 'shown to studios')",L=>{const m=String(L.synopsis).match(/[^.]*\b(the cast is|we are casting|we are looking for|roles? (are|is) open|parts? to cast|shown to studios|streamers|sell the (full )?show|scenes are filmed)\b[^.]*/i);return m?[{detail:m[0].trim()}]:[];});
   check(9,"r3_synopsis_shape","Synopsis outside 1–5 sentences, or a short one that gives away the twist",L=>{
     const n=sentences(L.synopsis).length;const out=[];
     if(n<1||n>5)out.push({detail:`${n} sentences`});

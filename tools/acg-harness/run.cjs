@@ -46,7 +46,7 @@ while(listings.length<N&&rounds<N){
   for(const raw of batch){
     const roles=raw._roles||[];
     const item=Object.fromEntries(Object.entries(raw).filter(([k])=>k[0]!=="_"));
-    const saved={...item,id:"L"+(listings.length+1),_batch:rounds,roles:roles.map(r=>({...Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=="_")),_isGroup:!!(r._group||/background/i.test(r.role_type||""))})),_raw:raw};
+    const saved={...item,id:"L"+(listings.length+1),_batch:rounds,roles:roles.map(r=>({...Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=="_")),_isGroup:!!(r._group||r._job||/background/i.test(r.role_type||""))})),_raw:raw};
     listings.push(saved);
     if(ACG.seenRowsFor)ACG.seenRowsFor(raw).forEach(r=>seenRows.push(r));
     else ACG.seenKeysFor(raw).forEach(k=>seenRows.push({key:k,kind:"story"}));
@@ -436,6 +436,7 @@ const ctxNow={names:(()=>{
   Object.entries(D.surnames).forEach(([bg,list])=>list.forEach(n=>{(last[n]=last[n]||[]).push(bg);}));
   return {first,last,famous:new Set((D.famous||[]).map(clean))};
 })()};
+require("./checks-r5.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(11,k,l,null));},sentences,clean,famOf,parseRoleRate,PROJECT_TYPE_OPTIONS});
 require("./checks-r4.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(10,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r3.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(9,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r2.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(8,k,l,null));},sentences,clean,minAge,maxAge,isGroup,famOf,srcNow,parseRoleRate,ctxNow});
@@ -459,7 +460,9 @@ function boardChecks(){
   for(let i=1;i<listings.length;i++){const a=clean(listings[i-1].synopsis).split(" ").slice(0,4).join(" "),b=clean(listings[i].synopsis).split(" ").slice(0,4).join(" ");if(a===b)add("opening_skeleton",listings[i].id,`adjacent same first 4 words "${a}"`);}
   // similar stories: shared content words
   // The story is sentences one and two; the casting and detail sentences are shared scaffolding.
-  const terms=L=>new Set(clean(sentences(L.synopsis).slice(0,2).join(" ")).split(" ").filter(w=>w.length>4&&!/^(about|where|which|makes|different|there|campaign|series|project|video|shows?|built|around|whole|photographed|subject|subjects|people|every|person)$/.test(w)));
+  // The practical-facts sentence (round 5) is shared scaffolding, not story.
+  const PRACT=/\b(made (over|in|across)|shoot days?|sessions?|\d+-episode|\d+-minute|runs online|online use|voice only|stills only|in one day|over a single day|the work is|expect )\b/i;
+  const terms=L=>new Set(clean(sentences(L.synopsis).filter(x=>!PRACT.test(x)).slice(0,2).join(" ")).split(" ").filter(w=>w.length>4&&!/^(about|where|which|makes|different|there|campaign|series|project|video|shows?|built|around|whole|photographed|subject|subjects|people|every|person)$/.test(w)));
   for(let i=0;i<listings.length;i++)for(let j=0;j<i;j++){const a=terms(listings[i]),b=terms(listings[j]);const inter=[...a].filter(w=>b.has(w)).length;const u=Math.min(a.size,b.size);if(u>=8&&inter/u>=0.5){add("similar_story",listings[i].id,`~${listings[j].id} (${inter}/${u})`);break;}}
   // voices
   const voices={};listings.forEach(L=>{const v=L._raw._voiceKey||"(none)";voices[v]=(voices[v]||0)+1;});
@@ -470,7 +473,8 @@ function boardChecks(){
   const missing=usable.filter(t=>!tc[t]);const maxT=Math.max(...Object.values(tc));
   const expect=listings.length/usable.length;
   if(missing.length>Math.max(0,usable.length-listings.length))add("type_spread","board",`${missing.length} types never drawn: ${missing.join(", ")}`);
-  Object.entries(tc).forEach(([t,n])=>{if(n>Math.ceil(expect)+2)add("type_spread","board",`${t} ${n}x (expected ~${expect.toFixed(1)})`);});
+  // Round 5: types follow a weighted quota, so the only cap is 12% per type.
+  Object.entries(tc).forEach(([t,n])=>{if(n>Math.max(3,listings.length*0.12))add("type_spread","board",`${t} ${n}x (cap 12%)`);});
   // NYC share
   const nyc=listings.filter(L=>/New York, NY/.test(L.location)).length;
   const share=nyc/listings.length;
@@ -577,6 +581,7 @@ if(global.__r3report){const R=global.__r3report,n=listings.length,p=c=>`${c} (${
   const A=["r3_role_days","r3_pay_by_size","r3_pronoun_strict","r3_type_word","r3_unexplained_phrase","r3_location_story","r3_tagline_vs_first","r3_holidays","r3_leftovers","r3_ethnicity_default"];
   console.log(`  Part A logic failures: ${A.map(k=>k.replace("r3_","")+" "+rr(k)).join(" · ")}`);
 }
+if(global.__r5report){const R=global.__r5report;console.log(`\nROUND 5 — type counts (${listings.length} listings): `+Object.entries(R.types).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`${t} ${n}`).join(" · "));console.log(`  Expiration dates: ${R.expDates} distinct, most on one date: ${R.expMax}`);}
 const firstOk=listings.length-(results.find(r=>r.key==="first_sentence").listings);
 console.log(`\nFirst sentence says what the project is: ${firstOk}/${listings.length}`);
 const failing=results.filter(r=>r.issues);

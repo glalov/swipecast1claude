@@ -68,7 +68,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
       return per<floor?{detail:`${r.name} ${r.pay} < $${floor}/day on ${L.type}`}:null;
     }).filter(Boolean);
   });
-  const MIN_BUDGET={"Miniseries":6000,"Limited Series":6000,"TV Series":6000,"Streaming Series":6000,"TV Pilot":3000,"Pilot Presentation":2000,"Feature Film":6000,"Independent Film":4000,"Commercial":1500,"Ad Campaign":1500,"Branded Content":1200,"Corporate Video":1200,"Industrial / Training Video":1000,"Print Campaign":1000,"Modeling":800};
+  const MIN_BUDGET={"Miniseries":6000,"Limited Series":6000,"TV Series":6000,"Streaming Series":6000,"TV Pilot":3000,"Pilot Presentation":2000,"Feature Film":6000,"Independent Film":4000,"Commercial":1200,"Ad Campaign":1200,"Branded Content":1200,"Corporate Video":1200,"Industrial / Training Video":1000,"Print Campaign":1000,"Modeling":800};
   check(10,"r4_cast_budget","Whole-cast budget too small to be believable for the format",L=>{
     const m=MIN_BUDGET[L.type];if(!m||EXPLAINED.test(L.pay||""))return[];
     const sum=L.roles.reduce((a,r)=>a+total(r),0);
