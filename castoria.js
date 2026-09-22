@@ -217,8 +217,8 @@ WHAT YOU DECLINE, IN ONE LINE, WITHOUT LECTURING
 Decline once and move on. Do not apologise twice.
 
 GROUNDING
-Never invent a price, a limit or a feature. Premium is $99/year ($8.25/month)
-and renews at $99; six months is $71.70 ($11.95/month); monthly is $14.95.
+Never invent a price, a limit or a feature. Premium is $129/year ($10.75/month)
+and renews at $129; six months is $79 ($13.17/month); monthly is $17.99.
 Free accounts get 1 headshot and one free submission — the first one, then Premium is required. If you do not know,
 say so and offer the team.
 
@@ -245,7 +245,7 @@ are genuinely unusual in casting:
     every week.
   - The Slate Video, unlimited photos and video, and unlimited submissions
     that are each seen individually.
-Then the price: $99 a year, about $1.90 a week, renewing at $99, every feature
+Then the price: $129 a year, about $2.48 a week, renewing at $129, every feature
 on every plan.
 
 Stay honest while you do it. Nobody can promise a booking, and anyone who does
@@ -271,7 +271,7 @@ a minor, or two consecutive misses - hand to the human team.`;
 
 /* ── help sheets ─────────────────────────────────────────────── */
 const ART={
- pricing:{t:'Membership & pricing',c:`<h5>Free account</h5><p>Free for as long as you want it, no card required. <b>1 headshot</b>, <b>first submission free</b>, and full browsing of every casting on the platform.</p><h5>Premium</h5><ul><li><b>$99 a year</b> — about $8.25/month, and it renews at $99. No first-year discount that climbs later.</li><li><b>$71.70 for six months</b> — $11.95/month.</li><li><b>$14.95 month to month</b> — cancel whenever.</li></ul><p>Every plan includes the same features. There is no higher tier holding anything back.</p>`},
+ pricing:{t:'Membership & pricing',c:`<h5>Free account</h5><p>Free for as long as you want it, no card required. <b>1 headshot</b>, <b>first submission free</b>, and full browsing of every casting on the platform.</p><h5>Premium</h5><ul><li><b>$129 a year</b> — about $10.75/month, and it renews at $129. No first-year discount that climbs later.</li><li><b>$79 for six months</b> — $13.17/month.</li><li><b>$17.99 month to month</b> — cancel whenever.</li></ul><p>Every plan includes the same features. There is no higher tier holding anything back.</p>`},
  guarantee:{t:'Every submission gets seen',c:`<p>Submissions are shown to casting directors <b>one at a time, full-screen</b>, and require an explicit decision — callback or pass. Nobody can scroll past you.</p><p>We measure review time per submission. The average is <b>over 8 seconds</b> — roughly five times longer than a grid platform where 80 headshots get scanned in twenty.</p>`},
  profile:{t:'Building a profile that gets callbacks',c:`<h5>Headshot</h5><ul><li>Taken within the last 18 months</li><li>At least 800×1000 pixels, JPG or PNG</li><li>Face filling about 60% of the frame</li><li>Natural or soft studio light, simple background</li></ul><h5>Bio</h5><p>Two to three sentences. Training first, then your strongest types, then one real differentiator.</p><h5>Reel</h5><p>Paste a YouTube or Vimeo URL into the Reel field and we embed it. Under two minutes, strongest work first.</p><h5>Credits & skills</h5><p>Your three most recent credits with years. Special skills only if you can do them on demand.</p>`},
  mm:{t:'Manager Mode',c:`<p>A private career check-in written for your profile, in your inbox every week. Not a newsletter — it reads your actual profile and your actual gaps.</p><ul><li><b>What you are doing well</b></li><li><b>What needs attention</b> — the specific gap holding you back</li><li><b>Your casting lane</b> — what you are most competitive for now</li><li><b>One task this week</b> — one, not a checklist</li></ul><p>It also suggests real industry events in New York and Los Angeles.</p><p>Manager Mode is a profile-improvement tool. It does not guarantee bookings, callbacks, representation or auditions.</p>`},
@@ -434,7 +434,7 @@ const DECLINE=[
  {id:'compare',
   re:/\b(actors ?access|backstage|casting ?networks|castingnetworks|mandy|starnow|star ?now|playbill|breakdown ?express|explore ?talent|project ?casting)\b|\b(better than|compare|comparison|vs\.?|versus) (other|another|any) (site|platform|app)/i,
   a:c=>`${c.name?c.name+', h':'H'}onestly — I can't compare CastSlate to other casting sites. I only know this one.`+
-  `<div class="hd">What I can tell you about CastSlate</div><ul><li>Every submission is shown to the casting director <b>one at a time, full-screen</b>, and they have to decide callback or pass. Average review time is <b>over 8 seconds</b> per submission.</li><li>Profiles are <b>free</b> — 1 headshot and ${FREE.sub} submission a week, no card.</li><li>Premium is <b>$99 a year</b> (about $8.25/month) and renews at $99, for unlimited submissions, unlimited photos and video, your Slate Video, your Business Card, weekly Manager Mode check-ins, and the ${DIR}-company agency directory.</li><li>Casting posts are reviewed by admins before they go live, and every caster can be reported.</li></ul>`+
+  `<div class="hd">What I can tell you about CastSlate</div><ul><li>Every submission is shown to the casting director <b>one at a time, full-screen</b>, and they have to decide callback or pass. Average review time is <b>over 8 seconds</b> per submission.</li><li>Profiles are <b>free</b> — 1 headshot and your first submission free, no card.</li><li>Premium is <b>$129 a year</b> (about $10.75/month) and renews at $129, for unlimited submissions, unlimited photos and video, your Slate Video, your Business Card, weekly Manager Mode check-ins, and the ${DIR}-company agency directory.</li><li>Casting posts are reviewed by admins before they go live, and every caster can be reported.</li></ul>`+
   `<p>What's the right platform for you is genuinely your call — I'd just be guessing about anyone else's.</p>`,
   b:c=>`Anything specific about how CastSlate works that would help you decide?`,
   s:['How does the review actually work?','What does Premium include?'],src:['guarantee','pricing']},
@@ -461,7 +461,7 @@ const DECLINE=[
 ];
 
 /* ── layer 3: knowledge ──────────────────────────────────────── */
-const PRICEFINE='$99/year — about $8.25/month, and it renews at $99. Or $14.95 monthly, cancel any time.';
+const PRICEFINE='$129/year — about $10.75/month, and it renews at $129. Or $17.99 monthly, cancel any time.';
 const KB=[
 
 {id:'what',k:'what is castslate about platform explain tell me new here how does it work works legit real',
@@ -473,19 +473,19 @@ const KB=[
 {id:'start',k:'get started begin sign up signup register create account first steps new actor join setup',
  a:c=>`Four steps and you're submitting today.`+
  `<ul><li><b>Create your free account</b> — email and password, no card</li><li><b>Upload a headshot</b> — the one thing casting sees first</li><li><b>Add your stats and a two-sentence bio</b> — training, your strongest types, one differentiator</li><li><b>Browse Open Castings and apply</b></li></ul>`+
- `<p>Free accounts submit to <b>${FREE.sub} casting a week</b> and hold <b>${FREE.shots} headshot</b> — enough to learn the place and get real submissions in.</p>`+
+ `<p>Free accounts get <b>their first submission free</b> and hold <b>${FREE.shots} headshot</b> — enough to learn the place and get real submissions in.</p>`+
  `<p>A profile with a headshot and nothing else gets passed on, because casting can't tell what you're right for. The bio matters more than people expect.</p>`,
  src:['profile','pricing'],s:['How do I apply?','What should my headshot look like?','What does Premium include?'],
- sell:c=>({e:'When one a week stops being enough',h:'Unlimited submissions whenever you\'re ready',b:'Most actors hit the weekly cap in their second or third week — the roles are there, the submissions aren\'t.'})},
+ sell:c=>({e:'When one submission stops being enough',h:'Unlimited submissions whenever you\'re ready',b:'The first submission is free; after that, every role you fit needs Premium — the roles are there, the submissions aren\'t.'})},
 
 {id:'pricing',k:'price cost how much premium membership subscription pay fee dollars month year plan plans expensive cheap billing charge',
  a:c=>`Here's the whole price list — there's nothing behind it.`+
  `<div class="hd">Free — $0, forever</div><ul><li>Full profile and unlimited browsing</li><li>${FREE.shots} headshot</li><li>First submission free</li><li>No card required, not a trial</li></ul>`+
- `<div class="hd">Premium</div><ul><li><b>$99 a year</b> — about <b>$8.25 a month</b>, and it renews at $99. No first-year discount that climbs later.</li><li><b>$71.70 for six months</b> — $11.95 a month</li><li><b>$14.95 month to month</b></li></ul>`+
+ `<div class="hd">Premium</div><ul><li><b>$129 a year</b> — about <b>$10.75 a month</b>, and it renews at $129. No first-year discount that climbs later.</li><li><b>$79 for six months</b> — $13.17 a month</li><li><b>$17.99 month to month</b></li></ul>`+
  `<p><b>Every plan includes the same features.</b> No higher tier, no per-submission fees.</p>`+
  (c.plan==='premium'?`<p>You're on Premium, so all of that is already switched on.</p>`:''),
  src:['pricing','billing'],s:['Is it worth it?','Free vs Premium?','What does Premium include?'],
- sell:c=>({e:'What the $8.25 buys',h:'Everything, on every plan',b:'Unlimited submissions · unlimited photos, video and Cast Me As clips · <em>Slate Video</em> · <em>Business Card</em> with QR code · mailing postcard and agent promo card · weekly <em>Manager Mode</em> · the <em>'+DIR+'-company agency directory</em>.'})},
+ sell:c=>({e:'What the $10.75 buys',h:'Everything, on every plan',b:'Unlimited submissions · unlimited photos, video and Cast Me As clips · <em>Slate Video</em> · <em>Business Card</em> with QR code · mailing postcard and agent promo card · weekly <em>Manager Mode</em> · the <em>'+DIR+'-company agency directory</em>.'})},
 
 {id:'worth',k:'worth it should i upgrade why pay convince me value bother benefit benefits point premium advantage advantages',
  a:c=>c.plan==='premium'
@@ -495,24 +495,24 @@ const KB=[
   `<div class="hd">3. Your Slate Video</div><p>Seven seconds. Casting hears your voice before deciding whether to open your reel. It's the cheapest advantage on the platform and it takes one take.</p>`+
   `<p>Want me to walk you through any of them?</p>`
  :`Yes — and not because of the submission counter. Let me show you what's actually behind it${c.name?', '+c.name:''}.`+
-  `<div class="hd">Unlimited submissions, each one seen</div><p>The ${FREE.sub}-a-week cap disappears. And every submission goes to the casting director <b>full-screen, one at a time</b> — they have to decide callback or pass. Average review time is <b>over 8 seconds</b> per person.</p>`+
+  `<div class="hd">Unlimited submissions, each one seen</div><p>The one-free-submission limit disappears. And every submission goes to the casting director <b>full-screen, one at a time</b> — they have to decide callback or pass. Average review time is <b>over 8 seconds</b> per person.</p>`+
   `<div class="hd">Your Actor Business Card — with a QR code</div><p>Headshot on the front, and a QR that <b>opens your entire profile — reel, Slate Video, stats, credits — in about two seconds</b>. You also get a <b>mailing postcard</b> and an <b>agent promo card</b>.</p>`+
   `<p>Think about what that means: you mail a postcard to an agency office, someone scans it at their desk, and your full profile is in front of them instantly. No typing your name in, no attachment they won't open, no email that never gets read. That is not a standard casting-site feature. Most platforms sell you a database listing and stop there.</p>`+
   `<div class="hd">The ${DIR}-company Agency & Manager Directory</div><p>Every agency and management company across <b>Los Angeles, Beverly Hills and New York</b> — addresses, websites, contact details, grouped in tiers, with <b>how each one wants to be approached</b> and submission tips written for actors with no representation yet.</p>`+
   `<p>Actors spend years guessing at this, or pay for lists that are out of date. Here it's just included.</p>`+
   `<div class="hd">Manager Mode — every single week</div><p>A private career check-in on <b>your</b> profile: what's working, what needs attention, the casting lane you're most competitive for, and one focused task. Plus real industry events in NY and LA. Most platforms take your money and forget you exist — this one reads your profile every week.</p>`+
   `<div class="hd">And the rest</div><ul><li><b>Slate Video</b> — a 7-second intro so casting hears you</li><li><b>Unlimited photos, video and Cast Me As clips</b> — the right look for every role</li></ul>`+
-  `<div class="hd">What it costs</div><p><b>$99 a year</b> — about <b>$1.90 a week</b> — and it renews at $99. Every plan gets every feature. Nothing is held back for a higher tier.</p>`+
+  `<div class="hd">What it costs</div><p><b>$129 a year</b> — about <b>$2.48 a week</b> — and it renews at $129. Every plan gets every feature. Nothing is held back for a higher tier.</p>`+
   `<p><b>The straight talk:</b> nobody can promise you a booking, and anyone who does is lying to you. What Premium gives you is everything that <em>is</em> in your control — in front of casting as often as you want, with the strongest version of you, and the map to representation in your hands. That's the whole idea behind this place: get talented actors seen, and get them repped.</p>`,
  src:['pricing','card','dir'],s:['Tell me about the Business Card','Tell me about the agency directory','What is Manager Mode?'],
- sell:c=>({e:'About $1.90 a week',h:'Everything, on every plan',b:'Unlimited submissions · <em>Business Card with QR code</em> · mailing postcard and agent promo card · the <em>'+DIR+'-company agency and manager directory</em> · weekly <em>Manager Mode</em> check-ins · <em>Slate Video</em> · unlimited photos and video.',cta:'Go Premium — $99/year'})},
+ sell:c=>({e:'About $2.48 a week',h:'Everything, on every plan',b:'Unlimited submissions · <em>Business Card with QR code</em> · mailing postcard and agent promo card · the <em>'+DIR+'-company agency and manager directory</em> · weekly <em>Manager Mode</em> check-ins · <em>Slate Video</em> · unlimited photos and video.',cta:'Go Premium — $129/year'})},
 
 {id:'freevp',k:'free vs premium difference compare tiers what do i get upgrade unlock locked included',
  a:c=>`Every difference, in one list.`+
  `<div class="hd">Free account</div><ul><li>Full profile — stats, bio, credits, reel link</li><li>Browse and search every casting</li><li>Messages and callbacks in your Inbox</li><li>${FREE.shots} headshot</li><li>First submission free</li></ul>`+
  `<div class="hd">Premium adds</div><ul><li><b>Unlimited submissions</b></li><li><b>Unlimited photos, videos and Cast Me As clips</b></li><li><b>Slate Video</b> — a 7-second intro on your profile</li><li><b>Business Card</b> with QR code, plus mailing postcard and agent promo card</li><li><b>Manager Mode</b> — a private career check-in every week</li><li><b>Agency & Manager Directory</b> — ${DIR} companies in LA, Beverly Hills and NYC</li></ul>`,
  src:['pricing','card','mm'],s:['Is it worth it?','What is Manager Mode?','How do I upgrade?'],
- sell:c=>({e:'One price, every feature',h:'No tiers, nothing held back',b:'$99 a year — about <em>$8.25 a month</em> — renewing at $99. Or $14.95 monthly if you\'d rather keep it loose.'})},
+ sell:c=>({e:'One price, every feature',h:'No tiers, nothing held back',b:'$129 a year — about <em>$10.75 a month</em> — renewing at $129. Or $17.99 monthly if you\'d rather keep it loose.'})},
 
 {id:'cap',k:'cap limit weekly submission limit cant apply cannot apply more submissions used up ran out blocked one a week reached maximum',
  a:c=>c.plan==='premium'
@@ -522,7 +522,7 @@ const KB=[
   `<div class="hd">Making one submission count</div><ul><li>Spend it on a role you fit by <b>type and experience level</b>, not the most exciting one on the board</li><li>Submit <b>early</b> — many casting directors start reviewing days before the deadline</li><li>Write the two-sentence cover note. Cheapest edge available to you</li></ul>`+
   `<p>Roles also cap themselves at 250–500 submissions so casting can review every one properly.</p>`,
  src:['apply','pricing'],s:['How do I apply?','What does Premium include?','What if I miss a deadline?'],
- sell:c=>({e:'This is the wall Premium removes',h:'Unlimited submissions',b:'The cap is the single most common reason actors upgrade — watching roles you fit close while you wait for Monday.',cta:'Remove the cap'})},
+ sell:c=>({e:'This is the wall Premium removes',h:'Unlimited submissions',b:'The cap is the single most common reason actors upgrade — watching roles you fit close without you.',cta:'Remove the cap'})},
 
 {id:'apply',k:'apply applying submit submission how to apply send headshot to casting application cover note letter multiple roles',
  a:c=>`From a casting page, hit <b>Apply Now</b> on the role that fits.`+
@@ -666,7 +666,7 @@ const KB=[
  `<p><b>Subscription Info</b> in the same settings menu shows your current plan and renewal date without leaving CastSlate.</p>`+
  `<p><button class="inl" data-nav="account-settings">Take me to Account Settings</button></p>`+
  `<div class="hd">What I can tell you</div>`+
- `<p>The published prices: <b>$99 a year</b> (about $8.25/month, renewing at $99), <b>$71.70 for six months</b>, or <b>$14.95 month to month</b>. Every plan includes every feature.</p>`+
+ `<p>The published prices: <b>$129 a year</b> (about $10.75/month, renewing at $129), <b>$79 for six months</b>, or <b>$17.99 month to month</b>. Every plan includes every feature.</p>`+
  `<p>If Premium access has disappeared unexpectedly, or a charge looks wrong, that goes to a person rather than to me — say the word and I will hand this over.</p>`,
  src:['billing','pricing'],s:['I have a billing problem','Talk to a human'],nocheck:true},
 
@@ -682,7 +682,7 @@ const KB=[
 {id:'upgrade',k:'how do i upgrade buy premium purchase go premium subscribe checkout pay now where do i pay',
  a:c=>c.plan==='premium'?`You're on Premium already, so it's all live. Want me to walk you through a piece of it — the promo materials, the agency directory, or Manager Mode?`
  :`Two taps.`+
- `<ul><li>Open <b>Membership</b> from the nav, or any "Go Premium" button</li><li>Pick your term — <b>$99/year</b>, <b>$71.70/6 months</b>, or <b>$14.95/month</b></li><li>Pay by card. Live immediately, no waiting on approval</li></ul>`+
+ `<ul><li>Open <b>Membership</b> from the nav, or any "Go Premium" button</li><li>Pick your term — <b>$129/year</b>, <b>$79/6 months</b>, or <b>$17.99/month</b></li><li>Pay by card. Live immediately, no waiting on approval</li></ul>`+
  `<p>Every plan carries the same features, so the only real question is how long you want to commit for.</p>`,
  src:['pricing','billing'],s:['What does Premium include?','Is Premium worth it?'],
  sell:c=>({e:'Live the moment you pay',h:'Unlimited submissions from today',b:'Plus your <em>Slate Video</em>, <em>Business Card</em>, weekly <em>Manager Mode</em> note and the <em>'+DIR+'-company agency directory</em>.',cta:'Go to Membership'})},
@@ -1166,7 +1166,7 @@ const KB=[
  `<div class="hd">The structural reality</div><p>Acting income is lumpy. Nothing for months, then several jobs at once. Budget on your <b>worst</b> month, not your average one.</p>`+
  `<div class="hd">Practical</div><ul><li><b>Flexible day work</b> beats well-paid rigid work. A job that won't let you leave for an audition will cost you more than it pays</li><li><b>Keep every receipt</b> — classes, headshots, reels, subscriptions, travel to auditions can often be deductible. Ask an accountant what applies to you</li><li>Set money aside from every booking for tax. Nobody withholds it for you on a lot of this work</li><li>Build a small buffer before big spends. A cushion buys you the ability to say no</li></ul>`+
  `<div class="hd">Where the money should go</div><p>In rough order: <b>ongoing class</b>, then <b>headshots</b>, then <b>footage</b>. Those three are the ones that change what you can be submitted for. Be careful with anything sold on access rather than skill.</p>`+
- `<p>For scale, CastSlate Premium is $99 a year — about $1.90 a week — and every plan includes every feature, so it doesn't compete with the class budget.</p>`,
+ `<p>For scale, CastSlate Premium is $129 a year — about $2.48 a week — and every plan includes every feature, so it doesn't compete with the class budget.</p>`,
  src:['pricing'],s:['Do I need acting school?','What do actors get paid?','How much does CastSlate cost?']},
 
 {id:'etiquette',k:'set etiquette audition room behaviour professional how to behave first day on set what not to do',
