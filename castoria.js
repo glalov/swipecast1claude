@@ -11,7 +11,7 @@ host.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:214748300
 document.body.appendChild(host);
 var ROOT=host.attachShadow({mode:'open'});
 var sEl=document.createElement('style');
-sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  /* Mono clapper. Silver disc, charcoal board, white stripes. The hairline\n     ring is not decoration \u2014 a pale disc dissolves into the cream page. */\n  --disc:linear-gradient(150deg,#FFFFFF,#EDEDF1 52%,#C8C8D0);\n  --ring:rgba(19,19,24,.16);--board:#131318;--stripe:#FFFFFF;\n  --cm1:rgba(255,255,255,.34);--cm2:rgba(255,255,255,.20);\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch,.tool,.snd,.srcs button,.b .inl,.bar button,.card .go{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background-image:var(--disc);border:0;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 1px var(--ring),0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);\n  /* Hidden until the curtain has finished falling \u2014 see armLaunchDrop(). It\n     starts a full viewport above the fold, so it is genuinely off-screen\n     rather than fading in on the spot. */\n  opacity:0;visibility:hidden;}\n/* Adopted from the inline stub, which already played the drop \u2014 showing it\n   again would be a second entrance for the same button. */\n.launch.drop.instant,.launch.drop.instant svg{animation:none;}\n.launch.drop{opacity:1;visibility:visible;\n  /* backwards, not both: the animation must not own transform once it ends,\n     or the hover scale never applies again. */\n  animation:launchDrop 1.05s backwards;}\n/* Per-keyframe easing, because a falling object accelerates \u2014 a single\n   ease-out would have it at its fastest the instant it leaves the sky. */\n@keyframes launchDrop{\n  0%{transform:translateY(calc(-100vh - 80px));animation-timing-function:cubic-bezier(.55,0,.85,.6)}\n  46%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}\n  62%{transform:translateY(-32px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}\n  76%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}\n  87%{transform:translateY(-11px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}\n  95%{transform:translateY(0)}\n  98%{transform:translateY(-2px)}\n  100%{transform:translateY(0)}}\n/* Squash on each landing sells the weight. It sits on the inner svg so it\n   never fights the translate on the button itself. */\n.launch.drop svg{animation:launchSquash 1.05s backwards;}\n@keyframes launchSquash{\n  0%,40%{transform:scale(1,1)}\n  47%{transform:scale(1.2,.8)}\n  54%{transform:scale(.95,1.05)}\n  62%,74%{transform:scale(1,1)}\n  78%{transform:scale(1.1,.9)}\n  84%,100%{transform:scale(1,1)}}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:58px;height:58px;display:block;}\n.launch .x{display:none;color:var(--board);font-size:25px;font-weight:300;line-height:1;}\n\n/* One clap every ten seconds \u2014 present, not fidgety. */\n.clap .stick{transform-origin:5.5px 12.5px;animation:csclap 10s cubic-bezier(.3,1.6,.5,1) infinite;}\n@keyframes csclap{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-27deg)}95%{transform:rotate(-24deg)}98%{transform:rotate(0)}}\n.launch:hover .clap .stick{animation-duration:2.2s;}\n@media(prefers-reduced-motion:reduce){.launch.drop,.launch.drop svg{animation:none}.clap .stick{animation:none}}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 first-visit nudge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n/* A comic-book pop beside the launcher, five seconds in, gone five seconds\n   later. Once per visitor, never while the panel is open. */\n.nudge{position:fixed;right:96px;bottom:34px;z-index:61;pointer-events:none;display:none;}\n.nudge.on{display:block;}\n.nudge b{\n  position:relative;display:block;background:#fff;color:#12121C;border:2.5px solid #12121C;\n  border-radius:26px 26px 8px 26px;padding:11px 17px;\n  font-family:var(--sys);font-weight:700;font-size:15px;letter-spacing:-.2px;white-space:nowrap;\n  box-shadow:4px 5px 0 rgba(18,18,28,.92);\n  animation:nudgeIn .42s cubic-bezier(.2,1.6,.4,1) both,nudgeWobble 2.6s ease-in-out .5s infinite;\n}\n.nudge b::after{content:\"\";position:absolute;right:-19px;bottom:11px;border:9px solid transparent;border-left-color:#12121C;border-left-width:16px;}\n.nudge b::before{content:\"\";position:absolute;right:-11px;bottom:14px;z-index:1;border:6px solid transparent;border-left-color:#fff;border-left-width:11px;}\n.nudge.out b{animation:nudgeOut .3s ease-in forwards;}\n@keyframes nudgeIn{0%{opacity:0;transform:scale(.3) rotate(-9deg)}60%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(-1.5deg)}}\n@keyframes nudgeWobble{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1.025) rotate(1deg)}}\n@keyframes nudgeOut{to{opacity:0;transform:scale(.82) translateY(6px)}}\n@media(max-width:560px){.nudge{right:82px;bottom:26px;}.nudge b{font-size:14px;padding:9px 14px;}}\n@media(prefers-reduced-motion:reduce){.nudge b{animation:none}.nudge.out b{opacity:0}}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;overscroll-behavior:contain;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar .xreset{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xreset:hover{background:rgba(120,120,128,.24);}\n.bar .xreset:active{transform:translateY(-50%) scale(.92);}\n.bar .xreset svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}\n.bar.sub .xreset{display:none;}\n.bar .xexpand{position:absolute;right:47px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xexpand:hover{background:rgba(120,120,128,.24);}\n.bar .xexpand:active{transform:translateY(-50%) scale(.92);}\n.bar .xexpand svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}\n.bar.sub .xexpand{display:none;}\n/* Long lessons and the help sheets are the parts that want the room. */\n.panel{transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.4,.1,.2,1),height .3s cubic-bezier(.4,.1,.2,1);}\n/* Desktop opens at the large size. Long lessons and the 15-question opener\n   both need the room, and a panel that grows after you have started reading\n   is worse than one that was the right size to begin with. `.compact` is the\n   opt-out, not the default. */\n@media(min-width:641px){\n  .panel{width:560px;height:min(760px,calc(100vh - 126px));height:min(760px,calc(100dvh - 126px));}\n  .panel.compact{width:394px;height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));}\n}\n@media(max-width:640px){ .bar .xexpand{display:none;} }\n.panel:not(.compact) .i-grow{display:none;}\n.panel.compact .i-shrink{display:none;}\n.bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xclose:hover{background:rgba(120,120,128,.24);}\n.bar .xclose:active{transform:translateY(-50%) scale(.92);}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background-image:var(--disc);box-shadow:inset 0 0 0 1px var(--ring);display:grid;place-items:center;margin:0 auto 4px;overflow:hidden;}\n.ava svg{width:44px;height:44px;display:block;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 10px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n/* \u26a0\ufe0f flex:none on every thread child. .thread is a column flex container, and\n   once its content overflows, items are free to shrink \u2014 an item whose\n   `overflow` is not visible has an automatic minimum size of ZERO, so it\n   collapses entirely. That is exactly what happened to the upgrade .card\n   (overflow:hidden): on any answer long enough to overflow the thread it\n   rendered at 0px and was invisible. Do not remove these. */\n.stamp,.msg,.card,.srcs,.receipt{flex:none;}\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul,.b ol{list-style:none;margin:2px 0 9px;padding:0;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b ul>li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b ol{counter-reset:csol;}\n.b ol>li{counter-increment:csol;padding-left:21px;}\n.b ol>li::before{content:counter(csol) \".\";position:absolute;left:0;top:0;font-weight:600;font-variant-numeric:tabular-nums;}\n.b b{font-weight:600;}\n.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}\n.b .inl:hover{color:var(--blue);}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:6px;align-items:center;background:var(--in);border-radius:19px;padding:13px 16px;}\n.typing i{width:9px;height:9px;border-radius:50%;background:#9E9EA4;animation:d 1.05s cubic-bezier(.4,0,.2,1) infinite;}\n.typing i:nth-child(2){animation-delay:.14s}.typing i:nth-child(3){animation-delay:.28s}\n@keyframes d{0%,55%,100%{opacity:.3;transform:translateY(0) scale(.9)}27%{opacity:1;transform:translateY(-5px) scale(1.05)}}\n\n/* Bubbles used to be inserted with no transition, which read as a hard cut.\n   They now fade while lifting, which is what a message landing looks like. */\n.msg{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n@keyframes msgIn{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:none}}\n.card,.srcs{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n\n@media(prefers-reduced-motion:reduce){\n  .typing i{animation:none;opacity:.6}\n  .msg,.card,.srcs{animation:none}\n}\n\n/* The chip strip scrolls, and nothing said so \u2014 people read the clipped row as\n   the whole menu. It now carries a labelled row underneath.\n\n   \u26a0\ufe0f Three things here are why a tap used to need three attempts on a phone:\n   1. the hint was an ABSOLUTE pill sitting on top of the chips, so a tap on the\n      right-hand side of a chip hit the pill instead \u2014 it is a row now and\n      cannot overlap anything;\n   2. the fade was a mask ON THE SCROLLING ELEMENT, toggled from its own scroll\n      handler. Repainting a mask mid-scroll swallows the tap that follows.\n      The mask is gone; the labelled row is the affordance;\n   3. only ~3 of 15 chips fitted on a phone, so every choice needed a scroll\n      first \u2014 and a tap straight after a flick is eaten cancelling the momentum.\n   `.scrolls` toggles layout and changes rarely; `.atend` only changes opacity,\n   so nothing re-lays-out while a finger is moving. */\n.suggwrap{flex:none;position:relative;}\n.suggwrap:empty{display:none;}\n/* The thread and the chips used to butt together with no separation at all, so\n   a long answer was guillotined mid-sentence flush against the first chip. A\n   hairline marks the boundary as deliberate, and a short fade dissolves the\n   text into it whenever there is more to scroll.\n   \u26a0\ufe0f The fade is an overlay on .suggwrap \u2014 which never scrolls \u2014 and NOT a mask\n   on the thread. Masking a scrolling element and repainting it mid-scroll is\n   exactly what was eating taps on mobile; do not move this onto .thread. */\n.suggwrap.has{border-top:.5px solid var(--hair);}\n.suggwrap::before{content:\"\";position:absolute;left:0;right:0;top:-30px;height:30px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}\n.suggwrap.has.spill::before{opacity:1;}\n/* The bottom row is a control strip, not just a hint: \"More questions\" hands\n   out the next batch, and the fold button collapses the whole chip block so the\n   answer gets the screen back. On a phone the strip is a third of the panel \u2014\n   folding it is the difference between reading an answer and squinting at it\n   through a four-line window. */\n.suggbar{display:none;align-items:center;gap:8px;height:26px;padding:0 10px;}\n.suggwrap.has .suggbar{display:flex;}\n.suggmore{display:none;flex:1;min-width:0;height:26px;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity .2s;}\n.suggfold{margin-left:auto;display:flex;align-items:center;gap:4px;height:26px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--mute);background:transparent;border:0;padding:0 2px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}\n.suggfold svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;}\n/* Folded: the chips are gone, the bar is the whole control and reads as the way\n   back to them. */\n.suggwrap.folded .sugg{display:none;}\n.suggwrap.folded .suggfold{flex:1;margin-left:0;justify-content:center;color:var(--brand);}\n.suggwrap.folded .suggfold svg{transform:rotate(180deg);}\n.suggwrap.folded::after{opacity:0;}\n/* The chip strip gets the same treatment as the thread: its clipped last row\n   dissolves into the \"More questions\" line instead of being sliced. Sits above\n   the row (which is a fixed 26px), and only while there is more to scroll. */\n.suggwrap::after{content:\"\";position:absolute;left:0;right:0;bottom:26px;height:22px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}\n.suggwrap.scrolls:not(.atend):not(.folded)::after{opacity:1;}\n.suggwrap.scrolls:not(.folded) .suggmore{display:flex;}\n.suggwrap.atend .suggmore{opacity:0;pointer-events:none;}\n.suggmore svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:nudgedown 1.8s ease-in-out infinite;}\n@keyframes nudgedown{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}\n@media(prefers-reduced-motion:reduce){.suggmore svg{animation:none}}\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:11px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;}\n@media(min-width:561px) and (max-height:720px){.sugg{max-height:120px;}}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}\n.sugg button:hover{background:#F2F2F7;border-color:var(--brand);}\n.sugg button:active{background:#E8E8ED;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);position:relative;}\n.cbox{background:var(--field);border:1.5px solid var(--fieldln);border-radius:20px;padding:9px 10px 7px 14px;transition:border-color .14s;}\n.cbox:focus-within{border-color:var(--brand);}\n.cbox textarea{width:100%;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:21px;padding:0;display:block;}\n.ctools{display:flex;align-items:center;gap:2px;margin-top:6px;}\n.ctools .sp{flex:1;}\n.tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}\n.tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}\n.tool[aria-pressed=\"true\"]{background:rgba(47,194,77,.16);color:var(--out2);}\n.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}\n.tool.on svg{stroke:var(--out2);}\n.emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}\n.emoji.on{display:grid;}\n.emoji button{border:0;background:transparent;font-size:19px;line-height:1;padding:6px 0;border-radius:8px;cursor:pointer;}\n.emoji button:hover{background:rgba(120,120,128,.14);}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  /* Room for five or six chips instead of three, so choosing rarely needs a\n     scroll at all \u2014 the scroll was where taps were being lost. */\n  .sugg{max-height:min(38vh,300px);}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n}\n";
+sEl.textContent="\n:host{\n  --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;\n  --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;\n  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;\n  --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;\n  --brand:#1A1A2E;--brand-2:#E8902A;\n  /* Mono clapper. Silver disc, charcoal board, white stripes. The hairline\n     ring is not decoration \u2014 a pale disc dissolves into the cream page. */\n  --disc:linear-gradient(150deg,#FFFFFF,#EDEDF1 52%,#C8C8D0);\n  --ring:rgba(19,19,24,.16);--board:#131318;--stripe:#FFFFFF;\n  --cm1:rgba(255,255,255,.34);--cm2:rgba(255,255,255,.20);\n  --sys:-apple-system,BlinkMacSystemFont,\"SF Pro Text\",\"Segoe UI\",Roboto,\"Helvetica Neue\",Arial,sans-serif;\n}\n*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}\n\n\n/* \u2500\u2500 launcher \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.launch,.tool,.snd,.srcs button,.b .inl,.bar button,.card .go{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}\n.launch{position:fixed;right:22px;bottom:22px;width:58px;height:58px;border-radius:50%;background-image:var(--disc);border:0;cursor:pointer;overflow:hidden;box-shadow:inset 0 0 0 1px var(--ring),0 8px 26px rgba(0,0,0,.24);display:grid;place-items:center;z-index:60;transition:transform .18s cubic-bezier(.34,1.5,.64,1);\n  /* Hidden until the curtain has finished falling \u2014 see armLaunchDrop(). It\n     starts a full viewport above the fold, so it is genuinely off-screen\n     rather than fading in on the spot. */\n  opacity:0;visibility:hidden;}\n/* Adopted from the inline stub, which already played the drop \u2014 showing it\n   again would be a second entrance for the same button. */\n.launch.drop.instant,.launch.drop.instant svg{animation:none;}\n.launch.drop{opacity:1;visibility:visible;\n  /* backwards, not both: the animation must not own transform once it ends,\n     or the hover scale never applies again. */\n  animation:launchDrop 1.05s backwards;}\n/* Per-keyframe easing, because a falling object accelerates \u2014 a single\n   ease-out would have it at its fastest the instant it leaves the sky. */\n@keyframes launchDrop{\n  0%{transform:translateY(calc(-100vh - 80px));animation-timing-function:cubic-bezier(.55,0,.85,.6)}\n  46%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}\n  62%{transform:translateY(-32px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}\n  76%{transform:translateY(0);animation-timing-function:cubic-bezier(.3,0,.6,1)}\n  87%{transform:translateY(-11px);animation-timing-function:cubic-bezier(.5,0,.85,.6)}\n  95%{transform:translateY(0)}\n  98%{transform:translateY(-2px)}\n  100%{transform:translateY(0)}}\n/* Squash on each landing sells the weight. It sits on the inner svg so it\n   never fights the translate on the button itself. */\n.launch.drop svg{animation:launchSquash 1.05s backwards;}\n@keyframes launchSquash{\n  0%,40%{transform:scale(1,1)}\n  47%{transform:scale(1.2,.8)}\n  54%{transform:scale(.95,1.05)}\n  62%,74%{transform:scale(1,1)}\n  78%{transform:scale(1.1,.9)}\n  84%,100%{transform:scale(1,1)}}\n.launch:hover{transform:scale(1.06);}\n.launch svg{width:58px;height:58px;display:block;}\n.launch .x{display:none;color:var(--board);font-size:25px;font-weight:300;line-height:1;}\n\n/* One clap every ten seconds \u2014 present, not fidgety. */\n.clap .stick{transform-origin:5.5px 12.5px;animation:csclap 10s cubic-bezier(.3,1.6,.5,1) infinite;}\n@keyframes csclap{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-27deg)}95%{transform:rotate(-24deg)}98%{transform:rotate(0)}}\n.launch:hover .clap .stick{animation-duration:2.2s;}\n@media(prefers-reduced-motion:reduce){.launch.drop,.launch.drop svg{animation:none}.clap .stick{animation:none}}\n.launch.open svg{display:none;}\n.launch.open .x{display:block;}\n\n/* \u2500\u2500 first-visit nudge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n/* A comic-book pop beside the launcher, five seconds in, gone five seconds\n   later. Once per visitor, never while the panel is open. */\n.nudge{position:fixed;right:96px;bottom:34px;z-index:61;pointer-events:none;display:none;}\n.nudge.on{display:block;}\n.nudge b{\n  position:relative;display:block;background:#fff;color:#12121C;border:2.5px solid #12121C;\n  border-radius:26px 26px 8px 26px;padding:11px 17px;\n  font-family:var(--sys);font-weight:700;font-size:15px;letter-spacing:-.2px;white-space:nowrap;\n  box-shadow:4px 5px 0 rgba(18,18,28,.92);\n  animation:nudgeIn .42s cubic-bezier(.2,1.6,.4,1) both,nudgeWobble 2.6s ease-in-out .5s infinite;\n}\n.nudge b::after{content:\"\";position:absolute;right:-19px;bottom:11px;border:9px solid transparent;border-left-color:#12121C;border-left-width:16px;}\n.nudge b::before{content:\"\";position:absolute;right:-11px;bottom:14px;z-index:1;border:6px solid transparent;border-left-color:#fff;border-left-width:11px;}\n.nudge.out b{animation:nudgeOut .3s ease-in forwards;}\n@keyframes nudgeIn{0%{opacity:0;transform:scale(.3) rotate(-9deg)}60%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(-1.5deg)}}\n@keyframes nudgeWobble{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1.025) rotate(1deg)}}\n@keyframes nudgeOut{to{opacity:0;transform:scale(.82) translateY(6px)}}\n@media(max-width:560px){.nudge{right:82px;bottom:26px;}.nudge b{font-size:14px;padding:9px 14px;}}\n@media(prefers-reduced-motion:reduce){.nudge b{animation:none}.nudge.out b{opacity:0}}\n\n/* \u2500\u2500 thread panel \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */\n.panel{position:fixed;overscroll-behavior:contain;right:22px;bottom:92px;width:394px;max-width:calc(100vw - 28px);height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));background:var(--page);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.26),0 2px 10px rgba(0,0,0,.10);z-index:59;display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(12px) scale(.985);pointer-events:none;transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1);}\n.panel.open{opacity:1;transform:none;pointer-events:auto;}\n\n.bar{flex:none;background:var(--bar);border-bottom:.5px solid var(--hair);padding:9px 14px 11px;text-align:center;position:relative;}\n.bar .back{position:absolute;left:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--blue);font-size:15px;font-weight:400;cursor:pointer;padding:6px;display:none;}\n.bar .xreset{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xreset:hover{background:rgba(120,120,128,.24);}\n.bar .xreset:active{transform:translateY(-50%) scale(.92);}\n.bar .xreset svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}\n.bar.sub .xreset{display:none;}\n.bar .xexpand{position:absolute;right:47px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xexpand:hover{background:rgba(120,120,128,.24);}\n.bar .xexpand:active{transform:translateY(-50%) scale(.92);}\n.bar .xexpand svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}\n.bar.sub .xexpand{display:none;}\n/* Long lessons and the help sheets are the parts that want the room. */\n.panel{transition:opacity .18s,transform .22s cubic-bezier(.34,1.4,.64,1),width .3s cubic-bezier(.4,.1,.2,1),height .3s cubic-bezier(.4,.1,.2,1);}\n/* Desktop opens at the large size. Long lessons and the 15-question opener\n   both need the room, and a panel that grows after you have started reading\n   is worse than one that was the right size to begin with. `.compact` is the\n   opt-out, not the default. */\n@media(min-width:641px){\n  .panel{width:560px;height:min(760px,calc(100vh - 126px));height:min(760px,calc(100dvh - 126px));}\n  .panel.compact{width:394px;height:min(672px,calc(100vh - 126px));height:min(672px,calc(100dvh - 126px));}\n}\n@media(max-width:640px){ .bar .xexpand{display:none;} }\n.panel:not(.compact) .i-grow{display:none;}\n.panel.compact .i-shrink{display:none;}\n.bar .xclose{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:0;border-radius:50%;background:rgba(120,120,128,.14);color:var(--ink2);font-size:16px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;}\n.bar .xclose:hover{background:rgba(120,120,128,.24);}\n.bar .xclose:active{transform:translateY(-50%) scale(.92);}\n.bar.sub .back{display:block;}\n.ava{width:44px;height:44px;border-radius:50%;background-image:var(--disc);box-shadow:inset 0 0 0 1px var(--ring);display:grid;place-items:center;margin:0 auto 4px;overflow:hidden;}\n.ava svg{width:44px;height:44px;display:block;}\n.bar b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.1px;}\n.bar i{display:block;font-style:normal;font-size:11px;color:var(--mute);margin-top:1px;}\n\n.thread{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px 12px 10px;background:var(--page);display:flex;flex-direction:column;}\n.stamp{text-align:center;font-size:11px;color:var(--mute);margin:10px 0 12px;font-weight:500;}\n.stamp b{color:var(--ink2);font-weight:600;}\n\n/* \u26a0\ufe0f flex:none on every thread child. .thread is a column flex container, and\n   once its content overflows, items are free to shrink \u2014 an item whose\n   `overflow` is not visible has an automatic minimum size of ZERO, so it\n   collapses entirely. That is exactly what happened to the upgrade .card\n   (overflow:hidden): on any answer long enough to overflow the thread it\n   rendered at 0px and was invisible. Do not remove these. */\n.stamp,.msg,.card,.srcs,.receipt{flex:none;}\n.msg{display:flex;margin-bottom:2px;padding:0 4px;}\n.msg.gap{margin-top:9px;}\n.msg.out{justify-content:flex-end;}\n.b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}\n.msg.in .b{background:var(--in);color:var(--ink);}\n.msg.out .b{background:var(--out);color:#fff;}\n.b.tail::before{content:\"\";position:absolute;bottom:0;width:18px;height:19px;}\n.b.tail::after{content:\"\";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}\n.msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}\n.msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}\n.msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}\n.msg.out .b.tail::after{right:-14px;border-bottom-left-radius:9px;}\n.b p{margin-bottom:9px;}\n.b p:last-child{margin-bottom:0;}\n.b .hd{font-weight:600;margin:12px 0 4px;}\n.b .hd:first-child{margin-top:0;}\n.b ul,.b ol{list-style:none;margin:2px 0 9px;padding:0;}\n.b li{position:relative;padding-left:14px;margin-bottom:3px;}\n.b ul>li::before{content:\"\u2022\";position:absolute;left:2px;top:-1px;}\n.b ol{counter-reset:csol;}\n.b ol>li{counter-increment:csol;padding-left:21px;}\n.b ol>li::before{content:counter(csol) \".\";position:absolute;left:0;top:0;font-weight:600;font-variant-numeric:tabular-nums;}\n.b b{font-weight:600;}\n.b .inl{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;border-bottom:1.5px solid var(--blue);padding:0;margin:0;cursor:pointer;text-align:left;}\n.b .inl:hover{color:var(--blue);}\n.b em{font-style:normal;font-weight:600;}\n.receipt{text-align:right;font-size:10.5px;color:var(--mute);padding:1px 10px 0 0;margin-bottom:2px;letter-spacing:-.1px;}\n.receipt b{font-weight:600;color:var(--mute);}\n\n/* link-preview style upgrade card */\n.card{max-width:83%;margin:3px 4px 2px 4px;border-radius:17px;overflow:hidden;background:#1C1C1E;color:#fff;align-self:flex-start;}\n.card .top{padding:13px 15px 14px;}\n.card .eyebrow{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand-2);margin-bottom:6px;}\n.card .h{font-size:15px;font-weight:600;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px;}\n.card .b2{font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.66);}\n.card .b2 em{color:#fff;font-weight:600;font-style:normal;}\n.card .go{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:.5px solid rgba(255,255,255,.14);padding:11px 15px;cursor:pointer;background:rgba(255,255,255,.05);}\n.card .go:hover{background:rgba(255,255,255,.11);}\n.card .go span{font-size:14px;font-weight:600;color:var(--brand-2);}\n.card .go i{font-style:normal;color:rgba(255,255,255,.4);font-size:16px;}\n.card .fine{font-size:10.5px;color:rgba(255,255,255,.38);padding:0 15px 12px;line-height:1.45;}\n\n.srcs{display:flex;flex-wrap:wrap;gap:6px;padding:5px 8px 2px 8px;max-width:100%;}\n.srcs button{font-family:inherit;font-size:12px;font-weight:500;color:var(--blue);background:var(--page);border:1px solid var(--hair);border-radius:100px;padding:5px 11px;cursor:pointer;}\n.srcs button:hover{background:#F2F2F7;}\n\n.typing{display:flex;gap:6px;align-items:center;background:var(--in);border-radius:19px;padding:13px 16px;}\n.typing i{width:9px;height:9px;border-radius:50%;background:#9E9EA4;animation:d 1.05s cubic-bezier(.4,0,.2,1) infinite;}\n.typing i:nth-child(2){animation-delay:.14s}.typing i:nth-child(3){animation-delay:.28s}\n@keyframes d{0%,55%,100%{opacity:.3;transform:translateY(0) scale(.9)}27%{opacity:1;transform:translateY(-5px) scale(1.05)}}\n\n/* Bubbles used to be inserted with no transition, which read as a hard cut.\n   They now fade while lifting, which is what a message landing looks like. */\n.msg{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n@keyframes msgIn{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:none}}\n.card,.srcs{animation:msgIn .30s cubic-bezier(.22,.9,.3,1) both;}\n\n@media(prefers-reduced-motion:reduce){\n  .typing i{animation:none;opacity:.6}\n  .msg,.card,.srcs{animation:none}\n}\n\n/* The chip strip scrolls, and nothing said so \u2014 people read the clipped row as\n   the whole menu. It now carries a labelled row underneath.\n\n   \u26a0\ufe0f Three things here are why a tap used to need three attempts on a phone:\n   1. the hint was an ABSOLUTE pill sitting on top of the chips, so a tap on the\n      right-hand side of a chip hit the pill instead \u2014 it is a row now and\n      cannot overlap anything;\n   2. the fade was a mask ON THE SCROLLING ELEMENT, toggled from its own scroll\n      handler. Repainting a mask mid-scroll swallows the tap that follows.\n      The mask is gone; the labelled row is the affordance;\n   3. only ~3 of 15 chips fitted on a phone, so every choice needed a scroll\n      first \u2014 and a tap straight after a flick is eaten cancelling the momentum.\n   `.scrolls` toggles layout and changes rarely; `.atend` only changes opacity,\n   so nothing re-lays-out while a finger is moving. */\n.suggwrap{flex:none;position:relative;}\n.suggwrap:empty{display:none;}\n/* The thread and the chips used to butt together with no separation at all, so\n   a long answer was guillotined mid-sentence flush against the first chip. A\n   hairline marks the boundary as deliberate, and a short fade dissolves the\n   text into it whenever there is more to scroll.\n   \u26a0\ufe0f The fade is an overlay on .suggwrap \u2014 which never scrolls \u2014 and NOT a mask\n   on the thread. Masking a scrolling element and repainting it mid-scroll is\n   exactly what was eating taps on mobile; do not move this onto .thread. */\n.suggwrap.has{border-top:.5px solid var(--hair);}\n.suggwrap::before{content:\"\";position:absolute;left:0;right:0;top:-30px;height:30px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}\n.suggwrap.has.spill::before{opacity:1;}\n/* The bottom row is a control strip, not just a hint: \"More questions\" hands\n   out the next batch, and the fold button collapses the whole chip block so the\n   answer gets the screen back. On a phone the strip is a third of the panel \u2014\n   folding it is the difference between reading an answer and squinting at it\n   through a four-line window. */\n.suggbar{display:none;align-items:center;gap:8px;height:26px;padding:0 10px;}\n.suggwrap.has .suggbar{display:flex;}\n.suggmore{display:none;flex:1;min-width:0;height:26px;align-items:center;justify-content:center;gap:5px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--brand);background:transparent;border:0;padding:0;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity .2s;}\n.suggfold{margin-left:auto;display:flex;align-items:center;gap:4px;height:26px;font-family:inherit;font-size:11.5px;font-weight:600;letter-spacing:-.1px;color:var(--mute);background:transparent;border:0;padding:0 2px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}\n.suggfold svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s;}\n/* Folded: the chips are gone, the bar is the whole control and reads as the way\n   back to them. */\n.suggwrap.folded .sugg{display:none;}\n.suggwrap.folded .suggfold{flex:1;margin-left:0;justify-content:center;color:var(--brand);}\n.suggwrap.folded .suggfold svg{transform:rotate(180deg);}\n.suggwrap.folded::after{opacity:0;}\n/* The chip strip gets the same treatment as the thread: its clipped last row\n   dissolves into the \"More questions\" line instead of being sliced. Sits above\n   the row (which is a fixed 26px), and only while there is more to scroll. */\n.suggwrap::after{content:\"\";position:absolute;left:0;right:0;bottom:26px;height:22px;pointer-events:none;opacity:0;transition:opacity .2s;background:linear-gradient(to top,var(--page),rgba(255,255,255,0));}\n.suggwrap.scrolls:not(.atend):not(.folded)::after{opacity:1;}\n.suggwrap.scrolls:not(.folded) .suggmore{display:flex;}\n.suggwrap.atend .suggmore{opacity:0;pointer-events:none;}\n.suggmore svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;animation:nudgedown 1.8s ease-in-out infinite;}\n@keyframes nudgedown{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}\n@media(prefers-reduced-motion:reduce){.suggmore svg{animation:none}}\n.sugg{flex:none;display:flex;flex-wrap:wrap;gap:7px;padding:11px 12px 4px;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;}\n@media(min-width:561px) and (max-height:720px){.sugg{max-height:120px;}}\n.sugg::-webkit-scrollbar{display:none}\n.sugg:empty{display:none}\n.sugg button{flex:0 1 auto;max-width:100%;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.3;color:var(--ink);background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:8.5px 14px;cursor:pointer;text-align:left;transition:border-color .14s,background .14s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}\n.sugg button:hover{background:#F2F2F7;border-color:var(--brand);}\n.sugg button:active{background:#E8E8ED;}\n\n.composer{flex:none;padding:8px 11px 11px;background:var(--page);border-top:.5px solid var(--hair);position:relative;}\n.cbox{background:var(--field);border:1.5px solid var(--fieldln);border-radius:20px;padding:9px 10px 7px 14px;transition:border-color .14s;}\n.cbox:focus-within{border-color:var(--brand);}\n.cbox textarea{width:100%;border:0;background:transparent;resize:none;font-family:inherit;font-size:15.5px;line-height:1.35;letter-spacing:-.2px;color:var(--ink);outline:none;max-height:86px;min-height:21px;padding:0;display:block;}\n.ctools{display:flex;align-items:center;gap:2px;margin-top:6px;}\n.ctools .sp{flex:1;}\n.tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}\n.tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}\n.tool[aria-pressed=\"true\"]{background:rgba(47,194,77,.16);color:var(--out2);}\n.tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}\n.tool.on svg{stroke:var(--out2);}\n.emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}\n.emoji.on{display:grid;}\n.emoji button{border:0;background:transparent;font-size:19px;line-height:1;padding:6px 0;border-radius:8px;cursor:pointer;}\n.emoji button:hover{background:rgba(120,120,128,.14);}\n.field textarea::placeholder{color:var(--mute2);}\n.snd{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--out);color:#fff;cursor:pointer;display:grid;place-items:center;padding:0;}\n.snd:disabled{background:#D6D6DA;cursor:default;}\n.snd svg{width:15px;height:15px;fill:#fff;}\n.foot{text-align:center;font-size:10.5px;color:var(--mute2);margin-top:7px;}\n\n/* article sheet */\n.sheet{position:absolute;inset:0;background:var(--page);display:none;flex-direction:column;z-index:5;}\n.sheet.on{display:flex;}\n.sheetbody{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:16px 22px 34px;}\n.sheetbody h2{font-size:24px;font-weight:700;letter-spacing:-.7px;line-height:1.15;margin-bottom:5px;}\n.sheetbody .meta{font-size:12px;color:var(--mute);margin-bottom:18px;}\n.sheetbody h5{font-size:14.5px;font-weight:600;margin:18px 0 6px;}\n.sheetbody p{font-size:15px;line-height:1.55;color:var(--ink2);margin-bottom:11px;}\n.sheetbody ul{margin:0 0 12px 18px;font-size:15px;line-height:1.55;color:var(--ink2);}\n.sheetbody li{margin-bottom:4px;}\n.sheetbody b{color:var(--ink);font-weight:600;}\n@media(max-width:560px){\n  /* Full-height sheet. The docked-card layout left a dead 84px strip for the\n     launcher and squeezed the thread; on a short phone that cropped the reply\n     chips. dvh (not vh) so a collapsing URL bar cannot push the composer off. */\n  /* No entry transform on mobile. A translate here has to be undone by\n     .panel.open, and when that override loses the panel sits below the fold\n     with the composer off-screen \u2014 which is exactly the bug this replaced.\n     A full-height sheet fading in needs no slide anyway. */\n  .panel{left:0;right:0;top:0;bottom:0;width:auto;max-width:none;height:100vh;height:100dvh;border-radius:0;transform:none;}\n  .launch{right:14px;bottom:14px;}\n  .launch.open{display:none;}          /* the header carries Close */\n  .bar{padding-top:calc(9px + env(safe-area-inset-top));}\n  .composer{padding-bottom:calc(11px + env(safe-area-inset-bottom));}\n  /* Room for five or six chips instead of three, so choosing rarely needs a\n     scroll at all \u2014 the scroll was where taps were being lost. */\n  .sugg{max-height:min(38vh,300px);}\n  .b{max-width:88%;}\n  .card{max-width:92%;}\n  .sheetbody{padding-bottom:calc(34px + env(safe-area-inset-bottom));}\n  /* 44px minimum touch targets. Chips grow to 44px; a lesson link in a menu\n     becomes a full-height row so the finger can't land between two items. */\n  .sugg button{min-height:44px;padding-top:10px;padding-bottom:10px;}\n  .b .inl[data-lesson]{display:inline-block;min-height:44px;line-height:44px;vertical-align:middle;border-bottom:0;\n    text-decoration:underline;text-decoration-color:var(--blue);text-decoration-thickness:1.5px;text-underline-offset:4px;}\n  .b ol>li:has(.inl[data-lesson]),.b ul>li:has(.inl[data-lesson]){margin-bottom:0;}\n}\n";
 ROOT.appendChild(sEl);
 var wrap=document.createElement('div');
 wrap.style.cssText='pointer-events:auto;';
@@ -298,11 +298,11 @@ const SMALL=[
   s:['I need help with my profile','Why is nobody getting back to me?','What does Premium include?']},
  {id:'whoareyou',re:/(who|what) (are|r) (you|u)\b|are (you|u) (a |an )?(real|human|person|bot|robot|ai|machine)|what'?s your name|your name|am i (talking|speaking) to a (human|person|bot|real)/i,
   a:c=>`I'm the <b>Super Assistant</b> — the virtual assistant and acting coach here on CastSlate. Not a person, and I won't pretend otherwise.`,
-  b:c=>`Two things I do: answer anything about the platform and the acting business, and actually <b>teach</b> you. I can take you through the fundamentals of acting for film, stage, commercials and voice, right here, for free. Grab a notepad and a pen — the stuff I teach is worth writing down.`,
+  b:c=>`Two things I do: answer anything about the platform and the acting business, and actually <b>teach</b> you. The lessons cover the fundamentals of acting for film, stage, commercials and voice.`,
   s:['Teach me the fundamentals','What can I ask you?','Talk to a human']},
  {id:'canask',re:/what (else )?can i (ask|say|talk about|do here)|what else (can|do) you|anything else i can ask|what do you (do|know|teach)|what can you (teach|help|do)|how can you help|what are you for|what do you help with|^help$/i,
   a:c=>`${c.name?c.name+', t':'T'}wo halves. I answer things, and I <b>teach</b>.`+
-  `<div class="hd">I can teach you the fundamentals — free</div><p>All of the fundamentals of acting for <b>film, stage, commercial and voice</b>, right here in this thread. You don't need to spend money on acting classes to start. Just get a <b>notepad and a pen</b> and write down what I teach you — every lesson ends with the one line worth keeping.</p>`+
+  `<div class="hd">What I teach</div>`+
   `<ul><li><b>Craft</b> — objective, stakes, subtext, listening, presence, playing a state truthfully</li><li><b>Film &amp; TV</b> — the close-up, shot size, eyelines, hitting marks, continuity, what the lens catches</li><li><b>Stage</b> — projection, cheating out, sightlines, stage geography, tech week</li><li><b>Commercial</b> — a genuinely different job, and why most film actors are bad at it first time</li><li><b>Audition</b> — self-tapes, slating, cold reading, taking direction, recovering from a mistake</li><li><b>On set</b> — the technical detail nobody teaches you before your first day</li></ul>`+
   `<div class="hd">And the career side</div><ul><li>Profile building, and what makes casting pass in seconds</li><li>Headshots — which one to lead with, and the one that quietly boxes you in</li><li>Reels — including why the first <b>six seconds</b> decide it</li><li>What to submit to and what to skip</li><li>Agents, unions, rates, studios, how casting actually runs</li><li>Using CastSlate itself — submissions, callbacks, Premium, billing, safety</li></ul>`+
   `<p>I can't compare CastSlate to other casting sites, I don't do live data like weather or news, and I don't talk about the company behind the platform. Everything else, ask away.</p>`,
@@ -429,7 +429,7 @@ const DECLINE=[
   a:c=>`${c.name?c.name+', h':'H'}onestly, I'm the wrong one to ask about the company itself — who built it, when, how it's put together, any of that. I stay out of it.`+
   `<div class="hd">What I'm actually good for</div><ul><li><b>Teaching you to act</b> — film, stage, commercial, voice. Real exercises, free, right here</li><li><b>Your profile and materials</b> — headshots, reels, what casting passes on and why</li><li><b>Using the site</b> — finding roles, submitting, callbacks, Premium, billing</li><li><b>The business</b> — agents, unions, rates, studios, how casting actually runs</li></ul>`+
   `<p>Pick whichever of those is closest to what you're really trying to sort out.</p>`,
-  b:c=>`Want to start with a lesson? I can teach you the fundamentals of acting for film or stage right here — no need to spend money on a class to begin. Grab a notepad and a pen.`,
+  b:c=>`Want to start with a lesson? The fundamentals are eight short ones, in order.`,
   s:['Teach me the fundamentals','How do I improve my profile?','How does CastSlate work?']},
  {id:'compare',
   re:/\b(actors ?access|backstage|casting ?networks|castingnetworks|mandy|starnow|star ?now|playbill|breakdown ?express|explore ?talent|project ?casting)\b|\b(better than|compare|comparison|vs\.?|versus) (other|another|any) (site|platform|app)/i,
@@ -854,7 +854,7 @@ const KB=[
  a:c=>`I'm not going to give you a motivational poster, so here's the useful version.`+
  `<ul><li><b>Age isn't the barrier people think.</b> Every production needs 40s, 50s, 60s and up, and there is far less competition there than at 22</li><li>What actually ends careers is stopping the craft work — not rejection, and not a slow year</li><li>The actors who move are the ones with a current headshot, real footage, an ongoing class, and a submission habit. That's it. It's unglamorous and it's the whole thing</li></ul>`+
  `<p>If you're asking because it's been a hard month: that's normal, and it isn't evidence about you. And if you're asking because you never trained — you do not need a school or a degree to be an actor. The instinct is the part you already have; the rest is materials and repetition.</p>`+
- `<p>Pick the smallest next thing — one class, one self-tape, one updated headshot — and do that one. Or let me teach you something right now, free, and you'll leave this conversation with a skill instead of a mood.</p>`,
+ `<p>Pick the smallest next thing — one class, one self-tape, one updated headshot — and do that one. Or let me teach you something right now, and you'll leave this conversation with a skill instead of a mood.</p>`,
  src:['profile'],s:['Teach me the fundamentals','How do I improve my profile?','How do I build a reel with no footage?']},
 
 {id:'where',k:'where available city location country international outside us market region local roles near me',
@@ -881,21 +881,12 @@ const KB=[
  `<div class="hd">Which lane are you aiming at?</div><ul><li><b>Film and TV</b> — deep character and scene work, self-tapes, reels, type matters enormously</li><li><b>Commercial</b> — personality, warmth and clarity in seconds; very different skill, very different auditions</li><li><b>Theater</b> — live technique, voice and body, monologues and open calls</li><li><b>Voiceover</b> — a separate business with its own demo, home booth and agents</li><li><b>Background / extra work</b> — paid days on real sets, a legitimate way to learn how production works</li></ul>`+
  `<p>Tell me which of those pulls at you — or if you're not sure, say so and I'll help you work it out. Most people start in two lanes at once, and that's fine.</p>`+
  `<div class="hd">What's true no matter which you pick</div><ul><li>Get into an ongoing class with one teacher. Not three teachers in a year</li><li>Get one current headshot that looks like you</li><li>Get footage, even self-shot. This is the thing everyone delays and everyone needs</li><li>Start submitting to things you're genuinely right for, weekly, and treat it as a habit rather than an event</li></ul>`+
- `<p>You don't need permission, a degree, or an agent to start. You need materials and a submission habit. Talent is the part you were born with — everything after that is learnable, and most of it is learnable for free.</p>`+
- `<p><b>Including here.</b> I can teach you all the fundamentals of acting for film or stage right in this thread, at no cost. Just get a notepad and a pen and write down what I teach you.</p>`,
+ `<p>You don't need permission, a degree, or an agent to start. You need materials and a submission habit. Talent is the part you were born with — everything after that is learnable.</p>`+
+ `<p><b>Including here.</b> I can take you through the fundamentals one short lesson at a time.</p>`,
  src:['profile'],s:['Teach me the fundamentals','Do I need acting school?','How do I get my first credit?']},
 
 {id:'lessons',k:'lesson lessons teach me class learn acting exercise train practise practice free lesson mini lesson study coach masterclass fundamentals course curriculum what can you teach',
- a:c=>`<p><b>I can teach you all the fundamentals of acting for film or stage right here — free.</b> You don't need to spend money on acting classes to start. Just get a <b>notepad and a pen</b> and write down what I teach you; every lesson ends with one line worth keeping.</p>`+
- `<p>These are real exercises you do on the spot, not definitions. Two or three minutes each.</p>`+
- `<div class="hd">Start here</div><ul><li><button class="inl" data-ask="Teach me the fundamentals">The fundamentals, in order</button> — objective, stakes, listening, scale. The whole spine in one go</li></ul>`+
- `<div class="hd">Film &amp; camera</div><ul><li><button class="inl" data-ask="The camera sees everything">The camera sees everything</button> — the show-it vs want-it experiment</li><li><button class="inl" data-ask="Teach me the close-up">Working in a close-up</button> — what the lens catches, and the mute-playback exercise</li><li><button class="inl" data-ask="How to stop overacting">How to stop overacting</button> — the flat pass</li></ul>`+
- `<div class="hd">Technique</div><ul><li><button class="inl" data-ask="Teach me about objectives">Objective</button> — what your character actually wants</li><li><button class="inl" data-ask="Stanislavsky's Magic If">Stanislavsky's Magic If</button> </li><li><button class="inl" data-ask="Teach me how to listen">Listening</button> </li><li><button class="inl" data-ask="Teach me to be present">Being present</button> </li><li><button class="inl" data-ask="Teach me subtext">Subtext</button> — one line, four meanings</li><li><button class="inl" data-ask="Teach me stakes">Stakes</button> — why your scene feels flat</li></ul>`+
- `<div class="hd">Audition</div><ul><li><button class="inl" data-ask="Self-tape exercise">Self-tape exercise</button> — a better take in fifteen minutes</li><li><button class="inl" data-ask="Teach me how to slate">How to slate</button> </li><li><button class="inl" data-ask="Teach me cold reading">Cold reading</button> without panicking</li><li><button class="inl" data-ask="Give me the audition room lesson">The room</button> — first impressions, taking direction, recovering from a mistake</li></ul>`+
- `<div class="hd">By medium</div><ul><li><button class="inl" data-ask="Teach me stage acting">Stage acting</button> — filling the room without inflating</li><li><button class="inl" data-ask="Give me a commercial acting lesson">Commercial acting</button> — a genuinely different job</li><li><button class="inl" data-ask="Teach me voice acting">Voice acting</button> </li></ul>`+
- `<div class="hd">The technical side nobody teaches</div><ul><li><button class="inl" data-ask="Teach me the on-set technicals">On set</button> — marks, blocking, coverage, matching your action, the vocabulary of the day</li><li><button class="inl" data-ask="Teach me the theatre technicals">Theatre technicals</button> — cheating out, upstaging, sightlines, spike marks, tech week, the half</li></ul>`+
- `<div class="hd">Materials and career</div><ul><li><button class="inl" data-ask="Teach me the first six seconds">The first six seconds</button> — why casting skips a reel, and cutting the opening titles</li><li><button class="inl" data-ask="Teach me profile building">Building a profile casting reads</button> — including the 60-second phone reel</li><li><button class="inl" data-ask="Which headshot should I lead with?">Choosing your headshot</button> — and the character shot that boxes you in</li><li><button class="inl" data-ask="Teach me what to submit to">What to submit to</button> — and what to skip, so you don't look desperate</li></ul>`+
- `<p>Tap any of those, or just tell me what is going wrong and I will pick. If it isn't on the list I'll build the lesson anyway — the list is a menu, not a limit.</p>`,
+ a:c=>menuHTML('all'),
  src:[],s:['Teach me the fundamentals','Teach me the first six seconds','Teach me the on-set technicals','Which headshot should I lead with?'],nocheck:true},
 
 {id:'filmvsstage',k:'film vs stage difference theater screen acting scale bigger smaller which is harder medium',
@@ -1149,7 +1140,7 @@ const KB=[
  `<div class="hd">Degree vs ongoing class</div><p>A conservatory or BFA gives immersion, time, and a peer group. It's expensive and it's not a requirement — plenty of working actors have neither. <b>An ongoing class with one good teacher for six months</b> will move your work further than three teachers in a year, and costs a fraction.</p>`+
  `<div class="hd">Choosing a class</div><ul><li>Audit first. Always. Any teacher who won't let you is telling you something</li><li>Watch how they treat the weakest actor in the room</li><li>Be suspicious of anything sold on <b>access to casting directors</b> rather than on the work</li><li>You want to be the least experienced person in the room, not the most</li></ul>`+
  `<div class="hd">And if you can't afford any of it right now</div><p>Then start without it. <b>You do not need school to become an actor.</b> Acting begins as something you already have — the pull to watch people, to imagine yourself into them, to be willing to be seen. Training sharpens that; it never hands it to you, and plenty of superb working actors never went.</p>`+
- `<p>In the meantime, <b>I'll teach you the fundamentals for free, right here</b> — film, stage, commercial or voice. Real exercises you do on the spot, not definitions. Get a notepad and a pen and we can start now.</p>`+
+ `<p>In the meantime, I can take you through the fundamentals — film, stage, commercial or voice — with real exercises you do on the spot.</p>`+
  `<p>CastSlate runs classes and workshops taught by working professionals if you want somewhere to start — but any consistent class is better than the perfect one you never book.</p>`,
  src:[],s:['Teach me the fundamentals','Tell me about classes','How do I get my first credit?']},
 
@@ -1258,7 +1249,7 @@ const KB=[
  a:c=>`You do not need a school, a degree or anyone's permission to be an actor. Plenty of superb working actors never set foot in a conservatory.`+
  `<div class="hd">The honest version</div><p>Acting starts as something you already have. The instinct to watch people closely, to imagine your way into someone else, to be willing to be looked at — you either have that pull or you do not, and if you are asking the question you have it. <b>Training sharpens the instinct. It does not hand it to you.</b></p>`+
  `<p>What school buys you is time, repetition, a room full of scene partners and someone watching. All of that is useful. None of it is a gate, and none of it is a substitute for actually acting where people can see you.</p>`+
- `<div class="hd">If you have never done this before, here is the whole path</div><ul><li><b>One current photo</b> that looks like you. A phone, a window, a plain wall, someone else holding the camera</li><li><b>Sixty seconds of footage.</b> A dialogue scene with a friend or a monologue. It does not need to be professional — it needs to exist</li><li><b>Get in front of people.</b> Student films, shorts, community theatre, background work, a class if you can afford one and want one</li><li><b>Submit weekly</b> to things you are genuinely right for. A habit, not an event</li><li><b>Learn the craft as you go</b> — which is what I am here for. I'll teach you the fundamentals for free, film or stage. Get a notepad and a pen and we can start now</li></ul>`+
+ `<div class="hd">If you have never done this before, here is the whole path</div><ul><li><b>One current photo</b> that looks like you. A phone, a window, a plain wall, someone else holding the camera</li><li><b>Sixty seconds of footage.</b> A dialogue scene with a friend or a monologue. It does not need to be professional — it needs to exist</li><li><b>Get in front of people.</b> Student films, shorts, community theatre, background work, a class if you can afford one and want one</li><li><b>Submit weekly</b> to things you are genuinely right for. A habit, not an event</li><li><b>Learn the craft as you go</b> — the fundamentals lessons here are a good place to start</li></ul>`+
  `<p>The actors who make it are rarely the most gifted ones in the room at nineteen. They are the ones who kept turning up with materials in order. That part is entirely learnable and you can start it today.</p>`,
  src:['profile'],s:['Teach me the fundamentals','Do I need acting school?','How do I get my first credit?']},
 
@@ -2360,41 +2351,103 @@ const LESSONS=[
    `<div class="hd">Takeaway</div><p><b>Play the want, not the feeling.</b> The camera is close enough to see you thinking, so give it something real to watch.</p>`,
   end:true}]},
 
-{id:'fundamentals',title:'The fundamentals, in order',mins:4,lane:'Course',
- k:'fundamentals basics course curriculum from scratch start teach me everything all the fundamentals acting course free course notepad first lesson where do i start',
+/* The eight fundamentals are eight separate lessons now, one per menu item.
+   The old single "fundamentals" lesson was a four-step digest that only
+   covered half of the menu it printed, and the menu items that had no lesson
+   of their own (tactics, given circumstances, truthful behaviour, scale)
+   routed to whichever neighbour the phrase happened to match. */
+{id:'tactics',title:'Tactics: how you go after what you want',mins:3,lane:'Technique',
+ k:'tactics tactic actions playing actions verbs how to get what you want change approach',
  steps:[
- {b:`<b>Right — the fundamentals, and they are free.</b>`+
-   `<p>I can teach you all the fundamentals of acting for film or stage right here. You do not need to spend money on acting classes to start. <b>Get a notepad and a pen</b> — every lesson ends with one line worth writing down, and by the end of a few of these you will have a page that is worth more than most beginner workshops.</p>`+
-   `<p>Here is the spine of it, in the order it actually builds:</p>`+
-   `<ol><li><button class="inl" data-ask="Teach me about objectives">Objective</button> — what you want from the other person</li><li><button class="inl" data-ask="Teach me stakes">Obstacle and stakes</button> — what is in the way, and what it costs you to fail</li><li><button class="inl" data-ask="Teach me about tactics">Tactics</button> — the different ways you go after it when the last one failed</li><li><button class="inl" data-ask="Teach me about given circumstances">Given circumstances</button> — where, when, what happened ten minutes ago</li><li><button class="inl" data-ask="Teach me how to listen">Listening</button> — letting them actually affect you</li><li><button class="inl" data-ask="Teach me subtext">Subtext</button> — what is being done under what is being said</li><li><button class="inl" data-ask="Teach me to be more natural">Truthful behaviour</button> — playing the effort to stay normal, not the emotion</li><li><button class="inl" data-ask="Film vs stage — what changes?">Scale</button> — the same truth, sized for a lens or for row twenty</li></ol>`+
-   `<p style="opacity:.72">Tap any of those to jump straight into it, or say "start me on the first one" and I will take them in order.</p>`+
-   `<p>That is the whole craft. Everything else — camera technique, stage technique, commercial, voice — is those eight things wearing different clothes.</p>`,
-  pro:`<p>If you already work: this order matters because most performance problems are misdiagnosed one layer up. A "flat" scene is almost never a tempo problem, it is a stakes problem. A "false" moment is almost never a truth problem, it is an objective that drifted into a mood.</p>`,
-  cta:`Start me on the first one`},
- {b:`<b>One. Objective — and the exercise, now.</b>`+
-   `<p>An objective is what your character wants <b>from the other person, in this scene</b>. Written as something you are trying to get out of somebody, never as a feeling. "To make her admit she lied" is playable. "To be angry" is not — you cannot <em>do</em> angry.</p>`+
-   `<p><b>Do this.</b> Talk to a chair. Your objective: <em>get them to stay five more minutes.</em> Run it three times — charm them into staying, guilt them into staying, make them curious enough to stay. Thirty seconds each. Say whatever words come.</p>`+
-   `<p><b>Write in the notepad:</b> <em>I want ___ to ___.</em> That sentence goes at the top of every set of sides you ever get.</p>`,
-  cta:`Done — next`},
- {b:`<b>Two. Stakes, and why your scene felt flat.</b>`+
-   `<p>Notice one of those three versions had more life in it. That was the one where staying actually mattered to you. <b>Stakes are what it costs you if you fail</b>, and they are the single most common thing missing from a beginner's work.</p>`+
-   `<p><b>Do this.</b> Same chair, same objective. But now decide, specifically: if they walk out that door, <em>this is the last time I ever see them.</em> Run it once more.</p>`+
-   `<p>It will not be bigger. It will be more <b>urgent</b>, which is a different thing entirely, and it is what an audience reads as truth.</p>`+
-   `<p><b>Notepad:</b> <em>What does it cost me if I fail? If the answer is nothing, the scene is dead.</em></p>`,
-  cta:`Keep going`},
- {b:`<b>Three. Listening — the one that fixes the other seven.</b>`+
-   `<p>Most bad acting is not bad feeling. It is an actor waiting for their cue with a pre-decided line in their mouth. <b>If the other person cannot change what you do next, you are not in a scene, you are performing next to one.</b></p>`+
-   `<p><b>Do this.</b> Get a friend or use a recording of anyone talking. Your only job: after each thing they say, do not speak until you can name — silently, in one word — what they just did to you. Attacked. Apologised. Dodged. Then reply.</p>`+
-   `<p>It will feel slow. On camera it reads as thinking, which is the most expensive thing in the frame.</p>`+
-   `<p><b>Notepad:</b> <em>Let them change me. Every time.</em></p>`,
-  cta:`And the last one`},
- {b:`<b>Four. Scale — film versus stage, settled.</b>`+
-   `<p>Same truth. Different delivery distance. Bergman said the human face is the great subject of the cinema — the lens is already close enough to read a thought off you, so nothing has to be sent anywhere. Theatre is the opposite geometry: row twenty cannot see your eyes at all, so meaning travels on breath, consonants and physical clarity.</p>`+
-   `<p><b>Stage acting is not overacting, and film acting is not underfeeling.</b> A stage performance is exactly as truthful — it simply has to carry.</p>`+
-   `<p><b>Do this.</b> Say one line — <em>"I told you I was going to be late"</em> — twice. Once to a person six inches away. Once to someone forty feet away. Do not change how much you mean it. Change only how much of it has to travel.</p>`+
-   `<div class="hd">Your page so far</div><p><b>1.</b> I want ___ to ___. <b>2.</b> What does it cost me to fail? <b>3.</b> Let them change me. <b>4.</b> Same truth, sized to the distance.</p>`+
-   `<p>That is the foundation, and it cost you nothing. Go further whenever you like:</p>`+
-   `<ul><li><button class="inl" data-ask="Teach me the close-up">The close-up</button></li><li><button class="inl" data-ask="Give me a self-tape exercise">Self-tapes</button></li><li><button class="inl" data-ask="Teach me the theatre technicals">Stage technicals</button></li><li><button class="inl" data-ask="Teach me the on-set technicals">On-set technicals</button></li><li><button class="inl" data-ask="Give me a commercial acting lesson">Commercial acting</button></li><li><button class="inl" data-ask="Teach me the first six seconds">The first six seconds of a reel</button></li></ul>`,
+ {b:`<b>Lesson: tactics.</b>`+
+   `<p>A tactic is <b>how</b> you go after what you want — the action you are playing on the other person, line by line. What you want stays fixed for the whole scene. The tactic changes every time one stops working.</p>`+
+   `<p>Write tactics as verbs you can do to someone: <em>flatter, warn, tease, shame, reassure, challenge, charm, corner.</em> "Being upset" is not a tactic. "Making him feel guilty" is.</p>`+
+   `<p>The rule that keeps a scene alive: <b>when a tactic fails, you switch.</b> People do not keep repeating what is not working. They try something else.</p>`,
+  pro:`<p>Some teachers call these "actions" or "actioning" — one transitive verb per line, written in the margin. The name matters less than the discipline: every line does something to somebody.</p>`,
+  cta:`Give me the exercise`},
+ {b:`<b>Exercise. One line, five tactics.</b>`+
+   `<p>The line: <em>"You should stay for dinner."</em> Say it to a chair or a friend five times, playing a different verb on them each time:</p>`+
+   `<ul><li><b>Charm</b> them</li><li><b>Guilt</b> them</li><li><b>Dare</b> them</li><li><b>Warn</b> them</li><li><b>Beg</b> them</li></ul>`+
+   `<p>Same words every time. Only the tactic changes. Do not plan the delivery — aim the verb at the person and let your voice follow.</p>`,
+  cta:`Done all five`},
+ {b:`<b>What you were practising.</b>`+
+   `<p>Five completely different scenes came out of one sentence, and the words never changed. That is the job of a tactic: it decides what a line <b>does</b>, not what it says.</p>`+
+   `<p>You probably noticed the tactic changed your body before it changed your voice — you leaned in to charm and pulled back to warn. That is exactly what a camera reads.</p>`,
+  cta:`Challenge`},
+ {b:`<b>Challenge.</b>`+
+   `<p>Take any sides. Next to each line, in the margin, write one verb — the tactic you are playing on the other person. Then mark every place the tactic changes, and ask why: what did they just do that made the last one stop working?</p>`+
+   `<p>Three lines in a row with the same verb is worth a second look. Either the scene really holds still there, or you have not found the change yet.</p>`+
+   `<div class="hd">Takeaway</div><p><b>One want, many tactics.</b> When a tactic fails, switch — never push harder on the same one.</p>`,
+  end:true}]},
+
+{id:'givencirc',title:'Given circumstances: the facts you are standing in',mins:3,lane:'Technique',
+ k:'given circumstances moment before who where when what happened facts situation script analysis',
+ steps:[
+ {b:`<b>Lesson: given circumstances.</b>`+
+   `<p>The given circumstances are <b>the facts of the situation</b> your character is in: who you are, where you are, when it is, what just happened, and what you know that the other person does not.</p>`+
+   `<p>Most of them are in the script. The rest you decide. Actors who skip this end up playing "a scene" instead of playing <em>this</em> scene.</p>`+
+   `<p>Five questions cover it: <b>Who am I? Where am I? When is it? What happened just before this? Who else could walk in?</b></p>`,
+  pro:`<p>Separate what the text states from what the characters claim — a character saying "I never lie" is a given circumstance about what they say, not about what is true. Directors will often hand you circumstances the script does not, and theirs win.</p>`,
+  cta:`Give me the exercise`},
+ {b:`<b>Exercise. One entrance, three sets of facts.</b>`+
+   `<p>Walk into the room you are in and sit down. That is the whole action. Do it three times, changing only the circumstances:</p>`+
+   `<ul><li>It is <b>3am</b>, and you are trying not to wake anyone</li><li>You have just had <b>good news</b> on the phone outside and have not told anyone yet</li><li>It is <b>a stranger's house</b>, and you have been asked to wait here</li></ul>`+
+   `<p>Do not act a feeling. Just walk and sit the way a person in those facts would.</p>`,
+  cta:`Did all three`},
+ {b:`<b>What you were practising.</b>`+
+   `<p>The action never changed, and you still got three different people. Your speed, your weight, where you looked, how you sat — the facts decided all of it without you having to play an emotion.</p>`+
+   `<p>That is why the circumstances come first. <b>Specific facts produce specific behaviour</b>; vague facts produce generic acting.</p>`,
+  cta:`Challenge`},
+ {b:`<b>Challenge.</b>`+
+   `<p>With your next sides, before you read a line out loud, write the answers to the five questions at the top of the page. Circle what the script tells you. Underline what you had to decide yourself.</p>`+
+   `<p>Spend the most time on <b>the moment before</b> — the ten minutes before the scene starts. It is where most of your first line comes from.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Know the facts before you play the scene.</b> Who, where, when, and what just happened.</p>`,
+  end:true}]},
+
+{id:'truth',title:'Truthful behaviour: play the effort to stay normal',mins:3,lane:'Technique',
+ k:'truthful behaviour behavior truth natural real believable effort to stay normal hide the feeling playing a state',
+ steps:[
+ {b:`<b>Lesson: truthful behaviour.</b>`+
+   `<p>The counter-intuitive rule: <b>real people in strong emotional states are mostly trying to stay normal.</b> The person at a funeral is trying to hold it together and say the right thing to the relatives. The drunk person is trying very hard to walk straight.</p>`+
+   `<p>So play <b>the effort to stay normal</b>, not the emotion. An audience reads the feeling from how hard you are working to hide it — and believes it far more than if you showed it to them.</p>`,
+  pro:`<p>This is why "playing the opposite" works so often in a close-up. The camera catches the leak — a swallow, a breath held a beat too long — and the leak is only visible because something is trying to contain it.</p>`,
+  cta:`Give me the exercise`},
+ {b:`<b>Exercise. The phone call.</b>`+
+   `<p>Imagine you have just had terrible news, and now you have to call a shop to move a delivery date. An ordinary, boring call.</p>`+
+   `<p>Make the call out loud. Your only job is to <b>get the date moved politely</b> and sound fine. Do not let the news out on purpose. Let it leak only when you cannot stop it.</p>`,
+  cta:`Made the call`},
+ {b:`<b>What you were practising.</b>`+
+   `<p>You were fighting the feeling instead of performing it, and that fight is what an audience actually watches. There was probably one moment — a word that caught, a pause that went too long — where it got through. That moment lands harder than a whole scene of crying, because you did not want it to happen.</p>`+
+   `<p>It works for any state: fear, joy, being drunk, being in love, lying.</p>`,
+  cta:`Challenge`},
+ {b:`<b>Challenge.</b>`+
+   `<p>Pick a scene where your character is in a big emotional state. Ask one question: <em>what is this person trying to do instead of feeling this?</em> Give them that ordinary task — making tea, finishing the conversation, getting out of the room — and play the task properly.</p>`+
+   `<p>Let the feeling break through <b>once</b>, near the end. Not before.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Don't show it — fight it.</b> The feeling is what gets through anyway.</p>`,
+  end:true}]},
+
+{id:'scale',title:'Scale: the same truth, sized for a lens or row twenty',mins:3,lane:'Technique',
+ k:'scale film vs stage film versus stage size of performance distance lens row twenty bigger smaller',
+ steps:[
+ {b:`<b>Lesson: scale — film versus stage.</b>`+
+   `<p>Scale is <b>how far the truth has to travel</b>. What you feel is the same size in both mediums; the delivery distance is not.</p>`+
+   `<p>Bergman said the human face is the great subject of the cinema — the lens is already close enough to read a thought off you, so nothing has to be sent anywhere. Theatre is the opposite geometry: row twenty cannot see your eyes at all, so meaning travels on breath, consonants and physical clarity.</p>`+
+   `<p><b>Stage acting is not overacting, and film acting is not underfeeling.</b> A stage performance is exactly as real — it simply has to carry.</p>`,
+  pro:`<p>On set the scale changes shot by shot, not film by film. Ask the camera department what the lens is, or just watch where the camera sits: a wide asks for readable physical shape, a tight single asks for almost nothing but thought.</p>`,
+  cta:`Give me the exercise`},
+ {b:`<b>Exercise. One line, three distances.</b>`+
+   `<p>Say one line — <em>"I told you I was going to be late"</em> — three times:</p>`+
+   `<ul><li>To a person <b>six inches away</b> — a close-up</li><li>To someone across a <b>kitchen table</b> — a mid-shot, or a small studio theatre</li><li>To someone <b>forty feet away</b> — the back of a real theatre</li></ul>`+
+   `<p>Do not change how much you mean it. Change only how much of it has to travel.</p>`,
+  cta:`Done all three`},
+ {b:`<b>What you were practising.</b>`+
+   `<p>If it worked, the meaning stayed identical and only the <b>carrying power</b> changed: more breath, sharper consonants and a clearer physical shape for the far one; almost nothing but thought for the near one.</p>`+
+   `<p>If you got louder <em>and angrier</em> on the far one, you changed the meaning, not the size. That is the habit people call "stage acting", and it is just as wrong on a stage.</p>`,
+  cta:`Challenge`},
+ {b:`<b>Challenge.</b>`+
+   `<p>Next time you get sides, ask first: <b>how far away is my audience?</b> A close-up, a wide shot, a 90-seat theatre, a 1,000-seat house. Decide the distance before anything else about delivery.</p>`+
+   `<p>Then film the same thirty seconds framed tight and framed wide, and watch both. The tight one should look like thinking. The wide one should still read from the body alone.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Same truth, sized to the distance.</b></p>`,
   end:true}]},
 
 {id:'sixsec',title:'The first six seconds of your reel',mins:2,lane:'Materials',
@@ -2679,7 +2732,7 @@ const LESSONS=[
  {b:`<b>What that strips out.</b>`+
    `<p>The flat pass kills your habitual line readings — the music you had already decided on. What comes back in the second pass is only what is driven by intention.</p>`+
    `<p>Almost always the scene gets simpler, quieter and considerably better. And it usually gets faster, because you stop stopping to feel things at the audience.</p>`,
-  cta:`Challenge'`},
+  cta:`Challenge`},
  {b:`<b>Challenge.</b>`+
    `<p>Ask someone to watch two takes without telling them which is which. Ask one question: <em>which one did you believe?</em></p>`+
    `<p>Not which was better. Which one they believed. It is a far more honest question and people answer it accurately.</p>`+
@@ -2825,11 +2878,12 @@ const LESSONS=[
    `<div class="hd">Takeaway</div><p><b>The line is the cover story.</b> Play what is underneath it.</p>`,
   end:true}]},
 
-{id:'stakes',title:'Stakes: why the scene matters',mins:2,lane:'Technique',
- k:'stakes raise the stakes consequence urgency flat scene boring low energy',
+{id:'stakes',title:'Obstacle and stakes: why the scene matters',mins:3,lane:'Technique',
+ k:'stakes obstacle obstacles raise the stakes consequence urgency flat scene boring low energy what is in the way',
  steps:[
- {b:`<b>Lesson: stakes.</b>`+
-   `<p>Stakes are <b>what it costs you to fail</b> in this scene. Not in the story — in this scene, in the next two minutes.</p>`+
+ {b:`<b>Lesson: obstacle and stakes.</b>`+
+   `<p>Two questions every scene has to answer. <b>What is in the way?</b> That is the obstacle — the other person refusing, the clock running out, your own pride. If nothing is in the way, you just get what you came for and the scene is over.</p>`+
+   `<p>And <b>what does it cost you to fail?</b> Those are the stakes. Not in the story — in this scene, in the next two minutes.</p>`+
    `<p>Almost every flat audition is a stakes problem. The actor decided, without noticing, that not much was riding on it. And once nothing is riding on it, no amount of good line work will save the scene.</p>`,
   cta:`How do I fix it?`},
  {b:`<b>Exercise. Same scene, three stakes.</b>`+
@@ -2842,9 +2896,9 @@ const LESSONS=[
    `<p>Your listening probably sharpened too. When the cost is real, you need information from the other person.</p>`,
   cta:`Challenge`},
  {b:`<b>Challenge.</b>`+
-   `<p>Before every audition, answer one question in one sentence: <em>what do I lose if this conversation goes badly?</em></p>`+
-   `<p>If the honest answer is "nothing much", invent something. The writer left room for you to decide.</p>`+
-   `<div class="hd">Takeaway</div><p><b>Raise the cost, not the volume.</b></p>`,
+   `<p>Before every audition, answer two questions in one sentence each: <em>what is stopping me getting it?</em> and <em>what do I lose if this conversation goes badly?</em></p>`+
+   `<p>If the honest answer to the second is "nothing much", invent something. The writer left room for you to decide.</p>`+
+   `<div class="hd">Takeaway</div><p><b>Name the obstacle, raise the cost — not the volume.</b></p>`,
   end:true}]},
 
 {id:'voice',title:'Voice acting: the mic hears everything',mins:2,lane:'Voiceover',
@@ -2892,10 +2946,124 @@ const LESSONS=[
   end:true}]}
 ];
 const LESSON_BY_ID=Object.fromEntries(LESSONS.map(l=>[l.id,l]));
+
+/* ── THE SYLLABUS — the one list of what the assistant teaches ──────────
+   Every lesson menu, every lesson chip and every "next lesson" offer is
+   rendered from this array, and every tap on one carries the lesson's `id`
+   (data-lesson) plus its exact `title` (data-title). A tap never goes back
+   through think(): the 2026-09-21 bug was menu buttons sending paraphrases
+   ("Teach me to be more natural") that the router resolved to whichever
+   lesson the phrase happened to match, so four of the eight fundamentals
+   opened a different topic from the one tapped.
+     keys  words the lesson's opening must contain (onTopic check)
+     lead  the one term that marks this lesson; another lesson's opening must
+           not lead with it
+     faq   the in-lesson question chip, answered without leaving the lesson  */
+const SYLLABUS=[
+ {id:'objective',group:'fundamentals',title:'Objective',desc:'what you want from the other person',keys:['objective','want'],lead:'objective',
+  faq:{q:'Can an objective be a feeling?',a:`<p><b>No — and that is the most common mistake with it.</b> "To be angry" or "to feel loved" cannot be played, because you cannot <em>do</em> a feeling. Turn it into something you are trying to get out of the other person: not "to be angry" but "to make him admit it was his fault".</p>`}},
+ {id:'stakes',group:'fundamentals',title:'Obstacle and stakes',desc:'what is in the way, and what it costs you to fail',keys:['obstacle','stakes'],lead:'stakes',
+  faq:{q:'Do high stakes mean playing it bigger?',a:`<p><b>Almost never.</b> When something really matters, people get quieter and more focused, not louder — they need information from the other person. Raise what it costs you to fail and let the volume look after itself.</p>`}},
+ {id:'tactics',group:'fundamentals',title:'Tactics',desc:'the different ways you go after it when the last one failed',keys:['tactic'],lead:'tactic',
+  faq:{q:'How often should my tactic change?',a:`<p><b>Every time the last one stops working</b> — which the other person decides, not you. Watch what they do: if they soften, you might push further; if they shut down, switch. A scene where the tactic never changes almost always plays flat.</p>`}},
+ {id:'givencirc',group:'fundamentals',title:'Given circumstances',desc:'where, when, what happened ten minutes ago',keys:['given circumstances'],lead:'given circumstances',
+  faq:{q:"What if the script doesn't tell me?",a:`<p><b>Then you decide, and you decide specifically.</b> The writer left it open for you. Choose facts that make the scene harder or more urgent for your character and that nothing else in the script contradicts. If a director hands you different facts, drop yours and play theirs.</p>`}},
+ {id:'listen',group:'fundamentals',title:'Listening',desc:'letting them actually affect you',keys:['listen'],lead:'listening',
+  faq:{q:'How do I listen when I know what they will say?',a:`<p><b>You know the words; you do not know how they will say them this time.</b> Stop listening for your cue and listen for what they are doing to you — and let that change how your next line comes out, even slightly. That change is the scene.</p>`}},
+ {id:'subtext',group:'fundamentals',title:'Subtext',desc:'what is being done under what is being said',keys:['subtext'],lead:'subtext',
+  faq:{q:'Should the audience see the subtext?',a:`<p><b>They should sense it, not be shown it.</b> You play what the character is really doing, and let the words stay polite, casual or ordinary on top. If you wink the real meaning at the audience, it is not subtext any more — it is just text said slowly.</p>`}},
+ {id:'truth',group:'fundamentals',title:'Truthful behaviour',desc:'playing the effort to stay normal, not the emotion',keys:['truthful behaviour','stay normal'],lead:'truthful behaviour',
+  faq:{q:"Isn't that just holding back?",a:`<p><b>No — holding back is doing nothing; this is doing something specific.</b> You are fully in the feeling and actively working against it, which takes more energy than letting it out. If a take reads as flat, the effort was not strong enough, or the feeling underneath was not real enough to fight.</p>`}},
+ {id:'scale',group:'fundamentals',title:'Scale',desc:'the same truth, sized for a lens or for row twenty',keys:['scale'],lead:'scale',
+  faq:{q:'Do I need to do less on camera?',a:`<p><b>Less sending, not less feeling.</b> On camera you stop pushing the thought outward because the lens is already close — but the thinking underneath has to be just as full, or there is nothing for it to catch.</p>`}},
+
+ {id:'film',group:'film',title:'The camera sees everything',desc:'the show-it vs want-it experiment',keys:['camera'],lead:'camera'},
+ {id:'closeup',group:'film',title:'Working in a close-up',desc:'what the lens catches, and the mute-playback exercise',keys:['close-up','lens'],lead:'close-up'},
+ {id:'overacting',group:'film',title:'How to stop overacting',desc:'the flat pass',keys:['overacting','indicating'],lead:'overacting'},
+ {id:'magicif',group:'technique',title:"Stanislavsky's Magic If",desc:'"what would I do", not "how would I feel"',keys:['magic if'],lead:'magic if'},
+ {id:'present',group:'technique',title:'Being present',desc:'stop waiting for your cue',keys:['presence','present'],lead:'presence'},
+ {id:'selftape',group:'audition',title:'Self-tape exercise',desc:'a better take in fifteen minutes',keys:['self-tape','tape'],lead:'self-tape'},
+ {id:'slating',group:'audition',title:'How to slate',desc:'the ten seconds before the scene',keys:['slate'],lead:'slate'},
+ {id:'coldreading',group:'audition',title:'Cold reading',desc:'without panicking',keys:['cold read'],lead:'cold read'},
+ {id:'roomnerves',group:'audition',title:'The room',desc:'first impressions, taking direction, recovering from a mistake',keys:['room'],lead:'the room'},
+ {id:'stage',group:'medium',title:'Stage acting',desc:'filling the room without inflating',keys:['stage'],lead:'stage acting'},
+ {id:'commercial',group:'medium',title:'Commercial acting',desc:'a genuinely different job',keys:['commercial'],lead:'commercial'},
+ {id:'voice',group:'medium',title:'Voice acting',desc:'the mic hears everything',keys:['voice','mic'],lead:'voice acting'},
+ {id:'onsetlesson',group:'technical',title:'On set',desc:'marks, blocking, coverage, matching your action',keys:['set'],lead:'on set'},
+ {id:'stagetech',group:'technical',title:'Theatre technicals',desc:'cheating out, upstaging, sightlines, spike marks, the half',keys:['cheat','sightline','stage'],lead:'cheating out'},
+ {id:'sixsec',group:'career',title:'The first six seconds',desc:'why casting skips a reel, and cutting the opening titles',keys:['six seconds'],lead:'six seconds'},
+ {id:'profilecd',group:'career',title:'Building a profile casting reads',desc:'including the 60-second phone reel',keys:['profile'],lead:'profile'},
+ {id:'headshotpick',group:'career',title:'Choosing your headshot',desc:'and the character shot that boxes you in',keys:['headshot'],lead:'headshot'},
+ {id:'submitfit',group:'career',title:'What to submit to',desc:'and what to skip',keys:['submit'],lead:'submit'}
+];
+const SYL_BY_ID=Object.fromEntries(SYLLABUS.map(x=>[x.id,x]));
+const SYL_GROUPS=[['fundamentals','The fundamentals, in order'],['film','Film &amp; camera'],['technique','More technique'],
+ ['audition','Audition'],['medium','By medium'],['technical','The technical side'],['career','Materials and career']];
+/* A syllabus id that has no lesson content is a build error, not a guess. */
+SYLLABUS.forEach(x=>{ if(!LESSON_BY_ID[x.id]) throw new Error('SYLLABUS: no lesson content for '+x.id); });
+const sylNext=id=>{ const S=SYL_BY_ID[id]; if(!S)return null;
+  const g=SYLLABUS.filter(x=>x.group===S.group), i=g.indexOf(S); return g[i+1]||null; };
+const escAttr=v=>String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+/* An inline menu button. id + exact title travel together on the tap. */
+const lessonBtn=(S,label)=>`<button class="inl" data-lesson="${S.id}" data-title="${escAttr(S.title)}">${label||S.title}</button>`;
+/* A chip object: {t:label, lesson:id, title} or {t:label, act:'next'|'faq'|'stop'|'menu'|'resume'}. */
+const lessonChip=(S,label)=>({t:label||S.title,lesson:S.id,title:S.title});
+function menuHTML(which){
+  const item=S=>`<li>${lessonBtn(S)} — ${S.desc}</li>`;
+  const groups=which==='all'?SYL_GROUPS:SYL_GROUPS.filter(g=>g[0]===which);
+  let html='', n=0;
+  groups.forEach(([g,h])=>{
+    const items=SYLLABUS.filter(x=>x.group===g); n+=items.length;
+    if(!items.length)return;
+    const list=g==='fundamentals'?`<ol>${items.map(item).join('')}</ol>`:`<ul>${items.map(item).join('')}</ul>`;
+    html+=(which==='all'||g!=='fundamentals'?`<div class="hd">${h}</div>`:'')+list;
+  });
+  /* The tap hint is only true when there is something to tap. */
+  const hint=n?`<p style="opacity:.72">Tap any of those to jump straight into it${which==='fundamentals'?' — or start at Objective and take them in order':''}.</p>`:'';
+  if(which==='fundamentals')
+    return `<b>The fundamentals, in order.</b><p>Eight lessons, in the order the craft actually builds. Each one takes a few minutes and ends with an exercise you do on the spot.</p>`+html+hint+
+      `<p>Everything else — camera, stage, commercial, voice — is those eight things wearing different clothes.</p>`;
+  return `<p>These are the lessons I teach. Each is a few minutes of real exercises, not definitions.</p>`+html+hint+
+    `<p>Anything else about acting, just ask — I'll answer it, and tell you straight if it's outside what I teach.</p>`;
+}
+const menuChips=which=>SYLLABUS.filter(x=>which==='all'?x.group==='fundamentals':x.group===which).map(S=>lessonChip(S));
+
+/* Post-response check: the opening of a lesson must be about THAT lesson,
+   and must not lead with another lesson's term. The content is fixed, so the
+   check is really a guard against someone editing a lesson into the wrong
+   shape — but it runs on every lesson start, and if it ever fails the
+   stored outline is sent instead of an off-topic reply. */
+const plainText=html=>{ const d=document.createElement('div'); d.innerHTML=html; return (d.textContent||'').replace(/\s+/g,' ').trim(); };
+function onTopic(id,html){
+  const S=SYL_BY_ID[id]; if(!S) return true;
+  const t=plainText(html).toLowerCase();
+  if(!S.keys.some(k=>t.includes(k))) return false;
+  const lead=t.slice(0,140);
+  return !SYLLABUS.some(o=>o.id!==id&&o.group===S.group&&lead.includes(o.lead)&&!lead.includes(S.lead));
+}
+const outlineHTML=S=>`<b>${S.title}</b><p>This lesson is about ${S.desc}. Tell me what you're working on and I'll take you through it step by step.</p>`;
+
+/* A turn log, so a misroute can be read back instead of guessed at:
+   window.__SA_TRACE holds what each turn sent, the state it ran against and
+   where it went. Set localStorage sa_debug=1 to also print it. */
+const TRACE=[];
+function trace(o){
+  const row=Object.assign({at:Date.now(),state:{lesson:st.lesson,step:st.step,paused:st.paused&&st.paused.id,offer:st.offer}},o);
+  TRACE.push(row); if(TRACE.length>200)TRACE.shift();
+  try{ if(localStorage.getItem('sa_debug'))console.debug('[super-assistant]',JSON.stringify(row)); }catch(_){}
+}
+if(typeof window!=='undefined')window.__SA_TRACE=TRACE;
 const LESSON_INTENT=[
  [/\b(film|screen|camera|on.?camera) (acting )?(lesson|exercise|class)\b|\bteach me (film|screen|camera)|\bhow (do i|to) act (on|for) camera\b|\bcamera sees\b|\bhitchcock\b|\bart of no acting\b/i,'film'],
- [/\bmagic if\b|\bstanislavsk\w* (exercise|lesson)\b|\bgiven circumstances\b/i,'magicif'],
- [/\b(teach|lesson|exercise).{0,20}\bobjectives?\b|\bobjectives? (exercise|lesson)\b|\bwhat does my character want\b|\b(teach|lesson|exercise).{0,20}\btactics?\b/i,'objective'],
+ /* Each fundamental owns its own lesson. "Given circumstances" used to open
+    the Magic If and "tactics" the objective lesson, so tapping those two menu
+    items taught a different topic from the one tapped (reported 2026-09-21). */
+ [/\bgiven circumstances\b|\bthe moment before\b/i,'givencirc'],
+ [/\b(teach|lesson|exercise).{0,20}\btactics?\b|\btactics? (exercise|lesson)\b|\bplaying (an )?actions?\b/i,'tactics'],
+ [/\btruthful behaviou?r\b|\b(play(ing)?|the) effort to (stay|appear|seem|look) normal\b/i,'truth'],
+ [/\bteach me (about )?scale\b|\bscale (lesson|exercise)\b|\b(film vs\.? stage|film versus stage) (lesson|exercise)\b/i,'scale'],
+ [/\bmagic if\b|\bstanislavsk\w* (exercise|lesson)\b/i,'magicif'],
+ [/\b(teach|lesson|exercise).{0,20}\bobjectives?\b|\bobjectives? (exercise|lesson)\b|\bwhat does my character want\b/i,'objective'],
  [/\b(teach|lesson|exercise).{0,18}\blisten|\blistening (exercise|lesson)\b|\bhow (do i|to) listen\b/i,'listen'],
  [/\b(present|presence) (exercise|lesson)\b|\bteach me (to be )?present\b|\bstop (anticipating|waiting for my cue)\b|\bin the moment\b/i,'present'],
  [/\bclose.?up (lesson|exercise|acting)\b|\bteach me.{0,20}close.?up\b|\bhow to act in a close.?up\b|\bblink/i,'closeup'],
@@ -2906,7 +3074,7 @@ const LESSON_INTENT=[
  [/\b(slate|slating) (lesson|exercise)\b|\bteach me (how )?to slate\b|\bhow (do i|should i) slate\b/i,'slating'],
  [/\bcold read(ing)? (lesson|exercise)\b|\bteach me cold read/i,'coldreading'],
  [/\bsubtext (lesson|exercise)\b|\bteach me subtext\b/i,'subtext'],
- [/\bstakes (lesson|exercise)\b|\bteach me stakes\b|\bmy scene(s)? (feel|are|is) flat\b|\braise the stakes\b/i,'stakes'],
+ [/\bstakes (lesson|exercise)\b|\bteach me (about )?(the )?(obstacle and )?stakes\b|\bteach me (about )?(the )?obstacles?\b|\bobstacle (lesson|exercise)\b|\bmy scene(s)? (feel|are|is) flat\b|\braise the stakes\b/i,'stakes'],
  [/\bvoice (acting|over) (lesson|exercise|class)\b|\bteach me voice\b/i,'voice'],
  /* "How do I take an adjustment?" used to be caught here and answered with the
     whole audition-room lesson — the same reply as "Give me the audition room
@@ -3213,7 +3381,12 @@ function think(text,c){
   const em=emojiFor(text.trim()); if(em) return {small:em};
   const bare=stripEmoji(text)||text.trim();
   for(const s of SMALL) if(s.re.test(bare)) return {small:s};
-  for(const [re,id] of LESSON_INTENT) if(re.test(text)) return {lesson:id};
+  /* Typing a menu item's exact name opens that item — a bare "Tactics" or
+     "Scale" must never be scored as a keyword question. */
+  const asTitle=bare.toLowerCase().replace(/^(teach me|start|open|do|let'?s do)\s+/,'').replace(/[\s.!?]+$/,'');
+  const byTitle=SYLLABUS.find(x=>x.title.toLowerCase()===asTitle||LESSON_BY_ID[x.id].title.toLowerCase()===asTitle);
+  if(byTitle) return {lesson:byTitle.id};
+  for(const [re,id] of LESSON_INTENT) if(re.test(text)) return id==='fundamentals'?{menu:'fundamentals'}:{lesson:id};
   /* Refusals run on the ORIGINAL words. Spell-correcting first would drag
      "who won the game" onto an acting term and smuggle an off-topic
      question past the scope filter. */
@@ -3269,7 +3442,7 @@ function think(text,c){
 
   /* generic "teach me something" with no topic -> the menu */
   if(/\b(give|show) me (a|an|another|the)?\s*(free |quick |short |mini )?(acting )?(lesson|class)\b|\bteach me (something|acting|to act)\b|\bwhat lessons\b|\banother lesson\b|\bcan you teach me\b/i.test(text)
-     && !conceptFor(text)) { const m=KB.find(e=>e.id==='lessons'); if(m) return {entry:m}; }
+     && !conceptFor(text)) return {menu:'all'};
 
   const toks=norm(text); if(!toks.length) return {miss:true};
   const shape=shapeOf(text), depth=depthOf(text,shape);
@@ -3327,7 +3500,7 @@ function principlesLesson(shape,q){
 /* ── UI ──────────────────────────────────────────────────────── */
 
 
-const st={plan:'visitor',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,asked:new Set(),moreQueue:[],suggFolded:false,profile:{weak:[],declared:null,taught:[]},lastConcept:null};
+const st={plan:'visitor',level:'beginner',open:false,misses:0,lastOut:null,lesson:null,step:0,offer:null,paused:null,identity:null,asked:new Set(),moreQueue:[],suggFolded:false,profile:{weak:[],declared:null,taught:[]},lastConcept:null,said:[],pitchUsed:new Set(),intro:false,faqDone:false};
 const ctx=()=>{const c=(window.__CS_CASTORIA_CTX||{});return{plan:c.plan||'visitor',name:c.name||''};};
 /* How long the dots hold before an answer lands. */
 const THINK=()=>1400+Math.random()*260;
@@ -3437,7 +3610,7 @@ let poolAt=0;
 function suggPlus(list,cap){
   list=(list||[]).filter(Boolean);
   cap=cap||11;
-  const used=new Set(list.map(x=>x.toLowerCase()));
+  const used=new Set(list.map(x=>chipLabel(x).toLowerCase()));
   const pool=TOPIC_POOL.filter(t=>!used.has(t.toLowerCase())&&!st.asked.has(t.toLowerCase()));
   if(!pool.length) return sugg(list);
   /* Stride rather than slice. A contiguous run came back as eleven craft
@@ -3480,7 +3653,7 @@ function syncIdentity(){
   /* Somebody else is here now. Wipe the thread — carrying it over would greet
      the new user by the old user's name and show them a stranger's questions. */
   st.misses=0;st.lastOut=null;st.lesson=null;st.step=0;st.offer=null;st.paused=null;
-  st.lastConcept=null;st.profile={weak:[],declared:null,taught:[]};
+  st.lastConcept=null;st.profile={weak:[],declared:null,taught:[]};st.said=[];st.pitchUsed=new Set();
   const sh=$('sheet'); if(sh)sh.classList.remove('on');
   const had=$('thread').children.length;
   $('thread').innerHTML='';sugg([]);
@@ -3560,10 +3733,93 @@ function reveal(row,follow){
   glideTo(tall?offsetInThread(row)-10:t.scrollHeight);
 }
 
-function msg(dir,html){
+/* ── NO REPEATED STOCK LINES ──────────────────────────────────────────
+   1. The pitch — notepad and pen, no need to pay for classes, it's free,
+      right here in this thread, every lesson ends with a line worth keeping,
+      worth more than a workshop — is said ONCE per conversation, in the
+      intro. Each family is a pattern, so a rewording is still caught.
+   2. No sentence may repeat one from the previous 5 assistant messages.
+      Sentences are compared by SHAPE (content words, order-free overlap),
+      so "Grab a pen and write it down" and "Write it down — get a pen" are
+      the same sentence.
+   Both run inside msg(), so no answer path can skip them. */
+const PITCH=[
+ ['notepad',/\bnote ?pad\b|\bpen and paper\b|\ba pen\b/i],
+ ['noclasses',/\b(spend|pay)(ing)? (any )?money on (an? )?(acting )?class|\bno need to (spend|pay)\b[^.]{0,40}class|\bdon'?t need to (spend|pay)\b[^.]{0,40}class|\bpay for (acting )?classes to (start|begin)/i],
+ ['free',/\b(for free|at no cost|(this|it|that) cost(s)? you nothing|free, right here|free right here|(they|it) (are|is) free)\b|\bteach(es|ing)?\b[^.]{0,70}\bfree\b|\bfundamentals\b[^.]{0,30}\bfree\b/i],
+ ['thread',/\bright here in (this|the) thread\b|\bin this thread\b/i],
+ ['lessonend',/\bevery lesson ends with\b/i],
+ ['workshops',/\bworth more than (most )?(beginner )?workshops\b/i],
+ ['herefree',/\bright here\b[^.]{0,30}\b(free|no cost)\b/i]
+];
+const pitchFam=t=>{ const f=PITCH.find(([,re])=>re.test(t)); return f?f[0]:null; };
+const REP_STOP=new Set(('a an the is are was were be been do does did i im me my you your it its of to for on in at and or but if so how what when where which who that this these those can could would will just about with as not no yes there here from than then them they he she we us our all any some very really more most also one').split(' '));
+function sentShape(t){
+  const all=t.toLowerCase().replace(/[^a-z0-9'\s]/g,' ').split(/\s+/).filter(Boolean);
+  const w=all.filter(x=>!REP_STOP.has(x));
+  if(w.length>=4) return {k:w.join(' '),set:new Set(w)};
+  /* short lines (sign-offs, check-ins) compare on the exact words */
+  if(all.length>=3) return {k:'#'+all.join(' '),set:null};
+  return null;
+}
+function sameShape(a,b){
+  if(a.k===b.k) return true;
+  if(!a.set||!b.set) return false;
+  let n=0; a.set.forEach(x=>{if(b.set.has(x))n++;});
+  return n/(a.set.size+b.set.size-n)>=0.75;
+}
+const splitSents=t=>(t.match(/[^.!?]+[.!?]*/g)||[]).map(x=>x.trim()).filter(Boolean);
+function dedupe(html){
+  const box=document.createElement('div'); box.innerHTML=html;
+  let blocks=[...box.querySelectorAll('p,li,h5,.hd')].filter(el=>!el.querySelector('p,li'));
+  if(!blocks.length) blocks=[box];
+  const recent=[].concat(...st.said.slice(-5));
+  const mine=[], fams=new Set();
+  blocks.forEach(el=>{
+    const sents=splitSents(el.textContent||'');
+    const drop=[];
+    sents.forEach(snt=>{
+      const fam=pitchFam(snt), sh=sentShape(snt);
+      const dup=(!st.intro&&fam)||(sh&&(recent.some(r=>sameShape(sh,r))||mine.some(r=>sameShape(sh,r))));
+      if(dup){ drop.push(snt); return; }
+      if(fam)fams.add(fam);
+      if(sh)mine.push(sh);
+    });
+    if(!drop.length) return;
+    if(drop.length===sents.length){ el.remove(); return; }
+    /* Remove just those sentences; keep inline markup where the sentence
+       sits inside one text node, flatten the block only when it doesn't. */
+    drop.forEach(snt=>{
+      const tw=document.createTreeWalker(el,4); let n, hit=false;
+      while((n=tw.nextNode())){ if(n.nodeValue.includes(snt)){ n.nodeValue=n.nodeValue.replace(snt,'').replace(/\s{2,}/g,' '); hit=true; break; } }
+      if(!hit) el.textContent=(el.textContent||'').replace(snt,'').replace(/\s{2,}/g,' ').trim();
+    });
+  });
+  /* A section header whose section was removed goes with it. */
+  box.querySelectorAll('.hd').forEach(h=>{ const n=h.nextElementSibling; if(!n||n.classList.contains('hd')) h.remove(); });
+  const left=(box.textContent||'').trim();
+  return {html:left?box.innerHTML:'',shapes:mine,fams};
+}
+const SAME_AS_ABOVE=[`That's the same ground as a moment ago — it's just up the thread.`,`I covered that just above, so scroll up a little.`,`Same answer as a moment ago, just above.`];
+function msg(dir,html,opt){
+  if(dir==='in'&&!(opt&&opt.keep)){
+    const d=dedupe(html);
+    if(!d.html){
+      const alt=SAME_AS_ABOVE.find(x=>!([].concat(...st.said.slice(-5))).some(r=>sameShape(sentShape(x),r)));
+      if(!alt) return null;
+      html=alt; st.said.push([sentShape(alt)]);
+    }else{
+      html=d.html; st.said.push(d.shapes);
+      d.fams.forEach(f=>st.pitchUsed.add(f));
+    }
+    if(st.said.length>20)st.said.shift();
+  }
   const th=$('thread');
   const prev=[...th.querySelectorAll('.msg')].pop();
-  if(prev&&prev.classList.contains(dir)) prev.querySelector('.b').classList.remove('tail');
+  /* The last row can be the typing dots (no .b) when two replies overlap —
+     that used to throw here and drop the reply on the floor. */
+  const pb=prev&&prev.querySelector('.b');
+  if(pb&&prev.classList.contains(dir)) pb.classList.remove('tail');
   const row=document.createElement('div');
   row.className='msg '+dir+((prev&&!prev.classList.contains(dir))?' gap':'');
   const b=document.createElement('div');b.className='b tail';b.innerHTML=html;
@@ -3664,22 +3920,37 @@ function tapBind(el,fn){
      pointer events still come through here. */
   el.addEventListener('click',e=>{ if(Date.now()-fired<700)return; fn(e); });
 }
-function suggBtn(label){
+/* A chip is a question (a string, answered like typed text) or an id-carrying
+   object: {t,lesson,title} opens exactly that lesson, {t,act} runs a lesson
+   control. A lesson is never reached by sending a chip's words back through
+   the router. A string that names a lesson is resolved to its id HERE, at
+   render time, so the tap itself still carries the id. */
+const chipLabel=x=>typeof x==='string'?x:(x&&x.t)||'';
+function chipSpec(x){
+  if(typeof x!=='string') return x;
+  for(const [re,id] of LESSON_INTENT) if(re.test(x)&&SYL_BY_ID[id]) return {t:x,lesson:id,title:SYL_BY_ID[id].title};
+  return x;
+}
+function suggBtn(item){
+  const spec=chipSpec(item);
   const b=document.createElement('button');
-  b.type='button'; b.textContent=label;
-  b.setAttribute('data-q',label);
+  b.type='button'; b.textContent=chipLabel(spec);
+  if(typeof spec==='string') b.setAttribute('data-q',spec);
+  else if(spec.lesson){ b.setAttribute('data-lesson',spec.lesson); b.setAttribute('data-title',spec.title||SYL_BY_ID[spec.lesson].title); }
+  else if(spec.act) b.setAttribute('data-act',spec.act);
   return b;
 }
 /* One listener on the strip instead of one per chip, so chips appended by
    "More questions" are live the moment they render. */
 function askChip(e){
   const t=(e.composedPath&&e.composedPath()[0])||e.target;
-  const b=t&&t.closest?t.closest('button[data-q]'):null;
+  const b=t&&t.closest?t.closest('button[data-q],button[data-lesson],button[data-act]'):null;
   if(!b)return;
-  const label=b.getAttribute('data-q');
   $('sugg').innerHTML='';st.moreQueue=[];
   refreshSuggHint();
-  send(label);
+  if(b.hasAttribute('data-lesson')) return pickLesson(b.getAttribute('data-lesson'),b.getAttribute('data-title'),b.textContent);
+  if(b.hasAttribute('data-act')) return doAct(b.getAttribute('data-act'),b.textContent);
+  send(b.getAttribute('data-q'));
 }
 /* Adds more chips without disturbing the ones already on screen. */
 function suggAppend(list){
@@ -3747,6 +4018,7 @@ function openPanel(){
 }
 function hello(){
   const c=ctx();stamp();
+  st.intro=true;
   const t=typing();
   setTimeout(()=>{
     t.remove();
@@ -3756,6 +4028,7 @@ function hello(){
         msg('in',`I can answer questions about acting and about CastSlate — and I can <b>teach</b>. All the fundamentals of acting for film or stage, free, right here. No need to spend money on acting classes to begin — just grab a notepad and a pen for the bits worth keeping.`);
         setTimeout(()=>{
           msg('in',`Want a quick <b>free lesson</b> to see how it works? Two minutes, and you can do it right where you are sitting.`);
+          st.intro=false;
           sugg(['Yes, teach me','What can you teach?','No thanks']);
         },720);
         st.offer='film';
@@ -3768,6 +4041,7 @@ function hello(){
          queued behind them — otherwise "More questions" on the opening screen
          scrolls those fifteen and stops, which is the one screen everybody
          sees. cap = the list length, so nothing curated is cut. */
+      st.intro=false;
       const opening=c.plan==='premium'?OPENING_PREMIUM:OPENING_FREE;
       suggPlus(opening,opening.length);
     },620);
@@ -3799,38 +4073,68 @@ function lessonStep(){
   if(!step) return endLesson();
   let html=step.b;
   if(st.level==='pro'&&step.pro) html+=step.pro;
+  /* The reply to a lesson tap is checked before it is sent (see onTopic):
+     re-read once from the stored lesson, then fall back to the outline. */
+  if(st.step===0&&SYL_BY_ID[st.lesson]&&!onTopic(st.lesson,html)){
+    const again=L.steps[0].b;
+    html=onTopic(st.lesson,again)?again:outlineHTML(SYL_BY_ID[st.lesson]);
+    trace({kind:'offtopic-guard',lesson:st.lesson});
+  }
   msg('in',html);
   if(step.end){
+    const done=st.lesson;
     st.lesson=null;st.step=0;
     setTimeout(()=>{
       const gap=st.profile.weak.find(w=>!st.profile.taught.includes('dyn-'+w)&&w!==st.lastConcept);
       if(gap&&CONCEPT_BY_ID[gap]){
         const g=CONCEPT_BY_ID[gap];
-        msg('in',`That is yours to keep${st.plan==='visitor'?', account or not':''}.`);
-        setTimeout(()=>{
-          msg('in',`You mentioned earlier that <b>${g.name.toLowerCase()}</b> is something you struggle with. Want to work on that next? It is about ${g.what}.`);
-          sugg([`Yes, teach me ${g.name.toLowerCase()}`,'Something else',st.plan==='visitor'?'What is CastSlate?':'How do I improve my profile?']);
-        },620);
+        msg('in',`You mentioned earlier that <b>${g.name.toLowerCase()}</b> is something you struggle with. Want to work on that next? It is about ${g.what}.`);
+        sugg([`Yes, teach me ${g.name.toLowerCase()}`].concat(endChips(done)));
         return;
       }
-      msg('in',st.plan==='visitor'
-        ?`That is yours to keep, account or not. Want another one, or shall I tell you what CastSlate does?`
-        :`Want another lesson, or shall we work on something specific in your profile?`);
-      suggPlus(['Another lesson',st.plan==='visitor'?'What is CastSlate?':'How do I improve my profile?']);
+      const nx=sylNext(done);
+      msg('in',!SYL_BY_ID[done]?`That's the end of that one. The set lessons are on the menu whenever you want one.`
+        :nx?`That's ${SYL_BY_ID[done].title.toLowerCase()} done. Next in the list is <b>${nx.title}</b> — ${nx.desc}.`
+        :`That's the last one in this set. Pick another from the menu whenever you like.`);
+      sugg(endChips(done));
     },700);
     return;
   }
   st.step++;
-  sugg([step.cta||'Next','Stop the lesson']);
+  sugg(lessonChips());
+}
+/* Chips are built from the state the conversation is in, never a fixed pair.
+   In a lesson: the next step, a question about THIS lesson, stop.
+   After a lesson: the next lesson in its set, back to the menu.
+   On the menu: the lessons themselves (see menuChips). */
+function lessonChips(){
+  const L=LESSON_BY_ID[st.lesson], S=SYL_BY_ID[st.lesson];
+  const step=L&&L.steps[st.step-1];
+  const out=[{t:(step&&step.cta)||'Next',act:'next'}];
+  if(S&&S.faq&&!st.faqDone)out.push({t:S.faq.q,act:'faq'});
+  out.push({t:'Stop the lesson',act:'stop'});
+  return out;
+}
+function endChips(done){
+  const nx=sylNext(done);
+  const out=[];
+  if(nx)out.push(lessonChip(nx,'Next: '+nx.title));
+  out.push({t:'Back to the menu',act:'menu'});
+  return out;
 }
 function startLesson(id){
   const L=(typeof id==='object')?id:LESSON_BY_ID[id];
   if(!L) return false;
   if(typeof id==='object'){LESSON_BY_ID['__dyn']=L;st.lesson='__dyn';} else st.lesson=id;
-  st.step=0;st.offer=null;st.paused=null;
+  st.step=0;st.offer=null;st.paused=null;st.faqDone=false;
   if(L.concept)st.lastConcept=L.concept;
   if(L.id&&!st.profile.taught.includes(L.id))st.profile.taught.push(L.id);
-  msg('in',`<b>${L.title}</b><br><span style="opacity:.62">${L.lane} &middot; about ${L.mins} minutes &middot; you can stop any time</span>`);
+  trace({kind:'lesson-start',lesson:st.lesson,title:L.title});
+  /* A composed answer is not one of the set lessons and must not pose as one
+     (no invented lesson, no invented running time). */
+  msg('in',typeof id==='object'
+    ?`<b>${L.title}</b><br><span style="opacity:.62">Not one of my set lessons — a coaching answer built from the fundamentals</span>`
+    :`<b>${L.title}</b><br><span style="opacity:.62">${L.lane} &middot; about ${L.mins} minutes</span>`,{keep:true});
   setTimeout(lessonStep,620);
   return true;
 }
@@ -3840,12 +4144,71 @@ function dynamicLesson(c,depth,shape){
 }
 function endLesson(quiet){
   st.lesson=null;st.step=0;st.paused=null;
-  if(!quiet){msg('in',`No problem — we can pick that up whenever. What else is on your mind?`);suggPlus(['Give me a different lesson']);}
+  if(!quiet){msg('in',`No problem — we can pick that up whenever. What else is on your mind?`);suggPlus([{t:'Back to the menu',act:'menu'}]);}
+}
+
+/* ── taps that carry an id ─────────────────────────────────────────
+   pickLesson is the ONLY way a menu item or lesson chip starts a lesson.
+   It gets the lesson id and the exact title; if either is missing, unknown,
+   or they disagree, it asks which lesson was meant rather than guessing. */
+function pickLesson(id,title,label){
+  syncIdentity();
+  const S=SYL_BY_ID[id];
+  const ok=!!S&&(!title||title===S.title);
+  trace({kind:'lesson-tap',lessonId:id,title:title||null,ok});
+  sugg([]);
+  outMsg(String(label||title||(S&&S.title)||'That one').replace(/[<>]/g,''));
+  st.asked.add(String(label||'').trim().toLowerCase());
+  st.offer=null;
+  const t0=typing();
+  setTimeout(()=>{
+    t0.remove();markRead();
+    if(!ok){
+      msg('in',`I'm not sure which lesson you meant — pick one and I'll start it.`);
+      showMenu('all',true);
+      return;
+    }
+    st.paused=null;
+    startLesson(id);
+  },THINK());
+}
+function showMenu(which,quiet){
+  st.lesson=null;st.step=0;
+  trace({kind:'menu',which});
+  msg('in',menuHTML(which));
+  sugg(menuChips(which));
+}
+/* Lesson controls. A control that is not valid in the current state is not
+   acted on — it says so and shows what is valid. */
+function doAct(act,label){
+  trace({kind:'act',act});
+  sugg([]);
+  outMsg(String(label||act).replace(/[<>]/g,''));
+  const t0=typing();
+  setTimeout(()=>{
+    t0.remove();markRead();
+    if(act==='menu'){ st.paused=null; return showMenu('fundamentals'); }
+    if(act==='resume'&&st.paused){ const p=st.paused;st.paused=null;st.lesson=p.id;st.step=p.step;return lessonStep(); }
+    if(act==='stop'&&(st.lesson||st.paused)){ return endLesson(); }
+    if(!st.lesson){
+      msg('in',`There's no lesson running right now. Pick one and I'll start it.`);
+      return showMenu('fundamentals');
+    }
+    if(act==='next') return lessonStep();
+    if(act==='faq'){
+      const S=SYL_BY_ID[st.lesson];
+      st.faqDone=true;
+      if(S&&S.faq)msg('in',S.faq.a);
+      return sugg(lessonChips());
+    }
+    sugg(lessonChips());
+  },act==='next'?THINK():480);
 }
 
 function send(text){
   syncIdentity();
   const c=ctx();
+  trace({kind:'text',text:String(text).slice(0,200)});
   st.asked.add(text.trim().toLowerCase());
   /* Controls are matched on the words, so a trailing emoji cannot break them. */
   const ctrl=onlyEmoji(text)?text.trim():(stripEmoji(text)||text.trim());
@@ -3912,7 +4275,7 @@ function send(text){
       setTimeout(()=>{
         t0.remove();markRead();
         msg('in',coachThrough(CONCEPT_BY_ID[st.lastConcept]));
-        sugg(['Tried it again','Give me a different angle','Stop the lesson']);
+        sugg(['Tried it again','Give me a different angle',{t:'Stop the lesson',act:'stop'}]);
       },THINK());
       return;
     }
@@ -3923,7 +4286,7 @@ function send(text){
         msg('in',`<p>Fair. Different route to the same place:</p>`+
           `<p><b>Stop working on the feeling entirely.</b> Give your character a small physical task in the scene — something with a real outcome. Play the task properly and let the scene happen around it.</p>`+
           `<p>Actors who cannot get there psychologically very often get there physically, and the other way round. Neither is the correct method.</p>`);
-        sugg(['That helped','Carry on with the lesson','Stop the lesson']);
+        sugg([{t:'Carry on with the lesson',act:'next'},{t:'Stop the lesson',act:'stop'}]);
       },THINK());
       return;
     }
@@ -3937,7 +4300,7 @@ function send(text){
       /* Asking for a different lesson replaces this one; anything else — an
          answer, a definition, even a miss — parks it and gets answered. */
       const switching=!!(rq&&(rq.lesson||rq.teach));
-      const parked=switching?null:{id:st.lesson,step:st.step,title:(L&&L.title)||'the lesson'};
+      const parked=switching?null:{id:st.lesson,step:st.step,title:(SYL_BY_ID[st.lesson]&&SYL_BY_ID[st.lesson].title)||(L&&L.title)||'the lesson'};
       st.lesson=null;st.step=0;
       const tq=typing();
       setTimeout(()=>{
@@ -3946,8 +4309,8 @@ function send(text){
         if(parked){
           st.paused=parked;
           setTimeout(()=>{
-            msg('in',`That was a detour — we were part-way through <b>${parked.title}</b>. Pick it back up, or carry on here?`);
-            sugg(['Carry on with the lesson','Ask something else','Stop the lesson']);
+            msg('in',`We were part-way through <b>${parked.title}</b> — it's parked, pick it back up whenever.`);
+            sugg([{t:'Back to '+parked.title,act:'resume'},'Ask something else',{t:'Stop the lesson',act:'stop'}]);
           },1600);
         }
       },THINK());
@@ -3988,9 +4351,17 @@ function respond(r,c){
       },700);
       return;
     }
+    /* Any route to "what can you teach" renders the one syllabus menu. */
+    if(r.entry&&r.entry.id==='lessons') r={menu:'all'};
+    if(r.menu){
+      st.misses=0;
+      showMenu(r.menu);
+      return;
+    }
     if(r.lesson){
       st.misses=0;
       st.lastConcept=null;
+      trace({kind:'route',lesson:r.lesson});
       startLesson(r.lesson);
       return;
     }
@@ -4179,7 +4550,7 @@ function wireTools(){
   const tN=$('newchat');
   if(tN)tN.onclick=function(){
     st.misses=0;st.lastOut=null;st.lesson=null;st.step=0;st.offer=null;st.paused=null;
-    st.lastConcept=null;st.asked=new Set();st.profile={weak:[],declared:null,taught:[]};
+    st.lastConcept=null;st.asked=new Set();st.profile={weak:[],declared:null,taught:[]};st.said=[];st.pitchUsed=new Set();
     const sh=$('sheet'); if(sh)sh.classList.remove('on');
     $('thread').innerHTML='';sugg([]);
     hello();
@@ -4209,6 +4580,8 @@ ROOT.addEventListener('click',function(e){
   if(t&&t.closest){
     var nv=t.closest('[data-nav]');
     if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));closePanel();} else {send('Where are my account settings?');} return; }
+    /* Lesson menu items carry the lesson id + exact title, never a phrase. */
+    var l=t.closest('[data-lesson]'); if(l&&!l.closest('#sugg')){pickLesson(l.getAttribute('data-lesson'),l.getAttribute('data-title'),l.textContent);return;}
     var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}
   }
   if(t&&t.closest&&t.closest('[data-go]')){

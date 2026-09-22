@@ -71,6 +71,8 @@ ROOT.addEventListener('click',function(e){
   if(t&&t.closest){
     var nv=t.closest('[data-nav]');
     if(nv){ if(window.__CS_NAV){window.__CS_NAV(nv.getAttribute('data-nav'));closePanel();} else {send('Where are my account settings?');} return; }
+    /* Lesson menu items carry the lesson id + exact title, never a phrase. */
+    var l=t.closest('[data-lesson]'); if(l&&!l.closest('#sugg')){pickLesson(l.getAttribute('data-lesson'),l.getAttribute('data-title'),l.textContent);return;}
     var a=t.closest('[data-ask]'); if(a){send(a.getAttribute('data-ask'));return;}
   }
   if(t&&t.closest&&t.closest('[data-go]')){
