@@ -324,6 +324,12 @@ function premiumWelcomeHtml(firstName: string): string {
   // is the dressed-up sibling rather than a different email. Premium reads as
   // premium through materials, not layout: champagne icon tiles with a gold
   // foil ring, serif feature titles, a gold section rule and 01–06 numerals.
+  // Backdrop (2026-09-22): "Projector beam" — a dark screening room with a gold
+  // beam spilling round the card, email/backgrounds/welcome-premium-projector.jpg
+  // on the outer table. It fades to CS_CREAM just above the card bottom so the
+  // footer stays on cream; fallback is plain cream. Made by
+  // tools/make-welcome-backgrounds.py — re-measure the fade there if this email
+  // gets longer or shorter.
   // Icons are PNGs (email/step-icons/pw-*-foil.png) for the same reason the
   // free welcome's are: emoji are a font and render differently, or as a tofu
   // box, across clients. Regenerate with tools/make-step-icons.py, never edit
@@ -347,7 +353,9 @@ function premiumWelcomeHtml(firstName: string): string {
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
 @media only screen and (max-width:480px){
-  .pw-outer{padding:12px 4px!important}
+  /* 12px gutter (was 4px) so a frame of the projector backdrop shows round
+     the card on a phone; costs ~16px of text width, approved 2026-09-22. */
+  .pw-outer{padding:16px 12px!important}
   .mast-pad{padding:24px 18px!important}
   .mast-pill{display:none!important}
   .mast-word{font-size:19px!important}
@@ -364,7 +372,7 @@ function premiumWelcomeHtml(firstName: string): string {
   .pw-b{font-size:13px!important}
 }
 </style></head><body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM}"><tr><td class="pw-outer" align="center" style="padding:40px 20px">
+  <table width="100%" cellpadding="0" cellspacing="0" background="${APP_URL}/email/backgrounds/welcome-premium-projector.jpg" bgcolor="${CS_CREAM}" style="background-color:${CS_CREAM};background-image:url(${APP_URL}/email/backgrounds/welcome-premium-projector.jpg);background-position:center top;background-repeat:no-repeat"><tr><td class="pw-outer" align="center" style="padding:40px 20px">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
       <tr><td class="mast-pad" style="background:#2E3050;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(242,179,96,.36) 0%,rgba(240,176,96,.11) 46%,rgba(240,176,96,0) 72%),linear-gradient(118deg,#26273F 0%,#33355A 52%,#3E4168 100%);border-top:3px solid #C9A227;padding:34px 36px 32px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -475,6 +483,10 @@ function newActorWelcomeHtml(firstName: string): string {
   // the morning upsell. Step icons are PNGs (email/step-icons/*-clay.png)
   // because emoji are a font and render differently, or as a tofu box, across
   // clients; regenerate with tools/make-step-icons.py, never edit the PNGs.
+  // Backdrop (2026-09-22): daytime "Stage gels" — terracotta, honey, teal and
+  // plum washes, email/backgrounds/welcome-free-gels.jpg on the outer table,
+  // fading to CS_CREAM above the card bottom (footer stays on cream). Made by
+  // tools/make-welcome-backgrounds.py; re-measure the fade if the email changes.
   const step = (icon: string, n: number, title: string, body: string) => `
     <tr><td class="stp" height="112" style="height:112px;${n === 1 ? "" : "border-top:1px solid #F1D6C8;"}padding:0">
       <table width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -509,7 +521,7 @@ function newActorWelcomeHtml(firstName: string): string {
 }
 </style></head>
 <body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM};padding:40px 20px"><tr><td align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" background="${APP_URL}/email/backgrounds/welcome-free-gels.jpg" bgcolor="${CS_CREAM}" style="background-color:${CS_CREAM};background-image:url(${APP_URL}/email/backgrounds/welcome-free-gels.jpg);background-position:center top;background-repeat:no-repeat;padding:40px 20px"><tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
 
       <tr><td class="mast-pad" style="background:#2E3050;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(242,179,96,.36) 0%,rgba(240,176,96,.11) 46%,rgba(240,176,96,0) 72%),linear-gradient(118deg,#26273F 0%,#33355A 52%,#3E4168 100%);border-top:3px solid #4A4C74;padding:34px 36px 32px">
