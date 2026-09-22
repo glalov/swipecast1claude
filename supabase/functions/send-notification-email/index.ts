@@ -67,6 +67,30 @@ function heroStill(st: {url:string;film:string;year:number;line:string}, capCol:
         <div style="font-family:Georgia,'Times New Roman',serif;font-size:15.5px;line-height:1.45;font-weight:700;color:${inkCol}">${st.line}</div>
       </td></tr>`;
 }
+// The photo an actor submitted for ONE role. Premium members upload many
+// photos and pick a different one per submission, so the shortlist email must
+// show applications.selected_photo_url for THAT application — never the
+// current profile headshot, which may be a different photo entirely, and never
+// a photo from another of their submissions.
+//
+// Served through Supabase's image transform: the stored original is ~400 KB
+// with cache-control no-cache, which is far too heavy for an inbox. The
+// transform returns a 232x292 crop (2x the 116x146 the email draws) at ~13 KB
+// with a real cache header, and "resize=cover" means an odd aspect ratio
+// cannot distort the layout.
+//
+// Only our own public storage URLs are rewritten; anything else returns null
+// so the email falls back to the badge layout rather than embedding a
+// surprise remote image.
+function submissionPhotoUrl(raw: string | null | undefined): string | undefined {
+  const url = (raw ?? "").trim();
+  if (!url) return undefined;
+  const prefix = `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/`;
+  if (!url.startsWith(prefix)) return undefined;
+  return url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/")
+    + "?width=232&height=292&resize=cover&quality=75";
+}
+
 function csFooterStripe(accent: string): string {
   return `<tr><td style="height:6px;line-height:6px;font-size:0;background:${accent};background:linear-gradient(90deg,${accent},${accent} 55%,${accent}55)">&nbsp;</td></tr>`;
 }
@@ -640,6 +664,10 @@ interface DecisionArgs {
   // it Gmail fills that line with the header labels ("CASTSLATE Casting update").
   // after = an extra block between the submission card and the button.
   preheader?: string; after?: string;
+  // portrait = the actor's own submitted photo, shown beside the headline
+  // (shortlist only). When set, the star badge steps out: the two together
+  // crowd the row. Absent, the headline row is exactly what it always was.
+  portrait?: string;
 }
 function decisionEmail(a: DecisionArgs): string {
   const t = a.tone;
@@ -666,6 +694,8 @@ function decisionEmail(a: DecisionArgs): string {
   .cs-h1{font-size:25px!important}
   .cs-badge-cell{width:80px!important}
   .cs-badge{width:78px!important;height:60px!important}
+  .cs-por-cell{width:106px!important}
+  .cs-por{width:92px!important;height:116px!important}
   .cs-cta a{padding:15px 24px!important}
 }
 </style></head>
@@ -687,7 +717,16 @@ function decisionEmail(a: DecisionArgs): string {
 
       <tr><td style="height:4px;line-height:4px;font-size:0;background:${t.rule};background:linear-gradient(90deg,${t.onDark},${t.rule} 52%,${t.rule0})">&nbsp;</td></tr>
 
-      <tr><td class="cs-pad" style="padding:34px 30px 0">
+      ${a.portrait ? `<tr><td class="cs-pad" style="padding:30px 30px 0">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td class="cs-por-cell" width="132" valign="top" style="width:132px">
+            <img class="cs-por" src="${a.portrait}" width="116" height="146" alt="Your submitted photo" style="display:block;width:116px;height:146px;border-radius:10px;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(154,65,39,0.22)"/>
+          </td>
+          <td valign="middle" style="padding-left:18px">
+            <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">${a.headTop}<br/><span style="color:${t.onCream}">${a.headAccent}</span></h1>
+          </td>
+        </tr></table>
+      </td></tr>` : `<tr><td class="cs-pad" style="padding:34px 30px 0">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td style="vertical-align:top">
             <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">${a.headTop}<br/><span style="color:${t.onCream}">${a.headAccent}</span></h1>
@@ -696,7 +735,7 @@ function decisionEmail(a: DecisionArgs): string {
             <img class="cs-badge" src="${APP_URL}/${t.badge}" width="104" height="80" alt="" style="display:block;border:0"/>
           </td>
         </tr></table>
-      </td></tr>
+      </td></tr>`}
 
       <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">${a.body}</p></td></tr>
 ${a.mid ?? card}
@@ -735,7 +774,7 @@ function holdSubject(firstName: string, projectName?: string): string {
     : `${firstName}, your profile was reviewed on CastSlate`;
 }
 
-function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
+function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string, portrait?: string): string {
   const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
   const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
   const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
@@ -765,6 +804,7 @@ function applicationSelectedHtml(firstName: string, projectName?: string, roleNa
     title,
     preheader: `${cdName ? esc(cdName) : "A casting director"} picked you out of the submissions. Here&rsquo;s what happens next.`,
     after: nextSteps,
+    portrait,
   });
 }
 
@@ -985,10 +1025,25 @@ serve(async (req) => {
       if (authErr || !authData?.user?.email) {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
+      // The photo THIS submission was made with. Matched on talent_id too, so a
+      // wrong or stale application_id can never put someone else's face in the
+      // email. No application_id, no stored photo, or a photo from outside our
+      // storage — the email falls back to the star-badge layout rather than
+      // showing a photo we cannot prove they submitted for this role.
+      let portrait: string | undefined;
+      if (application_id) {
+        const { data: appRow } = await supabase
+          .from("applications")
+          .select("selected_photo_url")
+          .eq("id", application_id)
+          .eq("talent_id", to_user_id)
+          .maybeSingle();
+        portrait = submissionPhotoUrl(appRow?.selected_photo_url);
+      }
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: shortlistSubject(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined),
-        html: applicationSelectedHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined),
+        html: applicationSelectedHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined, portrait),
       });
       if (!sent.ok) {
         console.error("[send-notification-email] shortlist send error:", sent.err);
