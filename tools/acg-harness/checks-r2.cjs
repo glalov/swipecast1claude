@@ -2,6 +2,7 @@
 // Registered by run.cjs. Every rule here is also enforced by the generator's
 // validator (v3Problems / v4RoleProblems) — this file is the independent test.
 module.exports=function register({check,addBoard,sentences,clean,minAge,maxAge,isGroup,famOf,srcNow,parseRoleRate,ctxNow}){
+  const isFnName=n=>/[A-Z]{2}/.test(String(n))&&/^[A-Z0-9][A-Z0-9 '’&\/.-]*( \([A-Z][a-z]+\))?$/.test(String(n));
   const ageRange=r=>[minAge(r),maxAge(r)];
   const slotOf=(L,r)=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name);return String((raw&&raw._slot)||"");};
   const CHILD=/\b(son|daughter|child|kid|boy|girl|grandson|granddaughter|grandchild|stepson|stepdaughter|sibling|brother|sister)\b/i;
@@ -76,6 +77,7 @@ module.exports=function register({check,addBoard,sentences,clean,minAge,maxAge,i
   check(8,"role_name_first","Description doesn't open with the character's name and who they are, or uses 'her son' instead of the name",L=>{
     const out=[];
     L.roles.forEach(r=>{const d=String(r.description||"");const first=String(r.name).split(" ")[0];
+      if(isFnName(r.name))return; // round 7: function-named roles (PATIENT) open with the part, not a name
       if(!isGroup(r)&&!new RegExp("^"+first.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(,| is | —)").test(d))out.push({detail:`${r.name}: ${d.slice(0,60)}`});
       if(/^(Looking for someone to play|Plays |That is)|\bThat is (the|a|an)\b/.test(d))out.push({detail:`${r.name}: ${d.slice(0,60)}`});
       if(/^[^.]*\b(her|his|their)\s+(son|daughter|mother|father|wife|husband|brother|sister|boss|partner)\b/i.test(d))out.push({detail:`${r.name}: possessive instead of a name: ${d.slice(0,70)}`});});
@@ -105,7 +107,7 @@ module.exports=function register({check,addBoard,sentences,clean,minAge,maxAge,i
 
   check(8,"odd_label_or_caps","'People at the <people>' labels or a capital article mid-sentence ('at A mountain…')",L=>{const out=[];L.roles.forEach(r=>{if(/^People at the \w+ (Owners|Vendors|Workers|Regulars|Customers|Staff)\b/i.test(r.name))out.push({detail:r.name});if(/[a-z,] (A|An|The) [a-z]/.test(r.description))out.push({detail:r.name+": "+(r.description.match(/.{0,20}[a-z,] (A|An|The) [a-z].{0,20}/)||[""])[0]});});return out;});
 
-  check(8,"lead_without_name","A Lead or Supporting story character with no person name",L=>{if(/^(ad|photo)$/.test(famOf(L.type)))return[];const raw=L._raw._roles||[];return L.roles.filter(r=>/^(Lead|Supporting|Principal)$/.test(r.role_type)&&!/^[A-Z][A-Za-z'’.-]+( [A-Z]\.)? [A-Z][A-Za-z'’-]+$/.test(r.name)&&!(raw.find(x=>x.name===r.name)||{})._job&&!/\b(ensemble|voices|players|double|performer|driver|dancers|face|model|lead|second|third|fourth|maker|character|runner|swimmer|subject|trader|worker|regular|group|crew|team|family|creator|kids|children|neighbors|regulars|students|staff|volunteers|guides|characters)\b/i.test(r.name)).map(r=>({detail:`${r.name} (${r.role_type})`}));});
+  check(8,"lead_without_name","A Lead or Supporting story character with no person name",L=>{if(/^(ad|photo)$/.test(famOf(L.type)))return[];const raw=L._raw._roles||[];return L.roles.filter(r=>!isFnName(r.name)&&/^(Lead|Supporting|Principal)$/.test(r.role_type)&&!/^[A-Z][A-Za-z'’.-]+( [A-Z]\.)? [A-Z][A-Za-z'’-]+$/.test(r.name)&&!(raw.find(x=>x.name===r.name)||{})._job&&!/\b(ensemble|voices|players|double|performer|driver|dancers|face|model|lead|second|third|fourth|maker|character|runner|swimmer|subject|trader|worker|regular|group|crew|team|family|creator|kids|children|neighbors|regulars|students|staff|volunteers|guides|characters)\b/i.test(r.name)).map(r=>({detail:`${r.name} (${r.role_type})`}));});
 
   // 8. Placeholder leaks.
   check(8,"placeholder_leak","Untitled/Working Title titles, (Group N), Group A, 1) labels",L=>{
@@ -158,7 +160,7 @@ module.exports=function register({check,addBoard,sentences,clean,minAge,maxAge,i
   // ── Names ────────────────────────────────────────────────────────────────
   const pools=ctxNow&&ctxNow.names;
   addBoard((listings,add)=>{
-    const people=L=>L.roles.filter(r=>!isGroup(r)).map(r=>({n:r.name,age:[minAge(r),maxAge(r)],slot:slotOf(L,r),kind:"char"})).concat((L._raw._crewNames||[]).map(n=>({n,age:null,slot:"crew",kind:"crew"})));
+    const people=L=>L.roles.filter(r=>!isGroup(r)&&!isFnName(r.name)).map(r=>({n:r.name,age:[minAge(r),maxAge(r)],slot:slotOf(L,r),kind:"char"})).concat((L._raw._crewNames||[]).map(n=>({n,age:null,slot:"crew",kind:"crew"})));
     const firstOf=n=>String(n).split(" ")[0],lastOf=n=>String(n).split(" ").slice(1).join(" ").replace(/^[A-Z]\.\s+/,"");
     const recentF=[],recentL=[];
     const full=new Map();

@@ -12,7 +12,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   const days=L=>plan(L).days||L._raw._shootDays||1;
   const isStage=L=>famOf(L.type)==="stage";
   const perDay=x=>!x?0:x.rate_unit==="hour"?x.rate_amount*8:x.rate_amount;
-  const HOLIDAY=x=>{const m=x.getUTCMonth(),day=x.getUTCDate(),y=x.getUTCFullYear();if(m===6&&day>=3&&day<=5)return true;if((m===11&&day>=22)||(m===0&&day<=2))return true;if(m===10){const f=new Date(Date.UTC(y,10,1,12)).getUTCDay();const thu=1+((4-f+7)%7)+21;if(day>=thu-4&&day<=thu+3)return true;}return false;};
+  const HOLIDAY=x=>{const m=x.getUTCMonth(),day=x.getUTCDate(),y=x.getUTCFullYear();if(m===6&&day>=3&&day<=5)return true;if((m===11&&day>=24)||(m===0&&day<=1))return true;if(m===10){const f=new Date(Date.UTC(y,10,1,12)).getUTCDay();const thu=1+((4-f+7)%7)+21;if(day>=thu-1&&day<=thu+1)return true;}return false;};
   const FILM_TYPES=/^(Feature Film|Short Film|Student Film|Independent Film|Experimental Film|Documentary|Background \/ Extras|Stand-In|Body Double|Stunts)$/;
 
   // ── Part A: logic ─────────────────────────────────────────────────────────
@@ -112,13 +112,15 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     if(win<n)return[{detail:`${n} days in ${win}-day window`}];
     if(n===1)return win===1||(/\bbetween\b/i.test(note)&&win<=7)?[]:[{detail:`1 day, ${win}-day window: ${note}`}];
     const allow=/saturdays/i.test(note)||plan(L).mode==="saturdays"?n*7:Math.max(n*3+1,Math.ceil(n/5)*7,Math.ceil(n/2)*7);
-    return win>allow?[{detail:`${n} days in ${win}-day window`}]:[];
+    // Round 7: a long shoot that breaks for a holiday (and says so) gets that week back.
+    const hol=n>=4&&/thanksgiving|christmas|new year|fourth of july/i.test(note)?7:0;
+    return win>allow+hol?[{detail:`${n} days in ${win}-day window`}]:[];
   });
-  check(9,"r3_deadline_gap","Deadline not 5 days to 10 weeks before the shoot (round 4 caps the expiration at 3 months, so far-out shoots close earlier)",L=>{const g=Math.round((d(L.shoot_start)-d(L.deadline))/DAY);return g<5||g>70?[{detail:`${g} days`}]:[];});
-  check(9,"r3_start_1_6_months","Start date not 1–6 months out",L=>{const now=new Date();now.setUTCHours(12,0,0,0);const g=Math.round((d(L.shoot_start)-now)/DAY);return g<28||g>186?[{detail:`${L.shoot_start} (${g} days)`}]:[];});
+  check(9,"r3_deadline_gap","Deadline not 1–4 weeks before the shoot (round 7)",L=>{const g=Math.round((d(L.shoot_start)-d(L.deadline))/DAY);return g<7||g>28?[{detail:`${g} days`}]:[];});
+  check(9,"r3_start_1_6_months","Start date not 6 weeks–2 months after posting (round 7)",L=>{const now=d(L._raw._postedAt||new Date().toISOString());const g=Math.round((d(L.shoot_start)-now)/DAY);return g<42||g>60?[{detail:`${L.shoot_start} (${g} days)`}]:[];});
   check(9,"r3_month_spread_note","Months covered by the board",null);
   check(9,"r3_batch_same_start","Two listings in one batch share a start date",null);
-  check(9,"r3_month_cluster","Board clusters in one month (>30% of listings)",null);
+  check(9,"r3_month_cluster","Board clusters in one month (>65% of listings; round 7 starts sit 6 weeks–2 months out, so one board spans two months)",null);
 
   // ── Part D: synopsis ──────────────────────────────────────────────────────
   // Round 5 asks for runtime, scale and usage in the summary; only
@@ -168,7 +170,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     });
     const byBatch={};listings.forEach(L=>{const b=L._batch;(byBatch[b]=byBatch[b]||[]).forEach(o=>{if(o.shoot_start===L.shoot_start)add("r3_batch_same_start",L.id,`${L.shoot_start} also ${o.id}`);});byBatch[b].push(L);});
     const months={};listings.forEach(L=>{const m=String(L.shoot_start).slice(0,7);months[m]=(months[m]||0)+1;});
-    Object.entries(months).forEach(([m,c])=>{if(c>listings.length*0.30)add("r3_month_cluster","board",`${m}: ${c}`);});
+    Object.entries(months).forEach(([m,c])=>{if(c>listings.length*0.65)add("r3_month_cluster","board",`${m}: ${c}`);});
     const opener=n=>clean(n).split(" ").slice(0,3).map(w=>/^\d+$|^(one|two|three|four|five|six|seven|eight|nine|ten)$/.test(w)?"#":w).join(" ");
     listings.forEach((L,i)=>{const o=opener(L.schedule_note);for(let j=Math.max(0,i-30);j<i;j++)if(opener(listings[j].schedule_note)===o){add("r3_note_repeat_opener",L.id,`"${o}" also ${listings[j].id}`);break;}});
 

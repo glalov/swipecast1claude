@@ -41,6 +41,8 @@ while(listings.length<N&&rounds<N){
   rounds++;
   if(!SAME_BROWSER)store.clear();
   const seenArg=ACG.seenRowsFor?seenRows.slice():seenRows.map(r=>r.key);
+  // Round 7: three days pass between batches, as between real admin runs.
+  ctx.__acgShiftDays=(rounds-1)*3;
   const batch=ACG.generateBatch("admin",listings.slice(),Math.min(5,N-listings.length),seenArg);
   const lr=ctx.__acgLastRun;if(lr){ATTEMPTS+=lr.attempts;REJECTED+=lr.rejected;Object.entries(lr.why||{}).forEach(([k,v])=>{WHY["build: "+k]=(WHY["build: "+k]||0)+v;});(lr.rejectLog||[]).forEach(x=>(x.problems.length?x.problems:["not fresh enough"]).forEach(p=>{const k=args.includes("--why-full")?p:p.replace(/:.*$/,"").replace(/ on .*$/,"");WHY[k]=(WHY[k]||0)+1;}));}
   for(const raw of batch){
@@ -437,6 +439,7 @@ const ctxNow={names:(()=>{
   return {first,last,famous:new Set((D.famous||[]).map(clean))};
 })()};
 require("./checks-r6.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(12,k,l,null));},sentences,clean,famOf,parseRoleRate});
+require("./checks-r7.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(13,k,l,null));},sentences,clean,famOf});
 require("./checks-r5.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(11,k,l,null));},sentences,clean,famOf,parseRoleRate,PROJECT_TYPE_OPTIONS});
 require("./checks-r4.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(10,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r3.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(9,k,l,null));},sentences,clean,famOf,parseRoleRate});
@@ -504,7 +507,8 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
   const chars=new Map(),crew=new Map(),surnames={};
   // Relatives share a surname on purpose (round 2), so a family counts once.
   const famOfRole=(L,name)=>{const raw=(L._raw._roles||[]).find(x=>x.name===name);return raw&&raw._familyId||null;};
-  const people=L=>L.roles.filter(r=>!isGroup(r)).map(r=>({n:r.name,k:"char",fam:famOfRole(L,r.name)})).concat((L._raw._crewNames||[]).map(n=>({n,k:"crew",fam:null})));
+  const isFnName=n=>/[A-Z]{2}/.test(String(n))&&/^[A-Z0-9][A-Z0-9 '’&\/.-]*( \([A-Z][a-z]+\))?$/.test(String(n));
+  const people=L=>L.roles.filter(r=>!isGroup(r)&&!isFnName(r.name)).map(r=>({n:r.name,k:"char",fam:famOfRole(L,r.name)})).concat((L._raw._crewNames||[]).map(n=>({n,k:"crew",fam:null})));
   listings.forEach(L=>{
     people(L).forEach(p=>{
       const m=p.k==="char"?chars:crew;const other=p.k==="char"?crew:chars;
@@ -588,6 +592,8 @@ if(global.__r5report){const R=global.__r5report;console.log(`\nROUND 5 — type 
 const firstOk=listings.length-(results.find(r=>r.key==="first_sentence").listings);
 console.log(`\nFirst sentence says what the project is: ${firstOk}/${listings.length}`);
 const failing=results.filter(r=>r.issues);
+const rr7=k=>{const r=results.find(x=>x.key===k);return r?r.issues:"?";};
+if(global.__r7report)console.log(`\nROUND 7 — starts outside the 6-week–2-month window: ${rr7("r7_start_window")} · date-order failures: ${rr7("r7_date_order")} · start dates used: ${global.__r7report.startDates} (max ${global.__r7report.startMax} per date) · roles with no counterpart: ${rr7("r7_role_counterpart")} · cross-field contradictions: ${rr7("r7_contradiction")} · mirrored partner templates: ${rr7("r7_partner_templates")} · sub-location-only listings: ${rr7("r7_sublocation")} · role-naming violations: ${rr7("r7_role_naming")} (${global.__r7report.fnListings} function-named listings)`);
 if(args.includes("--why"))console.log("Rejections by reason (last 40 per batch):",JSON.stringify(Object.entries(WHY).sort((a,b)=>b[1]-a[1]).slice(0,25)),`attempts ${ATTEMPTS}, rejected ${REJECTED}`);
 console.log(`Checks passing: ${results.length-failing.length}/${results.length}\n`);
 if(JSON_OUT)fs.writeFileSync(JSON_OUT,JSON.stringify({n:listings.length,ms,nyc:board._nyc,areaMax:board._areaMax,types:tc,names:board._names,results},null,1));

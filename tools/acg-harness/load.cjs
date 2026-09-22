@@ -25,7 +25,7 @@ function loadACG(){
   const ctx={console,localStorage,Math:M,Date,JSON,Set,Map,Array,Object,String,Number,RegExp,Error,isFinite,parseInt,parseFloat,Intl};
   ctx.window=ctx;
   vm.createContext(ctx);
-  vm.runInContext(grabFunction(src,"fmtShootDay")+"\n"+grabFunction(src,"parseRoleRate")+"\n"+block.replace("const ACG =","var ACG =")+"\nthis.ACG=ACG;",ctx,{filename:"acg-block.js"});
+  vm.runInContext(grabFunction(src,"fmtShootDay")+"\n"+grabFunction(src,"parseRoleRate")+"\n"+(src.indexOf("function castingDateProblems(")>-1?grabFunction(src,"castingDateProblems")+"\n":"")+block.replace("const ACG =","var ACG =")+"\nthis.ACG=ACG;",ctx,{filename:"acg-block.js"});
   return {ACG:ctx.ACG,ctx,store,parseRoleRate:ctx.parseRoleRate,src};
 }
 module.exports={loadACG};

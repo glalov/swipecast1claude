@@ -863,6 +863,38 @@ function scheduleNoteHasDate(note){
   const raw=(note||"").trim();
   return !!raw&&raw!==scheduleNoteAddendum(raw);
 }
+// Round 7: dates that can't all be true, in plain words that say what to fix.
+// One checker for the generator (a draft never arrives with one of these), the
+// Review & Edit Draft panel and the casting edit form (live, as the admin
+// types). Returns [{key,msg}]; empty when the dates make sense.
+function castingDateProblems(f,opts){
+  const o=opts||{};const DAY=86400000;
+  const d=v=>{const x=String(v||"").slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(x)?new Date(x+"T12:00:00Z"):null;};
+  const fmt=x=>x.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
+  const start=d(f.shoot_start),end=d(f.shoot_end),dl=d(f.deadline),exp=d(f.expires_at);
+  const today=o.today?d(o.today):(()=>{const t=new Date();t.setUTCHours(12,0,0,0);return t;})();
+  const posted=d(f.go_live_at)||d(f.created_at);
+  const out=[];const add=(key,msg)=>out.push({key,msg});
+  if(dl&&start&&dl>=start)add("deadline_start",`The application deadline (${fmt(dl)}) is ${+dl===+start?"on the same day the shoot starts":`after the shoot starts (${fmt(start)})`}. Move the deadline earlier.`);
+  if(exp&&start&&exp>=start)add("expiry_start",`The listing expires (${fmt(exp)}) ${+exp===+start?"on the day the shoot starts":`after the shoot starts (${fmt(start)})`}. Set the expiration before the shoot start.`);
+  if(exp&&dl&&exp<dl)add("expiry_deadline",`The listing expires (${fmt(exp)}) before the application deadline (${fmt(dl)}). Move the expiration to the deadline or later.`);
+  if(start&&end&&end<start)add("end_start",`The shoot ends (${fmt(end)}) before it starts (${fmt(start)}). Fix the shoot end date.`);
+  if(posted){
+    const later=[[dl,"application deadline"],[exp,"expiration"],[start,"shoot start"]].filter(([x])=>x&&posted>x);
+    if(later.length)add("posted_after",`The posted date (${fmt(posted)}) is after the ${later.map(([x,n])=>`${n} (${fmt(x)})`).join(" and the ")}. Move the posted date earlier or the dates later.`);
+  }
+  if(start&&!o.allowPastStart&&start<today)add("start_past",`The shoot start (${fmt(start)}) is in the past. Pick a future start date.`);
+  // Shoot days the schedule note promises vs the days the window holds.
+  const W={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20};
+  const note=String(f.schedule_note||"");let noteDays=0;
+  const re=/\b(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)[- ](?:(?:shoot|shooting|work|filming|recording|production)[- ])?days?\b(?! a week| per week| each week| a month| before| after| notice| ahead| out| in advance| later| earlier| of rehearsal)/gi;
+  let m;while((m=re.exec(note))){const w=m[1].toLowerCase();const n=/^\d+$/.test(w)?+w:W[w];if(n>noteDays)noteDays=n;}
+  const win=start&&end&&end>=start?Math.round((end-start)/DAY)+1:start&&!end?1:0;
+  if(noteDays&&win&&noteDays>win)add("note_days",`The schedule note says ${noteDays} shoot days, but the shoot window (${fmt(start)}${end&&+end!==+start?` – ${fmt(end)}`:""}) only has ${win} day${win===1?"":"s"}. Fix the note or widen the dates.`);
+  const total=noteDays||win;
+  if(total)(f.roles||[]).forEach(r=>{const n=+r.est_days||0;if(n>total)add("role_days",`${String(r.name||"A role").trim()} is set to ${n} days, but the shoot has only ${total}. Lower the role's days.`);});
+  return out;
+}
 // True only when the CD supplied at least one Where & When field.
 function hasWhereWhen(c){return !!(c&&(c.shoot_start||c.shoot_end||(c.shoot_location||"").trim()||scheduleNoteAddendum(c.schedule_note)));}
 // Turn a free-text rate ("$500-$750/day", "$1,200 flat", "Copy/credit/meals")
@@ -32284,13 +32316,33 @@ const ACG = (()=>{
     if(ws.length>7||!V3_VENUE_NOUN.test(s))return "";
     return s;
   }
+  // Round 7: the location is the venue, never a corner of it. "A community
+  // health center front desk" is a clinic; "the break room of a bus depot" is
+  // a bus depot. A phrase that is only a room, with no venue in it, is dropped
+  // so another place (or the generic one) is used instead.
+  const V7_SUB_ROOM=/(front desk|reception desk|reception area|reception|break room|breakroom|locker room|changing room|green room|waiting room|waiting area|dressing room|storage room|store room|supply closet|back office|back room|staff room|staff kitchen|utility room|janitor'?s? closet|rest ?room|bathroom|stairwell|hallway|corridor|parking lot|car park|loading dock|lobby|foyer|mezzanine|counter|kitchen|basement|rooftop|roof|entrance|doorway|driveway|porch|stoop|aisle|balcony|cubicle|break area|ticket window|drive-through window)/i;
+  function v7MainPlace(phrase){
+    let s=String(phrase||"").trim();
+    if(!s)return "";
+    // "the break room of a bus depot" → "a bus depot"
+    const m2=s.match(/^(?:a|an|the)\s+.*?\b(?:of|at|in|inside|behind|off)\s+((?:a|an|the)\s+.+)$/i);
+    if(m2&&V7_SUB_ROOM.test(s.slice(0,s.length-m2[1].length))&&V3_VENUE_NOUN.test(m2[1]))return m2[1];
+    // "a community health center front desk" → "a community health center"
+    const m=s.match(new RegExp("^((?:a|an|the)\\s+.+?)\\s+(?:"+V7_SUB_ROOM.source+")\\s*$","i"));
+    if(m){let main=m[1].trim();
+      for(let i=0;i<3;i++)main=main.replace(/\s+(in|on|at|a|an|the|of|with|for|and|to|by|from|sharing|next|inside|behind)$/i,"").trim();
+      return V3_VENUE_NOUN.test(main)&&main.split(/\s+/).length>=2?main:"";}
+    // A room on its own, with no venue named, is not a location.
+    if(V7_SUB_ROOM.test(s)&&!V3_VENUE_NOUN.test(s.replace(V7_SUB_ROOM,"")))return "";
+    return s;
+  }
   function v3Venue(seed,type,fam){
     if(fam==="stage")return {venue:pick(V3_STAGE_VENUES[type]||V3_STAGE_VENUES.Theater),need:"",placeNP:""};
     if(fam==="audio"||type==="Animation"||type==="Voiceover")return {venue:pick(["a recording studio","a voiceover booth","a small audio studio"]),need:"",placeNP:""};
     if(type==="Video Game"&&!/capture/i.test((seed.w||[]).join(" ")))return {venue:pick(["a recording studio","a game audio studio"]),need:"",placeNP:""};
     const story=`${seed.p||""} ${seed.h||""} ${seed.h2||""}`;
     let need=v3Need(story);
-    const places=(seed.w||[]).map(v3VenuePhrase).filter(Boolean);
+    const places=(seed.w||[]).map(v3VenuePhrase).map(v7MainPlace).filter(Boolean);
     if(type==="Motion Capture"){const cap=places.filter(p=>/capture/i.test(p));return {venue:cap.length?pick(cap):"a motion-capture stage",need:"industrial",placeNP:""};}
     if(need==="soundstage")return {venue:pick(["a soundstage with a built set","a film studio with a built set"]),need:"industrial",placeNP:""};
     const fits=need?places.filter(p=>V3_NEED[need].test(p)):[];
@@ -32692,6 +32744,7 @@ const ACG = (()=>{
       h.shapeKeys=h.shapeKeys||new Set();
       v7ShapeKeys({synopsis:c.synopsis,tagline:c.tagline,roles:c.roles||[],_crewNames:String(c.crew_credits||"").split(" · ").map(x=>x.replace(/^[^:]+:\s*/,"").trim())}).forEach(k=>h.shapeKeys.add(k));
       {const dl=String(c.deadline||c.expires_at||"").slice(0,10);if(dl){h.v7Deadlines=h.v7Deadlines||{};h.v7Deadlines[dl]=(h.v7Deadlines[dl]||0)+1;}}
+      {const ex=String(c.expires_at||"").slice(0,10);if(ex){h.v7Expires=h.v7Expires||{};h.v7Expires[ex]=(h.v7Expires[ex]||0)+1;}}
       if(i<120){h.recentTotal=(h.recentTotal||0)+1;if(c.location==="New York, NY")h.nycRecent=(h.nycRecent||0)+1;}
       if(i===0)h.lastOpen4=clean(c.synopsis).split(" ").slice(0,4).join(" ");
       if(i<120){h.skeletons=h.skeletons||{};const sk=v3Skeleton(v3Sentences(c.synopsis)[0],"");h.skeletons[sk]=(h.skeletons[sk]||0)+1;}
@@ -32715,6 +32768,8 @@ const ACG = (()=>{
         if(c.shoot_start)t("month",String(c.shoot_start).slice(0,7));
       }
       if(i<60&&c.shoot_start){h.v5Starts=h.v5Starts||new Set();h.v5Starts.add(String(c.shoot_start).slice(0,10));}
+      // Round 7: every upcoming start counts toward the two-per-date cap.
+      if(c.shoot_start&&String(c.shoot_start).slice(0,10)>=v5Iso(acgNow())){const k=String(c.shoot_start).slice(0,10);h.v5StartN=h.v5StartN||{};h.v5StartN[k]=(h.v5StartN[k]||0)+1;}
       if(i<30&&c.schedule_note){h.v5Openers=h.v5Openers||new Set();h.v5Openers.add(v5Opener(c.schedule_note));}
       const city=CITIES.find(x=>x.name===c.location);
       if(city){
@@ -33435,8 +33490,10 @@ const ACG = (()=>{
   function v5Holiday(d){
     const m=d.getUTCMonth(),day=d.getUTCDate(),y=d.getUTCFullYear();
     if(m===6&&day>=3&&day<=5)return true;
-    if((m===11&&day>=22)||(m===0&&day<=2))return true;
-    if(m===10){const first=new Date(Date.UTC(y,10,1,12)).getUTCDay();const thu=1+((4-first+7)%7)+21;if(day>=thu-4&&day<=thu+3)return true;}
+    // Round 7: the holidays themselves, not the fortnight around them — with
+    // starts 6 weeks–2 months out, a wide blackout left no start dates at all.
+    if((m===11&&day>=24)||(m===0&&day<=1))return true;
+    if(m===10){const first=new Date(Date.UTC(y,10,1,12)).getUTCDay();const thu=1+((4-first+7)%7)+21;if(day>=thu-1&&day<=thu+1)return true;}
     return false;
   }
   const V5_MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -33486,66 +33543,68 @@ const ACG = (()=>{
       if(plan.mode==="weekdays")return w>=1&&w<=5;
       if(plan.mode==="sixday")return w!==0;
       return true;};
+    // Round 7: longer shoots break for holidays rather than moving months out.
+    const ok0=ok;const okH=x=>ok0(x)&&!(plan.days>=4&&v5Holiday(x));
     while(out.length<plan.days&&guard++<400){
-      if(ok(d)){out.push(new Date(d.getTime()));if(plan.mode==="spread")d=new Date(d.getTime()+V5_DAY*rand(1,2,1));else d=new Date(d.getTime()+V5_DAY);}
+      if(okH(d)){out.push(new Date(d.getTime()));if(plan.mode==="spread")d=new Date(d.getTime()+V5_DAY*rand(1,2,1));else d=new Date(d.getTime()+V5_DAY);}
       else d=new Date(d.getTime()+V5_DAY);
     }
     return out;
   }
+  // Round 7: "now" goes through one hook so the harness can advance its clock
+  // between batches the way days pass between real admin runs.
+  function acgNow(){const d=new Date(Date.now()+((typeof window!=="undefined"&&window.__acgShiftDays)||0)*86400000);d.setUTCHours(12,0,0,0);return d;}
+  // Round 7: shoots START 6 weeks to 2 months after the listing is generated
+  // (actors skip listings months ahead); long formats may END later. No more
+  // than two listings share a start date. Submissions close 1–4 weeks before
+  // the start, and the listing expires on the deadline or up to three days
+  // after it — always before the shoot starts.
+  const V7_START_MIN=42,V7_START_MAX=60;
   function v5Dates(plan,h,res){
-    const now=new Date();now.setUTCHours(12,0,0,0);
-    // Shoots still spread over 1–5 months. The EXPIRATION is what the field
-    // promises to keep inside 1–3 months, so a shoot that is months out just
-    // closes submissions earlier than one next month.
-    const lo=new Date(now.getTime()+40*V5_DAY),hi=new Date(now.getTime()+160*V5_DAY);
-    // Six calendar months ahead; the one the board has used least wins.
-    const months=[];for(let i=0;i<7;i++){const m=new Date(Date.UTC(lo.getUTCFullYear(),lo.getUTCMonth()+i,1,12));if(m<=hi)months.push(m);}
-    const key=m=>`${m.getUTCFullYear()}-${String(m.getUTCMonth()+1).padStart(2,"0")}`;
-    const counts={};months.forEach(m=>{counts[key(m)]=v5Count(h,res,"month",key(m));});
-    const mix={};months.forEach(m=>{mix[key(m)]=1/months.length;});
-    // Round 5: when the chosen month has no workable day (December's holiday
-    // blackout), fall back to the LEAST used month, not a random one.
-    const order=[v5Pick(mix,counts,months.map(key))].concat(months.map(key).sort((a,b)=>(counts[a]||0)-(counts[b]||0)));
-    const taken=new Set([...(h.v5Starts||[]),...(res.v5Starts||[])]);
-    for(const mk of order){
-      const m=months.find(x=>key(x)===mk);
-      const days=[];
-      for(let d=1;d<=31;d++){const x=new Date(Date.UTC(m.getUTCFullYear(),m.getUTCMonth(),d,12));if(x.getUTCMonth()!==m.getUTCMonth())break;if(x<lo||x>hi)continue;days.push(x);}
-      for(const s0 of cgShuffle(days)){
-        let s=s0;
-        if(plan.stage&&!plan.read&&s.getUTCDay()!==pick([1,2]))continue;
-        if(plan.mode==="weekends"&&s.getUTCDay()!==6)continue;
-        if(plan.mode==="saturdays"&&s.getUTCDay()!==6)continue;
-        if(plan.mode==="weekdays"&&s.getUTCDay()!==1)continue;
-        if(plan.mode==="sixday"&&s.getUTCDay()!==1)continue;
-        if(plan.evening&&(s.getUTCDay()===0||s.getUTCDay()===6))continue;
-        const iso=v5Iso(s);
-        if(res.v5Starts&&res.v5Starts.has(iso))continue;
-        if(taken.has(iso)&&Math.random()<0.5)continue;
-        let work,end;
-        const guardEnd=plan.stage&&plan.weeks?new Date(s.getTime()+(plan.weeks*7-1)*V5_DAY):null;
-        if(plan.stage){end=new Date(s.getTime()+(plan.window-1)*V5_DAY);work=[s,end];}
-        else{work=v5WorkDates(s,plan);end=work[work.length-1];if(plan.mode==="flex1"){end=new Date(s.getTime()+rand(2,6,1)*V5_DAY);}}
-        if(!end)continue;
-        // No work day on a holiday (stage runs are allowed to play through).
-        const span=[];for(let t=s.getTime();t<=end.getTime();t+=V5_DAY)span.push(new Date(t));
-        if(guardEnd?span.filter(x=>x<=guardEnd).some(v5Holiday):span.some(v5Holiday))continue;
-        // Round 4: submissions close 5 days to 6 weeks before the shoot, and
-        // always inside the 1–3 months the expiration field promises.
-        // Round 5: the deadline is drawn from every day it may fall on — 5 to
-        // 70 days before the shoot and 1–3 months out — and no date carries
-        // more than two listings. Clamping to the edge of the window put 14
-        // of 20 drafts on the same expiration date.
-        const minDl=new Date(now.getTime()+28*V5_DAY),maxDl=new Date(now.getTime()+92*V5_DAY);
-        const lo=new Date(Math.max(minDl.getTime(),s.getTime()-70*V5_DAY)),hi=new Date(Math.min(maxDl.getTime(),s.getTime()-5*V5_DAY));
-        if(hi<lo)continue;
-        const cands=[];for(let t=lo.getTime();t<=hi.getTime();t+=V5_DAY){const k=v5Iso(new Date(t));const used=((h.v7Deadlines||{})[k]||0)+((res.v7Deadlines||{})[k]||0)+((res._v7DlBatch||{})[k]||0);if(used<2)cands.push(new Date(t));}
-        if(!cands.length)continue;
-        // Prefer the stretch 1–6 weeks before the shoot when it is available.
-        const nearer=cands.filter(x=>(s-x)/V5_DAY<=42);
-        const dl=pick(nearer.length&&Math.random()<0.75?nearer:cands);
-        return {start:s,end,work,deadline:dl,monthKey:mk};
-      }
+    const now=acgNow();
+    const lo=new Date(now.getTime()+V7_START_MIN*V5_DAY),hi=new Date(now.getTime()+V7_START_MAX*V5_DAY);
+    const startN=k=>((h.v5StartN||{})[k]||0)+((res.v5StartN||{})[k]||0);
+    const dlN=k=>((h.v7Deadlines||{})[k]||0)+((res.v7Deadlines||{})[k]||0)+((res._v7DlBatch||{})[k]||0);
+    const days=[];for(let t=lo.getTime();t<=hi.getTime();t+=V5_DAY)days.push(new Date(t));
+    // Least-used start dates first, so starts spread across the window.
+    const order=cgShuffle(days).filter(x=>startN(v5Iso(x))<2).sort((a,b)=>startN(v5Iso(a))-startN(v5Iso(b)));
+    for(const s of order){
+      if(plan.stage&&!plan.read&&[1,2].indexOf(s.getUTCDay())<0)continue;
+      if(plan.mode==="weekends"&&s.getUTCDay()!==6)continue;
+      if(plan.mode==="saturdays"&&s.getUTCDay()!==6)continue;
+      if(plan.mode==="weekdays"&&s.getUTCDay()!==1)continue;
+      if(plan.mode==="sixday"&&s.getUTCDay()!==1)continue;
+      if(plan.evening&&(s.getUTCDay()===0||s.getUTCDay()===6))continue;
+      const iso=v5Iso(s);
+      if(res.v5Starts&&res.v5Starts.has(iso))continue;
+      let work,end;
+      const guardEnd=plan.stage&&plan.weeks?new Date(s.getTime()+(plan.weeks*7-1)*V5_DAY):null;
+      if(plan.stage){end=new Date(s.getTime()+(plan.window-1)*V5_DAY);work=[s,end];}
+      else{work=v5WorkDates(s,plan);end=work[work.length-1];if(plan.mode==="flex1"){end=new Date(s.getTime()+rand(2,6,1)*V5_DAY);}}
+      if(!end)continue;
+      // No work day on a holiday (stage runs are allowed to play through).
+      const span=[];for(let t=s.getTime();t<=end.getTime();t+=V5_DAY)span.push(new Date(t));
+      // Short shoots avoid holiday weeks altogether; long shoots and stage runs
+      // break for them (the schedule note says so).
+      if(v5Holiday(s))continue;
+      const longRun=plan.stage||plan.days>=4;
+      if(!longRun&&span.some(v5Holiday))continue;
+      // A run of consecutive days can't straddle a holiday: the note says "in a row".
+      if(plan.mode==="consecutive"&&span.some(v5Holiday))continue;
+      if(!plan.stage&&work.some(v5Holiday))continue;
+      // Deadline 7–28 days before the start, at least a week after posting,
+      // two listings per date at most; expiration 0–3 days after it.
+      const dLo=new Date(Math.max(s.getTime()-28*V5_DAY,now.getTime()+7*V5_DAY)),dHi=new Date(s.getTime()-7*V5_DAY);
+      const cands=[];for(let t=dLo.getTime();t<=dHi.getTime();t+=V5_DAY){if(dlN(v5Iso(new Date(t)))<2)cands.push(new Date(t));}
+      if(!cands.length)continue;
+      const dl=pick(cands);
+      const gap=Math.round((s-dl)/V5_DAY);
+      const expN=k=>((h.v7Expires||{})[k]||0)+((res.v7Expires||{})[k]||0);
+      const offs=cgShuffle([0,1,2,3].filter(x=>x<gap&&expN(v5Iso(new Date(dl.getTime()+x*V5_DAY)))<2));
+      if(!offs.length)continue;
+      const exp=new Date(dl.getTime()+offs[0]*V5_DAY);
+      const mk=iso.slice(0,7);
+      return {start:s,end,work,deadline:dl,expires:exp,monthKey:mk};
     }
     return null;
   }
@@ -34043,7 +34102,9 @@ const ACG = (()=>{
       if(win<days)out.push("more shoot days than the window");
       if(days===1&&win>1&&!/\bbetween\b/i.test(note))out.push("one-day shoot with a multi-day window the note doesn't explain");
       const slack={one:1,consecutive:days,weekdays:Math.ceil(days/5)*7,sixday:Math.ceil(days/6)*7,weekends:Math.ceil(days/2)*7,saturdays:days*7,spread:days*3+1,flex1:7}[plan.mode]||days*2;
-      if(win>slack)out.push("window much longer than the shoot days");
+      // Round 7: holiday days a long shoot breaks for widen the window.
+      let holi=0;for(let t=v5D(item.shoot_start).getTime();t<=v5D(item.shoot_end).getTime();t+=V5_DAY)if(v5Holiday(new Date(t)))holi++;
+      if(win>slack+(days>=4?holi+2:0))out.push("window much longer than the shoot days");
     }
     // Round 4 caps the expiration at three months, so a shoot four or five
     // months out simply closes submissions earlier than six weeks ahead.
@@ -34189,47 +34250,6 @@ const ACG = (()=>{
   // 7. A lead needs enough to act on: who they are, who they are to the other
   // leads (by name), and what the part asks of the actor.
   const V6_REL=/\b(rival|rivals|partner|partners|boss|sibling|siblings|ex|best friend|competitor|neighbou?r|roommate|co-?worker|colleague|mentor|protégé|protege|assistant|understudy)\b/i;
-  function v6LeadDeep(named,c){
-    const leads=named.filter(r=>!r._group&&!r._job&&(/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||"")||+r.est_days>=5));
-    if(!leads.length)return;
-    const first=r=>String(r.name||"").split(" ")[0];
-    leads.forEach(r=>{
-      const co=named.filter(o=>o!==r&&!o._group&&!o._job);
-      if(!co.length)return;
-      const partner=co.find(o=>/^(Lead|Principal|Principal Voice)$/i.test(o.role_type||""))||co[0];
-      let d=String(r.description||"").trim();
-      const others=co.map(first);
-      // A relationship word has to say who it is about.
-      const rel=d.match(V6_REL);
-      if(rel&&!others.some(n=>d.indexOf(n)>-1)){
-        const w=rel[0].toLowerCase().replace(/s$/,"");
-        d+=` ${/^(ex|best friend)$/.test(w)?`The ${w} is ${first(partner)}`:`${first(r)}'s ${w} is ${first(partner)}`}.`;
-      }
-      // Who they play against, by name — the breakdown has to say it.
-      if(!others.some(n=>d.indexOf(n)>-1)){
-        // Round 5: written from this production's facts, never a stock line.
-        const pl=v7PartnerLine(r,partner,c,c.h||{},c.res||{},c.names||[]);
-        if(pl){d+=` ${pl}`;(c.res.shapeKeys=c.res.shapeKeys||new Set());}
-      }
-      // What the part asks of the actor — only where the role is big enough to
-      // need saying, and always in this format's own terms.
-      if(+r.est_days>=5&&v3Sentences(d).length<3){
-        const dd=+r.est_days||1;
-        const demand=c.stage
-          ? [`${capFirst(first(r))} plays ${v3Words(c.perfs||dd)} performances of the same arc, so it has to stay alive on repetition`,`${capFirst(first(r))} is on for the whole evening with no offstage break to reset`,`Long stretches of stage time for ${first(r)}, with nothing to hide behind`]
-          : c.sessions
-          ? [`${capFirst(first(r))} has ${v3Words(dd)} ${dd===1?"session":"sessions"} of close work on mic, most of it alone in the booth`,`The whole performance is voice, so ${first(r)} needs range more than anything`]
-          : c.live
-          ? [`${capFirst(first(r))} works the crowd live, with no second take`,`${capFirst(v3Words(dd))} days in front of a real audience, so ${first(r)} has to hold a room`]
-          : c.photo
-          ? [`${capFirst(v3Words(dd))} days in front of the camera for ${first(r)}, with a lot of repetition between setups`,`${capFirst(first(r))} carries the whole look, so stillness and patience matter`]
-          : [`It is ${v3Words(dd)} ${dd===1?"day":"days"} of work and ${first(r)} is in almost every setup`,`${capFirst(first(r))} works ${v3Words(dd)} of the ${c.days>1?v3Words(c.days)+" ":""}days, so the part needs stamina as much as instinct`,`Long days, and ${first(r)} holds the middle of the ${c.noun}`,`${capFirst(v3Words(dd))} days of work for ${first(r)}, much of it quiet reaction rather than dialogue`];
-        const dm=cgShuffle(demand).map(x=>`${x}.`).find(x=>!v7ShapeUsed(v7Shape(x,c.names||[]),c.h||{},c.res||{}));
-        if(dm)d+=` ${dm}`;
-      }
-      r.description=d.replace(/\s{2,}/g," ").trim();
-    });
-  }
 
   // 9. The listing asks for exactly what the roles ask for, and says who the
   // extra requirements are for.
@@ -34286,21 +34306,24 @@ const ACG = (()=>{
     // 7. Lead depth.
     roles.filter(r=>!r._group&&!r._job&&(/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||"")||+r.est_days>=5)).forEach(r=>{
       const d=String(r.description||"");
-      if(v3Sentences(d).length<2||d.split(/\s+/).length<18)out.push(`${r.name} is a lead with too little to act on`);
+      if(V7_FN.test(item.type)?d.split(/\s+/).length<12:(v3Sentences(d).length<2||d.split(/\s+/).length<18))out.push(`${r.name} is a lead with too little to act on`);
       const firsts=roles.filter(o=>o!==r&&!o._group).map(o=>String(o.name).split(" ")[0]);
-      if(V6_REL.test(d)&&!firsts.some(n=>d.indexOf(n)>-1))out.push(`${r.name}: relationship word with nobody named`);
+      const own=new RegExp("\\b("+String(r._slot||"").replace(/^(the|a|an)\s+/i,"").split(/\s+/).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")\\b","i");
+      if(V6_REL.test(d.replace(own,""))&&!firsts.some(n=>d.indexOf(n)>-1))out.push(`${r.name}: relationship word with nobody named`);
     });
-    // 8. Dates.
-    const day=86400000,now=new Date();now.setUTCHours(12,0,0,0);
-    const exp=item.expires_at?new Date(String(item.expires_at).slice(0,10)+"T12:00:00Z"):null;
-    const dl=item.deadline?v5D(item.deadline):null;
-    if(exp){
-      const months=(exp-now)/day;
-      if(months<25||months>95)out.push(`expiration ${Math.round(months)} days out, not 1–3 months`);
-      if(dl&&exp<dl)out.push("expiration before the deadline");
+    // 8. Dates. Round 7: start 6 weeks–2 months after posting, deadline 1–4
+    // weeks before the start, expiration on the deadline or up to 3 days
+    // after, before the start; plus every check the admin editor runs.
+    {
+      const day=86400000,now=acgNow();
+      const posted=item._postedAt?v5D(item._postedAt):now;
+      const st=item.shoot_start?v5D(item.shoot_start):null,dl=item.deadline?v5D(item.deadline):null;
+      const exp=item.expires_at?new Date(String(item.expires_at).slice(0,10)+"T12:00:00Z"):null;
+      if(st){const g=Math.round((st-posted)/day);if(g<V7_START_MIN||g>V7_START_MAX)out.push(`shoot starts ${g} days after posting, not 6 weeks–2 months`);}
+      if(st&&dl){const g=Math.round((st-dl)/day);if(g<7||g>28)out.push(`deadline ${g} days before the start, not 1–4 weeks`);}
+      if(exp&&dl){const g=Math.round((exp-dl)/day);if(g<0||g>3)out.push(`expiration ${g} days after the deadline, not 0–3`);}
+      if(typeof castingDateProblems==="function")castingDateProblems({...item,created_at:item._postedAt,roles},{today:v5Iso(now)}).forEach(x=>out.push("date: "+x.msg));
     }
-    if(dl&&item.shoot_start&&!(dl<v5D(item.shoot_start)))out.push("deadline not before the shoot start");
-    if(dl&&dl<now)out.push("deadline already past");
     // 9. Submission requirements vs roles.
     const s=String(item.submission_requirements||"");
     const asksReel=/\breel\b|recent footage|shot recently/i.test(s),asksSelf=/self-tape|selftape/i.test(s);
@@ -34597,25 +34620,6 @@ const ACG = (()=>{
 
   // 4b. Scene partners, written from this production's own facts: the
   // partner's name and role, and the place they actually are together.
-  function v7PartnerLine(r,partner,c,h,res,names){
-    const A=String(r.name||"").split(" ")[0],B=String(partner.name||"").split(" ")[0];
-    const lab=String(partner._slot||"").replace(/^(the|a|an)\s+/i,"");
-    const ven=String(c.venue||"").replace(/^(A|An|The)\s/,m=>m.toLowerCase());
-    const where=ven&&!/studio|booth|stage|theater|soundstage|rehearsal|conference|writers/i.test(ven)?`${placePrep(ven)} ${ven}`:"";
-    const opts=[
-      ()=>`${A}'s main scene partner is ${B}, the ${lab}.`,
-      ()=>where?`Most of ${A}'s time is spent ${where} with ${B}, the ${lab}.`:null,
-      ()=>where?`${A} and ${B} (the ${lab}) are together ${where} for most of it.`:null,
-      ()=>`The relationship that matters most for ${A} is with ${B}, the ${lab}.`,
-      ()=>`${A} works most closely with ${B}, who plays the ${lab}.`,
-      ()=>where?`${A}'s biggest scenes are ${where}, opposite ${B} as the ${lab}.`:null,
-      ()=>`Whatever ${A} wants, ${B} (the ${lab}) is the person in the way or the person who helps.`,
-      ()=>`${A} spends most of it pushing against ${B}, the ${lab}.`
-    ];
-    c._usedShapes=c._usedShapes||new Set();
-    for(const f of cgShuffle(opts)){const s=f();if(!s)continue;if(V4_FILLER.test(s)||V7_STOCK.test(s))continue;const k=v7Shape(s,names);if(v7ShapeUsed(k,h,res)||c._usedShapes.has(k))continue;c._usedShapes.add(k);return s;}
-    return null;
-  }
 
   // 5. Logic.
   // The summary's promise ("four conversations", "two sisters") sets a
@@ -34860,7 +34864,43 @@ const ACG = (()=>{
     return o&&o.length?o:null;
   }
   // Identity lines: every one starts with the name, the way breakdowns read.
-  function v8Identity(r,voice){
+  // ── Round 7: role naming by format ───────────────────────────────────────
+  // Commercial-world breakdowns name roles by FUNCTION ("PATIENT", "NURSE
+  // PRACTITIONER") so actors can filter by role type; narrative formats keep
+  // character names with the function in the description. In function
+  // formats every mention of a person becomes their function, in capitals.
+  const V7_FN=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover)$/;
+  function v7FnLabel(slot){return String(slot||"role").trim().replace(/^(the|a|an|our|your)\s+/i,"").replace(/^other\s+/i,"").toUpperCase();}
+  function v7FnNaming(item,named){
+    const people=named.filter(r=>!r._group&&!r._job&&r.name);
+    if(!people.length)return [];
+    const labs=people.map(r=>v7FnLabel(r._slot));
+    const esc=x=>String(x).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    const P=people.map((r,i)=>{const F=String(r.name).split(" ")[0];const LAB=labs.filter(x=>x===labs[i]).length>1?`${labs[i]} (${F})`:labs[i];
+      return {r,F,full:String(r.name),lab:String(r._slot||"").trim().replace(/^(the|a|an|our|your)\s+/i,"").toLowerCase(),LAB};})
+      .sort((a,b)=>b.F.length-a.F.length);
+    const ref=p=>`the ${p.LAB}`;
+    const fix=(t,own)=>{
+      let x=String(t||"");if(!x)return x;
+      P.forEach(p=>{
+        x=x.replace(new RegExp("\\b"+esc(p.full)+"\\b","g"),p.F);
+        // "Cody, the patient" / "Cody (the patient)" / "our Cody" → the PATIENT
+        x=x.replace(new RegExp("\\b(?:our )?"+esc(p.F)+"(?:,| —) (?:the|our) "+esc(p.lab)+"\\b","gi"),ref(p));
+        x=x.replace(new RegExp("\\b"+esc(p.F)+" \\((?:the|our) "+esc(p.lab)+"\\)","gi"),ref(p));
+        // "As the patient, Cody needs…" in Cody's own text → "The PATIENT needs…"
+        if(own===p.r)x=x.replace(new RegExp("\\bAs (?:the|our) "+esc(p.lab)+", "+esc(p.F)+"\\b","g"),"The "+p.LAB);
+        x=x.replace(new RegExp("\\b"+esc(p.F)+"\\b","g"),ref(p));
+      });
+      return x.replace(/\b(the|our|a) the\b/gi,"$1").replace(/\bthe the\b/gi,"the").replace(/(^|[.!?:]\s+)the (?=[A-Z]{2})/g,(m,a)=>a+"The ").replace(/\s{2,}/g," ").trim();
+    };
+    ["synopsis","tagline","schedule_note","pay","submission_requirements"].forEach(k=>{if(item[k])item[k]=fix(item[k],null);});
+    people.forEach(r=>{r.description=fix(r.description,r).replace(/^([a-z])/,m=>m.toUpperCase());});
+    const old=P.map(p=>p.F);
+    P.forEach(p=>{p.r._person=p.full;p.r.name=p.LAB;});
+    return old;
+  }
+  function v8Identity(r,voice,fn){
+    if(fn)return [""];
     const F=String(r.name||"").split(" ")[0];
     let label=String(r._slot||"").trim();
     const bare=/^[A-Z][a-z]+'s\s/.test(label)||/^(the|a|an)\s/i.test(label)?label:`the ${label}`;
@@ -34890,10 +34930,13 @@ const ACG = (()=>{
         if(usedStruct.has(id)||(recent[id]||0)>=2)continue;
         const [move,place]=id.split(":");
         const lines=v8Move(move,r,cc);if(!lines)continue;
-        for(const idn of cgShuffle(v8Identity(r,c.voice))){
+        for(const idn of cgShuffle(v8Identity(r,c.voice,c.fn))){
           for(const ln of cgShuffle(lines)){
             let parts;
             if(place==="middle"&&/^__(MERGE|FLIP|SKLEAD|DETAIL__)/.test(ln))continue;
+            if(!idn&&(/^__(MERGE|SKLEAD)/.test(ln)||(/^__DETAIL__/.test(ln)&&place==="before")))continue;
+            // Round 7: scene-partner information goes on one role of a pair only.
+            if(/^(partner|sharewith):/.test(id)&&cc.partner&&c._pairs&&c._pairs.has([r.name,cc.partner.name].sort().join("|")))continue;
             if(ln==="__MERGE__"){parts=[`${idn.replace(/\.$/,"")}${idn.indexOf(" — ")>-1?":":","} ${v5LowerFirst(sk[0].replace(/[.!?]+$/,""))}.`].concat(sk.slice(1));}
             else if(ln==="__FLIP__"){parts=[idn].concat(sk.slice().reverse());}
             else if(ln==="__SKLEAD__"){const Fn=String(r.name||"").split(" ")[0];const lb=String(r._slot||"").trim();const bare=/^[A-Z][a-z]+'s\s/.test(lb)||/^(the|a|an)\s/i.test(lb)?lb:`the ${lb}`;parts=[`${Fn}, who ${v5LowerFirst(sk[0].replace(/[.!?]+$/,""))}, is ${bare}.`].concat(sk.slice(1));}
@@ -34904,8 +34947,8 @@ const ACG = (()=>{
               parts=place==="before"?[`${idc}: ${v5LowerFirst(det)}.`].concat(rest):[idn].concat(rest,[`One detail: ${v5LowerFirst(det)}.`]);
             }else if(place==="middle"){if(sk.length<2)continue;parts=[idn,sk[0],ln].concat(sk.slice(1));}
             else parts=place==="before"?[idn,ln].concat(sk):[idn].concat(sk,[ln]);
-            const text=parts.join(" ").replace(/\s{2,}/g," ").trim();
-            if(isLead&&(v3Sentences(text).length<2||text.split(/\s+/).length<18))continue;
+            const text=parts.filter(Boolean).join(" ").replace(/\s{2,}/g," ").trim();
+            if(isLead&&(c.fn?text.split(/\s+/).length<12:(v3Sentences(text).length<2||text.split(/\s+/).length<18)))continue;
             if(V4_FILLER.test(text)||V8_BANNED_ROLE.test(text)||V3_LITERARY.test(text))continue;
             const added=v3Sentences(text).slice(1);
             if(!added.every(z=>z.split(/\s+/).length<5||v8ShapeFree(z,cc)))continue;
@@ -34921,10 +34964,14 @@ const ACG = (()=>{
       r.description=v4Pronouns(done.text,r.gender).replace(/(^|[.!?]\s+)([a-z])/g,(m,a,b)=>a+b.toUpperCase());
       v3Sentences(r.description).slice(1).forEach(z=>c._used.add(v7Shape(z,c.names)));
       r._v8Struct=done.id;out.push(done.id);
+      if(/^(partner|sharewith):/.test(done.id)&&cc.partner){(c._pairs=c._pairs||new Set()).add([r.name,cc.partner.name].sort().join("|"));}
     }
     // A relationship word still says who it is about.
+    const ownWords=r=>new RegExp("\\b("+String(r._slot||"").replace(/^(the|a|an)\s+/i,"").split(/\s+/).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")\\b","i");
     for(const r of people){
-      const m=String(r.description).match(V6_REL);if(!m)continue;
+      if(c.fn)break;
+      // "the new assistant" is Kennedy's own job, not a relationship to someone else.
+      const m=String(r.description).replace(ownWords(r),"").match(V6_REL);if(!m)continue;
       const F=String(r.name).split(" ")[0];
       const others=people.filter(o=>o!==r).map(o=>String(o.name).split(" ")[0]);
       if(others.some(n=>r.description.indexOf(n)>-1)||!others.length)continue;
@@ -34935,7 +34982,63 @@ const ACG = (()=>{
     return out;
   }
   // The four mirrored slot-filled patterns from round 5, gone for good.
-  const V8_BANNED_ROLE=/Whatever \w+ wants, \w+ is the person in the way|\w+'s biggest scenes are (at|in|on) .* opposite \w+ as the|The relationship that matters most for \w+ is with|Most of \w+'s time is spent (at|in|on) /i;
+  // Round 7 adds the two that were still in production listings.
+  const V8_BANNED_ROLE=/Whatever \w+ wants, \w+ is the person in the way|\w+'s biggest scenes are (at|in|on) .* opposite \w+ as the|The relationship that matters most for [\w ]+ is with|Most of \w+'s time is spent (at|in|on) |[\w ]+'s main scene partner is /i;
+
+  // ── Round 7: a relationship role needs the other person ──────────────────
+  // "The accompanying parent" with no child anywhere is a role that cannot be
+  // played. Each relationship word must find its counterpart in the cast or
+  // in the summary.
+  const V7_REL_PAIRS=[
+    [/\b(parent|mother|father|mom|dad|guardian|stepmother|stepfather)\b/i,/\b(child|children|kid|kids|son|daughter|baby|infant|toddler|teen|teenager|minor|pupil|student|patient)\b/i,"a child"],
+    [/\b(son|daughter|stepson|stepdaughter)\b/i,/\b(parent|mother|father|mom|dad|guardian|grandmother|grandfather|grandparent)\b/i,"a parent"],
+    [/\b(grandchild|grandson|granddaughter)\b/i,/\b(grandparent|grandmother|grandfather|grandma|grandpa)\b/i,"a grandparent"],
+    [/\b(grandparent|grandmother|grandfather|grandma|grandpa)\b/i,/\b(grandchild|grandson|granddaughter|child|kid|son|daughter|teen)\b/i,"a grandchild"],
+    [/\b(wife|husband|spouse|fiancée|fiancee|fiancé|fiance|newlywed|bride|groom)\b/i,/\b(wife|husband|spouse|fiancée|fiancee|fiancé|fiance|newlywed|bride|groom|partner|marriage|married|wedding)\b/i,"a spouse"],
+    [/\b(brother|sister|sibling|twin)\b/i,/\b(brother|sister|sibling|twin)\b/i,"a sibling"],
+    [/\b(boss|supervisor|manager|foreman)\b/i,/\b(employee|worker|staff|staffer|assistant|intern|trainee|apprentice|crew|team|clerk|server|driver|technician|hand)\b/i,"someone who works for them"],
+    [/\b(caregiver|carer|home aide|caretaker)\b/i,/\b(patient|resident|client|elder|parent|mother|father|grandparent|child)\b/i,"the person they care for"]
+  ];
+  function v7RelProblems(item,roles){
+    const out=[];
+    const people=(roles||[]).filter(r=>!r._group&&!r._job);
+    const syn=`${item.synopsis||""} ${item.tagline||""}`;
+    people.forEach(r=>{
+      const mine=`${r._slot||""} ${r.description||""}`;
+      V7_REL_PAIRS.forEach(([re,need,what])=>{
+        if(!re.test(mine))return;
+        const elsewhere=people.some(o=>o!==r&&need.test(`${o._slot||""} ${o.description||""}`))
+          ||(roles||[]).some(o=>(o._group||o._job)&&need.test(`${o._slot||""} ${o.name||""} ${o.description||""}`))
+          ||need.test(syn)
+          ||(/\b(parent|mother|father|mom|dad|guardian)\b/i.test(mine)&&people.some(o=>o!==r&&parseInt(String(o.age_range).split("-")[1],10)<18));
+        if(!elsewhere)out.push(`${r.name} is ${(mine.match(re)||[""])[0].toLowerCase()} but the listing has no ${what}`);
+      });
+    });
+    return out;
+  }
+
+  // ── Round 7: two statements that cannot both be true ─────────────────────
+  // A listing that says it is shot like a documentary with no pitch to camera
+  // cannot also have lines delivered straight to the lens.
+  function v7Contradictions(item,roles){
+    const out=[];
+    const rolesText=(roles||[]).map(r=>`${r._slot||""} ${r.description||""}`).join(" ");
+    const board=`${item.synopsis||""} ${item.tagline||""} ${item.schedule_note||""}`;
+    const all=`${board} ${rolesText}`;
+    // Drop what a sentence denies before looking for what it claims.
+    const strip=t=>String(t).replace(/\b(no|not|never|without|nothing)\b[^.;]*/gi," ");
+    const OBS=/\b(documentary[- ]style|filmed like a documentary|shot like a documentary|fly[- ]on[- ]the[- ]wall|observational|as if the camera isn'?t there|nobody (talks|speaks|plays) to camera|no polished pitch to camera)\b/i;
+    const DIRECT=/\b(direct address|direct[- ]to[- ]camera|straight (in)?to the lens|to the lens|down the barrel|pitch to camera|talks? straight into the camera)\b/i;
+    if(OBS.test(all)&&DIRECT.test(strip(all)))out.push("says it is documentary-style and also delivered straight to camera");
+    const SILENT=/\b(no dialogue|without dialogue|no lines|no spoken|nobody (talks|speaks)|silent|wordless)\b/i;
+    const TALK=/\b(dialogue|lines|speeches|monologue|scripted lines|says|speaks)\b/i;
+    if(SILENT.test(board)&&TALK.test(strip(rolesText)))out.push("the summary says there is no dialogue while a role speaks");
+    if(/\bunscripted\b/i.test(board)&&/\b(scripted lines|script pages|learn the lines|memoriz)/i.test(strip(all)))out.push("unscripted in the summary, scripted lines in the roles");
+    if(/\b(one|a single) (shoot |recording |filming )?day\b/i.test(board)&&(roles||[]).some(r=>+r.est_days>1))out.push("the summary says one day while a role is booked for more");
+    const pay=String(item.pay||"");
+    if(/^unpaid\b/i.test(pay)&&/\$\s*\d/.test(pay.replace(/\b(stipend|travel|meal|gas|mileage|per diem)[^.]*/gi," ")))out.push("the pay box says unpaid and also names a rate");
+    return out;
+  }
 
   // ── Practical facts, woven in ────────────────────────────────────────────
   // The facts go first (inside sentence one), second, split, or last — never
@@ -35096,6 +35199,10 @@ const ACG = (()=>{
   function v8Problems(item,c){
     const out=[];
     const roles=item._roles||[];
+    // Round 7: every relationship role has its counterpart, and no two fields
+    // say things that can't both be true.
+    v7RelProblems(item,roles).forEach(x=>out.push("relationship: "+x));
+    v7Contradictions(item,roles).forEach(x=>out.push("contradiction: "+x));
     const pay=String(item.pay||"");
     const priced=roles.some(r=>parseRoleRate(r.pay));
     const deferred=/deferr|stipend|gas money|reimburs|showcase/i.test(pay)||/^SAG-AFTRA Student/.test(item.union_status||"");
@@ -35336,7 +35443,7 @@ const ACG = (()=>{
       res._v8StructsHere=[];
       if(!isDoc){
         const skillE=V7_SKILLS.find(([re])=>named.some(r=>!r._group&&re.test(`${r._slot||""} ${r.description||""}`)));
-        const structs=v8ApplyStructures(named,{noun:v5Noun(type),stage:!!plan.stage,sessions:!!plan.sessions,fam,days:plan.days,genre:v3Genre(seed),skill:skillE?{re:skillE[0],label:skillE[1]}:null,voice:persona.voice,warmth:persona.w,h,res,names:roleNames,structCounts:v8Counts20(h,res,"struct")});
+        const structs=v8ApplyStructures(named,{fn:V7_FN.test(type),noun:v5Noun(type),stage:!!plan.stage,sessions:!!plan.sessions,fam,days:plan.days,genre:v3Genre(seed),skill:skillE?{re:skillE[0],label:skillE[1]}:null,voice:persona.voice,warmth:persona.w,h,res,names:roleNames,structCounts:v8Counts20(h,res,"struct")});
         if(!structs){why('no free role structure');continue;}
         res._v8StructsHere=structs;
       }
@@ -35360,7 +35467,7 @@ const ACG = (()=>{
       // weeks before the first day.
       const DT=v5Dates(plan,h,res);
       if(!DT){why('no dates');continue;}
-      const expires=`${v5Iso(DT.deadline)}T23:59:59.000Z`;
+      const expires=`${v5Iso(DT.expires||DT.deadline)}T23:59:59.000Z`;
       const startS=v5Iso(DT.start),endS=v5Iso(DT.end);
       const windowDays=Math.round((DT.end-DT.start)/V5_DAY)+1;
 
@@ -35440,8 +35547,17 @@ const ACG = (()=>{
       const tagSkel=tagline?v8TagSkeleton(tagline,{np:"",cast:"",days:""}):"";
       if(!tagline){why('no tagline '+type);res._tagFail.add(seed.k+"|"+turn);continue;}
       const synBucketFinal=synBucketUsed;
-      const schedule=v5Schedule({plan,start:DT.start,end:DT.end,startWeekday:V3_WEEKDAY[DT.start.getUTCDay()],stage:!!plan.stage&&!plan.read,read:!!plan.read,noun:v5Noun(type),minors,leadRehearse:plan.leadRehearse,persona},noteTier,h,res);
-      if(!schedule){why('no schedule '+type);res._typeFails[type]=(res._typeFails[type]||0)+1;if(res._typeFails[type]>4)res._deadTypes.add(type);continue;}
+      let schedule=v5Schedule({plan,start:DT.start,end:DT.end,startWeekday:V3_WEEKDAY[DT.start.getUTCDay()],stage:!!plan.stage&&!plan.read,read:!!plan.read,noun:v5Noun(type),minors,leadRehearse:plan.leadRehearse,persona},noteTier,h,res);
+      if(!schedule){why('no schedule '+type);res._typeFails[type]=(res._typeFails[type]||0)+1;if(res._typeFails[type]>9)res._deadTypes.add(type);continue;}
+      // Round 7: a long shoot or run that crosses a holiday says it breaks for it.
+      {const sp=[];for(let t=DT.start.getTime();t<=DT.end.getTime();t+=V5_DAY)sp.push(new Date(t));const hol=sp.find(v5Holiday);
+       if(hol){const nm=hol.getUTCMonth()===10?"Thanksgiving":hol.getUTCMonth()===6?"the Fourth of July":"the Christmas and New Year holidays";
+         const nn=v5Noun(type);let add="";
+         for(let i=0;i<20&&!add;i++){
+           const t=`${pick([`No work over ${nm}`,`We break for ${nm}`,`Everything pauses for ${nm}`,`The ${nn} stops for ${nm}`,`Nobody works over ${nm}`,`${capFirst(nm)} is a day off for everyone`,`We're dark for ${nm}`])}${pick([".",", and the schedule picks up right after.","; the dates skip it.",", so plan around it.",", with the rest of the days either side.","; it's built into the dates."])}`;
+           const k=v3NormSched(t);if(!(h.schedKeys&&h.schedKeys.has(k))&&!(res.schedKeys&&res.schedKeys.has(k)))add=t;}
+         if(!add){why('holiday line used');continue;}
+         schedule=`${schedule} ${add}`;}}
       const payStr=v5PayText(named,PAY,{noun:v5Noun(type),fam,type,union,days:plan.days,weekend:/^(weekends|saturdays)$/.test(plan.mode||""),dayWord:plan.stage?"rehearsal":plan.sessions?"session":"day",leadWord:"lead"},h,res);
       if(!payStr){why('pay text used');continue;}
       const payVoiced=v8PayVoice(payStr,{...PAY,tier:payTier,h,res},persona,PAY.structure==="unpaid");
@@ -35462,7 +35578,7 @@ const ACG = (()=>{
         admin_verified:null,
         tagline,synopsis,location:city.name,pay:payVoiced,union_status:union,status:"draft",published:false,is_admin_created:true,
         submission_requirements:reqStr,
-        expires_at:expires,deadline:new Date(expires).toISOString().slice(0,10),shoot_start:startS,shoot_end:endS,
+        expires_at:expires,deadline:v5Iso(DT.deadline),_postedAt:v5Iso(acgNow()),shoot_start:startS,shoot_end:endS,
         shoot_location:`${capFirst(V.venue)}, ${area} (${city.name})`,
         schedule_note:schedule,
         talent_scope:fam==="stage"?"Local — shoot city only":/^(ad|photo|audio|anim|corp)$/.test(fam)?"United States — Nationwide":"Local + self-report (within driving distance)",
@@ -35476,6 +35592,7 @@ const ACG = (()=>{
         _projectId:Date.now().toString(36)+Math.random().toString(36).slice(2,8),
         _lines:splitLines(synopsis).concat([tagline],named.map(r=>r.description)).filter(Boolean)
       };
+      if(V7_FN.test(type)){item._fnOldNames=v7FnNaming(item,named);item._lines=splitLines(item.synopsis).concat([item.tagline],named.map(r=>r.description)).filter(Boolean);}
       const c={fam,L,base:ctx.base,setup:ctx.setup,days:plan.days,rehearsal:plan.leadRehearse?plan.rehearsal:0,windowDays,mature,h,res};
       const probs=v3Problems(item,c);
       item._problems=probs;
@@ -35839,7 +35956,7 @@ const ACG = (()=>{
       // 5/6/7
       if(!r._group&&!r._job){
         const first=String(r.name).split(" ")[0];
-        if(!(d.indexOf(first+", ")===0||d.indexOf(first+" is ")===0||d.indexOf(first+" — ")===0))out.push("description does not open with the name");
+        if(!V7_FN.test(item.type)&&!(d.indexOf(first+", ")===0||d.indexOf(first+" is ")===0||d.indexOf(first+" — ")===0))out.push("description does not open with the name");
         if(/^[^.]*\b(her|his|their)\s+(son|daughter|mother|father|wife|husband|brother|sister|boss|partner)\b/i.test(d))out.push("possessive label instead of a name");
         if(/^(Male|Female)$/.test(r.gender)&&/\b(they|them|their|theirs|themselves)\b/i.test(d))out.push("they on a gendered role");
       }
@@ -37156,10 +37273,13 @@ const ACG = (()=>{
       }
       res.shapeKeys=res.shapeKeys||new Set();v7ShapeKeys(item).forEach(k=>res.shapeKeys.add(k));
       {const dl=String(item.deadline||"").slice(0,10);res.v7Deadlines=res.v7Deadlines||{};res.v7Deadlines[dl]=(res.v7Deadlines[dl]||0)+1;}
+      {const ex=String(item.expires_at||"").slice(0,10);res.v7Expires=res.v7Expires||{};res.v7Expires[ex]=(res.v7Expires[ex]||0)+1;}
+      res.schedKeys=res.schedKeys||new Set();v3Sentences(item.schedule_note).map(v3NormSched).filter(k=>k.split(" ").length>=3).forEach(k=>res.schedKeys.add(k));
       if(item._v5){
         const V5=item._v5;
         v5Tally(res,"pay",V5.tier);v5Tally(res,"cast",V5.castBucket);v5Tally(res,"syn",item._synBucket);v5Tally(res,"note",V5.noteTier);v5Tally(res,"month",V5.monthKey);
         (res.v5Starts=res.v5Starts||new Set()).add(item.shoot_start);
+        res.v5StartN=res.v5StartN||{};res.v5StartN[item.shoot_start]=(res.v5StartN[item.shoot_start]||0)+1;
         (res.v5Openers=res.v5Openers||new Set()).add(v5Opener(item.schedule_note));
         res.payKeys=res.payKeys||new Set();res.payKeys.add(v5PayKey(item.pay));v3Sentences(item.pay).map(v5PayKey).filter(x=>x.split(" ").length>=5).forEach(x=>res.payKeys.add("s "+x));
       }
@@ -38158,6 +38278,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
   const handlePublish=async()=>{
     if(form.casting_website_url.trim()&&!/^https?:\/\//i.test(form.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     if(!checkGoLive())return;
+    if(dateProbs.length&&!confirmDates){setConfirmDates(true);setErr("");return;}
     setBusy(true);setErr("");
     await onSave(buildPayload());
     await onPublish({id:form.id});
@@ -38165,6 +38286,13 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     setBusy(false);
   };
   const isDraft=listing.status==="draft"||listing.status==="pending_review";
+  // Round 7: dates that can't all be true, recomputed on every keystroke and
+  // every date pick, named in plain words. Publishing over one takes a second,
+  // explicit click; nothing is silently blocked, and the banner stays on the
+  // draft afterwards because it is derived from the fields themselves.
+  const dateProbs=castingDateProblems({...form,roles},{});
+  const [confirmDates,setConfirmDates]=useState(false);
+  useEffect(()=>{if(!dateProbs.length&&confirmDates)setConfirmDates(false);},[dateProbs.length]);
 
   return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"94vh",overflowY:"auto"}}>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
@@ -38177,6 +38305,12 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     </div>
 
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
+
+    {dateProbs.length>0&&<div style={{background:"rgba(214,141,0,0.10)",border:"1px solid rgba(214,141,0,0.45)",color:"#8a5200",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,lineHeight:1.55}}>
+      <strong style={{display:"block",marginBottom:4,color:"#7a4800"}}><Ico n="alert-triangle" s={14}/> {dateProbs.length===1?"Check this date":`Check these ${dateProbs.length} dates`}</strong>
+      <ul style={{margin:0,paddingLeft:18}}>{dateProbs.map((p,i)=><li key={p.key+i} style={{marginBottom:2}}>{p.msg}</li>)}</ul>
+      {confirmDates&&<div style={{marginTop:8,fontWeight:600}}>Press “Publish anyway” to publish with these dates.</div>}
+    </div>}
 
     <div className="form-group"><label className="label">Project Title</label>
       <input className="input" value={form.title} onChange={e=>set("title",e.target.value)} placeholder="e.g. Lead Role — Untitled Horror Feature"/></div>
@@ -38435,7 +38569,7 @@ function AdminCastingEditModal({listing,onClose,onSave,onPublish,adminId}){
     </div>
 
     <div style={{display:"flex",gap:10,marginTop:20,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
-      {isDraft&&<button className="btn-p" style={{background:"#1d7b44",borderColor:"#1d7b44"}} disabled={busy} onClick={handlePublish}>{busy?"…":"Save & Publish"}</button>}
+      {isDraft&&<button className="btn-p" style={{background:confirmDates?"#b3560c":"#1d7b44",borderColor:confirmDates?"#b3560c":"#1d7b44"}} disabled={busy} onClick={handlePublish}>{busy?"…":confirmDates?"Publish anyway":"Save & Publish"}</button>}
       <button className="btn-s" disabled={busy} onClick={handleSave}>{busy?"Saving…":"Save Draft"}</button>
       <button className="btn-s" style={{marginLeft:"auto"}} onClick={onClose}>Cancel</button>
     </div>

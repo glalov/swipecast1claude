@@ -116,19 +116,27 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     const raw=L._raw._roles||[];
     L.roles.filter(r=>{const x=raw.find(z=>z.name===r.name)||{};return !x._group&&!x._job&&isLead(r);}).forEach(r=>{
       const t=String(r.description||"");
-      if(sentences(t).length<2||t.split(/\s+/).length<18)out.push({detail:`${r.name} (${r.role_type}, ${r.est_days}d): ${t}`});
+      const fnName=/[A-Z]{2}/.test(r.name)&&r.name===r.name.toUpperCase().replace(/\([A-Z][A-Z]+\)/,m=>m);
+      // Round 7: function-named commercial roles read like real breakdowns — short.
+      if(/^[A-Z0-9 '’&\/.()-]+$/.test(String(r.name).replace(/\([A-Z][a-z]+\)/,""))&&/[A-Z]{2}/.test(r.name)?t.split(/\s+/).length<12:(sentences(t).length<2||t.split(/\s+/).length<18))out.push({detail:`${r.name} (${r.role_type}, ${r.est_days}d): ${t}`});
       const firsts=L.roles.filter(o=>o.name!==r.name).map(o=>String(o.name).split(" ")[0]);
-      if(REL.test(t)&&!firsts.some(n=>t.indexOf(n)>-1))out.push({detail:`${r.name}: "${(t.match(REL)||[""])[0]}" with nobody named`});
+      // Round 7: a role's own job title ("the new assistant") is not a relationship.
+      const slot=String((raw.find(z=>z.name===r.name)||{})._slot||"").replace(/^(the|a|an)\s+/i,"");
+      const own=slot?new RegExp("\\b("+slot.split(/\s+/).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")\\b","ig"):null;
+      const rel=own?t.replace(own,""):t;
+      if(REL.test(rel)&&!firsts.some(n=>t.indexOf(n)>-1))out.push({detail:`${r.name}: "${(rel.match(REL)||[""])[0]}" with nobody named`});
     });
     return out;
   });
 
   // 8. Dates.
-  check(10,"r4_dates","Expiration outside 1–3 months, or deadline/expiration/shoot out of order",L=>{
-    const now=new Date();now.setUTCHours(12,0,0,0);
+  check(10,"r4_dates","Expiration not 0–3 days after the deadline, or deadline/expiration/shoot out of order",L=>{
+    const now=d(L._raw._postedAt||new Date().toISOString());
     const out=[];
     const exp=L.expires_at?d(L.expires_at):null,dl=L.deadline?d(L.deadline):null,st=L.shoot_start?d(L.shoot_start):null;
-    if(exp){const n=Math.round((exp-now)/DAY);if(n<25||n>95)out.push({detail:`expires in ${n} days`});}
+    // Round 7: expiration on the deadline or up to 3 days after, before the shoot.
+    if(exp&&dl){const n=Math.round((exp-dl)/DAY);if(n<0||n>3)out.push({detail:`expires ${n} days after the deadline`});}
+    if(exp&&st&&!(exp<st))out.push({detail:`expires ${L.expires_at} not before shoot ${L.shoot_start}`});
     if(exp&&dl&&exp<dl)out.push({detail:`expires ${L.expires_at} before deadline ${L.deadline}`});
     if(dl&&st&&!(dl<st))out.push({detail:`deadline ${L.deadline} not before shoot ${L.shoot_start}`});
     if(dl&&dl<now)out.push({detail:`deadline ${L.deadline} already past`});
