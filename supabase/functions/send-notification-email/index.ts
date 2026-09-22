@@ -783,9 +783,16 @@ function applicationSelectedHtml(firstName: string, projectName?: string, roleNa
   // Every line here states only what CastSlate actually does: inbox messages
   // are emailed (inbox_message), audition requests are in-app notifications
   // only — there is no audition email, so the copy must not promise one.
+  // Spacing (2026-09-22, option "G"). The numbered circles are what the eye
+  // tracks down the left edge, so they must be equidistant. Step 1 wraps to
+  // three lines (72px) and steps 2-3 to two (48px), so equal 12px gaps put the
+  // circles 84px then 60px apart. Centring each number in its own row and
+  // widening only the second gap to 24px makes it 72px and 72px exactly, with
+  // no fixed row heights to go wrong in a client we cannot test. Measured, not
+  // eyeballed: re-measure if this copy changes length.
   const step = (n: number, html: string, last = false) => `
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 ${last ? 0 : 12}px"><tr>
-            <td width="38" style="width:38px;vertical-align:top;padding-top:1px">
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 ${last ? 0 : (n === 2 ? 24 : 12)}px"><tr>
+            <td width="38" style="width:38px;vertical-align:middle">
               <table cellpadding="0" cellspacing="0"><tr><td width="26" height="26" align="center" style="width:26px;height:26px;background:${t.card};border:1px solid ${t.cardBd};border-radius:13px;font-size:13px;font-weight:800;line-height:26px;color:${t.cta};text-align:center">${n}</td></tr></table>
             </td>
             <td style="vertical-align:top;font-size:15px;line-height:1.6;color:#5A5A72">${html}</td>
