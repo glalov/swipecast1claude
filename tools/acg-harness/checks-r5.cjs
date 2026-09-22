@@ -113,11 +113,11 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   addBoard((listings,add)=>{
     const names=L=>{const o=[];L.roles.forEach(r=>String(r.name||"").split(/\s+/).forEach(w=>{if(/^[A-Z][a-z'’.-]+$/.test(w))o.push(w);}));(L._raw._crewNames||[]).forEach(n=>String(n).split(/\s+/).forEach(w=>{if(/^[A-Z][a-z'’.-]+$/.test(w))o.push(w);}));return o;};
     const shape=(s,ns)=>{let t=" "+s+" ";ns.slice().sort((a,b)=>b.length-a.length).forEach(n=>{t=t.replace(new RegExp("\\b"+n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","g")," N ");});return clean(t).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|twenty|thirty|\d+)\b/g,"#").replace(/\s+/g," ").trim();};
-    const seen=new Map();
+    const seen=new Map();let idx=-1;
     listings.forEach(L=>{
-      const ns=names(L);
+      idx++;const ns=names(L);
       const sents=[...sentences(L.synopsis),L.tagline,...L.roles.flatMap(r=>sentences(r.description).slice(1))].filter(s=>String(s||"").split(/\s+/).length>=5);
-      new Set(sents.map(s=>shape(s,ns))).forEach(k=>{if(seen.has(k)&&seen.get(k)!==L.id)add("r5_shape_repeat",L.id,`"${k.slice(0,70)}" (also ${seen.get(k)})`);else seen.set(k,L.id);});
+      new Set(sents.map(s=>shape(s,ns))).forEach(k=>{if(seen.has(k)&&idx-seen.get(k)<50)add("r5_shape_repeat",L.id,`"${k.slice(0,70)}" (${idx-seen.get(k)} listings apart)`);seen.set(k,idx);});
     });
     const tc={};listings.forEach(L=>tc[L.type]=(tc[L.type]||0)+1);
     Object.entries(tc).forEach(([t,n])=>{if(n>listings.length*0.12)add("r5_type_quota","board",`${t}: ${n}/${listings.length}`);});

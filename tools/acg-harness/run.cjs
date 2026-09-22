@@ -436,6 +436,7 @@ const ctxNow={names:(()=>{
   Object.entries(D.surnames).forEach(([bg,list])=>list.forEach(n=>{(last[n]=last[n]||[]).push(bg);}));
   return {first,last,famous:new Set((D.famous||[]).map(clean))};
 })()};
+require("./checks-r6.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(12,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r5.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(11,k,l,null));},sentences,clean,famOf,parseRoleRate,PROJECT_TYPE_OPTIONS});
 require("./checks-r4.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(10,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r3.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(9,k,l,null));},sentences,clean,famOf,parseRoleRate});
@@ -581,6 +582,8 @@ if(global.__r3report){const R=global.__r3report,n=listings.length,p=c=>`${c} (${
   const A=["r3_role_days","r3_pay_by_size","r3_pronoun_strict","r3_type_word","r3_unexplained_phrase","r3_location_story","r3_tagline_vs_first","r3_holidays","r3_leftovers","r3_ethnicity_default"];
   console.log(`  Part A logic failures: ${A.map(k=>k.replace("r3_","")+" "+rr(k)).join(" · ")}`);
 }
+if(global.__r6report){const R=global.__r6report;console.log(`\nROUND 6 — personas: `+Object.entries(R.personas).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`${k} ${n}`).join(" · "));console.log(`  Warmth: ${JSON.stringify(R.warmth)} · distinct opening shapes: ${R.openShapes} · facts position: ${JSON.stringify(R.factsPos)}`);
+  console.log(`  TEMPLATE DETECTOR — sentence clusters spread over more than 3 listings (${R.templates.length}):`);R.templates.forEach(t=>console.log(`    [${t.listings} listings] ${t.sig.slice(0,90)}\n        e.g. ${t.ex[0].slice(0,110)}`));}
 if(global.__r5report){const R=global.__r5report;console.log(`\nROUND 5 — type counts (${listings.length} listings): `+Object.entries(R.types).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`${t} ${n}`).join(" · "));console.log(`  Expiration dates: ${R.expDates} distinct, most on one date: ${R.expMax}`);}
 const firstOk=listings.length-(results.find(r=>r.key==="first_sentence").listings);
 console.log(`\nFirst sentence says what the project is: ${firstOk}/${listings.length}`);
