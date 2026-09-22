@@ -34228,12 +34228,12 @@ const ACG = (()=>{
   function v7TagSubject(seed,brief){
     const src=String(brief||!seed.p?seed.about||"":seed.p).replace(/[.]+$/,"");
     const ws=src.split(/\s+/);
-    let cut=ws.findIndex((w,i)=>i>=2&&(v5IsVerb(w)||/^(who|that|which|where|while|when|as|because|at|in|on|during|for|from|with|after|before|to|into|across|through|by|of|and|but|,)$/i.test(w.replace(/,$/,""))||/,$/.test(ws[i-1]||"")));
+    let cut=ws.findIndex((w,i)=>i>=2&&(v5IsVerb(w)||/^(who|that|which|where|while|when|as|because|at|in|on|during|for|from|with|after|before|to|into|across|through|by|of|and|but|between|until|over|under|around|near|inside|outside|behind|without|against|,)$/i.test(w.replace(/,$/,""))||/,$/.test(ws[i-1]||"")));
     if(cut<0)cut=Math.min(ws.length,5);
     let np=ws.slice(0,Math.min(cut,6)).join(" ").replace(/,$/,"");
     if(np.split(/\s+/).length<2)np=ws.slice(0,Math.min(4,ws.length)).join(" ");
     // Never end on a function word ("a people who").
-    for(let i=0;i<3;i++)np=np.replace(/\s+(who|that|which|where|a|an|the|of|in|at|with|for|to|and|on|from|by)$/i,"");
+    for(let i=0;i<3;i++)np=np.replace(/\s+(who|that|which|where|a|an|the|of|in|at|with|for|to|and|on|from|by|between|one|two|three|four|five|six)$/i,"");
     const plural=/^(people|men|women|children|kids|staff|crew|team|families|neighbors|friends|strangers|workers|regulars|customers|students|creators|dancers|runners|\w+s)\b/i.test(np);
     if(!/^(a|an|the|two|three|four|five|six|one|some|his|her|their)\b/i.test(np)&&!plural)np=v3Aa(np);
     return np;
@@ -34315,6 +34315,9 @@ const ACG = (()=>{
       "Corporate Video":()=>`a short internal company video`,"Industrial / Training Video":()=>`a ${pick(["five","six","eight"])}-minute training video`,"Educational Video":()=>`a short educational series`,"Product Demo":()=>`a short product demo`,
       "Voiceover":()=>`a voiceover job`,"Podcast / Audio Drama":()=>`an ${pick(["eight","ten","six"])}-episode audio drama`.replace(/^an six/,"a six"),"Animation":()=>pick(["an animated short","an animated series"]),"Video Game":()=>`a story-driven video game`,"Motion Capture":()=>`a motion-capture shoot`,
       "Theater":()=>`a stage play`,"Off-Broadway Theater":()=>`an Off-Broadway play`,"Off-Off-Broadway Theater":()=>`an Off-Off-Broadway play`,"Musical Theater":()=>`a new stage musical`,"Workshop / Staged Reading":()=>`a staged reading`,"Table Read":()=>`a table read`,
+      "Public Service Announcement":()=>pick(["a 30-second PSA","a 30- and 60-second public service spot"]),"Commercial":()=>pick(["a 30-second spot","a 15- and 30-second spot"]),"Spec Commercial":()=>`a 30-second spec spot`,
+      "Social Media Ad":()=>pick(["a set of short social ads","a 15-second social ad"]),"Branded Content":()=>pick(["a two-minute branded video","a short branded film series"]).replace("branded film","branded video"),"Promo Video":()=>`a one-minute promo`,
+      "Ad Campaign":()=>`a campaign of short spots`,"Influencer / UGC Content":()=>`a set of creator-style videos`,
       "Photo Shoot":()=>`a photo shoot`,"Print Campaign":()=>`a print campaign`,"Modeling":()=>`a modeling job`,
       "Background / Extras":()=>`background work`,"Stand-In":()=>`stand-in work`,"Body Double":()=>`a body double booking`,"Stunts":()=>`stunt work`
     };
