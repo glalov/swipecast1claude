@@ -813,9 +813,13 @@ function whereWhenLine(c){
   else if(start)when=start;
   else if(end)when=end;
   if(!when&&!loc)return "";
-  if(when&&loc)return `Shoots ${when} in ${loc}.`;
+  // A place that opens with an article ("A community health center front
+  // desk") reads "at a …", lower-cased; a neighbourhood keeps "in".
+  const art=/^(a|an|the)\s/i.test(loc);
+  const where=art?"at "+loc.charAt(0).toLowerCase()+loc.slice(1):"in "+loc;
+  if(when&&loc)return `Shoots ${when} ${where}.`;
   if(when)return `Shoots ${when}.`;
-  return `Shoots in ${loc}.`;
+  return `Shoots ${where}.`;
 }
 // The dates and the location are owned by shoot_start / shoot_end /
 // shoot_location and printed by whereWhenLine(). The schedule note is an
@@ -847,8 +851,10 @@ function scheduleNoteAddendum(note){
 }
 // The exact string a listing prints under WHERE & WHEN, note included, so an
 // author previewing a casting sees what talent sees rather than half of it.
+// The note prints as its own "Schedule note" row, so the preview labels it.
 function whereWhenFull(c){
-  return [whereWhenLine(c),scheduleNoteAddendum(c&&c.schedule_note)].filter(Boolean).join(" ");
+  const note=scheduleNoteAddendum(c&&c.schedule_note);
+  return [whereWhenLine(c),note?"Schedule note: "+note:""].filter(Boolean).join(" · ");
 }
 // True when the typed note names a date, which the listing will drop — the
 // dates come from the shoot fields. Surfaced in the editors so it is never a
@@ -12077,7 +12083,6 @@ Free submission used
       const roll=castingPayRollup(c.roles);
       const wwLine=whereWhenLine(c);
       const wwNote=scheduleNoteAddendum(c.schedule_note);
-      const ww=[wwLine,wwNote].filter(Boolean).join(" ");
       const roleCount=c.roles?.length||0;
       // One row builder, so a field the CD never filled in simply does not
       // render - legacy castings have NULL for most of these.
@@ -12124,7 +12129,10 @@ Free submission used
               {fact("shoots","movie",t('casting.shoots'),c.shoots)}
               {fact("reh","clock",t('casting.rehearsal'),c.rehearsal)}
               {fact("af","video",t('casting.auditionFormat'),c.auditionFormat,true)}
-              {fact("ww","calendar","Where & When",ww,true)}
+              {fact("ww","calendar","Where & When",wwLine,true)}
+              {/* The note is status, not an address - on the end of the
+                  Where & When sentence it read as part of the location. */}
+              {fact("wwnote","clock","Schedule note",wwNote,true)}
               {fact("scope","map-pin","Open to talent from",c.talent_scope,true)}
             </div>
             {c.casting_website_url&&<div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
@@ -14133,6 +14141,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         shoot_end:c.shoot_end||null,
         shoot_location:c.shoot_location||null,
         schedule_note:c.schedule_note||null,
+        crew_credits:c.crew_credits||null,
         talent_scope:c.talent_scope||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
@@ -20994,6 +21003,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         shoot_end:c.shoot_end||null,
         shoot_location:c.shoot_location||null,
         schedule_note:c.schedule_note||null,
+        crew_credits:c.crew_credits||null,
         talent_scope:c.talent_scope||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
