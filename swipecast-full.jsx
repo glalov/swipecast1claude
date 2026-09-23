@@ -3317,7 +3317,7 @@ body.sheet-push .b2t-cube{display:none;}
    is free (the section paints its own gradient into the seam), and paint an
    extra pixel with a shadow where layout must not move. ─── */
 .lh-mm{margin-top:-1px;}   /* iOS teaser → Manager Mode teaser */
-/* Manager Mode teaser: stacked weekly letters + paper week stamp. */
+/* Manager Mode teaser: stacked monthly letters + paper stamp. */
 .mm-stk{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:36px;}
 .mm-stk .mm-letter{position:relative;z-index:5;}
 .mm-sheet{position:absolute;left:0;right:0;top:36px;bottom:0;border-radius:14px;box-shadow:0 6px 14px -5px rgba(20,14,6,0.42);}
@@ -5174,7 +5174,7 @@ const PREMIUM_SHARED_FEATURES=[
   ["Unlimited","video uploads"],
   ["Actor Slate Video","— 7-sec intro"],
   ["Actor cards with QR","business, postcard & agent promo"],
-  ["Manager Mode","weekly check-ins"],
+  ["Manager Mode","monthly check-ins"],
   ["Talent Agency & Manager Directory","650+ in LA, Beverly Hills & NYC"],
   ["Cancel anytime","from your account"]
 ];
@@ -5916,7 +5916,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      Free actors get their first casting submission free and can upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency &amp; Manager Directory — 650+ talent agencies and management companies in LA &amp; New York.
+      Free actors get their first casting submission free and can upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode monthly career check-ins, and the Talent Agency &amp; Manager Directory — 650+ talent agencies and management companies in LA &amp; New York.
 </p>
     {/* Shared value band. Every plan carries the same features, so they are
         stated once here instead of three times inside the cards. */}
@@ -7540,15 +7540,15 @@ const FAQ_CATEGORIES=[
   {id:"getting-started",label:"Getting Started",icon:"movie",blurb:"Creating your account, first steps, and how CastSlate works.",items:[
     {q:"What is CastSlate?",a:"CastSlate is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
     {q:"Is CastSlate actually live?",a:"Yes. The platform is live and active. Casting directors are posting roles, talent are submitting, and conversations are happening in the inbox right now."},
-    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors get their first casting submission free. Premium is $129 a year ($10.75/month) and stays $129 every year, or $17.99/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors get their first casting submission free. Premium is $129 a year ($10.75/month) and stays $129 every year, or $17.99/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode monthly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"Where is CastSlate available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
-    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Your first submission is free. Premium is $129 a year ($10.75/month) and stays $129 every year, or $17.99/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Your first submission is free. Premium is $129 a year ($10.75/month) and stays $129 every year, or $17.99/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode monthly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How do I get started as a casting director or producer?",a:"Create a free industry account, then click 'Post a Casting' from your dashboard. Submit your casting for free — it goes live after admin approval."}
   ]},
   {id:"talent-profiles",label:"Talent Profiles",icon:"user",blurb:"Headshots, stats, bio, reel — building a profile that gets callbacks.",items:[
     {q:"What should I put in my talent profile?",a:"A current headshot (within the last 18 months), accurate stats, a 2-3 sentence bio with your training and strongest types, your three most recent credits with years, and one current piece of footage. Special skills only if you can perform them on demand."},
     {q:"What size should my headshot be?",a:"At least 800×1000 pixels, JPG or PNG, with your face filling about 60% of the frame. Natural or soft studio lighting and a simple background read best."},
-    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts (from $10.75/month on the yearly plan) include a main headshot plus unlimited gallery photos, unlimited video uploads, Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
+    {q:"Can I have multiple headshots?",a:"Free accounts include 1 headshot. Premium accounts (from $10.75/month on the yearly plan) include a main headshot plus unlimited gallery photos, unlimited video uploads, Actor Slate Video, Actor Business Card with QR code, Manager Mode monthly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. Your main headshot is separate from the gallery. You choose which photo to attach to each submission."},
     {q:"What goes in the bio?",a:"Two to three sentences. Lead with your training, then your strongest types, then any genuine differentiator. Avoid generic 'I love acting' lines — CDs skip past them."},
     {q:"How do I add my reel?",a:"Edit your profile and paste a YouTube or Vimeo URL into the Reel field. We embed it automatically. Keep reels under two minutes and lead with your strongest, most recent work."},
     {q:"How do I update my profile later?",a:"My Profile → Edit Profile. Changes save instantly. Casting directors see your latest version on every submission, including ones you've already sent."}
@@ -7570,7 +7570,7 @@ const FAQ_CATEGORIES=[
     {q:"What if I need to edit a casting after it's posted?",a:"You can edit the breakdown, role specs, and deadline at any time from the dashboard. Already-submitted talent are notified of any changes that affect their submission."}
   ]},
   {id:"payments",label:"Payments & Membership",icon:"credit-card",blurb:"Talent membership, casting fees, and billing.",items:[
-    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and make your first casting submission at no cost. Premium is $129 a year ($10.75/month), and it stays $129 every year — we do not discount your first year and raise it later. Prefer monthly? $17.99/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
+    {q:"How much does the talent membership cost?",a:"Actor accounts are free — you can create a profile and make your first casting submission at no cost. Premium is $129 a year ($10.75/month), and it stays $129 every year — we do not discount your first year and raise it later. Prefer monthly? $17.99/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, and Manager Mode monthly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York."},
     {q:"How much does it cost to post a casting?",a:"Casting posts are free. Create a free industry account and submit your casting breakdown. It goes live after admin review and approval."},
     {q:"Are payments refundable?",a:"Membership fees are non-refundable except where required by law, but cancelled memberships continue until the end of the period you've already paid for. Casting post fees are non-refundable once the casting is published."},
     {q:"What payment methods do you accept?",a:"All major credit and debit cards. Payments are processed securely by our payment provider — CastSlate never stores your card details."},
@@ -9129,7 +9129,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
               <div style={{fontSize:11.5,color:"var(--t3)",marginTop:7}}>Prefer monthly? ${MEMBERSHIP_PLANS.monthly.monthly.toFixed(2)}/month, flat — no introductory rate that goes up.</div>
             </div>
             <div style={{flex:1}}>
-              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode weekly career check-ins','Talent Agency & Manager Directory — 650+ in LA, Beverly Hills & NYC'].map(f=>feat(f,"var(--acc)"))}
+              {['Unlimited media uploads','Unlimited photos, videos & Cast Me As',t('pricing.unlimitedLabel')+' submissions','Actor Slate Video — 7-sec intro','Actor Business Card with QR code','Mailing postcard & agent promo card','Manager Mode monthly career check-ins','Talent Agency & Manager Directory — 650+ in LA, Beverly Hills & NYC'].map(f=>feat(f,"var(--acc)"))}
             </div>
             {isPremium
               ?<button className="btn-teal" style={{width:"100%",height:44,borderRadius:10,marginTop:24}} onClick={()=>onNavigate("membership")}>Manage Plan <Tri/></button>
@@ -9231,7 +9231,7 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
               <span style={{fontSize:fs(12,10),fontWeight:700,color:"#1A1A2E"}}>CastSlate Career Team</span>
               <span style={{background:"rgba(59,101,89,0.1)",border:"1px solid rgba(59,101,89,0.25)",color:"#3B6559",fontSize:fs(8,7),fontWeight:700,padding:"1px 5px",borderRadius:4,letterSpacing:0.3,textTransform:"uppercase"}}>Private</span>
             </div>
-            <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Weekly Actor Check-In</div>
+            <div style={{fontSize:fs(11,9),color:"#5A5A72",fontWeight:600,marginBottom:1}}>Your Monthly Actor Check-In</div>
             <div className="mm-live-preview" style={{fontSize:fs(10,8),color:"#8E8EA0"}}>{mmPreview}</div>
           </div>
           <div style={{fontSize:fs(9,7.5),color:"#8E8EA0",flexShrink:0,whiteSpace:"nowrap"}}>Today</div>
@@ -9369,7 +9369,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <button className="mm-outline-btn" onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
-            {["Weekly career check-ins","Profile guidance","One task per week"].map(f=>(
+            {["Monthly career check-ins","Profile guidance","One task per month"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12,color:"rgba(255,255,255,0.6)"}}>
                 <span style={{color:"#F0B860",fontWeight:800,fontSize:13}}><Ico n="check" s={24}/></span>{f}
               </div>
@@ -9423,7 +9423,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
       <div className="mm-helps-grid">
         {[
-          {icon:"mailbox",accent:"#3B6559",title:"Weekly Career Check-Ins",body:"One private note a week with one clear step to improve your profile."},
+          {icon:"mailbox",accent:"#3B6559",title:"Monthly Career Check-Ins",body:"One private note a month with one clear step to improve your profile."},
           {icon:"photo",accent:"#8A5A12",title:"Profile Improvement Guidance",body:"Tips on your headshots, slate video, bio, resume, reel and skills."},
           {icon:"target",accent:"#3B6559",title:"Casting Lane Suggestions",body:"See which role types fit your profile, so you submit smarter."},
           {icon:"circle-check",accent:"#8A5A12",title:"One Task Per Week",body:"One focused task instead of a long checklist. Progress, one step at a time."},
@@ -9518,7 +9518,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
       <span className="mm-end-tag"><i/>Included With Premium</span>
       <h2>Manager Mode is included with<br className="mm-end-br"/> CastSlate Premium.</h2>
       <div className="mm-end-checks">
-        {["Weekly career check-ins","Profile improvement notes","Casting lane suggestions","One focused task/week","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
+        {["Monthly career check-ins","Profile improvement notes","One focused task a month","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
           <div key={f}><Ico n="check" s={20}/>{f}</div>
         ))}
       </div>
@@ -10558,7 +10558,7 @@ function TermsPage({onNavigate}){
 
     <S n="8B" t="Platform-Generated Talent Pool Listings">Platform-generated talent pool listings are used by CastSlate to organize performer interest, evaluate role-type availability, and build searchable rosters for future presentation to casting professionals, filmmakers, producers, and creative teams. These listings may be illustrative, developmental, or platform-created unless expressly identified as a verified third-party production. Submission to a platform-generated listing does not guarantee that a specific production, employer, filmmaker, compensation arrangement, audition, booking, or employment opportunity currently exists.</S>
 
-    <S n="8C" t="Manager Mode, Actor Business Card, and Event Suggestions">Manager Mode is a profile-improvement tool. It is designed to help you improve your profile, to help you present yourself more clearly to casting directors, and to help you focus your weekly profile improvement. CastSlate does not guarantee bookings, callbacks, representation, auditions, or any other career outcome, and nothing produced by Manager Mode &mdash; including its weekly check-ins, prompts, scores, or suggestions &mdash; constitutes a promise, prediction, or assurance of any such outcome. The Actor Business Card is a downloadable digital asset provided for your personal use. Event suggestions are provided for informational purposes only, are not offers, and are not guaranteed to be available in all locations or at all times. Access to Manager Mode, the Actor Business Card, and the Talent Agency &amp; Manager Directory is the consideration for the Premium subscription fee as described in Section 5A; the subscription does not purchase any career outcome.</S>
+    <S n="8C" t="Manager Mode, Actor Business Card, and Event Suggestions">Manager Mode is a profile-improvement tool. It is designed to help you improve your profile, to help you present yourself more clearly to casting directors, and to help you focus your monthly profile improvement. CastSlate does not guarantee bookings, callbacks, representation, auditions, or any other career outcome, and nothing produced by Manager Mode &mdash; including its monthly check-ins, prompts, scores, or suggestions &mdash; constitutes a promise, prediction, or assurance of any such outcome. The Actor Business Card is a downloadable digital asset provided for your personal use. Event suggestions are provided for informational purposes only, are not offers, and are not guaranteed to be available in all locations or at all times. Access to Manager Mode, the Actor Business Card, and the Talent Agency &amp; Manager Directory is the consideration for the Premium subscription fee as described in Section 5A; the subscription does not purchase any career outcome.</S>
 
     <S n="9" t="Intellectual Property">The Service, including all software, design, text, graphics, logos, the "CastSlate" name and mark, and all other content (excluding User Content), is the property of CastSlate or its licensors and is protected by U.S. and international copyright, trademark, and other intellectual property laws. Except for the limited license to use the Service as expressly permitted in these Terms, no rights are granted to you.</S>
 
@@ -19377,13 +19377,13 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
     {profile?.user_type==="talent"&&checkins.length>0&&(()=>{
       const latest=checkins[0];
       const isUnread=!latest.read_at;
-      let preview="Your weekly CastSlate career note is ready.";
+      let preview="Your monthly CastSlate career note is ready.";
       try{const c=JSON.parse(latest.body);if(c.task)preview=c.task;}catch(_){}
       const dt=new Date(latest.created_at);
       const dateLabel=dt.toLocaleDateString(undefined,{month:"short",day:"numeric"});
       return(
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",fontWeight:700,color:"var(--acc)",marginBottom:6}}>Weekly Career Note</div>
+          <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",fontWeight:700,color:"var(--acc)",marginBottom:6}}>Monthly Career Note</div>
           <div className="card" style={{padding:0,overflow:"hidden",border:"1px solid var(--acc)",borderRadius:12}}>
             <div onClick={()=>setOpenCheckin(latest)} style={{display:"grid",gridTemplateColumns:"auto 1fr auto",gap:14,padding:"16px 22px",cursor:"pointer",alignItems:"center",background:isUnread?"rgba(26,26,200,0.04)":"transparent",transition:"background 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="var(--s2)"} onMouseLeave={e=>e.currentTarget.style.background=isUnread?"rgba(26,26,200,0.04)":"transparent"}>
               <div style={{position:"relative"}}>
@@ -19393,7 +19393,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
               <div style={{minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:3}}>
                   <strong style={{fontSize:14,fontWeight:isUnread?800:700}}>CastSlate Career Team</strong>
-                  <span className="tag" style={{fontSize:9,background:"rgba(26,26,200,0.08)",color:"var(--acc)",fontWeight:700}}>WEEKLY CHECK-IN</span>
+                  <span className="tag" style={{fontSize:9,background:"rgba(26,26,200,0.08)",color:"var(--acc)",fontWeight:700}}>MONTHLY CHECK-IN</span>
                   {checkins.length>1&&<span style={{fontSize:11,color:"var(--t3)"}}>· {checkins.length} notes</span>}
                 </div>
                 <div style={{fontSize:13,color:isUnread?"var(--t1)":"var(--t2)",fontWeight:isUnread?500:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{preview}</div>
@@ -19406,7 +19406,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
               </button>
               {showPrevNotes&&<div style={{padding:"0 22px 10px"}}>
                 {checkins.slice(1,8).map(m=>{
-                  let prevPreview="Weekly career note";
+                  let prevPreview="Monthly career note";
                   try{const c=JSON.parse(m.body);if(c.task)prevPreview=c.task;}catch(_){}
                   const prevDt=new Date(m.created_at);
                   return(<div key={m.id} onClick={()=>setOpenCheckin(m)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",cursor:"pointer",gap:12,borderTop:"1px solid var(--bdr)"}}>
@@ -19646,14 +19646,14 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
           <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,var(--acc),#1a1a6e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}><Ico n="clipboard" s={22}/></div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontWeight:800,fontSize:15,letterSpacing:"-0.2px"}}>CastSlate Career Team</div>
-            <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:2}}>WEEKLY CAREER NOTE</div>
+            <div style={{fontSize:10,letterSpacing:1,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,marginTop:2}}>MONTHLY CAREER NOTE</div>
           </div>
           <div style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{weekLabel}</div>
         </div>
 
         {/* Body */}
         <div style={{flex:1,overflowY:"auto",padding:"24px 26px"}}>
-          <div style={{fontWeight:800,fontSize:20,letterSpacing:"-0.5px",marginBottom:2}}>Your Weekly Actor Check-In</div>
+          <div style={{fontWeight:800,fontSize:20,letterSpacing:"-0.5px",marginBottom:2}}>Your Monthly Actor Check-In</div>
           <div style={{fontSize:12,color:"var(--t3)",marginBottom:24,letterSpacing:0.2}}>{weekLabel} · CastSlate Career Team</div>
 
           <CheckInSection icon="" title="This week's note" body={content.note}/>
@@ -19674,7 +19674,7 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
 
         {/* No-reply footer */}
         <div style={{borderTop:"1px solid var(--bdr)",padding:"12px 22px",background:"var(--s2)",flexShrink:0,textAlign:"center"}}>
-          <p style={{fontSize:11,color:"var(--t3)",margin:0,lineHeight:1.6}}>This is your weekly CastSlate career note. Replies are not available for this message.</p>
+          <p style={{fontSize:11,color:"var(--t3)",margin:0,lineHeight:1.6}}>This is your monthly CastSlate career note. Replies are not available for this message.</p>
         </div>
       </div>
     </div>
@@ -22556,7 +22556,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and their first casting submission free. Premium is $129 a year ($10.75/month), and it stays $129 every year — we do not discount your first year and raise it later. Prefer monthly? $17.99/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode weekly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. No hidden tiers, no per-submission fees."},
+          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and their first casting submission free. Premium is $129 a year ($10.75/month), and it stays $129 every year — we do not discount your first year and raise it later. Prefer monthly? $17.99/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode monthly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York. No hidden tiers, no per-submission fees."},
           {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
           {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
           {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
@@ -22593,12 +22593,12 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             <span style={{width:7,height:7,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 10px #F0B860"}}/>New — Manager Mode
           </p>
           <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(30px,4vw,46px)",lineHeight:1.12,letterSpacing:-0.1,marginBottom:16,color:"#fff"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 64%,rgba(240,184,96,0.40) 64%)"}}>talent manager</span> before you have a talent manager.</h2>
-          <p style={{fontSize:"clamp(15px,1.8vw,18px)",lineHeight:1.65,color:"rgba(255,255,255,0.9)",marginBottom:28,maxWidth:520}}>A weekly private career check-in inside your inbox. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
+          <p style={{fontSize:"clamp(15px,1.8vw,18px)",lineHeight:1.65,color:"rgba(255,255,255,0.9)",marginBottom:28,maxWidth:520}}>A private career check-in in your inbox, once a month. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
             <button className="mm-teaser-btn" onClick={()=>onNavigate("manager-mode")}>Learn About Manager Mode<Tri/></button>
           </div>
           <div style={{display:"flex",gap:20,marginTop:22,flexWrap:"wrap"}}>
-            {["Weekly career check-ins","Profile improvement guidance","One focused task per week"].map(f=>(
+            {["Monthly career check-ins","Profile improvement guidance","One focused task per month"].map(f=>(
               <div key={f} style={{display:"flex",alignItems:"center",gap:6,fontSize:12.5,color:"rgba(255,255,255,0.9)"}}>
                 <span style={{color:"#F0B860",fontWeight:800}}><Ico n="check" s={24}/></span>{f}
               </div>
@@ -39004,7 +39004,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="email-campaigns" label="Email Campaigns" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="premium-upsell" label="Premium Upsell" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="monthly-event" label="Monthly Event Email" onClick={goToSection}/>}
-      {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Weekly Check-Ins" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Monthly Check-Ins" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="manager-mode" label="Manager Mode" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
@@ -42428,7 +42428,7 @@ function AdminWeeklyCheckIns({session}){
       const{data:alreadySent}=await window.sb.from("weekly_checkin_logs").select("talent_id").eq("week_start",weekStart);
       const sentSet=new Set((alreadySent||[]).map(r=>r.talent_id));
 
-      // All active PREMIUM talent — Manager Mode is a premium-only feature, so weekly
+      // All active PREMIUM talent — Manager Mode is a premium-only feature, so monthly
       // check-ins go ONLY to paying/premium members (membership_status='active'), never free accounts.
       setSendProgress("Loading Premium talent profiles…");
       const{data:talents,error:tErr}=await window.sb.from("profiles")
@@ -42722,7 +42722,8 @@ function AdminWeeklyCheckIns({session}){
 // ═══════════════════════════════════════════════════════════════
 // ADMIN: MANAGER MODE  (monthly weekly-check-in delivery graph)
 // ═══════════════════════════════════════════════════════════════
-// Premium-only Manager Mode = the weekly career check-in. The real schedule is the
+// Premium-only Manager Mode = the MONTHLY career check-in (monthly since 2026-09-23;
+// each actor lands on their own signup-anniversary day). The real schedule is the
 // pg_cron job "weekly-checkins": every Monday at 14:00 UTC (10:00 AM America/New_York).
 // This dashboard shows, month by month, each Monday's send: how many Premium
 // subscribers were successfully sent, at what time, plus the next scheduled Mondays.
@@ -42837,8 +42838,8 @@ function AdminManagerMode({session}){
       if(s.checkin_one_time_status==="scheduled"&&s.checkin_one_time_send_at)setScheduleValue(toDateTimeLocal(s.checkin_one_time_send_at));
       else if(!next)setScheduleValue("");
       setMsg(next
-        ?(runAtIso?`Manager Mode weekly check-ins are on. One-time send scheduled for ${fmtDateTimeET(runAtIso)}.`:"Manager Mode weekly check-ins are on.")
-        :"Manager Mode weekly check-ins are off. Scheduled sends are stopped."
+        ?(runAtIso?`Manager Mode monthly check-ins are on. One-time send scheduled for ${fmtDateTimeET(runAtIso)}.`:"Manager Mode monthly check-ins are on.")
+        :"Manager Mode monthly check-ins are off. Scheduled sends are stopped."
       );
     }
     setToggleBusy(false);
@@ -42862,11 +42863,11 @@ function AdminManagerMode({session}){
   return(<>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginBottom:4}}>
       <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,margin:0}}>Manager Mode</h1>
-      <button className="btn-s btn-sm" disabled={toggleBusy} aria-pressed={checkinsOn} onClick={toggleManagerMode} title={checkinsOn?"Turn off weekly Manager Mode sends":"Turn on weekly Manager Mode sends"} style={{borderColor:checkinsOn?"var(--grn)":"#c0392b",color:checkinsOn?"#fff":"#c0392b",background:checkinsOn?"var(--grn)":"#fff",fontWeight:800}}>
+      <button className="btn-s btn-sm" disabled={toggleBusy} aria-pressed={checkinsOn} onClick={toggleManagerMode} title={checkinsOn?"Turn off monthly Manager Mode sends":"Turn on monthly Manager Mode sends"} style={{borderColor:checkinsOn?"var(--grn)":"#c0392b",color:checkinsOn?"#fff":"#c0392b",background:checkinsOn?"var(--grn)":"#fff",fontWeight:800}}>
         {toggleBusy?"Saving...":checkinsOn?"Manager Mode Sends: ON":"Manager Mode Sends: OFF"}
       </button>
     </div>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Premium-only weekly career check-ins. Every <strong>Monday at 10:00&nbsp;AM ET</strong> (14:00 UTC), each Premium subscriber receives one personalized note. This view shows, month by month, how many paid subscribers were successfully sent on each of the month's Mondays and the upcoming schedule.</p>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Premium-only monthly career check-ins. Every <strong>Monday at 10:00&nbsp;AM ET</strong> (14:00 UTC), each Premium subscriber receives one personalized note. This view shows, month by month, how many paid subscribers were successfully sent on each of the month's Mondays and the upcoming schedule.</p>
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
 
     <div className="card" style={{padding:18,marginBottom:18}}>
@@ -45272,7 +45273,7 @@ const PAGE_SEO={
   "terms":{title:"Terms of Use",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
   "privacy":{title:"Privacy Policy",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "studios":{title:"For Studios",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
-  "manager-mode":{title:"Manager Mode",desc:"CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."},
+  "manager-mode":{title:"Manager Mode",desc:"CastSlate Manager Mode is a premium monthly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each month to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
   "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
   "actor-business-card":{title:"Actor Business Card",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download an A4 print-ready sheet."},

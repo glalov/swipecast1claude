@@ -286,7 +286,7 @@ const PERKS = [
   "Actor Business Card with QR code",
   "Mailing postcard &amp; agent promo card",
   "Actor Slate Video &mdash; your 7-second intro",
-  "Manager Mode &mdash; a weekly career check-in written for you",
+  "Manager Mode &mdash; a monthly career check-in written for you",
   "Unlimited photos, videos and Cast Me As clips",
 ];
 function perkList(): string {

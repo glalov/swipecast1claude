@@ -265,7 +265,7 @@ const PERKS = [
   "Unlimited photos, videos &amp; demo reels",
   "Actor's Slate &amp; 'Cast Me As' videos",
   "Actor Business Card + QR code",
-  "Manager Mode weekly check-ins",
+  "Manager Mode monthly check-ins",
   "Agency &amp; Manager Directory — 650+ in LA &amp; NY",
 ];
 

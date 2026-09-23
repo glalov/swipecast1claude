@@ -16,7 +16,8 @@
 // PREMIUM MEMBERS RECEIVE EMAIL NORMALLY — inbox messages, shortlists, holds, class and
 // event invitations, booking updates, and the premium welcome all send exactly as they
 // do for free accounts. Two types are withheld:
-//   • 'weekly_checkin' — the Manager Mode weekly note lives in the member's inbox on the
+//   • 'weekly_checkin' — the Manager Mode MONTHLY note lives in the member's inbox on the
+//     site (the key keeps its old name; only the cadence and the copy changed)
 //     site and is read there. Emailing it was what turned a quiet week into a
 //     cancellation, so the note is delivered in-app and never mailed.
 //   • 'activity_digest' — the daily "you're getting noticed" recap is for NON-premium
@@ -194,7 +195,7 @@ interface NotifyRequest {
   admin_note?: string;
   class_price?: string;
   class_id?: string;
-  // weekly_checkin extra — this week's task (the email hook)
+  // weekly_checkin extra — this month's task (the email hook)
   task?: string;
   // application_selected extras (the "you've been shortlisted" email)
   project_name?: string;
@@ -213,7 +214,7 @@ function esc(s: string): string {
 // Cream "stationery" shell whose header/CTA/accent share one tone keyed to
 // the emotion of the message: teal = trust, amber = chosen/reward, emerald =
 // greenlit, stone = a soft no. A gold "foil" CTA is reserved for the two
-// feel-special moments (a shortlist win and the Premium weekly note). This
+// feel-special moments (a shortlist win and the Premium monthly note). This
 // mirrors the approved "Warm Tonal" design demo 1:1.
 type ToneName = "teal" | "amber" | "green" | "stone";
 interface Tone { grad: string; solid: string; soft: string; rule: string; }
@@ -330,12 +331,12 @@ function bookingDeclinedHtml(firstName: string, classTitle: string, adminNote?: 
   });
 }
 
-function weeklyCheckinHtml(firstName: string, task?: string): string {
+function monthlyCheckinHtml(firstName: string, task?: string): string {
   return emailShell({
-    tone: "amber", foil: true, tag: "Manager Mode &middot; Weekly check-in",
-    heading: "Your weekly career note is ready",
-    body: "Your personalized Manager Mode check-in is waiting in your inbox — one focused step to keep you castable this week.",
-    mid: task ? csBlock("amber", "This week's task", esc(task)) : undefined,
+    tone: "amber", foil: true, tag: "Manager Mode &middot; Monthly check-in",
+    heading: "Your monthly career note is ready",
+    body: "Your personalized Manager Mode check-in is waiting in your inbox — one focused step for the month ahead.",
+    mid: task ? csBlock("amber", "This month's task", esc(task)) : undefined,
     cta: "Open my note", href: "/inbox",
     foot: "You're receiving this because Manager Mode is on for your account.",
   });
@@ -429,7 +430,7 @@ function premiumWelcomeHtml(firstName: string): string {
               <td><div style="height:1px;line-height:1px;font-size:0;background:#EADFC8">&nbsp;</div></td>
             </tr></table>
           </td></tr>
-          ${row("pw-calendar", 1, "Manager Mode &mdash; your weekly check-in", "One focused task every week (Mon&ndash;Wed), waiting in your CastSlate inbox.")}
+          ${row("pw-calendar", 1, "Manager Mode &mdash; your monthly check-in", "One focused task each month, waiting in your CastSlate inbox.")}
           ${row("pw-upload", 2, "Upload everything you can", "Photos, all your stats, <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>.")}
           ${row("pw-reel", 3, "Unlimited storage", "Demo reels, video clips and photos with no limits. Show your full range.")}
           ${row("pw-message", 4, "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
@@ -958,7 +959,7 @@ serve(async (req) => {
     }
 
     // Premium members get their email as normal. The single exception is the Manager Mode
-    // weekly note, which is delivered in-app and read on the site.
+    // monthly note, which is delivered in-app and read on the site.
     if (profile.membership_status === "active" && PREMIUM_EMAIL_BLOCKED.has(type)) {
       return json({ ok: true, results: { email: "skipped:premium_in_app_only" } });
     }
@@ -1183,7 +1184,7 @@ serve(async (req) => {
       return json({ ok: true, results: { email: "sent" } });
     }
 
-    // ── Weekly Manager Mode check-in nudge (premium-only; fired alongside the
+    // ── Monthly Manager Mode check-in nudge (premium-only; fired alongside the
     //    in-app note). Short email that drives the member back into the app. ──
     if (type === "weekly_checkin") {
       const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
@@ -1192,7 +1193,7 @@ serve(async (req) => {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
       }
       if (!emailConfigured()) {
-        console.warn("[send-notification-email] email provider not configured — skipping weekly check-in");
+        console.warn("[send-notification-email] email provider not configured — skipping monthly check-in");
         return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
       }
       const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
@@ -1201,11 +1202,11 @@ serve(async (req) => {
       }
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
-        subject: "Your weekly CastSlate career note is ready",
-        html: weeklyCheckinHtml(firstName, task?.trim() || undefined),
+        subject: "Your monthly CastSlate career note is ready",
+        html: monthlyCheckinHtml(firstName, task?.trim() || undefined),
       });
       if (!sent.ok) {
-        console.error("[send-notification-email] weekly check-in send error:", sent.err);
+        console.error("[send-notification-email] monthly check-in send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
       }
       return json({ ok: true, results: { email: "sent" } });
