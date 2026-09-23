@@ -5141,6 +5141,7 @@ const SOCIAL_LINK_FIELDS=[
 ];
 
 const CREDIT_CATEGORIES=["Film & TV","Theatre","Commercials","Other"];
+const CREDIT_YEARS=(()=>{const cur=new Date().getFullYear();const out=[];for(let y=cur+1;y>=1950;y--)out.push(String(y));return out;})();
 
 // ─── Social platform icon component (inline SVG, no external library needed)
 function SocialIcon({platform,size=18}){
@@ -23147,7 +23148,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const showErr=(m)=>{setErr(m);window.scrollTo({top:0,behavior:"smooth"});};
   const save=async()=>{
     setErr("");setMsg("");
-    if(containsContactInfo(f.bio)){showErr(CONTACT_INFO_MSG);return;}
+    if(containsContactInfo(f.bio)||containsContactInfo(f.credits)){showErr(CONTACT_INFO_MSG);return;}
     setSaving(true);
     try{
       const videoSlots=profile?.membership_status==="active"?PREMIUM_PLAN.videos:FREE_PLAN.videos;
@@ -23289,6 +23290,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   };
   const uploadResume=async(file)=>{
     if(!file)return;
+    if(!isPremium){showErr("Resume uploads are a Premium feature.");return;}
     const ext=(file.name.split(".").pop()||"pdf").toLowerCase();
     if(!["pdf","doc","docx"].includes(ext)){showErr("Resume must be a PDF, DOC, or DOCX file.");return;}
     if(file.size>10*1024*1024){showErr("Resume must be under 10 MB.");return;}
@@ -23509,9 +23511,15 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             ))}</div>
           }
           <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
-            <label className="label">Resume / CV (PDF, DOC, or DOCX — max 10 MB)</label>
+            <label className="label">Resume / CV (PDF, DOC, or DOCX — max 10 MB) {!isPremium&&<span style={{color:"var(--t3)",fontWeight:400}}>· Premium</span>}</label>
             <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:10}}>Casting directors can download this directly from your profile and from every submission you send.</p>
-            {profile.resume_url?(
+            {!isPremium?(
+              <div style={{border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px",fontSize:12,color:"var(--t3)",lineHeight:1.6,background:"var(--s2)"}}>
+                {profile.resume_url&&<div style={{marginBottom:8}}><a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={22}/> View current resume</a></div>}
+                <div style={{marginBottom:8}}>Give CDs a real, downloadable resume alongside your profile. <b style={{color:"var(--t1)"}}>Unlock with Premium.</b></div>
+                <button type="button" className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+              </div>
+            ):profile.resume_url?(
               <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
                 <a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={22}/> View current resume</a>
                 <label className="btn-s btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"Replace"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{display:"none"}} onChange={e=>uploadResume(e.target.files?.[0])}/></label>
@@ -23956,7 +23964,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             </select>
           </div>
           <div className="form-group"><label className="label">Year</label>
-            <input className="input" placeholder="2025" value={creditForm.credit_year} onChange={e=>setCreditForm(x=>({...x,credit_year:e.target.value}))}/>
+            <select className="select" style={{width:"100%"}} value={creditForm.credit_year} onChange={e=>setCreditForm(x=>({...x,credit_year:e.target.value}))}>
+              <option value="">— Select year —</option>
+              {CREDIT_YEARS.map(y=><option key={y} value={y}>{y}</option>)}
+            </select>
           </div>
         </div>
         <div className="form-group"><label className="label">Production Title *</label>
@@ -23972,18 +23983,39 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         </div>
         <div className="form-row">
           <div className="form-group"><label className="label">Location</label>
-            <input className="input" placeholder="e.g. New York, NY" value={creditForm.location} onChange={e=>setCreditForm(x=>({...x,location:e.target.value}))}/>
+            <select className="select" style={{width:"100%"}} value={creditForm.location} onChange={e=>setCreditForm(x=>({...x,location:e.target.value}))}>
+              <option value="">— Select location —</option>
+              {CASTING_MARKETS.map(m=><option key={m} value={m}>{m}</option>)}
+            </select>
           </div>
-          <div className="form-group"><label className="label">Website (optional)</label>
-            <input className="input" placeholder="https://..." value={creditForm.website_url} onChange={e=>setCreditForm(x=>({...x,website_url:e.target.value}))}/>
+          <div className="form-group">
+            <label className="label">Website {!isPremium&&<span style={{color:"var(--t3)",fontWeight:400}}>· Premium</span>}</label>
+            {isPremium?
+              <input className="input" placeholder="https://..." value={creditForm.website_url} onChange={e=>setCreditForm(x=>({...x,website_url:e.target.value}))}/>
+              :<div style={{border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px",fontSize:12,color:"var(--t3)",lineHeight:1.6,background:"var(--s2)"}}>
+                <div style={{marginBottom:8}}>Link this credit to its IMDb page, trailer, or listing — CDs can verify it in one click. <b style={{color:"var(--t1)"}}>Unlock with Premium.</b></div>
+                <button type="button" className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+              </div>}
           </div>
         </div>
         <div style={{display:"flex",gap:8}}>
           <button className="btn-p btn-sm" disabled={creditsLoading||!creditForm.production_title.trim()} onClick={async()=>{
             if(!creditForm.production_title.trim()){showErr("Production title is required.");return;}
+            if(containsContactInfo(creditForm.production_title)||containsContactInfo(creditForm.role)||containsContactInfo(creditForm.director_or_company)){showErr(CONTACT_INFO_MSG);return;}
             setCreditsLoading(true);setErr("");
             try{
-              const row={user_id:session.user.id,category:creditForm.category,production_title:creditForm.production_title.trim(),role:creditForm.role.trim()||null,director_or_company:creditForm.director_or_company.trim()||null,location:creditForm.location.trim()||null,credit_year:creditForm.credit_year.trim()||null,website_url:creditForm.website_url.trim()||null,display_order:dbCredits.length};
+              // Website is a Premium perk — normalize to an absolute URL (bare
+              // "imdb.com" would otherwise resolve as a relative link on our own domain).
+              // A downgraded member's existing link is preserved (the field is
+              // locked, not editable) rather than wiped on an unrelated edit.
+              let website;
+              if(isPremium){
+                website=creditForm.website_url.trim();
+                if(website&&!/^https?:\/\//i.test(website))website="https://"+website;
+              }else{
+                website=editingCreditId?(dbCredits.find(c=>c.id===editingCreditId)?.website_url||""):"";
+              }
+              const row={user_id:session.user.id,category:creditForm.category,production_title:creditForm.production_title.trim(),role:creditForm.role.trim()||null,director_or_company:creditForm.director_or_company.trim()||null,location:creditForm.location.trim()||null,credit_year:creditForm.credit_year.trim()||null,website_url:website||null,display_order:dbCredits.length};
               if(editingCreditId){
                 const {error}=await window.sb.from("talent_credits").update({...row,updated_at:new Date().toISOString()}).eq("id",editingCreditId);
                 if(error)throw error;
@@ -24010,7 +24042,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             {dbCredits.filter(c=>c.category===cat).map(c=>(
               <div key={c.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,alignItems:"flex-start",padding:"8px 0",borderBottom:"1px solid var(--bdr)"}}>
                 <div>
-                  <div style={{fontSize:15,fontWeight:700}}>{c.credit_year&&<span style={{color:"var(--t3)",fontWeight:400,fontSize:13,marginRight:8}}>{c.credit_year}</span>}{c.website_url?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"underline"}}>{c.production_title}</a>:c.production_title}{c.role&&<span style={{color:"var(--t2)",fontWeight:400,fontSize:13}}> · {c.role}</span>}</div>
+                  <div style={{fontSize:15,fontWeight:700}}>{c.credit_year&&<span style={{color:"var(--t3)",fontWeight:400,fontSize:13,marginRight:8}}>{c.credit_year}</span>}{c.website_url?<a href={/^https?:\/\//i.test(c.website_url)?c.website_url:"https://"+c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"underline"}}>{c.production_title}</a>:c.production_title}{c.role&&<span style={{color:"var(--t2)",fontWeight:400,fontSize:13}}> · {c.role}</span>}</div>
                   {(c.director_or_company||c.location)&&<div style={{fontSize:11,color:"var(--t3)",marginTop:2}}>{[c.director_or_company,c.location].filter(Boolean).join(" · ")}</div>}
                 </div>
                 <div style={{display:"flex",gap:6,whiteSpace:"nowrap"}}>
