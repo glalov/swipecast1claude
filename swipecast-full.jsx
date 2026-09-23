@@ -9218,7 +9218,7 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
           <div style={{flex:1,textAlign:"center",fontSize:fs(11,9),color:"rgba(255,255,255,0.45)",letterSpacing:0.5,fontWeight:500}}>Inbox — CastSlate</div>
         </div>
         <div style={{background:"#F7F7F8",padding:pd("3px 0","2px 0"),borderBottom:"1px solid #E2E2E7"}}>
-          {["Career Team","This week","Profile Tips"].map((lbl,i)=>(
+          {["Career Team","This month","Profile Tips"].map((lbl,i)=>(
             <span key={lbl} className={!mobile&&i===0?"mm-live-tab":""} style={{display:"inline-block",padding:pd("8px 16px","6px 11px"),fontSize:fs(11,9),fontWeight:i===0?700:500,color:i===0?"#1A1A2E":"#8E8EA0",borderBottom:i===0?"2px solid #1A1A2E":"2px solid transparent",cursor:"pointer"}}>{lbl}</span>
           ))}
           </div>
@@ -9252,7 +9252,7 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
               <span key={`${mmCycle}-l${i}`} className={`mm-live-line ${i<mmLines?"mm-line-visible":""}`}><span>{line}</span></span>
             ))}
           </div>
-          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#3B6559","rgba(59,101,89,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#3B6559","rgba(59,101,89,0.06)"],["Your task this month","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
+          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#3B6559","rgba(59,101,89,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Your month in numbers","3 submissions · 1 shortlist · 2 saved roles closing soon","#3B6559","rgba(59,101,89,0.06)"],["Your task this month","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
             <div key={`${mmCycle}-${label}`} className={`mm-live-card ${idx<mmCards?"mm-card-visible":""}`} style={{"--mm-rail":col,background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
@@ -22619,7 +22619,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             <div className="mm-sheet mm-sheet-1"><span>Week 11</span></div>
             <div className="mm-stamp" aria-hidden="true"><span>WK</span><b>12</b></div>
             <div className="mm-letter" style={{background:"#FFFAF2",borderRadius:14,padding:"26px 26px 22px",boxShadow:"0 6px 14px -4px rgba(30,20,8,0.38),0 1px 3px rgba(30,20,8,0.16)",width:"100%",minWidth:0,maxWidth:340,boxSizing:"border-box",color:"#3A3128"}}>
-              <div style={{fontSize:11,letterSpacing:0.3,color:"#7A6A55",marginBottom:12}}>From your CastSlate Career Team · <span style={{color:"#8A5A12",fontWeight:700}}>This week</span></div>
+              <div style={{fontSize:11,letterSpacing:0.3,color:"#7A6A55",marginBottom:12}}>From your CastSlate Career Team · <span style={{color:"#8A5A12",fontWeight:700}}>This month</span></div>
               <p style={{fontFamily:"'Source Serif 4',Georgia,serif",fontSize:16,lineHeight:1.55,color:"#3A3128",margin:"0 0 16px"}}>Hi Riley, your profile is moving in the right direction. Your headshot gives a strong first impression, but adding a slate video would make it significantly stronger.</p>
               <div style={{width:40,height:2,background:"#E0A93F",margin:"0 0 14px"}}/>
               <div style={{fontSize:13.5,fontWeight:600,color:"#2B2419",marginBottom:6}}><span style={{fontSize:10,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"#8A5A12",marginRight:8}}>Your task</span>Record a 7-second slate video.</div>
