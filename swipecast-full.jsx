@@ -44335,7 +44335,11 @@ function ActorCardPreview({formatKey='business',side='front',mailingMessage,disp
   return(
     <div role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
-      {watermark&&<div style={{position:'absolute',inset:0,zIndex:5,display:'flex',alignItems:'center',justifyContent:'center',pointerEvents:'none'}}><span style={{transform:'rotate(-16deg)',border:'2.5px solid rgba(26,26,46,0.18)',borderRadius:10,color:'rgba(26,26,46,0.22)',fontWeight:800,fontSize:26,letterSpacing:'0.22em',textTransform:'uppercase',padding:'7px 20px',background:'rgba(255,255,255,0.18)'}}>Preview</span></div>}
+      {watermark&&<div style={{position:'absolute',inset:'-40%',zIndex:5,pointerEvents:'none',transform:'rotate(-25deg)',display:'grid',gridTemplateColumns:'repeat(6,1fr)',gridTemplateRows:'repeat(7,1fr)',alignItems:'center',justifyItems:'center'}}>
+        {Array.from({length:42}).map((_,i)=>(
+          <span key={i} style={{fontSize:large?20:16,fontWeight:800,letterSpacing:'0.12em',textTransform:'uppercase',color:'rgba(140,140,150,0.6)',whiteSpace:'nowrap'}}>Preview</span>
+        ))}
+      </div>}
       {side==='back'&&large?(
         <>
           <div style={{width:'57%',padding:large?'24px 26px':'18px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5}}>
