@@ -9252,14 +9252,14 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
               <span key={`${mmCycle}-l${i}`} className={`mm-live-line ${i<mmLines?"mm-line-visible":""}`}><span>{line}</span></span>
             ))}
           </div>
-          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#3B6559","rgba(59,101,89,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#3B6559","rgba(59,101,89,0.06)"],["Your task this week","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
+          {[["What you're doing well","Your headshot is clear and professional — strong first impression.","#3B6559","rgba(59,101,89,0.06)"],["What needs attention","Your profile is missing a slate video.","#D63B3B","rgba(214,59,59,0.06)"],["Casting lane to focus on","Young professional / commercial friend","#3B6559","rgba(59,101,89,0.06)"],["Your task this month","Record a 7-second slate video.","#1A1A2E","rgba(26,26,46,0.04)"]].map(([label,val,col,bg],idx)=>(
             <div key={`${mmCycle}-${label}`} className={`mm-live-card ${idx<mmCards?"mm-card-visible":""}`} style={{"--mm-rail":col,background:bg,border:`1px solid ${col}20`,borderRadius:mobile?6:8,padding:pd("8px 11px","5px 8px"),marginBottom:pd(5,4)}}>
               <div style={{fontSize:fs(9,7),fontWeight:700,color:col,letterSpacing:0.6,textTransform:"uppercase",marginBottom:2}}>{label}</div>
               <div style={{fontSize:fs(11,8.5),color:"#1A1A2E",fontWeight:500,lineHeight:1.45}}>{val}</div>
             </div>
           ))}
           <div style={{marginTop:pd(12,8),display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-            <div key={`task-${mmCycle}`} className={`mm-live-task ${mmTask?"mm-task-visible":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Week's Task</div>
+            <div key={`task-${mmCycle}`} className={`mm-live-task ${mmTask?"mm-task-visible":""}`} style={{display:"inline-block",background:"#1A1A2E",color:"#fff",fontSize:fs(10,8),fontWeight:700,padding:pd("7px 14px","5px 10px"),borderRadius:100,cursor:"pointer",letterSpacing:0.3,boxShadow:"0 2px 8px rgba(26,26,46,0.2)"}}>Complete This Month's Task</div>
           </div>
           <div style={{marginTop:pd(8,6),fontSize:fs(9,7.5),color:"#8E8EA0",fontStyle:"italic"}}>Replies are not available for this message.</div>
         </div>
@@ -9411,7 +9411,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div className="mm-pile-logo"><LogoMark/></div>
         <div>
           <h3>Your profile doesn't sit in a pile.</h3>
-          <p>Every week a CastSlate career check-in is written for your inbox about your profile, your real gaps and one concrete next step. Not a generic newsletter.</p>
+          <p>Once a month a CastSlate career check-in is written for your inbox about your profile, your real gaps and one concrete next step. Not a generic newsletter.</p>
         </div>
       </div>
     </section>
@@ -9419,14 +9419,14 @@ function ManagerModePage({onNavigate,session,myProfile}){
     <section className="mm-helps">
       <div className="mm-helps-hd">
         <div className="section-label">How Manager Mode Helps You</div>
-        <h2>Everything a talent manager does.<br/>Every single week.</h2>
+        <h2>Everything a talent manager does.<br/>Every single month.</h2>
       </div>
       <div className="mm-helps-grid">
         {[
           {icon:"mailbox",accent:"#3B6559",title:"Monthly Career Check-Ins",body:"One private note a month with one clear step to improve your profile."},
           {icon:"photo",accent:"#8A5A12",title:"Profile Improvement Guidance",body:"Tips on your headshots, slate video, bio, resume, reel and skills."},
-          {icon:"target",accent:"#3B6559",title:"Casting Lane Suggestions",body:"See which role types fit your profile, so you submit smarter."},
-          {icon:"circle-check",accent:"#8A5A12",title:"One Task Per Week",body:"One focused task instead of a long checklist. Progress, one step at a time."},
+          {icon:"target",accent:"#3B6559",title:"Your Month in Numbers",body:"What you submitted to, what came back, and which saved roles are about to close."},
+          {icon:"circle-check",accent:"#8A5A12",title:"One Task Per Month",body:"One focused task instead of a long checklist. Progress, one step at a time."},
           {icon:"map-pin",accent:"#C3653F",title:"Industry Events in NYC & LA",body:"Curated mixers, showcases and workshops where you meet agents and managers."},
           {icon:"credit-card",accent:"#3B6559",title:"Actor Business Card",body:"Your headshot and a QR code that opens your full profile in seconds."}
         ].map(({icon,accent,title,body})=>(
@@ -19209,7 +19209,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
   const [castingByApp,setCastingByApp]=useState({}); // application_id -> casting (for admin-generated poster name)
   const [openMsg,setOpenMsg]=useState(null);
   const [openCheckin,setOpenCheckin]=useState(null); // for weekly_actor_checkin messages
-  const [showPrevNotes,setShowPrevNotes]=useState(false); // collapse older weekly career notes (Option A)
+  const [showPrevNotes,setShowPrevNotes]=useState(false); // collapse older monthly career notes (Option A)
   const [loading,setLoading]=useState(true);
   const [err,setErr]=useState("");
   const [search,setSearch]=useState("");
@@ -19373,7 +19373,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
       <button className="btn-s btn-sm" onClick={load}>Retry</button>
     </div>}
 
-    {/* ── Weekly career notes panel (talent only) ── */}
+    {/* ── Monthly career notes panel (talent only) ── */}
     {profile?.user_type==="talent"&&checkins.length>0&&(()=>{
       const latest=checkins[0];
       const isUnread=!latest.read_at;
@@ -19491,7 +19491,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
 }
 
 // ═══════════════════════════════════════════════════════════════
-// WEEKLY ACTOR CHECK-IN SYSTEM
+// MONTHLY ACTOR CHECK-IN SYSTEM
 // Generates one-way branded career notes for talent — no reply allowed.
 // ═══════════════════════════════════════════════════════════════
 
@@ -19506,7 +19506,7 @@ function generateWeeklyCheckInContent(profile){
 
   if(completed<2){
     return{
-      note:"Your CastSlate profile is still in the early stage. The best move this week is to complete your basic profile so casting directors can understand who you are and what roles may fit you.",
+      note:"Your CastSlate profile is still in the early stage. The best move this month is to complete your basic profile so casting directors can understand who you are and what roles may fit you.",
       doing_well:"You've started your profile, which is the first step.",
       needs_attention:"Your profile needs more material before it can make a strong first impression.",
       casting_lane:"General background and open-call roles",
@@ -19516,11 +19516,11 @@ function generateWeeklyCheckInContent(profile){
     };
   }
 
-  let needs_attention,task,cta_action,cta_label="Complete This Week's Task";
+  let needs_attention,task,cta_action,cta_label="Complete This Month's Task";
 
   if(!hasReel){
     needs_attention="Your profile doesn't yet include a reel or video clip. A short, well-lit performance clip — even 30 to 60 seconds — gives casting directors a direct sense of your work before they look further.";
-    task="Add a short video clip or reel link to your profile this week.";
+    task="Add a short video clip or reel link to your profile this month.";
     cta_action="media";
   }else if(!hasResume){
     needs_attention="Your profile is missing a resume. A concise, formatted resume helps casting directors quickly confirm your experience and training at a glance.";
@@ -19562,9 +19562,9 @@ function generateWeeklyCheckInContent(profile){
   if(completed>=4){
     note="Based on your current CastSlate profile, your materials are in good shape. Your next step is putting that profile to work — casting directors review talent who are active on the platform more regularly than those who are not.";
   }else if(completed===3){
-    note="Your CastSlate profile is moving in the right direction. You have some strong materials in place, and one or two additions this week could make a meaningful difference in how casting directors respond to your profile.";
+    note="Your CastSlate profile is moving in the right direction. You have some strong materials in place, and one or two additions this month could make a meaningful difference in how casting directors respond to your profile.";
   }else{
-    note="Here is your career note for this week. Based on your current CastSlate profile, there are a few targeted steps that could strengthen how your profile reads to casting directors.";
+    note="Here is your career note for this month. Based on your current CastSlate profile, there are a few targeted steps that could strengthen how your profile reads to casting directors.";
   }
 
   const union=(profile?.union_status||"").toLowerCase();
@@ -19656,19 +19656,19 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
           <div style={{fontWeight:800,fontSize:20,letterSpacing:"-0.5px",marginBottom:2}}>Your Monthly Actor Check-In</div>
           <div style={{fontSize:12,color:"var(--t3)",marginBottom:24,letterSpacing:0.2}}>{weekLabel} · CastSlate Career Team</div>
 
-          <CheckInSection icon="" title="This week's note" body={content.note}/>
+          <CheckInSection icon="" title="This month's note" body={content.note}/>
           <CheckInSection icon="" title="What you're doing well" body={content.doing_well} accent="var(--grn)"/>
           <CheckInSection icon="→" title="What needs attention" body={content.needs_attention}/>
-          <CheckInSection icon="" title="Casting lane to focus on" body={content.casting_lane} accent="var(--acc)"/>
+          {content.casting_lane&&<CheckInSection icon="" title="Casting lane to focus on" body={content.casting_lane} accent="var(--acc)"/>}
 
           <div style={{background:"var(--s2)",borderRadius:12,padding:"16px 18px",marginBottom:20,border:"1px solid var(--bdr)"}}>
-            <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",fontWeight:700,color:"var(--acc)",marginBottom:6}}>Your task this week</div>
-            <div style={{fontSize:14,lineHeight:1.65,color:"var(--t1)",fontWeight:500}}>{content.task||"Complete your profile this week."}</div>
+            <div style={{fontSize:10,letterSpacing:1.2,textTransform:"uppercase",fontWeight:700,color:"var(--acc)",marginBottom:6}}>Your task this month</div>
+            <div style={{fontSize:14,lineHeight:1.65,color:"var(--t1)",fontWeight:500}}>{content.task||"Complete your profile this month."}</div>
           </div>
 
           {taskDone
             ?<div style={{textAlign:"center",padding:"16px 0",color:"var(--grn)",fontWeight:700,fontSize:14,letterSpacing:0.2}}>Task completed. Your profile is stronger this week.</div>
-            :<button className="btn-p" style={{width:"100%",padding:"14px",fontSize:15,fontWeight:700}} onClick={handleCTA}>{content.cta_label||"Complete This Week's Task"}</button>
+            :<button className="btn-p" style={{width:"100%",padding:"14px",fontSize:15,fontWeight:700}} onClick={handleCTA}>{content.cta_label||"Complete This Month's Task"}</button>
           }
         </div>
 
@@ -42346,8 +42346,8 @@ function AdminPremiumUpsell({session}){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ADMIN: WEEKLY ACTOR CHECK-INS
-// Settings panel + manual send trigger for the automatic weekly
+// ADMIN: MONTHLY ACTOR CHECK-INS
+// Settings panel + manual send trigger for the automatic monthly
 // career note system. No approval queue — send everything, restrict what it says.
 // ═══════════════════════════════════════════════════════════════
 function AdminWeeklyCheckIns({session}){
@@ -42416,7 +42416,7 @@ function AdminWeeklyCheckIns({session}){
   };
 
   const runSendNow=async()=>{
-    if(!window.confirm("Send weekly check-ins now to all Premium talent accounts that haven't received one this week? (Free accounts are never included.)"))return;
+    if(!window.confirm("Send monthly check-ins now to all Premium talent accounts that haven't received one in the last 28 days? (Free accounts are never included.)"))return;
     setBusy(true);setMsg("");setSendProgress("Loading talent accounts…");
     try{
       const weekStart=getWeekStart();
@@ -42474,7 +42474,7 @@ function AdminWeeklyCheckIns({session}){
               status:"sent",
               task_action:content.cta_action
             });
-            // Fire the premium weekly check-in email nudge (non-fatal). Gated on
+            // Fire the premium monthly check-in email nudge (non-fatal). Gated on
             // the recipient's email prefs server-side; drives them back into the app.
             window.sb.functions.invoke("send-notification-email",{
               body:{to_user_id:talent.id,type:"weekly_checkin",task:content.task}
@@ -42563,11 +42563,11 @@ function AdminWeeklyCheckIns({session}){
   const readCount=logs.filter(l=>l.status==="read").length;
   const doneCount=logs.filter(l=>l.status==="task_completed").length;
 
-  if(loading)return(<CastSlateLoader size="inline" text="Loading weekly check-in settings…"/>);
+  if(loading)return(<CastSlateLoader size="inline" text="Loading monthly check-in settings…"/>);
 
   return(<>
-    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Weekly Actor Check-Ins</h1>
-    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Automatic weekly career notes delivered to every <strong>Premium</strong> talent inbox (premium-only feature — free accounts never receive these). One per actor per week. No reply. No admin approval needed.</p>
+    <h1 style={{fontWeight:800,fontSize:28,letterSpacing:-0.5,marginBottom:4}}>Monthly Actor Check-Ins</h1>
+    <p style={{color:"var(--t2)",fontSize:13,marginBottom:20}}>Automatic monthly career notes delivered to every <strong>Premium</strong> talent inbox (premium-only feature — free accounts never receive these). One per actor per month, on their own signup-anniversary day. No reply. No admin approval needed.</p>
 
     {msg&&<div style={{background:"var(--s2)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)"}}>{msg}</div>}
     {sendProgress&&<div style={{background:"rgba(26,26,200,0.07)",borderRadius:8,padding:"10px 14px",fontSize:13,marginBottom:14,borderLeft:"3px solid var(--acc)",fontWeight:600}}>{sendProgress}</div>}
@@ -42596,8 +42596,8 @@ function AdminWeeklyCheckIns({session}){
         <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
           <input type="checkbox" checked={form.checkin_enabled} onChange={e=>setForm(f=>({...f,checkin_enabled:e.target.checked}))} style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2}}/>
           <div>
-            <div style={{fontWeight:600,fontSize:14}}>Weekly Actor Check-In: ON</div>
-            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>When off, no weekly check-ins will be sent to any talent account</div>
+            <div style={{fontWeight:600,fontSize:14}}>Monthly Actor Check-In: ON</div>
+            <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>When off, no monthly check-ins will be sent to any talent account</div>
           </div>
         </label>
         <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer"}}>
@@ -42648,7 +42648,7 @@ function AdminWeeklyCheckIns({session}){
         </button>
       </div>
       <p style={{fontSize:12,color:"var(--t3)",marginTop:10}}>
-        "Send Now" sends to all Premium talent who have not received a check-in this week. Free accounts are never included. Safe to run multiple times — duplicates are blocked by a unique constraint.
+        "Send Now" sends to all Premium talent who have not received a check-in in the last 28 days. Free accounts are never included. Safe to run multiple times — duplicates are blocked by a unique constraint.
       </p>
     </div>
 
@@ -42720,7 +42720,7 @@ function AdminWeeklyCheckIns({session}){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ADMIN: MANAGER MODE  (monthly weekly-check-in delivery graph)
+// ADMIN: MANAGER MODE  (check-in delivery graph, by month)
 // ═══════════════════════════════════════════════════════════════
 // Premium-only Manager Mode = the MONTHLY career check-in (monthly since 2026-09-23;
 // each actor lands on their own signup-anniversary day). The real schedule is the
