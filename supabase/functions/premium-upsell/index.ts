@@ -3,6 +3,7 @@
 //
 // POST { action:"run", slot:"noon"|"evening" }  → send to every eligible free user.
 // POST { action:"test", to_email, slot? }        → preview send to one address.
+// POST { action:"catchup" }                     → new signups who missed a slot.
 // GET  ?action=unsubscribe&uid=<id>              → opt out of THIS campaign only.
 //
 // Design decisions (why this is safe to run twice a day):
@@ -259,6 +260,37 @@ const PALETTES: Record<string, Palette> = {
     fallbackStill:"https://image.tmdb.org/t/p/w1280/bKCpRjjTKcr3KAITmwjVMobbBYg.jpg",
   },
 };
+
+// ─── Signup catch-up ─────────────────────────────────────────────────────────
+// The two scheduled slots fire at 13:00 UTC (9am ET, "morning") and 22:00 UTC
+// (6pm ET, "evening"). Someone who signs up at 2pm ET missed the morning send and
+// would otherwise wait for the evening one, so we send them the one they missed
+// shortly after they arrive and then suppress the OTHER slot for the rest of that
+// first day — day one is the welcome email plus ONE upsell, never three.
+const SLOT_HOURS_UTC = { noon: 13, evening: 22 };
+const CATCHUP_REASON     = "signup_catchup";
+const CATCHUP_DELAY_MIN  = 30;   // wait this long after signup before sending
+const CATCHUP_WINDOW_MIN = 240;  // ...but never mail someone older than this
+// If the next scheduled slot is closer than this, send nothing: the fresh email is
+// nearly here and is better than a catch-up of the previous one. Chosen so that a
+// signup shortly before the morning send waits for it, while an early-afternoon
+// signup (5+ hours from the evening send) still gets its catch-up straight away.
+const CATCHUP_MIN_GAP_H  = 5;
+
+// The slot that most recently fired BEFORE this moment. Before 13:00 UTC the most
+// recent send was the previous evening's.
+function slotMissedBefore(d: Date): "noon"|"evening" {
+  const h = d.getUTCHours();
+  if (h >= SLOT_HOURS_UTC.evening) return "evening";
+  if (h >= SLOT_HOURS_UTC.noon)    return "noon";
+  return "evening";
+}
+function hoursUntilNextSlot(d: Date): number {
+  const h = d.getUTCHours() + d.getUTCMinutes()/60;
+  if (h < SLOT_HOURS_UTC.noon)    return SLOT_HOURS_UTC.noon - h;
+  if (h < SLOT_HOURS_UTC.evening) return SLOT_HOURS_UTC.evening - h;
+  return 24 - h + SLOT_HOURS_UTC.noon;
+}
 
 const PERKS = [
   "Unlimited casting submissions",
@@ -681,6 +713,99 @@ serve(async (req) => {
       return res({ok:true,test:true,slot,to:to_email,provider_id:r.id});
     }
 
+    // ── CATCH-UP: new signups who arrived after a slot already went out. ──
+    //    Driven by a 5-minute cron; on most runs it finds nobody and returns 0.
+    if(action==="catchup"){
+      const{data:ccfg}=await sb.from("site_settings").select("premium_upsell_enabled,premium_upsell_paused").eq("id",1).maybeSingle();
+      if(ccfg && ccfg.premium_upsell_enabled===false) return res({ok:false,action:"catchup",message:"Disabled",sent:0});
+      if(ccfg && ccfg.premium_upsell_paused===true)   return res({ok:false,action:"catchup",message:"Paused",sent:0});
+
+      const now=new Date();
+      const oldest=new Date(now.getTime()-CATCHUP_WINDOW_MIN*60000).toISOString();
+      const newest=new Date(now.getTime()-CATCHUP_DELAY_MIN*60000).toISOString();
+
+      const{data:fresh}=await sb.from("profiles")
+        .select("id,display_name,notification_email,membership_status,age,created_at")
+        .in("user_type",["talent","actor"])
+        .eq("account_status","active")
+        .eq("visible",true)
+        .or("membership_status.is.null,membership_status.neq.active")
+        .gte("created_at",oldest).lte("created_at",newest)
+        .order("created_at",{ascending:true}).limit(200);
+      if(!fresh?.length) return res({ok:true,action:"catchup",eligible:0,sent:0,skipped:0});
+
+      // One catch-up per account, ever.
+      const fids=fresh.map((p:any)=>p.id);
+      const{data:already}=await sb.from("premium_upsell_logs").select("user_id").eq("reason",CATCHUP_REASON).in("user_id",fids);
+      const doneSet=new Set((already||[]).map((r:any)=>r.user_id));
+
+      const{data:sup}=await sb.from("email_unsubscribes").select("email");
+      const supSet=new Set((sup||[]).map((r:any)=>String(r.email||"").trim().toLowerCase()));
+
+      let chero: Hero | null = null;
+      try{
+        const{data:hs}=await sb.from("site_settings").select("hero_rotation_enabled").eq("id",1).maybeSingle();
+        if(hs?.hero_rotation_enabled){ const{data:h}=await sb.rpc("get_next_email_hero"); if(h) chero=(Array.isArray(h)?h[0]:h) as Hero; }
+      }catch(e){ console.error("[upsell:catchup] hero unavailable:",(e as Error).message); }
+
+      const cToday=new Date().toISOString().slice(0,10);
+      const cFresh=new Date(Date.now()-14*86400000).toISOString();
+      const{data:ccast}=await sb.from("castings").select("id,title,type,location,union_status,pay,synopsis,slug,created_at,deadline").eq("status","open").eq("published",true).or(`deadline.is.null,deadline.gte.${cToday}`).or(`expires_at.is.null,expires_at.gte.${cToday}`).or(`go_live_at.is.null,go_live_at.lte.${new Date().toISOString()}`).gte("created_at",cFresh).order("created_at",{ascending:false}).limit(20);
+      const cPool:any[]=[];
+      if(ccast?.length){
+        const rb:Record<string,any[]>={};
+        const{data:rr}=await sb.from("roles").select("id,casting_id,name,age_range,gender,pay").in("casting_id",ccast.map((c:any)=>c.id));
+        (rr||[]).forEach((r:any)=>{(rb[r.casting_id]??=[]).push(r);});
+        ccast.forEach((c:any)=>cPool.push({...c,posted_at:c.created_at,roles:rb[c.id]||[]}));
+      }
+
+      const clogs:Record<string,unknown>[]=[];
+      let csent=0, cskip=0; const creasons:Record<string,number>={};
+      const cbump=(r:string)=>{ creasons[r]=(creasons[r]||0)+1; };
+
+      for(const p of fresh){
+        if(doneSet.has(p.id)){ cskip++; cbump("already_caught_up"); continue; }
+
+        const signedUp=new Date(p.created_at);
+        const gap=hoursUntilNextSlot(now);
+        if(gap < CATCHUP_MIN_GAP_H){ cskip++; cbump("next_slot_is_close"); continue; }
+        const cslot=slotMissedBefore(signedUp);
+
+        // Never mail an unconfirmed address: that is how a sender collects bounces.
+        let email:string|null=null, confirmed=false;
+        try{
+          const{data:au}=await sb.auth.admin.getUserById(p.id);
+          email=au?.user?.email??null;
+          confirmed=!!au?.user?.email_confirmed_at;
+        }catch(_){ /* treated as unconfirmed below */ }
+        if(!email){ cskip++; cbump("no_email"); continue; }
+        if(!confirmed){ cskip++; cbump("email_unconfirmed"); continue; }
+        if(supSet.has(email.trim().toLowerCase())){ cskip++; cbump("suppressed"); clogs.push({user_id:p.id,email,slot:cslot,status:"skipped",reason:CATCHUP_REASON+":suppressed"}); continue; }
+        if(p.notification_email===false){ cskip++; cbump("email_notifications_off"); continue; }
+
+        const{data:pref}=await sb.from("email_preferences").select("*").eq("user_id",p.id).maybeSingle();
+        const pf=pref??{};
+        if(pf.premium_upsell_optout===true){ cskip++; cbump("campaign_optout"); continue; }
+
+        const pool=cPool.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
+        const batch=pool.slice(0,3);
+        const first=(p.display_name??"").split(" ")[0].trim()||"there";
+        const html=addUtm(buildEmail(first,batch,p.id,cslot,chero),cslot);
+        const r=await sendEmail({
+          from:FROM_EMAIL, to:[email], replyTo:CONTACT_EMAIL,
+          subject:subjectFor(cslot,batch.length,chero), html,
+          headers:{"List-Unsubscribe":`<${UNSUB_BASE}?action=unsubscribe&uid=${p.id}&slot=${cslot}>`,"List-Unsubscribe-Post":"List-Unsubscribe=One-Click"},
+        });
+        if(r.ok){ csent++; clogs.push({user_id:p.id,email,slot:cslot,status:"sent",reason:CATCHUP_REASON,provider_message_id:r.id}); }
+        else    { cbump("send_failed"); clogs.push({user_id:p.id,email,slot:cslot,status:"failed",reason:CATCHUP_REASON,error_message:r.err}); }
+      }
+
+      if(clogs.length){ try{ await sb.from("premium_upsell_logs").insert(clogs); }catch(e){ console.error("[upsell:catchup] log insert failed",e); } }
+      const csummary={ok:true,action:"catchup",eligible:fresh.length,sent:csent,skipped:cskip,skip_reasons:creasons};
+      console.log("[premium-upsell] catchup complete",JSON.stringify(csummary));
+      return res(csummary);
+    }
+
     if(action!=="run") return res({error:"Unknown action"},400);
 
     // ── RUN: the twice-daily campaign. ──
@@ -774,6 +899,19 @@ serve(async (req) => {
     }
 
     // ── Active castings + roles (for the personalized job cards). ──
+    // Anyone who received a signup catch-up today has already had their upsell for
+    // the day. Skip the remaining slot so a first day is welcome + ONE upsell
+    // rather than three emails in an afternoon.
+    const caughtUpToday=new Set<string>();
+    {
+      const midnight=new Date(); midnight.setUTCHours(0,0,0,0);
+      const{data,error}=await sb.from("premium_upsell_logs")
+        .select("user_id").eq("reason",CATCHUP_REASON).eq("status","sent")
+        .gte("sent_at",midnight.toISOString());
+      if(error) console.error("[premium-upsell] catchup-today load error",error);
+      (data||[]).forEach((r:any)=>{ if(r.user_id) caughtUpToday.add(r.user_id); });
+    }
+
     const today=new Date().toISOString().slice(0,10);
     // One still per run — every recipient in this slot gets the same frame.
     let runHero: Hero | null = null;
@@ -822,6 +960,7 @@ serve(async (req) => {
       const pf=pm[p.id]??{};
       // Backstop: never email a premium member even if the query ever returns one.
       if(p.membership_status==="active"){ skipped++; bump("premium"); continue; }
+      if(caughtUpToday.has(p.id)){ skipped++; bump("signup_catchup_today"); continue; }
       let skipReason:string|null=null;
       if(pf.premium_upsell_optout===true)     skipReason="campaign_optout";
       else if(p.notification_email===false)   skipReason="email_notifications_off";
