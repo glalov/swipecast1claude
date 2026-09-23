@@ -8462,7 +8462,7 @@ function BookingRequestModal({target,myProfile,session,onClose,onSubmitted}){
           <textarea className="textarea" rows={3} value={form.short_bio} onChange={e=>up("short_bio",e.target.value)} placeholder="2–3 sentences about yourself and your experience" disabled={busy}/>
         </div>
         <div className="form-group">
-          <label className="label">Resume <span style={{color:"var(--t3)",fontWeight:400,fontSize:12}}>(optional — PDF or Word)</span></label>
+          <label className="label">Upload Resume <span style={{color:"var(--t3)",fontWeight:400,fontSize:12}}>(optional — PDF or Word)</span></label>
           {myProfile?.resume_url&&<p style={{fontSize:12,color:"var(--t2)",marginBottom:4}}>You have a resume on file. Upload a new one to use it for this request instead.</p>}
           <input type="file" accept=".pdf,.doc,.docx" onChange={e=>setResumeFile(e.target.files[0])} disabled={busy}/>
         </div>
@@ -23165,7 +23165,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         height:f.height||null,weight:f.weight||null,hair:f.hair||null,eyes:f.eyes||null,
         union_status:f.union_status||null,agent:f.agent||null,training:f.training||null,
         skills:mergedSkills,
-        instagram:f.instagram||null,phone:f.phone||null,
+        instagram:f.instagram||null,
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
         credits:f.credits||null,video_links:vl,
         body_type:f.body_type||null,age_range:f.age_range||null,
@@ -23465,7 +23465,6 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                 </div>}
           </div>
         </div>
-        <div className="form-row"><div className="form-group"><label className="label">Phone (private)</label><input className="input" placeholder="Optional" value={f.phone} onChange={e=>up("phone",e.target.value)}/></div></div>
         <div className="form-group"><label className="label">Bio / Overview</label><textarea className="textarea" style={{minHeight:130}} value={f.bio} onChange={e=>up("bio",e.target.value)} placeholder={isCD?"About you and your casting work…":"Your experience, strengths, what makes you unique…"}></textarea></div>
       </div>
       {!isCD&&<>
@@ -23480,7 +23479,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               {f.show_exact_age!==false
                 ? <>Casting directors will see <strong>{f.age?`age ${f.age}`:"your exact age"}</strong>. Untick to show a range instead.</>
                 : <>Casting directors will see <strong>{f.age?`age ${ageBracketLabel(f.age)}`:"an age range"}</strong> instead of your exact age.</>}
-              <br/>Your age is always required so we can confirm you're 18 or over — that part is never hidden from us.
+              <br/>We always ask for your age to confirm you're 18 or over — this toggle just controls what casting directors see.
             </div>
           </div></div>
           <div className="form-row"><div className="form-group"><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
@@ -23668,7 +23667,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           <div className="form-group"><label className="label">Credits / Notable Projects (one per line)</label><textarea className="textarea" style={{minHeight:100}} value={f.credits} onChange={e=>up("credits",e.target.value)}/></div>
         </div>
       </>}
-      <button className="btn-p" onClick={save} disabled={saving} style={{padding:"14px 32px"}}>{saving?"Saving…":"Save Profile"}</button>
+      <button className="btn-p" onClick={save} disabled={saving} style={{padding:"10px 22px",alignSelf:"flex-start"}}>{saving?"Saving…":"Save Profile"}</button>
     </>}
 
     {/* ── PHOTOS TAB ── */}
