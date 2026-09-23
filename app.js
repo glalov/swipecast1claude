@@ -2052,7 +2052,9 @@ a.news-card{text-decoration:none;color:inherit;}
   .td-stats{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:480px){.td-stats{grid-template-columns:1fr;gap:10px;}}
-/* Recommended for You cards (layout D, approved 2026-09-23).
+/* Recommended for You cards (layout D, approved 2026-09-23; Apply navy softened
+   to #464A73 on 2026-09-23 — #2E3050 read as near-black against the cream).
+
    The role is what makes the listing a recommendation, so the role name LEADS and
    the project drops to the supporting line. Deadline and match reason are chips,
    not more grey body text, so urgency is readable at a glance instead of being a
@@ -2060,7 +2062,7 @@ a.news-card{text-decoration:none;color:inherit;}
    and should not be the loudest thing in the column. */
 .trec{position:relative;padding:14px 16px 14px 18px;border-radius:10px;border:1px solid var(--bdr);background:var(--bg);display:flex;flex-direction:column;gap:9px;width:100%;box-sizing:border-box;overflow:hidden;transition:border-color .18s,box-shadow .18s;}
 .trec:hover{border-color:#CFC5B0;box-shadow:0 2px 10px -4px rgba(36,31,25,.16);}
-.trec::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#2E3050;opacity:.5;}
+.trec::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#464A73;opacity:.5;}
 .trec-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
 .trec-lead{min-width:0;flex:1;}
 .trec-role{font-size:15px;font-weight:700;color:var(--t1);letter-spacing:-.25px;line-height:1.25;word-break:break-word;}
@@ -2073,11 +2075,11 @@ a.news-card{text-decoration:none;color:inherit;}
 .trec-chip.match i{width:4px;height:4px;border-radius:50%;background:var(--teal);flex-shrink:0;}
 .trec-chip.urgent{background:rgba(214,59,59,.09);color:var(--red);border-color:rgba(214,59,59,.28);}
 .trec-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.trec-apply{background:#2E3050;color:#fff;border:none;font-family:inherit;font-size:11.5px;font-weight:700;padding:7px 14px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;line-height:1;transition:background .18s,transform .18s;}
-.trec-apply:hover{background:#3A3C62;transform:translateY(-1px);}
+.trec-apply{background:#464A73;color:#fff;border:none;font-family:inherit;font-size:11.5px;font-weight:700;padding:7px 14px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;line-height:1;transition:background .18s,transform .18s;}
+.trec-apply:hover{background:#545983;transform:translateY(-1px);}
 .trec-save{width:30px;height:30px;border-radius:7px;border:1px solid var(--bdr);background:var(--s2);display:grid;place-items:center;cursor:pointer;flex-shrink:0;color:var(--t3);transition:border-color .18s,color .18s,background .18s;padding:0;}
-.trec-save:hover{border-color:#2E3050;color:#2E3050;background:var(--s1);}
-.trec-save.on{border-color:#2E3050;color:#2E3050;background:rgba(46,48,80,.08);}
+.trec-save:hover{border-color:#464A73;color:#464A73;background:var(--s1);}
+.trec-save.on{border-color:#464A73;color:#464A73;background:rgba(70,74,115,.08);}
 .trec-save:disabled{cursor:not-allowed;opacity:.55;}
 /* Plan Status card: this and the Agency Directory card below it both lead to
    /membership. Two filled buttons gave neither priority, so this one is an outline
