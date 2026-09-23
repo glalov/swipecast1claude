@@ -1855,6 +1855,8 @@ const ETHNICITIES = ["Asian - East Asian","Asian - South Asian","Asian - Southea
 const GENDER_IDENTITY_OPTS = [
   {value:"Male",label:"Man / Male"},
   {value:"Female",label:"Woman / Female"},
+  {value:"Trans Man",label:"Trans Man"},
+  {value:"Trans Woman",label:"Trans Woman"},
   {value:"Non-Binary",label:"Non-Binary"},
   {value:"Transgender",label:"Transgender"},
   {value:"Genderfluid",label:"Genderfluid"},
@@ -1864,6 +1866,55 @@ const GENDER_IDENTITY_OPTS = [
   {value:"Prefer not to say",label:"Prefer not to say / Unspecified"},
 ];
 const isCustomGender = g => {const v=(g||"").trim();return !!v&&!GENDER_IDENTITY_OPTS.some(o=>o.value===v);};
+
+// ─── Role-gender matching ───────────────────────────────────────────────────
+// Identity and castability are two different questions and must not share a
+// field. profiles.gender answers "who am I" and is what casting directors read.
+// profiles.open_to_role_genders answers "what should I be shown", and is the
+// only thing the matcher reads.
+//
+// Roles do not store a tidy enum. Live data carries Female, Male, Non-Binary,
+// "Any" AND "All genders" — and the old matcher only understood "any", so all
+// 698 "All genders" roles were invisible to every actor who had filled in their
+// gender. Normalise first, always.
+const ROLE_GENDERS = ["Male","Female","Non-Binary"];
+const normRoleGender = g => {
+  const v = (g||"").toLowerCase().replace(/[\s_-]+/g," ").trim();
+  if(!v || v==="any" || v==="all genders" || v==="all" || v==="open" || v==="any gender") return "any";
+  if(v==="male" || v==="man" || v==="men") return "male";
+  if(v==="female" || v==="woman" || v==="women") return "female";
+  if(v==="non binary" || v==="nonbinary" || v==="enby") return "non-binary";
+  return "any"; // unknown wording must never hide a role
+};
+// Default castability for an identity, used until the actor edits it themselves.
+// Trans man reads for male roles and trans woman for female roles, as asked.
+// Identities with no sensible mapping (Genderfluid, Two-Spirit, a custom value,
+// or nothing set) default to ALL role genders: we would rather show too much
+// than silently hide work from someone we could not classify.
+const defaultOpenToRoleGenders = gender => {
+  const v = (gender||"").toLowerCase().replace(/[\s_-]+/g," ").trim();
+  if(v==="male" || v==="trans man" || v==="man male" || v==="ftm") return ["Male"];
+  if(v==="female" || v==="trans woman" || v==="woman female" || v==="mtf") return ["Female"];
+  if(v==="non binary") return ["Non-Binary"];
+  return ROLE_GENDERS.slice();
+};
+// The list the matcher actually uses. A stored [] is a real choice meaning
+// "gendered roles only if they are open to all", so only NULL/undefined falls
+// back to the identity default.
+const effectiveOpenTo = profile => {
+  const stored = profile && profile.open_to_role_genders;
+  if(Array.isArray(stored)) return stored.filter(g=>ROLE_GENDERS.includes(g));
+  return defaultOpenToRoleGenders(profile && profile.gender);
+};
+// Open-to-all roles are shown to EVERYONE, always. open_to only governs roles
+// that actually specify a gender, so no default can strand an actor with an
+// empty dashboard.
+const roleGenderAllowed = (roleGender, openTo) => {
+  const rg = normRoleGender(roleGender);
+  if(rg==="any") return true;
+  const set = (openTo||[]).map(g=>normRoleGender(g));
+  return set.includes(rg);
+};
 
 // ─── Casting archetypes ("Type Range"). Replaced the old Playable Age Range
 //     dropdown, which asked actors to pick a decade bracket when what casting
@@ -4147,6 +4198,15 @@ a.news-card{text-decoration:none;color:inherit;}
   .td-stats{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:480px){.td-stats{grid-template-columns:1fr;gap:10px;}}
+/* "Roles I'm open to" — the castability control that sits under Gender on the
+   profile. Deliberately chips, not another <select>: it is multi-select, and the
+   whole point is that the actor can see all three options and their own state at
+   a glance rather than opening a menu. */
+.otrg-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+.otrg-chip{font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:100px;cursor:pointer;background:var(--s2);color:var(--t2);border:1.5px solid var(--bdr);transition:background .16s,border-color .16s,color .16s;}
+.otrg-chip:hover{border-color:#464A73;color:#464A73;}
+.otrg-chip.on{background:rgba(70,74,115,.1);border-color:#464A73;color:#2E3050;}
+.otrg-note{font-size:11.5px;color:var(--t3);margin-top:7px;line-height:1.5;}
 /* Recommended for You cards (layout D, approved 2026-09-23; Apply navy softened
    to #464A73 on 2026-09-23 — #2E3050 read as near-black against the cream).
 
@@ -16017,7 +16077,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         const t=new Date(c.deadline).getTime();
         return isNaN(t)||Math.ceil((t-_nowMs)/86400000)>=0;
       });
-      const talentGender=(myProfile?.gender||"").toLowerCase().trim();
+      // Castability comes from open_to_role_genders (falling back to a default
+      // derived from identity), NEVER from a string comparison against gender.
+      // The old code compared substrings, and "female".includes("male") is true,
+      // so every actor marked Female matched every Male role and vice versa.
+      const openTo=effectiveOpenTo(myProfile);
+      const genderUnset=!((myProfile?.gender||"").trim());
       const talentAgeRange=myProfile?.age_range||"";
       const talentAge=myProfile?.age||null;
       const talentLocation=(myProfile?.location||"").toLowerCase();
@@ -16027,16 +16092,24 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       else if(talentAge){talentAgeMin=talentAge-3;talentAgeMax=talentAge+3;}
       const scored=castingsList.map(c=>{
         let score=0;
-        // The dashboard card leads with the role and shows WHY the casting was
-        // recommended, so the per-role sub-score is kept rather than thrown away:
-        // _bestRole is the role that actually earned the match (not roles[0]), and
-        // _mAge/_mGender/_mCity back the match chip with a real reason.
+        // Gender FILTERS, it no longer merely scores. A role the actor cannot be
+        // seen for is dropped outright, and a casting with no playable role left
+        // is dropped with it — otherwise a wrong-gender role still surfaces in
+        // the top 3 whenever the pool is small.
+        const playable=(c.roles||[]).filter(r=>roleGenderAllowed(r.gender,openTo));
+        if(!playable.length)return null;
+        // The card leads with the role and states WHY the casting was recommended,
+        // so the per-role sub-score is kept rather than thrown away: _bestRole is
+        // the role that actually earned the match (not roles[0]), and _mAge/
+        // _mGender/_mCity back the match chip with a real reason.
         let bestRole=null,bestRoleScore=-1,mAge=false,mGender=false,mCity=false;
-        for(const r of(c.roles||[])){
+        for(const r of playable){
           let rScore=0;
-          const rg=(r.gender||"any").toLowerCase();
-          const gm=rg==="any"||!talentGender||rg===talentGender||rg.includes(talentGender)||talentGender.includes(rg);
-          if(gm){score+=2;rScore+=2;if(talentGender&&rg!=="any")mGender=true;}
+          // Every playable role is a gender match by definition now. Only a role
+          // that NAMES a gender is worth saying anything about — "open to all"
+          // is not a fact about this actor.
+          score+=2;rScore+=2;
+          if(!genderUnset&&normRoleGender(r.gender)!=="any")mGender=true;
           if(r.age_range&&talentAgeMin!==null){
             const rm=r.age_range.match(/(\d+)\s*[-–]\s*(\d+)/);
             if(rm){const rMin=parseInt(rm[1]),rMax=parseInt(rm[2]);if(talentAgeMin<=rMax&&talentAgeMax>=rMin){score+=2;rScore+=2;mAge=true;}}
@@ -16049,8 +16122,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           if(tc&&cc&&tc===cc){score+=3;mCity=true;}
           else if(tc&&cl.includes(tc)){score+=1;mCity=true;}
         }
-        return{...c,_score:score,_bestRole:bestRole||(c.roles||[])[0]||null,_mAge:mAge,_mGender:mGender,_mCity:mCity};
-      });
+        return{...c,roles:playable,_score:score,_bestRole:bestRole||playable[0]||null,_mAge:mAge,_mGender:mGender,_mCity:mCity};
+      }).filter(Boolean);
       // Sort by match score, then soonest real deadline (nulls last) so equally
       // good matches surface the one about to close first.
       scored.sort((a,b)=>{
@@ -16065,7 +16138,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       setRecommended(scored);
     }catch(e){console.warn("[talent-dashboard] recommended:",e);}
     finally{setRecsLoading(false);}
-  },[myProfile?.gender,myProfile?.age_range,myProfile?.age,myProfile?.location]);
+  },[myProfile?.gender,(myProfile?.open_to_role_genders||[]).join("|"),myProfile?.age_range,myProfile?.age,myProfile?.location]);
 
   const loadSaved=useCallback(async()=>{
     if(!uid){setSavedLoading(false);return;}
@@ -16949,7 +17022,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
                 <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recommended for You</h2>
-                <p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Matched to your gender, age range and location</p>
+                {(myProfile?.gender||"").trim()?<p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Matched to your gender, age range and location</p>:<p style={{fontSize:11,color:"var(--t3)",margin:"2px 0 0"}}>Showing every role — <span onClick={()=>onNavigate("my-profile")} style={{color:"#464A73",fontWeight:700,cursor:"pointer",textDecoration:"underline",textUnderlineOffset:"2px"}}>set your gender</span> to sharpen these</p>}
               </div>
               <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse All <Tri/></button>
             </div>
@@ -16972,7 +17045,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     // signal for an actor; city next; a gender-specific role last.
                     // No reason recorded (a wide-open role) means no chip rather
                     // than a vague one.
-                    const why=c._mAge?"Matches your age range":c._mCity?"Near you":c._mGender?"Open to your profile":null;
+                    const why=c._mAge?"Matches your age range":c._mCity?"Near you":c._mGender?"Matches your gender":null;
                     return(
                       <div key={c.id} className="trec">
                         <div className="trec-head">
@@ -23061,6 +23134,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     company_name:profile?.company_name||"",company_role:profile?.company_role||"",website:profile?.website||"",
     credits:profile?.credits||"",
     body_type:profile?.body_type||"",age_range:profile?.age_range||"",
+    open_to_role_genders:Array.isArray(profile?.open_to_role_genders)?profile.open_to_role_genders:null,
     casting_types:Array.isArray(profile?.casting_types)?profile.casting_types:[],
     casting_type_other:profile?.casting_type_other||"",
     show_exact_age:profile?.show_exact_age!==false,
@@ -23086,6 +23160,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         company_name:profile.company_name||"",company_role:profile.company_role||"",website:profile.website||"",
         credits:profile.credits||"",
         body_type:profile.body_type||"",age_range:profile.age_range||"",
+        open_to_role_genders:Array.isArray(profile.open_to_role_genders)?profile.open_to_role_genders:null,
         casting_types:Array.isArray(profile.casting_types)?profile.casting_types:[],
         casting_type_other:profile.casting_type_other||"",
         show_exact_age:profile.show_exact_age!==false,
@@ -23245,6 +23320,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       const patch={
         display_name:f.display_name.trim()||null,bio:f.bio||null,location:f.location||null,
         age:f.age?parseInt(f.age):null,gender:f.gender||null,ethnicity:f.ethnicity||null,
+        open_to_role_genders:Array.isArray(f.open_to_role_genders)?f.open_to_role_genders:null,
         height:f.height||null,weight:f.weight||null,hair:f.hair||null,eyes:f.eyes||null,
         union_status:f.union_status||null,agent:f.agent||null,training:f.training||null,
         skills:mergedSkills,
@@ -23552,7 +23628,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
-          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/>
+          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}<div style={{marginTop:14}}><label className="label">Roles I'm open to</label><div className="otrg-row">{ROLE_GENDERS.map(g=>{const cur=Array.isArray(f.open_to_role_genders)?f.open_to_role_genders:defaultOpenToRoleGenders(f.gender);const on=cur.includes(g);return(<button key={g} type="button" className={"otrg-chip"+(on?" on":"")} aria-pressed={on} onClick={()=>{const next=on?cur.filter(x=>x!==g):ROLE_GENDERS.filter(x=>cur.includes(x)||x===g);up("open_to_role_genders",next);}}>{g}</button>);})}</div><div className="otrg-note">This decides which roles we recommend to you — casting directors still see your gender above. Roles marked open to all genders are always included.{!Array.isArray(f.open_to_role_genders)&&<> Set from your gender; change it any time.</>}</div></div></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/>
             <label className="checkbox-row" style={{marginTop:9,marginBottom:0,alignItems:"flex-start"}}>
               <input type="checkbox" style={{marginTop:2}} checked={f.show_exact_age!==false} onChange={e=>up("show_exact_age",e.target.checked)}/>
               <span>Show my exact age on my profile</span>
