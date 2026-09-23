@@ -2467,10 +2467,21 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tad-mini>div{flex:1;}
 .tad-mini b{display:block;font-size:16px;font-weight:800;line-height:1.1;}
 .tad-mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:rgba(255,255,255,.5);white-space:nowrap;}
-/* Emerald, not amber: the Actor Card Studio CTA directly above this card is amber,
-   and two identical buttons stacked gave neither any hierarchy. Dark navy text is
-   kept deliberately — #1A1A2E on #0FA47F is 5.3:1 (WCAG AA), white would be 3.2:1. */
-.tad-cta{position:relative;width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(180deg,#17BE93 0%,#0FA47F 100%);color:#1A1A2E;box-shadow:0 10px 26px -10px rgba(15,164,127,.8),inset 0 1px 0 rgba(255,255,255,.35);}
+/* Gold, and flat (2026-09-23). Two earlier problems, fixed together:
+   1. The old fill was a 180deg light-to-dark gradient + an inset white top lip +
+      a shadow tinted its own colour. Those three cues together read as a curved,
+      bevelled surface floating off the card — a glossy 3D pill, not a button.
+   2. Emerald was the one hue on this card that belonged to nothing else on it;
+      the kicker, dot and icon are all #F0B860. Emerald had been chosen only to
+      avoid clashing with the amber Actor Card Studio button above — that button
+      is now a white outline, so the clash it was working around is gone.
+   Dark navy text is kept: #1A1A2E on #F0B860 is 9.5:1 (WCAG AAA). */
+.tad-cta{position:relative;overflow:hidden;width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:#F0B860;color:#1A1A2E;box-shadow:0 2px 10px -3px rgba(0,0,0,.45);transition:background .18s;}
+.tad-cta:hover{background:#F5C87E;}
+/* The shimmer sweep moves here from the Actor Card Studio button: one sweeping
+   button per rail, and it belongs on the thing that is actually being sold. */
+.tad-cta::before{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-18deg);animation:abc-btnshine 3.4s ease-in-out infinite;pointer-events:none;}
+.tad-cta.tad-open::before{display:none;}
 .tad-cta.tad-open{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.25);}
 /* The directory is a slide-in sheet, not a centred modal — same left-to-right motion,
    easing and dim as the Browse Castings detail sheet, so both "open from a card"
@@ -3509,15 +3520,19 @@ body.sheet-push .b2t-cube{display:none;}
 .abc-prem::after{content:"";position:absolute;inset:-40%;pointer-events:none;z-index:2;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.28) 46%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.28) 54%,transparent 70%);transform:translateX(-120%);animation:abc-sheen 4.8s ease-in-out infinite;mix-blend-mode:screen;}
 .abc-prem .abc-glow-o{animation:abc-breathe 5s ease-in-out infinite;}
 .abc-prem .abc-dot{animation:abc-pulse 2.2s ease-in-out infinite;}
-.abc-prem .abc-cta{overflow:hidden;}
-.abc-prem .abc-cta::before{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);animation:abc-btnshine 3.4s ease-in-out infinite;pointer-events:none;}
+/* This CTA is a FREE preview sitting directly above the paid Agency Directory card.
+   As a filled amber pill it was the loudest button in the rail, above the thing the
+   rail is actually selling. It is now a white outline, and its shimmer moved to the
+   directory's gold CTA — see the note above .tad-cta. */
+.abc-prem .abc-cta{transition:background .18s,border-color .18s;}
+@media(hover:hover){.abc-prem .abc-cta:hover{background:rgba(255,255,255,.14);border-color:#fff;}}
 @media(hover:hover){.abc-prem:hover{box-shadow:0 34px 60px -26px rgba(0,0,0,.6);filter:brightness(1.03);}}
 @keyframes abc-sheen{0%{transform:translateX(-120%);}18%,100%{transform:translateX(120%);}}
 @keyframes abc-float{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
 @keyframes abc-breathe{0%,100%{opacity:.65;transform:scale(1);}50%{opacity:1;transform:scale(1.18);}}
 @keyframes abc-pulse{0%,100%{box-shadow:0 0 6px var(--amber);opacity:.75;}50%{box-shadow:0 0 14px var(--amber);opacity:1;}}
 @keyframes abc-btnshine{0%{transform:translateX(0) skewX(-18deg);}55%,100%{transform:translateX(422%) skewX(-18deg);}}
-@media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot,.abc-prem .abc-cta::before{animation:none!important;}.abc-prem::after{display:none;}}
+@media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot,.tad-cta::before{animation:none!important;}.abc-prem::after{display:none;}}
 /* Premium "Member" status card — dashboard welcome flourish (brand purple). Rendered only for membership_status='active'. */
 .cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#7a4fd6,#4d2a9c 60%,#7a4fd6);box-shadow:0 18px 40px -22px rgba(77,42,156,.6);}
 .cs-procard .cs-pc-edge{position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(120deg,#a07bff,#ffe9a8,#a07bff);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cs-pc-edge 6s linear infinite;opacity:.85;pointer-events:none;}
@@ -17142,7 +17157,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Card Studio</h3>
             </div>
             <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Build your business card, mailing postcard, or agent promo card — each with your headshot and a QR code linking to your CastSlate profile.</p>
-            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'none',cursor:'pointer',background:'linear-gradient(180deg,#F8B65E 0%,#EC942A 100%)',color:'#1A1A2E',boxShadow:'0 10px 26px -10px rgba(240,160,60,.8),inset 0 1px 0 rgba(255,255,255,.35)'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?<>Build My Actor Card <Tri/></>:<>Preview Actor Card <Tri/></>}</button>
+            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'1.5px solid rgba(255,255,255,.55)',cursor:'pointer',background:'transparent',color:'#fff',boxShadow:'none'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?<>Build My Actor Card <Tri/></>:<>Preview Actor Card <Tri/></>}</button>
           </div>
 
           {/* Talent Agency Directory — premium-gated; sits next to the business card on purpose
