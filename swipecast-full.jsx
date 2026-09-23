@@ -5094,6 +5094,18 @@ const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsTotal:1
 const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsTotal:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="from $10.75/month";
 const UPGRADE_MSG=`You've used your free submission. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more.`;
+// ─── Contact-info filter — bio / cover note / messages must not carry links,
+//     phone numbers, emails, or social handles (mirrored by a DB trigger).
+const CONTACT_INFO_MSG="Links, phone numbers, emails, and social handles aren't allowed here.";
+function containsContactInfo(t){
+  if(!t)return false;
+  if(/(https?:\/\/|www\.)\S+/i.test(t))return true;
+  if(/\b[a-z0-9-]+\.(com|net|org|io|co|tv|ly|me|app|link|biz|info|xyz|us|tt)\b/i.test(t))return true;
+  if(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(t))return true;
+  if(t.replace(/[^0-9]/g,"").match(/[0-9]{7,}/))return true;
+  if(/(^|[\s(])@[a-z0-9_.]{2,}/i.test(t))return true;
+  return false;
+}
 // ─── "Cast Me As" / Casting Fit DNA ─────────────────────────────────────────
 const CASTING_TYPES=[
   "Quiet Threat","Final Girl / Final Boy","Romantic Lead","Unhinged Neighbor",
@@ -11885,6 +11897,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       if(myPhotos.length===0){setApplyErr("A headshot is required to apply. Add at least one photo to your profile, then submit.");return;}
       if(!selectedPhoto){setApplyErr("Please pick a photo to submit with your application.");return;}
       if(showVideoRecorder&&!videoNoteUrlRef.current){setApplyErr("You've recorded a video. Please click ' Use This Video' to attach it, or ' Delete' to remove it before submitting.");return;}
+      if(containsContactInfo(coverNote)){setApplyErr(CONTACT_INFO_MSG);return;}
       console.log("[apply] submitting role:",roleId,"casting:",casting.id,"talent:",s.user.id);
       // Goes through public.submit_application (SECURITY DEFINER) so the
       // 50/24h cap and per-role uniqueness check are enforced server-side
@@ -18858,6 +18871,10 @@ function MessageThreadModal({message,sessionUid,sessionUserType,onViewProfile,on
   const sendReply=async()=>{
     const body=reply.trim();
     if((!body&&replyFiles.length===0)||busy||!counterpartyId)return;
+    // Talent can't slip contact info (links, phone, social) into a message to a CD —
+    // same bypass as the bio/cover-note trick. CDs are exempt: they legitimately
+    // share addresses, call-time numbers, and self-tape portal links.
+    if(sessionUserType==="talent"&&containsContactInfo(body)){setErr(CONTACT_INFO_MSG);return;}
     setBusy(true);setErr("");
     try{
       let attachments=[];
@@ -23129,7 +23146,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const showErr=(m)=>{setErr(m);window.scrollTo({top:0,behavior:"smooth"});};
   const save=async()=>{
-    setErr("");setMsg("");setSaving(true);
+    setErr("");setMsg("");
+    if(containsContactInfo(f.bio)){showErr(CONTACT_INFO_MSG);return;}
+    setSaving(true);
     try{
       const videoSlots=profile?.membership_status==="active"?PREMIUM_PLAN.videos:FREE_PLAN.videos;
     const vl=videos.slice(0,videoSlots).filter(v=>v.trim());
