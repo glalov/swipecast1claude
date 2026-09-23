@@ -5101,8 +5101,12 @@ function containsContactInfo(t){
   if(!t)return false;
   if(/(https?:\/\/|www\.)\S+/i.test(t))return true;
   if(/\b[a-z0-9-]+\.(com|net|org|io|co|tv|ly|me|app|link|biz|info|xyz|us|tt)\b/i.test(t))return true;
+  // "www" spelled out with spaces/dots between the letters (w w w, w.w.w)
+  if(/\bw\s*\.?\s*w\s*\.?\s*w\b/i.test(t))return true;
+  // domain spelled with "dot" instead of "." — "caa dot com"
+  if(/\b[a-z0-9-]{2,}\s+dot\s+(com|net|org|io|co|tv|ly|me|app|link|biz|info|xyz|us|tt)\b/i.test(t))return true;
   if(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(t))return true;
-  if(t.replace(/[^0-9]/g,"").match(/[0-9]{7,}/))return true;
+  if(/(\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}\b/.test(t))return true;
   if(/(^|[\s(])@[a-z0-9_.]{2,}/i.test(t))return true;
   return false;
 }
