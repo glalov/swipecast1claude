@@ -4133,6 +4133,39 @@ a.news-card{text-decoration:none;color:inherit;}
   .td-stats{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:480px){.td-stats{grid-template-columns:1fr;gap:10px;}}
+/* Recommended for You cards (layout D, approved 2026-09-23).
+   The role is what makes the listing a recommendation, so the role name LEADS and
+   the project drops to the supporting line. Deadline and match reason are chips,
+   not more grey body text, so urgency is readable at a glance instead of being a
+   fourth identical line. Apply stays filled but small: it is a low-stakes action
+   and should not be the loudest thing in the column. */
+.trec{position:relative;padding:14px 16px 14px 18px;border-radius:10px;border:1px solid var(--bdr);background:var(--bg);display:flex;flex-direction:column;gap:9px;width:100%;box-sizing:border-box;overflow:hidden;transition:border-color .18s,box-shadow .18s;}
+.trec:hover{border-color:#CFC5B0;box-shadow:0 2px 10px -4px rgba(36,31,25,.16);}
+.trec::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#2E3050;opacity:.5;}
+.trec-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.trec-lead{min-width:0;flex:1;}
+.trec-role{font-size:15px;font-weight:700;color:var(--t1);letter-spacing:-.25px;line-height:1.25;word-break:break-word;}
+.trec-role span{font-weight:500;color:var(--t2);font-size:13px;letter-spacing:0;}
+.trec-title{font-size:12.5px;color:var(--t2);margin-top:3px;line-height:1.4;word-break:break-word;}
+.trec-title b{font-weight:600;color:var(--t1);}
+.trec-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.trec-chip{font-size:10.5px;font-weight:700;letter-spacing:.2px;padding:3px 9px;border-radius:100px;display:inline-flex;align-items:center;gap:5px;line-height:1.4;white-space:nowrap;background:var(--s2);color:var(--t2);border:1px solid var(--bdr);}
+.trec-chip.match{background:rgba(42,132,114,.1);color:var(--teal-dk);border-color:rgba(42,132,114,.26);}
+.trec-chip.match i{width:4px;height:4px;border-radius:50%;background:var(--teal);flex-shrink:0;}
+.trec-chip.urgent{background:rgba(214,59,59,.09);color:var(--red);border-color:rgba(214,59,59,.28);}
+.trec-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.trec-apply{background:#2E3050;color:#fff;border:none;font-family:inherit;font-size:11.5px;font-weight:700;padding:7px 14px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;line-height:1;transition:background .18s,transform .18s;}
+.trec-apply:hover{background:#3A3C62;transform:translateY(-1px);}
+.trec-save{width:30px;height:30px;border-radius:7px;border:1px solid var(--bdr);background:var(--s2);display:grid;place-items:center;cursor:pointer;flex-shrink:0;color:var(--t3);transition:border-color .18s,color .18s,background .18s;padding:0;}
+.trec-save:hover{border-color:#2E3050;color:#2E3050;background:var(--s1);}
+.trec-save.on{border-color:#2E3050;color:#2E3050;background:rgba(46,48,80,.08);}
+.trec-save:disabled{cursor:not-allowed;opacity:.55;}
+/* Plan Status card: this and the Agency Directory card below it both lead to
+   /membership. Two filled buttons gave neither priority, so this one is an outline
+   and the directory card — the card that actually argues for paying — keeps the
+   only filled CTA in the rail. */
+.trec-plan-cta{width:100%;background:transparent;color:#2E3050;border:1.5px solid rgba(46,48,80,.42);font-family:inherit;font-size:12px;font-weight:700;padding:9px 16px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;line-height:1;transition:background .18s,color .18s,border-color .18s;}
+.trec-plan-cta:hover{background:#2E3050;color:#fff;border-color:#2E3050;}
 /* ─── Dashboard overflow prevention ─── */
 .td-dash-outer{width:100%;max-width:1240px;margin:0 auto;padding:24px 16px 64px;box-sizing:border-box;overflow-x:hidden;}
 .casting-row-left{min-width:0;overflow:hidden;}
@@ -15888,6 +15921,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   const fmtDate=(s)=>{if(!s)return"—";const d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
   const fmtDeadline=(s)=>{if(!s)return null;try{const d=new Date(s);const now=new Date();const diff=Math.ceil((d-now)/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff<=3)return{label:`${diff}d left`,urgent:true};return{label:`${diff}d left`,urgent:false};}catch{return null;}};
+  // Chip wording for the Recommended cards. Spelled out ("12 days left") because it
+  // sits in a pill on its own, not appended to the word "Deadline:". Urgency follows
+  // fmtDeadline's existing threshold so the dashboard never disagrees with the rest
+  // of the site about what counts as closing soon.
+  const fmtDeadlineChip=(s)=>{if(!s)return{label:"Open — no deadline",urgent:false};try{const d=new Date(s);if(isNaN(d.getTime()))return null;const diff=Math.ceil((d-new Date())/(1000*60*60*24));if(diff<0)return{label:"Closed",urgent:false};if(diff===0)return{label:"Closes today",urgent:true};if(diff===1)return{label:"1 day left",urgent:true};return{label:`${diff} days left`,urgent:diff<=3};}catch{return null;}};
   const castingDecisionName=(casting)=>String(casting?.casting_director_name||casting?.posted_by_label||casting?.prod||"").trim()||"A casting director";
 
   const loadApps=useCallback(async()=>{
@@ -15973,22 +16011,29 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       else if(talentAge){talentAgeMin=talentAge-3;talentAgeMax=talentAge+3;}
       const scored=castingsList.map(c=>{
         let score=0;
+        // The dashboard card leads with the role and shows WHY the casting was
+        // recommended, so the per-role sub-score is kept rather than thrown away:
+        // _bestRole is the role that actually earned the match (not roles[0]), and
+        // _mAge/_mGender/_mCity back the match chip with a real reason.
+        let bestRole=null,bestRoleScore=-1,mAge=false,mGender=false,mCity=false;
         for(const r of(c.roles||[])){
+          let rScore=0;
           const rg=(r.gender||"any").toLowerCase();
           const gm=rg==="any"||!talentGender||rg===talentGender||rg.includes(talentGender)||talentGender.includes(rg);
-          if(gm)score+=2;
+          if(gm){score+=2;rScore+=2;if(talentGender&&rg!=="any")mGender=true;}
           if(r.age_range&&talentAgeMin!==null){
             const rm=r.age_range.match(/(\d+)\s*[-–]\s*(\d+)/);
-            if(rm){const rMin=parseInt(rm[1]),rMax=parseInt(rm[2]);if(talentAgeMin<=rMax&&talentAgeMax>=rMin)score+=2;}
+            if(rm){const rMin=parseInt(rm[1]),rMax=parseInt(rm[2]);if(talentAgeMin<=rMax&&talentAgeMax>=rMin){score+=2;rScore+=2;mAge=true;}}
           }
+          if(rScore>bestRoleScore){bestRoleScore=rScore;bestRole=r;}
         }
         if(talentLocation){
           const cl=(c.location||"").toLowerCase();
           const tc=talentLocation.split(",")[0].trim(),cc=cl.split(",")[0].trim();
-          if(tc&&cc&&tc===cc)score+=3;
-          else if(tc&&cl.includes(tc))score+=1;
+          if(tc&&cc&&tc===cc){score+=3;mCity=true;}
+          else if(tc&&cl.includes(tc)){score+=1;mCity=true;}
         }
-        return{...c,_score:score};
+        return{...c,_score:score,_bestRole:bestRole||(c.roles||[])[0]||null,_mAge:mAge,_mGender:mGender,_mCity:mCity};
       });
       // Sort by match score, then soonest real deadline (nulls last) so equally
       // good matches surface the one about to close first.
@@ -16903,29 +16948,47 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:12}}>
                   {recommended.slice(0,3).map(c=>{
-                    const dl=c.deadline?fmtDeadline(c.deadline):null;
+                    const dl=fmtDeadlineChip(c.deadline);
                     const isSaved=savedIds.has(c.id);
                     const isSaving=savingId===c.id;
-                    const firstRole=(c.roles||[])[0];
+                    const role=c._bestRole||(c.roles||[])[0];
+                    // One chip only, strongest reason first. Age fit is the sharpest
+                    // signal for an actor; city next; a gender-specific role last.
+                    // No reason recorded (a wide-open role) means no chip rather
+                    // than a vague one.
+                    const why=c._mAge?"Matches your age range":c._mCity?"Near you":c._mGender?"Open to your profile":null;
                     return(
-                      <div key={c.id} style={{padding:"14px 16px",borderRadius:10,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",flexDirection:"column",gap:6,width:"100%",boxSizing:"border-box"}}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
-                          <div style={{fontWeight:700,fontSize:14,color:"var(--t1)",lineHeight:1.3,flex:1,minWidth:0,overflow:"hidden",wordBreak:"break-word"}}>{c.title}</div>
+                      <div key={c.id} className="trec">
+                        <div className="trec-head">
+                          <div className="trec-lead">
+                            <div className="trec-role">
+                              {role&&role.name?role.name:c.title}
+                              {role&&(role.gender&&role.gender!=="Any"||role.age_range)&&<span>
+                                {role.gender&&role.gender!=="Any"?` · ${role.gender}`:""}
+                                {role.age_range?` · ${role.age_range}`:""}
+                              </span>}
+                            </div>
+                            <div className="trec-title">
+                              {role&&role.name?<><b>{c.title}</b>{c.type?` — ${c.type}`:""}</>:<b>{c.type||""}</b>}
+                              {c.location?` · ${c.location}`:""}
+                            </div>
+                          </div>
                           <button
+                            className={"trec-save"+(isSaved?" on":"")}
                             disabled={isSaving}
+                            aria-label={isSaved?"Saved — tap to remove":"Save this casting"}
+                            title={isSaved?"Saved":"Save"}
                             onClick={()=>toggleSave(c.id,{id:c.id,title:c.title,type:c.type,location:c.location,deadline:c.deadline})}
-                            style={{fontSize:11,padding:"3px 9px",borderRadius:6,border:`1px solid ${isSaved?"var(--acc)":"var(--bdr)"}`,background:isSaved?"rgba(99,60,180,0.08)":"var(--s2)",color:isSaved?"var(--acc)":"var(--t2)",cursor:isSaving?"not-allowed":"pointer",flexShrink:0,fontFamily:"inherit",fontWeight:600,transition:"all .15s"}}
-                          >{isSaving?"…":isSaved?"Saved":"Save"}</button>
+                          >
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 7v14l-6-4-6 4V7a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4z"/></svg>
+                          </button>
                         </div>
-                        <div style={{fontSize:12,color:"var(--t2)"}}>{c.type}{c.location?` · ${c.location}`:""}</div>
-                        {firstRole&&<div style={{fontSize:11,color:"var(--t3)"}}>
-                          {firstRole.name&&<span style={{fontWeight:600,color:"var(--t2)"}}>{firstRole.name}</span>}
-                          {firstRole.gender&&firstRole.gender!=="Any"&&<span> · {firstRole.gender}</span>}
-                          {firstRole.age_range&&<span> · Age {firstRole.age_range}</span>}
+                        {(why||dl)&&<div className="trec-chips">
+                          {why&&<span className="trec-chip match"><i/>{why}</span>}
+                          {dl&&<span className={"trec-chip"+(dl.urgent?" urgent":"")}>{dl.label}</span>}
                         </div>}
-                        {dl&&<div style={{fontSize:11,color:dl.urgent?"var(--red)":"var(--t3)",fontWeight:dl.urgent?600:400}}>Deadline: {dl.label}</div>}
-                        <div style={{display:"flex",gap:8,marginTop:4}}>
-                          <button className="btn-p btn-sm" style={{fontSize:11}} onClick={()=>onViewCastingById?onViewCastingById(c.id):onNavigate("search")}>Apply <Tri/></button>
+                        <div className="trec-foot">
+                          <button className="trec-apply" onClick={()=>onViewCastingById?onViewCastingById(c.id):onNavigate("search")}>Apply <Tri/></button>
                         </div>
                       </div>
                     );
@@ -17059,7 +17122,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                     </div>
                   ))}
                 </div>
-                <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium <Tri/></button>
+                <button className="trec-plan-cta" onClick={()=>onNavigate("membership")}>See what Premium adds <Tri/></button>
               </>
             )}
           </div>
