@@ -14555,12 +14555,12 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
 
   if(!isPremium){
     return(
-      <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20,position:"relative",overflow:"hidden"}}>
+      <div style={{background:"var(--s1)",border:"1px solid rgba(42,132,114,.28)",borderRadius:14,padding:20,position:"relative",overflow:"hidden"}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
           <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Improve Your Profile</h3>
-          <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:"rgba(99,60,180,0.12)",color:"var(--acc)",textTransform:"uppercase",letterSpacing:0.6}}>Premium</span>
+          <span style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",padding:"3px 9px",borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",textTransform:"uppercase"}}>Premium</span>
         </div>
-        <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 14px",lineHeight:1.55}}>Get personalized suggestions on how to improve your profile so casting directors can review your work more easily.</p>
+        <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 14px",lineHeight:1.55}}>Casting directors skim 40–60 profiles a session — Premium tells you exactly what's costing you a look, ranked by how much it matters.</p>
         <div style={{filter:"blur(2px)",pointerEvents:"none",userSelect:"none",marginBottom:12}}>
           {[["High","Add a stronger main headshot"],["Medium","Add more gallery photos with different looks"],["Low","Add your special skills"]].map(([p,text])=>(
             <div key={p} style={{display:"flex",alignItems:"flex-start",gap:8,padding:"8px 0",borderBottom:"1px solid var(--bdr)"}}>
@@ -14569,7 +14569,7 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
             </div>
           ))}
         </div>
-        <button className="btn-p btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("membership")}>Upgrade to Premium to unlock suggestions <Tri/></button>
+        <button onClick={()=>onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium to unlock suggestions <Tri/></button>
       </div>
     );
   }
@@ -22639,13 +22639,16 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
 
   return(<div>
     {/* plan banner */}
-    <div style={{background:isPremium?"rgba(99,60,180,0.07)":"rgba(26,26,46,0.06)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-      <span style={{fontSize:13,color:"var(--t2)"}}>
+    <div style={{background:isPremium?"rgba(99,60,180,0.07)":"var(--s1)",border:isPremium?"1px solid var(--bdr)":"1px solid rgba(42,132,114,.28)",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+      <span style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:"var(--t2)"}}>
         {isPremium
           ?<><Ico n="star" s={22}/> <strong>Premium:</strong> unlimited casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} supporting photos per type</>
-          :<>Free Plan: up to {FREE_PLAN.castingTypes} casting types · no clips or photos. <strong>Upgrade for full Cast Me As.</strong></>}
+          :<>
+            <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",flexShrink:0}}><Ico n="lock" s={14}/></span>
+            <span>Free plan: up to {FREE_PLAN.castingTypes} casting types, no clips or photos. Premium shows unlimited types with mood clips — the full range CDs see when they check your fit.</span>
+          </>}
       </span>
-      {!isPremium&&<button className="btn-s btn-sm btn-amber-hover" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>}
+      {!isPremium&&<button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>}
     </div>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
@@ -23455,10 +23458,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <label className="label">Instagram{!isPremium&&!isCD?" · Premium":""}</label>
             {(isPremium||isCD)
               ?<input className="input" placeholder="@handle" value={f.instagram} onChange={e=>up("instagram",e.target.value)}/>
-              :<button type="button" onClick={()=>onNavigate&&onNavigate("pricing")} title="Upgrade to add your Instagram" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"12px 14px",borderRadius:10,border:"1px dashed var(--bdr)",background:"var(--s2)",color:"var(--t2)",font:"inherit",fontSize:14,cursor:"pointer",textAlign:"left"}}>
-                  <span style={{display:"flex",alignItems:"center",gap:8}}><Ico n="lock" s={16}/> Unlock with Premium</span>
-                  <span style={{fontWeight:700,color:"var(--acc)",whiteSpace:"nowrap"}}>Upgrade <Tri/></span>
-                </button>}
+              :<div style={{display:"flex",alignItems:"center",gap:10,background:"var(--s1)",border:"1px solid rgba(42,132,114,.28)",borderRadius:8,padding:"10px 14px"}}>
+                  <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",flexShrink:0}}><Ico n="lock" s={14}/></span>
+                  <span style={{fontSize:12.5,color:"var(--t2)",flexGrow:1}}>CDs check your socials before booking.</span>
+                  <button type="button" onClick={()=>onNavigate&&onNavigate("pricing")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>
+                </div>}
           </div>
         </div>
         <div className="form-row"><div className="form-group"><label className="label">Phone (private)</label><input className="input" placeholder="Optional" value={f.phone} onChange={e=>up("phone",e.target.value)}/></div></div>
@@ -23500,7 +23504,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                     <div className="credit-year">{c.credit_year||"—"}</div>
                     <div className="credit-title">
                       {c.website_url
-                        ?<a href={c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
+                        ?<a href={/^https?:\/\//i.test(c.website_url)?c.website_url:"https://"+c.website_url} target="_blank" rel="noopener noreferrer" style={{color:"var(--t1)",textDecoration:"none"}}>{c.production_title}</a>
                         :c.production_title}
                     </div>
                     <div className="credit-role">{c.role||""}</div>
@@ -23514,10 +23518,14 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <label className="label">Resume / CV (PDF, DOC, or DOCX — max 10 MB) {!isPremium&&<span style={{color:"var(--t3)",fontWeight:400}}>· Premium</span>}</label>
             <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:10}}>Casting directors can download this directly from your profile and from every submission you send.</p>
             {!isPremium?(
-              <div style={{border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px",fontSize:12,color:"var(--t3)",lineHeight:1.6,background:"var(--s2)"}}>
-                {profile.resume_url&&<div style={{marginBottom:8}}><a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={22}/> View current resume</a></div>}
-                <div style={{marginBottom:8}}>Give CDs a real, downloadable resume alongside your profile. <b style={{color:"var(--t1)"}}>Unlock with Premium.</b></div>
-                <button type="button" className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+              <div style={{border:"1px solid rgba(42,132,114,.28)",borderRadius:10,padding:"14px 16px",background:"var(--s1)"}}>
+                {profile.resume_url&&<div style={{marginBottom:10}}><a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={22}/> View current resume</a></div>}
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                  <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",flexShrink:0}}><Ico n="lock" s={14}/></span>
+                  <span style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#206557",background:"rgba(42,132,114,.12)",padding:"3px 9px",borderRadius:999}}>Premium</span>
+                </div>
+                <p style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.6,margin:"0 0 12px"}}>A real, downloadable resume next to your profile — CDs pull it during casting, not just from your submission.</p>
+                <button type="button" onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
               </div>
             ):profile.resume_url?(
               <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
@@ -23584,7 +23592,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         {/* ── ACTOR SLATE VIDEO — Premium only ── */}
         <div className="card" style={{padding:24,marginBottom:16}}>
           <div style={{marginBottom:isPremium?16:0}}>
-            <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>Actor Slate Video <span style={{fontSize:10,fontWeight:800,background:"var(--acc)",color:"#fff",padding:"2px 7px",borderRadius:6,letterSpacing:0.8,textTransform:"uppercase",marginLeft:6,verticalAlign:"middle"}}>Premium</span></h3>
+            <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>Actor Slate Video <span style={{fontSize:9.5,fontWeight:800,background:"rgba(42,132,114,.12)",color:"#206557",padding:"3px 9px",borderRadius:999,letterSpacing:0.8,textTransform:"uppercase",marginLeft:6,verticalAlign:"middle"}}>Premium</span></h3>
             <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.65,marginBottom:8}}>
               Your slate is one of the most important first impressions casting directors receive. Before they decide to open your full profile or review the rest of your materials, this short video helps them quickly see your presence, voice, energy, and professionalism.
             </p>
@@ -23593,9 +23601,12 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             </p>
           </div>
           {!isPremium?(
-            <div style={{marginTop:14,background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.18)",borderRadius:10,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-              <div style={{fontSize:13,color:"var(--t2)"}}><Ico n="lock" s={22}/> Upgrade to Premium to record and upload your actor slate video.</div>
-              <button className="btn-p btn-sm" onClick={()=>onNavigate("membership")}>Upgrade — {PREMIUM_PRICE}</button>
+            <div style={{marginTop:14,background:"var(--s1)",border:"1px solid rgba(42,132,114,.28)",borderRadius:10,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",flexShrink:0}}><Ico n="lock" s={14}/></span>
+                <span style={{fontSize:13,color:"var(--t2)"}}>A 7-second slate is often the first thing a CD sees, before they open the rest of your profile.</span>
+              </div>
+              <button className="btn-s btn-sm" onClick={()=>onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
             </div>
           ):(
             <>
@@ -23763,11 +23774,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     {tab==="videos"&&!isCD&&<div className="card" style={{padding:24}}>
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Video Uploads</h3>
       {!isPremium?(
-        <div style={{textAlign:"center",padding:"40px 24px"}}>
-          <div style={{fontSize:36,marginBottom:12}}><Ico n="movie" s={22}/></div>
-          <h4 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
-          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:360,margin:"0 auto 20px"}}>Upgrade to Premium to upload unlimited videos. Videos are stored and played directly on your profile.</p>
-          <button className="btn-p" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+        <div style={{textAlign:"center",padding:"32px 24px",border:"1px solid rgba(42,132,114,.28)",borderRadius:10,background:"var(--s1)"}}>
+          <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:40,height:40,borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",marginBottom:12}}><Ico n="movie" s={19}/></span>
+          <div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#206557",background:"rgba(42,132,114,.12)",padding:"3px 9px",borderRadius:999,display:"inline-block",marginBottom:10}}>Premium</div>
+          <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:18,maxWidth:360,margin:"0 auto 18px"}}>Photos get you noticed. Motion gets you booked — show your range in a real clip, not just a headshot.</p>
+          <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
         </div>
       ):(
         <>
@@ -23846,7 +23857,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           {isPremium
             ?"No gallery photos or videos yet. Upload some in the Photos and Videos tabs."
             :"Upgrade to Premium to upload gallery photos and videos, then arrange them here."}
-          {!isPremium&&<div style={{marginTop:14}}><button className="btn-p btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium</button></div>}
+          {!isPremium&&<div style={{marginTop:14}}><button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button></div>}
         </div>
       ):(
         <>
@@ -23992,9 +24003,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <label className="label">Website {!isPremium&&<span style={{color:"var(--t3)",fontWeight:400}}>· Premium</span>}</label>
             {isPremium?
               <input className="input" placeholder="https://..." value={creditForm.website_url} onChange={e=>setCreditForm(x=>({...x,website_url:e.target.value}))}/>
-              :<div style={{border:"1px solid var(--bdr)",borderRadius:8,padding:"10px 12px",fontSize:12,color:"var(--t3)",lineHeight:1.6,background:"var(--s2)"}}>
-                <div style={{marginBottom:8}}>Link this credit to its IMDb page, trailer, or listing — CDs can verify it in one click. <b style={{color:"var(--t1)"}}>Unlock with Premium.</b></div>
-                <button type="button" className="btn-s btn-sm" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+              :<div style={{display:"flex",alignItems:"center",gap:10,background:"var(--s1)",border:"1px solid rgba(42,132,114,.28)",borderRadius:8,padding:"10px 14px"}}>
+                <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",flexShrink:0}}><Ico n="lock" s={14}/></span>
+                <span style={{fontSize:12.5,color:"var(--t2)",flexGrow:1}}>Link straight to its IMDb page, trailer, or listing.</span>
+                <button type="button" onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>
               </div>}
           </div>
         </div>
@@ -24062,11 +24074,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── SOCIAL LINKS TAB ── (Premium only) */}
     {tab==="social"&&!isCD&&!isPremium&&<div className="card" style={{padding:24}}>
-      <div style={{textAlign:"center",padding:"40px 24px"}}>
-        <div style={{fontSize:36,marginBottom:12}}><Ico n="link" s={22}/></div>
-        <h4 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Premium Feature</h4>
-        <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:20,maxWidth:380,margin:"0 auto 20px"}}>Upgrade to Premium to add your website and social media links (Instagram, Facebook, and more). They'll appear on your public profile so casting directors can find you everywhere.</p>
-        <button className="btn-p" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+      <div style={{textAlign:"center",padding:"32px 24px",border:"1px solid rgba(42,132,114,.28)",borderRadius:10,background:"var(--s1)"}}>
+        <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:40,height:40,borderRadius:999,background:"rgba(42,132,114,.12)",color:"#206557",marginBottom:12}}><Ico n="link" s={19}/></span>
+        <div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#206557",background:"rgba(42,132,114,.12)",padding:"3px 9px",borderRadius:999,display:"inline-block",marginBottom:10}}>Premium</div>
+        <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.7,marginBottom:18,maxWidth:380,margin:"0 auto 18px"}}>Every place CDs can find you — Instagram, your site, your reel — in one spot on your public profile.</p>
+        <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
       </div>
     </div>}
     {tab==="social"&&!isCD&&isPremium&&<div className="card" style={{padding:24}}>
