@@ -2478,10 +2478,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    Dark navy text is kept: #1A1A2E on #F0B860 is 9.5:1 (WCAG AAA). */
 .tad-cta{position:relative;overflow:hidden;width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:#F0B860;color:#1A1A2E;box-shadow:0 2px 10px -3px rgba(0,0,0,.45);transition:background .18s;}
 .tad-cta:hover{background:#F5C87E;}
-/* The shimmer sweep moves here from the Actor Card Studio button: one sweeping
-   button per rail, and it belongs on the thing that is actually being sold. */
-.tad-cta::before{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-18deg);animation:abc-btnshine 3.4s ease-in-out infinite;pointer-events:none;}
-.tad-cta.tad-open::before{display:none;}
+/* Deliberately NO shimmer sweep on this button. The Actor Card Studio card above
+   already floats, sheens, breathes and pulses; a sweeping button underneath it made
+   the rail restless. Removed 2026-09-23 at the owner's request — don't re-add. */
 .tad-cta.tad-open{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.25);}
 /* The directory is a slide-in sheet, not a centred modal — same left-to-right motion,
    easing and dim as the Browse Castings detail sheet, so both "open from a card"
@@ -3522,8 +3521,8 @@ body.sheet-push .b2t-cube{display:none;}
 .abc-prem .abc-dot{animation:abc-pulse 2.2s ease-in-out infinite;}
 /* This CTA is a FREE preview sitting directly above the paid Agency Directory card.
    As a filled amber pill it was the loudest button in the rail, above the thing the
-   rail is actually selling. It is now a white outline, and its shimmer moved to the
-   directory's gold CTA — see the note above .tad-cta. */
+   rail is actually selling. It is now a white outline, and its shimmer sweep is gone
+   — the card's own motion is plenty. */
 .abc-prem .abc-cta{transition:background .18s,border-color .18s;}
 @media(hover:hover){.abc-prem .abc-cta:hover{background:rgba(255,255,255,.14);border-color:#fff;}}
 @media(hover:hover){.abc-prem:hover{box-shadow:0 34px 60px -26px rgba(0,0,0,.6);filter:brightness(1.03);}}
@@ -3532,7 +3531,7 @@ body.sheet-push .b2t-cube{display:none;}
 @keyframes abc-breathe{0%,100%{opacity:.65;transform:scale(1);}50%{opacity:1;transform:scale(1.18);}}
 @keyframes abc-pulse{0%,100%{box-shadow:0 0 6px var(--amber);opacity:.75;}50%{box-shadow:0 0 14px var(--amber);opacity:1;}}
 @keyframes abc-btnshine{0%{transform:translateX(0) skewX(-18deg);}55%,100%{transform:translateX(422%) skewX(-18deg);}}
-@media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot,.tad-cta::before{animation:none!important;}.abc-prem::after{display:none;}}
+@media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot{animation:none!important;}.abc-prem::after{display:none;}}
 /* Premium "Member" status card — dashboard welcome flourish (brand purple). Rendered only for membership_status='active'. */
 .cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#7a4fd6,#4d2a9c 60%,#7a4fd6);box-shadow:0 18px 40px -22px rgba(77,42,156,.6);}
 .cs-procard .cs-pc-edge{position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(120deg,#a07bff,#ffe9a8,#a07bff);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cs-pc-edge 6s linear infinite;opacity:.85;pointer-events:none;}
