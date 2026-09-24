@@ -2176,6 +2176,29 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    none at the very top. Toggled by the .scrolled class (window.scrollY>4). */
 .nav.scrolled{box-shadow:0 6px 18px -6px rgba(10,10,10,.16);}
 @media(max-width:900px){.nav.scrolled{box-shadow:0 5px 16px rgba(10,10,10,.15);}}
+/* Browse Castings join stripe (approved 2026-09-24): same 65px height as the nav,
+   soft navy from the Manager Mode card, the casting-team photo flush to the right
+   edge with the whole scene kept (the blurred actor, the team, the camera). The
+   close button sits over the dark studio wall, never on a face. Signed-out
+   visitors and free talent only; premium never sees it. */
+.bjs{position:relative;height:65px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;overflow:hidden;color:#fff;font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse 40% 90% at 12% 0%,rgba(240,184,96,.12),transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#2A2B47 100%);}
+.bjs-txt{font-size:18px;font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
+.bjs-txt em{font-style:normal;color:#EAC080;}
+.bjs-short{display:none;}
+.bjs-go{order:-1;flex:none;font:800 13.5px 'DM Sans',sans-serif;background:#EAC080;color:#1A1A2E;border:0;border-radius:9px;padding:9px 18px;cursor:pointer;white-space:nowrap;}
+.bjs-go:hover{background:#E3B46C;}
+.bjs-ph{margin-left:auto;flex:none;align-self:stretch;width:196px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
+.bjs-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(20,20,34,.6);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;opacity:.85;}
+.bjs-x:hover{opacity:1;}
+@media(max-width:900px){
+  .bjs{padding:0 0 0 12px;gap:10px;}
+  .bjs-full{display:none;}
+  .bjs-short{display:inline;}
+  .bjs-txt{font-size:13.5px;white-space:normal;line-height:1.15;flex:0 0 106px;}
+  .bjs-go{order:0;font-size:12.5px;padding:8px 11px;}
+  .bjs-ph{width:140px;background-image:url(/assets/banner/casting-team-stripe-m.jpg);}
+  .bjs-x{top:3px;right:3px;width:20px;height:20px;}
+}
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
 /* Fonts: loaded once by the head link in build-html.py (the duplicate CSS imports here re-fetched them mid-animation on slow wifi). */
 .logo-i{width:30px;height:30px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;}
@@ -5857,6 +5880,31 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
 // ─── Red sticky banner shown at the very top of every page when the user is
 //     a free-tier talent (CDs / producers / admins / studios are unaffected).
 //     Click anywhere → /membership.
+// ─── Browse Castings join stripe — sits above the nav on the Browse Castings
+//     page only. Signed-out visitors get "Join Free" (signup); free talent get
+//     "Go Premium" (membership). Premium members, CDs and admins never see it,
+//     and it disappears the moment an account turns premium. The × hides it
+//     for the rest of the browser session.
+function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
+  const [off,setOff]=useState(()=>{try{return sessionStorage.getItem("cs_bjs_off")==="1";}catch(_){return false;}});
+  if(page!=="search"||off||!authReady)return null;
+  let mode="join";
+  if(session?.user){
+    if(!myProfile)return null;
+    const userType=(myProfile.user_type||"").toLowerCase();
+    if(!["talent","actor"].includes(userType))return null;
+    if((myProfile.membership_status||"free")==="active")return null;
+    mode="premium";
+  }
+  const close=()=>{try{sessionStorage.setItem("cs_bjs_off","1");}catch(_){}setOff(true);};
+  return(<div className="bjs">
+    <div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams are looking.</span></div>
+    <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Join Free":"Go Premium"}</button>
+    <div className="bjs-ph" role="img" aria-label="A casting team watching an actor through a camera"></div>
+    <button className="bjs-x" aria-label="Close" onClick={close}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>);
+}
+
 function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
   // Never show without a live logged-in session — prevents a stale myProfile
   // from flashing the upsell after logout — and never on the auth pages.
@@ -5866,6 +5914,8 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
   // The Talent Dashboard already carries the full-size purple upgrade banner,
   // so suppress this thin stripe there — one upgrade prompt per page, not two.
   if(page==="talent-dashboard")return null;
+  // Browse Castings carries the BrowseJoinStripe ("Go Premium") instead.
+  if(page==="search")return null;
   const userType=(myProfile?.user_type||"").toLowerCase();
   const isTalent=["talent","actor"].includes(userType);
   const status=myProfile?.membership_status||"free";
@@ -47470,6 +47520,7 @@ function App(){
       {/* Free-tier talent see this red banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} session={session} page={page} onNavigate={navigate}/>
+      <BrowseJoinStripe page={page} session={session} myProfile={myProfile} authReady={authReady} onNavigate={navigate}/>
       <nav className={"nav"+(navScrolled?" scrolled":"")}>
         <div className="logo" onClick={()=>navThen("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
         <div className="nav-links">
