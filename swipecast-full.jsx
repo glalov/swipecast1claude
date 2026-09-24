@@ -12657,7 +12657,7 @@ Free submission used
           <button className="btn-teal" onClick={()=>onRequireAuth?.()}>Create my free profile</button>
           <button className="btn-s btn-sm" onClick={()=>onNavigate("login")}>I already have one</button>
         </div>
-        <div className="cfoot-foot">No card required &middot; <b>Your first submission is free</b></div>
+        <div className="cfoot-foot">No card required &middot; <b>Free to join</b></div>
       </section>
       :simCastings.length>0&&<section className="cfoot cfoot-more">
         <div className="cfoot-more-hd">
