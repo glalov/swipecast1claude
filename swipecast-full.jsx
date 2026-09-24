@@ -3186,7 +3186,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-role.lead .b5-bar{background:var(--teal);}
 .b5-role.sup .b5-bar{background:#EAC080;}
 .b5-rname{font-weight:700;font-size:14.5px;color:var(--t1);overflow-wrap:anywhere;}
-.b5-rspec{font-size:13px;color:var(--t2);}
+.b5-rspec{font-size:13px;color:var(--t2);min-width:0;overflow-wrap:normal;}
 .b5-rspec b{color:#206557;font-weight:700;}
 .b5-pay{white-space:nowrap;}
 .b5-racts{display:flex;align-items:center;gap:4px;}
@@ -14597,7 +14597,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                       <span className="b5-bar" aria-hidden="true"/>
                       <div style={{minWidth:0}}>
                         <div className="b5-rname">{r.name||label}</div>
-                        <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><span key={k} className="b5-pay">{k?" · ":""}{x}</span>)}{pay&&<span className="b5-pay"> · <b>{pay}</b></span>}</div>
+                        <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><React.Fragment key={k}>{k?" · ":""}<span className="b5-pay">{x}</span></React.Fragment>)}{pay&&<> · <span className="b5-pay"><b>{pay}</b></span></>}</div>
                       </div>
                       {!isClosedCard&&<div className="b5-racts">
                         <button type="button" className={"b5-bm"+(isSaved?" on":"")} aria-label={isSaved?"Saved":"Save casting"} aria-pressed={isSaved} onClick={e=>{e.stopPropagation();toggleSaveCasting(rawC);}}>
