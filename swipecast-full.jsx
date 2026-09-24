@@ -804,6 +804,22 @@ function cardShootChip(c){
   if(!b)return "Shoots "+a;
   return "Shoots "+a+" – "+(s.slice(0,7)===e.slice(0,7)?String(+e.slice(8,10)):b);
 }
+// Soft Ink casting page (2026-09-24): the details card is set in regular
+// weight; only the figures an actor scans for are bold — the dollar amounts in
+// the pay text (whatever the poster typed) and the shoot dates in Where & When.
+const CD_EMPH_RE={
+  pay:/\$[\d,]+(?:\.\d{1,2})?(?:\s?\/\s?(?:day|week|wk|hour|hr|episode|session)|\s(?:flat|a day|per day|per week|per session|per episode))?/g,
+  date:/\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.? \d{1,2}(?:\s*[–-]\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.? )?\d{1,2})?\b/g
+};
+function cdEmph(text,kind){
+  if(!text||typeof text!=="string")return text;
+  const re=CD_EMPH_RE[kind];if(!re)return text;
+  const out=[];let last=0,m,k=0;re.lastIndex=0;
+  while((m=re.exec(text))){if(m.index>last)out.push(text.slice(last,m.index));out.push(<strong key={k++}>{m[0]}</strong>);last=m.index+m[0].length;if(!m[0].length)re.lastIndex++;}
+  if(!out.length)return text;
+  if(last<text.length)out.push(text.slice(last));
+  return out;
+}
 function whereWhenLine(c){
   if(!c)return "";
   const start=fmtShootDay(c.shoot_start),end=fmtShootDay(c.shoot_end);
@@ -3235,7 +3251,8 @@ body.sheet-push .b2t-cube{display:none;}
 .cd-ico.good{color:#1d7b44;}
 .cd-ico.warn{color:#c0392b;}
 .cd-lab{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:3px;}
-.cd-val{font-size:14px;color:var(--t1);font-weight:600;}
+.cd-val{font-size:14px;color:#453D34;font-weight:400;}
+.cd-val strong{font-weight:600;color:var(--t1);}
 .cd-trust{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--t2);
   margin-top:16px;padding-top:14px;border-top:1px solid var(--bdr);}
 .cd-side{background:var(--s2);border-left:1px solid var(--bdr);padding:20px 22px;display:flex;
@@ -4345,21 +4362,21 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* One ledger, not six floating cards: the roles belong to a single casting, so
    they are ruled apart inside one bordered sheet rather than each carrying its
    own card outline. */
-.rl-list{border:1px solid #e2e0d8;border-radius:12px;background:#fff;overflow:hidden;}
-.rl-row{background:#fff;position:relative;border-bottom:1px solid #EFEDE6;transition:background .3s ease;}
+.rl-list{border:1px solid var(--bdr);border-radius:12px;background:var(--s1);overflow:hidden;}
+.rl-row{background:var(--s1);position:relative;border-bottom:1px solid #EDE6D8;transition:background .3s ease;}
 .rl-row:last-child{border-bottom:none;}
 /* Teal spine. Grows from the middle of the row outward as it opens, so the
    motion reads as the row unfolding rather than as content being appended. */
 .rl-row::before{content:"";position:absolute;left:0;top:50%;bottom:50%;width:3px;background:#4F8B7F;transition:top .42s cubic-bezier(.22,.9,.28,1),bottom .42s cubic-bezier(.22,.9,.28,1);}
 .rl-row.rl-open::before{top:0;bottom:0;}
-.rl-row.rl-open{background:#FBFDFD;border-bottom-color:#E4EDEA;}
+.rl-row.rl-open{background:#FBF8F1;border-bottom-color:#EDE6D8;}
 /* The whole header is the hit target, not a small chevron: on a phone the
    chevron alone is a 30px tap area inside a 120px row, which is exactly the
    miss everyone makes. Apply stops the click so the two never fight. */
-.rl-top{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:#fff;transition:background .25s;}
+.rl-top{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:var(--s1);transition:background .25s;}
 .rl-top.rl-clickable{cursor:pointer;}
-.rl-top.rl-clickable:hover{background:#fafcfc;}
-.rl-row.rl-open .rl-top{background:#fbfdfd;}
+.rl-top.rl-clickable:hover{background:#FBF8F1;}
+.rl-row.rl-open .rl-top{background:#FBF8F1;}
 .rl-top:focus-visible{outline:2px solid #376A60;outline-offset:-3px;}
 /* Type is set for readability first — a working actor reads these on a phone in
    bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
@@ -4370,11 +4387,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    splits the two questions an actor asks in order: what kind of part is this,
    then who are they looking for. */
 .rl-kind{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#4F566A;margin-bottom:6px;}
-.rl-nm{font-size:22px;font-weight:800;letter-spacing:-.4px;color:#0A0B18;line-height:1.2;}
+.rl-nm{font-size:22px;font-weight:700;letter-spacing:-.4px;color:#0A0B18;line-height:1.2;}
 .rl-mt{font-size:14.5px;font-weight:500;color:#3D3E58;margin-top:6px;line-height:1.5;}
 .rl-mt .sep{color:#AFADBA;font-weight:500;margin:0 6px;}
 .rl-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid #e2e0d8;background:#fff;color:#376A60;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
+.rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid var(--bdr);background:var(--s1);color:#376A60;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
 .rl-row.rl-open .rl-chev{transform:rotate(180deg);background:#EAF4F2;border-color:#CFE0DC;}
 /* 0fr -> 1fr animates to the content's real height with no JS measuring, so a
    two-line brief and a ten-line one both open at the same speed. */
@@ -4382,7 +4399,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-row.rl-open .rl-body{grid-template-rows:1fr;}
 .rl-body>.rl-clip{overflow:hidden;}
 .rl-inner{padding:0 20px 20px;}
-.rl-rule{height:1px;background:#e2e0d8;margin-bottom:15px;}
+.rl-rule{height:1px;background:var(--bdr);margin-bottom:15px;}
 /* The lines arrive in sequence rather than all at once — a 60-word brief plus a
    row of chips landing in one frame reads as a dump. */
 .rl-inner>*{opacity:0;transform:translateY(9px);transition:opacity .34s ease,transform .44s cubic-bezier(.22,.9,.28,1);}
@@ -4428,8 +4445,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* Floating text at the right-hand end left the row with weight on one side and
    air on the other. In a plate it reads as an object, and the estimate stops
    looking like an afterthought hanging under the rate. */
-.rl-pay{text-align:right;border:1px solid #D7E7DC;background:#F4FAF6;border-radius:11px;padding:11px 15px;}
-.rl-pay .v{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:17.5px;font-weight:800;color:#0F6B33;letter-spacing:-.3px;white-space:nowrap;}
+.rl-pay{text-align:right;border:1px solid #D7E6DD;background:#F2F7F4;border-radius:11px;padding:11px 15px;}
+.rl-pay .v{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:17.5px;font-weight:700;color:#0F6B33;letter-spacing:-.3px;white-space:nowrap;}
 .rl-pay .s{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12.5px;font-weight:700;color:#32334A;white-space:nowrap;border-top:1px solid #E1EDE5;margin-top:8px;padding-top:7px;}
 /* A 15px coin in a 24px tile was a smudge nobody could identify, and an 18px
    line glyph in a tinted tile was barely better — the tile's own contrast
@@ -12355,11 +12372,11 @@ Free submission used
               {fact("nud",c.has_nudity?"alert-triangle":"circle-check","Nudity / Intimate content",
                     c.has_nudity?"Yes — this project involves nudity or intimate content":"None",
                     false,c.has_nudity?"warn":"good")}
-              {fact("pay","coin",t('casting.pay'),payText,true)}
+              {fact("pay","coin",t('casting.pay'),cdEmph(payText,"pay"),true)}
               {fact("shoots","movie",t('casting.shoots'),c.shoots)}
               {fact("reh","clock",t('casting.rehearsal'),c.rehearsal)}
               {fact("af","video",t('casting.auditionFormat'),c.auditionFormat,true)}
-              {fact("ww","calendar","Where & When",wwLine,true)}
+              {fact("ww","calendar","Where & When",cdEmph(wwLine,"date"),true)}
               {/* The note is status, not an address - on the end of the
                   Where & When sentence it read as part of the location. */}
               {fact("wwnote","clock","Schedule note",wwNote,true)}
