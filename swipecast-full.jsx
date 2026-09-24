@@ -4576,10 +4576,15 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   width:1.5px;height:.8em;background:rgba(26,26,46,.3);}
 .agd-lede{font-size:16px;line-height:1.75;color:var(--t2);max-width:520px;margin:18px 0 24px;}
 .agd-ctas{display:flex;gap:11px;flex-wrap:wrap;}
-.agd-btn{border:none;border-radius:9px;padding:15px 28px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;transition:transform .2s,box-shadow .2s;}
-.agd-btn:hover{transform:translateY(-2px);}
-.agd-btn.gold{background:linear-gradient(180deg,#F2BE3C,#E8902A);color:#2A1802;box-shadow:0 12px 26px -14px rgba(232,144,42,.8);}
+/* Flat gold, same family as the dashboard rail's .tad-cta (#F0B860 + navy text).
+   The old gradient + amber glow + 2px hover lift read as oddly 3D (2026-09-23).
+   On cream the pale gold's edge melts into the page, so a 1px deeper-gold inset
+   rim keeps it crisp; hover only lightens the fill, nothing moves. */
+.agd-btn{border:none;border-radius:9px;padding:15px 28px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;transition:background .18s,border-color .18s;}
+.agd-btn.gold{background:#F0B860;color:#1A1A2E;font-weight:800;box-shadow:inset 0 0 0 1px #D9A04A,0 1px 2px rgba(36,31,25,.10);}
+.agd-btn.gold:hover{background:#F5C87E;}
 .agd-btn.line{background:transparent;border:1.5px solid var(--bdr);color:var(--t1);}
+.agd-btn.line:hover{border-color:var(--t3);}
 /* studio row — context for WHAT a talent agency is, not a partnership claim */
 /* Studio row. It used to live inside the hero's left column, which is ~500px
    wide — marks could only be ~26px there, well under what Warner's shield and
@@ -10058,7 +10063,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         <h2 className="agd-h2">The list opens the moment you upgrade.</h2>
         <p>650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York — plus your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $17.99/mo"}</button>
-        <div className="agd-guarantee">Cancel any time · $99/year if you'd rather pay once</div>
+        <div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>
       </div></section>
     </div>
 
