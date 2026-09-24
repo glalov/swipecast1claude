@@ -2180,18 +2180,21 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    soft navy from the Manager Mode card, the casting-team photo flush to the right
    edge with the whole scene kept (the blurred actor, the team, the camera). The
    close button sits over the dark studio wall, never on a face. Signed-out
-   visitors and free talent only; premium never sees it. */
-.bjs{position:relative;height:65px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;overflow:hidden;color:#fff;font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse 40% 90% at 12% 0%,rgba(240,184,96,.12),transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#2A2B47 100%);}
+   visitors and free talent only; premium never sees it. On wide screens the
+   button and words sit right next to the photo (approved demo spacing), the
+   group hugs the right edge, and any extra width is plain navy on the left. */
+.bjs{position:relative;height:65px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#fff;font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse 40% 90% at 12% 0%,rgba(240,184,96,.12),transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#2A2B47 100%);}
 .bjs-txt{font-size:18px;font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
 .bjs-txt em{font-style:normal;color:#EAC080;}
 .bjs-short{display:none;}
 .bjs-go{order:-1;flex:none;font:800 13.5px 'DM Sans',sans-serif;background:#EAC080;color:#1A1A2E;border:0;border-radius:9px;padding:9px 18px;cursor:pointer;white-space:nowrap;}
 .bjs-go:hover{background:#E3B46C;}
-.bjs-ph{margin-left:auto;flex:none;align-self:stretch;width:196px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
+.bjs-ph{margin-left:36px;flex:none;align-self:stretch;width:196px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
 .bjs-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(20,20,34,.6);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;opacity:.85;}
 .bjs-x:hover{opacity:1;}
 @media(max-width:900px){
-  .bjs{padding:0 0 0 12px;gap:10px;}
+  .bjs{padding:0 0 0 12px;gap:10px;justify-content:flex-start;}
+  .bjs-ph{margin-left:auto;}
   .bjs-full{display:none;}
   .bjs-short{display:inline;}
   .bjs-txt{font-size:13.5px;white-space:normal;line-height:1.15;flex:0 0 106px;}
