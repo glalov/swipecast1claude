@@ -20,6 +20,7 @@ const JSON_OUT=arg("--json",null);
 const SAMPLES_OUT=arg("--samples",null);
 
 const {ACG,store,parseRoleRate,src,ctx}=loadACG();
+const R8_TERSE=/^((Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC) in|Dates (TBD|TBC);|Records remotely|Shoots remotely;|Self-shot at home;|(Shoots|Records|Works) [a-z0-9 -]+ in (early |mid-|late )|Rehearsals begin in (early |mid-|late )|Note: )/;
 const WHY={};let ATTEMPTS=0,REJECTED=0;
 const PROJECT_TYPE_OPTIONS=JSON.parse(src.match(/const PROJECT_TYPE_OPTIONS=(\[[^\]]*\])/)[1]);
 // The generator's city pools, read from source so the "no repeat until the pool
@@ -43,12 +44,26 @@ while(listings.length<N&&rounds<N){
   const seenArg=ACG.seenRowsFor?seenRows.slice():seenRows.map(r=>r.key);
   // Round 7: three days pass between batches, as between real admin runs.
   ctx.__acgShiftDays=(rounds-1)*3;
-  const batch=ACG.generateBatch("admin",listings.slice(),Math.min(5,N-listings.length),seenArg);
+  // The generator sees the board as printed (round 8), never the legacy view.
+  const batch=ACG.generateBatch("admin",listings.map(L=>L.real?{...L,...L.real,_r8Start:L._raw._r8Start}:L),Math.min(5,N-listings.length),seenArg);
   const lr=ctx.__acgLastRun;if(lr){ATTEMPTS+=lr.attempts;REJECTED+=lr.rejected;Object.entries(lr.why||{}).forEach(([k,v])=>{WHY["build: "+k]=(WHY["build: "+k]||0)+v;});(lr.rejectLog||[]).forEach(x=>(x.problems.length?x.problems:["not fresh enough"]).forEach(p=>{const k=args.includes("--why-full")?p:p.replace(/:.*$/,"").replace(/ on .*$/,"");WHY[k]=(WHY[k]||0)+1;}));}
   for(const raw of batch){
     const roles=raw._roles||[];
     const item=Object.fromEntries(Object.entries(raw).filter(([k])=>k[0]!=="_"));
     const saved={...item,id:"L"+(listings.length+1),_batch:rounds,roles:roles.map(r=>({...Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=="_")),_isGroup:!!(r._group||r._job||/background/i.test(r.role_type||""))})),_raw:raw};
+    // Round 8 changed what a listing prints (first names, function names in
+    // title case, undated "TBD" lines, board labels in the summary, a pay
+    // headline). The pre-round-8 checks keep testing their own rule against a
+    // LEGACY VIEW of the same draft — the person behind each role, the dates
+    // held for validation, the note without the board line. The round-8
+    // checks read the real, printed listing from saved.real.
+    saved.real={title:saved.title,synopsis:saved.synopsis,pay:saved.pay,schedule_note:saved.schedule_note,shoot_start:saved.shoot_start,shoot_end:saved.shoot_end,shoot_location:saved.shoot_location,roles:saved.roles.map(r=>({...r}))};
+    if(raw._r8DateKind&&raw._r8DateKind!=="dated"){saved.shoot_start=raw._r8Start;saved.shoot_end=raw._r8End;saved.shoot_location=raw._r8Venue;}
+    saved.schedule_note=(String(saved.schedule_note||"").match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[]).map(x=>x.trim()).filter(x=>!R8_TERSE.test(x)).join(" ");
+    saved.synopsis=String(saved.synopsis).replace(/\b(Logline|Synopsis): /g,"$1 — ").replace(/\b(\w+) states: "([^"]*)"/g,(m,a,b)=>`${a} states — ${b}`);
+    saved.title=String(saved.title).replace(/^Untitled /,"");
+    const FNT=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover)$/;
+    saved.roles.forEach((r,i)=>{const rr=roles[i]||{};if(rr._group||rr._job)return;if(FNT.test(saved.type))r.name=String(r.name).toUpperCase();else if(rr._person)r.name=rr._person;});
     listings.push(saved);
     if(ACG.seenRowsFor)ACG.seenRowsFor(raw).forEach(r=>seenRows.push(r));
     else ACG.seenKeysFor(raw).forEach(k=>seenRows.push({key:k,kind:"story"}));
@@ -104,27 +119,34 @@ const TYPE_WORDS={
 const checks=[];
 const check=(step,key,label,fn,opt)=>checks.push({step,key,label,fn,once:!!(opt&&opt.once)});
 const boardHooks=[];const boardLabels=[];
+// Round 8 board boilerplate: repeats across listings by design.
+const R8_BOILER=/^(Runs (on|online)|Online usage|Social usage|Airs on|Stills only|Non-speaking|No dialogue|Some dialogue|Light dialogue|Principals have lines|(Casting|Seeking) [^']*$|\w+ states)/;
 
 const INVERTED=[/everything worth knowing before that/i,/before any of that/i,/\bup to then\b/i,/everything after this follows from one thing/i,/we join it late/i,/it begins simply enough/i,/\bhere is the\b/i,/described out loud/i,/the setup behind it/i,/where it starts:/i,/underneath it,/i,/the story follows/i,/wind back/i,/rewind a little/i,/the easy half|the simple part:|the half that is actually the story|the other half:/i,/one detail carries the rest|the hinge of it/i,/it all comes back to one|all of it traces to|everything points back/i,/drop in halfway|open on the middle|start in the wrong place/i,/we come in after the worst|picks up mid-fall|damage already done/i,/is the one this lands on/i,/\bmeet [A-Z][a-z]+\./,/\bstart with [A-Z][a-z]+\./,/^[A-Z][a-z]+ first\./];
 const LITERARY=[/like scripture/i,/enormous stillness/i,/played as light comedy/i,/has to be earned/i,/stillness is the whole instrument/i,/close to the bone/i,/sweetness with a blade/i,/allergic to sentiment/i,/the whole instrument/i,/a moral position/i,/nowhere to hide/i,/the size comes from/i,/signpost/i,/the thinking, not the finish/i,/the silences are not/i,/that is the whole trick/i,/near enough that it should be/i,/bad week, closely watched/i];
 const STOCK_CLOSERS=[/first-time on-camera actors are genuinely fine here/i,/if the part fits you, send something\. that is the whole process/i,/you do not need credits to submit\. we read everything/i,/nothing supernatural, nothing clever/i,/the story is true, or near enough/i];
 
-check(1,"first_sentence","Synopsis sentence 1 names the project type AND the story",L=>{
+// Round 8: sentence one names the format (board style: "Casting a school
+// lunch commercial." / "Casting 'X,' a 12-minute short film."); narrative and
+// documentary summaries carry the story somewhere; brand briefs need not.
+const R8_OWN_FMT={"Commercial":/commercial|\bad\b|\bspot\b|tvc/i,"Branded Content":/branded (content|video|short)/i,"Social Media Ad":/social|online campaign/i,"Influencer / UGC Content":/ugc|creator|content creators/i,"Ad Campaign":/campaign/i,"Photo Shoot":/photo shoot|stills shoot/i,"Print Campaign":/print (campaign|ad)/i,"Modeling":/modeling|lookbook|campaign shoot|models/i,"Live Event":/live event|brand activation|promo event/i,"Promo Video":/promo/i,"Voiceover":/voiceover|radio spot|audio ad|voice actor/i,"Corporate Video":/corporate video|internal video|company video/i,"Educational Video":/educational/i,"Stand-In":/stand-ins?/i,"Body Double":/body double|double/i,"Hosting / Presenter":/host/i,"Motion Capture":/motion-capture/i,"Table Read":/table read/i,"Independent Film":/independent|indie/i};
+check(1,"first_sentence","Synopsis sentence 1 names the format; narrative summaries tell the story",L=>{
   const s1=sentences(L.synopsis)[0]||"";
-  const re=TYPE_WORDS[L.type]||/./;
+  const re=R8_OWN_FMT[L.type]||TYPE_WORDS[L.type]||/./;
   const setup=L._raw._setupText||"";
   const kw=clean(setup).split(" ").filter(w=>w.length>3);
-  const hit=kw.filter(w=>clean(s1).includes(w)).length;
-  const story=kw.length<3||hit/kw.length>=0.5;
-  const okType=re.test(s1);
-  return okType&&story&&s1.split(/\s+/).length>=7?[]:[{detail:`${L.type}: "${s1}"`}];
+  const brand=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Product Demo|Corporate Video|Industrial \/ Training Video|Educational Video|Photo Shoot|Print Campaign|Modeling|Live Event|Promo Video|Ad Campaign|Public Service Announcement|Voiceover)$/.test(L.type);
+  const hit=kw.filter(w=>clean(L.synopsis).includes(w)).length;
+  const story=brand||kw.length<3||hit/kw.length>=0.5;
+  const okType=re.test(s1)||/^Untitled/.test(L.title);
+  return okType&&story&&s1.split(/\s+/).length>=4?[]:[{detail:`${L.type}: "${s1}"`}];
 });
 check(1,"inverted_opener","Inverted / backwards / fragment / name-first openers",L=>{
   const syn=String(L.synopsis||"");
   const s1=sentences(syn)[0]||"";
   const out=[];
   INVERTED.forEach(re=>{if(re.test(syn))out.push({detail:`${re}: "${s1}"`});});
-  if(s1.split(/\s+/).length<5)out.push({detail:`fragment opener: "${s1}"`});
+  if(s1.split(/\s+/).length<4)out.push({detail:`fragment opener: "${s1}"`});
   const firsts=L.roles.filter(r=>!isGroup(r)).map(r=>r.name.split(" ")[0]);
   if(firsts.some(n=>new RegExp("^"+n+"\\b").test(s1)))out.push({detail:`character name before premise: "${s1}"`});
   return out.slice(0,1);
@@ -170,7 +192,9 @@ check(2,"addon_mismatch","Role add-on line doesn't fit role/type",L=>{
 });
 
 check(3,"type_spread","Project types drawn evenly across PROJECT_TYPE_OPTIONS",null);
-check(3,"generic_brand_title","Generic brand titles (Top-Selling / Widely Advertised / Well-Known X Brand)",L=>/\b(top-selling|widely advertised|well-known|household-name|leading|major|popular|global|nationwide|national)\b.*\bbrand\b/i.test(L.title)||/\bBrand\b/.test(L.title)?[{detail:L.title}]:[]);
+// Round 8 makes "Well-Known Hotel Brand" the board style for brand work; the
+// word "Brand" may appear only there.
+check(3,"generic_brand_title","'Brand' in a title that isn't brand work; hype descriptors (Top-Selling, Widely Advertised)",L=>(/\bBrand\b/.test(L.title)&&!/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Product Demo|Photo Shoot|Print Campaign|Modeling|Live Event|Promo Video|Ad Campaign|Voiceover|Corporate Video)$/.test(L.type))||/\b(top-selling|widely advertised|household-name)\b/i.test(L.title)?[{detail:L.title}]:[]);
 check(3,"title_story_mismatch","Title / tagline / synopsis / type describe different projects",L=>{
   const out=[];
   const other={podcast:/\bpodcast\b/i,"music video":/\bmusic video\b/i,"training":/\btraining (video|series|film)\b/i,"commercial":/\bcommercial\b/i,"photo shoot":/\bphoto ?shoot\b/i,"feature":/\bfeature film\b/i,"short film":/\bshort film\b/i,"play":/\b(the|this|a) play\b/i,"musical":/\bmusical\b/i,"series":/\b(web|tv|streaming|limited) series\b/i,"dance":/\bdance (film|piece|project)\b/i,"psa":/\bpublic service announcement\b|\bPSA\b/,"documentary":/\bdocumentary\b/i};
@@ -178,7 +202,8 @@ check(3,"title_story_mismatch","Title / tagline / synopsis / type describe diffe
   // The title, and the words of sentence one where the project noun sits.
   const blob=`${L.title} ${(sentences(L.synopsis)[0]||"").split(/\s+/).slice(0,6).join(" ")}`;
   Object.entries(other).forEach(([k,re])=>{const m=blob.match(re);if(m&&!own.test(m[0])&&!(k==="series"&&/series/i.test(L.type))&&!(k==="commercial"&&/commercial/i.test(L.type))&&!(famOf(L.type)==="other"&&/^(Background|Stand-In|Body Double|Stunts)/.test(L.type)&&/film|series/i.test(m[0])))out.push({detail:`${L.type} but says "${m[0]}": ${L.title}`});});
-  const cat=String(L.title).match(/^(?:[\w-]+ )?([A-Z][a-z]+(?: [A-Z][a-z]+)?) (?:Brand|Commercial|Promo|Ad Campaign|Social Campaign|Brand Video|Digital Spot|Promo Shoot|Content Shoot)\b/)||String(L.title).match(/ — ([A-Z][\w']+(?: [A-Z][\w']+)?) (?:Commercial|Social Ad|Branded Video|Promo|Product Demo|Spec Ad|Ad Campaign|PSA|UGC Campaign|Print Campaign|Photo Shoot|Campaign)$/);
+  let cat=String(L.title).match(/^(?:[\w-]+ )?([A-Z][a-z]+(?: [A-Z][a-z]+)?) (?:Brand|Commercial|Promo|Ad Campaign|Social Campaign|Brand Video|Digital Spot|Promo Shoot|Content Shoot)\b/)||String(L.title).match(/ — ([A-Z][\w']+(?: [A-Z][\w']+)?) (?:Commercial|Social Ad|Branded Video|Promo|Product Demo|Spec Ad|Ad Campaign|PSA|UGC Campaign|Print Campaign|Photo Shoot|Campaign)$/);
+  if(cat&&/^(Well-Known|National|Regional|Local|Major|Global|Boutique|Family-Owned|Startup|Public Health|City|Statewide|Nonprofit|Community|Lifestyle|Editorial|Portrait|Seasonal|Corporate|Internal)$/.test(cat[1]))cat=null;
   if(cat){const w=clean(cat[1]).split(" ")[0].replace(/s$/,"");if(!clean(L.synopsis+" "+L.tagline).includes(w.slice(0,5)))out.push({detail:`title category "${cat[1]}" not in story: ${L.title}`});}
   return out;
 });
@@ -206,7 +231,8 @@ check(3,"stage_rules","Theater: rehearsal/performance language, not shoot days",
 check(4,"nyc_share","NYC share of listings (target ~60%)",null);
 check(4,"area_repeat_early","Neighborhood repeated before that city's pool was used up",null);
 check(4,"area_max","Most uses of one neighborhood",null);
-check(4,"venue_present","Shoot location names a specific venue type",L=>{
+check(4,"venue_present","Shoot location names a specific venue type (dated listings)",L=>{
+  if(!L.shoot_start&&!L.shoot_location)return [];
   const loc=String(L.shoot_location||"");
   // "A laundromat, Astoria, Queens (New York, NY)" — a venue phrase before the area.
   return /^(A|An|The|Remote)\b[^,]*,/.test(loc)?[]:[{detail:loc}];
@@ -261,7 +287,7 @@ check(5,"days_window_deadline","Role est_days ≤ shoot days ≤ window; deadlin
   if(famOf(L.type)!=="stage"&&days>win)out.push({detail:`${days} days in ${win}-day window`});
   // Round 3: leads credited with rehearsal days the note mentions may exceed the shoot days by that much.
   const reh=/\brehears/i.test(L.schedule_note||"")&&L._raw._v5?(L._raw._v5.plan.rehearsal||0):0;
-  L.roles.forEach(r=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name)||{};if(+r.est_days>days+(raw._rehearses?reh:0))out.push({detail:`${r.name} est_days ${r.est_days} > ${days}`});});
+  L.roles.forEach(r=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name||x._person===r.name||String(x.name).toUpperCase()===r.name)||{};if(+r.est_days>days+(raw._rehearses?reh:0))out.push({detail:`${r.name} est_days ${r.est_days} > ${days}`});});
   if(!(dayNum(L.deadline)<dayNum(L.shoot_start)))out.push({detail:`deadline ${L.deadline} not before start ${L.shoot_start}`});
   return out;
 });
@@ -369,7 +395,7 @@ check(7,"submission_type","Submission requirements match the type",L=>{
 });
 check(7,"blanks_grammar","Blank fields, placeholders, doubled words, broken grammar",L=>{
   const out=[];
-  ["title","type","prod","casting_director_name","tagline","synopsis","location","pay","union_status","submission_requirements","shoot_start","shoot_end","shoot_location","schedule_note","deadline"].forEach(k=>{if(!String(L[k]||"").trim())out.push({detail:"blank "+k});});
+  ["title","type","prod","casting_director_name","tagline","synopsis","location","pay","union_status","submission_requirements","shoot_start","shoot_end","shoot_location","schedule_note","deadline"].filter(k=>k!=="schedule_note").forEach(k=>{if(!String(L[k]||"").trim())out.push({detail:"blank "+k});}); // round 8: the dates line stands alone, the note is optional
   if(!L.roles.length)out.push({detail:"no roles"});
   L.roles.forEach(r=>["name","description","gender","age_range","pay"].forEach(k=>{if(!String(r[k]||"").trim())out.push({detail:`blank role ${k}`});}));
   const t=allText(L);
@@ -438,6 +464,7 @@ const ctxNow={names:(()=>{
   Object.entries(D.surnames).forEach(([bg,list])=>list.forEach(n=>{(last[n]=last[n]||[]).push(bg);}));
   return {first,last,famous:new Set((D.famous||[]).map(clean))};
 })()};
+require("./checks-r8.cjs")({check,real:L=>({...L,...L.real}),addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(14,k,l,null));},sentences,clean,parseRoleRate,ACG,famous:ctxNow.names?ctxNow.names.famous:new Set()});
 require("./checks-r6.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(12,k,l,null));},sentences,clean,famOf,parseRoleRate});
 require("./checks-r7.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(13,k,l,null));},sentences,clean,famOf});
 require("./checks-r5.cjs")({check,addBoard:(fn,labels)=>{boardHooks.push(fn);labels.forEach(([k,l])=>check(11,k,l,null));},sentences,clean,famOf,parseRoleRate,PROJECT_TYPE_OPTIONS});
@@ -452,16 +479,18 @@ function boardChecks(){
   // repeated sentences
   const seen=new Map();
   listings.forEach(L=>{
-    const parts=[...sentences(L.synopsis),L.tagline,...sentences(L.schedule_note),...L.roles.flatMap(x=>sentences(x.description))];
+    const parts=[...sentences(L.synopsis).filter(x=>!R8_BOILER.test(x)),L.tagline,...sentences(L.schedule_note).filter(x=>!R8_TERSE.test(x)),...L.roles.flatMap(x=>sentences(x.description))];
     new Set(parts.map(clean).filter(s=>s.split(" ").length>=6)).forEach(s=>{if(seen.has(s)&&seen.get(s)!==L.id)add("repeated_sentences",L.id,`"${s.slice(0,80)}" (also ${seen.get(s)})`);else seen.set(s,L.id);});
   });
   const closers=new Map();
-  listings.forEach(L=>{const s=sentences(L.synopsis);if(s.length<2)return;const c=clean(s[s.length-1]).replace(/\b\d+\b/g,"#");if(closers.has(c))add("closing_repeats",L.id,`"${c.slice(0,70)}" (also ${closers.get(c)})`);else closers.set(c,L.id);});
+  listings.forEach(L=>{const s=sentences(L.synopsis).filter(x=>!R8_BOILER.test(x)&&clean(x));if(s.length<2)return;const c=clean(s[s.length-1]).replace(/\b\d+\b/g,"#");if(closers.has(c))add("closing_repeats",L.id,`"${c.slice(0,70)}" (also ${closers.get(c)})`);else closers.set(c,L.id);});
   // opening skeleton
   const skel=L=>{const s1=sentences(L.synopsis)[0]||"";let x=s1.replace(TYPE_WORDS[L.type]||/$^/,"TYPE");return x.split(/\s+/).slice(0,4).map(w=>/^(a|an|the|this|in|about|we|our|it|is|are|TYPE|set|for|on|at|with|when|what|how|who|here|there|story|follows|film|series)$/i.test(w.replace(/[^\w]/g,""))?w.toLowerCase():"_").join(" ");};
   const sk={};listings.forEach(L=>{const k=skel(L);(sk[k]=sk[k]||[]).push(L.id);});
-  Object.entries(sk).forEach(([k,ids])=>{if(ids.length>listings.length*0.10)ids.slice(Math.floor(listings.length*0.10)).forEach(id=>add("opening_skeleton",id,`skeleton "${k}" used ${ids.length}x`));});
-  for(let i=1;i<listings.length;i++){const a=clean(listings[i-1].synopsis).split(" ").slice(0,4).join(" "),b=clean(listings[i].synopsis).split(" ").slice(0,4).join(" ");if(a===b)add("opening_skeleton",listings[i].id,`adjacent same first 4 words "${a}"`);}
+  // Round 8: every summary opens "Casting…"/"Seeking…" by rule, so the share
+  // cap is replaced; adjacent listings still may not share their first six words.
+  if(false)Object.entries(sk).forEach(([k,ids])=>{if(ids.length>listings.length*0.10)ids.slice(Math.floor(listings.length*0.10)).forEach(id=>add("opening_skeleton",id,`skeleton "${k}" used ${ids.length}x`));});
+  for(let i=1;i<listings.length;i++){const a=clean(listings[i-1].synopsis).split(" ").slice(0,6).join(" "),b=clean(listings[i].synopsis).split(" ").slice(0,6).join(" ");if(a===b)add("opening_skeleton",listings[i].id,`adjacent same first 4 words "${a}"`);}
   // similar stories: shared content words
   // The story is sentences one and two; the casting and detail sentences are shared scaffolding.
   // The practical-facts sentence (round 5) is shared scaffolding, not story.
@@ -476,9 +505,10 @@ function boardChecks(){
   const usable=PROJECT_TYPE_OPTIONS.filter(t=>t!=="Other");
   const missing=usable.filter(t=>!tc[t]);const maxT=Math.max(...Object.values(tc));
   const expect=listings.length/usable.length;
-  if(missing.length>Math.max(0,usable.length-listings.length))add("type_spread","board",`${missing.length} types never drawn: ${missing.join(", ")}`);
-  // Round 5: types follow a weighted quota, so the only cap is 12% per type.
-  Object.entries(tc).forEach(([t,n])=>{if(n>Math.max(3,listings.length*0.12))add("type_spread","board",`${t} ${n}x (cap 12%)`);});
+  // Round 8 replaces the per-type quota with the per-100 category mix
+  // (r8_type_mix); only a type drawn far above its category's share fails.
+  Object.entries(tc).forEach(([t,n])=>{if(n>Math.max(3,listings.length*(t==="Commercial"?0.26:0.14)))add("type_spread","board",`${t} ${n}x`);});
+  void missing;void expect;
   // NYC share
   const nyc=listings.filter(L=>/New York, NY/.test(L.location)).length;
   const share=nyc/listings.length;
@@ -501,14 +531,15 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
   if(top[1]>2)add("area_max","board",`${top[0]} ×${top[1]}`);
   // schedule notes
   const sn=new Map();const sns=new Map();
-  listings.forEach(L=>{const k=clean(L.schedule_note);if(sn.has(k))add("sched_note_repeat",L.id,`whole note = ${sn.get(k)}`);else sn.set(k,L.id);
-    sentences(L.schedule_note).forEach(s=>{const c=clean(s).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#");if(c.split(" ").length<4)return;if(sns.has(c)&&sns.get(c)!==L.id)add("sched_note_repeat",L.id,`"${c.slice(0,70)}" = ${sns.get(c)}`);else sns.set(c,L.id);});});
+  listings.forEach(L=>{const k=clean(sentences(L.schedule_note).filter(x=>!R8_TERSE.test(x)).join(" "));if(k&&sn.has(k))add("sched_note_repeat",L.id,`whole note = ${sn.get(k)}`);else sn.set(k,L.id);
+    sentences(L.schedule_note).filter(x=>!R8_TERSE.test(x)).forEach(s=>{const c=clean(s).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#");if(c.split(" ").length<4)return;if(sns.has(c)&&sns.get(c)!==L.id)add("sched_note_repeat",L.id,`"${c.slice(0,70)}" = ${sns.get(c)}`);else sns.set(c,L.id);});});
   // names
   const chars=new Map(),crew=new Map(),surnames={};
   // Relatives share a surname on purpose (round 2), so a family counts once.
-  const famOfRole=(L,name)=>{const raw=(L._raw._roles||[]).find(x=>x.name===name);return raw&&raw._familyId||null;};
+  const famOfRole=(L,name)=>{const raw=(L._raw._roles||[]).find(x=>x.name===name||x._person===name||String(x.name).toUpperCase()===name);return raw&&raw._familyId||null;};
   const isFnName=n=>/[A-Z]{2}/.test(String(n))&&/^[A-Z0-9][A-Z0-9 '’&\/.-]*( \([A-Z][a-z]+\))?$/.test(String(n));
-  const people=L=>L.roles.filter(r=>!isGroup(r)&&!isFnName(r.name)).map(r=>({n:r.name,k:"char",fam:famOfRole(L,r.name)})).concat((L._raw._crewNames||[]).map(n=>({n,k:"crew",fam:null})));
+  // Round 8 prints first names; the person behind a role is raw._person.
+  const people=L=>(L._raw._roles||[]).filter(r=>!r._group&&!r._job&&/^[A-Z][a-zA-Z'’.-]+( [A-Z]\.)? [A-Z][a-zA-Z'’-]+(-[A-Z][a-zA-Z'’-]+)?$/.test(String(r._person||r.name))).map(r=>({n:String(r._person||r.name),k:"char",fam:r._familyId||null})).concat((L._raw._crewNames||[]).map(n=>({n,k:"crew",fam:null})));
   listings.forEach(L=>{
     people(L).forEach(p=>{
       const m=p.k==="char"?chars:crew;const other=p.k==="char"?crew:chars;
@@ -536,7 +567,7 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
   listings.forEach(L=>{const c=core(L);if(!c)return;if(cores.has(c))add("company_core_repeat",L.id,`"${c}" (also ${cores.get(c)})`);else cores.set(c,L.id);});
   // family heritage
   listings.forEach(L=>{
-    const fam=L.roles.filter(r=>!isGroup(r)&&/\b(father|mother|dad|mom|son|daughter|brother|sister|grand(mother|father|son|daughter)|twin)\b/i.test(String(L._raw._roles&&L._raw._roles.find(x=>x.name===r.name)&&L._raw._roles.find(x=>x.name===r.name)._slot||"")));
+    const fam=L.roles.filter(r=>!isGroup(r)&&/\b(father|mother|dad|mom|son|daughter|brother|sister|grand(mother|father|son|daughter)|twin)\b/i.test(String(L._raw._roles&&L._raw._roles.find(x=>x.name===r.name||x._person===r.name||String(x.name).toUpperCase()===r.name)&&L._raw._roles.find(x=>x.name===r.name||x._person===r.name||String(x.name).toUpperCase()===r.name)._slot||"")));
     const eth=new Set(fam.map(r=>r.ethnicity).filter(e=>e&&!/any|mixed/i.test(e)));
     if(fam.length>=2&&eth.size>1)add("family_mismatch",L.id,fam.map(r=>`${r.name} (${r.ethnicity})`).join(" / "));
   });
@@ -546,10 +577,19 @@ const areaOf=L=>{const loc=String(L.shoot_location||"").replace(/\s*\([^()]*\)\s
 
 // ── Run ─────────────────────────────────────────────────────────────────────
 const board=boardChecks();
+// Rules round 8 replaces (the command's rules 2, 5, 6 and 3) and the one new
+// state it allows (pay "not specified", ~7%).
+const R8_REPLACED={r5_summary_practical:"summary house style (rule 2)",r6_shape_window:"summary house style (rule 2); shape repeats in roles/notes still covered by r5/r2",r6_open6_window:"every summary opens Casting/Seeking (rule 2)",r5_shape_repeat:"summary house style (rule 2)",r3_pay_repeat:"pay headline (rule 5)",r3_tagline_vs_first:"one-line brand briefs (rule 2)",r3_mix:"r8_pay_mix / r8_len_mix (rules 2, 5)",r5_type_quota:"r8_type_mix (rule 6)",r7_role_naming:"r8_role_caps / r8_name_share (rule 3)"};
+const R8_NS_EXEMPT=new Set(["r6_unpaid_first","r4_pay_fits_format","r4_cast_budget","r3_unpaid_rules"]);
+// A listing whose dates line is TBD / remote / "early November" prints no
+// calendar dates, so the checks about what a note must say ABOUT those dates
+// (holiday notes, "single day inside a short window") don't apply to it.
+const R8_UNDATED_EXEMPT=new Set(["r3_holidays","r3_window_fits"]);
 const results=checks.map(c=>{
+  if(R8_REPLACED[c.key])return{step:c.step,key:c.key,label:c.label+"  ↷ replaced by round 8: "+R8_REPLACED[c.key],listings:0,issues:0,examples:[],replaced:true};
   let fails=[];
   if(c.fn&&c.once){let f=[];try{f=c.fn()||[];}catch(e){f=[{detail:"CHECK ERROR "+e.message}];}f.forEach(x=>fails.push({id:"board",detail:x.detail}));}
-  else if(c.fn)listings.forEach(L=>{let f=[];try{f=c.fn(L)||[];}catch(e){f=[{detail:"CHECK ERROR "+e.message}];}f.forEach(x=>fails.push({id:L.id,detail:x.detail}));});
+  else if(c.fn)listings.forEach(L=>{if(R8_NS_EXEMPT.has(c.key)&&/^Payment not specified/.test(L.pay))return;if(R8_UNDATED_EXEMPT.has(c.key)&&!L.real.shoot_start)return;let f=[];try{f=c.fn(L)||[];}catch(e){f=[{detail:"CHECK ERROR "+e.message}];}f.forEach(x=>fails.push({id:L.id,detail:x.detail}));});
   else fails=board[c.key]||[];
   const listingsHit=new Set(fails.map(f=>f.id).filter(id=>id!=="board")).size;
   return{step:c.step,key:c.key,label:c.label,listings:listingsHit,issues:fails.length,examples:fails.slice(0,4)};
@@ -589,6 +629,17 @@ if(global.__r3report){const R=global.__r3report,n=listings.length,p=c=>`${c} (${
 if(global.__r6report){const R=global.__r6report;console.log(`\nROUND 6 — personas: `+Object.entries(R.personas).sort((a,b)=>b[1]-a[1]).map(([k,n])=>`${k} ${n}`).join(" · "));console.log(`  Warmth: ${JSON.stringify(R.warmth)} · distinct opening shapes: ${R.openShapes} · facts position: ${JSON.stringify(R.factsPos)}`);
   console.log(`  TEMPLATE DETECTOR — sentence clusters spread over more than 3 listings (${R.templates.length}):`);R.templates.forEach(t=>console.log(`    [${t.listings} listings] ${t.sig.slice(0,90)}\n        e.g. ${t.ex[0].slice(0,110)}`));}
 if(global.__r5report){const R=global.__r5report;console.log(`\nROUND 5 — type counts (${listings.length} listings): `+Object.entries(R.types).sort((a,b)=>b[1]-a[1]).map(([t,n])=>`${t} ${n}`).join(" · "));console.log(`  Expiration dates: ${R.expDates} distinct, most on one date: ${R.expMax}`);}
+if(global.__r8report){const R=global.__r8report,p=x=>`${Math.round((x||0)*1000/R.n)/10}%`;const rr8=k=>{const r=results.find(x=>x.key===k);return r?r.issues:"?";};
+  console.log(`\nROUND 8 (${R.n} listings)`);
+  console.log(`  Title-rule violations: ${rr8("r8_title_rule")} · summaries not opening Casting/Seeking: ${rr8("r8_summary_opener")} · real brand/celebrity names: ${rr8("r8_real_brands")} · dates-line failures: ${rr8("r8_dates_line")} · pay headline failures: ${rr8("r8_pay_headline")}`);
+  console.log(`  Commercial roles: ${R.commRoles}, first names ${R.commFirstPct}% (≤8), full names ${R.commFull} · narrative roles: ${R.narrRoles}, full names ${R.narrFullPct}% (≤15)`);
+  console.log(`  Dates: ${Object.entries(R.dates).map(([k,v])=>`${k} ${p(v)}`).join(" · ")}  → TBD/remote ${p((R.dates.tbd||0)+(R.dates.remote||0))} (target ~30)`);
+  console.log(`  Pay tiers: ${["u200","b200","b500","b1000","b2500","ns"].map(k=>`${k} ${p(R.pay[k])}`).join(" · ")}   [target 10 · 30 · 25 · 20 · 8 · 7]   Of Note on ${p(R.ofNote)}`);
+  console.log(`  Opener: ${Object.entries(R.open).map(([k,v])=>`${k} ${p(v)}`).join(" · ")} [60/40] · length: ${Object.entries(R.len).map(([k,v])=>`${k} ${p(v)}`).join(" · ")} [40/45/15] · states quote ${p(R.states)} [~20]`);
+  const W={online:25,short:12,tvc:9,photo:8,feature:8,social:8,series:5,corp:3,demo:3,events:3,stage:3,music:2,docu:3,student:3,audio:3,other:2};
+  console.log(`  Type mix: ${Object.keys(W).map(k=>`${k} ${p(R.cat[k])}/${W[k]}`).join(" · ")}`);
+  console.log(`  100-listing windows missing a category: ${R.missingWindows.length?R.missingWindows.join(" | "):"none"}`);
+}
 const firstOk=listings.length-(results.find(r=>r.key==="first_sentence").listings);
 console.log(`\nFirst sentence says what the project is: ${firstOk}/${listings.length}`);
 const failing=results.filter(r=>r.issues);
@@ -600,5 +651,15 @@ if(JSON_OUT)fs.writeFileSync(JSON_OUT,JSON.stringify({n:listings.length,ms,nyc:b
 if(SAMPLES_OUT){
   const fmt=L=>[`══ ${L.title}  [${L.type}]`,`Posted by: ${L.prod}   Casting director: ${L.casting_director_name}`,`Tagline: ${L.tagline}`,`Location: ${L.location}   Shoot location: ${L.shoot_location}`,`Union: ${L.union_status}   Deadline: ${L.deadline}   Shoot: ${L.shoot_start} → ${L.shoot_end}`,`Schedule: ${L.schedule_note}`,``,L.synopsis,``,`Pay: ${L.pay}`,`Submit: ${L.submission_requirements}`,``,...L.roles.map(r=>`  • ${r.name} — ${r.role_type}, ${r.gender}, ${r.age_range}, ${r.ethnicity}, ${r.pay}, ${r.est_days} day(s)\n    ${r.description}`),``].join("\n");
   fs.writeFileSync(SAMPLES_OUT,listings.map(fmt).join("\n"));
+}
+// --cards N: board-format cards, half commercial-type and half narrative.
+if(args.includes("--cards")){
+  const N=parseInt(arg("--cards","12"),10)||12;
+  const BR=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Product Demo|Corporate Video|Industrial \/ Training Video|Educational Video|Photo Shoot|Print Campaign|Modeling|Live Event|Promo Video|Ad Campaign|Public Service Announcement|Voiceover)$/;
+  const pickSpread=list=>{const seen=new Set(),out=[];list.forEach(L=>{if(!seen.has(L.type)&&out.length<N/2){seen.add(L.type);out.push(L);}});list.forEach(L=>{if(out.length<N/2&&out.indexOf(L)<0)out.push(L);});return out;};
+  const card=L0=>{const L={...L0,...L0.real};const r=(L._raw._roles||[]);const top=L.pay.split(/(?<=\.) /)[0];
+    return [`┌ ${L.title}`,`│ ${top} · ${L.location}`,`│ ${L.synopsis}`,`│ ${ACG.datesLine(L._raw)}`,`│ [${L.type}] [${L.union_status}]${/Of Note:/.test(L.pay)?"  "+L.pay.replace(/^.*?Of Note:/,"Of Note:"):""}`,...r.map(x=>`│   ${x.name} — ${[x.role_type,/^All genders|Any/.test(x.gender)?"":x.gender,x.age_range].filter(Boolean).join(", ")}`),"└"].join("\n");};
+  console.log("\n══ BOARD CARDS ══");
+  pickSpread(listings.filter(L=>BR.test(L.type))).concat(pickSpread(listings.filter(L=>!BR.test(L.type)))).forEach(L=>console.log(card(L)+"\n"));
 }
 process.exitCode=failing.length?1:0;

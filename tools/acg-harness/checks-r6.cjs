@@ -17,7 +17,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   check(12,"r6_age_vs_timespan","A time-span phrase (years of, decades, veteran, retired, since he was…) the age range can't have lived",L=>{
     const out=[];const raw=L._raw._roles||[];
     L.roles.forEach(r=>{
-      const x=raw.find(z=>z.name===r.name)||{};if(x._group)return;
+      const x=raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{};if(x._group)return;
       const t=`${x._slot||""} ${r.description||""}`;let need=0;
       if(/\bretired\b|\bold-timer\b/i.test(t))need=60;
       else if(/\bdecades\b|\blong career\b|\bthirty years\b|\bforty years\b/i.test(t))need=40;

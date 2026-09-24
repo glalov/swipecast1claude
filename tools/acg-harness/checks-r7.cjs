@@ -10,7 +10,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
   const NARRATIVE=/^(Feature Film|Independent Film|Short Film|Student Film|TV Series|Streaming Series|Limited Series|Miniseries|TV Pilot|Web Series|Vertical Series|Theater|Off-Broadway Theater|Off-Off-Broadway Theater|Musical Theater|Animation|Video Game|Podcast \/ Audio Drama)$/;
   const isFnName=n=>/[A-Z]{2}/.test(String(n))&&/^[A-Z0-9][A-Z0-9 '’&\/.-]*( \([A-Z][a-z]+\))?$/.test(String(n));
   const isPersonName=n=>/^[A-Z][a-z'’.-]+( [A-Z]\.)? [A-Z][a-z'’-]+$/.test(String(n));
-  const groupRole=(L,r)=>{const x=(L._raw._roles||[]).find(z=>z.name===r.name)||{};return !!(x._group||x._job)||/background|extras|ensemble|crowd|players|voices/i.test(r.name);};
+  const groupRole=(L,r)=>{const x=(L._raw._roles||[]).find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{};return !!(x._group||x._job)||/background|extras|ensemble|crowd|players|voices/i.test(r.name);};
 
   // ── 1. Role naming by format ─────────────────────────────────────────────
   check(13,"r7_role_naming","Commercial-world roles named with a person's name, or narrative roles with none",L=>{
@@ -67,7 +67,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
   check(13,"r7_role_counterpart","A relationship role whose counterpart is nowhere in the cast or the summary",L=>{
     const out=[];
     const raw=L._raw._roles||[];
-    const slotOf=r=>(raw.find(z=>z.name===r.name)||{})._slot||"";
+    const slotOf=r=>(raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{})._slot||"";
     const syn=`${L.synopsis||""} ${L.tagline||""}`;
     const people=L.roles.filter(r=>!groupRole(L,r));
     people.forEach(r=>{
@@ -126,7 +126,8 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
 
   addBoard((listings,add)=>{
     const st={};
-    listings.forEach(L=>{if(L.shoot_start)st[L.shoot_start]=(st[L.shoot_start]||0)+1;});
+    // Round 8: only a start the listing prints can collide on the board.
+    listings.forEach(L=>{const s0=L.real?L.real.shoot_start:L.shoot_start;if(s0)st[s0]=(st[s0]||0)+1;});
     Object.entries(st).forEach(([k,n])=>{if(n>2)add("r7_start_cluster","board",`${k}: ${n}`);});
     const fnL=listings.filter(L=>FN.test(L.type)).length;
     global.__r7report={startDates:Object.keys(st).length,startMax:Math.max(0,...Object.values(st)),fnListings:fnL};

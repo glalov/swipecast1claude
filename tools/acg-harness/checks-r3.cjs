@@ -23,7 +23,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     [1,2,3].forEach(k=>{const o=by(k);if(lead.length&&o.length&&Math.min(...lead)<Math.max(...o))out.push({detail:`lead ${Math.min(...lead)}d < rank${k} ${Math.max(...o)}d`});});
     if(by(1).length&&by(2).length&&Math.min(...by(1))<Math.max(...by(2)))out.push({detail:"supporting < day player"});
     const reh=/\brehears/i.test(note)&&!isStage(L)?(plan(L).rehearsal||0):0;
-    L.roles.forEach(r=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name)||{};const cap=n+(raw._rehearses?reh:0);if(!isStage(L)&&+r.est_days>cap)out.push({detail:`${r.name} ${r.est_days}d > ${cap}`});});
+    L.roles.forEach(r=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name||x._person===r.name||String(x.name).toUpperCase()===r.name)||{};const cap=n+(raw._rehearses?reh:0);if(!isStage(L)&&+r.est_days>cap)out.push({detail:`${r.name} ${r.est_days}d > ${cap}`});});
     return out;
   });
   check(9,"r3_pay_by_size","Pay doesn't follow role size, or the lead isn't above day players without a same-rate note",L=>{
@@ -42,7 +42,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   });
   check(9,"r3_unexplained_phrase","A character label that needs a backstory ('the grown-up passenger') isn't set up",L=>{
     const out=[];
-    L.roles.forEach(r=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name)||{};const s=String(raw._slot||"");if(/\b(grown-up|grown|former|returning)\b/i.test(s)&&!/\b(who|used to|years ago|as a (boy|girl|kid|child|teen)|back when|once|since|from (her|his|their) )\b/i.test(r.description))out.push({detail:`${s}: ${r.description.slice(0,80)}`});});
+    L.roles.forEach(r=>{const raw=(L._raw._roles||[]).find(x=>x.name===r.name||x._person===r.name||String(x.name).toUpperCase()===r.name)||{};const s=String(raw._slot||"");if(/\b(grown-up|grown|former|returning)\b/i.test(s)&&!/\b(who|used to|years ago|as a (boy|girl|kid|child|teen)|back when|once|since|from (her|his|their) )\b/i.test(r.description))out.push({detail:`${s}: ${r.description.slice(0,80)}`});});
     if(/\b(the grown-up|the former|the returning|the other)\s+[a-z]+/i.test(L.synopsis))out.push({detail:L.synopsis.slice(0,100)});
     return out;
   });
@@ -153,7 +153,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   // ── Part F: cast size ─────────────────────────────────────────────────────
   check(9,"r3_cast_fits_story","Background stapled onto a small story, or one role for a story about a group",L=>{
     const out=[];const raw=L._raw._roles||[];
-    if(L.roles.length<=4&&/^(film|tv|stage)$/.test(famOf(L.type))&&!L._raw._brief&&!/^(Background \/ Extras|Stand-In|Body Double|Stunts)$/.test(L.type)&&L.roles.some(r=>/background/i.test(r.role_type||"")&&!(raw.find(x=>x.name===r.name)||{})._storyNeeds))out.push({detail:L.roles.map(r=>r.name).join(", ")});
+    if(L.roles.length<=4&&/^(film|tv|stage)$/.test(famOf(L.type))&&!L._raw._brief&&!/^(Background \/ Extras|Stand-In|Body Double|Stunts)$/.test(L.type)&&L.roles.some(r=>/background/i.test(r.role_type||"")&&!(raw.find(x=>x.name===r.name||x._person===r.name||String(x.name).toUpperCase()===r.name)||{})._storyNeeds))out.push({detail:L.roles.map(r=>r.name).join(", ")});
     if(L.roles.length===1&&/\b(strangers|riders|neighbors|volunteers|family|friends|crew|team|students|customers|guests|players|band|class|regulars|passengers|workers|staff|residents|tenants|kids|children)\b/i.test(L._raw._setupText||""))out.push({detail:`1 role: ${L._raw._setupText}`});
     return out;
   });
@@ -172,7 +172,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     const months={};listings.forEach(L=>{const m=String(L.shoot_start).slice(0,7);months[m]=(months[m]||0)+1;});
     Object.entries(months).forEach(([m,c])=>{if(c>listings.length*0.65)add("r3_month_cluster","board",`${m}: ${c}`);});
     const opener=n=>clean(n).split(" ").slice(0,3).map(w=>/^\d+$|^(one|two|three|four|five|six|seven|eight|nine|ten)$/.test(w)?"#":w).join(" ");
-    listings.forEach((L,i)=>{const o=opener(L.schedule_note);for(let j=Math.max(0,i-30);j<i;j++)if(opener(listings[j].schedule_note)===o){add("r3_note_repeat_opener",L.id,`"${o}" also ${listings[j].id}`);break;}});
+    listings.forEach((L,i)=>{const o=opener(L.schedule_note);if(!o)return;for(let j=Math.max(0,i-30);j<i;j++)if(opener(listings[j].schedule_note)===o){add("r3_note_repeat_opener",L.id,`"${o}" also ${listings[j].id}`);break;}});
 
     const pct=(c,n)=>Math.round(c*1000/Math.max(1,n))/10;
     const tally=(fn)=>{const t={};listings.forEach(L=>{const k=fn(L);t[k]=(t[k]||0)+1;});return t;};

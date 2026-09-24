@@ -114,14 +114,14 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   check(10,"r4_lead_depth","A lead (or a 5+ day role) has too little to act on, or a relationship with nobody named",L=>{
     const out=[];
     const raw=L._raw._roles||[];
-    L.roles.filter(r=>{const x=raw.find(z=>z.name===r.name)||{};return !x._group&&!x._job&&isLead(r);}).forEach(r=>{
+    L.roles.filter(r=>{const x=raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{};return !x._group&&!x._job&&isLead(r);}).forEach(r=>{
       const t=String(r.description||"");
       const fnName=/[A-Z]{2}/.test(r.name)&&r.name===r.name.toUpperCase().replace(/\([A-Z][A-Z]+\)/,m=>m);
       // Round 7: function-named commercial roles read like real breakdowns — short.
       if(/^[A-Z0-9 '’&\/.()-]+$/.test(String(r.name).replace(/\([A-Z][a-z]+\)/,""))&&/[A-Z]{2}/.test(r.name)?t.split(/\s+/).length<12:(sentences(t).length<2||t.split(/\s+/).length<18))out.push({detail:`${r.name} (${r.role_type}, ${r.est_days}d): ${t}`});
       const firsts=L.roles.filter(o=>o.name!==r.name).map(o=>String(o.name).split(" ")[0]);
       // Round 7: a role's own job title ("the new assistant") is not a relationship.
-      const slot=String((raw.find(z=>z.name===r.name)||{})._slot||"").replace(/^(the|a|an)\s+/i,"");
+      const slot=String((raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{})._slot||"").replace(/^(the|a|an)\s+/i,"");
       const own=slot?new RegExp("\\b("+slot.split(/\s+/).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")\\b","ig"):null;
       const rel=own?t.replace(own,""):t;
       if(REL.test(rel)&&!firsts.some(n=>t.indexOf(n)>-1))out.push({detail:`${r.name}: "${(rel.match(REL)||[""])[0]}" with nobody named`});

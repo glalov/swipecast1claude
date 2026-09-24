@@ -67,7 +67,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     const out=[];const story=`${L._raw._setupText||""} ${L._raw._turnText||""} ${L.synopsis}`;
     const raw=L._raw._roles||[];
     L.roles.forEach(r=>{
-      const x=raw.find(z=>z.name===r.name)||{};if(x._group)return;
+      const x=raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{};if(x._group)return;
       const t=`${x._slot||""} ${String(r.description||"").split(/[.!?]/).slice(0,2).join(" ")}`;
       if(/\b(teen|teenage|teenager|high school|student|kid|child|boy|girl|junior|youngest|intern|apprentice)\b/i.test(t))return;
       let need=0;
@@ -88,7 +88,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   check(11,"r5_documentary","Documentary casts named fictional characters, doesn't say reenactment, or tags a future event as known",L=>{
     if(!DOC.test(L.type))return[];
     const out=[];const raw=L._raw._roles||[];
-    L.roles.forEach(r=>{const x=raw.find(z=>z.name===r.name)||{};if(/background/i.test(r.role_type||""))return;if(/^[A-Z][a-z]+ [A-Z][a-z'’-]+$/.test(r.name)&&!x._docRole)out.push({detail:`named character "${r.name}"`});});
+    L.roles.forEach(r=>{const x=raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{};if(/background/i.test(r.role_type||""))return;if(/^[A-Z][a-z]+ [A-Z][a-z'’-]+$/.test(r.name)&&!x._docRole)out.push({detail:`named character "${r.name}"`});});
     if(L.type==="Documentary"&&!/reenactment/i.test(L.synopsis))out.push({detail:"summary doesn't say reenactment roles"});
     if(/\b(is|are|gets?|will be) (sold|closed|demolished|shut down|cancelled|evicted)\b|\bin the middle of filming\b/i.test(L.tagline))out.push({detail:`future event: ${L.tagline}`});
     return out;
@@ -97,7 +97,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     const t=`${L._raw._setupText||""} ${L._raw._turnText||""} ${L.tagline} ${L.synopsis}`;
     if(!/\bsame (person|passenger|man|woman|character|kid|girl|boy|driver|customer)\b[^.]*\bages?\b|\bat (two|three|four|different) (different )?ages\b/i.test(t))return[];
     const raw=L._raw._roles||[];
-    const g=new Set(L.roles.filter(r=>!(raw.find(z=>z.name===r.name)||{})._group).map(r=>r.gender));
+    const g=new Set(L.roles.filter(r=>!(raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{})._group).map(r=>r.gender));
     return g.size>1?[{detail:[...g].join(" / ")}]:[];
   });
   check(11,"r5_minors_multiday","Minor on a 3+ day shoot without guardian, child-labor and school-hours language",L=>{
