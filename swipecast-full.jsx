@@ -7050,7 +7050,7 @@ function RegisterTalent({onNavigate}){
           <div className="eye">Free account for actors</div>
           <h3>Start getting<br/>seen today.</h3>
           <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-            {["Free account — no card required","Submit to real casting calls — first one free","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+            {["Free account — no card required","Submit to casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
         </div>
       </div>
@@ -10994,7 +10994,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-              {["Free account — no card required","Submit to real casting calls — first one free","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+              {["Free account — no card required","Submit to casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
             </div>
           )}
         </div>
@@ -12210,8 +12210,10 @@ Free submission used
       <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions · cancel anytime</div>
     </div></div></BodyPortal>}
 
-    {/* ── Free-actor submissions remaining badge ── */}
-    {isTalent&&!isPremium&&isLoggedIn&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+    {/* ── Free-actor submissions badge — only AFTER the free one is used. Showing
+          "1 of 1 remaining" before the first apply made new actors hoard their one
+          submission and never apply (3-day submit rate 33.7% → 28.4%, Sep 2026). ── */}
+    {isTalent&&!isPremium&&isLoggedIn&&usedCount>=FREE_PLAN.submissionsTotal&&<div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
       <span style={{fontSize:13,color:"var(--t2)"}}>Free Plan: <strong style={{color:usedCount>=FREE_PLAN.submissionsTotal?"#c0392b":"var(--t1)"}}>{Math.max(0,FREE_PLAN.submissionsTotal-usedCount)}</strong> of {FREE_PLAN.submissionsTotal} free submission remaining</span>
       <button className="btn-s btn-sm btn-amber-hover" onClick={()=>onNavigate&&onNavigate("membership")}>Upgrade for Unlimited</button>
     </div>}
