@@ -38780,22 +38780,29 @@ function AdminCastingGenerator({session}){
     const {error}=await window.sb.from("castings").update(patch).eq("id",updated.id);
     if(error){showMsg("Save failed: "+error.message);return;}
     if(updated.roles!==undefined){
-      await window.sb.from("roles").delete().eq("casting_id",updated.id);
-      const toInsert=(updated.roles||[]).filter(r=>r.name&&r.name.trim());
-      if(toInsert.length>0){
-        await window.sb.from("roles").insert(toInsert.map(r=>{
-          // Roles are delete-and-reinserted on every admin save, so the rate and
-          // requirement fields MUST be carried through here or editing a generated
-          // draft would silently strip them.
-          const rateNum=parseFloat(r.rate_amount);
-          const daysNum=parseFloat(r.est_days);
-          return {casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take",
-            rate_amount:isFinite(rateNum)&&rateNum>0?rateNum:null,
-            rate_unit:isFinite(rateNum)&&rateNum>0?(r.rate_unit||"day"):null,
-            est_days:isFinite(daysNum)&&daysNum>0?daysNum:null,
-            required_media:(Array.isArray(r.required_media)&&r.required_media.length)?r.required_media:null,
-            prescreen:(r.prescreen&&r.prescreen!=="none")?r.prescreen:null};
-        }));
+      // Roles are UPDATED in place, never delete-and-reinserted: applications
+      // reference roles with ON DELETE CASCADE, so re-creating the roles on
+      // every admin save silently deleted every application to the casting
+      // (89 live castings lost theirs this way, found 2026-09-24). Only a role
+      // the admin actually removed is deleted.
+      const rowOf=r=>{
+        const rateNum=parseFloat(r.rate_amount);
+        const daysNum=parseFloat(r.est_days);
+        return {casting_id:updated.id,name:r.name.trim(),description:r.description||"",gender:r.gender||"Any",role_type:r.role_type||inferRoleType(r.name,r.description),age_range:r.age_range||"",ethnicity:r.ethnicity||"Any ethnicity",pay:r.pay||null,sides_pdf_url:r.sides_pdf_url||null,direction_notes:r.direction_notes||null,slate_instructions:r.slate_instructions||null,video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||null,wardrobe_notes:r.wardrobe_notes||null,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take",
+          rate_amount:isFinite(rateNum)&&rateNum>0?rateNum:null,
+          rate_unit:isFinite(rateNum)&&rateNum>0?(r.rate_unit||"day"):null,
+          est_days:isFinite(daysNum)&&daysNum>0?daysNum:null,
+          required_media:(Array.isArray(r.required_media)&&r.required_media.length)?r.required_media:null,
+          prescreen:(r.prescreen&&r.prescreen!=="none")?r.prescreen:null};
+      };
+      const keep=(updated.roles||[]).filter(r=>r.name&&r.name.trim());
+      const {data:cur}=await window.sb.from("roles").select("id").eq("casting_id",updated.id);
+      const keptIds=new Set(keep.filter(r=>r.id).map(r=>r.id));
+      const toDelete=(cur||[]).map(x=>x.id).filter(id=>!keptIds.has(id));
+      if(toDelete.length){const{error:dErr}=await window.sb.from("roles").delete().in("id",toDelete);if(dErr){showMsg("Role delete failed: "+dErr.message);return;}}
+      for(const r of keep){
+        if(r.id){const{error:uErr}=await window.sb.from("roles").update(rowOf(r)).eq("id",r.id);if(uErr){showMsg("Role save failed: "+uErr.message);return;}}
+        else{const{error:iErr}=await window.sb.from("roles").insert(rowOf(r));if(iErr){showMsg("Role save failed: "+iErr.message);return;}}
       }
     }
     // The editor autosaves the in-progress form to localStorage so a remount
