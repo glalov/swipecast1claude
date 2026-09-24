@@ -13687,7 +13687,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
           <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65,margin:"0 auto 28px",maxWidth:360}}>CastSlate keeps full role information available to real actor profiles so casting pages stay cleaner, safer, and easier to manage.</p>
           <button className="btn-p" style={{width:"100%",marginBottom:12,fontSize:15,padding:"13px 20px",fontWeight:700}} onClick={onCreateProfile}>Create Free Actor Profile</button>
           <button className="btn-s" style={{width:"100%",fontSize:15,padding:"13px 20px"}} onClick={onLogin}>Log In</button>
-          <p style={{color:"var(--t3)",fontSize:12,marginTop:20,marginBottom:0}}>Free accounts can browse castings and make their first submission free.</p>
+          <p style={{color:"var(--t3)",fontSize:12,marginTop:20,marginBottom:0}}>Free to join · No card required</p>
         </div>
         <div style={{textAlign:"center",marginTop:16}}>
           <button className="btn-s btn-sm" onClick={onBack}>← Back to Browse Castings</button>
