@@ -3157,6 +3157,53 @@ body.sheet-push .b2t-cube{display:none;}
           background:#FBF4E4;border:1px solid #E7D3A6;color:#6E4E12;
           font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;}
 .cc-gpill > .ti{color:#B08327;}
+/* ── B5 Browse card (2026-09-24) ─────────────────────────────────────────
+   Project on the left, roles on the right. The clapperboard stripe and the
+   gold pick pill appear on CastSlate picks only. Own class names so the
+   homepage Featured cards (.fcs-card-v2, cc-*) are untouched. No backticks
+   or dollar-brace in this CSS: it lives inside a JS template literal. */
+.b5-card{position:relative;overflow:hidden;border-radius:14px;background:var(--s1);border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
+.b5-stripe{height:10px;background:repeating-linear-gradient(-45deg,#241F19 0 14px,var(--s1) 14px 28px);}
+.b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;}
+.b5-main{padding:24px 26px;display:grid;gap:10px;align-content:start;min-width:0;}
+.b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
+.b5-pickpill .ti{color:#B08327;}
+.b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
+.b5-head .cc-title{margin:0;}
+.b5-tag{font-size:12.5px;font-weight:600;color:var(--t2);background:var(--s2);border-radius:6px;padding:3px 8px;white-space:nowrap;}
+.b5-urgent{font-size:12.5px;font-weight:700;color:#B3261E;background:#FCE4E1;border-radius:6px;padding:3px 8px;white-space:nowrap;}
+.b5-meta{color:var(--t3);font-size:14px;display:flex;flex-wrap:wrap;row-gap:4px;}
+.b5-meta span+span::before{content:"·";margin:0 8px;color:var(--bdr);}
+.b5-meta .pay{color:var(--teal);font-weight:600;}
+.b5-sum{margin:0;color:var(--t1);font-size:15px;line-height:1.5;max-width:68ch;}
+.b5-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px;}
+.b5-ghost{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;font-size:14.5px;background:transparent;color:var(--teal);border:1.5px solid var(--teal);border-radius:10px;padding:10px 17px;cursor:pointer;}
+.b5-ghost:hover{background:var(--teal);color:#fff;}
+.b5-side{border-left:1px solid var(--bdr);padding:8px 18px;display:flex;flex-direction:column;justify-content:center;}
+.b5-role{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:0 12px;padding:11px 0;align-items:center;}
+.b5-role+.b5-role{border-top:1px solid var(--bdr);}
+.b5-bar{align-self:stretch;border-radius:4px;background:var(--bdr);}
+.b5-role.lead .b5-bar{background:var(--teal);}
+.b5-role.sup .b5-bar{background:#EAC080;}
+.b5-rname{font-weight:700;font-size:14.5px;color:var(--t1);overflow-wrap:anywhere;}
+.b5-rspec{font-size:13px;color:var(--t2);}
+.b5-rspec b{color:#206557;font-weight:700;}
+.b5-pay{white-space:nowrap;}
+.b5-racts{display:flex;align-items:center;gap:4px;}
+.b5-bm{display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center;border-radius:8px;border:0;background:transparent;color:var(--t3);cursor:pointer;padding:0;}
+.b5-bm:hover,.b5-bm.on{color:var(--teal);}
+.b5-bm:hover{background:var(--s2);}
+.b5-bm svg{width:17px;height:17px;}
+.b5-apply{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:13.5px;color:#fff;background:var(--teal);border:0;border-radius:8px;padding:7px 12px;cursor:pointer;white-space:nowrap;}
+.b5-apply:hover{background:#206557;}
+.b5-more{font-size:13.5px;color:var(--t2);font-weight:600;padding:8px 0 4px 16px;}
+.b5-bm:focus-visible,.b5-apply:focus-visible,.b5-ghost:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+@media (max-width:900px){
+  .b5-grid{grid-template-columns:minmax(0,1fr);}
+  .b5-main{padding:18px 18px 12px;}
+  .b5-side{border-left:0;border-top:1px solid var(--bdr);padding:4px 18px 10px;}
+}
+
 .btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
 
 /* ── Casting detail: ONE card for status, every supplied fact, and apply ──
@@ -13780,6 +13827,19 @@ function castingCardRoles(casting,limit=3){
 }
 // "Female · 22–32" — the part, not the character name. An invented name tells a
 // talent nothing mid-scroll; the age and gender tell them whether to stop.
+// B5 Browse card: one role's own rate, the way the card prints it ("$300/day",
+// "$750 flat", "$600/wk"). Structured rate first, else a figure or "Unpaid"
+// from the written pay; nothing when the role has no pay at all.
+function b5RolePay(role){
+  if(!role)return "";
+  const a=Number(role.rate_amount);
+  const u={day:"/day",week:"/wk",hour:"/hr",flat:" flat"}[role.rate_unit||"day"]||"/day";
+  if(isFinite(a)&&a>0)return "$"+(Math.round(a)===a?a.toLocaleString("en-US"):a.toFixed(2))+u;
+  const raw=String(role.pay||"").trim();
+  if(!raw||/not specified/i.test(raw))return "";
+  if(/^(unpaid|deferred|no salary)/i.test(raw))return "Unpaid";
+  return "";
+}
 function roleCardSpec(role){
   if(!role)return "";
   const g=String(role.gender||"").trim();
@@ -14317,6 +14377,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           gender:r.gender||"Any",
           ageRange:r.age_range||"",
           ethnicity:r.ethnicity||"Any",
+          pay:r.pay||null,
           rate_amount:r.rate_amount==null?null:Number(r.rate_amount),
           rate_unit:r.rate_unit||null,
           est_days:r.est_days==null?null:Number(r.est_days),
@@ -14414,6 +14475,25 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     };
   },[fetchCastings,fetchTalent]);
 
+  // B5 card: the bookmark on each role saves the casting (saved_castings is
+  // per casting), and every bookmark on that card shows it as saved.
+  const [savedIds,setSavedIds]=useState(()=>new Set());
+  const suid=session?.user?.id;
+  useEffect(()=>{
+    if(!suid||!isLoggedIn){setSavedIds(new Set());return;}
+    window.sb.from("saved_castings").select("casting_id").eq("user_id",suid)
+      .then(({data})=>{if(Array.isArray(data))setSavedIds(new Set(data.map(x=>x.casting_id)));});
+  },[suid,isLoggedIn]);
+  const toggleSaveCasting=async(rc)=>{
+    if(!isLoggedIn||!suid){onRequireAuth&&onRequireAuth(rc,null);return;}
+    const id=rc.id,was=savedIds.has(id);
+    setSavedIds(p=>{const n=new Set(p);was?n.delete(id):n.add(id);return n;});
+    try{
+      const {error}=was?await window.sb.from("saved_castings").delete().eq("user_id",suid).eq("casting_id",id)
+                       :await window.sb.from("saved_castings").insert({user_id:suid,casting_id:id});
+      if(error)throw error;
+    }catch(e){console.warn("[b5-save]",e);setSavedIds(p=>{const n=new Set(p);was?n.add(id):n.delete(id);return n;});}
+  };
   // Merge: real DB castings first (newest), then demo. Real talent first, then demo.
   // Real DB data only — demo CASTINGS / TALENT arrays were merged here for the
   // pre-launch preview but actively misrepresent the platform's real activity.
@@ -14457,39 +14537,35 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick no longer gets its own shadow: the band is the
                whole mark, and a gold lift underneath it was a second one. */
-            const restShadow="0 1px 4px rgba(26,26,46,0.05)";return(
-            <div key={c.id} className={isFeat?"cc-picked":undefined} style={{
-              padding:0,overflow:"hidden",cursor:isClosedCard?"default":"pointer",borderRadius:14,position:"relative",
-              background:isFeat?undefined:"var(--s1)",   /* picked: .cc-picked keeps it white */
-              border:"1px solid var(--bdr)",   /* neutral on a pick too — the band is the mark */
-              boxShadow:restShadow,
-              transition:"box-shadow .2s,transform .15s",
-            }}
+            const restShadow="0 1px 4px rgba(26,26,46,0.05)";
+            /* B5 card (owner-approved 2026-09-24): the project on the left — title
+               with one type tag, one grey facts line, the summary and the "See all
+               roles" button — and the roles on the right, each with its own rate,
+               a save bookmark and Apply. The clapperboard stripe and the pick pill
+               mark CastSlate picks only. Replaces the chip strip and role-pill row
+               that made the card read as stacked boxes. Per-role pay is shown on
+               purpose now (owner decision) — it used to be deliberately omitted. */
+            const pick=castingCardRoles(c,3);
+            const soon=!isClosedCard&&cdn&&!cdn.expired&&cdn.days<=5;
+            const rateLine=castingTopRate(c);
+            const shootTxt=cardShootChip(c);
+            const posted=castingPostedAt(c)?`Posted ${fmtPostedAgo(castingPostedAt(c),{dayOnly:castingPostedIsDayOnly(c)})}`:"";
+            const facts=[rateLine?rateLine.text:"",c.location||"",shootTxt||"",c.union||"",posted].filter(Boolean);
+            const roleCount=c.roles?.length||0;
+            const isSaved=savedIds.has(c.id);
+            return(
+            <div key={c.id} className={"b5-card"+(isFeat?" b5-pick":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
               onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
-              {isFeat&&<span className="cc-band" aria-hidden="true"/>}
-              <div className={isArchived?"cs-archived-dim":undefined}>
-              {/* Picked rows carry the band's width in their left padding. It is
-                  inline because the base padding is inline and would win. */}
-              <div className="casting-card-row" style={{padding:isFeat?"28px 28px 28px 36px":"28px",display:"grid",gridTemplateColumns:"auto 1fr",gap:20,alignItems:"start"}}>
-                {/* Raw casting on purpose — c.type is the translated label. */}
-                <ProjectTypeTile type={rawC.type}/>
-                <div>
-                  {/* The pick gets its own line above the type badges — sharing
-                      that row made the top of the card a wall of pills. */}
-                  {isFeat&&<div className="cc-pickrow"><span className="cc-gpill"><Ico n="star" s={12}/> Cast Slate Pick</span></div>}
-                  <div className="cc-titlewrap">
-                    {/* The title is its own click target, not just a passenger on the
-                        card. The card-level onClick bails out at <=768px so a stray
-                        tap while scrolling a phone cannot open a casting — which left
-                        the title dead on mobile, where it is the most obvious thing to
-                        tap. This opens the sheet at EVERY width, exactly like the
-                        "View Roles" button beside it, and stops propagation so the
-                        card handler cannot fire a second time on desktop.
-                        Closed and archived cards stay unclickable here, the same way
-                        their role pills and CTA already are. */}
+              {isFeat&&<div className="b5-stripe" aria-hidden="true"/>}
+              <div className={"b5-grid"+(isArchived?" cs-archived-dim":"")}>
+                <div className="b5-main">
+                  {isFeat&&<div><span className="b5-pickpill"><Ico n="star" s={12}/> CastSlate Pick</span></div>}
+                  <div className="b5-head">
+                    {/* The title opens the sheet at every width (the card-level
+                        click is off on phones so a scroll tap can't open one). */}
                     <h3 className={"cc-title"+(isClosedCard?"":" cc-title-link")}
                         {...(isClosedCard?{}:{
                           role:"link",
@@ -14497,85 +14573,42 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                           onClick:(e)=>{e.stopPropagation();openSheet(rawC);},
                           onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();openSheet(rawC);}}
                         })}>{c.title}</h3>
-                    <div className="cc-badgerow">
-                      <span className="cc-badge">{translateCastingType(c.type,lang)}</span>
-                      <span className="cc-badge">{c.union}</span>
-                      {isExpiredCasting&&!isArchived&&<span className="cc-badge" style={{background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>Expired</span>}
-                      {isLive&&<LiveCastingBadge/>}
-                      {/* Verification sits with the chips. The names (company,
-                          people) are no longer on the card — they live in
-                          Company Details on the casting page, like Backstage. */}
-                      {c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}
-                    </div>
+                    <span className="b5-tag">{translateCastingType(c.type,lang)}</span>
+                    {soon&&<span className="b5-urgent">{cdn.label}</span>}
+                    {isExpiredCasting&&!isArchived&&<span className="b5-urgent">Expired</span>}
+                    {c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}
                   </div>
-                  {(c.tagline&&c.tagline!==c.prod)
-                    ?<p className="cc-tagline">{c.tagline}</p>
-                    :c.type?<p className="cc-tagline">{translateCastingType(c.type,lang)}</p>:null}
-                  {/* The facts an actor decides on, in the order they decide in:
-                      how many parts, what it pays, how long it is open, where,
-                      how fresh. The deadline is the only loud one — it is a real
-                      signal, not decoration. */}
-                  {(()=>{
-                    const rateLine=castingTopRate(c);
-                    const roleCount=c.roles?.length||0;
-                    return(
-                      <div className="cc-strip">
-                        {roleCount>0&&<span className="cc-chip roles">{roleCount===1?`1 ${t('search.role')}`:`${roleCount} ${t('search.roles')}`}</span>}
-                        {rateLine&&<span className={"cc-chip"+(rateLine.money?" pay":"")}>{rateLine.text}</span>}
-                        {isArchived
-                          ?<span className="cc-chip soon">Role filled — no longer accepting</span>
-                          :cdn&&!cdn.expired
-                            ?(cdn.days>CARD_COUNTDOWN_MAX_DAYS
-                              ?null
-                              :<span className={"cc-chip "+(cdn.urgent?"urgent":"soon")}>{cdn.label}</span>)
-                            :isExpiredCasting?<span className="cc-chip soon">Applications closed</span>:null}
-                        {c.location&&<span className="cc-chip">{c.location}</span>}
-                        {cardShootChip(c)&&<span className="cc-chip">{cardShootChip(c)}</span>}
-                        {castingPostedAt(c)&&<span className="cc-chip quiet">Posted {fmtPostedAgo(castingPostedAt(c),{dayOnly:castingPostedIsDayOnly(c)})}</span>}
-                      </div>
-                    );
-                  })()}
-                  {/* Role pills. Each one opens THIS casting on THAT role, so a
-                      talent goes from recognising themselves to the application
-                      in one tap. Closed listings show them flat (no click), so a
-                      filled casting can never start an application.
-                      ⚠️ No rate here, on purpose. The pay belongs to the casting,
-                      and it is already in the strip above as a top line ("up to
-                      $300/day"); repeating it per role added nothing, anchored
-                      the reader on the SMALLEST number on the card, and turned
-                      theatre listings into a row of "Rate on request" shrugs.
-                      Rank, gender and age range only — the rate is on the
-                      casting page, one tap away. */}
-                  {/* Pills and the CTA share one row. The .cc-pills div renders
-                      even when a casting has no roles to show: it is the flex:1
-                      spacer that keeps the button hard right, and dropping it
-                      would slide the CTA over to the left edge. */}
-                  <div className="cc-foot">
-                    {(()=>{
-                      const pick=castingCardRoles(c,3);
-                      return(
-                        <div className="cc-pills">
-                          {pick.shown.map((r,i)=>{
-                            const spec=roleCardSpec(r);
-                            const label=r.type||r.role_type||"Role";
-                            const inner=<><span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}</>;
-                            return isClosedCard
-                              ?<span key={r.id||i} className="cc-pill" style={{cursor:"default",opacity:.65}}>{inner}</span>
-                              :<button key={r.id||i} type="button" className="cc-pill" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{inner}</button>;
-                          })}
-                          {pick.rest>0&&<span className="cc-pill-rest">+ {pick.rest} more {pick.rest===1?"role":"roles"}</span>}
-                        </div>
-                      );
-                    })()}
-                    <div className="casting-card-row-side" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-end",flexShrink:0}}>
-                      {isArchived||isExpiredCasting
-                        ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
-                        :<button className="btn-teal cc-cta" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{withTri(t('search.viewRoles'))}</button>}
-                      {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
-                    </div>
+                  {facts.length>0&&<div className="b5-meta">{facts.map((x,i)=><span key={i} className={i===0&&rateLine&&rateLine.money?"pay":undefined}>{x}</span>)}</div>}
+                  {(c.tagline&&c.tagline!==c.prod)?<p className="b5-sum">{c.tagline}</p>:null}
+                  <div className="b5-actions">
+                    {isArchived||isExpiredCasting
+                      ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
+                      :<button type="button" className="b5-ghost" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{withTri(roleCount>1?`See all ${roleCount} roles`:"See the role")}</button>}
+                    {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                   </div>
                 </div>
-              </div>
+                {pick.shown.length>0&&<div className="b5-side">
+                  {pick.shown.map((r,i)=>{
+                    const label=r.type||r.role_type||"Role";
+                    const lead=/^(lead|principal|series regular|host)$/i.test(label),sup=/^(supporting|co-star|recurring|guest star|featured)$/i.test(label);
+                    const spec=roleCardSpec(r);
+                    const pay=b5RolePay(r);
+                    return(<div key={r.id||i} className={"b5-role"+(lead?" lead":sup?" sup":"")}>
+                      <span className="b5-bar" aria-hidden="true"/>
+                      <div style={{minWidth:0}}>
+                        <div className="b5-rname">{r.name||label}</div>
+                        <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><span key={k} className="b5-pay">{k?" · ":""}{x}</span>)}{pay&&<span className="b5-pay"> · <b>{pay}</b></span>}</div>
+                      </div>
+                      {!isClosedCard&&<div className="b5-racts">
+                        <button type="button" className={"b5-bm"+(isSaved?" on":"")} aria-label={isSaved?"Saved":"Save casting"} aria-pressed={isSaved} onClick={e=>{e.stopPropagation();toggleSaveCasting(rawC);}}>
+                          <svg viewBox="0 0 24 24" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+                        </button>
+                        <button type="button" className="b5-apply" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{withTri("Apply")}</button>
+                      </div>}
+                    </div>);
+                  })}
+                  {pick.rest>0&&<span className="b5-more">+{pick.rest} more {pick.rest===1?"role":"roles"}</span>}
+                </div>}
               </div>
             </div>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
