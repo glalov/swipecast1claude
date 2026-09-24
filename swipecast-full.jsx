@@ -11861,13 +11861,14 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     rail.scrollTo({left,behavior:instant?"auto":"smooth"});
   };
   const autoOpenedRef=useRef(false);
-  useEffect(()=>{
-    if(autoApplyRole&&isLoggedIn&&!autoOpenedRef.current&&casting?.status!=="archived"&&!castingIsExpired(casting)){
-      autoOpenedRef.current=true;
-      setApplyRole(autoApplyRole);
-      onAutoApplyConsumed?.();
-    }
-  },[]);// eslint-disable-line
+  // Set once this casting's role ids (and the free-actor submission count)
+  // have loaded. An Apply that arrives from outside — a Browse card's role,
+  // or a sign-in that resumes an apply — waits for it, then goes through
+  // handleApply like the page's own buttons: the free-submission limit shows
+  // the upgrade prompt, and the role carries the index Submit looks its id up
+  // by. Opening the form directly skipped both, so a used-up free actor got the
+  // form and then "This role is no longer available" on Submit.
+  const [rolesReady,setRolesReady]=useState(false);
   const [applied,setApplied]=useState(new Set());
   const [coverNote,setCoverNote]=useState("");
   const [submitting,setSubmitting]=useState(false);
@@ -11960,6 +11961,21 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     }
     setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
   };
+  useEffect(()=>{
+    if(!autoApplyRole||!isLoggedIn||autoOpenedRef.current)return;
+    if(isDbCasting&&!rolesReady)return;
+    autoOpenedRef.current=true;
+    onAutoApplyConsumed?.();
+    if(casting?.status==="archived"||castingIsExpired(casting))return;
+    // Same order the page lists its roles in (and realRoleIds is keyed by).
+    const sorted=(casting?.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
+    let i=-1;
+    if(autoApplyRole.id){const hit=Object.entries(realRoleIds).find(([,rid])=>rid===autoApplyRole.id);if(hit)i=parseInt(hit[0],10);}
+    if(i<0&&Number.isInteger(autoApplyRole.idx))i=autoApplyRole.idx;
+    if(i<0)i=sorted.findIndex(x=>x&&x.name===autoApplyRole.name);
+    if(i<0||!sorted[i])return;
+    handleApply(sorted[i],i);
+  },[autoApplyRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!casting)return;
     const {data:{session:s}}=await window.sb.auth.getSession();
@@ -11984,6 +12000,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       });
       setRealRoleIds(map);
       setRoleInstructions(instrMap);
+      setRolesReady(true);
       if(s?.user){
         const {data:apps}=await window.sb.from("applications").select("role_id").eq("talent_id",s.user.id).eq("casting_id",casting.id);
         const appliedIdx=new Set();
