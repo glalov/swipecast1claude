@@ -2449,8 +2449,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    On cream the pale gold's edge melts into the page, so a 1px deeper-gold inset
    rim keeps it crisp; hover only lightens the fill, nothing moves. */
 .agd-btn{border:none;border-radius:9px;padding:15px 28px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;transition:background .18s,border-color .18s;}
-.agd-btn.gold{background:#F0B860;color:#1A1A2E;font-weight:800;box-shadow:inset 0 0 0 1px #D9A04A,0 1px 2px rgba(36,31,25,.10);}
-.agd-btn.gold:hover{background:#F5C87E;}
+/* Softened same day to Honey Sand #EAC080 (the homepage hero CTA colour) with a
+   lighter #D8AA64 rim and 700 text: #F0B860 at 800 still felt heavy on this page. */
+.agd-btn.gold{background:#EAC080;color:#1A1A2E;font-weight:700;box-shadow:inset 0 0 0 1px #D8AA64;}
+.agd-btn.gold:hover{background:#F0CD95;}
 .agd-btn.line{background:transparent;border:1.5px solid var(--bdr);color:var(--t1);}
 .agd-btn.line:hover{border-color:var(--t3);}
 /* studio row — context for WHAT a talent agency is, not a partnership claim */
