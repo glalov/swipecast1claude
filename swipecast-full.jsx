@@ -40688,7 +40688,7 @@ function AdminEmailCampaigns({session}){
         <StatTile num={selStatus?selStatus.skipped:selCamp.skipped} label="Unsub-skipped"/>
       </div>
       {(()=>{ const st=selStatus||{queued:selCamp.queued,sent:selCamp.sent,failed:selCamp.failed,skipped:selCamp.skipped};
-        const total=st.queued+st.sent+st.failed; const done=st.sent+st.failed; // unsubscribers are never emailed, so they are not progress const pct=total?Math.round(done/total*100):0;
+        const total=st.queued+st.sent+st.failed; const done=st.sent+st.failed; /* unsubscribers are never emailed, so they are not progress */ const pct=total?Math.round(done/total*100):0;
         return(<div style={{marginBottom:16}}>
           <div style={{fontSize:14,color:"var(--t1)",marginBottom:6}}><strong>{(st.sent||0).toLocaleString()}</strong> emailed · <strong>{(st.queued||0).toLocaleString()}</strong> still to email{st.queued===0?<span style={{color:"#15803d",fontWeight:700}}> · <Ico n="circle-check" s={22}/> everyone has been emailed</span>:""}</div>
           <div style={{height:14,background:"var(--bdr)",borderRadius:7,overflow:"hidden"}}><div style={{height:"100%",width:pct+"%",background:"var(--acc)",transition:"width .3s"}}/></div>
