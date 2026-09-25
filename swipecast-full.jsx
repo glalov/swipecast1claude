@@ -32411,10 +32411,333 @@ const ACG = (()=>{
   // taken out of these before casting, never flagged afterwards.
   const V3_MATURE=/\b(horror|crime|noir|thriller|robbery|robbing|hostage|blackmail|morgue|body|gun|kill|murder|drug|overdose|chop shop|prison|violence|informant|heist|armored|stunt double|dangerous|explicit|scenes staged)\b/i;
   function v3IsBrief(seed){return !!seed.about&&!!seed.only;}
+  // ── Round 9 (2026-09-25): narrative premises are COMPOSED, not drawn ─────
+  //
+  // FILM_SEEDS is a hand-written bank of 231 premises. Brand work never used
+  // it - a brief is assembled from parts, so the ad formats have an endless
+  // supply - but every film, series and stage listing came out of that bank,
+  // and by 2026-09-25 the durable log held 289 spent "seed ..." keys. Narrative
+  // types therefore died on the first spin (buildConceptV3 marks a type dead
+  // when nothing unused is left), the picker fell through to the formats that
+  // could still build, and the 9/25 batch came out 7 brand listings, 2 shorts
+  // and no feature at all. The type quota was never the cause; the supply was.
+  //
+  // So narrative gets the same treatment as brand work: a frame (the shape of
+  // the story), a person, a place and a turn, each pool written to fit its
+  // frame so the combinations stay coherent. 10 frames x 6 people x 4 places
+  // is 240 premises and ~960 premise+turn pairs, all keyed durably like any
+  // other premise. The hand-written seeds are still preferred - composed ones
+  // fill in behind them - so the board keeps its best-written stories.
+  const R9_FRAMES=[
+    {k:"lastshift",genre:"drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"cook",s:"the line cook",a:"adult",p:"a line cook"},
+       {k:"manager",s:"the manager",a:"mature",p:"a manager who has run the place for eleven years"},
+       {k:"newkid",s:"the new hire",a:"youngAdult",p:"a new hire three weeks into the job"},
+       {k:"owner",s:"the owner",a:"senior",p:"an owner signing the last of the paperwork"},
+       {k:"driver",s:"the delivery driver",a:"midCareer",p:"a delivery driver on his usual route"},
+       {k:"regular",s:"the regular",a:"senior",p:"a customer who has come in every morning for years"}],
+     place:[
+       {k:"diner",short:"the diner",w:["a 24-hour diner on a state road","a corner diner with the stools still bolted down","a diner with half the booths already stripped out"]},
+       {k:"hardware",short:"the hardware store",w:["a family hardware store on a main street","a hardware store with the shelves half empty","a neighborhood hardware store under a faded awning"]},
+       {k:"laundromat",short:"the laundromat",w:["a laundromat that never closes","a laundromat with three machines still working","a corner laundromat lit like an aquarium"]},
+       {k:"bowling",short:"the bowling alley",w:["a bowling alley with two lanes still open","an old bowling alley with the league boards still up","a bowling alley being sold by the square foot"]}],
+     p:(w,pl)=>`${w.p} works the last week of ${pl.short} before it closes for good`,
+     turns:[
+       "the final day runs long and nobody wants to be the one who turns the lights off",
+       "a buyer walks the floor while the staff are still working",
+       "the last shift turns into a kind of party that none of them planned",
+       "an argument about who gets what breaks out over the smallest object in the building"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Carries the week. Keeps working at a normal pace while everyone around them treats it as an ending. The performance lives in what they refuse to say out loud."},
+       {s:"the coworker",r:"Supporting",a:"youngAdult",x:"Younger, louder, already has another job lined up and feels guilty about how little this hurts."},
+       {s:"the one who stays late",r:"Supporting",a:"mature",x:"Has worked here longest. Takes inventory of things nobody asked them to count."},
+       {s:"the buyer",r:"Day Player",a:"midCareer",x:"Polite, efficient, walks the room measuring it. Not a villain, and should not be played as one."}]},
+
+    {k:"return",genre:"drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"daughter",s:"the daughter",a:"adult",p:"a woman who left at eighteen and has not been back since"},
+       {k:"son",s:"the son",a:"adult",p:"a man who moved three states away and stopped answering calls"},
+       {k:"teacher",s:"the teacher",a:"midCareer",p:"a teacher who took a job in the town she grew up in"},
+       {k:"medic",s:"the paramedic",a:"adult",p:"a paramedic transferred back to the county she is from"},
+       {k:"player",s:"the former athlete",a:"youngAdult",p:"a college athlete home for a season he did not plan on"},
+       {k:"musician",s:"the musician",a:"adult",p:"a musician home between tours with no money left"}],
+     place:[
+       {k:"house",short:"a family house",w:["a family house with the furniture under sheets","a two-bedroom house at the end of a dead-end street","a house that has not been cleaned out in four years"]},
+       {k:"church",short:"a church hall",w:["a church hall with folding tables along one wall","a parish hall that smells like coffee and floor wax","a church basement used for everything in town"]},
+       {k:"garage",short:"a repair garage",w:["a two-bay repair garage off the highway","a garage with one lift and a radio nobody turns off","a repair shop behind a chain-link fence"]},
+       {k:"motel",short:"a roadside motel",w:["a twelve-room motel with a vacancy sign","a roadside motel with a pool that has been empty for years","a motel where half the rooms are rented by the month"]}],
+     p:(w,pl)=>`${w.p} comes back to settle something at ${pl.short} and finds the place is not waiting for her`,
+     turns:[
+       "the person she came to see refuses to talk about the one thing she came for",
+       "she is offered the life she left, and it is better than she remembered",
+       "an old friend has been keeping the place running and expects to be thanked",
+       "she discovers the family has been telling a different version of why she left"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"The whole story is on their face. Has rehearsed this visit for years and gets none of the conversations they prepared for."},
+       {s:"the one who stayed",r:"Lead",a:"midCareer",x:"Never left. Not bitter about it, which is harder to play than bitter. Runs the room without seeming to."},
+       {s:"the parent",r:"Supporting",a:"senior",x:"Remembers a version of events nobody else recognizes. Warm, stubborn, tired."},
+       {s:"the neighbor",r:"Day Player",a:"mature",x:"Knows everything and says it kindly, which is worse."}]},
+
+    {k:"deadline",genre:"comedy drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"baker",s:"the baker",a:"adult",p:"a baker with one oven and a bad inspection notice"},
+       {k:"barber",s:"the barber",a:"mature",p:"a barber whose lease is up in nine days"},
+       {k:"florist",s:"the florist",a:"midCareer",p:"a florist who took an order she cannot fill"},
+       {k:"mechanic",s:"the mechanic",a:"adult",p:"a mechanic holding a car he cannot finish"},
+       {k:"tailor",s:"the tailor",a:"senior",p:"a tailor with more work than hands"},
+       {k:"printer",s:"the print-shop owner",a:"midCareer",p:"a print-shop owner who promised a job by Friday"}],
+     place:[
+       {k:"bakery",short:"a small bakery",w:["a bakery with one oven and a window onto the street","a storefront bakery with the flour on everything","a bakery that opens at four in the morning"]},
+       {k:"barbershop",short:"a barbershop",w:["a two-chair barbershop with a TV nobody watches","a barbershop that has been in the same window for thirty years","a barbershop where everyone stays after their cut"]},
+       {k:"shop",short:"a repair shop",w:["a repair shop packed to the ceiling","a workshop with a bell over the door","a shop where the work is stacked in the order it came in"]},
+       {k:"market",short:"a corner market",w:["a corner market with a butcher counter in back","a market squeezed between two apartment buildings","a corner store with a hand-painted sign"]}],
+     p:(w,pl)=>`${w.p} has to get ${pl.short} through one impossible week without losing the people who work there`,
+     turns:[
+       "the person who could fix it is the person they fired last year",
+       "the help that arrives is enthusiastic and completely unqualified",
+       "they get an offer that solves the money and costs them the shop",
+       "the deadline moves up and nobody tells them until the morning of"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Funny under pressure and terrible at accepting help. Comedy timing required, but the panic has to be real underneath it."},
+       {s:"the one who works there",r:"Supporting",a:"youngAdult",x:"Fast, capable, treated as furniture. The audience should be waiting for them to speak up."},
+       {s:"the one who comes back",r:"Supporting",a:"midCareer",x:"Left on bad terms. Better at the work than the lead and careful never to say so."},
+       {s:"the inspector",r:"Day Player",a:"mature",x:"Doing a job. Dry, exact, and not interested in anyone's story."}]},
+
+    {k:"lostfound",genre:"drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"cleaner",s:"the cleaner",a:"mature",p:"a night cleaner who finds something a guest left behind"},
+       {k:"cabbie",s:"the driver",a:"midCareer",p:"a driver who finds a bag in his back seat"},
+       {k:"clerk",s:"the desk clerk",a:"youngAdult",p:"a desk clerk holding a package nobody claims"},
+       {k:"super",s:"the building super",a:"mature",p:"a building super clearing out an apartment"},
+       {k:"sorter",s:"the sorter",a:"adult",p:"a woman who sorts what people leave on the train"},
+       {k:"student",s:"the student",a:"teen",p:"a teenager who finds an envelope of cash"}],
+     place:[
+       {k:"hotel",short:"a small hotel",w:["a twenty-room hotel off a commercial strip","an old hotel with a switchboard still on the wall","a hotel that mostly takes long-stay guests"]},
+       {k:"depot",short:"a bus depot",w:["a bus depot at the end of the line","a depot waiting room with the benches bolted down","a bus station open through the night"]},
+       {k:"building",short:"an apartment building",w:["a six-floor walk-up with a basement full of storage","a pre-war building with one working elevator","an apartment building where everyone knows the super"]},
+       {k:"office",short:"a lost-property office",w:["a lost-property office behind a station","a back room with everything shelved and tagged","a counter with a bell and a long window"]}],
+     p:(w,pl)=>`${w.p} at ${pl.short} and has a week to decide whether to give it back`,
+     turns:[
+       "the owner turns up and is not who anyone expected",
+       "what is inside answers a question about someone they love",
+       "returning it would cost them the one thing they have been saving for",
+       "someone else in the building already knows, and wants a share"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Mostly alone on screen. The decision has to read without dialogue, in what they do with their hands."},
+       {s:"the one who knows",r:"Supporting",a:"adult",x:"Saw it happen. Friendly, and the friendliness is the pressure."},
+       {s:"the owner",r:"Supporting",a:"midCareer",x:"Arrives late in the story. Grateful and slightly wrong about what happened."},
+       {s:"the family member",r:"Day Player",a:"senior",x:"Needs the money more than the lead does and has never once asked for it."}]},
+
+    {k:"tryout",genre:"drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"dancer",s:"the dancer",a:"youngAdult",p:"a dancer with one shot at a company place"},
+       {k:"pitcher",s:"the pitcher",a:"teen",p:"a high-school pitcher being watched by a scout"},
+       {k:"singer",s:"the singer",a:"youngAdult",p:"a singer auditioning for the first time in four years"},
+       {k:"boxer",s:"the fighter",a:"adult",p:"a fighter taking one more bout than she should"},
+       {k:"chef",s:"the cook",a:"adult",p:"a cook competing for a kitchen job she cannot afford to lose"},
+       {k:"driverK",s:"the apprentice",a:"youngAdult",p:"an apprentice being tested by the person who trained him"}],
+     place:[
+       {k:"studio",short:"a rehearsal studio",w:["a rehearsal studio with mirrors on three walls","a studio above a shop with a sprung floor","a rehearsal room booked by the hour"]},
+       {k:"field",short:"a practice field",w:["a practice field with one set of bleachers","a public field with the lines freshly cut","a field behind a high school in the late afternoon"]},
+       {k:"gym",short:"a boxing gym",w:["a gym over a laundromat","a boxing gym with the ring in the middle of the room","a gym that smells like canvas and bleach"]},
+       {k:"kitchen",short:"a working kitchen",w:["a restaurant kitchen during service","a kitchen with six burners and no room to stand","a kitchen where the pass is the loudest place in the building"]}],
+     p:(w,pl)=>`${w.p} gets one afternoon at ${pl.short} to prove it, in front of the person who decides`,
+     turns:[
+       "the person judging them is someone they used to beat",
+       "an injury halfway through has to be hidden to the end",
+       "they are offered a place on a condition they cannot accept",
+       "the person they came to impress does not watch the part they were best at"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Physical role, and the skill has to be real on camera. Most of the performance happens while catching their breath."},
+       {s:"the one who decides",r:"Supporting",a:"mature",x:"Says very little. Every look has to land as a verdict without ever being one."},
+       {s:"the rival",r:"Supporting",a:"youngAdult",x:"Better on paper. Generous in person, which the lead cannot stand."},
+       {s:"the coach",r:"Day Player",a:"senior",x:"Hard on them because nobody else will be. Has done this for thirty years."}]},
+
+    {k:"caretake",genre:"drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"nurse",s:"the night nurse",a:"adult",p:"a night nurse working doubles she cannot keep up"},
+       {k:"aide",s:"the home aide",a:"midCareer",p:"a home aide who has become part of the family"},
+       {k:"granddaughter",s:"the granddaughter",a:"youngAdult",p:"a granddaughter who moved in to help for a month and stayed a year"},
+       {k:"neighborC",s:"the neighbor",a:"mature",p:"a neighbor doing what nobody in the family will"},
+       {k:"husband",s:"the husband",a:"senior",p:"a husband learning to run a house at seventy-one"},
+       {k:"brother",s:"the brother",a:"midCareer",p:"a brother who came for a weekend and has not gone home"}],
+     place:[
+       {k:"flat",short:"a ground-floor apartment",w:["a ground-floor apartment with a ramp to the door","an apartment with the bed moved into the living room","a small apartment where every room is in use"]},
+       {k:"ward",short:"a care home",w:["a care home with a garden nobody uses","a nursing floor with four beds to a room","a care home where the television is always on"]},
+       {k:"kitchenC",short:"a family kitchen",w:["a kitchen with a calendar full of appointments","a family kitchen with medicine on the counter","a kitchen table doing the work of an office"]},
+       {k:"porch",short:"a front porch",w:["a front porch with two chairs and a fan","a porch where the whole street can hear you","a covered porch that holds the heat"]}],
+     p:(w,pl)=>`${w.p} is holding ${pl.short} together for someone who is getting worse, and the rest of the family has opinions`,
+     turns:[
+       "a relative arrives after a year away and starts making decisions",
+       "the person being cared for asks for something the carer cannot agree to",
+       "the money runs out in the middle of an ordinary Tuesday",
+       "one good day makes everyone believe the worst is over"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Exhausted and completely competent. The tiredness lives in the timing, never in the voice."},
+       {s:"the one being cared for",r:"Lead",a:"senior",x:"Sharp, funny, and losing ground. Never plays the illness; plays the person managing it."},
+       {s:"the relative",r:"Supporting",a:"midCareer",x:"Arrives with solutions. Genuinely means well, which is the problem."},
+       {s:"the visiting worker",r:"Day Player",a:"adult",x:"Twenty minutes in the house, professional and kind, sees everything."}]},
+
+    {k:"debt",genre:"crime drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"cousin",s:"the cousin",a:"adult",p:"a man collecting money his cousin borrowed"},
+       {k:"friend",s:"the friend",a:"youngAdult",p:"a woman who co-signed for a friend and is now being called"},
+       {k:"bookkeeper",s:"the bookkeeper",a:"midCareer",p:"a bookkeeper who has been covering a hole in the accounts"},
+       {k:"dealer",s:"the card player",a:"mature",p:"a card player into the wrong people for nine thousand dollars"},
+       {k:"sonD",s:"the son",a:"youngAdult",p:"a son paying off what his father left behind"},
+       {k:"partner",s:"the partner",a:"adult",p:"a business partner who found the second set of books"}],
+     place:[
+       {k:"club",short:"a social club",w:["a social club with the blinds down","a members' club above a storefront","a club room with a card table and a coffee urn"]},
+       {k:"lot",short:"a car lot",w:["a used-car lot with a trailer for an office","a lot with string lights and forty cars","a car lot backing onto a rail line"]},
+       {k:"warehouse",short:"a warehouse floor",w:["a warehouse with one loading door open","a storage floor with the lights on a timer","a warehouse where the office is a glass box upstairs"]},
+       {k:"office2",short:"a back office",w:["a back office behind a restaurant","an office with a desk and a safe and nothing else","a room behind a shop with a second door"]}],
+     p:(w,pl)=>`${w.p} has until the end of the month, and the conversation keeps happening at ${pl.short}`,
+     turns:[
+       "the debt is forgiven on a condition worse than the money",
+       "the person who lent it needs it back for a reason nobody suspected",
+       "a third party pays it off and now owns the problem",
+       "the money is found, and handing it over means telling the truth about where it came from"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Calm on the surface. Talks their way through every scene and is losing the whole time."},
+       {s:"the one owed",r:"Supporting",a:"mature",x:"Reasonable, patient, never raises their voice. The threat is in how ordinary they are."},
+       {s:"the one in the middle",r:"Supporting",a:"adult",x:"Related to both sides. Tries to broker it and makes it worse."},
+       {s:"the one who pays",r:"Day Player",a:"senior",x:"Puts up the money without being asked and says nothing about it afterwards."}]},
+
+    {k:"nightdrive",genre:"drama",tracks:["film","tv"],
+     who:[
+       {k:"driverN",s:"the driver",a:"midCareer",p:"a driver taking a passenger four hundred miles overnight"},
+       {k:"sister",s:"the sister",a:"adult",p:"a woman driving her sister somewhere she does not want to go"},
+       {k:"ranger",s:"the transport officer",a:"adult",p:"an officer moving one person between counties"},
+       {k:"trucker",s:"the trucker",a:"mature",p:"a long-haul driver with a rider she did not plan on"},
+       {k:"kid",s:"the teenager",a:"teen",p:"a seventeen-year-old driving his grandfather across the state"},
+       {k:"exwife",s:"the ex-wife",a:"midCareer",p:"a woman driving her ex-husband to a funeral"}],
+     place:[
+       {k:"car",short:"the car",w:["a car on an interstate at night","the front seats of a sedan with three hundred miles to go","a car with the radio losing every station"]},
+       {k:"stop",short:"a truck stop",w:["a truck stop at two in the morning","a service plaza with one counter open","a truck stop with a diner attached"]},
+       {k:"shoulder",short:"the side of the road",w:["the shoulder of a two-lane highway","a rest area with one light working","a lay-by with nothing around it for miles"]},
+       {k:"crossing",short:"a border crossing",w:["a county line with a weigh station","a bridge crossing at night","a checkpoint with a queue of four cars"]}],
+     p:(w,pl)=>`${w.p}, and everything that matters gets said at ${pl.short}`,
+     turns:[
+       "the passenger asks to stop somewhere that was never on the route",
+       "one of them has been lying about why the trip is happening",
+       "the car gives out and they have to wait somewhere with nothing to do but talk",
+       "they arrive early and neither of them gets out"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Two-hander. Most of the film is in a front seat, driving, which means the performance is in the voice and the hands."},
+       {s:"the passenger",r:"Lead",a:"senior",x:"Funny for the first hour and something else after that. Holds long silences without filling them."},
+       {s:"the one on the phone",r:"Day Player",a:"midCareer",x:"Heard more than seen. Waiting at the other end of the drive."},
+       {s:"the stranger",r:"Day Player",a:"adult",x:"One scene at a counter in the middle of the night. Kind for no reason."}]},
+
+    {k:"secret",genre:"drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"motherS",s:"the mother",a:"mature",p:"a mother who has kept one fact from her children for twenty years"},
+       {k:"uncle",s:"the uncle",a:"senior",p:"an uncle who knows why the family split"},
+       {k:"bride",s:"the bride",a:"adult",p:"a woman who invited someone nobody else wanted at the table"},
+       {k:"executor",s:"the executor",a:"midCareer",p:"a son reading a will he has already read once"},
+       {k:"twin",s:"the sibling",a:"adult",p:"a sibling who found paperwork in a drawer"},
+       {k:"inlaw",s:"the in-law",a:"midCareer",p:"a man marrying into a family that talks around everything"}],
+     place:[
+       {k:"dining",short:"a dining room",w:["a dining room with the good table set","a dining room used twice a year","a family table with one chair too many"]},
+       {k:"hall",short:"a rented hall",w:["a rented hall with a bar at one end","a function room with paper tablecloths","a hall booked for the afternoon only"]},
+       {k:"yard",short:"a back yard",w:["a back yard with borrowed chairs","a yard with a tent up and rain coming","a back garden with the neighbors listening"]},
+       {k:"lounge",short:"a front room",w:["a front room kept for visitors","a sitting room with photographs on every surface","a front room where nobody normally sits"]}],
+     p:(w,pl)=>`${w.p}, and the whole family is at ${pl.short} for the afternoon`,
+     turns:[
+       "it comes out in front of the one person it was kept from",
+       "everyone already knew except the person it was about",
+       "the one who tells it does it kindly and it lands worse",
+       "the afternoon ends without anyone saying it, and that is the ending"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Runs the room and is the one thing in it that could break. Ensemble piece: the lead is the quietest person at the table."},
+       {s:"the one it is about",r:"Lead",a:"youngAdult",x:"Finds out on screen. Everything after that is reaction, most of it under the table."},
+       {s:"the one who tells",r:"Supporting",a:"midCareer",x:"Certain they are doing the right thing. Should never read as cruel."},
+       {s:"the peacemaker",r:"Supporting",a:"senior",x:"Has held this family together for decades with small talk, and runs out of it."}]},
+
+    {k:"newhire",genre:"comedy drama",tracks:["film","tv","stage"],
+     who:[
+       {k:"hireA",s:"the new hire",a:"youngAdult",p:"a new hire who is better at the job than everyone there"},
+       {k:"hireB",s:"the temp",a:"adult",p:"a temp covering two weeks who starts rearranging things"},
+       {k:"hireC",s:"the trainee",a:"teen",p:"a seventeen-year-old on a first job"},
+       {k:"hireD",s:"the returner",a:"mature",p:"a woman back at work after fifteen years at home"},
+       {k:"hireE",s:"the transfer",a:"midCareer",p:"a transfer from the other branch nobody asked for"},
+       {k:"hireF",s:"the relative",a:"youngAdult",p:"the owner's nephew, hired over someone who deserved it"}],
+     place:[
+       {k:"depotN",short:"a small depot",w:["a depot with four vans and a dispatcher","a yard with a portacabin for an office","a depot where the shift starts at five"]},
+       {k:"cafe",short:"a cafe",w:["a cafe with eight tables and a hatch to the kitchen","a coffee shop that runs on two people","a cafe attached to a garden center"]},
+       {k:"library",short:"a branch library",w:["a branch library with a community room","a library open four days a week","a small library with a leak in the back"]},
+       {k:"salon",short:"a salon",w:["a three-chair salon with a waiting bench","a salon that has been in the family two generations","a salon where the appointments are written in a book"]}],
+     p:(w,pl)=>`${w.p} arrives at ${pl.short}, where the way things are done has not changed in years`,
+     turns:[
+       "the one who trained everyone there takes it personally",
+       "the new hire is right, and being right costs them the room",
+       "an inspection or a visit forces them onto the same side for a day",
+       "the person who resented them most asks them for help in private"],
+     cast:(w)=>[
+       {s:w.s,r:"Lead",a:w.a,x:"Reads the room wrong in a way the audience can see coming. Comedy that never tips into mugging."},
+       {s:"the one who has been there longest",r:"Lead",a:"mature",x:"Not the villain. Proud of a job nobody else respects, and watching it change."},
+       {s:"the one in the middle",r:"Supporting",a:"adult",x:"Likes both of them. Gets used by both of them."},
+       {s:"the boss",r:"Day Player",a:"senior",x:"In twice a week. Solves nothing and is very pleased with the atmosphere."}]}
+  ];
+  // Every composed listing drawing the same four sentences would collide with
+  // the round-6 shape detector inside a handful of listings, so a slot's
+  // sketch is itself assembled: a trait, what they do about it, and the thing
+  // that complicates it, each drawn against the combination so two listings
+  // off one frame do not read alike.
+  const R9_TRAIT={
+    lead:["Steady in a way that costs them something","Quick, funny, and about two steps behind","Careful with everyone except themselves","Competent and completely out of road","Patient past the point where patience helps","Good at this job and tired of being good at it","Warm on the surface and calculating underneath","Decent, and decency is the thing being tested","Blunt, and sorry about it later","Holding a plan that stopped working weeks ago"],
+    second:["Younger and reading the room better than anyone","Loyal, and sick of being taken for granted","Sharp-elbowed and usually right","Easy company until a decision is needed","Watches first and speaks last","Generous with everything except the truth","The one who says what the others are thinking","Nervous, thorough, impossible to rush"],
+    third:["Has been here longer than anyone still working","Arrives with an opinion and stays for the argument","Keeps the peace out of habit","Treats the whole thing as somebody else's business","Fond of the lead and no help at all"]
+  };
+  const R9_DOES={
+    lead:["Keeps working while the conversation happens around them","Talks their way through the week and loses ground daily","Makes one decision early and spends the story living with it","Says yes to something they should refuse","Does the practical thing while everyone else feels their feelings","Holds the thing together with small repairs nobody notices"],
+    second:["Pushes once, hard, then backs off and watches","Fixes what they can reach and ignores the rest","Keeps score quietly","Offers help in a way that is difficult to accept","Tells one truth at the worst possible moment"],
+    third:["Turns up twice and changes the temperature both times","Offers advice that would have worked ten years ago","Asks the question nobody wanted asked"]
+  };
+  const R9_TURN_CLAUSE={
+    lead:["The performance lives in what they will not say","Most of it is reaction, and it has to hold","Long stretches without dialogue, carrying the scene anyway","The comedy and the panic run at the same time","Never plays for sympathy, which is why it lands"],
+    second:["Not a sidekick; wants something of their own","Should be likeable and still hard to live with","Funny, and never only the joke in the room","The audience should be waiting for them to speak"],
+    third:["Small part, strong presence","One or two scenes, both of them turning points","Plays kind, reads as pressure"]
+  };
+  const R9_TIER=["lead","second","third","third"];
+  function r9Hash(str){let x=0;String(str).split("").forEach(c=>{x=(x*31+c.charCodeAt(0))>>>0;});return x;}
+  function r9Sketch(tier,salt,i){
+    const t=R9_TRAIT[tier],d=R9_DOES[tier],c=R9_TURN_CLAUSE[tier];
+    const n=r9Hash(salt+"|"+i);
+    return `${t[n%t.length]}. ${d[(n>>3)%d.length]}. ${c[(n>>7)%c.length]}.`;
+  }
+  // A composed premise is a seed like any other: same fields, same durable key,
+  // and it never carries `about`/`only`, so v3IsBrief keeps treating it as a
+  // story rather than a brand brief.
+  function r9ComposedSeeds(track){
+    const out=[];
+    R9_FRAMES.forEach(f=>{
+      if(f.tracks.indexOf(track)<0)return;
+      f.who.forEach(w=>f.place.forEach(pl=>{
+        const k=`r9-${f.k}-${w.k}-${pl.k}`;
+        const slots=f.cast(w,pl).map((c,i)=>({...c,x:r9Sketch(R9_TIER[i]||"third",k,i)}));
+        out.push({
+          k,
+          era:"present day",
+          genre:f.genre,
+          tracks:f.tracks.slice(),
+          ttl:[],
+          p:f.p(w,pl),
+          h:f.turns[0],
+          h2:f.turns[1],
+          _turns:f.turns.slice(),
+          w:pl.w.slice(),
+          c:slots,
+          _r9:true
+        });
+      }));
+    });
+    return out;
+  }
   function v3SeedsFor(type){
     const t=V3_TYPE[type];
     if(!t)return [];
-    return FILM_SEEDS.filter(s=>{
+    const base=FILM_SEEDS.filter(s=>{
       if(s.only)return s.only.indexOf(type)>-1;
       if(t.mode==="brief")return false;
       const tracks=s.tracks||[];
@@ -32425,6 +32748,10 @@ const ACG = (()=>{
       }
       return tracks.indexOf(t.track)>-1;
     });
+    // Brand formats build their own briefs and never needed the bank.
+    if(t.mode==="brief")return base;
+    const track=t.mode==="job"?"film":t.track;
+    return base.concat(r9ComposedSeeds(track));
   }
 
   // ── Plain words ──────────────────────────────────────────────────────────
@@ -33942,6 +34269,13 @@ const ACG = (()=>{
     const byUse=cgShuffle(days).sort((a,b)=>startN(v5Iso(a))-startN(v5Iso(b)));
     const under=byUse.filter(x=>startN(v5Iso(x))<2);
     const order=under.length?under:byUse;
+    // Round 9: two passes. The first keeps every start date unique inside the
+    // batch; the second allows a repeat. A 19-day window crossed with a plan's
+    // own day-of-week rule (weekends only, Mondays only, stage previews) can
+    // leave a listing no legal date at all once earlier listings in the batch
+    // have taken the few days that fit - and then the whole attempt was thrown
+    // away with "no dates", which is how a batch of ten came back with three.
+    for(let pass=0;pass<2;pass++){
     for(const s of order){
       if(plan.stage&&!plan.read&&[1,2].indexOf(s.getUTCDay())<0)continue;
       if(plan.mode==="weekends"&&s.getUTCDay()!==6)continue;
@@ -33950,7 +34284,7 @@ const ACG = (()=>{
       if(plan.mode==="sixday"&&s.getUTCDay()!==1)continue;
       if(plan.evening&&(s.getUTCDay()===0||s.getUTCDay()===6))continue;
       const iso=v5Iso(s);
-      if(res.v5Starts&&res.v5Starts.has(iso))continue;
+      if(pass===0&&res.v5Starts&&res.v5Starts.has(iso))continue;
       let work,end;
       const guardEnd=plan.stage&&plan.weeks?new Date(s.getTime()+(plan.weeks*7-1)*V5_DAY):null;
       if(plan.stage){end=new Date(s.getTime()+(plan.window-1)*V5_DAY);work=[s,end];}
@@ -33984,6 +34318,7 @@ const ACG = (()=>{
       const exp=new Date(dl.getTime()+offs[0]*V5_DAY);
       const mk=iso.slice(0,7);
       return {start:s,end,work,deadline:dl,expires:exp,monthKey:mk};
+    }
     }
     return null;
   }
@@ -36289,7 +36624,7 @@ const ACG = (()=>{
       const pool=grp?[...new Set(V3_TYPES.filter(t=>grp.test(t)).reduce((a,t)=>a.concat(v3SeedsFor(t)),[]))]:v3SeedsFor(type);
       const pairUsed=(s,t)=>h.traits.has(clean("story "+s.k+" "+t))||res.traits.has(clean("story "+s.k+" "+t));
       const seedUnused=s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k));
-      const turnsOf=s=>{const own=[s.h,s.h2].filter(Boolean);const bank=v3IsBrief(s)?v3Twists(fam):turnBank(s,T.track==="film"||T.track==="tv"||T.track==="stage"?T.track:"film");return own.concat(bank.filter(x=>own.indexOf(x)<0));};
+      const turnsOf=s=>{const own=(s._turns&&s._turns.length?s._turns:[s.h,s.h2]).filter(Boolean);const bank=v3IsBrief(s)?v3Twists(fam):turnBank(s,T.track==="film"||T.track==="tv"||T.track==="stage"?T.track:"film");return own.concat(bank.filter(x=>own.indexOf(x)<0));};
       let choices=pool.filter(seedUnused).filter(s=>!(res._seedFails&&res._seedFails[s.k]>=3));
       const revived=!choices.length;
       // A premise the board has already told may come back only when this type
@@ -36302,7 +36637,10 @@ const ACG = (()=>{
       const strict=attempt<50;
       const famOk=!res.lastFamily&&((res.famCount||0)*4)<=(res.storyCount||0);
       const spaced=famOk?choices:choices.filter(z=>!familySeed(z));
-      const seed=pick(spaced.length?spaced:choices);
+      // Hand-written premises are the better writing, so they go first; the
+      // composed ones only fill in once the bank has nothing unused left.
+      const preferred=(spaced.length?spaced:choices).filter(z=>!z._r9);
+      const seed=pick(preferred.length?preferred:(spaced.length?spaced:choices));
       const brief=v3IsBrief(seed);
       const own=[seed.h,seed.h2].filter(Boolean);
       res._tagFail=res._tagFail||new Set();
@@ -40037,6 +40375,14 @@ function AdminMemberAnnounce({session,SUPA}){
 // add a row here. `subject` is the default subject that ships with the design;
 // you can still edit it before creating the campaign.
 const PROMO_TEMPLATES=[
+  {id:"fullpage-obsession",file:"/email/promo-fullpage-obsession.html",name:"Full Page · Obsession",
+   blurb:"Upsell-style full width, Navy Dawn. Obsession bed still, wide casting rows, dark guarantee band.",
+   subject:"The slow-burn is having a year. Three roles are open.",
+   bg:"#33355A",fg:"#EAC080",mark:"CASTSLATE"},
+  {id:"fullpage-backrooms",file:"/email/promo-fullpage-backrooms.html",name:"Full Page · Backrooms",
+   blurb:"Upsell-style full width, Sage & Clay. Backrooms still, wide casting rows, dark guarantee band.",
+   subject:"Liminal, tense, and casting this week",
+   bg:"#2F5B52",fg:"#E8A87C",mark:"CASTSLATE"},
   {id:"classic",file:"/email/promo-castings-campaign.html",name:"Classic Cards",
    blurb:"White shell, hero banner, three full casting cards with role tables.",
    subject:"Casting calls are live on CastSlate",
