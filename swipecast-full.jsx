@@ -5884,7 +5884,7 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
 //     a free-tier talent (CDs / producers / admins / studios are unaffected).
 //     Click anywhere → /membership.
 // ─── Browse Castings join stripe — sits above the nav on the Browse Castings
-//     page only. Signed-out visitors get "Join Free" (signup); free talent get
+//     page only. Signed-out visitors get "Get Found" (signup); free talent get
 //     "Go Premium" (membership). Premium members, CDs and admins never see it,
 //     and it disappears the moment an account turns premium. The × hides it
 //     for the rest of the browser session.
@@ -5902,7 +5902,7 @@ function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
   const close=()=>{try{sessionStorage.setItem("cs_bjs_off","1");}catch(_){}setOff(true);};
   return(<div className="bjs">
     <div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams are looking.</span></div>
-    <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Join Free":"Go Premium"}</button>
+    <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Get Found":"Go Premium"}</button>
     <div className="bjs-ph" role="img" aria-label="A casting team watching an actor through a camera"></div>
     <button className="bjs-x" aria-label="Close" onClick={close}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>);
