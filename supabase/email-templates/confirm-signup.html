@@ -1,6 +1,13 @@
 <!--
   CastSlate — Auth "Confirm signup" email template.
 
+  DESIGN (2026-09-25, owner's pick "B · Soft teal / The Truman Show"): same family
+  as the new-actor welcome — soft masthead, full-width film still + caption,
+  peach "stage gels" backdrop (email/backgrounds/confirm-signup-door.jpg, made by
+  tools/make-welcome-backgrounds.py; its fade is measured to THIS card's bottom,
+  so re-measure if the card grows), cream Footer A, accent stripe. Teal accent so
+  it reads apart from the terracotta welcome that follows it.
+
   WHERE THIS LIVES: this file is the source of record, but the live template is
   configured in Supabase Dashboard → Authentication → Emails → "Confirm signup"
   (it is NOT deployed from the repo). After editing here, paste the contents into
@@ -21,63 +28,35 @@
   the cause of "I clicked the link but I'm still not logged in").
   Do NOT revert this to https://www.castslate.com/?token_hash={{ .TokenHash }}&type=signup.
 -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="color-scheme" content="light"/>
+<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="color-scheme" content="light"/>
 <title>Confirm your CastSlate account</title>
-</head>
-<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;">
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f5f5f7;padding:28px 16px;">
-<tr><td align="center">
-
-<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.09);">
-
-<!-- HEADER -->
-<tr>
-  <td style="background:#1a1b2e;padding:16px 28px;">
-    <table cellpadding="0" cellspacing="0" role="presentation"><tr>
-      <td style="vertical-align:middle;padding-right:10px;">
-        <img src="https://www.castslate.com/email/castslate-logo.png?v=1" width="32" height="32" alt="CastSlate" style="display:block;border-radius:7px;border:none;outline:none;text-decoration:none;" />
-      </td>
-      <td style="vertical-align:middle;">
-        <span style="font-size:18px;font-weight:800;color:#ffffff;letter-spacing:-0.4px;">CastSlate</span>
-      </td>
-    </tr></table>
-  </td>
-</tr>
-
-<!-- BODY -->
-<tr>
-  <td style="padding:34px 32px 30px;">
-    <h1 style="margin:0 0 14px;font-size:24px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;line-height:1.25;">Confirm your email</h1>
-    <p style="margin:0 0 26px;font-size:15px;line-height:1.7;color:#475569;">
-      Welcome to CastSlate — casting, finally built for actors. Confirm your email to activate your account and start getting seen.
-    </p>
-    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 26px;"><tr><td style="border-radius:10px;background:#1a1b2e;">
-      <a href="https://www.castslate.com/?token_hash={{ .TokenHash }}&type=signup" style="display:inline-block;padding:14px 30px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;letter-spacing:0.1px;">Confirm my email &rarr;</a>
-    </td></tr></table>
-    <p style="margin:0 0 8px;font-size:12px;color:#94a3b8;line-height:1.6;">If the button doesn't work, paste this link into your browser:</p>
-    <p style="margin:0 0 26px;font-size:12px;line-height:1.6;word-break:break-all;"><a href="https://www.castslate.com/?token_hash={{ .TokenHash }}&type=signup" style="color:#4338ca;text-decoration:none;">https://www.castslate.com/?token_hash={{ .TokenHash }}&type=signup</a></p>
-    <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6;">If you didn't create a CastSlate account, you can safely ignore this email.</p>
-  </td>
-</tr>
-
-<!-- FOOTER -->
-<tr><td style="padding:0 32px;"><div style="height:1px;background:#e2e8f0;"></div></td></tr>
-<tr>
-  <td style="padding:18px 32px 26px;">
-    <p style="margin:0;font-size:11px;color:#cbd5e1;line-height:1.6;">
-      <a href="https://www.castslate.com" style="color:#94a3b8;text-decoration:none;font-weight:700;">CastSlate</a>
-      &mdash; The casting platform built for working actors.
-      Questions? <a href="mailto:team@castslate.com" style="color:#94a3b8;text-decoration:none;">team@castslate.com</a>
-    </p>
-  </td>
-</tr>
-
-</table>
-</td></tr></table>
-</body>
-</html>
+<style>@media only screen and (max-width:480px){.mast-pad{padding:24px 18px!important}.mast-pill{display:none!important}.row-pad{padding-left:20px!important;padding-right:20px!important}.h1{font-size:23px!important}}</style></head>
+<body style="margin:0;padding:0;background:#F3EEE6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" background="https://www.castslate.com/email/backgrounds/confirm-signup-door.jpg" bgcolor="#F3EEE6" style="background-color:#F3EEE6;background-image:url(https://www.castslate.com/email/backgrounds/confirm-signup-door.jpg);background-position:center top;background-repeat:no-repeat;padding:40px 20px"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
+<tr><td class="mast-pad" style="background:#2F6E66;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(248,196,140,.34) 0%,rgba(248,196,140,.10) 46%,rgba(248,196,140,0) 72%),linear-gradient(118deg,#285F58 0%,#327269 52%,#3D8378 100%);border-top:3px solid #4A9186;padding:30px 36px 28px">
+<table width="100%" cellpadding="0" cellspacing="0"><tr>
+<td valign="middle" style="width:52px"><span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20)"><img src="https://www.castslate.com/logo-email.png" alt="CastSlate" width="30" height="30" style="display:block"/></span></td>
+<td valign="middle" style="padding-left:14px"><div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.1">CastSlate</div><div style="margin-top:4px;font-size:11px;font-weight:600;color:rgba(255,255,255,.78);letter-spacing:2px;text-transform:uppercase">Get seen. Get cast.</div></td>
+<td class="mast-pill" valign="middle" align="right" style="padding-left:12px"><span style="display:inline-block;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#fff;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase;white-space:nowrap">One last step</span></td>
+</tr></table></td></tr>
+<tr><td style="padding:0;line-height:0"><img src="https://image.tmdb.org/t/p/w1280/rmiG2uwcNoGFmBKMoa1pIcf514L.jpg" width="600" alt="" style="display:block;width:100%;height:auto;border:0"/></td></tr>
+<tr><td style="padding:14px 36px 0;text-align:center"><div style="font-size:10px;letter-spacing:.4px;color:#2A7266;margin-bottom:6px">Still: <em>The Truman Show</em> (1998)</div>
+<div style="font-family:Georgia,'Times New Roman',serif;font-size:15.5px;line-height:1.45;font-weight:700;color:#1A1A2E">Jim Carrey was doing stand-up in Toronto clubs at fifteen. Truman&rsquo;s whole world changes with one step through a door.</div></td></tr>
+<tr><td class="row-pad" style="padding:30px 36px 6px">
+<div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#2A7266;margin:0 0 8px">Almost there</div>
+<h1 class="h1" style="margin:0 0 12px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Confirm your email</h1>
+<p style="margin:0 0 24px;font-size:16px;line-height:1.65;color:#555">Welcome to CastSlate &mdash; casting, finally built for actors. Confirm your email to activate your account and start getting seen.</p></td></tr>
+<tr><td class="row-pad" style="padding:0 36px 26px" align="center"><a href="https://www.castslate.com/?token_hash={{ .TokenHash }}&type=signup" style="display:inline-block;background:#206557;background:linear-gradient(90deg,#3A8A7C,#206557);color:#fff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">Confirm my email &rarr;</a></td></tr>
+<tr><td class="row-pad" style="padding:0 36px 30px"><div style="background:#EEF6F3;border:1px dashed #CFE4DD;border-radius:12px;padding:14px 18px">
+<div style="font-size:12.5px;color:#6b6259;margin:0 0 6px">If the button doesn't work, paste this link into your browser:</div>
+<div style="font-size:12px;line-height:1.55;word-break:break-all"><a href="https://www.castslate.com/?token_hash={{ .TokenHash }}&type=signup" style="color:#2A7266;text-decoration:underline">https://www.castslate.com/?token_hash=&hellip;&amp;type=signup</a></div></div></td></tr>
+<tr><td style="height:6px;line-height:6px;font-size:0;background:#2A7266;background:linear-gradient(90deg,#2A7266,#2A7266 55%,#2A726655)">&nbsp;</td></tr>
+</table><table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:560px;margin:0 auto"><tr><td align="center" style="padding:30px 22px 40px">
+<table cellpadding="0" cellspacing="0" role="presentation" align="center" style="max-width:500px;width:100%">
+<tr><td align="center" style="padding-bottom:10px"><table cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding-right:10px;vertical-align:middle"><img src="https://www.castslate.com/logo-email-tile.png" width="34" height="34" alt="CastSlate" style="display:block;border-radius:8px"/></td><td style="vertical-align:middle;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:17px;font-weight:800;letter-spacing:2.4px;color:#1A1A2E">CASTSLATE</td></tr></table></td></tr>
+<tr><td align="center" style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:14px;color:#8A7A66;padding-bottom:20px">Get seen. Get cast.</td></tr>
+<tr><td align="center" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12.5px;line-height:1.7;color:#7A7064;padding-bottom:20px">You're receiving this because someone signed up for CastSlate with this address.<br/>If it wasn't you, you can safely ignore this email.</td></tr>
+<tr><td align="center" style="border-top:1px solid #E2D9CB;padding-top:16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:11.5px;color:#A39684">&copy; 2026 CastSlate &middot; <a href="mailto:team@castslate.com" style="color:#8A7A66;text-decoration:none">team@castslate.com</a></td></tr>
+</table></td></tr></table>
+</td></tr></table></body></html>

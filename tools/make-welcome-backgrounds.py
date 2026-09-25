@@ -7,6 +7,7 @@ make-welcome-backgrounds.py — render the backdrops behind the two welcome emai
 Writes email/backgrounds/*.jpg. Approved 2026-09-22:
   welcome-free-gels.jpg          "Stage gels" (day)   behind newActorWelcomeHtml
   welcome-premium-projector.jpg  "Projector beam"     behind premiumWelcomeHtml
+  confirm-signup-door.jpg        "Open door" (2026-09-25) behind the Supabase confirm-signup template
 
 HOW THEY ARE USED. Each image is the background of the outermost table of its
 email, anchored centre-top, no-repeat, on the usual cream (CS_CREAM). The card
@@ -36,6 +37,9 @@ CREAM = (243, 238, 230)          # CS_CREAM #F3EEE6 — the fade target
 
 FREE    = dict(H=1500, FADE_START=950,  FADE_END=1420)
 PREMIUM = dict(H=2950, FADE_START=2300, FADE_END=2870)
+# Confirm-signup (Supabase auth template, supabase/email-templates/confirm-signup.html).
+# Card bottom measured at 919px on desktop (2026-09-25).
+CONFIRM = dict(H=1140, FADE_START=550, FADE_END=920)
 
 
 def fade_mask(H, f0, f1, edge=160):
@@ -121,6 +125,15 @@ def main():
     # Premium: near-black screening room, gold beam.
     save(projector_beam(PREMIUM, (16, 14, 22), (30, 24, 30), (250, 212, 140), 0.38, 420),
          "welcome-premium-projector.jpg", PREMIUM)
+    # Confirm signup: "Open door" (approved 2026-09-25, demo B) — peach gels
+    # with one sea-glass teal wash, to sit behind the soft-teal masthead.
+    save(stage_gels(CONFIRM, (248, 236, 224), [
+        (620, 250, 640, 420, (244, 170, 128), 0.80),
+        (1820, 280, 640, 440, (122, 178, 164), 0.55),
+        (480, 920, 560, 400, (248, 200, 150), 0.70),
+        (1900, 960, 520, 380, (236, 168, 150), 0.55),
+        (1200, 620, 420, 300, (250, 220, 190), 0.55),
+    ]), "confirm-signup-door.jpg", CONFIRM)
 
 
 if __name__ == "__main__":
