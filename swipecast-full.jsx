@@ -21713,9 +21713,10 @@ const LANDING_SWIPE_DEMO=[
   // object-position 61% 11% + scale 1.95 with the origin at the same point
   // (re-framed closer by the owner 2026-09-24; was 60% 20% x1.42).
   // Self-hosted at 1000x1250 (retina for the 1.42 zoom) so no server-side crop can re-frame it.
-  // v2 = the owner's edited photo with only the grain removed (light non-local-means,
-  // channel averages locked to the edit), same framing.
-  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v2.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
+  // v3 = the owner's edited photo with grain removed from the BACKGROUND ONLY: her
+  // face, hair, hands, blazer and the table are untouched original pixels (v2 denoised
+  // the whole frame and read as changed lighting).
+  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v3.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
   // Kira sits second, right after Nayara (2026-09-24), so one swipe shows the
   // natural-headshot style. NOTE the image URL carries NO h=/fit=crop: the owner
   // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
