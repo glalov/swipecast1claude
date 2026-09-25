@@ -242,6 +242,10 @@ serve(async (req) => {
       //   {{CASTINGS}}        index rows      (The Marquee)
       //   {{CASTINGS_CARDS}}  full cards      (Classic Cards)
       //   {{CASTINGS_LATE}}   lead + two-up   (The Late Show)
+      //   {{CASTINGS_WIDE_NAVY}} / {{CASTINGS_WIDE_SAGE}}
+      //                       wide two-column rows (full-page Obsession /
+      //                       Backrooms promos, same shape as the noon/evening
+      //                       premium-upsell rows; the suffix picks the palette)
       // Any of them takes an optional ":slug" that pins that casting to the top
       // for as long as it is live.
       const esc = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -373,7 +377,53 @@ ${roleRows}${more}
       </td>`;
       };
 
-      const CASTINGS_TAG = /\{\{CASTINGS(_CARDS|_LATE)?(?::([a-z0-9-]+))?\}\}/i;
+      // ── Full-page promos: wide two-column rows, as in premium-upsell ──
+      // Left: type tile + pay + View Now. Right: title, location, lead role.
+      // Stacks under 620px via the template's .col rule.
+      const WIDE: Record<string, { ink: string; body: string; line: string; kicker: string; cta: string; radius: string }> = {
+        NAVY: { ink: "#221F2E", body: "#605C6B", line: "#E6E4E0", kicker: "#45476E", cta: "#3E4168", radius: "999px" },
+        SAGE: { ink: "#22322E", body: "#5F7069", line: "#E3E8E4", kicker: "#2F5B52", cta: "#C3653F", radius: "10px" },
+      };
+      const typeSlug = (t: unknown) => String(t || "casting").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const wideRow = (c: any, p: typeof WIDE.NAVY) => {
+        const pay = payOf(c);
+        const r = rolesOf(c)[0];
+        const more = Math.max(0, (c.role_count || 0) - 1);
+        let roleLine = "Open casting call";
+        if (r) {
+          const bits = [esc(r.name || "Role")];
+          if (r.age) bits.push(esc(r.age));
+          if (r.gender && !/^(any|all genders)$/i.test(String(r.gender))) bits.push(esc(r.gender));
+          roleLine = bits.join(" &middot; ") + (more ? ` &middot; <span style="color:${p.body}">+${more} more role${more === 1 ? "" : "s"}</span>` : "");
+        }
+        const union = unionOf(c);
+        const payHtml = pay
+          ? `<img src="${APP_URL}/email/money-icon.png" width="18" height="18" alt="" style="display:inline-block;width:18px;height:18px;vertical-align:-3px;margin-right:8px;border:0;"/>Paid &mdash; ${pay}`
+          : "Paid";
+        return `
+      <tr><td class="row-pad" style="padding:22px 40px;border-top:1px solid ${p.line};">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+          <td class="col" width="44%" style="width:44%;vertical-align:top;padding-right:24px;">
+            <table cellpadding="0" cellspacing="0" role="presentation"><tr>
+              <td style="vertical-align:middle;padding-right:12px;"><img src="${APP_URL}/email/type-icons/${typeSlug(c.ctype)}.png" width="46" height="46" alt="" style="display:block;width:46px;height:46px;border:0;"/></td>
+              <td style="vertical-align:middle;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${p.kicker};">${esc(c.ctype || "Casting").toUpperCase()}</td>
+            </tr></table>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:17px;color:#1F6B4A;font-weight:700;margin:12px 0 16px;white-space:nowrap;overflow:hidden;">${payHtml}</div>
+            <a href="${urlOf(c)}" style="display:inline-block;background:${p.cta};color:#FFFFFF;text-decoration:none;padding:13px 30px;border-radius:${p.radius};font-size:14px;font-weight:800;letter-spacing:.3px;">View Now</a>
+          </td>
+          <td class="col" width="56%" style="width:56%;vertical-align:top;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:${p.ink};line-height:1.25;margin:0 0 10px;">&lsquo;${esc(String(c.title || "").trim() || "Open casting")}&rsquo;</div>
+            <div style="font-size:14.5px;line-height:2;color:${p.body};">
+              <strong style="color:${p.ink};">Location:</strong> ${esc(c.location || "Location TBD")}${union ? " &middot; " + esc(union) : ""}<br/>
+              <strong style="color:${p.ink};">Role:</strong> ${roleLine}<br/>
+              <strong style="color:${p.ink};">Status:</strong> Open now &middot; free to submit
+            </div>
+          </td>
+        </tr></table>
+      </td></tr>`;
+      };
+
+      const CASTINGS_TAG = /\{\{CASTINGS(_CARDS|_LATE|_WIDE_NAVY|_WIDE_SAGE)?(?::([a-z0-9-]+))?\}\}/i;
       let castingsBlock: string | null = null;
       const tagMatch = (camp.html || "").match(CASTINGS_TAG);
       if (tagMatch) {
@@ -385,6 +435,8 @@ ${roleRows}${more}
         if (le || !rows.length) return res({ error: le ? `castings lookup failed: ${le.message}` : "no live castings to feature — refusing to send" }, 500);
         if (variant === "_CARDS") {
           castingsBlock = rows.map(cardBlock).join("\n");
+        } else if (variant.startsWith("_WIDE_")) {
+          castingsBlock = rows.map((c) => wideRow(c, WIDE[variant.slice(6)])).join("");
         } else if (variant === "_LATE") {
           const [lead, ...rest] = rows;
           const grid = rest.length
