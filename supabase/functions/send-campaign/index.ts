@@ -205,11 +205,13 @@ serve(async (req) => {
 
     if (action === "reset_campaign") {
       const { campaign_id } = body; if (!campaign_id) return res({ error: "campaign_id required" }, 400);
-      // Never resurrect an unsubscribe, a registered user, or a known-bad address.
-      await sb.from("email_campaign_recipients").update({ status: "queued", provider_message_id: null, error_message: null, sent_at: null }).eq("campaign_id", campaign_id).not("status", "in", "(skipped_unsub,skipped_is_user,skipped_invalid)");
-      await sb.from("email_campaigns").update({ status: "draft", sent_count: 0, failed_count: 0, updated_at: new Date().toISOString() }).eq("id", campaign_id);
-      const { count } = await sb.from("email_campaign_recipients").select("*", { count: "exact", head: true }).eq("campaign_id", campaign_id).eq("status", "queued");
-      return res({ ok: true, requeued: count ?? 0 });
+      // Set-based in cs_campaign_reset: never resurrects an unsubscribe, a registered
+      // user, or a known-bad address; premium members re-skip; old rows are snapshotted
+      // into email_campaign_reset_backup first. A plain PATCH here ran the per-row
+      // premium guard 10k+ times, hit the 8s statement timeout, and failed silently.
+      const { data: requeued, error } = await sb.rpc("cs_campaign_reset", { p_campaign: campaign_id });
+      if (error) return res({ error: `re-queue failed: ${error.message}` }, 500);
+      return res({ ok: true, requeued: requeued ?? 0 });
     }
 
     if (action === "requeue_failed") {
