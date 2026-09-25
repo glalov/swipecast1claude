@@ -9993,12 +9993,14 @@ const AGD_ROUTE="M64 96 C 150 34, 268 34, 352 66";
 // Three sample Actor Business Cards for the hero. Each carries its OWN QR, so
 // the fan reads as three real cards rather than one card and some headshots.
 const AGD_CARDS=[
-  {name:"Angela Romano",head:"Actor · Theatrical",loc:"New York, NY",slug:"angela-romano",
-   tags:["Meisner","Fluent Spanish"],img:"https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=420&h=560&fit=crop&q=80",pos:"center 16%"},
-  {name:"Andre Sallis",head:"Actor · Film & TV",loc:"Los Angeles, CA",slug:"andre-sallis",
-   tags:["Improv","Stage Combat"],img:"https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=420&h=560&fit=crop&q=80",pos:"center 34%"},
-  {name:"Nora Kavanagh",head:"Actor · Commercial",loc:"Beverly Hills, CA",slug:"nora-kavanagh",
-   tags:["On-camera","Dance"],img:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=420&h=560&fit=crop&q=80",pos:"center 18%"}
+  // Photos are pre-cropped to the card's photo slot (~3:5), so object-position
+  // only matters if the slot shape ever changes.
+  {name:"Naya Bellamy",head:"Actor · Theatrical",loc:"New York, NY",slug:"naya-bellamy",
+   tags:["Meisner","Fluent Spanish"],img:"/assets/agd-cards/agd-card-1.jpg",pos:"center 50%"},
+  {name:"Malcolm Vey",head:"Actor · Film & TV",loc:"Los Angeles, CA",slug:"malcolm-vey",
+   tags:["Improv","Stage Combat"],img:"/assets/agd-cards/agd-card-2.jpg",pos:"center 50%"},
+  {name:"Clara Moss",head:"Actor · Commercial",loc:"Beverly Hills, CA",slug:"clara-moss",
+   tags:["On-camera","Dance"],img:"/assets/agd-cards/agd-card-3.jpg",pos:"center 50%"}
 ];
 function AgdCard({c,k}){
   const qr="https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data="+encodeURIComponent("https://www.castslate.com/talent/"+c.slug);
