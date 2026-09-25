@@ -21712,7 +21712,9 @@ const LANDING_SWIPE_DEMO=[
   // fitter (castslate-nayara-fit-tool.html) against the ORIGINAL 4:5 photo:
   // object-position 60% 20% + scale 1.42 with the origin at the same point.
   // Self-hosted at 1000x1250 (retina for the 1.42 zoom) so no server-side crop can re-frame it.
-  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"60% 20%",zoom:1.42,img:"/assets/landing/nayara-haddad.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
+  // v2 = the owner's edited photo with only the grain removed (light non-local-means,
+  // channel averages locked to the edit), same framing.
+  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"60% 20%",zoom:1.42,img:"/assets/landing/nayara-haddad-v2.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
   // Kira sits second, right after Nayara (2026-09-24), so one swipe shows the
   // natural-headshot style. NOTE the image URL carries NO h=/fit=crop: the owner
   // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
