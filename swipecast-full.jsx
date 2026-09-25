@@ -2184,9 +2184,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    button and words sit right next to the photo (approved demo spacing), the
    group hugs the right edge, and any extra width is plain navy on the left.
    Photo width = height x its real shape (3.0 desktop, 2.35 phone) so it is never
-   squashed. On phones the button stays beside the photo; wider phones give the
-   extra room to the words, not to a gap. */
+   squashed. On phones the words box is exactly as wide as the words, and the
+   free space is split evenly: edge to words, words to button, button to photo. */
 .bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#fff;font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse 40% 90% at 12% 0%,rgba(240,184,96,.12),transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#2A2B47 100%);}
+.bjs-l{display:flex;align-items:center;gap:20px;min-width:0;}
 .bjs-txt{font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
 .bjs-txt em{font-style:normal;color:#EAC080;}
 .bjs-short{display:none;}
@@ -2196,10 +2197,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .bjs-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(20,20,34,.6);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;opacity:.85;}
 .bjs-x:hover{opacity:1;}
 @media(max-width:900px){
-  .bjs{padding:0 0 0 12px;gap:10px;justify-content:flex-start;}
+  .bjs{padding:0;gap:0;justify-content:flex-start;}
+  .bjs-l{flex:1 1 auto;gap:0;justify-content:space-evenly;}
   .bjs-full{display:none;}
   .bjs-short{display:inline;}
-  .bjs-txt{font-size:13px;white-space:normal;line-height:1.15;flex:1 1 106px;}
+  .bjs-txt{font-size:13px;white-space:nowrap;line-height:1.15;flex:none;}
   .bjs-go{order:0;font-size:12.5px;padding:6px 10px;}
   .bjs-ph{margin-left:0;width:132px;background-image:url(/assets/banner/casting-team-stripe-m.jpg);}
   .bjs-x{top:3px;right:3px;width:20px;height:20px;}
@@ -5903,8 +5905,10 @@ function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
   }
   const close=()=>{try{sessionStorage.setItem("cs_bjs_off","1");}catch(_){}setOff(true);};
   return(<div className="bjs">
-    <div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams are looking.</span></div>
-    <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Get Found":"Go Premium"}</button>
+    <div className="bjs-l">
+      <div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams<br/>are looking.</span></div>
+      <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Get Found":"Go Premium"}</button>
+    </div>
     <div className="bjs-ph" role="img" aria-label="A casting team watching an actor through a camera"></div>
     <button className="bjs-x" aria-label="Close" onClick={close}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>);
