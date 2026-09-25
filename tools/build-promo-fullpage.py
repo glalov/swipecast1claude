@@ -160,6 +160,32 @@ def marquee(p):
     </td></tr>"""
 
 
+# "Promise cards" (owner's pick B, 2026-09-25): tinted panel, three columns,
+# ringed check + serif promise + a short line under each. On phones the
+# columns stack into centred rows split by hairlines (.tB rules below).
+TRUST = [("Free to join", "Set up in two minutes"),
+         ("Free to submit", "Straight to the casting team"),
+         ("Every profile reviewed", "Read by a real person")]
+
+
+def trust(p):
+    cols = []
+    for i, (t, sub) in enumerate(TRUST):
+        last = i == len(TRUST) - 1
+        br = "" if last else f"border-right:1px solid {p['line']};"
+        cls = "tB tB-last" if last else "tB"
+        cols.append(f"""<td class="{cls}" width="33%" style="width:33.33%;vertical-align:top;text-align:center;padding:4px 14px;{br}">
+          <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:0 auto 10px;"><tr><td width="36" height="36" style="width:36px;height:36px;border:2px solid {p['rule']};border-radius:40px;text-align:center;vertical-align:middle;font-size:16px;line-height:16px;font-weight:800;color:{p['cta']};">&#10003;</td></tr></table>
+          <div class="tB-t" style="font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:{p['ink']};line-height:1.25;">{t}</div>
+          <div style="font-size:12.5px;color:{p['body']};margin-top:5px;line-height:1.5;">{sub}</div>
+        </td>""")
+    return f"""<table class="trust-b" width="100%" cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:30px auto 0;width:100%;max-width:720px;background:{p['stripBg']};border-radius:14px;"><tr><td class="trust-b-in" style="padding:22px 10px;">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr>
+        {"".join(cols)}
+        </tr></table>
+      </td></tr></table>"""
+
+
 def template(key):
     p, c = PALETTES[key], COPY[key]
     tag = "NAVY" if key == "obsession" else "SAGE"
@@ -180,7 +206,11 @@ def template(key):
   .mast-sub{{font-size:11px!important;letter-spacing:3px!important;margin-top:12px!important;}}
   .hl{{font-size:28px!important;}} .hl2{{font-size:25px!important;}}
   .hl br,.hl2 br{{display:none!important;}}
-  .trust td{{padding:0 5px!important;font-size:11.5px!important;}}
+  .trust-b{{margin-top:24px!important;border-radius:12px!important;}}
+  .trust-b-in{{padding:6px 18px!important;}}
+  .tB{{display:block!important;width:auto!important;border-right:0!important;border-bottom:1px solid {p['line']}!important;padding:16px 0!important;}}
+  .tB-last{{border-bottom:0!important;}}
+  .tB-t{{font-size:18px!important;}}
   .l-a24{{width:38px!important;height:16px!important;}}
   .l-neon{{width:56px!important;height:16px!important;}}
   .l-nflx{{width:58px!important;height:16px!important;}}
@@ -217,13 +247,7 @@ def template(key):
       <div style="font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:{p['kicker']};margin-bottom:14px;">{c['kicker']}</div>
       <h1 class="hl" style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:40px;font-weight:700;color:{p['ink']};letter-spacing:-.5px;line-height:1.12;">{c['headline']}</h1>
       <p style="margin:0 auto;max-width:600px;font-size:16px;line-height:1.75;color:{p['body']};">{c['lede']}</p>
-      <table class="trust" cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:22px auto 0;"><tr>
-        <td style="padding:0 10px;font-size:13px;font-weight:800;color:{p['ink']};white-space:nowrap;">Free to join</td>
-        <td style="color:{p['rule']};font-size:13px;">&bull;</td>
-        <td style="padding:0 10px;font-size:13px;font-weight:800;color:{p['ink']};white-space:nowrap;">Free to submit</td>
-        <td style="color:{p['rule']};font-size:13px;">&bull;</td>
-        <td style="padding:0 10px;font-size:13px;font-weight:800;color:{p['ink']};white-space:nowrap;">Every profile reviewed</td>
-      </tr></table>
+      {trust(p)}
     </td></tr>
 
     <tr><td style="height:22px;line-height:22px;font-size:0;">&nbsp;</td></tr>
