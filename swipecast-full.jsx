@@ -21718,7 +21718,9 @@ const LANDING_SWIPE_DEMO=[
   // v3 = the owner's edited photo with grain removed from the BACKGROUND ONLY: her
   // face, hair, hands, blazer and the table are untouched original pixels (v2 denoised
   // the whole frame and read as changed lighting).
-  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v3.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
+  // v4 (2026-09-25, owner's pick of three) = v3 with a +10% face-only midtone lift
+  // (gamma .85 through a feathered ellipse on the face); background, hair, blazer untouched.
+  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v4.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
   // Kira sits second, right after Nayara (2026-09-24), so one swipe shows the
   // natural-headshot style. NOTE the image URL carries NO h=/fit=crop: the owner
   // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
