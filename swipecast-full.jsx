@@ -21708,12 +21708,11 @@ function SwipeCardPhoto({t,alt="",draggable}){
 }
 
 const LANDING_SWIPE_DEMO=[
-  // Kira leads the deck. NOTE the image URL carries NO h=/fit=crop: the owner
-  // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
-  // server-side crop would re-frame the shot before object-position ever ran,
-  // throwing the crop away. w=1200 keeps the 3:2 source at retina size (86KB).
-  // Photo: Pexels #4668550 by Vlada Karpovich.
-  {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"https://images.pexels.com/photos/4668550/pexels-photo-4668550.jpeg?auto=compress&cs=tinysrgb&w=1200",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
+  // Nayara leads the deck (owner's pick, 2026-09-24). Framed by the owner in the
+  // fitter (castslate-nayara-fit-tool.html) against the ORIGINAL 4:5 photo:
+  // object-position 60% 20% + scale 1.42 with the origin at the same point.
+  // Self-hosted at 1000x1250 (retina for the 1.42 zoom) so no server-side crop can re-frame it.
+  {id:22,name:"Nayara Haddad",age:26,gender:"Female",height:"5'6\"",pos:"60% 20%",zoom:1.42,img:"/assets/landing/nayara-haddad.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:20,name:"Julian J. West",age:30,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1587397845856-e6cf49176c70?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Drama","Screen Acting","Stage Combat"]},
   {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"center 12%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
@@ -21722,6 +21721,12 @@ const LANDING_SWIPE_DEMO=[
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
   {id:6,name:"Roman Kovalenko",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
+  // Kira (moved from first to just before Owen, 2026-09-24). NOTE the image URL carries NO h=/fit=crop: the owner
+  // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
+  // server-side crop would re-frame the shot before object-position ever ran,
+  // throwing the crop away. w=1200 keeps the 3:2 source at retina size (86KB).
+  // Photo: Pexels #4668550 by Vlada Karpovich.
+  {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"https://images.pexels.com/photos/4668550/pexels-photo-4668550.jpeg?auto=compress&cs=tinysrgb&w=1200",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
   {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Georgie Nelson",age:26,gender:"Female",height:"5'11\"",pos:"center 18%",img:"https://images.unsplash.com/photo-1721956514577-f6c15d73e585?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Action","Commercial","Improv"]},
 ];
