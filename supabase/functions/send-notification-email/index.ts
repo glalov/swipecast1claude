@@ -191,7 +191,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   to_user_id: string;
-  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "new_actor_welcome" | "cd_welcome" | "weekly_checkin" | "application_selected" | "application_hold" | "activity_digest";
+  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "new_actor_welcome" | "cd_welcome" | "casting_live" | "weekly_checkin" | "application_selected" | "application_hold" | "activity_digest";
   from_id?: string;
   from_name?: string;
   application_id?: string;
@@ -699,6 +699,99 @@ function cdWelcomeHtml(firstName: string): string {
 
     </table>
     ${csFooterA("You're receiving this because you created a CastSlate casting account.", "#8C6A22", `${APP_URL}/account-settings`)}
+  </td></tr></table>
+</body></html>`;
+}
+
+// "Your casting is live" — to the casting director, the moment an admin approves
+// their post and it is visible on Browse Castings (castings_live_email trigger /
+// process_casting_live_emails). Design "B · Greenlit emerald", approved
+// 2026-09-26: the emerald of the decision emails with a gold top rule, no images.
+// The copy about HOW submissions arrive is deliberately true to the product:
+// self-submissions appear one by one as actors apply; CastSlate Submit delivers a
+// matched batch at once. It does not promise any automatic holding/release.
+interface LiveCasting { title: string; type: string | null; location: string | null; deadline: string | null; roles: number; slug: string | null; }
+function castingLiveHtml(firstName: string, c: LiveCasting): string {
+  const acc = "#1B7A3B", accDark = "#17693A", line = "#D8EDDF", card = "#E7F4EC", cardBd = "#C9E6D3";
+  let closes = "";
+  if (c.deadline) {
+    const d = new Date(String(c.deadline).slice(0, 10) + "T12:00:00Z");
+    if (!isNaN(d.getTime())) closes = "Submissions close " + d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  }
+  const meta = [c.type, c.roles ? `${c.roles} role${c.roles === 1 ? "" : "s"}` : "", c.location, closes]
+    .filter((x) => x && String(x).trim()).map((x) => esc(String(x))).join(" &middot; ");
+  const castingHref = c.slug ? `${APP_URL}/casting/${encodeURIComponent(c.slug)}` : `${APP_URL}/dashboard`;
+  const step = (n: number, title: string, body: string, last = false) => `
+      <tr><td style="padding:${n === 1 ? "0" : "16px"} 0 ${last ? "0" : "16px"};${n === 1 ? "" : `border-top:1px solid ${line};`}">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td width="44" valign="top" style="width:44px;padding-top:1px"><table cellpadding="0" cellspacing="0"><tr><td width="30" height="30" align="center" style="width:30px;height:30px;background:${card};border:1px solid ${cardBd};border-radius:15px;font-size:13px;font-weight:800;line-height:30px;color:${accDark};text-align:center">${n}</td></tr></table></td>
+          <td valign="top"><div style="font-size:15.5px;font-weight:800;color:#1A1A2E;margin:0 0 3px">${title}</div><div style="font-size:14px;line-height:1.6;color:#555">${body}</div></td>
+        </tr></table>
+      </td></tr>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+@media only screen and (max-width:480px){
+  .mast-pad{padding:24px 18px!important}
+  .mast-pill{display:none!important}
+  .mast-word{font-size:19px!important}
+  .mast-sub{font-size:10px!important;letter-spacing:1.4px!important}
+  .row-pad{padding-left:20px!important;padding-right:20px!important}
+  .h1{font-size:23px!important}
+}
+</style></head>
+<body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM};padding:40px 20px"><tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
+      <tr><td class="mast-pad" style="background:#1B7A3B;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(232,185,106,.30) 0%,rgba(232,185,106,.09) 46%,rgba(232,185,106,0) 72%),linear-gradient(118deg,#0F4A2B 0%,#17693A 52%,#1E8046 100%);border-top:3px solid #E8B96A;padding:30px 36px 28px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td valign="middle" style="width:52px"><span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20)"><img src="${APP_URL}/logo-email.png" alt="CastSlate" width="30" height="30" style="display:block"/></span></td>
+          <td valign="middle" style="padding-left:14px">
+            <div class="mast-word" style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.1">CastSlate</div>
+            <div class="mast-sub" style="margin-top:4px;font-size:11px;font-weight:600;color:#CDEBD8;letter-spacing:2px;text-transform:uppercase">For casting professionals</div>
+          </td>
+          <td class="mast-pill" valign="middle" align="right" style="padding-left:12px"><span style="display:inline-block;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);color:#ffffff;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase;white-space:nowrap">&#9679; Live</span></td>
+        </tr></table>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:34px 36px 6px">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${acc};margin:0 0 8px">Approved</div>
+        <h1 class="h1" style="margin:0 0 12px;font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Your casting is live, ${esc(firstName)}</h1>
+        <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#555">Our team reviewed your post and approved it. Actors on CastSlate can now find it and submit to your roles.</p>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:0 36px 8px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="background:${card};border:1px solid ${cardBd};border-left:3px solid ${acc};border-radius:12px;padding:18px 20px">
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${acc};margin:0 0 8px">Now live</div>
+          <div style="font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:700;color:#1A1A2E;line-height:1.25">${esc(c.title)}</div>
+          ${meta ? `<div style="font-size:13.5px;color:#5A5A72;margin-top:6px">${meta}</div>` : ""}
+        </td></tr></table>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:26px 36px 4px">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${acc};margin:0 0 14px">How submissions reach you</div>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${step(1, "Give it a little time", "CastSlate doesn&rsquo;t work like a traditional casting board where submissions pile up the minute a post goes live. It can take a while before the first ones reach you.")}
+          ${step(2, "One by one, or all at once", "Some submissions arrive individually as actors apply. Others arrive together in a larger batch when CastSlate matches talent to your roles. Depending on the volume, you may see a few at a time or a big group at once &mdash; both are normal.")}
+          ${step(3, "Review them in your dashboard", "Every submission lands in your dashboard with the actor&rsquo;s photo, profile and any video. Shortlist, hold or message them from there &mdash; actors are emailed the moment you do.", true)}
+        </table>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:26px 36px 22px" align="center">
+        <a href="${castingHref}" style="display:inline-block;background:#1B7A3B;background:linear-gradient(90deg,#279152,#17693A);color:#ffffff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">View my casting &rarr;</a>
+        <div style="margin-top:12px;font-size:13px"><a href="${APP_URL}/dashboard" style="color:${accDark};font-weight:700;text-decoration:none">Go to my dashboard</a></div>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:0 36px 30px">
+        <div style="background:${card};border:1px dashed ${cardBd};border-radius:12px;padding:16px 18px">
+          <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Good to know</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Clear role descriptions &mdash; age range, look, and anything the part needs &mdash; bring better-matched submissions. You can edit your casting anytime from your dashboard. Questions? Just reply to this email.</div>
+        </div>
+      </td></tr>
+
+      ${csFooterStripe(acc)}
+    </table>
+    ${csFooterA("You're receiving this because a casting you posted on CastSlate was approved.", accDark, `${APP_URL}/account-settings`)}
   </td></tr></table>
 </body></html>`;
 }
@@ -1253,6 +1346,46 @@ serve(async (req) => {
       });
       if (!sent.ok) {
         console.error("[send-notification-email] premium welcome send error:", sent.err);
+        return json({ ok: false, results: { email: `error:${sent.err}` } });
+      }
+      return json({ ok: true, results: { email: "sent" } });
+    }
+
+    // ── "Your casting is live" (to the CD, once per casting, fired by the
+    //    castings trigger / process_casting_live_emails when an approved casting
+    //    becomes visible on Browse). The casting must belong to to_user_id.
+    //    Transactional: respects only the master email toggle. ──
+    if (type === "casting_live") {
+      if (!casting_id) return json({ error: "Missing casting_id" }, 400);
+      const { data: c } = await supabase.from("castings")
+        .select("title, type, location, deadline, slug, cd_id, roles(id)")
+        .eq("id", casting_id).maybeSingle();
+      if (!c || c.cd_id !== to_user_id) {
+        return json({ ok: false, results: { email: "skipped:casting_not_owned_by_recipient" } });
+      }
+      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      if (profile.notification_email === false) {
+        return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
+      }
+      if (!emailConfigured()) {
+        return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
+      }
+      const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
+      if (authErr || !authData?.user?.email) {
+        return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
+      }
+      const title = (c.title || "").trim() || "Your casting";
+      const sent = await sendEmail({
+        from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
+        subject: `Your casting is live: ${clampText(title, 60)}`,
+        html: castingLiveHtml(firstName, {
+          title, type: c.type, location: c.location, deadline: c.deadline, slug: c.slug,
+          // deno-lint-ignore no-explicit-any
+          roles: Array.isArray((c as any).roles) ? (c as any).roles.length : 0,
+        }),
+      });
+      if (!sent.ok) {
+        console.error("[send-notification-email] casting live send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
       }
       return json({ ok: true, results: { email: "sent" } });
