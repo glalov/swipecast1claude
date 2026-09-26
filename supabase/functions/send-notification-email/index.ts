@@ -191,7 +191,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   to_user_id: string;
-  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "new_actor_welcome" | "cd_welcome" | "casting_live" | "weekly_checkin" | "application_selected" | "application_hold" | "activity_digest";
+  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "new_actor_welcome" | "cd_welcome" | "casting_live" | "posting_approved" | "weekly_checkin" | "application_selected" | "application_hold" | "activity_digest";
   from_id?: string;
   from_name?: string;
   application_id?: string;
@@ -796,6 +796,88 @@ function castingLiveHtml(firstName: string, c: LiveCasting): string {
 </body></html>`;
 }
 
+// "You're approved to post" — to a casting director, once, the moment an admin
+// turns on posting for their account (profiles.can_post_castings false -> true;
+// profiles_posting_approved_email trigger, guard posting_approved_email_sent_at).
+// Same layout as the casting-live email, "A · Royal indigo" colouring (approved
+// 2026-09-26) so it never reads as the emerald live email or terracotta shortlist.
+function postingApprovedHtml(firstName: string, company: string | null): string {
+  const acc = "#3D43B0", accDark = "#2F3494", line = "#E2E3F5", card = "#EDEEFA", cardBd = "#D3D5F2";
+  const step = (n: number, title: string, body: string, last = false) => `
+      <tr><td style="padding:${n === 1 ? "0" : "16px"} 0 ${last ? "0" : "16px"};${n === 1 ? "" : `border-top:1px solid ${line};`}">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td width="44" valign="top" style="width:44px;padding-top:1px"><table cellpadding="0" cellspacing="0"><tr><td width="30" height="30" align="center" style="width:30px;height:30px;background:${card};border:1px solid ${cardBd};border-radius:15px;font-size:13px;font-weight:800;line-height:30px;color:${accDark};text-align:center">${n}</td></tr></table></td>
+          <td valign="top"><div style="font-size:15.5px;font-weight:800;color:#1A1A2E;margin:0 0 3px">${title}</div><div style="font-size:14px;line-height:1.6;color:#555">${body}</div></td>
+        </tr></table>
+      </td></tr>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+@media only screen and (max-width:480px){
+  .mast-pad{padding:24px 18px!important}
+  .mast-pill{display:none!important}
+  .mast-word{font-size:19px!important}
+  .mast-sub{font-size:10px!important;letter-spacing:1.4px!important}
+  .row-pad{padding-left:20px!important;padding-right:20px!important}
+  .h1{font-size:23px!important}
+}
+</style></head>
+<body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:${CS_CREAM};padding:40px 20px"><tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
+      <tr><td class="mast-pad" style="background:#34399A;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(232,185,106,.30) 0%,rgba(232,185,106,.09) 46%,rgba(232,185,106,0) 72%),linear-gradient(118deg,#23276B 0%,#34399A 52%,#4349B8 100%);border-top:3px solid #E8B96A;padding:30px 36px 28px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td valign="middle" style="width:52px"><span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20)"><img src="${APP_URL}/logo-email.png" alt="CastSlate" width="30" height="30" style="display:block"/></span></td>
+          <td valign="middle" style="padding-left:14px">
+            <div class="mast-word" style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.1">CastSlate</div>
+            <div class="mast-sub" style="margin-top:4px;font-size:11px;font-weight:600;color:#D5D8FF;letter-spacing:2px;text-transform:uppercase">For casting professionals</div>
+          </td>
+          <td class="mast-pill" valign="middle" align="right" style="padding-left:12px"><span style="display:inline-block;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);color:#ffffff;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase;white-space:nowrap">&#10003; Approved</span></td>
+        </tr></table>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:34px 36px 6px">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${acc};margin:0 0 8px">Posting access</div>
+        <h1 class="h1" style="margin:0 0 12px;font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">You&rsquo;re approved to post, ${esc(firstName)}</h1>
+        <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#555">Our team reviewed your casting account and turned on posting. You can now publish castings for actors on CastSlate.</p>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:0 36px 8px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr><td style="background:${card};border:1px solid ${cardBd};border-left:3px solid ${acc};border-radius:12px;padding:18px 20px">
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${acc};margin:0 0 8px">Posting enabled</div>
+          <div style="font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:700;color:#1A1A2E;line-height:1.25">${esc((company || "").trim() || "Your casting account")}</div>
+          <div style="font-size:13.5px;color:#5A5A72;margin-top:6px">Posting is free right now</div>
+        </td></tr></table>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:26px 36px 4px">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${acc};margin:0 0 14px">How posting works</div>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${step(1, "Post your first casting", "Add the project, your roles, dates and location from your dashboard. It only takes a few minutes.")}
+          ${step(2, "We give it a quick review", "Every casting is checked by our team before it appears on Browse Castings. We&rsquo;ll email you the moment yours is live.")}
+          ${step(3, "Submissions come to you", "Actors&rsquo; submissions land in your dashboard with their photo, profile and any video. Shortlist, hold or message them from there.", true)}
+        </table>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:26px 36px 22px" align="center">
+        <a href="${APP_URL}/dashboard" style="display:inline-block;background:#34399A;background:linear-gradient(90deg,#4B52C4,#2F3494);color:#ffffff;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">Post a casting &rarr;</a>
+        <div style="margin-top:12px;font-size:13px"><a href="${APP_URL}/browse-castings" style="color:${accDark};font-weight:700;text-decoration:none">See what&rsquo;s live on CastSlate</a></div>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:0 36px 30px">
+        <div style="background:${card};border:1px dashed ${cardBd};border-radius:12px;padding:16px 18px">
+          <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Good to know</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Clear role descriptions &mdash; age range, look, and anything the part needs &mdash; bring better-matched submissions. Questions about your first posting? Just reply to this email and a real person on our team will answer.</div>
+        </div>
+      </td></tr>
+
+      ${csFooterStripe(acc)}
+    </table>
+    ${csFooterA("You're receiving this because posting was turned on for your CastSlate casting account.", accDark, `${APP_URL}/account-settings`)}
+  </td></tr></table>
+</body></html>`;
+}
+
 // ── Casting-decision emails (shortlist + hold) ─────────────────────────────
 // These two deliberately do NOT use emailShell: the approved design is a solid
 // colour stripe, a two-line serif headline with a badge beside it and a dark
@@ -1145,7 +1227,7 @@ serve(async (req) => {
 
     const { data: profile, error: profileErr } = await supabase
       .from("profiles")
-      .select("display_name, user_type, membership_status, notification_email, notification_messages, notification_applications, notification_marketing, notification_sms, phone")
+      .select("display_name, company_name, can_post_castings, user_type, membership_status, notification_email, notification_messages, notification_applications, notification_marketing, notification_sms, phone")
       .eq("id", to_user_id)
       .maybeSingle();
 
@@ -1346,6 +1428,36 @@ serve(async (req) => {
       });
       if (!sent.ok) {
         console.error("[send-notification-email] premium welcome send error:", sent.err);
+        return json({ ok: false, results: { email: `error:${sent.err}` } });
+      }
+      return json({ ok: true, results: { email: "sent" } });
+    }
+
+    // ── "You're approved to post" (to a CD, once, fired by the profiles trigger
+    //    when an admin turns on can_post_castings). Re-checks the flag so a
+    //    stale/queued call after a revoke sends nothing.
+    if (type === "posting_approved") {
+      if (profile.can_post_castings !== true || !["cd", "producer", "studio", "creator"].includes(String(profile.user_type))) {
+        return json({ ok: false, results: { email: "skipped:not_approved_industry_account" } });
+      }
+      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      if (profile.notification_email === false) {
+        return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
+      }
+      if (!emailConfigured()) {
+        return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
+      }
+      const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
+      if (authErr || !authData?.user?.email) {
+        return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
+      }
+      const sent = await sendEmail({
+        from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
+        subject: "You're approved to post castings on CastSlate",
+        html: postingApprovedHtml(firstName, profile.company_name ?? null),
+      });
+      if (!sent.ok) {
+        console.error("[send-notification-email] posting approved send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
       }
       return json({ ok: true, results: { email: "sent" } });

@@ -20136,6 +20136,52 @@ function SelfieCamera({onShot,onCancel}){
 //     what made the full profile form feel like paperwork.
 //     Bucket, path shape and crop ratio match the profile editor's uploader, so
 //     a photo added here is indistinguishable from one added there later.
+// First-run company step for casting directors (2026-09-26). "Continue with
+// Google" creates a CD account without the signup form, so it never asked for a
+// company. This asks once, can't be skipped, and is the same component the
+// Post-a-casting modal shows (with onCancel) if a CD still has none. The DB
+// backs it up: castings_require_company refuses a CD casting without one.
+const CD_COMPANY_ROLES=["Casting Director","Producer","Director","Casting Associate","Talent Manager","Studio Executive"];
+function CompanyStep({uid,displayName,initialRole,onSaved,onCancel}){
+  const tr=useT();
+  const [name,setName]=useState("");
+  const [role,setRole]=useState(CD_COMPANY_ROLES.includes(initialRole)?initialRole:"Casting Director");
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const first=(displayName||"").trim().split(/\s+/)[0]||"";
+  const save=async(e)=>{
+    if(e&&e.preventDefault)e.preventDefault();
+    if(busy)return;
+    const n=name.trim();
+    if(n.length<2){setErr("Please enter your company or production.");return;}
+    if(!uid){setErr("Your session expired. Please log in again.");return;}
+    setBusy(true);setErr("");
+    try{
+      const {error}=await window.sb.from("profiles").update({company_name:n,company_role:role}).eq("id",uid);
+      if(error)throw error;
+      onSaved(n,role); // parent unmounts this step
+    }catch(e2){setErr((e2&&e2.message)||"That didn't save. Please try again.");setBusy(false);}
+  };
+  return(<div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}} onClick={onCancel||undefined}>
+    <form className="modal" onSubmit={save} onClick={e=>e.stopPropagation()} style={{maxWidth:430,padding:"28px 26px",margin:"auto"}}>
+      <div style={{fontSize:10.5,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--teal)",marginBottom:10,textAlign:"center"}}>{onCancel?"One quick thing":"Last step"}</div>
+      <h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.8,margin:"0 0 8px",textAlign:"center"}}>
+        {onCancel?"Add your company first":first?`Finish your casting account, ${first}`:"Finish your casting account"}
+      </h2>
+      <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.55,margin:"0 0 20px",textAlign:"center"}}>
+        Actors see who is casting. Add the company or production you cast for &mdash; you can change it later in your profile.
+      </p>
+      <div className="form-group"><label className="label">{tr('reg.cd.companyName')}</label>
+        <input className="input" autoFocus value={name} maxLength={120} placeholder="e.g. Northlight Casting" onChange={e=>{setName(e.target.value);if(err)setErr("");}}/></div>
+      <div className="form-group"><label className="label">{tr('reg.cd.role')}</label>
+        <select className="select" style={{width:"100%"}} value={role} onChange={e=>setRole(e.target.value)}>{CD_COMPANY_ROLES.map(r=><option key={r}>{r}</option>)}</select></div>
+      {err&&<div style={{margin:"2px 0 12px",fontSize:13,color:"#c0392b"}}>{err}</div>}
+      <button type="submit" className="btn-p" style={{width:"100%"}} disabled={busy}>{busy?"Saving…":onCancel?"Save and continue":"Continue"}</button>
+      {onCancel&&<button type="button" className="btn-s" style={{width:"100%",marginTop:10}} onClick={onCancel} disabled={busy}>Cancel</button>}
+    </form>
+  </div>);
+}
+
 function HeadshotStep({session,displayName,onSaved,onSkip}){
   const [pick,setPick]=useState(null);   // File|Blob passed to ImageCropModal
   const [cam,setCam]=useState(false);
@@ -20853,6 +20899,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   // Admins bypass the verification gate so they can always post.
   const isAdmin=myProfile&&(myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
   const canPost=isAdmin||(myProfile&&myProfile.can_post_castings===true&&myProfile.identity_verified===true&&myProfile.verification_status==="verified");
+  const [coName,setCoName]=useState(myProfile?.company_name||"");
   const [step,setStep]=useState(1); // 1 = form, 2 = success
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
@@ -20991,6 +21038,12 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         <button className="btn-s" onClick={onClose}>Close</button>
       </div>
     </div></div>);
+  }
+
+  // Approved, but no company on the account (older Google signups): ask for it
+  // here instead of letting the insert bounce off castings_require_company.
+  if(!isAdmin&&!String(coName||"").trim()){
+    return <CompanyStep uid={uid} displayName={myProfile?.display_name} initialRole={myProfile?.company_role} onSaved={(n)=>setCoName(n)} onCancel={onClose}/>;
   }
 
   // Common pay presets shown as one-tap chips beside the pay field
@@ -23511,6 +23564,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const save=async()=>{
     setErr("");setMsg("");
     if(containsContactInfo(f.bio)||containsContactInfo(f.credits)){showErr(CONTACT_INFO_MSG);return;}
+    if(profile?.user_type==="cd"&&!String(f.company_name||"").trim()){showErr("Please enter your company or production — actors see it on your castings.");return;}
     setSaving(true);
     try{
       const videoSlots=profile?.membership_status==="active"?PREMIUM_PLAN.videos:FREE_PLAN.videos;
@@ -42537,7 +42591,7 @@ function AdminCDVerification(){
   const needsReview=(u,notes)=>callRpc("admin_needs_review_casting_creator",{p_user_id:u.id,p_notes:notes||null},`${u.display_name||u.email} flagged for review.`,u.id);
   const reset=(u)=>{if(!confirm(`Reset verification for ${u.display_name||u.email}? This clears all verification data.`))return;callRpc("admin_reset_casting_verification",{p_user_id:u.id},`${u.display_name||u.email} reset.`,u.id);};
   // Grant posting AFTER the ID check passed (or for a recognized/test account). ID-passing alone does NOT allow posting.
-  const allowPost=(u)=>{if(!confirm(`Allow ${u.display_name||u.email} to post castings?\n\nOnly do this once their ID is verified — or if you recognize this as a test/known account.`))return;callRpc("admin_set_posting",{p_user_id:u.id,p_allow:true,p_notes:null},`${u.display_name||u.email} can now post castings.`,u.id);};
+  const allowPost=(u)=>{if(!confirm(`Allow ${u.display_name||u.email} to post castings?\n\nOnly do this once their ID is verified — or if you recognize this as a test/known account.`+(String(u.company_name||"").trim()?"":`\n\n⚠ No company name on this account. They'll be asked for one before they can post, and the "You're approved" email will say "Your casting account" instead.`)))return;callRpc("admin_set_posting",{p_user_id:u.id,p_allow:true,p_notes:null},`${u.display_name||u.email} can now post castings.`,u.id);};
   const revokePost=(u)=>{if(!confirm(`Revoke posting permission for ${u.display_name||u.email}? They will no longer be able to post castings.`))return;callRpc("admin_set_posting",{p_user_id:u.id,p_allow:false,p_notes:null},`Posting revoked for ${u.display_name||u.email}.`,u.id);};
 
   const filtered=users.filter(u=>{
@@ -48949,6 +49003,10 @@ function App(){
     setHeadshotStepActive(true);
   },[headshotStepApplies,headshotStepActive,headshotStepOff,session?.user?.id,headshotStepDayKey]);
   const showHeadshotStep=headshotStepActive&&headshotStepApplies&&headshotStepAllowedHere&&!headshotStepOff;
+  // Casting directors with no company (Google signups skip the form) — see CompanyStep.
+  const [companyStepDone,setCompanyStepDone]=useState(false);
+  const showCompanyStep=!companyStepDone&&!!session?.user?.id&&myProfile?.id===session?.user?.id&&myProfile?.user_type==="cd"&&!String(myProfile?.company_name||"").trim()
+    &&!["login","success","plan-summary","terms","privacy","unsubscribed"].includes(page);
   const dismissHeadshotStep=()=>{
     try{localStorage.setItem("sc_hs_step_skip_"+session.user.id,headshotStepDayKey);}catch(_){}
     setHeadshotStepOff(true);
@@ -49197,6 +49255,12 @@ function App(){
       <CookieConsentModal open={cookieModalOpen} onClose={()=>setCookieModalOpen(false)} onNavigate={navigate}/>
       {/* First-run headshot step — sits above every page so it owns the first
           screen a new actor sees, whichever route they landed on. */}
+      {showCompanyStep&&<CompanyStep
+        uid={session?.user?.id}
+        displayName={myProfile?.display_name}
+        initialRole={myProfile?.company_role}
+        onSaved={(n,r)=>{setCompanyStepDone(true);setMyProfile(p=>p?{...p,company_name:n,company_role:r}:p);loadProfile(session?.user?.id);}}
+      />}
       {showHeadshotStep&&<HeadshotStep
         session={session}
         displayName={myProfile?.display_name}
