@@ -4222,7 +4222,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
 /* GPU-composited marquee: transform animation runs off the main thread, so the
    slide stays perfectly smooth while every video keeps decoding/playing. */
-.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 52s linear infinite;}
+.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 60.7s linear infinite;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;outline:none;}
 /* No hover lift. Moving the card re-layered the playing video and made it (and
@@ -22068,8 +22068,12 @@ function NewsArticlePage({slug,onNavigate}){
 // ═══════════════════════════════════════════
 // CASTING ACROSS EVERY FORMAT — premium video-card carousel
 // Real production footage (Pexels + Coverr · free commercial license · no AI),
-// pre-cropped 3:4 loops served from /video-formats/loop/. Slow auto-slide (never
+// pre-cropped 3:4 clips served from /video-formats/reel2/. Slow auto-slide (never
 // pauses on hover); every clip autoplays muted/looping from page load.
+// reel2 (2026-09-25): Feature Films / Theater / Student Films use the full-length
+// Pexels originals (8089117 37s, 9419426 22s, 9810800 18s) instead of 8s trims;
+// Theater, Student, Commercials, Voiceover, Indie and Modeling are stabilized
+// (ffmpeg vidstab, smoothing 40). Modeling is the owner-supplied 30s clip.
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
@@ -22077,6 +22081,7 @@ const FORMAT_CARDS=[
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:"megaphone"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student",icon:"cap"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:"mic"},
+  {cat:"Modeling",desc:"Print. Editorial. Runway.",file:"modeling",icon:"camera"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
 ];
 const FORMAT_ICONS={
@@ -22084,6 +22089,7 @@ const FORMAT_ICONS={
   masks:'<path d="M3 4s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0V4Z"/><path d="M13 8s1.5 1 4 1 4-1 4-1v6a4 4 0 0 1-8 0"/><path d="M5 8.5h.01M9 8.5h.01M15 12h.01M19 12h.01"/>',
   megaphone:'<path d="M3 11v2a1 1 0 0 0 1 1h2l3 4 .5-.2V7.2L9 7H6a1 1 0 0 0-1 1"/><path d="M9 7l9-4v18l-9-4"/><path d="M18 8a3 3 0 0 1 0 8"/>',
   cap:'<path d="M12 4 2 9l10 5 10-5-10-5Z"/><path d="M6 11v4c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4"/><path d="M22 9v4"/>',
+  camera:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/>',
   mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
   star:'<path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/>',
 };
@@ -22181,8 +22187,8 @@ function FormatReel(){
   const reelRef=React.useRef(null);
   React.useEffect(function(){
     const reel=reelRef.current; if(!reel) return;
-    // Motion is pure CSS (GPU compositor) and never pauses. Every clip is one
-    // short 3:4 loop (~0.45-1.3MB, 4.4MB for all six) that starts at page load.
+    // Motion is pure CSS (GPU compositor) and never pauses. Every clip is a
+    // 3:4 loop (0.3-2.7MB, 9.8MB for all seven) that starts at page load.
     const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
     const offs=vids.map(csArmLoopVideo);
     // The second copy of the row (needed for the seamless wrap) reuses the same
@@ -22201,7 +22207,7 @@ function FormatReel(){
     return function(){ offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
-  // Clips live in /video-formats/loop/: one cycle of each shot, pre-cropped to
+  // Clips live in /video-formats/reel2/ (was loop/): pre-cropped to
   // the card's 3:4 frame at full source resolution. The old files were the same
   // 8s shot repeated to 60s at 16:9 (25MB total, most of it cropped away).
   // New folder = new URLs, so nobody is served the old immutable-cached files.
@@ -22209,9 +22215,9 @@ function FormatReel(){
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
         <div className="fmt-track">
-          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/loop/'+c.file+'.mp4'; return (
+          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel2/'+c.file+'.mp4'; return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
-              <img className="fmt-poster" src={'/video-formats/loop/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+              <img className="fmt-poster" src={'/video-formats/reel2/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
               <video className="fmt-video" src={first?url:undefined} data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
