@@ -6970,6 +6970,15 @@ const STRIPE_ACTOR_LINK = null;             // TODO: "https://buy.stripe.com/you
 const STRIPE_CD_LINK    = null;             // TODO: "https://buy.stripe.com/your_cd_link"
 // ──────────────────────────────────────────────────────────────────────────
 
+// Signup "email already registered" message, by HOW the address is registered
+// (public.email_signup_status). A Google account has no password and no pending
+// confirmation, so offering "Resend verification email" there was a dead end;
+// a confirmed email account just needs to log in.
+function dupEmailMsg(kind){
+  if(kind==="oauth")return "This email is already registered with Google. Use \"Continue with Google\" above to sign in.";
+  if(kind==="confirmed")return "An account with this email already exists. Log in instead — or use \"Forgot password\" on the login page if you need to reset it.";
+  return "An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.";
+}
 function RegisterTalent({onNavigate}){
   const tr=useT();
   const [step,setStep]=useState(1);
@@ -6977,6 +6986,7 @@ function RegisterTalent({onNavigate}){
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
   const [dupEmail,setDupEmail]=useState(false); // true when the email is already registered → show Resend / Login
+  const [dupKind,setDupKind]=useState(""); // email_signup_status: oauth | confirmed | unconfirmed
   const [resentOk,setResentOk]=useState(false);
   const [resendCooldown,setResendCooldown]=useState(0);
   const submittingRef=useRef(false); // blocks double-click races that fire two signUp calls
@@ -7000,7 +7010,7 @@ function RegisterTalent({onNavigate}){
   const createAccount=async()=>{
     if(submittingRef.current)return; // prevent double-click race
     submittingRef.current=true;
-    setErr("");setDupEmail(false);setResentOk(false);setLoading(true);
+    setErr("");setDupEmail(false);setDupKind("");setResentOk(false);setLoading(true);
     try{
       const display_name=(f.first+" "+f.last).trim();
       const email=f.email.trim().toLowerCase();
@@ -7041,10 +7051,10 @@ function RegisterTalent({onNavigate}){
       // Supabase v2 can silently resend a confirmation email to an existing
       // confirmed address instead of returning an error — this catches it first.
       try{
-        const {data:emailTaken}=await window.sb.rpc("check_email_exists",{p_email:email});
-        if(emailTaken===true){
-          setDupEmail(true);
-          setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+        const {data:signupStatus}=await window.sb.rpc("email_signup_status",{p_email:email});
+        if(signupStatus&&signupStatus!=="none"){
+          setDupEmail(true);setDupKind(signupStatus);
+          setErr(dupEmailMsg(signupStatus));
           window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
         }
       }catch(_){}// RPC failure → fall through; signUp itself has error handling
@@ -7147,7 +7157,7 @@ function RegisterTalent({onNavigate}){
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
-          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}>{dupKind==="oauth"?<button type="button" className="btn-s btn-sm" onClick={()=>handleSocialAuth("google")}>Continue with Google</button>:dupKind==="confirmed"?null:<button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button>}<button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
           <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
@@ -7162,7 +7172,7 @@ function RegisterTalent({onNavigate}){
   return(
     <div className="page"><div style={{maxWidth:640,margin:"0 auto"}}>
       <div style={{display:"flex",gap:8,marginBottom:32}}>{[1,2,3].map(s=><div key={s} style={{flex:1,height:4,borderRadius:2,background:s<=step?"var(--acc)":"var(--s3)",transition:"background .3s"}}/>)}</div>
-      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}>{dupKind==="oauth"?<button type="button" className="btn-s btn-sm" onClick={()=>handleSocialAuth("google")}>Continue with Google</button>:dupKind==="confirmed"?null:<button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button>}<button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
 
       {step===2&&<><h3 style={{fontSize:18,fontWeight:700,marginBottom:20}}>2 / 3 — {tr('reg.t.step2')}</h3>
         <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.gender')}</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">Select</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div><div className="form-group"><label className="label">{tr('reg.t.age')} <span style={{color:"var(--red)"}}>*</span></label><input className="input" type="number" placeholder={tr('reg.t.age')} value={f.age} onChange={e=>up("age",e.target.value)}/>
@@ -7226,6 +7236,7 @@ function RegisterCD({onNavigate}){
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
   const [dupEmail,setDupEmail]=useState(false);
+  const [dupKind,setDupKind]=useState(""); // email_signup_status: oauth | confirmed | unconfirmed
   const [resentOk,setResentOk]=useState(false);
   const [resendCooldown,setResendCooldown]=useState(0);
   const submittingRef=useRef(false);
@@ -7244,7 +7255,7 @@ function RegisterCD({onNavigate}){
   };
   const submit=async()=>{
     if(submittingRef.current)return;
-    setErr("");setDupEmail(false);setResentOk(false);
+    setErr("");setDupEmail(false);setDupKind("");setResentOk(false);
     if(!f.first||!f.last){setErr("Please enter your first and last name.");return;}
     if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email.");return;}
     if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return;}
@@ -7268,10 +7279,10 @@ function RegisterCD({onNavigate}){
       // Pre-check: query auth.users before calling signUp to prevent Supabase
       // v2 from silently sending a confirmation email to an existing address.
       try{
-        const {data:emailTaken}=await window.sb.rpc("check_email_exists",{p_email:email});
-        if(emailTaken===true){
-          setDupEmail(true);
-          setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
+        const {data:signupStatus}=await window.sb.rpc("email_signup_status",{p_email:email});
+        if(signupStatus&&signupStatus!=="none"){
+          setDupEmail(true);setDupKind(signupStatus);
+          setErr(dupEmailMsg(signupStatus));
           window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
         }
       }catch(_){}
@@ -7370,7 +7381,7 @@ function RegisterCD({onNavigate}){
           <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0",color:"var(--t3)",fontSize:12}}>
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
-          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button><button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
+          {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}>{dupKind==="oauth"?<button type="button" className="btn-s btn-sm" onClick={()=>handleSocialAuth("google")}>Continue with Google</button>:dupKind==="confirmed"?null:<button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button>}<button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.firstName')}</label><input className="input" placeholder={tr('reg.cd.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.lastName')}</label><input className="input" placeholder={tr('reg.cd.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
           <div className="form-group"><label className="label">{tr('reg.cd.email')}</label><input className="input" type="email" placeholder="you@company.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.cd.password')}</label><input className="input" type="password" placeholder={tr('reg.cd.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
