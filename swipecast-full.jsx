@@ -3231,6 +3231,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-main{padding:24px 26px;display:grid;gap:10px;align-content:start;min-width:0;}
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
 .b5-pickpill{overflow:hidden;}
+.b5-card.b5-pick{border-color:#D8CEB8;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;}
@@ -14657,9 +14658,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
-               way out. A pick no longer gets its own shadow: the band is the
-               whole mark, and a gold lift underneath it was a second one. */
-            const restShadow="0 1px 4px rgba(26,26,46,0.05)";
+               way out. A pick gets a compact bottom-right shadow (owner-approved
+               2026-09-26): tight, one direction, no spread — grounded, not a glow. */
+            const restShadow=isFeat?"2px 3px 3px -2px rgba(26,26,46,.42),1px 1px 0 rgba(26,26,46,.06)":"0 1px 4px rgba(26,26,46,0.05)";
             /* B5 card (owner-approved 2026-09-24): the project on the left — title
                with one type tag, one grey facts line, the summary and the "See all
                roles" button — and the roles on the right, each with a save bookmark
