@@ -99,7 +99,7 @@ create or replace function public.process_casting_live_emails()
  set search_path to 'public'
 as $function$
 declare
-  r record;
+  r public.castings%rowtype;   -- a plain record cannot be cast to castings
   n int := 0;
 begin
   for r in
@@ -112,7 +112,7 @@ begin
      limit 50
      for update skip locked
   loop
-    if public.casting_is_browse_visible(r::public.castings) then
+    if public.casting_is_browse_visible(r) then
       begin
         perform public.send_casting_live_email(r.id, r.cd_id);
         n := n + 1;
