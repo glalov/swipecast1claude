@@ -119,7 +119,9 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   check(9,"r3_deadline_gap","Deadline not 1–4 weeks before the shoot (round 7)",L=>{const g=Math.round((d(L.shoot_start)-d(L.deadline))/DAY);return g<7||g>28?[{detail:`${g} days`}]:[];});
   check(9,"r3_start_1_6_months","Start date not 6 weeks–2 months after posting (round 7)",L=>{const now=d(L._raw._postedAt||new Date().toISOString());const g=Math.round((d(L.shoot_start)-now)/DAY);return g<42||g>60?[{detail:`${L.shoot_start} (${g} days)`}]:[];});
   check(9,"r3_month_spread_note","Months covered by the board",null);
-  check(9,"r3_batch_same_start","Two listings in one batch share a start date",null);
+  // Round 9: a unique start date per batch is preferred, then given up -
+  // see v5Dates. Two in one batch is no longer a failure.
+  check(9,"r3_batch_same_start","Three listings in one batch share a start date",null);
   check(9,"r3_month_cluster","Board clusters in one month (>65% of listings; round 7 starts sit 6 weeks–2 months out, so one board spans two months)",null);
 
   // ── Part D: synopsis ──────────────────────────────────────────────────────

@@ -671,7 +671,11 @@ function inferRoleType(name,description){
 }
 
 // Rank used to order roles within a casting: lead/big roles first, background last.
-const ROLE_TYPE_RANK={Lead:0,"Series Regular":1,Principal:2,Supporting:3,"Co-Star":4,Recurring:5,"Guest Star":6,Featured:7,"Real People":7,"Content Creators":7,Models:7,Host:8,Voiceover:9,Singer:10,Dancer:11,Understudy:12,Swing:13,Ensemble:14,"Day Player":15,"Stand-In":16,"Photo Double":17,"Body Double":18,"Stunt Performer":19,"Featured Background":20,Background:21};
+// Round 9: the order a board lists parts in - Lead, Principal, Supporting,
+// Featured, Day Player, Voiceover, then background and doubles. Day Player
+// used to sit below Ensemble and Voiceover above it, so a one-day speaking
+// part was listed under the chorus.
+const ROLE_TYPE_RANK={Lead:0,"Series Regular":1,Principal:2,Supporting:3,"Co-Star":4,Recurring:5,"Guest Star":6,Featured:7,"Real People":7,"Content Creators":7,Models:7,Host:8,"Day Player":9,Voiceover:10,Singer:11,Dancer:12,Ensemble:13,Understudy:14,Swing:15,"Stand-In":16,"Photo Double":17,"Body Double":18,"Stunt Performer":19,"Featured Background":20,Background:21};
 function roleTypeRank(t){const r=ROLE_TYPE_RANK[t||"Supporting"];return r===undefined?12:r;}
 // A role field counts as "open to anyone" when it's blank, "any", "all", or already
 // phrased as "any …". We turn those into explicit, non-vague labels so a casting that
@@ -934,6 +938,15 @@ function parseRoleRate(s){
 // index map (fetched separately) always order identically.
 function compareRolesByType(aType,aId,bType,bId){
   return roleTypeRank(aType)-roleTypeRank(bType) || String(aId).localeCompare(String(bId));
+}
+// Same ranking, but the bigger part goes first inside a rank: two Supporting
+// roles are not equal when one of them works four days and the other one.
+function roleDays(r){const n=Number(r&&(r.est_days!==undefined?r.est_days:r.estDays));return isFinite(n)&&n>0?n:0;}
+function compareRoles(a,b){
+  const at=a&&(a.type||a.role_type),bt=b&&(b.type||b.role_type);
+  return roleTypeRank(at)-roleTypeRank(bt)
+      || roleDays(b)-roleDays(a)
+      || String(a&&a.id).localeCompare(String(b&&b.id));
 }
 
 // Name to show for the OTHER party in a message thread. For admin-generated
@@ -12046,7 +12059,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     onAutoApplyConsumed?.();
     if(casting?.status==="archived"||castingIsExpired(casting))return;
     // Same order the page lists its roles in (and realRoleIds is keyed by).
-    const sorted=(casting?.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
+    const sorted=(casting?.roles||[]).slice().sort(compareRoles);
     let i=-1;
     if(autoApplyRole.id){const hit=Object.entries(realRoleIds).find(([,rid])=>rid===autoApplyRole.id);if(hit)i=parseInt(hit[0],10);}
     if(i<0&&Number.isInteger(autoApplyRole.idx))i=autoApplyRole.idx;
@@ -12072,7 +12085,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(isDbCasting){
       const {data:roles}=await window.sb.from("roles").select("id,name,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
       const map={};const instrMap={};
-      (roles||[]).slice().sort((a,b)=>compareRolesByType(a.role_type,a.id,b.role_type,b.id)).forEach((r,idx)=>{
+      (roles||[]).slice().sort(compareRoles).forEach((r,idx)=>{
         map[idx]=r.id;
         instrMap[r.id]={sides_pdf_url:r.sides_pdf_url||"",direction_notes:r.direction_notes||"",slate_instructions:r.slate_instructions||"",video_length_limit:r.video_length_limit||60,audition_deadline:r.audition_deadline||"",wardrobe_notes:r.wardrobe_notes||"",submission_type:r.submission_type||"both",allow_multiple_takes:r.allow_multiple_takes!==false,official_takes_allowed:r.official_takes_allowed||2,submission_mode:r.submission_mode||"best_take"};
       });
@@ -12384,7 +12397,7 @@ Free submission used
            long rate was absent from the top of the page entirely. ── */}
     {(()=>{
       const payText=c.rate||c.pay;
-      const sortedRoles=(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
+      const sortedRoles=(c.roles||[]).slice().sort(compareRoles);
       const live=!applicationsClosed;
       const canApply=!applicationsClosed&&sortedRoles.length>0;
       const verified=c.is_admin_created?(c.admin_verified===true):(cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified");
@@ -12486,7 +12499,7 @@ Free submission used
         </div>
       </div>
       {(()=>{
-        const sorted=(c.roles||[]).slice().sort((a,b)=>compareRolesByType(a.type,a.id,b.type,b.id));
+        const sorted=(c.roles||[]).slice().sort(compareRoles);
         if(!sorted.length)return null;
         const metaFor=(i)=>{
           const roleId=realRoleIds[i];
@@ -30683,7 +30696,41 @@ const ACG = (()=>{
     const m=String(band||"").match(/(\d+)\s*-\s*(\d+)/);
     return !!m&&age>=+m[1]&&age<=+m[2];
   }
-  function seedAge(group,usedLocal,stated){
+  // ── Round 9 section 4: the age spread of the whole board ────────────────
+  // Targets across all roles: under 18 ~10%, 18-24 ~28%, 25-34 ~30%, 35-44
+  // ~15%, 45-59 ~11%, 60+ ~6%. The bands themselves are unchanged - this only
+  // decides which band a slot that could go either way ends up in, so a story
+  // about retirees still casts retirees.
+  const R9_AGE_MIX={u18:0.10,a18:0.28,a25:0.30,a35:0.15,a45:0.11,a60:0.06};
+  function r9AgeBucket(range){
+    const m=String(range||"").match(/(\d+)\s*-\s*(\d+)/);
+    if(!m)return null;
+    const mid=(+m[1]+ +m[2])/2;
+    return +m[1]<18?"u18":mid<25?"a18":mid<35?"a25":mid<45?"a35":mid<60?"a45":"a60";
+  }
+  function r9AgeCounts(h,res){
+    const o={};Object.keys(R9_AGE_MIX).forEach(k=>{o[k]=((h.r9Age&&h.r9Age[k])||0)+((res.r9Age&&res.r9Age[k])||0);});
+    return o;
+  }
+  function r9AgeTally(res,range){
+    const b=r9AgeBucket(range);if(!b)return;
+    res.r9Age=res.r9Age||{};res.r9Age[b]=(res.r9Age[b]||0)+1;
+  }
+  // Of the bands on offer for this slot, prefer the one the board is short of.
+  function r9AgePrefer(pool,h,res){
+    if(!pool||pool.length<2)return pool;
+    const counts=r9AgeCounts(h,res);
+    const total=Object.values(counts).reduce((a,b)=>a+b,0)+1;
+    const score=a=>{
+      const b=r9AgeBucket(a);if(!b)return 0;
+      return (R9_AGE_MIX[b]*total)-(counts[b]||0);
+    };
+    const best=pool.slice().sort((x,y)=>score(y)-score(x));
+    // Not a hard sort: the shortfall leads, with a little noise so a board
+    // does not fill with one band.
+    return Math.random()<0.75?best:cgShuffle(pool);
+  }
+  function seedAge(group,usedLocal,stated,h,res){
     const bank=SEED_AGE_BANDS[group]||SEED_AGE_BANDS.adult;
     let pool=bank;
     if(stated){
@@ -30694,8 +30741,10 @@ const ACG = (()=>{
       if(fits.length)pool=fits;
     }
     const open=pool.filter(a=>!usedLocal.has(a));
-    const age=pick(open.length?open:pool);
+    const ordered=r9AgePrefer(open.length?open:pool,h||{},res||{});
+    const age=ordered[0]||pick(open.length?open:pool);
     usedLocal.add(age);
+    if(res)r9AgeTally(res,age);
     return age;
   }
   // Genders: slots the story fixes stay fixed, everything else is varied — with
@@ -31142,7 +31191,7 @@ const ACG = (()=>{
         _frameBase:frameIdx,
         _frameSlot:i,
         gender:genders[i],
-        age_range:seedAge(youngerGroup(s.a||"adult",s),usedAges,sketchAge(s.x)),
+        age_range:seedAge(youngerGroup(s.a||"adult",s),usedAges,sketchAge(s.x),h,res),
         // v4: "Any ethnicity" unless the story makes it matter.
         ethnicity:OPEN_ETHNICITY,
         pay:noFee?pick(["Copy, credit and meals","Unpaid — copy, credit and meals","No fee. Copy, credit, meals"]):rolePayString(amount,rank,track,type,days),
@@ -32430,333 +32479,723 @@ const ACG = (()=>{
   // fill in behind them - so the board keeps its best-written stories.
   const R9_FRAMES=[
     {k:"lastshift",genre:"drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"cook",s:"the line cook",a:"adult",p:"a line cook"},
-       {k:"manager",s:"the manager",a:"mature",p:"a manager who has run the place for eleven years"},
-       {k:"newkid",s:"the new hire",a:"youngAdult",p:"a new hire three weeks into the job"},
-       {k:"owner",s:"the owner",a:"senior",p:"an owner signing the last of the paperwork"},
-       {k:"driver",s:"the delivery driver",a:"midCareer",p:"a delivery driver on his usual route"},
-       {k:"regular",s:"the regular",a:"senior",p:"a customer who has come in every morning for years"}],
-     place:[
-       {k:"diner",short:"the diner",w:["a 24-hour diner on a state road","a corner diner with the stools still bolted down","a diner with half the booths already stripped out"]},
-       {k:"hardware",short:"the hardware store",w:["a family hardware store on a main street","a hardware store with the shelves half empty","a neighborhood hardware store under a faded awning"]},
-       {k:"laundromat",short:"the laundromat",w:["a laundromat that never closes","a laundromat with three machines still working","a corner laundromat lit like an aquarium"]},
-       {k:"bowling",short:"the bowling alley",w:["a bowling alley with two lanes still open","an old bowling alley with the league boards still up","a bowling alley being sold by the square foot"]}],
+     who:[{k:"cook",s:"the line cook",a:"adult",p:"a line cook"},{k:"manager",s:"the manager",a:"mature",p:"a manager of eleven years"},{k:"newkid",s:"the new hire",a:"youngAdult",p:"a new hire three weeks in"},{k:"owner",s:"the owner",a:"senior",p:"an owner signing the last of the paperwork"}],
+     place:[{k:"diner",short:"the diner",w:["a 24-hour diner on a state road","a corner diner with the stools still bolted down","a diner with half the booths stripped out"]},{k:"hardware",short:"the hardware store",w:["a family hardware store on a main street","a hardware store with the shelves half empty","a hardware store under a faded awning"]},{k:"bowling",short:"the bowling alley",w:["a bowling alley with two lanes still open","an old bowling alley with the league boards up","a bowling alley being sold by the square foot"]}],
+     ttl:(P)=>[`Last Orders at ${P}`,`Closing Time`,`The Final Week at ${P}`],
      p:(w,pl)=>`${w.p} works the last week of ${pl.short} before it closes for good`,
-     turns:[
-       (P,J)=>`the final day at ${P} runs long and nobody wants to be the one who turns the lights off`,
-       (P,J)=>`a buyer walks ${P} with a clipboard while the staff are still working`,
-       (P,J)=>`the last shift at ${P} turns into a party none of them planned`,
-       (P,J)=>`an argument breaks out over the smallest object in ${P}`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Carries the week. Keeps working at a normal pace while everyone around them treats it as an ending. The performance lives in what they refuse to say out loud."},
-       {s:"the staffer",r:"Supporting",a:"youngAdult",x:"Younger, louder, already has another job lined up and feels guilty about how little this hurts."},
-       {s:"the one who stays late",r:"Supporting",a:"mature",x:"Has worked here longest. Takes inventory of things nobody asked them to count."},
-       {s:"the buyer",r:"Day Player",a:"midCareer",x:"Polite, efficient, walks the room measuring it. Not a villain, and should not be played as one."}]},
+     turns:[(P,J)=>`the final day at ${P} runs long and nobody wants to turn the lights off`,(P,J)=>`a buyer walks ${P} with a clipboard while the staff are still working`,(P,J)=>`the last shift at ${P} turns into a party none of them planned`,(P,J)=>`an argument breaks out over the smallest object in ${P}`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Has worked at ${pl.short} long enough to do it without looking. Treats the last week as an ordinary week, which is the hardest thing in the story to play.`,`Runs ${pl.short} out of habit now. Says the closure does not bother them, and is the only one who cannot stop cleaning.`]},
+       {s:"the staffer",r:"Supporting",a:"youngAdult",xs:[`Younger than everyone at ${pl.short} and already has another job lined up. Feels guilty about how little this hurts.`,`Took the shift at ${pl.short} for the summer and stayed two years. Says the wrong thing at the right moment, twice.`]},
+       {s:"the regular",r:"Supporting",a:"senior",xs:[`Has eaten at ${pl.short} every morning for years and has nowhere to go after Friday. Never asks anyone to make a fuss.`,`Knows every name behind the counter at ${pl.short}. Brings something in on the last day that nobody knows what to do with.`]},
+       {s:"the buyer",r:"Day Player",a:"midCareer",xs:[`Measures ${pl.short} while people are still working in it. Polite, efficient, and not a villain.`,`Arrives at ${pl.short} with a tape measure and a schedule. Kind to everyone and immovable about the date.`]}]},
 
     {k:"return",genre:"drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"daughter",s:"the daughter",a:"adult",p:"a woman who left at eighteen and has not been back since"},
-       {k:"son",s:"the son",a:"adult",p:"a man who moved three states away and stopped answering calls"},
-       {k:"teacher",s:"the teacher",a:"midCareer",p:"a teacher who took a job in the town she grew up in"},
-       {k:"medic",s:"the paramedic",a:"adult",p:"a paramedic transferred back to the county she is from"},
-       {k:"player",s:"the former athlete",a:"youngAdult",p:"a college athlete home for a season he did not plan on"},
-       {k:"musician",s:"the musician",a:"adult",p:"a musician home between tours with no money left"}],
-     place:[
-       {k:"house",short:"the family house",w:["a family house with the furniture under sheets","a two-bedroom house at the end of a dead-end street","a house that has not been cleaned out in four years"]},
-       {k:"church",short:"the church hall",w:["a church hall with folding tables along one wall","a parish hall that smells like coffee and floor wax","a church basement used for everything in town"]},
-       {k:"garage",short:"the garage",w:["a two-bay repair garage off the highway","a garage with one lift and a radio nobody turns off","a repair shop behind a chain-link fence"]},
-       {k:"motel",short:"the motel",w:["a twelve-room motel with a vacancy sign","a roadside motel with a pool that has been empty for years","a motel where half the rooms are rented by the month"]}],
-     p:(w,pl)=>`${w.p} comes back to settle something at ${pl.short} and finds the place is not waiting for her`,
-     turns:[
-       (P,J)=>`the person she came to see will not talk about the one thing she came to ${P} for`,
-       (P,J)=>`she is offered the life she left, and ${P} is better than she remembered`,
-       (P,J)=>`someone else has been keeping ${P} running and expects to be thanked for it`,
-       (P,J)=>`the family has been telling a different version of why she left ${P}`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"The whole story is on their face. Has rehearsed this visit for years and gets none of the conversations they prepared for."},
-       {s:"the one who stayed",r:"Lead",a:"midCareer",x:"Never left. Not bitter about it, which is harder to play than bitter. Runs the room without seeming to."},
-       {s:"the parent",r:"Supporting",a:"senior",x:"Remembers a version of events nobody else recognizes. Warm, stubborn, tired."},
-       {s:"the neighbor",r:"Day Player",a:"mature",x:"Knows everything and says it kindly, which is worse."}]},
+     who:[{k:"daughter",s:"the daughter",a:"adult",p:"a woman who left at eighteen and has not been back"},{k:"son",s:"the son",a:"adult",p:"a man who moved three states away and stopped calling"},{k:"teacher",s:"the teacher",a:"midCareer",p:"a teacher who took a job in the town she grew up in"},{k:"player",s:"the former athlete",a:"youngAdult",p:"a college athlete home for a season he did not plan on"}],
+     place:[{k:"house",short:"the family house",w:["a family house with the furniture under sheets","a two-bedroom house at the end of a dead-end street","a house nobody has cleared out in four years"]},{k:"garage",short:"the garage",w:["a two-bay repair garage off the highway","a garage with one lift and a radio nobody turns off","a repair shop behind a chain-link fence"]},{k:"motel",short:"the motel",w:["a twelve-room motel with a vacancy sign","a roadside motel with an empty pool","a motel where half the rooms are rented by the month"]}],
+     ttl:(P)=>[`Back at ${P}`,`The Long Way Home`,`Nobody Waited`],
+     p:(w,pl)=>`${w.p} comes back to settle something at ${pl.short} and finds the place did not wait`,
+     turns:[(P,J)=>`the person they came to see will not discuss the one thing they came to ${P} for`,(P,J)=>`they are offered the life they left, and ${P} is better than they remembered`,(P,J)=>`someone else has kept ${P} running and expects to be thanked for it`,(P,J)=>`the family has been telling a different version of why they left ${P}`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Rehearsed this visit to ${pl.short} for years and gets none of the conversations they prepared. Everything lands on the face before it reaches the mouth.`,`Came back to ${pl.short} for two days with a return ticket they keep touching. Polite to people who hurt them, which reads as strength until it does not.`]},
+       {s:"the one who stayed",r:"Lead",a:"midCareer",xs:[`Never left ${pl.short} and is not bitter about it, which is harder to play than bitter. Runs the room without appearing to.`,`Has kept ${pl.short} going alone. Welcomes them home and keeps a tally at the same time.`]},
+       {s:"the parent",r:"Supporting",a:"senior",xs:[`Remembers a version of ${pl.short} nobody else recognises. Warm, stubborn, and tired in a way they will not admit.`,`Still keeps their room at ${pl.short} the way it was. Talks about everything except the reason they left.`]},
+       {s:"the neighbour",r:"Day Player",a:"mature",xs:[`Knows everything that happened at ${pl.short} and says it kindly, which is worse. One scene, no malice.`,`Catches them outside ${pl.short} and asks the question everyone else avoided.`]}]},
 
     {k:"deadline",genre:"comedy drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"baker",s:"the baker",a:"adult",p:"a baker with one oven and a bad inspection notice"},
-       {k:"barber",s:"the barber",a:"mature",p:"a barber whose lease is up in nine days"},
-       {k:"florist",s:"the florist",a:"midCareer",p:"a florist who took an order she cannot fill"},
-       {k:"mechanic",s:"the mechanic",a:"adult",p:"a mechanic holding a car he cannot finish"},
-       {k:"tailor",s:"the tailor",a:"senior",p:"a tailor with more work than hands"},
-       {k:"printer",s:"the print-shop owner",a:"midCareer",p:"a print-shop owner who promised a job by Friday"}],
-     place:[
-       {k:"bakery",short:"the bakery",w:["a bakery with one oven and a window onto the street","a storefront bakery with the flour on everything","a bakery that opens at four in the morning"]},
-       {k:"barbershop",short:"the barbershop",w:["a two-chair barbershop with a TV nobody watches","a barbershop that has been in the same window for thirty years","a barbershop where everyone stays after their cut"]},
-       {k:"shop",short:"the repair shop",w:["a repair shop packed to the ceiling","a workshop with a bell over the door","a shop where the work is stacked in the order it came in"]},
-       {k:"market",short:"the market",w:["a corner market with a butcher counter in back","a market squeezed between two apartment buildings","a corner store with a hand-painted sign"]}],
+     who:[{k:"baker",s:"the baker",a:"adult",p:"a baker with one oven and a bad inspection notice"},{k:"barber",s:"the barber",a:"mature",p:"a barber whose lease is up in nine days"},{k:"florist",s:"the florist",a:"midCareer",p:"a florist who took an order she cannot fill"},{k:"printer",s:"the print-shop owner",a:"midCareer",p:"a print-shop owner who promised a job by Friday"}],
+     place:[{k:"bakery",short:"the bakery",w:["a bakery with one oven and a window onto the street","a storefront bakery with flour on everything","a bakery that opens at four in the morning"]},{k:"barbershop",short:"the barbershop",w:["a two-chair barbershop with a television nobody watches","a barbershop in the same window for thirty years","a barbershop where everyone stays after their cut"]},{k:"shop",short:"the shop",w:["a repair shop packed to the ceiling","a workshop with a bell over the door","a shop where the work is stacked in the order it arrived"]}],
+     ttl:(P)=>[`One Week at ${P}`,`Nine Days`,`The Order Book`],
      p:(w,pl)=>`${w.p} has to get ${pl.short} through one impossible week without losing the people who work there`,
-     turns:[
-       (P,J)=>`the only person who could save ${P} is the one they fired last year`,
-       (P,J)=>`the help that turns up at ${P} is enthusiastic and completely unqualified`,
-       (P,J)=>`an offer arrives that solves the money and costs them ${P}`,
-       (P,J)=>`the deadline moves up and nobody tells the ${J} until that morning`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Funny under pressure and terrible at accepting help. Comedy timing required, but the panic has to be real underneath it."},
-       {s:"the one who works there",r:"Supporting",a:"youngAdult",x:"Fast, capable, treated as furniture. The audience should be waiting for them to speak up."},
-       {s:"the one who comes back",r:"Supporting",a:"midCareer",x:"Left on bad terms. Better at the work than the lead and careful never to say so."},
-       {s:"the inspector",r:"Day Player",a:"mature",x:"Doing a job. Dry, exact, and not interested in anyone's story."}]},
+     turns:[(P,J)=>`the only person who could save ${P} is the one they fired last year`,(P,J)=>`the help that turns up at ${P} is enthusiastic and completely unqualified`,(P,J)=>`an offer arrives that solves the money and costs them ${P}`,(P,J)=>`the deadline moves up and nobody tells the ${J} until that morning`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Funny under pressure and terrible at accepting help. The panic underneath ${pl.short} has to be real or the comedy does not work.`,`Has run ${pl.short} on no sleep for a week and is still the most capable person in it. Says no to help four times and means it less each time.`]},
+       {s:"the assistant",r:"Supporting",a:"youngAdult",xs:[`Faster than anyone at ${pl.short} and treated like furniture. The audience should be waiting for them to speak up.`,`Does half the work at ${pl.short} and gets none of the credit. Keeps a list of everything that needs fixing.`]},
+       {s:"the one who comes back",r:"Supporting",a:"midCareer",xs:[`Left ${pl.short} on bad terms and is better at the work than the lead. Careful never to say so out loud.`,`Walks back into ${pl.short} like no time passed. Knows exactly which machine is broken before anyone tells them.`]},
+       {s:"the inspector",r:"Day Player",a:"mature",xs:[`Dry, exact, and not interested in anyone's story about ${pl.short}. Doing a job, not making a point.`,`Arrives at ${pl.short} with a clipboard and a list. Gives one piece of advice nobody asked for.`]}]},
 
     {k:"lostfound",genre:"drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"cleaner",s:"the cleaner",a:"mature",p:"a night cleaner who finds something a guest left behind"},
-       {k:"cabbie",s:"the driver",a:"midCareer",p:"a driver who finds a bag in his back seat"},
-       {k:"clerk",s:"the desk clerk",a:"youngAdult",p:"a desk clerk holding a package nobody claims"},
-       {k:"super",s:"the building super",a:"mature",p:"a building super clearing out an apartment"},
-       {k:"sorter",s:"the sorter",a:"adult",p:"a woman who sorts what people leave on the train"},
-       {k:"student",s:"the student",a:"teen",p:"a teenager who finds an envelope of cash"}],
-     place:[
-       {k:"hotel",short:"the hotel",w:["a twenty-room hotel off a commercial strip","an old hotel with a switchboard still on the wall","a hotel that mostly takes long-stay guests"]},
-       {k:"depot",short:"the depot",w:["a bus depot at the end of the line","a depot waiting room with the benches bolted down","a bus station open through the night"]},
-       {k:"building",short:"the building",w:["a six-floor walk-up with a basement full of storage","a pre-war building with one working elevator","an apartment building where everyone knows the super"]},
-       {k:"office",short:"the lost-property office",w:["a lost-property office behind a station","a back room with everything shelved and tagged","a counter with a bell and a long window"]}],
-     p:(w,pl)=>`${w.p} at ${pl.short} and has a week to decide whether to give it back`,
-     turns:[
-       (P,J)=>`the owner turns up at ${P} and is nobody anyone expected`,
-       (P,J)=>`what is inside answers a question about someone the ${J} loves`,
-       (P,J)=>`giving it back would cost the ${J} the one thing they have been saving for`,
-       (P,J)=>`somebody else at ${P} already knows, and wants a share`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Mostly alone on screen. The decision has to read without dialogue, in what they do with their hands."},
-       {s:"the one who knows",r:"Supporting",a:"adult",x:"Saw it happen. Friendly, and the friendliness is the pressure."},
-       {s:"the owner",r:"Supporting",a:"midCareer",x:"Arrives late in the story. Grateful and slightly wrong about what happened."},
-       {s:"the family member",r:"Day Player",a:"senior",x:"Needs the money more than the lead does and has never once asked for it."}]},
+     who:[{k:"cleaner",s:"the night cleaner",a:"mature",p:"a night cleaner who finds something a guest left"},{k:"cabbie",s:"the driver",a:"midCareer",p:"a driver who finds a bag in his back seat"},{k:"clerk",s:"the desk clerk",a:"youngAdult",p:"a desk clerk holding a package nobody claims"},{k:"super",s:"the building super",a:"mature",p:"a building super clearing out an apartment"}],
+     place:[{k:"hotel",short:"the hotel",w:["a twenty-room hotel off a commercial strip","an old hotel with a switchboard still on the wall","a hotel that mostly takes long-stay guests"]},{k:"depot",short:"the depot",w:["a bus depot at the end of the line","a depot waiting room with the benches bolted down","a bus station open through the night"]},{k:"building",short:"the building",w:["a six-floor walk-up with a basement full of storage","a pre-war building with one working elevator","a building where everyone knows the super"]}],
+     ttl:(P)=>[`Left Behind at ${P}`,`Unclaimed`,`Finders`],
+     p:(w,pl)=>`${w.p} at ${pl.short} and has a week to decide whether to hand it in`,
+     turns:[(P,J)=>`the owner turns up at ${P} and is nobody anyone expected`,(P,J)=>`what is inside answers a question about someone the ${J} loves`,(P,J)=>`handing it back would cost the ${J} the one thing they have been saving for`,(P,J)=>`somebody else at ${P} already knows, and wants a share`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Alone for most of it, moving through ${pl.short} at night. The decision has to read in the hands before it reaches the dialogue.`,`Works ${pl.short} on their own and talks to almost nobody. Every choice in the story happens in silence and has to be legible anyway.`]},
+       {s:"the one who saw",r:"Supporting",a:"adult",xs:[`Was in ${pl.short} that night and is very friendly about it. The friendliness is the pressure.`,`Works the other half of the shift at ${pl.short}. Mentions what they saw once, lightly, and never lets it go.`]},
+       {s:"the owner",r:"Supporting",a:"midCareer",xs:[`Comes to ${pl.short} late in the story, grateful and slightly wrong about what happened.`,`Turns up at ${pl.short} with a description that does not quite match. Neither cruel nor honest.`]},
+       {s:"the relative",r:"Day Player",a:"senior",xs:[`Needs the money more than the lead does and has never once asked. Two scenes, both quiet.`,`Sits in the lead's kitchen and talks about a bill. Never mentions ${pl.short} at all.`]}]},
 
-    {k:"tryout",genre:"drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"dancer",s:"the dancer",a:"youngAdult",p:"a dancer with one shot at a company place"},
-       {k:"pitcher",s:"the pitcher",a:"teen",p:"a high-school pitcher being watched by a scout"},
-       {k:"singer",s:"the singer",a:"youngAdult",p:"a singer auditioning for the first time in four years"},
-       {k:"boxer",s:"the fighter",a:"adult",p:"a fighter taking one more bout than she should"},
-       {k:"chef",s:"the cook",a:"adult",p:"a cook competing for a kitchen job she cannot afford to lose"},
-       {k:"driverK",s:"the apprentice",a:"youngAdult",p:"an apprentice being tested by the person who trained him"}],
-     place:[
-       {k:"studio",short:"the studio",w:["a rehearsal studio with mirrors on three walls","a studio above a shop with a sprung floor","a rehearsal room booked by the hour"]},
-       {k:"field",short:"the field",w:["a practice field with one set of bleachers","a public field with the lines freshly cut","a field behind a high school in the late afternoon"]},
-       {k:"gym",short:"the gym",w:["a gym over a laundromat","a boxing gym with the ring in the middle of the room","a gym that smells like canvas and bleach"]},
-       {k:"kitchen",short:"the kitchen",w:["a restaurant kitchen during service","a kitchen with six burners and no room to stand","a kitchen where the pass is the loudest place in the building"]}],
-     p:(w,pl)=>`${w.p} gets one afternoon at ${pl.short} to prove it, in front of the person who decides`,
-     turns:[
-       (P,J)=>`the person judging at ${P} is someone they used to beat`,
-       (P,J)=>`an injury halfway through has to be hidden until they are out of ${P}`,
-       (P,J)=>`the place is offered on a condition the ${J} cannot accept`,
-       (P,J)=>`the one person they came to ${P} to impress misses the part they were best at`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Physical role, and the skill has to be real on camera. Most of the performance happens while catching their breath."},
-       {s:"the one who decides",r:"Supporting",a:"mature",x:"Says very little. Every look has to land as a verdict without ever being one."},
-       {s:"the rival",r:"Supporting",a:"youngAdult",x:"Better on paper. Generous in person, which the lead cannot stand."},
-       {s:"the coach",r:"Day Player",a:"senior",x:"Hard on them because nobody else will be. Has done this for thirty years."}]},
+    {k:"tryout",genre:"sports drama",tracks:["film","tv"],
+     who:[{k:"pitcher",s:"the pitcher",a:"teen",p:"a high-school pitcher being watched by a scout"},{k:"boxer",s:"the fighter",a:"adult",p:"a fighter taking one more bout than she should"},{k:"dancerT",s:"the dancer",a:"youngAdult",p:"a dancer with one shot at a company place"},{k:"swimmer",s:"the swimmer",a:"teen",p:"a swimmer half a second off a qualifying time"}],
+     place:[{k:"field",short:"the field",w:["a practice field with one set of bleachers","a public field with the lines freshly cut","a field behind a high school in the late afternoon"]},{k:"gym",short:"the gym",w:["a gym over a laundromat","a boxing gym with the ring in the middle of the room","a gym that smells like canvas and bleach"]},{k:"studio",short:"the studio",w:["a rehearsal studio with mirrors on three walls","a studio above a shop with a sprung floor","a rehearsal room booked by the hour"]}],
+     ttl:(P)=>[`Trials at ${P}`,`One Afternoon`,`The Shortlist`],
+     p:(w,pl)=>`${w.p} gets one afternoon at ${pl.short} in front of the person who decides`,
+     turns:[(P,J)=>`the person judging at ${P} knows more about the ${J} than they let on`,(P,J)=>`an injury halfway through has to be hidden until they are out of ${P}`,(P,J)=>`the place is offered on a condition the ${J} cannot accept`,(P,J)=>`the one person they came to ${P} to impress misses the part they were best at`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Physical part: the skill has to be real at ${pl.short}, on camera, repeatedly. Most of the performance happens while out of breath.`,`Trains at ${pl.short} alone before anyone else arrives. Says almost nothing and wants this more than anyone in the room.`]},
+       {s:"the one who decides",r:"Supporting",a:"mature",xs:[`Watches from the side of ${pl.short} and says very little. Every look has to land as a verdict without being one.`,`Has seen a thousand of these at ${pl.short}. Kind in a way that gives nothing away.`]},
+       {s:"the rival",r:"Supporting",a:"youngAdult",xs:[`Better on paper and generous in person, which the lead cannot stand. Trains at ${pl.short} too.`,`Arrives at ${pl.short} relaxed, warms up properly, and is impossible to dislike.`]},
+       {s:"the coach",r:"Day Player",a:"senior",xs:[`Hard on them because nobody else at ${pl.short} will be. Thirty years of this and no sentiment left on the surface.`,`Tapes their hands, tells them one thing, and leaves ${pl.short} before the result.`]}]},
 
     {k:"caretake",genre:"drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"nurse",s:"the night nurse",a:"adult",p:"a night nurse working doubles she cannot keep up",mate:"the patient",mateAge:"senior"},
-       {k:"aide",s:"the home aide",a:"midCareer",p:"a home aide who has become part of the family",mate:"the patient",mateAge:"senior"},
-       {k:"granddaughter",s:"the granddaughter",a:"youngAdult",p:"a granddaughter who moved in to help for a month and stayed a year",mate:"the grandmother",mateAge:"senior"},
-       {k:"neighborC",s:"the neighbor",a:"mature",p:"a neighbor doing what nobody in the family will",mate:"the patient",mateAge:"senior"},
-       {k:"husband",s:"the husband",a:"senior",p:"a husband learning to run a house at seventy-one",mate:"the wife",mateAge:"senior"},
-       {k:"brother",s:"the brother",a:"midCareer",p:"a brother who came for a weekend and has not gone home",mate:"the sister",mateAge:"mature"}],
-     place:[
-       {k:"flat",short:"the apartment",w:["a ground-floor apartment with a ramp to the door","an apartment with the bed moved into the living room","a small apartment where every room is in use"]},
-       {k:"ward",short:"the care home",w:["a care home with a garden nobody uses","a nursing floor with four beds to a room","a care home where the television is always on"]},
-       {k:"kitchenC",short:"the kitchen",w:["a kitchen with a calendar full of appointments","a family kitchen with medicine on the counter","a kitchen table doing the work of an office"]},
-       {k:"porch",short:"the porch",w:["a front porch with two chairs and a fan","a porch where the whole street can hear you","a covered porch that holds the heat"]}],
-     p:(w,pl)=>`${w.p} is holding ${pl.short} together for someone who is getting worse, and the rest of the family has opinions`,
-     turns:[
-       (P,J)=>`a relative arrives at ${P} after a year away and starts making decisions`,
-       (P,J)=>`the person being cared for asks the ${J} for something they cannot agree to`,
-       (P,J)=>`the money for ${P} runs out in the middle of an ordinary Tuesday`,
-       (P,J)=>`one good day at ${P} makes everyone believe the worst is over`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Exhausted and completely competent. The tiredness lives in the timing, never in the voice."},
-       {s:w.mate||"the patient",r:"Lead",a:w.mateAge||"senior",x:"Sharp, funny, and losing ground. Never plays the illness; plays the person managing it."},
-       {s:"the relative",r:"Supporting",a:"midCareer",x:"Arrives with solutions. Genuinely means well, which is the problem."},
-       {s:"the visiting worker",r:"Day Player",a:"adult",x:"Twenty minutes in the house, professional and kind, sees everything."}]},
+     who:[{k:"nurse",s:"the night nurse",a:"adult",p:"a night nurse working doubles she cannot keep up",mate:"the patient",mateAge:"senior"},{k:"aide",s:"the home aide",a:"midCareer",p:"a home aide who has become part of the family",mate:"the patient",mateAge:"senior"},{k:"granddaughter",s:"the granddaughter",a:"youngAdult",p:"a granddaughter who moved in for a month and stayed a year",mate:"the grandmother",mateAge:"senior"},{k:"husband",s:"the husband",a:"senior",p:"a husband learning to run a house at seventy-one",mate:"the wife",mateAge:"senior"}],
+     place:[{k:"flat",short:"the apartment",w:["a ground-floor apartment with a ramp to the door","an apartment with the bed moved into the living room","a small apartment where every room is in use"]},{k:"ward",short:"the care home",w:["a care home with a garden nobody uses","a nursing floor with four beds to a room","a care home where the television is always on"]},{k:"kitchenC",short:"the kitchen",w:["a kitchen with a calendar full of appointments","a family kitchen with medicine on the counter","a kitchen table doing the work of an office"]}],
+     ttl:(P)=>[`Nights at ${P}`,`The Rota`,`Good Days and Bad`],
+     p:(w,pl)=>`${w.p} is holding ${pl.short} together for someone getting worse, and the family has opinions`,
+     turns:[(P,J)=>`a relative arrives at ${P} after a year away and starts making decisions`,(P,J)=>`the person being cared for asks the ${J} for something they cannot agree to`,(P,J)=>`the money for ${P} runs out in the middle of an ordinary Tuesday`,(P,J)=>`one good day at ${P} makes everyone believe the worst is over`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Exhausted and completely competent. At ${pl.short} the tiredness lives in the timing, never in the voice.`,`Keeps ${pl.short} running on a schedule only they understand. Refuses every offer of help in a way that sounds like gratitude.`]},
+       {s:w.mate||"the patient",r:"Lead",a:w.mateAge||"senior",xs:[`Sharp, funny, and losing ground. Plays the person managing it, never the illness.`,`Rules ${pl.short} from one chair. Remembers everything and chooses carefully what to admit to.`]},
+       {s:"the relative",r:"Supporting",a:"midCareer",xs:[`Arrives at ${pl.short} with solutions and a flight home. Genuinely means well, which is the problem.`,`Has not been to ${pl.short} in a year and starts by rearranging the medicine.`]},
+       {s:"the visiting worker",r:"Day Player",a:"adult",xs:[`Twenty minutes inside ${pl.short}, professional and kind, and sees everything.`,`Comes to ${pl.short} twice a week. Asks one question the family has been avoiding.`]}]},
 
     {k:"debt",genre:"crime drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"cousin",s:"the cousin",a:"adult",p:"a man collecting money his cousin borrowed"},
-       {k:"friend",s:"the friend",a:"youngAdult",p:"a woman who co-signed for a friend and is now being called"},
-       {k:"bookkeeper",s:"the bookkeeper",a:"midCareer",p:"a bookkeeper who has been covering a hole in the accounts"},
-       {k:"dealer",s:"the card player",a:"mature",p:"a card player into the wrong people for nine thousand dollars"},
-       {k:"sonD",s:"the son",a:"youngAdult",p:"a son paying off what his father left behind"},
-       {k:"partner",s:"the partner",a:"adult",p:"a business partner who found the second set of books"}],
-     place:[
-       {k:"club",short:"the club",w:["a social club with the blinds down","a members' club above a storefront","a club room with a card table and a coffee urn"]},
-       {k:"lot",short:"the lot",w:["a used-car lot with a trailer for an office","a lot with string lights and forty cars","a car lot backing onto a rail line"]},
-       {k:"warehouse",short:"the warehouse",w:["a warehouse with one loading door open","a storage floor with the lights on a timer","a warehouse where the office is a glass box upstairs"]},
-       {k:"office2",short:"the back office",w:["a back office behind a restaurant","an office with a desk and a safe and nothing else","a room behind a shop with a second door"]}],
+     who:[{k:"cousin",s:"the collector",a:"adult",p:"a man collecting money his cousin borrowed"},{k:"cosigner",s:"the co-signer",a:"youngAdult",p:"a woman who co-signed for a friend and is being called"},{k:"bookkeeper",s:"the bookkeeper",a:"midCareer",p:"a bookkeeper covering a hole in the accounts"},{k:"sonD",s:"the son",a:"youngAdult",p:"a son paying off what his father left behind",mate:"the father",mateAge:"senior"}],
+     place:[{k:"club",short:"the club",w:["a social club with the blinds down","a members' club above a storefront","a club room with a card table and a coffee urn"]},{k:"lot",short:"the lot",w:["a used-car lot with a trailer for an office","a lot with string lights and forty cars","a car lot backing onto a rail line"]},{k:"office2",short:"the back office",w:["a back office behind a restaurant","an office with a desk, a safe and nothing else","a room behind a shop with a second door"]}],
+     ttl:(P)=>[`What Is Owed`,`End of the Month`,`The Arrangement at ${P}`],
      p:(w,pl)=>`${w.p} has until the end of the month, and the conversation keeps happening at ${pl.short}`,
-     turns:[
-       (P,J)=>`the debt is forgiven on a condition worse than the money owed at ${P}`,
-       (P,J)=>`the person who lent it needs it back for a reason nobody at ${P} suspected`,
-       (P,J)=>`a third party pays it off and now owns the ${J} and the problem both`,
-       (P,J)=>`the money turns up, and handing it over at ${P} means saying where it came from`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Calm on the surface. Talks their way through every scene and is losing the whole time."},
-       {s:"the one owed",r:"Supporting",a:"mature",x:"Reasonable, patient, never raises their voice. The threat is in how ordinary they are."},
-       {s:"the one in the middle",r:"Supporting",a:"adult",x:"Related to both sides. Tries to broker it and makes it worse."},
-       {s:"the one who pays",r:"Day Player",a:"senior",x:"Puts up the money without being asked and says nothing about it afterwards."}]},
+     turns:[(P,J)=>`the debt is forgiven on a condition worse than the money owed at ${P}`,(P,J)=>`the person who lent it needs it back for a reason nobody at ${P} suspected`,(P,J)=>`a third party settles it and now owns the ${J} and the problem both`,(P,J)=>`the money turns up, and handing it over at ${P} means saying where it came from`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Calm on the surface at ${pl.short} and losing ground in every scene. Talks their way through and it stops working.`,`Comes to ${pl.short} with a plan each time and leaves with a worse one. Never raises their voice.`]},
+       {s:"the one owed",r:"Supporting",a:"mature",xs:[`Patient, reasonable, never threatening at ${pl.short}. The menace is entirely in how ordinary they are.`,`Runs ${pl.short} and does not enjoy this part of it. Offers coffee first, every time.`]},
+       {s:"the go-between",r:"Supporting",a:"adult",xs:[`Related to both sides. Tries to broker it at ${pl.short} and makes it worse twice.`,`Carries messages across ${pl.short} and shades each one slightly in their own favour.`]},
+       {s:"the one who pays",r:"Day Player",a:"senior",xs:[`Puts up the money without being asked and never mentions it again. One scene outside ${pl.short}.`,`Arrives at ${pl.short} with an envelope and an opinion nobody wants.`]}]},
 
     {k:"nightdrive",genre:"drama",tracks:["film","tv"],
-     who:[
-       {k:"driverN",s:"the driver",a:"midCareer",p:"a driver taking a passenger four hundred miles overnight",mate:"the passenger",mateAge:"senior"},
-       {k:"sister",s:"the sister",a:"adult",p:"a woman driving her sister somewhere she does not want to go",mate:"the other sister",mateAge:"midCareer"},
-       {k:"ranger",s:"the transport officer",a:"adult",p:"an officer moving one person between counties",mate:"the person being moved",mateAge:"youngAdult"},
-       {k:"trucker",s:"the trucker",a:"mature",p:"a long-haul driver with a rider she did not plan on",mate:"the rider",mateAge:"youngAdult"},
-       {k:"kid",s:"the teenager",a:"teen",p:"a seventeen-year-old driving his grandfather across the state",mate:"the grandfather",mateAge:"senior"},
-       {k:"exwife",s:"the ex-wife",a:"midCareer",p:"a woman driving her ex-husband to a funeral",mate:"the ex-husband",mateAge:"mature"}],
-     place:[
-       {k:"car",short:"the car",w:["a car on an interstate at night","the front seats of a sedan with three hundred miles to go","a car with the radio losing every station"]},
-       {k:"stop",short:"the truck stop",w:["a truck stop at two in the morning","a service plaza with one counter open","a truck stop with a diner attached"]},
-       {k:"shoulder",short:"the roadside",w:["the shoulder of a two-lane highway","a rest area with one light working","a lay-by with nothing around it for miles"]},
-       {k:"crossing",short:"the crossing",w:["a county line with a weigh station","a bridge crossing at night","a checkpoint with a queue of four cars"]}],
+     who:[{k:"driverN",s:"the driver",a:"midCareer",p:"a driver taking a passenger four hundred miles overnight",mate:"the passenger",mateAge:"senior"},{k:"sisterN",s:"the sister",a:"adult",p:"a woman driving her sister somewhere she does not want to go",mate:"the other sister",mateAge:"midCareer"},{k:"kidN",s:"the teenager",a:"teen",p:"a seventeen-year-old driving his grandfather across the state",mate:"the grandfather",mateAge:"senior"},{k:"exwife",s:"the ex-wife",a:"midCareer",p:"a woman driving her ex-husband to a funeral",mate:"the ex-husband",mateAge:"mature"}],
+     place:[{k:"car",short:"the car",w:["a car on an interstate at night","the front seats of a sedan with three hundred miles to go","a car with the radio losing every station"]},{k:"stop",short:"the truck stop",w:["a truck stop at two in the morning","a service plaza with one counter open","a truck stop with a diner attached"]},{k:"shoulder",short:"the roadside",w:["the shoulder of a two-lane highway","a rest area with one light working","a lay-by with nothing around it for miles"]}],
+     ttl:(P)=>[`Four Hundred Miles`,`The Long Drive`,`Somewhere Past ${P}`],
      p:(w,pl)=>`${w.p}, and everything that matters gets said at ${pl.short}`,
-     turns:[
-       (P,J)=>`the passenger asks to stop somewhere that was never on the route to ${P}`,
-       (P,J)=>`one of them has been lying about why the drive to ${P} is happening at all`,
-       (P,J)=>`the car gives out and they wait somewhere with nothing to do but talk about ${P}`,
-       (P,J)=>`they reach ${P} early and neither of them gets out`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Two-hander. Most of the film is in a front seat, driving, which means the performance is in the voice and the hands."},
-       {s:w.mate||"the passenger",r:"Lead",a:w.mateAge||"senior",x:"Funny for the first hour and something else after that. Holds long silences without filling them."},
-       {s:"the one on the phone",r:"Day Player",a:"midCareer",x:"Heard more than seen. Waiting at the other end of the drive."},
-       {s:"the stranger",r:"Day Player",a:"adult",x:"One scene at a counter in the middle of the night. Kind for no reason."}]},
+     turns:[(P,J)=>`the passenger asks to stop somewhere that was never on the route past ${P}`,(P,J)=>`one of them has been lying about why the drive is happening at all`,(P,J)=>`the car gives out and they wait at ${P} with nothing to do but talk`,(P,J)=>`they arrive early and neither of them gets out`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Two-hander. Most of the story happens driving, so the part lives in the voice and the hands rather than ${pl.short}.`,`Drives the whole night and does almost all the listening. Answers three questions honestly and regrets each one.`]},
+       {s:w.mate||"the passenger",r:"Lead",a:w.mateAge||"senior",xs:[`Funny for the first hour and something else after that. Holds long silences at ${pl.short} without filling them.`,`Talks constantly until the one subject that matters, then stops. Asks to stop at ${pl.short} for no stated reason.`]},
+       {s:"the voice on the phone",r:"Day Player",a:"midCareer",xs:[`Heard more than seen, waiting at the other end of the drive. Two calls, both short.`,`Calls twice while they are at ${pl.short}. Warm, worried, and no help at all.`]},
+       {s:"the stranger",r:"Day Player",a:"adult",xs:[`One scene behind a counter at ${pl.short} in the middle of the night. Kind for no reason.`,`Works nights at ${pl.short} and has seen every kind of passenger. Says one thing that lands.`]}]},
 
     {k:"secret",genre:"drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"motherS",s:"the mother",a:"mature",p:"a mother who has kept one fact from her children for twenty years"},
-       {k:"uncle",s:"the uncle",a:"senior",p:"an uncle who knows why the family split"},
-       {k:"bride",s:"the host of the lunch",a:"adult",p:"a woman who invited someone nobody else wanted at the table"},
-       {k:"executor",s:"the executor",a:"midCareer",p:"a son reading a will he has already read once"},
-       {k:"twin",s:"the sibling",a:"adult",p:"a sibling who found paperwork in a drawer"},
-       {k:"inlaw",s:"the newcomer to the family",a:"midCareer",p:"a man marrying into a family that talks around everything"}],
-     place:[
-       {k:"dining",short:"the dining room",w:["a dining room with the good table set","a dining room used twice a year","a family table with one chair too many"]},
-       {k:"hall",short:"the hall",w:["a rented hall with a bar at one end","a function room with paper tablecloths","a hall booked for the afternoon only"]},
-       {k:"yard",short:"the yard",w:["a back yard with borrowed chairs","a yard with a tent up and rain coming","a back garden with the neighbors listening"]},
-       {k:"lounge",short:"the front room",w:["a front room kept for visitors","a sitting room with photographs on every surface","a front room where nobody normally sits"]}],
+     who:[{k:"motherS",s:"the mother",a:"mature",p:"a mother who has kept one fact from her children for twenty years",mate:"the daughter",mateAge:"youngAdult"},{k:"uncle",s:"the uncle",a:"senior",p:"an uncle who knows why the family split",mate:"the niece",mateAge:"youngAdult"},{k:"executor",s:"the executor",a:"midCareer",p:"a son reading a will he has already read once",mate:"the sister",mateAge:"adult"},{k:"host",s:"the host",a:"adult",p:"a woman who invited someone nobody else wanted at the table",mate:"the guest",mateAge:"mature"}],
+     place:[{k:"dining",short:"the dining room",w:["a dining room with the good table set","a dining room used twice a year","a family table with one chair too many"]},{k:"hall",short:"the hall",w:["a rented hall with a bar at one end","a function room with paper tablecloths","a hall booked for the afternoon only"]},{k:"yard",short:"the yard",w:["a back yard with borrowed chairs","a yard with a tent up and rain coming","a back garden with the neighbours listening"]}],
+     ttl:(P)=>[`The Afternoon at ${P}`,`What Nobody Said`,`Sunday Lunch`],
      p:(w,pl)=>`${w.p}, and the whole family is at ${pl.short} for the afternoon`,
-     turns:[
-       (P,J)=>`it comes out at ${P} in front of the one person it was kept from`,
-       (P,J)=>`everyone at ${P} already knew except the person it was about`,
-       (P,J)=>`the ${J} tells it kindly, and kindly lands worse`,
-       (P,J)=>`the afternoon at ${P} ends without anyone saying it, and that is the ending`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Runs the room and is the one thing in it that could break. Ensemble piece: the lead is the quietest person at the table."},
-       {s:"the daughter",r:"Lead",a:"youngAdult",x:"Finds out on screen. Everything after that is reaction, most of it under the table."},
-       {s:"the one who tells",r:"Supporting",a:"midCareer",x:"Certain they are doing the right thing. Should never read as cruel."},
-       {s:"the peacemaker",r:"Supporting",a:"senior",x:"Has held this family together for decades with small talk, and runs out of it."}]},
+     turns:[(P,J)=>`it comes out at ${P} in front of the one person it was kept from`,(P,J)=>`everyone at ${P} already knew except the person it was about`,(P,J)=>`the ${J} tells it kindly, and kindly lands worse`,(P,J)=>`the afternoon at ${P} ends without anyone saying it, and that is the ending`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Runs ${pl.short} and is the one thing in it that could break. Ensemble piece: the lead is the quietest person at the table.`,`Seats everyone at ${pl.short}, refills glasses, and watches the door. Says the least and carries the film.`]},
+       {s:w.mate||"the daughter",r:"Lead",a:w.mateAge||"youngAdult",xs:[`Finds out on screen at ${pl.short}. Everything after that is reaction, most of it under the table.`,`Arrives at ${pl.short} late and happy. The whole part turns on one sentence they overhear.`]},
+       {s:"the one who tells",r:"Supporting",a:"midCareer",xs:[`Certain they are doing the right thing at ${pl.short}. Must never read as cruel.`,`Waits until the plates are cleared at ${pl.short}. Believes the truth is a kindness.`]},
+       {s:"the peacemaker",r:"Supporting",a:"senior",xs:[`Has held this family together with small talk for decades and runs out of it at ${pl.short}.`,`Changes the subject four times at ${pl.short} and cannot manage a fifth.`]}]},
 
     {k:"newhire",genre:"comedy drama",tracks:["film","tv","stage"],
-     who:[
-       {k:"hireA",s:"the new hire",a:"youngAdult",p:"a new hire who is better at the job than everyone there"},
-       {k:"hireB",s:"the temp",a:"adult",p:"a temp covering two weeks who starts rearranging things"},
-       {k:"hireC",s:"the trainee",a:"teen",p:"a seventeen-year-old on a first job"},
-       {k:"hireD",s:"the returner",a:"mature",p:"a woman back at work after fifteen years at home"},
-       {k:"hireE",s:"the transfer",a:"midCareer",p:"a transfer from the other branch nobody asked for"},
-       {k:"hireF",s:"the relative",a:"youngAdult",p:"the owner's nephew, hired over someone who deserved it"}],
-     place:[
-       {k:"depotN",short:"the depot",w:["a depot with four vans and a dispatcher","a yard with a portacabin for an office","a depot where the shift starts at five"]},
-       {k:"cafe",short:"the cafe",w:["a cafe with eight tables and a hatch to the kitchen","a coffee shop that runs on two people","a cafe attached to a garden center"]},
-       {k:"library",short:"the library",w:["a branch library with a community room","a library open four days a week","a small library with a leak in the back"]},
-       {k:"salon",short:"the salon",w:["a three-chair salon with a waiting bench","a salon that has been in the family two generations","a salon where the appointments are written in a book"]}],
-     p:(w,pl)=>`${w.p} arrives at ${pl.short}, where the way things are done has not changed in years`,
-     turns:[
-       (P,J)=>`the person who trained everyone at ${P} takes it personally`,
-       (P,J)=>`the ${J} is right, and being right costs them the room`,
-       (P,J)=>`an inspection puts everyone at ${P} on the same side for a day`,
-       (P,J)=>`the one who resented the ${J} most asks them for help in private`
-],
-     cast:(w)=>[
-       {s:w.s,r:"Lead",a:w.a,x:"Reads the room wrong in a way the audience can see coming. Comedy that never tips into mugging."},
-       {s:"the one who has been there longest",r:"Lead",a:"mature",x:"Not the villain. Proud of a job nobody else respects, and watching it change."},
-       {s:"the other member of staff",r:"Supporting",a:"adult",x:"Likes both of them. Gets used by both of them."},
-       {s:"the owner",r:"Day Player",a:"senior",x:"In twice a week. Solves nothing and is very pleased with the atmosphere."}]}
-  ];
-  // Every composed listing drawing the same four sentences would collide with
-  // the round-6 shape detector inside a handful of listings, so a slot's
-  // sketch is itself assembled: a trait, what they do about it, and the thing
-  // that complicates it, each drawn against the combination so two listings
-  // off one frame do not read alike.
-  // A sentence SHAPE is retired for fifty listings, and a shape is very nearly
-  // the sentence itself, so a fixed bank of clauses is spent within two
-  // batches - which is what happened first: "no free role structure" threw
-  // away 409 drafts in a single run because every sentence the writer could
-  // build had already been used. These templates carry the listing's own
-  // place and job into the sentence, so ten templates across 240 combinations
-  // give thousands of distinct sentences instead of ten.
-  const R9_TRAIT=[
-    (P,J)=>`Knows ${P} better than the people who own it`,
-    (P,J)=>`Has been at ${P} longer than anyone still working there`,
-    (P,J)=>`Could run ${P} alone and most weeks has to`,
-    (P,J)=>`Came to ${P} for six months and never left`,
-    (P,J)=>`Treats ${P} like a second home, which is most of the trouble`,
-    (P,J)=>`Was good at being ${J} before anyone thought to say so`,
-    (P,J)=>`Took the job as ${J} to pay for something else entirely`,
-    (P,J)=>`Is the reason ${P} still opens on time`,
-    (P,J)=>`Keeps ${P} in their head: every name, every order, every favour owed`,
-    (P,J)=>`Has stopped telling people that ${P} is temporary`,
-    (P,J)=>`Is better as ${J} than the job has ever paid for`,
-    (P,J)=>`Has one good reason for staying at ${P} and will not say it out loud`
-  ];
-  const R9_DOES=[
-    (P,J)=>`Keeps working at ${P} while the argument goes on around them`,
-    (P,J)=>`Says yes to something at ${P} they should have refused`,
-    (P,J)=>`Makes one decision about ${P} early and lives inside it after that`,
-    (P,J)=>`Does the practical thing while everyone else at ${P} has feelings about it`,
-    (P,J)=>`Holds ${P} together with small repairs nobody notices`,
-    (P,J)=>`Writes down everything ${P} needs and forgets the part that matters`,
-    (P,J)=>`Feeds people at ${P} instead of answering them`,
-    (P,J)=>`Covers for everyone at ${P} twice, and not a third time`,
-    (P,J)=>`Gets to ${P} early, leaves last, and mentions neither`,
-    (P,J)=>`Tells one true thing at the worst hour of the week for ${J}`,
-    (P,J)=>`Fixes whatever is within reach at ${P} and leaves the rest`,
-    (P,J)=>`Counts what everyone at ${P} owes and never asks for any of it`
-  ];
-  const R9_EDGE=[
-    (P,J)=>`Never asks anyone at ${P} for help and is furious when it arrives`,
-    (P,J)=>`Is funny in the middle of the worst week ${P} has had`,
-    (P,J)=>`Remembers every kindness at ${P} and none of the favours they have done`,
-    (P,J)=>`Would rather be wrong alone than right with anyone from ${P}`,
-    (P,J)=>`Keeps one thing back from everybody at ${P}`,
-    (P,J)=>`Has been halfway out of ${P} for a year`,
-    (P,J)=>`Is kind in a way that puts everyone else at ${P} under pressure`,
-    (P,J)=>`Wants something past ${J} and will not name it`,
-    (P,J)=>`Is right often enough to be hard company at ${P}`,
-    (P,J)=>`Says almost nothing and is the last to leave ${P}`
+     who:[{k:"hireA",s:"the new hire",a:"youngAdult",p:"a new hire better at the job than everyone there"},{k:"hireB",s:"the temp",a:"adult",p:"a temp covering two weeks who starts rearranging things"},{k:"hireD",s:"the returner",a:"mature",p:"a woman back at work after fifteen years at home"},{k:"hireE",s:"the transfer",a:"midCareer",p:"a transfer from the other branch nobody asked for"}],
+     place:[{k:"cafe",short:"the cafe",w:["a cafe with eight tables and a hatch to the kitchen","a coffee shop that runs on two people","a cafe attached to a garden centre"]},{k:"library",short:"the library",w:["a branch library with a community room","a library open four days a week","a small library with a leak in the back"]},{k:"salon",short:"the salon",w:["a three-chair salon with a waiting bench","a salon two generations in the same family","a salon where the appointments are written in a book"]}],
+     ttl:(P)=>[`The New Starter at ${P}`,`Probation`,`First Fortnight`],
+     p:(w,pl)=>`${w.p} arrives at ${pl.short}, where nothing has changed in years`,
+     turns:[(P,J)=>`the person who trained everyone at ${P} takes it personally`,(P,J)=>`the ${J} is right, and being right costs them the room`,(P,J)=>`an inspection puts everyone at ${P} on the same side for a day`,(P,J)=>`the one who resented the ${J} most asks them for help in private`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Reads ${pl.short} wrong in a way the audience can see coming. Comedy that never tips into mugging.`,`Fixes three things at ${pl.short} in the first week and makes four enemies. Genuinely does not understand why.`]},
+       {s:"the one who has been there longest",r:"Lead",a:"mature",xs:[`Not the villain. Proud of a job at ${pl.short} nobody else respects, and watching it change.`,`Has run ${pl.short} their way for twenty years. Polite to the new hire and immovable.`]},
+       {s:"the other member of staff",r:"Supporting",a:"adult",xs:[`Likes both of them and is used by both of them. Works every shift at ${pl.short} between the two.`,`Keeps the peace at ${pl.short} until keeping the peace becomes taking a side.`]},
+       {s:"the owner",r:"Day Player",a:"senior",xs:[`In at ${pl.short} twice a week. Solves nothing and is delighted with the atmosphere.`,`Drops into ${pl.short}, praises the wrong person, and leaves.`]}]},
+
+    {k:"housesit",genre:"horror",tracks:["film","tv"],
+     who:[{k:"sitter",s:"the house-sitter",a:"youngAdult",p:"a house-sitter alone in a place she does not know"},{k:"cleanerH",s:"the cleaner",a:"adult",p:"a cleaner working nights in an empty property"},{k:"caretakerH",s:"the caretaker",a:"mature",p:"a caretaker checking a property through the winter"},{k:"agent",s:"the estate agent",a:"adult",p:"an agent staying over to finish a valuation"}],
+     place:[{k:"estate",short:"the house",w:["a large house set back from the road","a house with more rooms than anyone needs","a house the owners left in a hurry"]},{k:"farm",short:"the farmhouse",w:["a farmhouse with no neighbours for a mile","a farmhouse with the generator in an outbuilding","a farmhouse where the phone only works by the window"]},{k:"lodge",short:"the lodge",w:["a lake lodge closed for the season","a lodge with the water turned off in half the rooms","a lodge reachable by one unlit road"]}],
+     ttl:(P)=>[`Someone Else's House`,`A Week at ${P}`,`The Empty Rooms`],
+     p:(w,pl)=>`${w.p} spends a week alone at ${pl.short} while the owners are away, and the nights get longer`,
+     turns:[(P,J)=>`something inside ${P} has been moved, and only the ${J} has keys`,(P,J)=>`the owners call and say nothing that matches what is happening at ${P}`,(P,J)=>`a neighbour mentions the last person who stayed at ${P}`,(P,J)=>`the ${J} finds a room at ${P} that was not on the plan`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Carries ${pl.short} alone for most of the running time. Long stretches without dialogue; the fear has to build in the body, not the voice.`,`Practical, unsentimental, and determined to finish the week at ${pl.short}. Explains away the first three things and cannot explain the fourth.`]},
+       {s:"the neighbour",r:"Supporting",a:"mature",xs:[`Comes to the door at ${pl.short} with a warning dressed as small talk. Never says the thing directly.`,`Has lived beside ${pl.short} for thirty years. Friendly, helpful, and leaves before dark every time.`]},
+       {s:"the owner",r:"Supporting",a:"midCareer",xs:[`Heard on the phone and seen once. Pleasant about ${pl.short} in a way that stops answering questions.`,`Returns to ${pl.short} at the end and behaves as though nothing needs explaining.`]},
+       {s:"the friend",r:"Day Player",a:"youngAdult",xs:[`Drives out to ${pl.short} for one night and does not take any of it seriously.`,`Stays at ${pl.short} for an evening, makes a joke of it, and leaves the lead worse off.`]}]},
+    {k:"cabin",genre:"horror",tracks:["film","tv"],
+     who:[{k:"organiser",s:"the organiser",a:"adult",p:"the friend who booked the trip and insisted everyone come"},{k:"returner",s:"the one who has been here before",a:"adult",p:"someone who came to this place years ago and never said why"},{k:"driverC",s:"the driver",a:"youngAdult",p:"the one who drove everybody up and keeps the keys"},{k:"newcomer",s:"the newcomer",a:"youngAdult",p:"the partner nobody in the group has met before"}],
+     place:[{k:"cabin",short:"the cabin",w:["a rented cabin an hour past the last shop","a cabin with a generator and no signal","a cabin with one road in"]},{k:"campsite",short:"the campsite",w:["a closed campsite out of season","a campsite beside a reservoir","a campsite with the warden's hut boarded up"]},{k:"chalet",short:"the chalet",w:["a ski chalet between seasons","a chalet with the heating on a timer","a chalet at the end of a service track"]}],
+     ttl:(P)=>[`The Road Out`,`Four at ${P}`,`Nobody Came Back`],
+     p:(w,pl)=>`${w.p} brings four people to ${pl.short} for a weekend, and one of them knows what happened here`,
+     turns:[(P,J)=>`the road out of ${P} is blocked and nobody agrees on what to do`,(P,J)=>`the ${J} recognises something at ${P} and says nothing`,(P,J)=>`one of the group is lying about where they were that night at ${P}`,(P,J)=>`whatever it is at ${P} wants one of them specifically`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Keeps the weekend at ${pl.short} running long after it should have ended. Cheerful until the cheerfulness becomes frightening.`,`Organised every part of the trip to ${pl.short} and refuses to be the one who calls it off.`]},
+       {s:"the one who wants to leave",r:"Lead",a:"youngAdult",xs:[`Says out loud at ${pl.short} what everyone is thinking and is voted down. Fear played as irritation.`,`Packed a bag on the first night at ${pl.short} and has been carrying it since.`]},
+       {s:"the sceptic",r:"Supporting",a:"adult",xs:[`Explains every noise at ${pl.short} and gets quieter with each explanation.`,`Treats ${pl.short} as a joke for two days. The turn has to be specific, not general panic.`]},
+       {s:"the local",r:"Day Player",a:"senior",xs:[`Sells them supplies near ${pl.short} and asks which cabin. One scene, no warning, all subtext.`,`Runs the only shop before ${pl.short}. Polite, unhurried, and does not wish them a good stay.`]}]},
+
+    {k:"tape",genre:"horror",tracks:["film","tv"],
+     who:[{k:"archivist",s:"the archivist",a:"adult",p:"an archivist digitising a box of old recordings"},{k:"nightdesk",s:"the night operator",a:"youngAdult",p:"a night operator who reviews footage nobody watches"},{k:"sonT",s:"the son",a:"midCareer",p:"a man going through his father's recordings"},{k:"student",s:"the student",a:"youngAdult",p:"a student who found a box of tapes in a clearance"}],
+     place:[{k:"archive",short:"the archive",w:["a basement archive with one working machine","an archive room kept cold and lit by strip lights","a records room behind a library"]},{k:"control",short:"the control room",w:["a security control room with nine screens","a monitoring room on a night shift","a control room with a window onto an empty lobby"]},{k:"flatT",short:"the flat",w:["a one-bedroom flat with the curtains shut","a flat with the player set up on the kitchen table","a flat above a shop that closes at six"]}],
+     ttl:(P)=>[`What the Tapes Show`,`Playback`,`The Night Log at ${P}`],
+     p:(w,pl)=>`${w.p} at ${pl.short} finds something on them that cannot have been recorded`,
+     turns:[(P,J)=>`the ${J} appears on a recording made before they arrived at ${P}`,(P,J)=>`somebody else has already watched the tapes at ${P} and stopped coming in`,(P,J)=>`the timestamps at ${P} do not agree with anything`,(P,J)=>`the last recording at ${P} is of the room they are sitting in`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Alone at ${pl.short} with a machine and a list. Most scenes are watching, and the watching has to hold.`,`Methodical about the work at ${pl.short} until method becomes obsession. Tells nobody how many hours they are putting in.`]},
+       {s:"the colleague",r:"Supporting",a:"midCareer",xs:[`Works the other shift at ${pl.short} and does not want to hear about the tapes.`,`Has been at ${pl.short} longer and is careful about which rooms they use.`]},
+       {s:"the person on the recording",r:"Supporting",a:"mature",xs:[`Seen only on screen until very late. Plays it perfectly ordinary, which is the horror.`,`Appears on the tapes at ${pl.short} doing something dull, over and over, slightly differently each time.`]},
+       {s:"the supervisor",r:"Day Player",a:"senior",xs:[`Signs off the hours at ${pl.short} and asks no questions about the box.`,`Tells the lead once to leave the tapes at ${pl.short} alone, and does not explain why.`]}]},
+
+    {k:"stalker",genre:"thriller",tracks:["film","tv"],
+     who:[{k:"nurseS",s:"the night-shift nurse",a:"adult",p:"a nurse who finishes at four in the morning"},{k:"barstaff",s:"the bartender",a:"youngAdult",p:"a bartender who walks home the same way every night"},{k:"runner",s:"the runner",a:"midCareer",p:"a woman who runs the same route before dawn"},{k:"delivery",s:"the courier",a:"youngAdult",p:"a courier working the late block"}],
+     place:[{k:"stairwell",short:"the stairwell",w:["an apartment stairwell with a broken light","a walk-up with a door that never latches","a stairwell shared by eight flats"]},{k:"lotS",short:"the car park",w:["a staff car park lit at one end","a multi-storey car park after eleven","a car park behind a hospital"]},{k:"street",short:"the street",w:["a residential street with long gaps between lamps","a street of terraces with nobody about","a street where every house is dark by ten"]}],
+     ttl:(P)=>[`The Walk Home`,`Every Night at ${P}`,`Somebody Waiting`],
+     p:(w,pl)=>`${w.p} is sure somebody is waiting at ${pl.short}, and nobody else can see it`,
+     turns:[(P,J)=>`the ${J} reports it and is politely not believed`,(P,J)=>`a neighbour at ${P} turns out to have been watching too`,(P,J)=>`something of theirs turns up at ${P} that they did not leave`,(P,J)=>`the person at ${P} is somebody they already know`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Competent and increasingly alone. Plays ${pl.short} as ordinary until it is not; no screaming, ever.`,`Walks ${pl.short} every night and starts changing small things. Tells nobody for a long time, and the reasons have to be legible.`]},
+       {s:"the neighbour",r:"Supporting",a:"mature",xs:[`Lives off ${pl.short} and notices more than they admit. Helpful in a way that is hard to read.`,`Offers to walk with them past ${pl.short} once. The offer plays two ways.`]},
+       {s:"the officer",r:"Supporting",a:"midCareer",xs:[`Takes the report seriously and can do nothing about ${pl.short}. Never dismissive, which is worse.`,`Meets them twice near ${pl.short}, writes it down, and explains the limits calmly.`]},
+       {s:"the friend",r:"Day Player",a:"adult",xs:[`Stays over once and treats ${pl.short} as nothing. Warm, wrong, and gone by morning.`,`Tells them to move, which is not possible, and means it kindly.`]}]},
+
+    {k:"witness",genre:"thriller",tracks:["film","tv","stage"],
+     who:[{k:"driverW",s:"the driver",a:"midCareer",p:"a driver who saw something on a back road and drove on"},{k:"cleanerW",s:"the cleaner",a:"mature",p:"a cleaner who was in the building that night"},{k:"teen",s:"the teenager",a:"teen",p:"a sixteen-year-old who filmed thirty seconds of it"},{k:"clerkW",s:"the shop assistant",a:"youngAdult",p:"a shop assistant who served both of them an hour before"}],
+     place:[{k:"station",short:"the station",w:["a police station front desk","an interview room with two chairs","a station waiting area with a vending machine"]},{k:"shopW",short:"the shop",w:["a corner shop with cameras that work","a late shop on a quiet parade","a shop with one aisle and a hatch"]},{k:"roadW",short:"the road",w:["a back road with no lighting","a lane between two villages","a road nobody uses after dark"]}],
+     ttl:(P)=>[`What I Saw`,`The Statement`,`Nothing to Report`],
+     p:(w,pl)=>`${w.p} and has told no one, and now somebody is asking questions at ${pl.short}`,
+     turns:[(P,J)=>`the ${J} realises the other person at ${P} recognised them too`,(P,J)=>`speaking up at ${P} would expose something of their own`,(P,J)=>`someone else comes forward and gets it wrong`,(P,J)=>`the questions at ${P} stop, which is worse than the questions`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`The whole part is a person deciding whether to speak. At ${pl.short} the silences carry more than the lines.`,`Ordinary, careful, and lying by omission from the first scene at ${pl.short}. The audience must stay on their side.`]},
+       {s:"the investigator",r:"Supporting",a:"mature",xs:[`Patient at ${pl.short} and never raises their voice. Knows more than they ask.`,`Comes back to ${pl.short} three times with the same question phrased differently.`]},
+       {s:"the other one who knows",r:"Supporting",a:"adult",xs:[`Was also near ${pl.short} that night. Wants the lead to stay quiet and never says so plainly.`,`Turns up at ${pl.short} to be friendly. It is not friendliness.`]},
+       {s:"the family member",r:"Day Player",a:"senior",xs:[`Asks the lead one direct question at home and accepts the answer. One scene, devastating.`,`Knows something changed after ${pl.short} and waits to be told.`]}]},
+
+    {k:"blackmail",genre:"thriller",tracks:["film","tv","stage"],
+     who:[{k:"teacherB",s:"the teacher",a:"midCareer",p:"a teacher sent a photograph and a number"},{k:"coachB",s:"the coach",a:"mature",p:"a coach asked for a favour instead of money"},{k:"councillor",s:"the councillor",a:"mature",p:"a councillor with one vote somebody wants"},{k:"managerB",s:"the branch manager",a:"adult",p:"a branch manager who can move money and hates that she can"}],
+     place:[{k:"carpark",short:"the car park",w:["a car park behind a leisure centre","a retail park at closing time","a car park with one working camera"]},{k:"office3",short:"the office",w:["a small office with a glass wall","an office rented by the month","a back office with the blinds always half shut"]},{k:"cafeB",short:"the cafe",w:["a motorway services cafe","a cafe nobody either of them knows","a cafe with one table by the window"]}],
+     ttl:(P)=>[`The Ask`,`One Photograph`,`Meeting at ${P}`],
+     p:(w,pl)=>`${w.p} and is told to bring an answer to ${pl.short}`,
+     turns:[(P,J)=>`the person asking at ${P} is someone the ${J} has helped before`,(P,J)=>`paying once at ${P} makes a second demand certain`,(P,J)=>`the thing being held over them is not what the ${J} assumed`,(P,J)=>`somebody else is being asked for the same thing at ${P}`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Holds a normal week together while meeting someone at ${pl.short}. The performance is the gap between the two.`,`Decent, competent, and cornered. Every scene away from ${pl.short} has to carry the weight of it.`]},
+       {s:"the one asking",r:"Supporting",a:"adult",xs:[`Courteous at ${pl.short} and completely certain. Never threatens; never has to.`,`Arrives at ${pl.short} early, orders for both of them, and is almost apologetic.`]},
+       {s:"the colleague",r:"Supporting",a:"midCareer",xs:[`Notices the lead is not right and pushes once, gently, then leaves it.`,`Shares the work the demand touches. Never learns what happened at ${pl.short}.`]},
+       {s:"the partner",r:"Day Player",a:"mature",xs:[`Asks where the money went. Two scenes, both at home, both quiet.`,`Believes the first explanation and not the second.`]}]},
+
+    {k:"firstdate",genre:"romance",tracks:["film","tv","stage"],
+     who:[{k:"widower",s:"the one starting again",a:"mature",p:"a man on a first date for the first time in nineteen years"},{k:"carerR",s:"the carer",a:"adult",p:"a woman with two free hours and a phone she keeps checking"},{k:"graduate",s:"the graduate",a:"youngAdult",p:"a graduate who has moved to the city knowing nobody"},{k:"divorced",s:"the divorcee",a:"midCareer",p:"a woman whose friends set this up against her wishes"}],
+     place:[{k:"trattoria",short:"the restaurant",w:["a small restaurant with eleven tables","a restaurant that stays open late for regulars","a restaurant where the waiter knows one of them"]},{k:"pier",short:"the pier",w:["a seafront pier out of season","a pier with half the arcade shut","a pier in the rain"]},{k:"gallery",short:"the gallery",w:["a small gallery on a late opening","a gallery with two rooms and a bench","a gallery between exhibitions"]}],
+     ttl:(P)=>[`An Hour at ${P}`,`Second Round`,`The Long Evening`],
+     p:(w,pl)=>`${w.p} meets a stranger at ${pl.short} for an hour that turns into a night`,
+     turns:[(P,J)=>`one of them has to be somewhere else and stays at ${P} anyway`,(P,J)=>`they discover at ${P} that they have met before and remember it differently`,(P,J)=>`the ${J} tells the truth about something early and it changes the evening`,(P,J)=>`the evening at ${P} ends well and neither of them says what happens next`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Two-hander, mostly dialogue, mostly at ${pl.short}. Charm is not the point; specificity is.`,`Arrives at ${pl.short} over-prepared and abandons all of it within twenty minutes.`]},
+       {s:"the date",r:"Lead",a:"adult",xs:[`Easier company than the lead and hiding more. Real listening at ${pl.short}, not waiting to speak.`,`Came to ${pl.short} intending to leave after one drink. Does not.`]},
+       {s:"the waiter",r:"Day Player",a:"youngAdult",xs:[`Works ${pl.short} and gives them the table by the window twice. Comic timing, no lines wasted.`,`Closes up around them at ${pl.short} without hurrying them out.`]},
+       {s:"the friend on the phone",r:"Day Player",a:"adult",xs:[`Heard, not seen. Two calls, both badly timed.`,`Set the date up and wants a report before it is over.`]}]},
+
+    {k:"exes",genre:"romance",tracks:["film","tv","stage"],
+     who:[{k:"contractor",s:"the contractor",a:"midCareer",p:"a contractor hired by the person he used to live with"},{k:"vetR",s:"the vet",a:"adult",p:"a vet covering a practice her ex-husband runs"},{k:"designer",s:"the designer",a:"adult",p:"a designer put on a job with the person she left"},{k:"chefR",s:"the chef",a:"midCareer",p:"a chef sharing a kitchen with someone he has not spoken to in years"}],
+     place:[{k:"siteR",short:"the site",w:["a half-finished extension with no heating","a building site behind a terrace","a site with two weeks left on the schedule"]},{k:"practice",short:"the practice",w:["a two-room veterinary practice","a practice above a shop","a practice with one waiting room and no privacy"]},{k:"kitchenR",short:"the kitchen",w:["a restaurant kitchen with one pass","a kitchen too small for two people who are not speaking","a kitchen that runs six services a week"]}],
+     ttl:(P)=>[`Three Weeks at ${P}`,`Working Together`,`Professional Distance`],
+     p:(w,pl)=>`${w.p} has to work beside them at ${pl.short} for three weeks and be professional about it`,
+     turns:[(P,J)=>`something at ${P} goes wrong and they are good at it together`,(P,J)=>`one of them has met somebody new and mentions it at ${P}`,(P,J)=>`an old argument restarts at ${P} exactly where it stopped`,(P,J)=>`the job at ${P} ends and neither of them books the next one`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Half the part is being careful at ${pl.short}. The audience should see what is under the politeness before the character does.`,`Turns up at ${pl.short} early every day to avoid arriving at the same time.`]},
+       {s:"the other one",r:"Lead",a:"adult",xs:[`Better at pretending than the lead and worse at stopping. Runs ${pl.short} and gives nothing away.`,`Hired them for ${pl.short} knowing exactly what it would be like.`]},
+       {s:"the apprentice",r:"Supporting",a:"youngAdult",xs:[`Works between them at ${pl.short} and sees all of it. Comic relief with a conscience.`,`New to ${pl.short} and keeps asking the questions neither of them will answer.`]},
+       {s:"the new partner",r:"Day Player",a:"adult",xs:[`Visits ${pl.short} once and is entirely nice, which spoils everything.`,`Brings lunch to ${pl.short} and stays ten minutes too long.`]}]},
+
+    {k:"weddingprep",genre:"comedy",tracks:["film","tv","stage"],
+     who:[{k:"brideW",s:"the bride",a:"adult",p:"a bride whose venue cancelled eight days out",mate:"the groom",mateAge:"adult"},{k:"plannerW",s:"the planner",a:"midCareer",p:"a planner covering for a colleague who quit"},{k:"motherW",s:"the mother of the bride",a:"mature",p:"a mother paying for a wedding she was not consulted about",mate:"the bride",mateAge:"youngAdult"},{k:"bestman",s:"the best man",a:"youngAdult",p:"a best man who has lost the rings and one day to find them"}],
+     place:[{k:"hallW",short:"the hall",w:["a village hall with a stage at one end","a rented hall with a kitchen hatch","a hall booked for a Saturday in July"]},{k:"hotelW",short:"the hotel",w:["a three-star hotel with a function room","a hotel with one lift and forty guests","a seafront hotel out of season"]},{k:"barnW",short:"the barn",w:["a converted barn with the lights not finished","a barn with power running from the house","a barn an hour from the nearest taxi"]}],
+     ttl:(P)=>[`Eight Days`,`The Seating Plan`,`Saturday at ${P}`],
+     p:(w,pl)=>`${w.p} has one week to rebuild the whole day around ${pl.short}`,
+     turns:[(P,J)=>`the only replacement for ${P} belongs to somebody in the family`,(P,J)=>`two guests who should not be seated together end up running ${P}`,(P,J)=>`the ${J} says out loud what everybody has been avoiding`,(P,J)=>`the day at ${P} works, for reasons nobody planned`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Holding ${pl.short} and eleven people together and running out of week. Comedy built on competence, not chaos.`,`Makes forty decisions a day about ${pl.short} and is asked about the forty-first at midnight.`]},
+       {s:w.mate||"the partner",r:"Lead",a:w.mateAge||"adult",xs:[`Calmer than the lead about ${pl.short} and no help at all. Loves them, absolutely; useless with a phone.`,`Wants a smaller day and has said so once. Says it again at ${pl.short} at the wrong moment.`]},
+       {s:"the relative with opinions",r:"Supporting",a:"senior",xs:[`Has run four weddings and is delighted to run this one from a chair at ${pl.short}.`,`Turns up at ${pl.short} with a folder of ideas and an unshakeable memory of 1986.`]},
+       {s:"the supplier",r:"Day Player",a:"adult",xs:[`Delivers to ${pl.short} and will not be rushed. Two scenes, both funny, neither broad.`,`Runs the kitchen at ${pl.short} and negotiates like a hostage specialist.`]}]},
+
+    {k:"heistsmall",genre:"crime comedy",tracks:["film","tv"],
+     who:[{k:"nightguard",s:"the security guard",a:"adult",p:"a guard who knows exactly where the cameras do not reach"},{k:"barman",s:"the bar manager",a:"midCareer",p:"a bar manager with a week to replace what he borrowed"},{k:"cousinH",s:"the cousin",a:"youngAdult",p:"a cousin with a plan and no experience"},{k:"driverH",s:"the driver",a:"mature",p:"a driver who has done this once before and badly"}],
+     place:[{k:"warehouseH",short:"the warehouse",w:["a distribution warehouse on an industrial estate","a warehouse with one night shift","a warehouse with a gate that sticks"]},{k:"clubH",short:"the club",w:["a members' club with a safe in the office","a club with a takings bag and a routine","a club that banks on Mondays"]},{k:"depotH",short:"the depot",w:["a haulage depot with a keypad on the door","a depot where nobody checks the log","a depot with a dog and a bored handler"]}],
+     ttl:(P)=>[`One Night at ${P}`,`The Easy Part`,`Nobody Gets Hurt`],
+     p:(w,pl)=>`${w.p} talks three people into taking one night at ${pl.short}`,
+     turns:[(P,J)=>`somebody unexpected is inside ${P} that night`,(P,J)=>`the plan for ${P} works and the getting-away does not`,(P,J)=>`one of them has told somebody about ${P}`,(P,J)=>`what they take from ${P} is worth far less than they were told`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Sells the plan for ${pl.short} to everyone and half-believes it. Funny, and the fear has to be visible under it.`,`Knows ${pl.short} inside out and nothing about people. Runs every scene and loses control of all of them.`]},
+       {s:"the reluctant one",r:"Lead",a:"midCareer",xs:[`Says no to ${pl.short} twice and yes for a reason the audience understands.`,`Has the most to lose. Argues detail at ${pl.short} because arguing detail is easier than arguing principle.`]},
+       {s:"the liability",r:"Supporting",a:"youngAdult",xs:[`Enthusiastic about ${pl.short} in a way that terrifies everybody. Comic engine, never stupid.`,`Brings equipment to ${pl.short} nobody asked for and one thing that saves them.`]},
+       {s:"the one inside",r:"Day Player",a:"mature",xs:[`Works nights at ${pl.short} and recognises one of them. One scene that decides the ending.`,`On shift at ${pl.short} and does not react the way anyone planned for.`]}]},
+
+    {k:"cover",genre:"crime drama",tracks:["film","tv","stage"],
+     who:[{k:"brotherC",s:"the brother",a:"adult",p:"a man asked to say his brother was with him",mate:"the younger brother",mateAge:"youngAdult"},{k:"sisterC",s:"the sister",a:"midCareer",p:"a woman who knows where her sister was",mate:"the younger sister",mateAge:"adult"},{k:"friendC",s:"the friend",a:"adult",p:"a friend since school being asked for one lie"},{k:"partnerC",s:"the business partner",a:"mature",p:"a partner who has seen the paperwork"}],
+     place:[{k:"kitchenC2",short:"the kitchen",w:["a kitchen with two chairs and a back door","a kitchen where the family meets by default","a kitchen with the radio left on"]},{k:"yardC",short:"the yard",w:["a builder's yard on a Sunday","a yard with a gate and a dog","a yard where nobody can overhear"]},{k:"pubC",short:"the pub",w:["a pub with three regulars and a back room","a pub that opens at eleven","a pub where the landlord knows both of them"]}],
+     ttl:(P)=>[`The Alibi`,`One Weekend`,`What Family Means`],
+     p:(w,pl)=>`${w.p}, and the asking happens at ${pl.short} over a single weekend`,
+     turns:[(P,J)=>`the lie at ${P} protects somebody else entirely`,(P,J)=>`the ${J} agrees and is asked for a second thing`,(P,J)=>`somebody at ${P} has already given a different account`,(P,J)=>`refusing at ${P} costs them the family, and they refuse`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Spends the film at ${pl.short} being asked and not answering. The decision has to be in doubt until the last scene.`,`Loves the person asking and knows exactly what they did. Both facts live in every line at ${pl.short}.`]},
+       {s:w.mate||"the one who asks",r:"Lead",a:w.mateAge||"adult",xs:[`Asks at ${pl.short} without ever asking directly. Charming, frightened, and manipulative in small increments.`,`Turns up at ${pl.short} with a story and keeps adjusting it as it is questioned.`]},
+       {s:"the parent",r:"Supporting",a:"senior",xs:[`Has decided at ${pl.short} what happened and will not be moved off it.`,`Makes food, keeps talking, and refuses to let the subject be raised at ${pl.short}.`]},
+       {s:"the officer",r:"Day Player",a:"midCareer",xs:[`Comes to ${pl.short} once, takes a statement, and is perfectly pleasant.`,`Leaves a card at ${pl.short} and says there is no rush, which there is.`]}]},
+
+    {k:"informant",genre:"thriller",tracks:["film","tv"],
+     who:[{k:"stockman",s:"the stock controller",a:"adult",p:"a stock controller who has been counting what goes missing"},{k:"barmaid",s:"the bar supervisor",a:"youngAdult",p:"a bar supervisor who hears everything and repeats none of it"},{k:"bookkeeperI",s:"the accounts clerk",a:"midCareer",p:"a clerk who has copies of everything"},{k:"driverI",s:"the driver",a:"mature",p:"a driver who knows every drop on the route"}],
+     place:[{k:"yardI",short:"the yard",w:["a haulage yard with a weighbridge","a yard that runs from four in the morning","a yard with a portacabin office"]},{k:"clubI",short:"the club",w:["a members' club with a back room","a club where the same six men sit","a club with an office nobody enters"]},{k:"marketI",short:"the market",w:["a wholesale market that starts at three","a market hall with fifty stalls","a market with its own security"]}],
+     ttl:(P)=>[`Quiet Words`,`Inside ${P}`,`The Arrangement`],
+     p:(w,pl)=>`${w.p} at ${pl.short} starts talking quietly to somebody official`,
+     turns:[(P,J)=>`the people at ${P} begin testing who knows what`,(P,J)=>`the ${J} is asked to stay in place longer than agreed`,(P,J)=>`somebody innocent at ${P} is suspected instead`,(P,J)=>`the case ends and the ${J} still has to work at ${P}`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Working a normal shift at ${pl.short} while lying to everyone in it. Tension played through routine, not through looks over shoulders.`,`Careful, quiet, and completely alone. Every conversation at ${pl.short} is two conversations.`]},
+       {s:"the handler",r:"Supporting",a:"midCareer",xs:[`Meets them away from ${pl.short} and is warm in a way that is partly professional.`,`Promises what they can and no more. The lead wants more.`]},
+       {s:"the boss",r:"Supporting",a:"mature",xs:[`Runs ${pl.short} and is generous, funny and dangerous in the same sentence.`,`Trusts the lead at ${pl.short} more than anyone, which is the whole problem.`]},
+       {s:"the colleague",r:"Day Player",a:"youngAdult",xs:[`Works beside them at ${pl.short} and is about to be blamed.`,`Asks the lead for advice at ${pl.short} at the worst possible moment.`]}]},
+    {k:"signal",genre:"science fiction",tracks:["film","tv"],
+     who:[{k:"engineerS",s:"the engineer",a:"adult",p:"an engineer sent to fix a fault nobody can describe"},{k:"operatorS",s:"the operator",a:"midCareer",p:"an operator logging a transmission that should not exist"},{k:"techS",s:"the technician",a:"youngAdult",p:"a technician on a six-month posting alone"},{k:"scientistS",s:"the researcher",a:"mature",p:"a researcher whose instruments keep agreeing with each other"}],
+     place:[{k:"relay",short:"the relay station",w:["a relay station on a hillside","a relay station reached by one track","a relay station with living quarters attached"]},{k:"platform",short:"the platform",w:["an offshore platform with a skeleton crew","a platform two hours from shore","a platform where the weather decides everything"]},{k:"observ",short:"the observatory",w:["a small observatory above the treeline","an observatory kept at constant temperature","an observatory with one road and no neighbours"]}],
+     ttl:(P)=>[`The Repeat`,`Nine Seconds`,`Alone at ${P}`],
+     p:(w,pl)=>`${w.p} at ${pl.short} receives something that repeats, and the repetition is not natural`,
+     turns:[(P,J)=>`the signal at ${P} answers a question the ${J} only asked aloud`,(P,J)=>`head office tells them to stop logging it at ${P}`,(P,J)=>`somebody was at ${P} before them and left notes`,(P,J)=>`the ${J} works out what it is and cannot prove it`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Alone at ${pl.short} for most of the story, talking to a log and a radio. Technical competence has to be convincing.`,`Rational to the last possible moment at ${pl.short}. The performance is somebody working, not somebody reacting.`]},
+       {s:"the relief",r:"Supporting",a:"midCareer",xs:[`Arrives at ${pl.short} to take over and finds the lead changed.`,`Shares two weeks at ${pl.short} and wants none of it explained.`]},
+       {s:"the voice from base",r:"Supporting",a:"mature",xs:[`Heard on the link to ${pl.short}, calm and procedural, answering slightly late.`,`Manages ${pl.short} from four hundred miles away and knows more than the lead does.`]},
+       {s:"the predecessor",r:"Day Player",a:"adult",xs:[`Seen in recordings from ${pl.short} and once in person. Ordinary, tired, certain.`,`Left ${pl.short} early and will talk about anything else.`]}]},
+
+    {k:"copy",genre:"science fiction",tracks:["film","tv","stage"],
+     who:[{k:"clerkCo",s:"the clerk",a:"adult",p:"a records clerk whose file has been updated by somebody else"},{k:"nurseCo",s:"the nurse",a:"midCareer",p:"a nurse whose shifts are being covered by a person she has never met"},{k:"teacherCo",s:"the teacher",a:"adult",p:"a teacher recognised by pupils she has never taught"},{k:"driverCo",s:"the bus driver",a:"mature",p:"a driver whose route was run last week without him"}],
+     place:[{k:"officeCo",short:"the office",w:["a records office on a mezzanine","an office of eleven desks and one printer","an office where the rota is printed every Friday"]},{k:"hospitalCo",short:"the hospital",w:["a district hospital with three wards","a hospital with a staff corridor nobody uses","a hospital that runs on agency cover"]},{k:"depotCo",short:"the depot",w:["a bus depot with a signing-on window","a depot where the shifts are chalked up","a depot with a canteen open at five"]}],
+     ttl:(P)=>[`The Rota Says Otherwise`,`Somebody Else's Shifts`,`The Other One at ${P}`],
+     p:(w,pl)=>`${w.p} and the paperwork at ${pl.short} insists they were there`,
+     turns:[(P,J)=>`somebody at ${P} greets the ${J} as though they spoke yesterday`,(P,J)=>`the ${J} finds their own handwriting at ${P} on something they never wrote`,(P,J)=>`the other one has been better at the job at ${P}`,(P,J)=>`the ${J} is offered the chance to let it continue at ${P}`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Plays it straight at ${pl.short}: an ordinary person collecting evidence about themselves.`,`Keeps working at ${pl.short} while the ground goes. No hysteria; everything in the detail.`]},
+       {s:"the colleague",r:"Supporting",a:"midCareer",xs:[`Worked with both of them at ${pl.short} and cannot tell the difference.`,`Liked the other one more and says so at ${pl.short} without knowing what they are saying.`]},
+       {s:"the supervisor",r:"Supporting",a:"mature",xs:[`Has a rota for ${pl.short} that explains nothing and will not be questioned.`,`Deals with the complaint at ${pl.short} as an administrative matter, which is the horror.`]},
+       {s:"the partner",r:"Day Player",a:"adult",xs:[`Asks the lead one question at home that they cannot answer.`,`Notices something different before anyone at ${pl.short} does.`]}]},
+
+    {k:"lastbus",genre:"mystery",tracks:["film","tv"],
+     who:[{k:"conductor",s:"the conductor",a:"mature",p:"a conductor working a service that is not on the timetable"},{k:"passengerL",s:"the passenger",a:"youngAdult",p:"a passenger who boards the wrong bus and stays on it"},{k:"inspectorL",s:"the inspector",a:"adult",p:"an inspector auditing a route with no paperwork"},{k:"driverL",s:"the driver",a:"midCareer",p:"a driver given a route that adds forty minutes to the map"}],
+     place:[{k:"route",short:"the route",w:["a night service through six suburbs","a route that ends at a stop with no shelter","a service that runs once, after midnight"]},{k:"terminus",short:"the terminus",w:["a terminus with one lit window","a turning circle behind a retail park","a terminus where the last crew signs off"]},{k:"garageL",short:"the garage",w:["a bus garage with a pit and a radio","a garage where the rota is kept in a ledger","a garage that smells of diesel and tea"]}],
+     ttl:(P)=>[`The Late Service`,`Stops Nobody Knows`,`Last Bus from ${P}`],
+     p:(w,pl)=>`${w.p} finds that ${pl.short} includes stops nobody can place`,
+     turns:[(P,J)=>`the same passenger boards at ${P} every night and never gets off`,(P,J)=>`the ledger at ${P} shows the service running for years`,(P,J)=>`the ${J} follows the route to the end and it is somewhere ordinary`,(P,J)=>`somebody at ${P} asks the ${J} not to look into it, politely`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Works ${pl.short} nightly and starts writing things down. Curiosity, not obsession, until quite late.`,`Steady, unspooked, and methodical about ${pl.short}. The audience gets ahead of them and has to wait.`]},
+       {s:"the regular passenger",r:"Supporting",a:"senior",xs:[`Rides ${pl.short} most nights and answers questions with other questions.`,`Sits in the same seat on ${pl.short} and knows the lead's name before it is given.`]},
+       {s:"the depot supervisor",r:"Supporting",a:"mature",xs:[`Signs off ${pl.short} and finds the whole subject tedious.`,`Has worked ${pl.short} for thirty years and stops the conversation twice.`]},
+       {s:"the retired driver",r:"Day Player",a:"senior",xs:[`Drove ${pl.short} in the eighties and will only talk in a public place.`,`Confirms one detail about ${pl.short} and refuses every other question.`]}]},
+
+    {k:"custody",genre:"family drama",tracks:["film","tv","stage"],
+     who:[{k:"fatherCu",s:"the father",a:"adult",p:"a father with his children every other week",mate:"the daughter",mateAge:"teen"},{k:"motherCu",s:"the mother",a:"adult",p:"a mother whose week starts on Wednesdays",mate:"the son",mateAge:"teen"},{k:"stepdad",s:"the stepfather",a:"midCareer",p:"a stepfather getting it wrong carefully"},{k:"grandmaCu",s:"the grandmother",a:"senior",p:"a grandmother doing the handovers so nobody has to meet",mate:"the grandson",mateAge:"teen"}],
+     place:[{k:"flatCu",short:"the flat",w:["a one-bedroom flat with a sofa bed","a flat furnished in a hurry","a flat with a spare room painted twice"]},{k:"carCu",short:"the car",w:["a car outside a school gate","a car with two booster seats","a car used for every handover"]},{k:"parkCu",short:"the park",w:["a park with a cafe and a car park","a park halfway between two houses","a park with a bandstand and no shelter"]}],
+     ttl:(P)=>[`Every Other Week`,`Handover at ${P}`,`Wednesdays`],
+     p:(w,pl)=>`${w.p} has one week to get right, and every handover happens at ${pl.short}`,
+     turns:[(P,J)=>`a school event falls in the wrong week and both parents come to ${P}`,(P,J)=>`one of the children asks the ${J} a direct question at ${P}`,(P,J)=>`the arrangement changes without warning and ${P} is where it is announced`,(P,J)=>`the week at ${P} goes well, which makes the ending harder`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Trying very hard at ${pl.short} and showing it. The love is never in doubt; the competence is.`,`Plans every hour of the week at ${pl.short} and gets almost none of it. Never complains in front of the children.`]},
+       {s:w.mate||"the child",r:"Lead",a:w.mateAge||"teen",xs:[`Old enough to manage both parents and doing it at ${pl.short} without being asked. No precocity, no speeches.`,`Says very little at ${pl.short} and watches everything. Has one scene that turns the film.`]},
+       {s:"the other parent",r:"Supporting",a:"adult",xs:[`Seen at ${pl.short} in handovers and on the phone. Reasonable, and reasonable is not the same as kind.`,`Arrives at ${pl.short} on time every week and makes one remark that lands hard.`]},
+       {s:"the younger sibling",r:"Supporting",a:"child",xs:[`Too young to follow it and reads the room anyway. Scenes at ${pl.short} need a parent or guardian and a chaperone on set.`,`Cheerful at ${pl.short} and the barometer for everyone else. Minor: a parent or guardian on set.`]}]},
+
+    {k:"foster",genre:"family drama",tracks:["film","tv","stage"],
+     who:[{k:"fosterA",s:"the foster carer",a:"mature",p:"a carer whose house has been quiet for a year"},{k:"fosterB",s:"the first-time carer",a:"adult",p:"a woman taking a placement for the first time"},{k:"fosterC",s:"the uncle",a:"midCareer",p:"an uncle taking in his brother's child"},{k:"fosterD",s:"the retired teacher",a:"senior",p:"a retired teacher approved at sixty-three"}],
+     place:[{k:"houseF",short:"the house",w:["a house with a spare room kept ready","a terraced house with a garden gate","a house where the third bedroom has been repainted"]},{k:"schoolF",short:"the school",w:["a primary school with a wrap-around club","a school with a new intake every September","a school where the office knows every family"]},{k:"officeF",short:"the office",w:["a social work office with a family room","an office with a box of toys in the corner","an office where meetings run over"]}],
+     ttl:(P)=>[`Six Weeks`,`The Spare Room`,`Placement`],
+     p:(w,pl)=>`${w.p} takes in a child for what is supposed to be six weeks, and ${pl.short} has to change`,
+     turns:[(P,J)=>`the child tests whether the ${J} means it`,(P,J)=>`a parent asks to meet, and ${P} is where it is arranged`,(P,J)=>`a decision is made about the placement without consulting ${P}`,(P,J)=>`six weeks becomes a year and nobody at ${P} says the word permanent`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Patient at ${pl.short} in a way that costs them. Does the unglamorous version of love: lifts, meals, forms.`,`Has read everything and is still unprepared. Every good day at ${pl.short} is provisional.`]},
+       {s:"the child",r:"Lead",a:"teen",xs:[`Guarded at ${pl.short}, funny when they forget to be. Minor role: a parent or guardian on set, plus a chaperone for all scenes.`,`Arrives at ${pl.short} with one bag and a practised politeness. Minor role: a parent or guardian on set.`]},
+       {s:"the social worker",r:"Supporting",a:"adult",xs:[`Carries too many cases and is good at this one. Visits ${pl.short} with real warmth and a deadline.`,`Explains the process at ${pl.short} three times and believes in it less each time.`]},
+       {s:"the neighbour",r:"Day Player",a:"senior",xs:[`Watches ${pl.short} from across the road and turns out to be an ally.`,`Brings something to ${pl.short} in week two without making a thing of it.`]}]},
+
+    {k:"sibs",genre:"family drama",tracks:["film","tv","stage"],
+     who:[{k:"eldest",s:"the eldest",a:"midCareer",p:"the one who organised the funeral and the paperwork",mate:"the youngest",mateAge:"adult"},{k:"middle",s:"the middle sibling",a:"adult",p:"the one who came back for a week and stayed three",mate:"the eldest sibling",mateAge:"mature"},{k:"youngest",s:"the youngest",a:"youngAdult",p:"the one everybody still treats as a child",mate:"the eldest sibling",mateAge:"mature"},{k:"onlyone",s:"the one who stayed",a:"adult",p:"the one who lived ten minutes away for twenty years",mate:"the brother",mateAge:"midCareer"}],
+     place:[{k:"flatS",short:"the flat",w:["a flat with fifty years of things in it","a flat where nothing has been thrown away","a flat that has to be cleared by Friday"]},{k:"bungalow",short:"the bungalow",w:["a bungalow with a garage full of boxes","a bungalow sold before probate finished","a bungalow with a garden somebody still waters"]},{k:"shopS",short:"the shop",w:["a shop the family ran for thirty years","a shop with the stock still on the shelves","a shop with the name over the door"]}],
+     ttl:(P)=>[`Four Days at ${P}`,`Everything in Boxes`,`What They Left`],
+     p:(w,pl)=>`${w.p} has to clear ${pl.short} with the others in four days`,
+     turns:[(P,J)=>`one object at ${P} turns out to matter more than the money`,(P,J)=>`somebody has been taking things from ${P} already`,(P,J)=>`a document at ${P} contradicts the family story`,(P,J)=>`the last hour at ${P} is the first time they have all laughed`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Organising ${pl.short} because nobody else will and resenting it silently. The resentment must never become a speech.`,`Has a list for ${pl.short} and keeps to it. Grief arrives sideways, in the middle of a practical task.`]},
+       {s:w.mate||"the sibling",r:"Lead",a:w.mateAge||"adult",xs:[`Arrives at ${pl.short} late and is better with people than the lead. Both of them know it.`,`Wants to talk about their childhood at ${pl.short}; the lead wants to finish the kitchen.`]},
+       {s:"the in-law",r:"Supporting",a:"midCareer",xs:[`Married into this and is the only calm person at ${pl.short}.`,`Makes tea at ${pl.short}, says almost nothing, and sees all of it.`]},
+       {s:"the neighbour",r:"Day Player",a:"senior",xs:[`Knew the parent better than the children did and says so at ${pl.short}, kindly.`,`Brings a photograph to ${pl.short} that nobody in the family has seen.`]}]},
+
+    {k:"coach",genre:"sports drama",tracks:["film","tv"],
+     who:[{k:"coachA",s:"the coach",a:"mature",p:"a coach in the last season of a losing contract"},{k:"coachB",s:"the stand-in coach",a:"adult",p:"an assistant handed the team eight games in"},{k:"coachC",s:"the returning player",a:"midCareer",p:"a former player who came back to run the side"},{k:"coachD",s:"the volunteer",a:"senior",p:"a volunteer keeping a club alive on their own"}],
+     place:[{k:"clubP",short:"the club",w:["a community club with one pitch and a shed","a club with a bar that pays for the kit","a club whose lease runs out in June"]},{k:"sportshall",short:"the hall",w:["a sports hall booked three evenings a week","a hall with markings for four sports","a hall shared with a martial arts class"]},{k:"trackP",short:"the track",w:["a municipal track with two working lanes","a track used by three clubs","a track with floodlights on a meter"]}],
+     ttl:(P)=>[`One More Season`,`Saturdays at ${P}`,`The Lease Runs Out`],
+     p:(w,pl)=>`${w.p} has one season to keep ${pl.short} open`,
+     turns:[(P,J)=>`the best player at ${P} is offered somewhere better`,(P,J)=>`the funding decision about ${P} arrives mid-season`,(P,J)=>`the ${J} drops a player for the right reason and the wrong week`,(P,J)=>`${P} survives, and not because of the results`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Runs ${pl.short} on evenings and goodwill. Never gives a big speech; the team is held together in small corrections.`,`Knows ${pl.short} is finished and turns up anyway. Dry, funny, and hard to sit next to when losing.`]},
+       {s:"the best player",r:"Lead",a:"teen",xs:[`Carries the side at ${pl.short} and is being pulled away from it. Minor role if cast under 18: a parent or guardian on set.`,`Talented at ${pl.short} and bored. The part needs real ability on camera.`]},
+       {s:"the parent",r:"Supporting",a:"midCareer",xs:[`On the touchline at ${pl.short} every week with opinions about selection.`,`Funds half of ${pl.short} quietly and expects something for it.`]},
+       {s:"the veteran player",r:"Supporting",a:"mature",xs:[`Too old for ${pl.short} and the only one who knows what it used to be.`,`Trains at ${pl.short} twice a week and holds the dressing room together.`]}]},
+
+    {k:"comeback",genre:"sports drama",tracks:["film","tv"],
+     who:[{k:"cyclist",s:"the cyclist",a:"adult",p:"a cyclist eleven months after a crash"},{k:"runnerCB",s:"the runner",a:"youngAdult",p:"a runner coming back from a stress fracture"},{k:"goalie",s:"the goalkeeper",a:"midCareer",p:"a goalkeeper nobody has signed since the injury"},{k:"lifter",s:"the lifter",a:"adult",p:"a lifter whose shoulder decides how long this lasts"}],
+     place:[{k:"gymCB",short:"the gym",w:["a gym open from six with a physio room","a gym above a supermarket","a gym with one coach and a booking sheet"]},{k:"trackCB",short:"the track",w:["a track in the early morning","a track shared with a school","an indoor track with three lanes"]},{k:"poolCB",short:"the pool",w:["a pool with lane ropes up at seven","a municipal pool with a viewing gallery","a pool that closes for schools at ten"]}],
+     ttl:(P)=>[`Twelve Weeks`,`Back at ${P}`,`The Second Time`],
+     p:(w,pl)=>`${w.p} has twelve weeks at ${pl.short} to find out whether there is a career left`,
+     turns:[(P,J)=>`the body holds at ${P} and the nerve does not`,(P,J)=>`a younger athlete at ${P} is quietly better`,(P,J)=>`the ${J} is offered coaching work instead`,(P,J)=>`the last session at ${P} answers it, one way or the other`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Physical lead: training at ${pl.short} has to be real on camera. Most of the drama is in the recovery, not the effort.`,`Back at ${pl.short} before anyone advised it. Cheerful with everybody and honest with nobody.`]},
+       {s:"the physio",r:"Supporting",a:"adult",xs:[`Treats them at ${pl.short} and says the thing the lead does not want.`,`Knows exactly how far ${pl.short} can be pushed and holds the line.`]},
+       {s:"the younger athlete",r:"Supporting",a:"teen",xs:[`Trains alongside them at ${pl.short}, admiring and faster. Minor role: a parent or guardian on set.`,`Asks the lead for advice at ${pl.short} without knowing what it costs to give.`]},
+       {s:"the old coach",r:"Day Player",a:"senior",xs:[`Comes to ${pl.short} once and tells the truth in eleven words.`,`Has seen this at ${pl.short} a dozen times and is gentle about it.`]}]},
+
+    {k:"band",genre:"music drama",tracks:["film","tv"],
+     who:[{k:"singerB",s:"the singer",a:"youngAdult",p:"a singer who has booked the last gig without telling the others"},{k:"drummerB",s:"the drummer",a:"adult",p:"a drummer holding a band together out of habit"},{k:"bassistB",s:"the bassist",a:"midCareer",p:"a bassist with a job and a family and one night free"},{k:"guitaristB",s:"the guitarist",a:"youngAdult",p:"a guitarist who has been offered somebody else's tour"}],
+     place:[{k:"rehearsalB",short:"the rehearsal room",w:["a rehearsal room hired by the hour","a lock-up with carpet on the walls","a practice room under a railway arch"]},{k:"venueB",short:"the venue",w:["a two-hundred-capacity venue with a sticky floor","a back room with a stage a foot high","a pub venue that pays in beer and a door split"]},{k:"vanB",short:"the van",w:["a van with a broken heater","a van that smells of cable and crisps","a van bought for four hundred pounds"]}],
+     ttl:(P)=>[`The Last Gig`,`One More Night at ${P}`,`Load Out`],
+     p:(w,pl)=>`${w.p}, and the band has one week around ${pl.short} to decide whether this is the end`,
+     turns:[(P,J)=>`one of them is offered a place elsewhere and says nothing at ${P}`,(P,J)=>`a song written by one member is what everyone at ${P} wants`,(P,J)=>`the gig at ${P} is oversold and they are not ready`,(P,J)=>`they play ${P} and it is the best they have ever been`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Fronts the band and holds ${pl.short} together badly. Must genuinely perform; miming will not carry it.`,`Wrote the songs and cannot say what they are about. At ${pl.short} the band is the only place they are articulate.`]},
+       {s:"the one who is leaving",r:"Lead",a:"adult",xs:[`Has the offer in their pocket through every scene at ${pl.short}. Loyalty and ambition in the same body.`,`Best musician at ${pl.short} and the least comfortable there.`]},
+       {s:"the one who never leaves",r:"Supporting",a:"midCareer",xs:[`Books ${pl.short}, drives, loads in, and is thanked by nobody.`,`Has a life outside ${pl.short} and keeps showing up anyway.`]},
+       {s:"the promoter",r:"Day Player",a:"adult",xs:[`Runs ${pl.short} and counts the door money in front of them.`,`Likes the band and pays them badly at ${pl.short}, cheerfully.`]}]},
+
+    {k:"choir",genre:"music comedy drama",tracks:["film","tv","stage"],
+     who:[{k:"conductorC",s:"the conductor",a:"mature",p:"a conductor with six weeks and a choir that cannot hold a line"},{k:"accompanist",s:"the accompanist",a:"midCareer",p:"an accompanist who has been running everything unofficially"},{k:"newmemberC",s:"the new member",a:"adult",p:"a newcomer who can actually sing and says nothing about it"},{k:"organiserC",s:"the organiser",a:"senior",p:"the person who books the hall and chases the subs"}],
+     place:[{k:"hallC",short:"the hall",w:["a church hall with a piano that needs tuning","a hall hired on Tuesday evenings","a hall with a draught and a tea urn"]},{k:"churchC",short:"the church",w:["a parish church with a cold nave","a church used twice a week","a church with a choir stall for twelve"]},{k:"schoolC",short:"the school hall",w:["a school hall booked after six","a hall with stacking chairs and a stage","a hall shared with a badminton club"]}],
+     ttl:(P)=>[`Six Weeks to the Competition`,`Tuesdays at ${P}`,`In Four Parts`],
+     p:(w,pl)=>`${w.p} has one competition to prepare for, and ${pl.short} is all they have`,
+     turns:[(P,J)=>`the best voice at ${P} will not sing alone`,(P,J)=>`two members of ${P} have not spoken in years`,(P,J)=>`the piece chosen for ${P} is too hard and nobody will say so`,(P,J)=>`they do not win, and ${P} is fuller the following week`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Holds ${pl.short} together with charm and blackmail in equal parts. Musical credibility required.`,`Cares more about ${pl.short} than about winning and has to hide it.`]},
+       {s:"the reluctant soloist",r:"Lead",a:"adult",xs:[`Can sing and will not, for a reason the film earns. Real vocal ability needed for ${pl.short}.`,`Joined ${pl.short} to sit at the back and is not allowed to stay there.`]},
+       {s:"the longest-standing member",r:"Supporting",a:"senior",xs:[`Has been at ${pl.short} for thirty years and disapproves of everything since 1994.`,`Runs the tea at ${pl.short} and the politics with it.`]},
+       {s:"the teenager",r:"Supporting",a:"teen",xs:[`Dragged to ${pl.short} and turns out to be the best musician in the room. Minor role: a parent or guardian on set.`,`Comes to ${pl.short} for the wrong reasons and stays for the right ones. Minor role: a parent or guardian on set.`]}]},
+
+    {k:"busker",genre:"music drama",tracks:["film","tv","stage"],
+     who:[{k:"buskerA",s:"the busker",a:"youngAdult",p:"a street musician playing the same pitch every day"},{k:"buskerB",s:"the saxophonist",a:"mature",p:"a player who has worked one corner for nine years"},{k:"buskerC",s:"the duo",a:"adult",p:"half of a duo whose partner has stopped turning up"},{k:"buskerD",s:"the violinist",a:"youngAdult",p:"a conservatoire dropout playing underground"}],
+     place:[{k:"concourse",short:"the concourse",w:["a station concourse with a pitch by the barriers","a concourse where the acoustics are perfect","a concourse patrolled twice an hour"]},{k:"marketB",short:"the market",w:["a covered market with a permitted spot","a market street on a Saturday","a market with a rota for performers"]},{k:"underpass",short:"the underpass",w:["an underpass with a tiled ceiling","an underpass between two platforms","an underpass that carries sound for fifty yards"]}],
+     ttl:(P)=>[`The Pitch at ${P}`,`Playing for Coins`,`Somebody Else's Corner`],
+     p:(w,pl)=>`${w.p} finds somebody else has taken ${pl.short}, and the pitch is the whole living`,
+     turns:[(P,J)=>`the newcomer at ${P} is better and knows it`,(P,J)=>`an official ruling about ${P} suits neither of them`,(P,J)=>`the two of them play ${P} together and it works`,(P,J)=>`somebody films ${P} and it changes one of their lives only`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Plays live at ${pl.short}; the music has to be theirs. Proud in a way that is close to fragile.`,`Works ${pl.short} in all weathers and counts coins in the van. Never asks anybody for anything.`]},
+       {s:"the newcomer",r:"Lead",a:"youngAdult",xs:[`Arrives at ${pl.short} with better gear and no manners. Genuine musicianship required.`,`Takes ${pl.short} without asking and is baffled by the offence.`]},
+       {s:"the stallholder",r:"Supporting",a:"mature",xs:[`Works beside ${pl.short} daily and has heard every song twice.`,`Adjudicates ${pl.short} unofficially, and everybody obeys.`]},
+       {s:"the official",r:"Day Player",a:"adult",xs:[`Enforces the rules at ${pl.short} without enjoying it.`,`Comes to ${pl.short} with a clipboard and a licensing schedule.`]}]},
+    {k:"plantvote",genre:"period drama",tracks:["film","tv","stage"],era:"1970s",
+     who:[{k:"steward",s:"the shop steward",a:"mature",p:"a shop steward counting votes he is not sure of"},{k:"youngworker",s:"the young worker",a:"youngAdult",p:"a worker three months in with an opinion"},{k:"foremanP",s:"the foreman",a:"mature",p:"a foreman caught between the floor and the office"},{k:"clerkP",s:"the wages clerk",a:"adult",p:"a clerk who knows what everyone is paid"}],
+     place:[{k:"plant",short:"the plant",w:["a components plant on the edge of town","a plant running two shifts","a plant with a canteen the size of a church"]},{k:"canteenP",short:"the canteen",w:["a works canteen with long tables","a canteen open from six","a canteen where every meeting really happens"]},{k:"gateP",short:"the gate",w:["a factory gate with a brazier","a gate where the buses stop","a gate with a hut and a barrier"]}],
+     ttl:(P)=>[`The Vote`,`Three Days at ${P}`,`Show of Hands`],
+     p:(w,pl)=>`${w.p} has three days before the floor at ${pl.short} decides whether to walk out`,
+     turns:[(P,J)=>`the vote at ${P} is closer than anyone admits`,(P,J)=>`a family at ${P} is split down the middle by it`,(P,J)=>`the offer improves the night before the meeting at ${P}`,(P,J)=>`the ${J} votes against their own side and explains it to nobody`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Speaks for four hundred people at ${pl.short} and is not sure any more. Period piece: the argument is the action.`,`Has worked ${pl.short} since school and knows what a strike costs a street. Never grandstands.`]},
+       {s:"the one on the other side",r:"Lead",a:"midCareer",xs:[`Argues the opposite at ${pl.short} and is not wrong. Must be as sympathetic as the lead.`,`Has three children and a mortgage and says so at ${pl.short} without self-pity.`]},
+       {s:"the manager",r:"Supporting",a:"mature",xs:[`Represents the office at ${pl.short} and believes he is being reasonable.`,`Came up off the floor at ${pl.short} and has not forgotten it, which makes it worse.`]},
+       {s:"the wife",r:"Supporting",a:"midCareer",xs:[`Does the arithmetic at home that nobody does at ${pl.short}.`,`Supports him completely and tells him the truth in the last scene.`]}]},
+
+    {k:"boarding",genre:"period drama",tracks:["film","tv","stage"],era:"1950s",
+     who:[{k:"landladyP",s:"the landlady",a:"mature",p:"a landlady with six rooms and strict hours"},{k:"lodgerP",s:"the new lodger",a:"youngAdult",p:"a lodger who arrived with one case and no references"},{k:"soldierP",s:"the former soldier",a:"adult",p:"a man who has been demobbed two years and cannot settle"},{k:"typistP",s:"the typist",a:"youngAdult",p:"a typist saving for a ticket out"}],
+     place:[{k:"boardhouse",short:"the boarding house",w:["a boarding house on a seafront terrace","a boarding house with a payphone in the hall","a boarding house where the dining room seats eight"]},{k:"parlour",short:"the parlour",w:["a front parlour kept for visitors","a parlour with a wireless and one good chair","a parlour used on Sundays"]},{k:"kitchenP2",short:"the kitchen",w:["a basement kitchen with a range","a kitchen where the lodgers are not allowed","a kitchen with a scullery off it"]}],
+     ttl:(P)=>[`Room Six`,`The House Rules`,`Full Board at ${P}`],
+     p:(w,pl)=>`${w.p} finds the arrangement at ${pl.short} disturbed by one new arrival`,
+     turns:[(P,J)=>`something is missing from a room at ${P} and everyone is suspected`,(P,J)=>`two lodgers at ${P} knew each other before`,(P,J)=>`the ${J} covers for somebody and cannot explain why`,(P,J)=>`the rules at ${P} bend once, and everything changes`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Runs ${pl.short} to the minute and is lonelier than anyone in it. Period manners, modern interior life.`,`Keeps the ledger at ${pl.short} and every secret in it. Warmth appears twice and both times it costs.`]},
+       {s:"the new lodger",r:"Lead",a:"youngAdult",xs:[`Arrives at ${pl.short} charming and unplaceable. The audience should like them and not trust them.`,`Pays a month up front at ${pl.short} in cash and answers no questions.`]},
+       {s:"the long-term lodger",r:"Supporting",a:"senior",xs:[`Has lived at ${pl.short} eleven years and has the best chair by right.`,`Notices every change at ${pl.short} and reports them at breakfast.`]},
+       {s:"the maid",r:"Supporting",a:"teen",xs:[`Works at ${pl.short} from six in the morning and hears everything. Minor role: a parent or guardian on set if cast under 18.`,`Cleans the rooms at ${pl.short} and knows what is in all of them.`]}]},
+
+    {k:"videostore",genre:"period comedy drama",tracks:["film","tv"],era:"1990s",
+     who:[{k:"clerkV",s:"the clerk",a:"youngAdult",p:"a clerk who has seen everything on the shelves twice"},{k:"ownerV",s:"the owner",a:"mature",p:"an owner who remortgaged for the second store"},{k:"saturdaykid",s:"the Saturday assistant",a:"teen",p:"a sixteen-year-old on their first wage"},{k:"regularV",s:"the regular",a:"adult",p:"a customer in four nights a week who never rents anything new"}],
+     place:[{k:"store",short:"the store",w:["a video store between a chip shop and a bookmaker","a rental store with a beaded curtain at the back","a store with hand-written staff picks"]},{k:"arcade",short:"the arcade",w:["a seafront arcade with eight machines","an arcade with a change booth","an arcade that shuts when the tide is in"]},{k:"recordshop",short:"the record shop",w:["a record shop up a flight of stairs","a record shop with listening posts","a shop that orders in from a catalogue"]}],
+     ttl:(P)=>[`Due Back Tuesday`,`The Shop on the Corner`,`Late Fees at ${P}`],
+     p:(w,pl)=>`${w.p} watches ${pl.short} run out of time as the chain opens across the road`,
+     turns:[(P,J)=>`the chain offers the ${J} a job`,(P,J)=>`a stocktake at ${P} shows where the money has gone`,(P,J)=>`the regulars organise something for ${P} that will not work`,(P,J)=>`${P} closes and one of them keeps the sign`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Knows every title in ${pl.short} and nothing about what happens next. Funny, specific, never nostalgic on purpose.`,`Has worked ${pl.short} for six years and calls it temporary. Period detail matters; the feelings do not need dressing.`]},
+       {s:"the owner",r:"Lead",a:"mature",xs:[`Put everything into ${pl.short} and is the last to admit the numbers.`,`Runs ${pl.short} like a club rather than a business, which is why people come.`]},
+       {s:"the Saturday assistant",r:"Supporting",a:"teen",xs:[`First job at ${pl.short}, embarrassed by all of it, secretly loves it. Minor role: a parent or guardian on set.`,`Restocks ${pl.short} badly and is better with customers than anyone. Minor role: a parent or guardian on set.`]},
+       {s:"the rep",r:"Day Player",a:"adult",xs:[`Comes to ${pl.short} monthly with terms that get worse each visit.`,`Likes ${pl.short} and cannot help it. One scene, apologetic, immovable.`]}]},
+
+    {k:"funeralwrong",genre:"dark comedy",tracks:["film","tv","stage"],
+     who:[{k:"executorD",s:"the executor",a:"midCareer",p:"the child left to organise a funeral for a difficult parent"},{k:"undertaker",s:"the funeral director",a:"mature",p:"a director with two services and one hearse"},{k:"widowD",s:"the widow",a:"senior",p:"a widow discovering her husband's second address"},{k:"friendD",s:"the friend",a:"adult",p:"the friend asked to speak who did not like him much"}],
+     place:[{k:"crem",short:"the crematorium",w:["a crematorium with twenty-minute slots","a crematorium chapel that seats sixty","a crematorium with a car park too small"]},{k:"wake",short:"the wake",w:["a function room above a pub","a wake with a buffet and a raffle table","a back room with sandwiches under film"]},{k:"parlourD",short:"the funeral home",w:["a funeral home on a high street","a funeral home with two viewing rooms","a funeral home that also sells headstones"]}],
+     ttl:(P)=>[`A Good Send-Off`,`Twenty Minutes at ${P}`,`The Other Family`],
+     p:(w,pl)=>`${w.p} has to get through one afternoon at ${pl.short} without the family finding out`,
+     turns:[(P,J)=>`somebody nobody invited arrives at ${P}`,(P,J)=>`the wrong words are read out at ${P} and nobody stops it`,(P,J)=>`two versions of the dead man meet at ${P}`,(P,J)=>`the truth comes out at ${P} and the day is better for it`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Holding ${pl.short} together while it comes apart. Comedy of politeness under pressure; never broad.`,`Has a schedule for ${pl.short} and a eulogy they do not believe. Both are tested by three o'clock.`]},
+       {s:"the unexpected guest",r:"Lead",a:"mature",xs:[`Arrives at ${pl.short} with a claim and perfect manners.`,`Knows more about the deceased than the family and behaves impeccably at ${pl.short}.`]},
+       {s:"the sibling",r:"Supporting",a:"adult",xs:[`Does nothing to help at ${pl.short} and is very good with the guests.`,`Turns up at ${pl.short} late and charms everybody the lead has been managing for hours.`]},
+       {s:"the officiant",r:"Day Player",a:"senior",xs:[`Runs ${pl.short} to time, whatever is happening in the room.`,`Has conducted a thousand of these and adapts to ${pl.short} without blinking.`]}]},
+
+    {k:"neighbours",genre:"dark comedy",tracks:["film","tv","stage"],
+     who:[{k:"neighA",s:"the householder",a:"midCareer",p:"a man who measured the fence and found it eleven inches out"},{k:"neighB",s:"the newcomer",a:"adult",p:"a woman who has just moved in and wants to be liked"},{k:"neighC",s:"the retired couple",a:"senior",p:"a retiree with a camera and a log book"},{k:"neighD",s:"the tenant",a:"youngAdult",p:"a tenant whose landlord will not answer the phone"}],
+     place:[{k:"fence",short:"the boundary",w:["a boundary fence between two gardens","a shared driveway with a painted line","a hedge nobody has agreed about"]},{k:"street2",short:"the street",w:["a cul-de-sac of nine houses","a street with a residents' group","a terrace with parking permits"]},{k:"hallM",short:"the meeting",w:["a residents' meeting in a community room","a meeting in somebody's front room","a hall hired for one evening"]}],
+     ttl:(P)=>[`Eleven Inches`,`The Boundary`,`A Matter of Principle`],
+     p:(w,pl)=>`${w.p} takes a small dispute at ${pl.short} much further than it needs to go`,
+     turns:[(P,J)=>`somebody else at ${P} takes a side and doubles it`,(P,J)=>`a letter about ${P} is sent that cannot be unsent`,(P,J)=>`the ${J} is right about ${P} and it does not help`,(P,J)=>`they need each other for one night and ${P} is forgotten`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Reasonable in every scene at ${pl.short} and escalating in all of them. The comedy is in the reasonableness.`,`Documents ${pl.short} thoroughly. Would be sympathetic if they stopped one step earlier, and they never do.`]},
+       {s:"the other party",r:"Lead",a:"adult",xs:[`Wants none of this and gives as good as they get at ${pl.short}.`,`Tries to be friendly about ${pl.short} twice, then stops trying.`]},
+       {s:"the onlooker",r:"Supporting",a:"senior",xs:[`Watches ${pl.short} from a window and enjoys it enormously.`,`Offers to mediate ${pl.short} and makes it considerably worse.`]},
+       {s:"the official",r:"Day Player",a:"midCareer",xs:[`Assesses ${pl.short} and finds both of them tiresome.`,`Comes to ${pl.short} with a tape measure and no interest in history.`]}]},
+
+    {k:"lastsummer",genre:"coming-of-age",tracks:["film","tv"],
+     who:[{k:"leaver",s:"the one leaving",a:"teen",p:"a teenager with a place at a college three hundred miles away"},{k:"stayer",s:"the one staying",a:"teen",p:"a teenager who did not apply anywhere"},{k:"workerY",s:"the summer worker",a:"teen",p:"a seventeen-year-old on their first proper wage"},{k:"carerY",s:"the one who cannot go",a:"teen",p:"a teenager whose mother is ill"}],
+     place:[{k:"lido",short:"the lido",w:["an outdoor pool open from June","a lido with a kiosk and a whistle","a lido that closes the first week of September"]},{k:"cornershop",short:"the shop",w:["a corner shop with a Saturday rota","a shop where everyone under twenty works one summer","a shop with a stockroom nobody supervises"]},{k:"estateY",short:"the estate",w:["an estate with a green and a shuttered pub","an estate where everyone's family knows everyone's family","an estate ten minutes from the sea"]}],
+     ttl:(P)=>[`The Last Summer at ${P}`,`Before September`,`Nothing Much Happens`],
+     p:(w,pl)=>`${w.p} spends one last summer around ${pl.short} with people they will not see again`,
+     turns:[(P,J)=>`somebody at ${P} says out loud that it is over`,(P,J)=>`the ${J} does something at ${P} they cannot take back`,(P,J)=>`a parent needs them and ${P} becomes impossible`,(P,J)=>`the last night at ${P} is ordinary, and that is the point`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Carries the summer at ${pl.short}. Minor role: a parent or guardian on set, plus a chaperone for all filming days.`,`Funny with their friends at ${pl.short} and silent at home. Minor role: a parent or guardian on set.`]},
+       {s:"the best friend",r:"Lead",a:"teen",xs:[`Staying at ${pl.short} and pretending not to mind. Minor role: a parent or guardian on set.`,`Knows the lead better than the family does. Minor role: a parent or guardian on set.`]},
+       {s:"the older one",r:"Supporting",a:"youngAdult",xs:[`Two years ahead and back at ${pl.short} for the summer, which tells them everything.`,`Works at ${pl.short} full time now and is kind about it.`]},
+       {s:"the parent",r:"Supporting",a:"midCareer",xs:[`Proud, frightened, and no good at saying either. Scenes at home, not at ${pl.short}.`,`Works nights and sees them for twenty minutes a day.`]}]},
+
+    {k:"firstjob",genre:"coming-of-age comedy",tracks:["film","tv","stage"],
+     who:[{k:"kitchenporter",s:"the kitchen porter",a:"teen",p:"a sixteen-year-old washing up six hours a night"},{k:"caddy",s:"the caddy",a:"teen",p:"a teenager carrying bags for people twice their age"},{k:"paperround",s:"the delivery kid",a:"teen",p:"a fourteen-year-old with the longest round in town"},{k:"helper",s:"the shop assistant",a:"teen",p:"a teenager working for a relative who will not pay properly"}],
+     place:[{k:"kitchenJ",short:"the kitchen",w:["a hotel kitchen running four services","a pub kitchen with one extractor","a kitchen where the rota is a whiteboard"]},{k:"course",short:"the course",w:["a municipal golf course with a hut","a course where the members all know each other","a course with a caddy shed and a kettle"]},{k:"roundJ",short:"the round",w:["a paper round covering three streets and a hill","a round that starts at half past five","a round with two dogs on it"]}],
+     ttl:(P)=>[`First Wage`,`Six Hours a Night`,`Learning at ${P}`],
+     p:(w,pl)=>`${w.p} discovers what adults are like when they think nobody is listening at ${pl.short}`,
+     turns:[(P,J)=>`the ${J} is blamed for something at ${P} they did not do`,(P,J)=>`somebody at ${P} treats them as an equal for the first time`,(P,J)=>`the money from ${P} matters more at home than anyone says`,(P,J)=>`they walk out of ${P} and are asked to come back`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`First job, all of it new at ${pl.short}. Minor role: a parent or guardian on set, plus a chaperone for all filming days.`,`Quiet at ${pl.short} and watching everything. Comedy comes from what they notice. Minor role: a parent or guardian on set.`]},
+       {s:"the one who shows them",r:"Lead",a:"adult",xs:[`Runs ${pl.short} and teaches them properly, in between being rude about everything.`,`Has been at ${pl.short} for years and is the first adult to take them seriously.`]},
+       {s:"the boss",r:"Supporting",a:"mature",xs:[`Owns ${pl.short} and treats the young staff as furniture until it suits them not to.`,`Keeps ${pl.short} going on thin margins and cuts corners with the rota.`]},
+       {s:"the other new starter",r:"Supporting",a:"teen",xs:[`Started at ${pl.short} the same week and is much better at pretending. Minor role: a parent or guardian on set.`,`Gets on at ${pl.short} with everyone and is not a friend. Minor role: a parent or guardian on set.`]}]},
+
+    {k:"missingposter",genre:"mystery",tracks:["film","tv"],
+     who:[{k:"postmistress",s:"the post office clerk",a:"mature",p:"a clerk who has pinned the same poster up for two years"},{k:"reporterM",s:"the local reporter",a:"adult",p:"a reporter on a paper with two staff left"},{k:"sisterM",s:"the sister",a:"adult",p:"a sister who never accepted the official account",mate:"the brother",mateAge:"adult"},{k:"officerM",s:"the retired officer",a:"senior",p:"an officer who worked the original case"}],
+     place:[{k:"townM",short:"the town",w:["a market town with one main street","a town with a bypass that took the traffic","a town where the same families run everything"]},{k:"officeM",short:"the newspaper office",w:["a local paper's office above a shop","an office with forty years of back issues","an office with one desk still used"]},{k:"lakeM",short:"the reservoir",w:["a reservoir with a footpath round it","a reservoir that drops in summer","a reservoir with a car park and a gate"]}],
+     ttl:(P)=>[`Still Missing`,`Two Years On`,`Nobody Talks About It`],
+     p:(w,pl)=>`${w.p} starts asking about a disappearance around ${pl.short} that everyone has agreed to stop discussing`,
+     turns:[(P,J)=>`somebody at ${P} lied at the time and still does`,(P,J)=>`a second person left ${P} the same week and nobody connected them`,(P,J)=>`the ${J} is warned off by somebody who means well`,(P,J)=>`the answer at ${P} is smaller and sadder than the rumour`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Knows everyone at ${pl.short}, which is an advantage for an hour and a problem after that.`,`Patient and methodical around ${pl.short}. Asks the same question of eleven people and hears eleven versions.`]},
+       {s:"the one who knows",r:"Supporting",a:"senior",xs:[`Has carried it since and will only talk away from ${pl.short}.`,`Answers everything about ${pl.short} except the one thing, twice.`]},
+       {s:"the family member",r:"Supporting",a:"midCareer",xs:[`Wants it left alone and cannot say why at ${pl.short}.`,`Has built a life since and ${pl.short} threatens it.`]},
+       {s:"the official",r:"Day Player",a:"mature",xs:[`Explains the file at ${pl.short} and is entirely correct and no help.`,`Meets the lead once near ${pl.short} and is careful with every word.`]}]},
+
+    {k:"letter",genre:"mystery",tracks:["film","tv","stage"],
+     who:[{k:"solicitor",s:"the solicitor",a:"midCareer",p:"a solicitor holding a letter to be opened on a date"},{k:"daughterL",s:"the daughter",a:"adult",p:"a woman left an envelope and an instruction",mate:"the mother",mateAge:"senior"},{k:"archivistL",s:"the archivist",a:"adult",p:"an archivist who found a letter never sent"},{k:"posty",s:"the postman",a:"mature",p:"a postman delivering to an address that no longer exists"}],
+     place:[{k:"officeL",short:"the office",w:["a solicitor's office above a bank","an office with box files to the ceiling","an office where the same clock has run for forty years"]},{k:"houseL",short:"the house",w:["a house being sold after a death","a house with a locked bureau","a house cleared in a week"]},{k:"libraryL",short:"the reading room",w:["a reading room with six desks","a reading room that closes at four","a reading room with a duty archivist"]}],
+     ttl:(P)=>[`To Be Opened`,`The Instruction`,`One Envelope`],
+     p:(w,pl)=>`${w.p} at ${pl.short} has to decide whether to act on what it says`,
+     turns:[(P,J)=>`the person it names is still alive and near ${P}`,(P,J)=>`a second letter at ${P} contradicts the first`,(P,J)=>`the ${J} was left it for a reason they do not like`,(P,J)=>`the instruction at ${P} is followed and nothing happens, and then it does`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Careful, professional, and personally involved by the second scene at ${pl.short}.`,`Reads it at ${pl.short} and re-reads it. Most of the performance is deciding.`]},
+       {s:"the person named",r:"Lead",a:"senior",xs:[`Lives an ordinary life near ${pl.short} and has been waiting for this without knowing it.`,`Answers the door and is not surprised. Everything at ${pl.short} turns on that.`]},
+       {s:"the relative",r:"Supporting",a:"adult",xs:[`Wants the letter at ${pl.short} destroyed and has a defensible reason.`,`Arrives at ${pl.short} to be helpful and is not.`]},
+       {s:"the colleague",r:"Day Player",a:"midCareer",xs:[`Tells the lead at ${pl.short} what the rules are and looks away once.`,`Signs the file at ${pl.short} and asks nothing.`]}]},
+
+    {k:"lockedroom",genre:"mystery",tracks:["film","tv","stage"],
+     who:[{k:"managerLR",s:"the duty manager",a:"adult",p:"a duty manager with one room that will not open"},{k:"maintenance",s:"the maintenance engineer",a:"midCareer",p:"an engineer whose master key does not work on one door"},{k:"guestLR",s:"the guest",a:"mature",p:"a guest who booked the same room for eleven years"},{k:"housekeeper",s:"the housekeeper",a:"mature",p:"a housekeeper who has never been inside it"}],
+     place:[{k:"hotelLR",short:"the hotel",w:["a railway hotel with ninety rooms","a hotel with two lifts and one stair","a hotel that keeps a ledger as well as a system"]},{k:"innLR",short:"the inn",w:["a coaching inn with a courtyard","an inn with rooms above the bar","an inn where the third floor is closed"]},{k:"spaLR",short:"the resort",w:["an out-of-season resort with a shut pool","a resort hotel with a wing closed for works","a resort where half the staff are seasonal"]}],
+     ttl:(P)=>[`Room Nine`,`Paid Up`,`The Booking at ${P}`],
+     p:(w,pl)=>`${w.p} at ${pl.short} finds that one room has been booked and paid for since before they started`,
+     turns:[(P,J)=>`the payment for ${P} comes from an account nobody can trace`,(P,J)=>`a long-serving member of staff at ${P} refuses to discuss it`,(P,J)=>`the room is opened and what is inside at ${P} is ordinary`,(P,J)=>`the booking at ${P} renews the day after it is cancelled`],
+     cast:(w,pl)=>[
+       {s:w.s,r:"Lead",a:w.a,xs:[`Runs ${pl.short} competently and cannot let this go. Curiosity played as administration.`,`Works nights at ${pl.short} and investigates between jobs. Never dramatic about it.`]},
+       {s:"the long-serving staff member",r:"Supporting",a:"senior",xs:[`Has worked ${pl.short} for decades and answers questions with the rota.`,`Knows the history of ${pl.short} and gives it out a sentence at a time.`]},
+       {s:"the owner's representative",r:"Supporting",a:"midCareer",xs:[`Visits ${pl.short} quarterly and wants the matter left where it is.`,`Polite about ${pl.short}, and the politeness has a floor under it.`]},
+       {s:"the guest",r:"Day Player",a:"mature",xs:[`Stays at ${pl.short} twice a year and has noticed the same thing.`,`Mentions ${pl.short} to the lead in passing and changes the story.`]}]},
   ];
   function r9Hash(str){let x=0;String(str).split("").forEach(c=>{x=(x*31+c.charCodeAt(0))>>>0;});return x;}
-  function r9Sketch(tier,salt,i,place,job){
-    const P=place||"the place",J=job||"the job";
-    const n=r9Hash(salt+"|"+tier+"|"+i);
-    const T=R9_TRAIT[n%R9_TRAIT.length](P,J);
-    const D=R9_DOES[(n>>>3)%R9_DOES.length](P,J);
-    const E=R9_EDGE[(n>>>7)%R9_EDGE.length](P,J);
-    const shape=(n>>>11)%4;
-    if(shape===0)return `${T}. ${D}. ${E}.`;
-    if(shape===1)return `${D}. ${T}. ${E}.`;
-    if(shape===2)return `${T}. ${E}. ${D}.`;
-    return `${D}. ${E}.`;
-  }
   // A composed premise is a seed like any other: same fields, same durable key,
   // and it never carries `about`/`only`, so v3IsBrief keeps treating it as a
   // story rather than a brand brief.
+  //
+  // Round 9 step 1: every line a role gets is written for THAT frame's
+  // characters and carries the listing's own venue, so nothing is shared
+  // between unrelated listings. The universal clause bank this replaced put
+  // the same sentence ("keeps working at the diner while the argument goes on
+  // around her") on a line cook, a bus driver and a wedding planner.
+  // ── Round 9 step 2: a role label dropped where a noun belongs ───────────
+  // "Shelby is our one owed", "Wants something past regular", "Took the job as
+  // regular" - all of them a slot label ("the one owed", "the regular") pushed
+  // through a sentence built for an ordinary noun. The labels are the
+  // listing's own, so the check needs no dictionary.
+  const R9_SLOT_PREP=/\b(past|as|for|our one|the one|a|an)\s+$/i;
+  function r9SlotWords(roles){
+    const out=new Set();
+    (roles||[]).forEach(r=>{
+      const lb=String(r._slot||"").trim().replace(/^(the|a|an)\s+/i,"");
+      if(!lb)return;
+      // Only single-word labels can be mistaken for a noun mid-sentence.
+      if(/^[a-z][a-z-]+$/i.test(lb))out.add(lb.toLowerCase());
+    });
+    return [...out];
+  }
+  function r9SlotFillProblems(item,roles,txt){
+    const out=[];
+    const words=r9SlotWords(roles);
+    const all=String(txt||"");
+    words.forEach(w=>{
+      const re=new RegExp("\\b(past|as|for|our one)\\s+"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i");
+      if(re.test(all))out.push("role label used as a noun: "+w);
+    });
+    // "Shelby is our one owed", "about an one driving the wagon" - a slot
+    // label pushed through a sentence built for a noun. "is the one who
+    // stayed" is ordinary English and must not be caught.
+    if(/\b(a|an)\s+one\b/i.test(all))out.push("article before the word one");
+    if(/\bour one\s+\w+/i.test(all)&&!/\bour one\s+(day|night|week|shoot|session|role|actor|lead)\b/i.test(all))out.push("role label used as a noun: our one");
+    // An article left standing where its noun should be.
+    if(/\b(a|an|the)\s+[.,;:]/i.test(all))out.push("empty slot after an article");
+    if(/\s—\s*[.,;]|—\s*$|\s-\s*$/.test(all))out.push("dangling dash");
+    if(/ {2,}/.test(all))out.push("double space");
+    // Plain subject-verb disagreement on the handful of nouns the generator
+    // puts in front of a verb.
+    if(/\b(the (script|shoot|call|day|crew|team|part|role|story))\s+(come|go|have|are|were|do)\b/i.test(all))out.push("subject and verb disagree");
+    if(/\b(they|we|you)\s+(is|was|does|has been)\b/i.test(all)&&!/\bthey (is|was) (a|an|the)\b/i.test(all))out.push("subject and verb disagree");
+    return out;
+  }
+
+  // ── Round 9 step 3: things that cannot both be true ──────────────────────
+  // A customer does not work the last week of the diner; a buyer does not keep
+  // the place running; a fourteen-year-old has not been holding a gym together
+  // for years; a schedule note does not promise to be flexible and immovable
+  // in the same breath.
+  const R9_VISITOR=/\b(customer|regular|guest|visitor|buyer|inspector|official|passenger|patient|client|neighbour|neighbor)\b/i;
+  const R9_WORK_VERB=/\b(works?|working|runs?|keeps? .*(running|together)|holds? .{0,20}together|staffs?|opens? up|closes? up|clocks? (in|out)|on shift)\b/i;
+  function r9LogicProblems(item,roles){
+    const out=[];
+    (roles||[]).forEach(r=>{
+      const slot=String(r._slot||"");
+      const d=String(r.description||"");
+      if(R9_VISITOR.test(slot)&&R9_WORK_VERB.test(d)&&!/\b(used to work|worked there|former|ex-)\b/i.test(d))
+        out.push("a "+slot.replace(/^(the|a|an)\s+/i,"")+" is described as working there");
+      // Age against history: a minor cannot carry decades, or a past over an adult.
+      const lo=parseInt(String(r.age_range||"").split("-")[0],10);
+      if(isFinite(lo)&&lo<20){
+        if(/\b(twenty|thirty|forty|fifty) years\b|\bdecades\b|\bfor years\b|\bsince before\b|\blonger than anyone\b/i.test(d))out.push("a "+r.age_range+" role is given a decades-long history");
+        if(/\bused to beat\b|\btrained (him|her|them) years ago\b|\bworked together for years\b/i.test(d))out.push("a "+r.age_range+" role is given a history it cannot have");
+      }
+    });
+    // A schedule note that argues with itself.
+    const note=String(item.schedule_note||"");
+    if(/\bflexible\b/i.test(note)&&/\b(cannot move|can't move|won't move|will not move|fixed|immovable|no flexibility)\b/i.test(note))out.push("schedule note contradicts itself");
+    return out;
+  }
+
+  // Round 9 step 3: two background lines for the same crowd ("Regulars in the
+  // Background" and "Customers at a Diner (Background)") are one crowd. They
+  // are merged rather than rejected - the listing is fine, the breakdown just
+  // said it twice.
+  // ── Round 9 item 6k: the minors note is a listing-level fact ────────────
+  // "Guardian required." pasted into every under-18 role repeats the same
+  // sentence three times on one page and reads as boilerplate. It is stripped
+  // from the roles and stated once, in the submission requirements.
+  const R9_GUARDIAN=/\s*(A parent or guardian[^.]*\.|Guardian required\.|Minor role[^.]*guardian[^.]*\.|Minors?:[^.]*guardian[^.]*\.)/gi;
+  function r9MinorsNote(item,roles){
+    let had=false;
+    (roles||[]).forEach(r=>{
+      const d=String(r.description||"");
+      if(R9_GUARDIAN.test(d)){had=true;r.description=d.replace(R9_GUARDIAN," ").replace(/\s{2,}/g," ").trim();}
+      R9_GUARDIAN.lastIndex=0;
+    });
+    const minors=(roles||[]).some(r=>{const lo=parseInt(String(r.age_range||"").split("-")[0],10);return isFinite(lo)&&lo<18;});
+    if(!minors&&!had)return;
+    const req=String(item.submission_requirements||"").trim();
+    if(/parent or guardian/i.test(req))return;
+    item.submission_requirements=(req?req+" ":"")+"Roles under 18: a parent or guardian must be present on set, and all work follows child labour rules and permit requirements.";
+  }
+
+  function r9MergeBackground(roles){
+    const out=[];const taken=[];
+    (roles||[]).forEach(r=>{
+      const isBg=r._group||/background|extras/i.test(r.role_type||"");
+      if(!isBg){out.push(r);return;}
+      const words=clean(r._slot||r.name).split(" ").filter(w=>w.length>3);
+      const clash=taken.find(t=>words.some(w=>t.words.indexOf(w)>-1));
+      if(clash){
+        // Keep the fuller description of the two.
+        if(String(r.description||"").length>String(clash.role.description||"").length)clash.role.description=r.description;
+        return;
+      }
+      taken.push({words,role:r});out.push(r);
+    });
+    return out;
+  }
+
+  // Round 9: the brand bank is spent too. 222 briefs were written by hand and
+  // the log has retired all of them, so with narrative supply restored the
+  // board swung to 100% narrative - no commercials at all, which misses the
+  // mix as badly as the other direction did. A brief is a business and an
+  // angle, so it composes cleanly: 34 businesses x 14 angles.
+  const R9_BIZ=[
+    {k:"coffee",c:"Coffee Shop",n:"a neighbourhood coffee shop"},{k:"dental",c:"Dental Practice",n:"a family dental practice"},
+    {k:"garden",c:"Garden Centre",n:"a garden centre on the edge of town"},{k:"phone",c:"Mobile Network",n:"a mobile network"},
+    {k:"bank",c:"Credit Union",n:"a local credit union"},{k:"grocer",c:"Grocery Shop",n:"an independent grocery shop"},
+    {k:"gymb",c:"Gym",n:"a gym that opens at five"},{k:"paint",c:"Paint Brand",n:"a paint brand"},
+    {k:"insure",c:"Insurance",n:"a home insurer"},{k:"removal",c:"Removals Company",n:"a removals company"},
+    {k:"optician",c:"Opticians",n:"a high-street opticians"},{k:"pharma",c:"Pharmacy",n:"a late-opening pharmacy"},
+    {k:"petfood",c:"Pet Food Brand",n:"a pet food brand"},{k:"tyres",c:"Tyre Fitters",n:"a tyre-fitting chain"},
+    {k:"laundry",c:"Laundry Service",n:"a laundry and dry-cleaning service"},{k:"bakerybiz",c:"Bakery",n:"a bakery that supplies half the cafes in town"},
+    {k:"builder",c:"Builders Merchant",n:"a builders merchant"},{k:"energy",c:"Energy Supplier",n:"an energy supplier"},
+    {k:"broadband",c:"Broadband Provider",n:"a broadband provider"},{k:"taxi",c:"Taxi Firm",n:"a taxi firm"},
+    {k:"furniture",c:"Furniture Shop",n:"a furniture shop"},{k:"cleanb",c:"Cleaning Products",n:"a cleaning products brand"},
+    {k:"childcare",c:"Nursery",n:"a day nursery"},{k:"college",c:"Further Education",n:"a further education college"},
+    {k:"charity",c:"Charity",n:"a local charity"},{k:"council",c:"Public Service",n:"a public information service"},
+    {k:"dairy",c:"Dairy Brand",n:"a dairy brand"},{k:"shoes",c:"Footwear Brand",n:"a footwear brand"},
+    {k:"travel",c:"Travel Agent",n:"a high-street travel agent"},{k:"vets",c:"Veterinary Practice",n:"a veterinary practice"},
+    {k:"hardwareb",c:"Hardware Shop",n:"a hardware shop"},{k:"bikes",c:"Bike Shop",n:"a bike shop"},
+    {k:"deli",c:"Delicatessen",n:"a delicatessen"},{k:"printb",c:"Print Shop",n:"a print and copy shop"}
+  ];
+  const R9_ANGLE=[
+    {k:"first",a:n=>`the first customer through the door at ${n}`},
+    {k:"last",a:n=>`the last ten minutes of a shift at ${n}`},
+    {k:"handover",a:n=>`two members of staff at ${n} handing over between shifts`},
+    {k:"regulars",a:n=>`the regulars who treat ${n} as a second front room`},
+    {k:"newjob",a:n=>`somebody's first week working at ${n}`},
+    {k:"mistake",a:n=>`a small mistake at ${n} that everybody remembers`},
+    {k:"rain",a:n=>`a wet Tuesday at ${n} when nobody comes in`},
+    {k:"queue",a:n=>`the queue at ${n} and what people talk about in it`},
+    {k:"family",a:n=>`three generations of one family using ${n}`},
+    {k:"before",a:n=>`${n} an hour before it opens`},
+    {k:"repair",a:n=>`something at ${n} that needs fixing before the day starts`},
+    {k:"advice",a:n=>`the advice people actually come to ${n} for`},
+    {k:"night",a:n=>`${n} after dark, with one light on`},
+    {k:"delivery",a:n=>`a delivery arriving at ${n} at the worst moment`}
+  ];
+  function r9BriefCast(b,a){
+    const n=b.n,h=r9Hash(b.k+a.k);
+    const pick2=(x,y)=>(h%2?x:y);
+    return [
+      {s:"the customer",r:"Lead",a:"adult",
+       x:pick2(`Comes into ${n} knowing exactly what they want and asks for it plainly. Warm, unhurried, real rather than polished.`,
+               `Uses ${n} every week and treats the staff as people. Easy in front of a camera without performing.`)},
+      {s:"the member of staff",r:"Lead",a:"youngAdult",
+       x:pick2(`Works at ${n} and is good at it. Handles the counter, the questions and the queue without ever looking rushed.`,
+               `Has been at ${n} long enough to know every regular's order. Friendly, quick, and never oversells anything.`)},
+      {s:"the regular",r:"Supporting",a:"senior",
+       x:pick2(`Has used ${n} for years and has an opinion about how it has changed. Dry, likeable, comfortable being filmed.`,
+               `Comes to ${n} at the same time every day. Says little and lands every line.`)},
+      {s:"the colleague",r:"Day Player",a:"midCareer",
+       x:pick2(`Works the other half of the day at ${n}. Practical, funny in passing, no mugging.`,
+               `Keeps ${n} running behind the scenes. Seen more than heard, and has to hold a look.`)}
+    ];
+  }
+  const R9_BRIEF_TYPES=["Commercial","Branded Content","Spec Commercial","Social Media Ad","Ad Campaign","Promo Video","Public Service Announcement","Influencer / UGC Content","Product Demo","Corporate Video","Photo Shoot","Print Campaign","Modeling","Industrial / Training Video","Educational Video"];
+  function r9ComposedBriefs(type){
+    if(R9_BRIEF_TYPES.indexOf(type)<0)return [];
+    const out=[];
+    R9_BIZ.forEach(b=>R9_ANGLE.forEach(a=>{
+      out.push({
+        k:`r9b-${b.k}-${a.k}`,
+        era:"n/a",genre:"brand brief",tracks:["spot"],
+        cat:b.c,only:R9_BRIEF_TYPES.slice(),
+        about:a.a(b.n),
+        ttl:[],
+        p:`an ad about ${a.a(b.n)}`,
+        h:`it is shot as one continuous take, with no voiceover over the top`,
+        h2:`the people in it are played straight, so nothing is sold at the camera`,
+        _turns:[`it is shot as one continuous take, with no voiceover over the top`,
+                `the people in it are played straight, so nothing is sold at the camera`,
+                `the whole thing rests on faces rather than dialogue`,
+                `it runs without music until the last few seconds`],
+        w:[b.n,`${b.n} on an ordinary weekday`,`${b.n} with the shutters half up`],
+        // Brand work casts people doing an ordinary thing well. The names are
+        // rewritten to functions (CUSTOMER, ASSISTANT) later, so the labels
+        // here are the job, and the sketch carries this business so no two
+        // briefs describe their people in the same words.
+        c:r9BriefCast(b,a),
+        _r9:true
+      });
+    }));
+    return out;
+  }
+
   function r9ComposedSeeds(track){
     const out=[];
     R9_FRAMES.forEach(f=>{
@@ -32764,13 +33203,17 @@ const ACG = (()=>{
       f.who.forEach(w=>f.place.forEach(pl=>{
         const k=`r9-${f.k}-${w.k}-${pl.k}`;
         const job=String(w.s||"").replace(/^the\s+/i,"");
-        const slots=f.cast(w,pl).map((c,i)=>({...c,x:r9Sketch(i===0?"lead":i===1?"second":"third",k,i,pl.short,job)}));
+        const slots=f.cast(w,pl).map((c,i)=>{
+          const xs=c.xs||[c.x||""];
+          return {s:c.s,r:c.r,a:c.a,x:xs[r9Hash(k+"|"+i)%xs.length]};
+        });
         out.push({
           k,
-          era:"present day",
+          era:f.era||"present day",
           genre:f.genre,
           tracks:f.tracks.slice(),
-          ttl:[],
+          // "the diner" reads as "the Diner" inside a title, article and all.
+          ttl:f.ttl?f.ttl(String(pl.short).split(" ").map(x=>/^(the|a|an|of|at|in|on)$/i.test(x)?x.toLowerCase():x.charAt(0).toUpperCase()+x.slice(1)).join(" ")):[],
           p:f.p(w,pl),
           h:f.turns[0](pl.short,job),
           h2:f.turns[1](pl.short,job),
@@ -32797,8 +33240,9 @@ const ACG = (()=>{
       }
       return tracks.indexOf(t.track)>-1;
     });
-    // Brand formats build their own briefs and never needed the bank.
-    if(t.mode==="brief")return base;
+    // Brand formats build their own briefs - and that bank is spent too, so
+    // composed briefs stand behind it the same way composed stories do.
+    if(t.mode==="brief")return base.concat(r9ComposedBriefs(type));
     const track=t.mode==="job"?"film":t.track;
     return base.concat(r9ComposedSeeds(track));
   }
@@ -33129,27 +33573,116 @@ const ACG = (()=>{
     s=s.replace(/^(NYC|LA|Chicago|Boston|Philly|Atlanta|Newark|New Orleans|Pittsburgh|Austin|Detroit|Baltimore|North|South|East|West|Lower|Upper|Downtown|Uptown)\s+/,"");
     return clean(s);
   }
-  function v3Company(fam,h,res){
-    const tails=COMPANY_TAILS[fam]||COMPANY_TAILS.film;
-    const usedWord=w=>(h.coreWords&&h.coreWords.has(clean(w)))||(res.coreWords&&res.coreWords.has(clean(w)));
-    const free=core=>!h.cores.has(clean(core))&&!res.cores.has(clean(core));
-    let core="";
-    for(let tier=0;tier<3&&!core;tier++){
-      for(let i=0;i<80;i++){
-        const a=pick(CORE_A),b=pick(CORE_B);
-        if(clean(a)===clean(b))continue;
-        const cand=`${a} ${b}`;
-        if(!free(cand))continue;
-        if(tier===0&&(usedWord(a)||usedWord(b)))continue;
-        if(tier===1&&usedWord(a)&&usedWord(b))continue;
-        core=cand;break;
+  // ── Round 9 step 8: ten ways a company is named ─────────────────────────
+  // Every generated company used to be two nouns and a suffix - Rosewood
+  // Envelope Motion Pictures, Nightjar Matchbook Creative, Poppy Echo Creative
+  // - which reads as generated the moment you see three of them together.
+  // Real boards carry one-word names, surnames, initials, streets, a
+  // director's own name, agency names, thesis credits, theatre companies and
+  // plain descriptions. No real company, school, network or studio is ever
+  // used: every part is drawn from the generator's own invented word lists and
+  // its surname pool.
+  const R9_ONEWORD=["Lanternfish","Coldwater","Thornfield","Marrowbone","Highwater","Blackthorn","Saltmarsh","Winterbourne","Ferrybridge","Ashvale","Kestrel","Nightjar","Roebuck","Stonecrop","Whitethorn","Redpoll","Harrowgate","Millrace","Stormcock","Farthing","Quicksilver","Longshadow","Brightwater","Fenwick","Gravesend","Ironwood","Larkspur","Netherfield","Overton","Pennyroyal"];
+  const R9_STREET=["Second Avenue","Ninth Street","Lower Mill","Canal Street","Bridge Road","Old Market","Front Street","Harbour Lane","Chapel Street","Station Road","Water Street","Foundry Lane","Union Street","Park Row","Bell Lane"];
+  const R9_AGENCY=["Northbound","Southbound","Eastlight","Westfield","Fieldwork","Groundwork","Longform","Shortwave","Overtone","Undertow","Frontroom","Backroom","Daylight","Halfmoon","Truescale"];
+  const R9_STUDIONUM=["Studio Nine","Studio Fourteen","Studio Six","Studio Twenty-One","Studio Three","Unit Seven","Unit Eleven","Stage Four","Room Nine","Floor Two"];
+  const R9_PLAIN={
+    film:["Independent production","Privately financed feature","Independent feature production","Self-financed short"],
+    tv:["Independent series production","Privately financed pilot"],
+    stage:["Independent theatre production","Company-produced run","Co-operative theatre production"],
+    other:["Independent production","Privately financed production"]
+  };
+  const R9_THESIS=["a graduate film programme thesis","a university film school thesis production","a postgraduate directing thesis","a final-year film degree production","a conservatoire thesis production"];
+  function r9Surname(h,res){
+    const pools=Object.values(EXTRA_SURNAMES||{});
+    for(let i=0;i<60;i++){
+      const pool=pick(pools);const n=pick(pool);
+      if(!n)continue;
+      const key=clean(n);
+      if(h.cores.has(key)||res.cores.has(key))continue;
+      return n;
+    }
+    return null;
+  }
+  function r9Initials(h,res){
+    const L="ABCDEFGHJKLMNPRSTVW";
+    for(let i=0;i<40;i++){
+      const n=3;let out="";
+      for(let j=0;j<n;j++)out+=L[Math.floor(Math.random()*L.length)];
+      if(h.cores.has(clean(out))||res.cores.has(clean(out)))continue;
+      return out;
+    }
+    return null;
+  }
+  // A suffix may be used twice in a batch and no more, so a run of listings
+  // does not come out "... Creative, ... Creative, ... Creative".
+  function r9TailFree(tail,res){
+    res._r9Tails=res._r9Tails||{};
+    return (res._r9Tails[clean(tail)]||0)<2;
+  }
+  function r9TakeTail(tail,res){
+    res._r9Tails=res._r9Tails||{};
+    res._r9Tails[clean(tail)]=(res._r9Tails[clean(tail)]||0)+1;
+  }
+  function v3Company(fam,h,res,opts){
+    const o=opts||{};
+    const tails=(COMPANY_TAILS[fam]||COMPANY_TAILS.film).filter(t=>r9TailFree(t,res));
+    const tail=tails.length?pick(tails):pick(COMPANY_TAILS[fam]||COMPANY_TAILS.film);
+    const free=core=>core&&!h.cores.has(clean(core))&&!res.cores.has(clean(core));
+    const take=(core,company,noTail)=>{
+      res.cores.add(clean(core));
+      res.coreWords=res.coreWords||new Set();
+      String(core).split(" ").forEach(w=>res.coreWords.add(clean(w)));
+      if(!noTail)r9TakeTail(tail,res);
+      return {company,core};
+    };
+    // Student work is credited to a programme, not a company.
+    if(o.student&&Math.random()<0.8){
+      const t=pick(R9_THESIS);
+      return {company:t.charAt(0).toUpperCase()+t.slice(1),core:clean(t).split(" ").slice(0,3).join(" ")};
+    }
+    const shapes=cgShuffle(["oneword","surname","initials","street","agency","studio","plain","pair","oneword","surname","street","agency"]);
+    for(const shape of shapes){
+      if(shape==="oneword"){
+        const c=pick(R9_ONEWORD);
+        if(free(c))return take(c,`${c} ${tail}`);
+      }else if(shape==="surname"){
+        const a=r9Surname(h,res),b=r9Surname(h,res);
+        if(a&&b&&clean(a)!==clean(b)&&free(`${a} ${b}`))return take(`${a} ${b}`,`${a} & ${b} ${tail}`);
+        if(a&&free(a))return take(a,`${a} ${tail}`);
+      }else if(shape==="initials"){
+        const c=r9Initials(h,res);
+        if(c)return take(c,`${c} ${tail}`);
+      }else if(shape==="street"){
+        const c=pick(R9_STREET);
+        if(free(c))return take(c,`${c} ${tail}`);
+      }else if(shape==="agency"){
+        const c=pick(R9_AGENCY);
+        if(free(c))return take(c,`${c} ${tail}`);
+      }else if(shape==="studio"){
+        const c=pick(R9_STUDIONUM);
+        if(free(c))return take(c,c,true);
+      }else if(shape==="plain"){
+        const c=pick(R9_PLAIN[fam]||R9_PLAIN.other);
+        if(free(c))return take(c,c,true);
+      }else{
+        // The old two-part name, kept as one shape among ten rather than the
+        // only one there is.
+        for(let i=0;i<40;i++){
+          const a=pick(CORE_A),b=pick(CORE_B);
+          if(clean(a)===clean(b))continue;
+          const c=`${a} ${b}`;
+          if(free(c))return take(c,`${c} ${tail}`);
+        }
       }
     }
-    if(!core){for(let i=0;i<500&&!core;i++){const cand=`${pick(CORE_A)} ${pick(CORE_B)} ${pick(CORE_B)}`;if(free(cand))core=cand;}}
-    res.cores.add(clean(core));
-    res.coreWords=res.coreWords||new Set();
-    core.split(" ").forEach(w=>res.coreWords.add(clean(w)));
-    return {company:`${core} ${pick(tails)}`,core};
+    // Everything taken: fall back to a three-part name rather than repeat one.
+    for(let i=0;i<200;i++){
+      const c=`${pick(CORE_A)} ${pick(CORE_B)} ${pick(CORE_B)}`;
+      if(free(c))return take(c,`${c} ${tail}`);
+    }
+    const c=`${pick(R9_ONEWORD)} ${pick(CORE_B)}`;
+    return take(c,`${c} ${tail}`);
   }
   function v3CrewJobs(fam,type){
     if(fam==="stage")return /Musical/.test(type)?["Director","Choreographer","Music Director","Producer"]:["Director","Producer"];
@@ -33507,6 +34040,16 @@ const ACG = (()=>{
       // premise CATEGORIES stay permanent, because those are identity, not
       // phrasing.
       if(i<R9_PROSE_WINDOW)v3ListingSentences(c,c.roles).forEach(x=>h.sentKeys.add(v3SentKey(x)));
+      // Round 9 step 8: title words and product categories have their own
+      // windows. A distinctive word may not come back inside 60 listings, a
+      // narrative title shares no content word with the last 100, and a
+      // product category ("coffee", "furniture") waits 25.
+      {
+        const toks=r9TitleTokens(c.title);
+        if(i<60){h.r9Tok60=h.r9Tok60||new Set();toks.forEach(t=>h.r9Tok60.add(t));}
+        if(i<100){h.r9Tok100=h.r9Tok100||new Set();toks.forEach(t=>h.r9Tok100.add(t));}
+        if(i<25){const cat=r9CatOf(c);if(cat){h.r9Cat25=h.r9Cat25||new Set();h.r9Cat25.add(cat);}}
+      }
       if(i<150){
         (h.storyWords=h.storyWords||[]).push(v3StoryWords(c.synopsis));
         h.recentSeeds=h.recentSeeds||new Set();
@@ -33694,7 +34237,13 @@ const ACG = (()=>{
     });
     (seed.w||[]).map(w=>v3VenuePhrase(w)).filter(Boolean).forEach(v=>{const t=titleCase(stripArticle(v));["Tuesday at the","Last Night at the","Closing Time at the","Mornings at the"].forEach(pre=>{const c=`${pre} ${t}`;if(c.split(" ").length<=6)cands.push(c);});});
     const single=!V8_SERIES_TYPES.test(type);
-    for(const c of cands.filter((v,i,a)=>v&&a.indexOf(v)===i)){if(single&&V8_SERIES_WORD.test(c))continue;const n=clean(c);if(!h.titles.has(n)&&!res.titles.has(n)){if(!peek)res.titles.add(n);return c;}}
+    const uniq=cands.filter((v,i,a)=>v&&a.indexOf(v)===i);
+    // Two passes: the full freshness rule, then the distinctive-word rule
+    // alone. A title that can pass neither still beats "Untitled Drama".
+    // Third pass drops the freshness rule entirely: a real title that repeats
+    // a word beats "Untitled Student Short Drama".
+    for(let strict=2;strict>=0;strict--)
+    for(const c of uniq){if(single&&V8_SERIES_WORD.test(c))continue;if(strict&&!r9TitleFree(c,strict>1?fam:"",h,res))continue;const n=clean(c);if(!h.titles.has(n)&&!res.titles.has(n)){if(!peek){res.titles.add(n);r9TitleTake(c,res);}return c;}}
     return null;
   }
   function v3Plan(type,fam,track){
@@ -33852,6 +34401,8 @@ const ACG = (()=>{
     if(/\b(a|an|the)\s+(a|an|the)\b|\s[,.;:]|\.\.(?!\.)|,,|\(\s*\)/i.test(txt))out.push("broken punctuation");
     if(/(^|[^\w'’])a [aeiou]\w/i.test(txt.replace(/\ba (one|uni|use|usu|euro|eu|ubi|uti|UGC\b)/gi,"")))out.push("a/an");
     roles.forEach(r=>{if(!r._group&&!r._job&&v3PluralSlot(r._slot||""))out.push("group given a person's name");});
+    r9SlotFillProblems(item,roles,txt).forEach(x=>out.push(x));
+    r9LogicProblems(item,roles).forEach(x=>out.push(x));
     v3Sentences(syn).forEach(s=>{if(s.split(/\s+/).length>32)out.push("sentence too long");});
     v4RoleProblems(item,c).forEach(x=>out.push(x));
     v7Problems(item,c).forEach(x=>out.push(x));
@@ -33884,6 +34435,39 @@ const ACG = (()=>{
   // How far back prose has to stay fresh. 150 listings is about a month of the
   // board at five a day, and further than anyone scrolls.
   const R9_PROSE_WINDOW=150;
+  // Round 9 step 8: words that make a title distinctive - product categories,
+  // number words, the qualifiers brand titles lean on, format phrases. Plain
+  // words ("night", "shift") are not tracked; only the ones that make two
+  // titles feel like the same title.
+  const R9_TITLE_STOP=/^(a|an|the|and|or|of|in|on|at|for|with|by|from|to|that|this|its|his|her|their|we|our|you|your|is|are|was|were|be|it|one|two|no|not|off|out|up|down|over|under|last|first|new|old|day|night|story|film|short|feature|project|video|spot|series|show)$/;
+  const R9_TITLE_MARK=/^(coffee|grocery|furniture|bakery|pharmacy|hardware|insurance|banking|mattress|mobile|broadband|energy|airline|pet|dental|optical|garden|fitness|takeaway|delivery|laundry|salon|barber|florist|butcher|greengrocer|family-owned|global|well-known|local|regional|national|major|leading|popular|household-name|nationwide|top-selling|branded|commercial|advert|advertisement|campaign|forty-one|twenty-one|thirty-two|nineteen|seventeen|thirteen|eleven|twelve|fourteen|fifteen|sixteen|eighteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)$/;
+  function r9TitleTokens(title){
+    return clean(title).split(" ").filter(w=>w&&w.length>2&&!R9_TITLE_STOP.test(w));
+  }
+  function r9CatOf(c){
+    const cat=clean((c&&c._brandCat)||"");
+    if(cat)return cat.split(" ").filter(w=>w.length>3)[0]||cat;
+    const t=clean(c&&c.title);
+    return t.split(" ").find(w=>R9_TITLE_MARK.test(w))||"";
+  }
+  function r9TitleFree(cand,fam,h,res){
+    const toks=r9TitleTokens(cand);
+    if(!toks.length)return true;
+    const t60=h.r9Tok60||new Set(),t100=h.r9Tok100||new Set();
+    const b60=res.r9Tok60=res.r9Tok60||new Set(),b100=res.r9Tok100=res.r9Tok100||new Set();
+    if(toks.filter(t=>R9_TITLE_MARK.test(t)).some(t=>t60.has(t)||b60.has(t)))return false;
+    const cat=r9CatOf({title:cand});
+    if(cat&&((h.r9Cat25&&h.r9Cat25.has(cat))||(res.r9Cat25&&res.r9Cat25.has(cat))))return false;
+    // Narrative titles share no content word with the last hundred.
+    if(/^(film|tv|stage)$/.test(fam||"")&&toks.some(t=>t100.has(t)||b100.has(t)))return false;
+    return true;
+  }
+  function r9TitleTake(cand,res){
+    res.r9Tok60=res.r9Tok60||new Set();res.r9Tok100=res.r9Tok100||new Set();res.r9Cat25=res.r9Cat25||new Set();
+    r9TitleTokens(cand).forEach(t=>{res.r9Tok60.add(t);res.r9Tok100.add(t);});
+    const cat=r9CatOf({title:cand});if(cat)res.r9Cat25.add(cat);
+  }
+
   // Roughly the phrasing rows those 150 listings produce.
   const R9_PROSE_ROWS=1800;
   const V5_PAY_MIX={unpaid:0.15,deferred:0.10,low:0.30,mid:0.25,high:0.15,union:0.05};
@@ -34044,6 +34628,16 @@ const ACG = (()=>{
     lowWeek:[150,200,250,300],midWeek:[400,450,500,600,700]
   };
   const V5_RANKS=["Lead","Supporting","Day Player","Background"];
+  // Round 9: ceilings by how a project of that kind is actually financed.
+  // Student work is unpaid or a small stipend; micro-budget non-union pays a
+  // lead a few hundred a day at most and a supporting part rather less.
+  const R9_STUDENT=/^(Student Film)$/;
+  const R9_MICRO=/^(Experimental Film|Performance Art|Dance Project|Proof of Concept|Pitch Trailer|Table Read|Workshop \/ Staged Reading|Short Film|Sizzle Reel)$/;
+  function R9_BUDGET_CAP(type,fam){
+    if(R9_STUDENT.test(type))return {day:{lead:100,support:75,small:50},flat:{lead:300,support:200,small:150}};
+    if(R9_MICRO.test(type))return {day:{lead:300,support:150,small:125},flat:{lead:1000,support:600,small:400}};
+    return null;
+  }
   // Lead ≥ Supporting ≥ Day Player ≥ Background, and the lead strictly above
   // the day players unless the listing pays everyone the same and says so.
   function v5Rungs(list,ranksPresent){
@@ -34115,6 +34709,30 @@ const ACG = (()=>{
     P.flatAll=roles.length>1&&v6FlatAllowed(type,fam,plan.days,roles)&&Math.random()<0.07;
     const rungs=P.flatAll?(()=>{const v=pick(list);return {Lead:v,Supporting:v,"Day Player":v,Background:v};})():v5Rungs(list,ranks);
     const fmt={day:a=>`${money(a)}/day`,buyout:a=>`${money(a)}/day`,flat:a=>`${money(a)} flat`,hour:a=>`${money(a)}/hour`,ep:a=>`${money(a)} per episode`,session:a=>`${money(a)} per session`,week:a=>`${money(a)}/week`,stipendDay:a=>`${money(a)}/day stipend`,stipendFlat:a=>`${money(a)} stipend`}[st];
+    // ── Round 9 step 7: what this kind of project can actually pay ────────
+    // A student short does not pay a minor $300 for a day, and an art short
+    // is a micro-budget job however ambitious it is. Union work is untouched:
+    // those rates are scale (verified against SAG-AFTRA's published sheets -
+    // Ultra Low $257/day, Moderate Low $449/day, Low Budget $834/day, all
+    // effective 1 July 2026).
+    const cap=R9_BUDGET_CAP(type,fam);
+    if(cap&&(st==="day"||st==="buyout"||st==="flat")){
+      const lim=st==="flat"?cap.flat:cap.day;
+      if(lim){
+        V5_RANKS.forEach(rk=>{
+          if(rungs[rk]==null)return;
+          const ceiling=rk==="Lead"?lim.lead:rk==="Supporting"?lim.support:lim.small;
+          if(ceiling&&rungs[rk]>ceiling)rungs[rk]=ceiling;
+        });
+        // The lead is never paid less than the supporting cast unless the
+        // listing says one rate for everyone.
+        if(!P.flatAll&&rungs.Lead!=null){
+          ["Supporting","Day Player","Background"].forEach(rk=>{
+            if(rungs[rk]!=null&&rungs[rk]>rungs.Lead)rungs[rk]=rungs.Lead;
+          });
+        }
+      }
+    }
     setAll((r,rk)=>fmt(rungs[rk]||rungs.Lead));
     if(st==="buyout"){P.buyout=pick([500,750,1000,1200,1500,2000]);P.usage=pick([6,12]);}
     P.rungs=rungs;
@@ -36206,7 +36824,11 @@ const ACG = (()=>{
   const R8_BAND_RANGE={u200:[50,175],b200:[200,475],b500:[500,950],b1000:[1000,2400],b2500:[2500,5000]};
   const R8_HIGH_TYPES=/^(Commercial|Branded Content|Ad Campaign|Print Campaign|Modeling|Corporate Video|Industrial \/ Training Video|Product Demo|Promo Video)$/;
   const R8_LOW_TYPES=/^(Short Film|Student Film|Experimental Film|Proof of Concept|Pitch Trailer|Sizzle Reel|Web Series|Vertical Series|Theater|Off-Off-Broadway Theater|Off-Broadway Theater|Musical Theater|Workshop \/ Staged Reading|Table Read|Podcast \/ Audio Drama|Dance Project|Performance Art|Music Video|Animation)$/;
-  const R8_NS_OK=/^(Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Product Demo|Corporate Video|Photo Shoot|Print Campaign|Modeling|Live Event|Promo Video|Ad Campaign)$/;
+  // Round 9 item 6i: "Payment not specified" is never acceptable on
+  // commercial, TV commercial or branded work - those have a budget and an
+  // actor needs the number. It stays available to the formats where a rate
+  // genuinely depends on the booking.
+  const R8_NS_OK=/^(Social Media Ad|Influencer \/ UGC Content|Product Demo|Photo Shoot|Modeling|Live Event)$/;
   function r8BandOfAmount(a){return a<200?"u200":a<500?"b200":a<1000?"b500":a<2500?"b1000":"b2500";}
   // A saved listing's band, read back from its roles and pay box.
   function r8BandOf(c){
@@ -36218,8 +36840,12 @@ const ACG = (()=>{
     const out=[];
     const low=R8_LOW_TYPES.test(type),high=R8_HIGH_TYPES.test(type)||(type==="Commercial");
     if(tiers.some(t=>/unpaid|deferred|low/.test(t))&&!V6_BRAND_WORK.test(type)&&(!R8_BRAND.test(type)||/^(Photo Shoot|Spec Commercial)$/.test(type)))out.push("u200");
+    if(R9_STUDENT.test(type)){if(out.indexOf("u200")<0)out.push("u200");return out;}
     out.push("b200");
-    if(!/^(Student Film|Experimental Film|Table Read|Workshop \/ Staged Reading|Performance Art)$/.test(type))out.push("b500");
+    // Round 9 step 7: a student short cannot pay $500 a day and an art short
+    // cannot pay $300, so those bands are not offered at all. Capping them
+    // later just threw the whole draft away ("pay band b500").
+    if(!R9_STUDENT.test(type)&&!R9_MICRO.test(type))out.push("b500");
     if(high||/^(Social Media Ad|Influencer \/ UGC Content|Photo Shoot|Live Event|Voiceover|Stunts|Public Service Announcement)$/.test(type)||(!low&&tiers.indexOf("union")>-1))out.push("b1000");
     if(high&&!/^(Industrial \/ Training Video|Promo Video|Product Demo)$/.test(type))out.push("b2500");
     if(R8_NS_OK.test(type))out.push("ns");
@@ -36248,13 +36874,19 @@ const ACG = (()=>{
     const top0=Math.max(...priced.map(amt));
     const unitOf=r=>parseRoleRate(r.pay).rate_unit;
     // Non-union day-rate ceilings per format, plus the student/experimental cap.
-    const dayCap=Math.min((V3_CAPS[fam]||900)*1.2,{ad:1500,photo:2000,film:700,tv:800,unscripted:700,corp:1440}[fam]||Infinity,/^(Student Film|Experimental Film|Table Read)$/.test(type)?350:Infinity);
+    // Round 9 step 7: what a project of this kind is actually financed at.
+    // A student short pays in meals, credit and small money; an art short is a
+    // micro-budget job whatever its ambitions. These are the final word,
+    // because the band fitter rescales every rate after the ladder has run.
+    const r9Cap=R9_STUDENT.test(type)?100:R9_MICRO.test(type)?300:Infinity;
+    const dayCap=Math.min((V3_CAPS[fam]||900)*1.2,{ad:1500,photo:2000,film:700,tv:800,unscripted:700,corp:1440}[fam]||Infinity,r9Cap);
     let lo=rng[0],hi=rng[1];
     if(priced.some(r=>unitOf(r)==="day")){
       if(lo>dayCap){
         // Brand and stills work pays a flat fee for a short booking instead.
         if(!/^(ad|photo|corp|live|music)$/.test(fam)||(plan.days||1)>3)return false;
-        priced.forEach(r=>{r.pay=`${money(amt(r))} flat`;});P.structure="flat";
+        const flatCap=R9_STUDENT.test(type)?300:R9_MICRO.test(type)?1000:Infinity;
+        priced.forEach(r=>{r.pay=`${money(Math.min(amt(r),flatCap))} flat`;});P.structure="flat";
       }else hi=Math.min(hi,Math.floor(dayCap/25)*25);
     }
     if(lo>hi)return false;
@@ -36304,7 +36936,11 @@ const ACG = (()=>{
     let note="";
     if(/SAG-AFTRA/.test(u))note=`${u} scale${P.usage&&/plus/.test(String(P.usage))?", plus usage":""}.`;
     else if(P.structure==="buyout"&&P.buyout)note=`Pays ${r8Amt(top)}/day + ${money(P.buyout)} buyout.`;
-    else if(Math.random()<0.3)note=`Pays ${range}${/^between/.test(range)&&!/wk/.test(unit)&&Math.random()<0.5?", depending on role":""}.`;
+    // Round 9 item 6h: the note earns its place or it is not written. A
+    // headline of "Roles paying up to $250." followed by "Of Note: Pays
+    // $250/day." tells an actor nothing twice.
+    else if(/^between/.test(range)&&Math.random()<0.45)note=`Pays ${range}${Math.random()<0.5?", depending on role":""}.`;
+    else if(unit==="/wk"&&Math.random()<0.5)note=`Pays ${range}.`;
     if(note&&(/SAG/.test(u)?Math.random()<0.45:true))s+=` Of Note: ${note}`;
     return s;
   }
@@ -36581,11 +37217,19 @@ const ACG = (()=>{
     // Narrative formats: first name only, unless the story needs the full one.
     const ppl=roles.filter(r=>!r._group&&!r._job&&nameParts(r.name));
     const firsts={};ppl.forEach(r=>{const f=String(r.name).split(" ")[0];firsts[f]=(firsts[f]||0)+1;});
+    // Round 9 step 5: one naming style per listing. A cast reading "Jamal
+    // Zhang, Candace Lynch, Josiah, Ian" looks like two breakdowns stapled
+    // together. Everybody is on first-name terms except where the story
+    // genuinely needs a surname - a character whose full name is the point,
+    // or two characters who share a first name - and at most one such
+    // character per listing unless the clash forces it.
+    const dupe=r=>firsts[String(r.name).split(" ")[0]]>1;
+    const needFull=ppl.filter(r=>!dupe(r)&&R8_NEEDS_FULL.test(r._slot||""));
+    const chosenFull=needFull.length&&Math.random()<0.5?needFull[0]:null;
     ppl.forEach(r=>{
       const full=String(r.name),first=full.split(" ")[0];
       r._person=full;
-      const need=R8_NEEDS_FULL.test(r._slot||"")&&Math.random()<0.5;
-      if(firsts[first]>1||need||Math.random()<0.03){r._r8Full=true;return;}
+      if(dupe(r)||r===chosenFull){r._r8Full=true;return;}
       const slot=r8Slot(r);
       let nm=first;
       if(Math.random()<0.1&&slot&&slot.split(/\s+/).length<=3&&!/'|’|\b(who|that|one|with|of|in|at)\b/i.test(slot)&&/^(Lead|Supporting|Day Player)$/.test(r.role_type||""))nm=`${first}, ${titleCase(slot)}`;
@@ -36608,7 +37252,8 @@ const ACG = (()=>{
   }
 
   // ── 4. Dates & locations line ────────────────────────────────────────────
-  const R8_DATE_MIX={dated:0.60,tbd:0.25,remote:0.08,vague:0.07};
+  // Round 9 step 6: roughly seven listings in ten carry real dates.
+  const R8_DATE_MIX={dated:0.70,tbd:0.20,remote:0.05,vague:0.05};
   const R8_REMOTE_OK=/^(Voiceover|Podcast \/ Audio Drama|Animation|Influencer \/ UGC Content|Social Media Ad|Video Game)$/;
   const R8_MON=["Jan.","Feb.","March","April","May","June","July","Aug.","Sept.","Oct.","Nov.","Dec."];
   const R8_MONTH=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -36642,7 +37287,7 @@ const ACG = (()=>{
     const nt=v3Sentences(note).find(s=>/^Note:/.test(s));
     return nt?`${line} ${nt}`:line;
   }
-  const R8_DATES_RE=/^((Shoots|Records|Works|Reads) ((Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) \d{1,2}(-((Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) )?\d{1,2})?) in [A-Z][^.;]+\.|Rehearsals begin in [A-Z][a-z]+; performances (Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) \d{1,2}-((Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) )?\d{1,2} in [A-Z][^.;]+\.|(Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC) in [A-Z][^.;]+\.|Dates (TBD|TBC); (shoots|records|runs) [a-z0-9 -]+ in [A-Z][^.;]+\.|Records remotely( from a home studio)?\.|Shoots remotely; deliver content within (one|two) weeks? of booking\.|Self-shot at home; content due (one|two) weeks? after booking\.|(Shoots|Records|Works) [a-z0-9 -]+ in (early |mid-|late )[A-Z][a-z]+ in [A-Z][^.;]+\.|Rehearsals begin in (early |mid-|late )[A-Z][a-z]+ in [A-Z][^.;]+\.)( Note: [A-Z][^.]*\.)?$/;
+  const R8_DATES_RE=/^((Shoots|Records|Works|Reads) ((Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) \d{1,2}(-((Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) )?\d{1,2})?) in [A-Z][^.;]+\.|Rehearsals begin in [A-Z][a-z]+; performances (Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) \d{1,2}-((Jan\.|Feb\.|March|April|May|June|July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.) )?\d{1,2} in [A-Z][^.;]+\.|(Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC)( in [A-Z][^.;]+)?\.|Dates (TBD|TBC); (shoots|records|runs) [a-z0-9 -]+( in [A-Z][^.;]+)?\.|Records remotely( from a home studio)?\.|Shoots remotely; deliver content within (one|two) weeks? of booking\.|Self-shot at home; content due (one|two) weeks? after booking\.|(Shoots|Records|Works) [a-z0-9 -]+ in (early |mid-|late )[A-Z][a-z]+( in [A-Z][^.;]+)?\.|Rehearsals begin in (early |mid-|late )[A-Z][a-z]+( in [A-Z][^.;]+)?\.)( Note: [A-Z][^.]*\.)?$/;
   function r8NoteLine(c){
     const o=[];
     if(!c.remote)o.push("Note: Local hire only.","Note: Local talent only; no travel or lodging.");
@@ -36660,7 +37305,10 @@ const ACG = (()=>{
   function r8ApplyDates(item,c,h,res){
     const {type,fam,plan,city,area}=c;
     const allowed=["dated","tbd","vague"].concat(R8_REMOTE_OK.test(type)?["remote"]:[]);
-    let kind=v5Pick(R8_DATE_MIX,v5Counts(h,res,"r8date",R8_DATE_MIX),allowed);
+    // Round 9 step 6: roughly seven in ten carry real dates. The quota alone
+    // could not hold that - a board of dated listings reads as "dated is over
+    // target" and swings the next hundred to TBD.
+    let kind=Math.random()<0.12?"dated":v5Pick(R8_DATE_MIX,v5Counts(h,res,"r8date",R8_DATE_MIX),allowed);
     if(R8_REMOTE_OK.test(type)&&kind==="tbd"&&Math.random()<0.6)kind="remote";
     const place=r8Place(city,area);
     const stage=!!plan.stage;
@@ -36684,14 +37332,21 @@ const ACG = (()=>{
     }else if(kind==="tbd"){
       const w=pick(["TBD","TBD","TBC"]);
       const what=stage?"Rehearsal and performance":/^(Records)$/.test(verb)?pick(["Session","Recording"]):/^(Live Event)$/.test(type)?"Event":"Shoot";
-      line=Math.random()<0.75||stage?`${what} dates ${w} in ${place}.`:`Dates ${w}; ${verb==="Records"?"records":"shoots"} ${days===1?"one day":`${v3Words(days)} days`} in ${place}.`;
+      // The place is in shoot_location now, so the note only carries the
+      // status. Repeating the city here printed it twice on the listing.
+      line=Math.random()<0.75||stage?`${what} dates ${w}.`:`Dates ${w}; ${verb==="Records"?"records":"shoots"} ${days===1?"one day":`${v3Words(days)} days`}.`;
     }else{
       const when=`${part}${part.endsWith("-")?"":" "}${R8_MONTH[A.m]}`;
-      line=stage?`Rehearsals begin in ${when} in ${place}.`:`${verb} ${days===1?"one day":days<=12?`${v3Words(days)} days`:`${days} days`} ${days>12?"starting ":""}in ${when} in ${place}.`;
+      line=stage?`Rehearsals begin in ${when}.`:`${verb} ${days===1?"one day":days<=12?`${v3Words(days)} days`:`${days} days`} ${days>12?"starting ":""}in ${when}.`;
     }
     // Keep the dates for the validators, then take them off the listing.
     item._r8Start=item.shoot_start;item._r8End=item.shoot_end;item._r8Venue=item.shoot_location;
-    item.shoot_start=null;item.shoot_end=null;item.shoot_location=null;
+    item.shoot_start=null;item.shoot_end=null;
+    // Round 9 step 6: the WHERE survives even when the WHEN does not. A
+    // listing with no shoot location tells an actor nothing about whether
+    // they can get to it; every listing that happens somewhere keeps its
+    // venue, and only genuinely remote work has none.
+    if(kind==="remote")item.shoot_location=null;
     const keep=kind==="remote"?[]:v3Sentences(persona).filter(s=>!R8_DATE_BOUND.test(s)&&!/\b(noon|am|pm)\b.*\bon the\b/i.test(s));
     item.schedule_note=[line].concat(keep,[noteLine]).filter(Boolean).join(" ");
     if(kind==="remote")item.talent_scope="United States — Nationwide";
@@ -36699,7 +37354,7 @@ const ACG = (()=>{
   }
   // The terse line and "Note:" sentences are board boilerplate: they repeat
   // across listings by design and never count as reused sentences.
-  const R8_TERSE=/^((Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC) in|Dates (TBD|TBC);|Records remotely|Shoots remotely;|Self-shot at home;|(Shoots|Records|Works) [a-z0-9 -]+ in (early |mid-|late )|Rehearsals begin in (early |mid-|late )|Note: )/;
+  const R8_TERSE=/^((Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC)|Dates (TBD|TBC);|Records remotely|Shoots remotely;|Self-shot at home;|(Shoots|Records|Works) [a-z0-9 -]+ in (early |mid-|late )|Rehearsals begin in (early |mid-|late )|Note: )/;
   function r8NoteBody(note){return v3Sentences(note).filter(s=>!R8_TERSE.test(s)).join(" ");}
 
   // ── The finishing pass, run on every draft ───────────────────────────────
@@ -36985,7 +37640,7 @@ const ACG = (()=>{
       const minors=named.some(r=>parseInt(String(r.age_range).split("-")[0],10)<18);
 
       // Company, crew and casting director.
-      const co=v3Company(type==="Motion Capture"||type==="Video Game"?"capture":fam==="move"&&type!=="Dance Project"?"music":fam,h,res);
+      const co=v3Company(type==="Motion Capture"||type==="Video Game"?"capture":fam==="move"&&type!=="Dance Project"?"music":fam,h,res,{student:type==="Student Film"});
       const castingName=v3Person(h,res);
       const jobs=cgShuffle(v3CrewJobs(fam,type)).slice(0,rand(1,2,1));
       const credits=jobs.map(j=>[j,v3Person(h,res)]);
@@ -37133,7 +37788,8 @@ const ACG = (()=>{
         shoot_location:`${capFirst(V.venue)}, ${area} (${city.name})`,
         schedule_note:schedule,
         talent_scope:fam==="stage"?"Local — shoot city only":/^(ad|photo|audio|anim|corp)$/.test(fam)?"United States — Nationwide":"Local + self-report (within driving distance)",
-        _roles:named,_brandCat:brandCat||null,_areaName:area,_voiceKey:voice,_shootDays:plan.days,
+        // Round 9 step 4: the board's order, biggest part first inside a rank.
+        _roles:r9MergeBackground(named).slice().sort(compareRoles),_brandCat:brandCat||null,_areaName:area,_voiceKey:voice,_shootDays:plan.days,
         _v8:{persona:persona.k,warmth:persona.w,structs:res._v8StructsHere||[],tagSkel,weave},_brief:brief,_v5:{plan,tier:payTier,noteTier,castBucket:fam==="job"?v5CastBucket(named.length):castBucket,structure:PAY.structure,monthKey:DT.monthKey},_synBucket:synBucketFinal,
         _setupText:ctx.setup,_turnText:turn,_baseKey:fp(seed.k+" "+turn),_storyKey:fp(seed.k+" "+turn+" "+type),
         _storyTextKey:`${T8?T8.t:title} ${type} ${synopsis}`.slice(0,1200),_traitKey:fp([type,city.short,seed.k,turn].join("|")),
@@ -37149,6 +37805,8 @@ const ACG = (()=>{
         item._r8Verb=T8.verb;item._r8Len=T8.len;item._r8Bare=T8.bare||null;item._r8Untitled=!!T8.untitled;item._r8Stems=seedTitleStems(seed);
         item._lines=splitLines(item.synopsis).concat([item.tagline],named.map(r=>r.description)).filter(Boolean);
       }
+      // Round 9 item 6k: one minors note on the listing, not one per role.
+      r9MinorsNote(item,item._roles||named);
       const c={fam,L,base:ctx.base,setup:ctx.setup,days:plan.days,rehearsal:plan.leadRehearse?plan.rehearsal:0,windowDays,mature,h,res};
       const probs=v3Problems(item,c);
       item._problems=probs;

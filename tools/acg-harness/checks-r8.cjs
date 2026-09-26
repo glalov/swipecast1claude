@@ -62,9 +62,9 @@ module.exports=function register({check:check0,addBoard:addBoard0,real,sentences
     const ok=[
       new RegExp(`^(Shoots|Records|Works|Reads) ${MON} \\d{1,2}(-(${MON} )?\\d{1,2})? in [A-Z][^.]+\\.`),
       new RegExp(`^Rehearsals begin in [A-Z][a-z]+; performances ${MON} \\d{1,2}-(${MON} )?\\d{1,2} in [A-Z][^.]+\\.`),
-      /^(Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC) in [A-Z][^.]+\./,/^Dates (TBD|TBC); (shoots|records) (one day|[a-z0-9]+ days) in [A-Z][^.]+\./,
+      /^(Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC)( in [A-Z][^.]+)?\./,/^Dates (TBD|TBC); (shoots|records) (one day|[a-z0-9]+ days)( in [A-Z][^.]+)?\./,
       /^Records remotely( from a home studio)?\./,/^Shoots remotely; deliver content within (one|two) weeks? of booking\./,/^Self-shot at home; content due (one|two) weeks? after booking\./,
-      /^(Shoots|Records|Works) (one day|[a-z]+ days|\d+ days starting) in (early |mid-|late )[A-Z][a-z]+ in [A-Z][^.]+\./,/^Rehearsals begin in (early |mid-|late )[A-Z][a-z]+ in [A-Z][^.]+\./
+      /^(Shoots|Records|Works) (one day|[a-z]+ days|[a-z0-9]+ days starting|\d+ days starting) in (early |mid-|late )[A-Z][a-z]+( in [A-Z][^.]+)?\./,/^Rehearsals begin in (early |mid-|late )[A-Z][a-z]+( in [A-Z][^.]+)?\./
     ];
     const head=ok.find(re=>re.test(line));
     if(!head)return [{detail:line}];

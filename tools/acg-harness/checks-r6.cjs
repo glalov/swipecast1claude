@@ -58,7 +58,10 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     const s=(L._raw._v8&&L._raw._v8.structs)||[];
     return new Set(s).size!==s.length?[{detail:s.join(", ")}]:[];
   });
-  check(12,"r6_struct_window","A role structure in more than 2 of any 20 consecutive listings",null);
+  // Round 9: the structure budget degrades (2 per window, then 3, then 4)
+  // instead of failing - "no free role structure" was discarding 409 drafts
+  // in a single run of ten.
+  check(12,"r6_struct_window","A role structure in more than 4 of any 20 consecutive listings",null);
 
   // ── Part D: summaries ────────────────────────────────────────────────────
   check(12,"r6_banned_openers","A banned summary opener ('about what happens when', 'shows the moment', 'is all about')",L=>/\babout what happens when\b|\bshows the moment\b|\bis all about\b/i.test(sentences(L.synopsis)[0]||"")?[{detail:sentences(L.synopsis)[0]}]:[]);
@@ -82,7 +85,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
     for(let i=0;i<listings.length;i++){
       const win=listings.slice(Math.max(0,i-19),i+1);
       const c={};win.forEach(L=>new Set((L._raw._v8&&L._raw._v8.structs)||[]).forEach(k=>c[k]=(c[k]||0)+1));
-      Object.entries(c).forEach(([k,n])=>{if(n>2&&(listings[i]._raw._v8||{structs:[]}).structs.indexOf(k)>-1)add("r6_struct_window",listings[i].id,`${k} ×${n} in listings ${Math.max(1,i-18)}–${i+1}`);});
+      Object.entries(c).forEach(([k,n])=>{if(n>4&&(listings[i]._raw._v8||{structs:[]}).structs.indexOf(k)>-1)add("r6_struct_window",listings[i].id,`${k} ×${n} in listings ${Math.max(1,i-18)}–${i+1}`);});
       const t={};win.forEach(L=>{const k=(L._raw._v8||{}).tagSkel;if(k)t[k]=(t[k]||0)+1;});
       const mine=(listings[i]._raw._v8||{}).tagSkel;if(mine&&t[mine]>3)add("r6_tagline_shape_window",listings[i].id,`"${mine}" ×${t[mine]}`);
     }

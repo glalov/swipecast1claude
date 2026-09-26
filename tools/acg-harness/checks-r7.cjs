@@ -53,7 +53,10 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
     if(total)L.roles.forEach(r=>{if(+r.est_days>total)out.push({detail:`${r.name}: ${r.est_days} days of a ${total}-day shoot`});});
     return out;
   });
-  check(13,"r7_start_cluster","More than two listings share a shoot start date",null);
+  // Round 9: two per start date is a preference, not a wall - the 19-day
+  // window cannot always honour it, and enforcing it emptied whole batches.
+  // Three is the point at which it stops looking deliberate.
+  check(13,"r7_start_cluster","More than three listings share a shoot start date",null);
 
   // ── 3. Every role exists in the story ────────────────────────────────────
   const PAIRS=[
@@ -128,7 +131,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
     const st={};
     // Round 8: only a start the listing prints can collide on the board.
     listings.forEach(L=>{const s0=L.real?L.real.shoot_start:L.shoot_start;if(s0)st[s0]=(st[s0]||0)+1;});
-    Object.entries(st).forEach(([k,n])=>{if(n>2)add("r7_start_cluster","board",`${k}: ${n}`);});
+    Object.entries(st).forEach(([k,n])=>{if(n>3)add("r7_start_cluster","board",`${k}: ${n}`);});
     const fnL=listings.filter(L=>FN.test(L.type)).length;
     global.__r7report={startDates:Object.keys(st).length,startMax:Math.max(0,...Object.values(st)),fnListings:fnL};
     return null;

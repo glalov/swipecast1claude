@@ -20,7 +20,7 @@ const JSON_OUT=arg("--json",null);
 const SAMPLES_OUT=arg("--samples",null);
 
 const {ACG,store,parseRoleRate,src,ctx}=loadACG();
-const R8_TERSE=/^((Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC) in|Dates (TBD|TBC);|Records remotely|Shoots remotely;|Self-shot at home;|(Shoots|Records|Works) [a-z0-9 -]+ in (early |mid-|late )|Rehearsals begin in (early |mid-|late )|Note: )/;
+const R8_TERSE=/^((Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC)|Dates (TBD|TBC);|Records remotely|Shoots remotely;|Self-shot at home;|(Shoots|Records|Works) [a-z0-9 -]+ in (early |mid-|late )|Rehearsals begin in (early |mid-|late )|Note: )/;
 const WHY={};let ATTEMPTS=0,REJECTED=0;
 const PROJECT_TYPE_OPTIONS=JSON.parse(src.match(/const PROJECT_TYPE_OPTIONS=(\[[^\]]*\])/)[1]);
 // The generator's city pools, read from source so the "no repeat until the pool
