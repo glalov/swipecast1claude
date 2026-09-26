@@ -3237,9 +3237,6 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-sum{margin:0;color:var(--t1);font-size:15px;line-height:1.5;max-width:68ch;}
 .b5-story-wrap{border-left:3px solid #EAC080;padding:2px 0 2px 12px;max-width:70ch;}
 .b5-story{margin:0;font-size:14.5px;line-height:1.55;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
-.b5-readmore{margin-top:4px;padding:0;border:0;background:none;font:inherit;font-size:13.5px;font-weight:700;color:var(--teal);cursor:pointer;}
-.b5-readmore:hover{text-decoration:underline;}
-.b5-readmore:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px;}
 .b5-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px;}
 .b5-ghost{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;font-size:14.5px;background:transparent;color:var(--teal);border:1.5px solid var(--teal);border-radius:10px;padding:10px 17px;cursor:pointer;}
 .b5-ghost:hover{background:var(--teal);color:#fff;}
@@ -14661,7 +14658,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                the "Up to" line carries pay here, each role's rate shows inside the
                casting. The pick pill (with its mini clapper) marks CastSlate picks.
                Under the summary: a 2-line story preview from the synopsis, gold
-               rule on the left, filling what used to be empty space (2026-09-26). */
+               rule on the left, filling what used to be empty space (2026-09-26).
+               The left button says what is still hidden (owner-approved 2026-09-26):
+               "See all N roles" only when roles are cut off, otherwise "Read the
+               (full) breakdown"; castings closing within 3 days get a "Closing soon ·"
+               prefix. No "Read more" link on the story — the button is the one step. */
             const pick=castingCardRoles(c,3);
             const story=String(c.synopsis||"").replace(/^\s*synopsis\s*:\s*/i,"").replace(/\*/g,"").trim();
             const soon=!isClosedCard&&cdn&&!cdn.expired&&cdn.days<=5;
@@ -14671,6 +14672,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             const facts=[rateLine?rateLine.text:"",c.location||"",shootTxt||"",c.union||"",posted].filter(Boolean);
             const roleCount=c.roles?.length||0;
             const isSaved=savedIds.has(c.id);
+            const btnBase=pick.rest>0?`See all ${roleCount} roles`:roleCount>1?"Read the full breakdown":"Read the breakdown";
+            const btnLabel=(cdn&&!cdn.expired&&cdn.days<=3?"Closing soon · ":"")+btnBase;
             return(
             <div key={c.id} className={"b5-card"+(isFeat?" b5-pick":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
@@ -14699,12 +14702,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {(c.tagline&&c.tagline!==c.prod)?<p className="b5-sum">{c.tagline}</p>:null}
                   {story&&<div className="b5-story-wrap">
                     <p className="b5-story">{story}</p>
-                    {!isClosedCard&&<button type="button" className="b5-readmore" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>Read more</button>}
                   </div>}
                   <div className="b5-actions">
                     {isArchived||isExpiredCasting
                       ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
-                      :<button type="button" className="b5-ghost" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{withTri(roleCount>1?`See all ${roleCount} roles`:"See the role")}</button>}
+                      :<button type="button" className="b5-ghost" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{withTri(btnLabel)}</button>}
                     {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                   </div>
                 </div>
