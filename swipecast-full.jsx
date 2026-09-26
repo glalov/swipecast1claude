@@ -14702,12 +14702,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     const label=r.type||r.role_type||"Role";
                     const lead=/^(lead|principal|series regular|host)$/i.test(label),sup=/^(supporting|co-star|recurring|guest star|featured)$/i.test(label);
                     const spec=roleCardSpec(r);
-                    const pay=b5RolePay(r);
                     return(<div key={r.id||i} className={"b5-role"+(lead?" lead":sup?" sup":"")}>
                       <span className="b5-bar" aria-hidden="true"/>
                       <div style={{minWidth:0}}>
                         <div className="b5-rname">{r.name||label}</div>
-                        <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><React.Fragment key={k}>{k?" · ":""}<span className="b5-pay">{x}</span></React.Fragment>)}{pay&&<> · <span className="b5-pay"><b>{pay}</b></span></>}</div>
+                        <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><React.Fragment key={k}>{k?" · ":""}<span className="b5-pay">{x}</span></React.Fragment>)}</div>
                       </div>
                       {!isClosedCard&&<div className="b5-racts">
                         <button type="button" className={"b5-bm"+(isSaved?" on":"")} aria-label={isSaved?"Saved":"Save casting"} aria-pressed={isSaved} onClick={e=>{e.stopPropagation();toggleSaveCasting(rawC);}}>
