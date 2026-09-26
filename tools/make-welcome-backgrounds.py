@@ -8,6 +8,7 @@ Writes email/backgrounds/*.jpg. Approved 2026-09-22:
   welcome-free-gels.jpg          "Stage gels" (day)   behind newActorWelcomeHtml
   welcome-premium-projector.jpg  "Projector beam"     behind premiumWelcomeHtml
   confirm-signup-door.jpg        "Open door" (2026-09-25) behind the Supabase confirm-signup template
+  welcome-cd-midnight.jpg        "Midnight & Gold" (2026-09-26) behind cdWelcomeHtml (casting directors)
 
 HOW THEY ARE USED. Each image is the background of the outermost table of its
 email, anchored centre-top, no-repeat, on the usual cream (CS_CREAM). The card
@@ -40,6 +41,8 @@ PREMIUM = dict(H=2950, FADE_START=2300, FADE_END=2870)
 # Confirm-signup (Supabase auth template, supabase/email-templates/confirm-signup.html).
 # Card bottom measured at 919px on desktop (2026-09-25).
 CONFIRM = dict(H=1140, FADE_START=550, FADE_END=920)
+# Casting-director welcome. Card bottom measured at 1363px on desktop (2026-09-26).
+CD = dict(H=1450, FADE_START=880, FADE_END=1360)
 
 
 def fade_mask(H, f0, f1, edge=160):
@@ -112,6 +115,30 @@ def projector_beam(spec, top, bottom, beam, beam_alpha, dust):
                            dm.filter(ImageFilter.GaussianBlur(0.8)))
 
 
+def midnight(spec, stops, glow, glow_alpha):
+    """Awards-night: near-black at the top warming down to cream, with one soft
+    gold glow behind the masthead. Vertical colour stops are (y, rgb)."""
+    H, s = spec["H"], 4
+    w, h = W // s, H // s
+    col = []
+    for y in range(h):
+        Y = y * s
+        for (y0, c0), (y1, c1) in zip(stops, stops[1:]):
+            if y0 <= Y <= y1:
+                t = (Y - y0) / max(1, y1 - y0)
+                t = t * t * (3 - 2 * t)
+                col.append(tuple(int(c0[i] + (c1[i] - c0[i]) * t) for i in range(3)))
+                break
+        else:
+            col.append(stops[-1][1])
+    grad = Image.new("RGB", (1, h)); grad.putdata(col); c = grad.resize((w, h))
+    m = Image.new("L", (w, h), 0)
+    sx = W / 2 / s
+    ImageDraw.Draw(m).ellipse([sx - 220, -110, sx + 220, 110], fill=int(255 * glow_alpha))
+    m = m.filter(ImageFilter.GaussianBlur(60))
+    return Image.composite(Image.new("RGB", (w, h), glow), c, m).resize((W, H), Image.BICUBIC)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     # Free: daytime gels — terracotta, honey, soft teal, a touch of plum.
@@ -134,6 +161,11 @@ def main():
         (1900, 960, 520, 380, (236, 168, 150), 0.55),
         (1200, 620, 420, 300, (250, 220, 190), 0.55),
     ]), "confirm-signup-door.jpg", CONFIRM)
+    # Casting-director welcome: "Midnight & Gold Foil" (approved 2026-09-26).
+    save(midnight(CD, [(0, (18, 20, 34)), (300, (30, 33, 54)), (540, (62, 65, 92)),
+                       (760, (168, 165, 170)), (930, (232, 226, 215)), (1040, CREAM)],
+                  (222, 182, 96), 0.32),
+         "welcome-cd-midnight.jpg", CD)
 
 
 if __name__ == "__main__":

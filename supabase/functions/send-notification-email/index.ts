@@ -58,6 +58,14 @@ const PREMIUM_STILL = {
   film: "Once Upon a Time in Hollywood", year: 2019,
   line: "A fading star and his stunt double. The whole film is about the unglamorous part of the job — the auditions, the day rates, the work between the work.",
 };
+// Casting-director welcome (2026-09-26, owner's pick). The film that won the
+// first-ever casting Oscar (Cassandra Kulukundis, March 2026). Chosen frame has
+// no weapon in it; several of this film's backdrops do, so re-check if swapped.
+const CD_WELCOME_STILL = {
+  url: "https://image.tmdb.org/t/p/w1280/gre7gyocZSuwd7M51CGlqsJqBmB.jpg",
+  film: "One Battle After Another", year: 2025,
+  line: "In March 2026, Cassandra Kulukundis won the first Oscar ever given for casting, for this film. The job finally has its own statue.",
+};
 // One full-width still plus its line. A plain <img> at natural 16:9 on purpose:
 // a shorter crop would need a CSS background-image, which Outlook on Windows
 // drops entirely and some Gmail setups strip.
@@ -183,7 +191,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   to_user_id: string;
-  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "new_actor_welcome" | "weekly_checkin" | "application_selected" | "application_hold" | "activity_digest";
+  type: "inbox_message" | "class_invitation" | "booking_approved" | "booking_declined" | "premium_welcome" | "new_actor_welcome" | "cd_welcome" | "weekly_checkin" | "application_selected" | "application_hold" | "activity_digest";
   from_id?: string;
   from_name?: string;
   application_id?: string;
@@ -601,6 +609,100 @@ function newActorWelcomeHtml(firstName: string): string {
 </body></html>`;
 }
 
+// Casting-director welcome — "Midnight & Gold Foil", approved 2026-09-26.
+// The industry sibling of newActorWelcomeHtml: identical structure (masthead,
+// hero still + line, three open steps, one CTA, tip box, footer A) so the two
+// read as one family, but a near-black masthead with a gold glow, gold step
+// icons (email/step-icons/step-cd-*-gold.png, tools/make-step-icons.py), a gold
+// CTA with navy text, and its own backdrop (email/backgrounds/welcome-cd-
+// midnight.jpg, tools/make-welcome-backgrounds.py) that fades to CS_CREAM
+// above the card bottom. Only industry accounts get this; see
+// send_new_actor_welcome_email() / process_due_welcomes() for the routing.
+function cdWelcomeHtml(firstName: string): string {
+  const step = (icon: string, n: number, title: string, body: string) => `
+    <tr><td class="stp" height="112" style="height:112px;${n === 1 ? "" : "border-top:1px solid #EFE4C9;"}padding:0">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td class="stp-i" width="86" valign="middle" style="width:86px">
+          <img src="${APP_URL}/email/step-icons/${icon}.png" width="66" height="66" alt="" style="display:block;width:66px;height:66px;border:0"/>
+        </td>
+        <td valign="middle" style="padding-left:6px">
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#9C7A2E;margin:0 0 4px">Step ${n}</div>
+          <div class="stp-t" style="font-size:16px;font-weight:800;color:#1A1A2E;margin:0 0 3px">${title}</div>
+          <div class="stp-b" style="font-size:13.5px;line-height:1.55;color:#555">${body}</div>
+        </td>
+      </tr></table>
+    </td></tr>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+@media only screen and (max-width:480px){
+  .mast-pill{display:none!important}
+  .mast-pad{padding:24px 18px!important}
+  .mast-word{font-size:19px!important}
+  .mast-sub{font-size:10px!important;letter-spacing:1.4px!important}
+  .stp{height:150px!important}
+  .stp-i{width:66px!important}
+  .stp-t{font-size:15px!important}
+  .stp-b{font-size:13px!important}
+  .row-pad{padding-left:20px!important;padding-right:20px!important}
+}
+</style></head>
+<body style="margin:0;padding:0;background:${CS_CREAM};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" background="${APP_URL}/email/backgrounds/welcome-cd-midnight.jpg" bgcolor="${CS_CREAM}" style="background-color:${CS_CREAM};background-image:url(${APP_URL}/email/backgrounds/welcome-cd-midnight.jpg);background-position:center top;background-repeat:no-repeat;padding:40px 20px"><tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;max-width:600px;width:100%">
+
+      <tr><td class="mast-pad" style="background:#1C1F33;background:radial-gradient(ellipse 72% 125% at 50% 102%,rgba(222,182,96,.42) 0%,rgba(222,182,96,.13) 46%,rgba(222,182,96,0) 72%),linear-gradient(118deg,#0F111D 0%,#1A1D31 52%,#252943 100%);border-top:3px solid #B8923F;padding:34px 36px 32px">
+        <table width="100%" cellpadding="0" cellspacing="0"><tr>
+          <td valign="middle" style="width:52px">
+            <span style="display:inline-block;background:#ffffff;border-radius:12px;padding:9px;line-height:0;box-shadow:0 4px 14px rgba(0,0,0,0.20)">
+              <img src="${APP_URL}/logo-email.png" alt="CastSlate" width="30" height="30" style="display:block"/>
+            </span>
+          </td>
+          <td valign="middle" style="padding-left:14px">
+            <div class="mast-word" style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.1">CastSlate</div>
+            <div class="mast-sub" style="margin-top:4px;font-size:11px;font-weight:600;color:#D9CFB4;letter-spacing:2px;text-transform:uppercase">For casting professionals</div>
+          </td>
+          <td class="mast-pill" valign="middle" align="right" style="padding-left:12px">
+            <span style="display:inline-block;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);color:#ffffff;font-size:11px;font-weight:700;letter-spacing:0.5px;padding:5px 13px;border-radius:20px;text-transform:uppercase;white-space:nowrap">Welcome</span>
+          </td>
+        </tr></table>
+      </td></tr>
+
+      ${heroStill(CD_WELCOME_STILL, "#9C7A2E", "#1A1A2E")}
+
+      <tr><td class="row-pad" style="padding:36px 36px 8px">
+        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate, ${firstName} 🎬</h1>
+        <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">Your casting account is ready. You&rsquo;re a few minutes from putting your first role in front of actors — here&rsquo;s the whole process.</p>
+        <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#555">Three steps, in this order:</p>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:0 36px 8px">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${step("step-cd-verify-gold", 1, "Verify your identity", "A quick ID check so actors know your casting is real. Our team then switches on posting for your account.")}
+          ${step("step-cd-post-gold", 2, "Post your first casting", "Add each role with its age range, gender and a clear description. Your casting goes live after a quick review.")}
+          ${step("step-cd-review-gold", 3, "Review submissions", "Swipe or grid view. Shortlist, hold, or message actors directly — they get an email the moment you do.")}
+        </table>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:22px 36px 26px" align="center">
+        <a href="${APP_URL}/dashboard" style="display:inline-block;background:#B08634;background:linear-gradient(90deg,#DDB864,#A8812F);color:#1A1A2E;text-decoration:none;padding:15px 40px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.1px">Go to my dashboard &rarr;</a>
+      </td></tr>
+
+      <tr><td class="row-pad" style="padding:0 36px 30px">
+        <div style="background:#FBF5E6;border:1px dashed #EFE2BF;border-radius:12px;padding:16px 18px">
+          <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Good to know</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Posting a casting is <strong>free right now</strong>. Creating your account is always free. Questions about your first posting? Just reply to this email and a real person on our team will answer.</div>
+        </div>
+      </td></tr>
+
+      ${csFooterStripe("#A8812F")}
+
+    </table>
+    ${csFooterA("You're receiving this because you created a CastSlate casting account.", "#8C6A22", `${APP_URL}/account-settings`)}
+  </td></tr></table>
+</body></html>`;
+}
+
 // ── Casting-decision emails (shortlist + hold) ─────────────────────────────
 // These two deliberately do NOT use emailShell: the approved design is a solid
 // colour stripe, a two-line serif headline with a badge beside it and a dark
@@ -950,7 +1052,7 @@ serve(async (req) => {
 
     const { data: profile, error: profileErr } = await supabase
       .from("profiles")
-      .select("display_name, membership_status, notification_email, notification_messages, notification_applications, notification_marketing, notification_sms, phone")
+      .select("display_name, user_type, membership_status, notification_email, notification_messages, notification_applications, notification_marketing, notification_sms, phone")
       .eq("id", to_user_id)
       .maybeSingle();
 
@@ -1156,16 +1258,24 @@ serve(async (req) => {
       return json({ ok: true, results: { email: "sent" } });
     }
 
-    // ── New actor welcome (fired once when a talent confirms their signup) ──
-    //    Onboarding nudge that drives them to upload a headshot and apply.
-    if (type === "new_actor_welcome") {
+    // ── Welcome emails (fired once per account, see send_new_actor_welcome_email
+    //    and process_due_welcomes). An industry account (cd/producer/studio/
+    //    creator) ALWAYS gets the casting welcome, even if a caller asked for the
+    //    actor one — that is the belt-and-braces for the Google-signup race where
+    //    the profile is still 'talent' for a few seconds. 'cd_welcome' asked for
+    //    explicitly also gets the casting version (the DB only asks for it for
+    //    industry accounts; it also lets an admin send a test copy). ──
+    const INDUSTRY_TYPES = ["cd", "producer", "studio", "creator"];
+    if (type === "new_actor_welcome" || type === "cd_welcome") {
+      const isIndustry = type === "cd_welcome" ||
+        INDUSTRY_TYPES.includes(String((profile as { user_type?: string }).user_type || "").toLowerCase());
       const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
       const emailMasterEnabled = profile.notification_email !== false;
       if (!emailMasterEnabled) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
       }
       if (!emailConfigured()) {
-        console.warn("[send-notification-email] email provider not configured — skipping new actor welcome");
+        console.warn("[send-notification-email] email provider not configured — skipping welcome");
         return json({ ok: true, results: { email: "skipped:EMAIL_NOT_CONFIGURED" } });
       }
       const { data: authData, error: authErr } = await supabase.auth.admin.getUserById(to_user_id);
@@ -1174,14 +1284,14 @@ serve(async (req) => {
       }
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
-        subject: "Welcome to CastSlate — let's get you cast 🎬",
-        html: newActorWelcomeHtml(firstName),
+        subject: isIndustry ? "Welcome to CastSlate — your casting account is ready" : "Welcome to CastSlate — let's get you cast 🎬",
+        html: isIndustry ? cdWelcomeHtml(firstName) : newActorWelcomeHtml(firstName),
       });
       if (!sent.ok) {
-        console.error("[send-notification-email] new actor welcome send error:", sent.err);
+        console.error("[send-notification-email] welcome send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
       }
-      return json({ ok: true, results: { email: "sent" } });
+      return json({ ok: true, results: { email: "sent", template: isIndustry ? "cd_welcome" : "new_actor_welcome" } });
     }
 
     // ── Monthly Manager Mode check-in nudge (premium-only; fired alongside the

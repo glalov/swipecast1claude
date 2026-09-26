@@ -17,7 +17,8 @@ Everything is drawn at SS× and downsampled, so the curves come out clean.
     python3 tools/make-step-icons.py
 
 Writes email/step-icons/*.png at 3× the 52px display size. The pw-*-foil.png
-set is the six premium-welcome feature icons (same grid, champagne + gold).
+set is the six premium-welcome feature icons (same grid, champagne + gold);
+step-cd-*-gold.png are the three casting-director welcome steps.
 """
 import os
 from PIL import Image, ImageDraw
@@ -204,11 +205,78 @@ def build(suffix):
         print(f"{name+suffix+'.png':30} {os.path.getsize(path):6} bytes  {im.size}")
 
 
+# ── Casting-director welcome (cdWelcomeHtml, 2026-09-26) ──────────────────
+# The industry sibling of the free welcome: same grid and tile, "Midnight &
+# Gold Foil" palette (champagne tile, antique-gold ink) to match its masthead.
+CD_TILE = (246, 237, 214)          # champagne  #F6EDD6
+CD_INK  = (156, 122,  46)          # gold       #9C7A2E
+
+
+def verify(d):
+    """Verify your identity: a shield with a tick knocked out of it."""
+    d.polygon([(px(12), px(2.2)), (px(20.6), px(5.4)), (px(20.6), px(11.2)),
+               (px(19.4), px(15.6)), (px(16.2), px(19.4)), (px(12), px(21.8)),
+               (px(7.8), px(19.4)), (px(4.6), px(15.6)), (px(3.4), px(11.2)),
+               (px(3.4), px(5.4))], fill=INK)
+    d.line([(px(8.1), px(11.9)), (px(11), px(14.8)), (px(16.2), px(9.2))],
+           fill=TINT, width=int(2.2 * U), joint="curve")
+    for x, y in ((8.1, 11.9), (11, 14.8), (16.2, 9.2)):
+        circle(d, x, y, 1.1, TINT)
+
+
+def post(d):
+    """Post your casting: a clipboard with a breakdown on it."""
+    rrect(d, 3.6, 4.0, 20.4, 21.8, 2.6, INK)
+    rrect(d, 8.2, 2.2, 15.8, 6.4, 1.4, INK)
+    rrect(d, 9.6, 3.4, 14.4, 5.0, 0.7, TINT)
+    for y, w in ((9.6, 10.4), (13.2, 10.4), (16.8, 6.8)):
+        rrect(d, 6.8, y, 6.8 + w, y + 1.8, 0.9, TINT)
+
+
+def review(d):
+    """Review submissions: a headshot card with a star on its corner."""
+    rrect(d, 2.6, 3.4, 17.6, 20.6, 3.0, INK)
+    circle(d, 10.1, 9.6, 2.9, TINT)
+    shoulders(d, 10.1, 0, 5.2, 13.2, 18.2, TINT)
+    import math
+    cx, cy, R, r = 17.6, 17.4, 5.4, 2.3
+    ring = [(px(cx + (R + 1.3) * math.cos(math.radians(-90 + i * 36))),
+             px(cy + (R + 1.3) * math.sin(math.radians(-90 + i * 36)))) if i % 2 == 0 else
+            (px(cx + (r + 0.9) * math.cos(math.radians(-90 + i * 36))),
+             px(cy + (r + 0.9) * math.sin(math.radians(-90 + i * 36)))) for i in range(10)]
+    d.polygon(ring, fill=TINT)
+    star = [(px(cx + (R if i % 2 == 0 else r) * math.cos(math.radians(-90 + i * 36))),
+             px(cy + (R if i % 2 == 0 else r) * math.sin(math.radians(-90 + i * 36)))) for i in range(10)]
+    d.polygon(star, fill=INK)
+
+
+CD_ICONS = {
+    "step-cd-verify": verify,
+    "step-cd-post":   post,
+    "step-cd-review": review,
+}
+
+
+def build_cd():
+    global TINT, INK
+    TINT, INK = CD_TILE, CD_INK
+    for name, draw_glyph in CD_ICONS.items():
+        im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+        d = ImageDraw.Draw(im)
+        d.rounded_rectangle([0, 0, S - 1, S - 1], radius=SIZE * 0.29 * SS, fill=TINT)
+        draw_glyph(d)
+        im = im.resize((SIZE, SIZE), Image.LANCZOS)
+        path = os.path.normpath(os.path.join(OUT, name + "-gold.png"))
+        im.save(path, optimize=True)
+        print(f"{name+'-gold.png':30} {os.path.getsize(path):6} bytes  {im.size}")
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for suffix in PALETTES:
         build(suffix)
     build_premium()
+    build_cd()
 
 
 if __name__ == "__main__":
