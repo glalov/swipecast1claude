@@ -2271,6 +2271,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
 .btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
+.cs-optin-tg{position:relative;flex:none;width:44px;height:26px;border-radius:99px;border:none;background:#CFC6B4;cursor:pointer;transition:background .2s;padding:0;}
+.cs-optin-tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s;}
+.cs-optin-tg.on{background:var(--teal);}
+.cs-optin-tg.on::after{transform:translateX(18px);}
+.cs-optin-tg:disabled{opacity:.6;cursor:default;}
 .btn-teal{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-teal:hover{background:var(--teal-dk);transform:translateY(-1px);}
 /* The two primary Apply buttons ran the full width of their column at 13-14px,
@@ -12083,7 +12088,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setMyPhotos(list);
       // lifetime submission count for the free-actor gate — one free submission per account
       if(isTalent&&!isPremium){
-        const {count}=await window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",s.user.id);
+        // CastSlate Submit rows (source='castslate') are filed by CastSlate on the
+        // actor's behalf and never use their free submission — the DB cap agrees.
+        const {count}=await window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",s.user.id).neq("source","castslate");
         setUsedCount(count||0);
       }
     }
@@ -24583,6 +24590,39 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     <Footer onNavigate={onNavigate}/></div>);
 }
 
+// ─── CastSlate Submit opt-out (Settings → Privacy & Security, talent only).
+// profiles.castslate_submit_opt_in defaults to TRUE. When off, the admin matcher
+// (castslate-submit-match) never proposes this actor and admin_castslate_submit
+// refuses them even if a stale list still has them. Saves on click.
+function CastslateSubmitOptIn({uid,profile,onReload}){
+  const [on,setOn]=useState(profile?.castslate_submit_opt_in!==false);
+  const [busy,setBusy]=useState(false);
+  const [note,setNote]=useState("");
+  useEffect(()=>{setOn(profile?.castslate_submit_opt_in!==false);},[profile?.castslate_submit_opt_in]);
+  const flip=async()=>{
+    if(!uid||busy)return;
+    const next=!on;
+    setOn(next);setBusy(true);setNote("");
+    try{
+      const{error}=await window.sb.from("profiles").update({castslate_submit_opt_in:next}).eq("id",uid);
+      if(error)throw error;
+      setNote(next?"On — CastSlate can submit you to matching roles.":"Off — CastSlate won't submit you to roles.");
+      onReload&&onReload();
+    }catch(e){setOn(!next);setNote("Couldn't save. Please try again.");}
+    finally{setBusy(false);}
+  };
+  return(<div className="card" style={{marginBottom:16}}>
+    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16}}>
+      <div style={{minWidth:0}}>
+        <div style={{fontWeight:700,fontSize:15,marginBottom:6}}>Let CastSlate submit me to matching roles</div>
+        <div style={{color:"var(--t2)",fontSize:13,lineHeight:1.55}}>When a verified casting director posts a role that fits your profile, CastSlate may submit you even if you haven't applied yourself. It's free, it never uses your free submission, and if the casting director reaches out you'll get an email and can reply.</div>
+        {note&&<div style={{color:note.startsWith("Couldn't")?"var(--red)":"var(--teal)",fontSize:12,fontWeight:600,marginTop:8}}>{note}</div>}
+      </div>
+      <button type="button" role="switch" aria-checked={on} aria-label="Let CastSlate submit me to matching roles" disabled={busy} onClick={flip} className={"cs-optin-tg"+(on?" on":"")}/>
+    </div>
+  </div>);
+}
+
 // ═══════════════════════════════════════════
 // PAGE: ADMIN / OWNER DASHBOARD (only for officecasting01@gmail.com)
 // ═══════════════════════════════════════════
@@ -25273,6 +25313,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Privacy & Security</h2>
       <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Your account security settings and data visibility.</p>
+      {isTalent&&<CastslateSubmitOptIn uid={uid} profile={profile} onReload={onReload}/>}
       <div className="card" style={{marginBottom:16}}>
         <div style={{fontWeight:700,marginBottom:16}}>Account Information</div>
         <div style={{display:"flex",flexDirection:"column",gap:12}}>
@@ -41024,6 +41065,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       <AdminNavLink current={section} target="cd-verification" label="CD Verification" onClick={goToSection}/>
       <AdminNavLink current={section} target="castings" label="Castings" badge={pendingCastingCount} onClick={goToSection}/>
       <AdminNavLink current={section} target="applications" label="Applications" onClick={goToSection}/>
+      <AdminNavLink current={section} target="castslate-submit" label="CastSlate Submit" onClick={goToSection}/>
       <AdminNavLink current={section} target="classes" label="Classes" onClick={goToSection}/>
       <AdminNavLink current={section} target="class-invitations" label="Class Invitations" onClick={goToSection}/>
       <AdminNavLink current={section} target="booking-requests" label="Class Booking Requests" badge={pendingBookingCount} onClick={goToSection}/>
@@ -41061,6 +41103,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="cd-verification"&&<AdminCDVerification/>}
       {section==="castings"&&<AdminCastings onPendingCountChange={setPendingCastingCount}/>}
       {section==="applications"&&<AdminApplications/>}
+      {section==="castslate-submit"&&<AdminCastslateSubmit/>}
       {section==="classes"&&<AdminClasses/>}
       {section==="class-invitations"&&<AdminClassInvitations session={session}/>}
       {section==="booking-requests"&&<AdminAllBookingRequests/>}
@@ -41084,6 +41127,203 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
     </div>
   </div>);
 }
+// ─── Admin → CastSlate Submit ──────────────────────────────────────────────
+// Admin picks a live casting posted by a real, approved CD (never admin-created /
+// generated castings, never castings with nudity). The castslate-submit-match
+// edge function returns, per role, every actor who passes age + gender + opt-in +
+// headshot, rated by Gemini against the role description. Everyone the AI didn't
+// rule out is pre-checked — no cap. "Submit to CD" calls admin_castslate_submit,
+// which re-validates every row and files ordinary applications tagged
+// source='castslate'. CDs see them exactly like self-submissions; actors are NOT
+// emailed; it never uses an actor's free submission.
+const CSS_FIT={strong:{label:"Strong fit",bg:"#E4F2EE",fg:"#206557"},good:{label:"Good fit",bg:"#EEF0F8",fg:"#3A3C80"},possible:{label:"Possible",bg:"#FBF1DF",fg:"#8A6420"},unrated:{label:"Matches age & gender",bg:"var(--s2)",fg:"var(--t2)"},no:{label:"Not a fit",bg:"rgba(214,59,59,0.08)",fg:"#B03030"}};
+// Deadlines are day-only strings; anchor at noon so no timezone shifts the day.
+const csDay=(d)=>{try{return new Date(String(d).slice(0,10)+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch(_){return d;}};
+function AdminCastslateSubmit(){
+  const [castings,setCastings]=useState(null);
+  const [counts,setCounts]=useState({});
+  const [loadErr,setLoadErr]=useState("");
+  const [active,setActive]=useState(null);     // casting row being matched
+  const [match,setMatch]=useState(null);       // edge fn result
+  const [matching,setMatching]=useState(false);
+  const [matchErr,setMatchErr]=useState("");
+  const [roleIdx,setRoleIdx]=useState(0);
+  const [sel,setSel]=useState({});             // {roleId:{talentId:true}}
+  const [submitting,setSubmitting]=useState(false);
+  const [result,setResult]=useState(null);
+
+  const load=async()=>{
+    setLoadErr("");
+    try{
+      const{data,error}=await window.sb.from("castings")
+        .select("id,title,type,location,deadline,status,published,is_admin_created,has_nudity,created_at,cd_id,roles(id),cd:cd_id(display_name,company_name,user_type,can_post_castings)")
+        .eq("status","open").eq("published",true)
+        .or("is_admin_created.is.null,is_admin_created.eq.false")
+        .order("created_at",{ascending:false}).limit(200);
+      if(error)throw error;
+      const today=new Date().toISOString().slice(0,10);
+      const real=(data||[]).filter(c=>c.cd&&c.cd.user_type==="cd"&&c.cd.can_post_castings===true&&(!c.deadline||c.deadline>=today));
+      setCastings(real);
+      if(real.length){
+        const{data:apps}=await window.sb.from("applications").select("casting_id").eq("source","castslate").in("casting_id",real.map(c=>c.id));
+        const m={};(apps||[]).forEach(a=>{m[a.casting_id]=(m[a.casting_id]||0)+1;});
+        setCounts(m);
+      }
+    }catch(e){setLoadErr(e.message||"Couldn't load castings.");setCastings([]);}
+  };
+  useEffect(()=>{load();},[]);
+
+  const findMatches=async(c)=>{
+    setActive(c);setMatch(null);setMatchErr("");setResult(null);setRoleIdx(0);setMatching(true);
+    try{
+      const{data,error}=await window.sb.functions.invoke("castslate-submit-match",{body:{casting_id:c.id}});
+      if(error){
+        let msg=error.message||"Matching failed.";
+        try{const j=await error.context?.json?.();if(j?.error)msg=j.error;}catch(_){}
+        throw new Error(msg);
+      }
+      if(data?.error)throw new Error(data.error);
+      const s={};
+      (data.roles||[]).forEach(r=>{s[r.id]={};r.candidates.forEach(x=>{if(x.fit!=="no")s[r.id][x.id]=true;});});
+      setSel(s);setMatch(data);
+    }catch(e){setMatchErr(e.message||"Matching failed.");}
+    finally{setMatching(false);}
+  };
+
+  const totals=()=>{
+    let n=0;const people=new Set();
+    Object.entries(sel).forEach(([rid,m])=>Object.entries(m).forEach(([tid,on])=>{if(on){n++;people.add(tid);}}));
+    return{n,people:people.size};
+  };
+  const setRoleAll=(r,on)=>{setSel(p=>{const m={};r.candidates.forEach(x=>{if(x.fit!=="no"&&on)m[x.id]=true;});return{...p,[r.id]:m};});};
+  const tog=(rid,tid)=>setSel(p=>({...p,[rid]:{...(p[rid]||{}),[tid]:!(p[rid]||{})[tid]}}));
+
+  const submit=async()=>{
+    const {n,people}=totals();
+    if(!n||!active)return;
+    if(!window.confirm(`Submit ${n} submission${n===1?"":"s"} (${people} ${people===1?"person":"people"}) to "${active.title}"?\n\nThe casting director sees them as regular submissions. Actors are not emailed, and it doesn't use anyone's free submission.`))return;
+    setSubmitting(true);setMatchErr("");
+    try{
+      const items=[];
+      Object.entries(sel).forEach(([rid,m])=>Object.entries(m).forEach(([tid,on])=>{if(on)items.push({role_id:rid,talent_id:tid});}));
+      const{data,error}=await window.sb.rpc("admin_castslate_submit",{p_casting:active.id,p_items:items});
+      if(error)throw error;
+      setResult(data||{});
+      load();
+    }catch(e){setMatchErr(e.message||"Submit failed.");}
+    finally{setSubmitting(false);}
+  };
+  const back=()=>{setActive(null);setMatch(null);setResult(null);setMatchErr("");};
+
+  const head=(<div style={{marginBottom:18}}>
+    <h2 style={{fontSize:22,fontWeight:800,margin:"0 0 6px"}}>CastSlate Submit</h2>
+    <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.55,margin:0,maxWidth:720}}>Pick a live casting from a real, approved casting director. AI finds every actor who matches each role's age range, gender and description. Everyone it doesn't rule out is pre-checked, with no cap. Review the list, then submit. The CD sees them as regular submissions, actors aren't emailed, and it never uses anyone's free submission.</p>
+  </div>);
+
+  // ── Result
+  if(active&&result){
+    const r=result.skipped_reasons||{};
+    const lab={already_applied:"already applied",not_eligible:"opted out or no longer eligible",bad_role:"role no longer on the casting"};
+    return(<div>{head}
+      <div className="card" style={{textAlign:"center",padding:"32px 20px"}}>
+        <div style={{fontSize:38,fontWeight:800,color:"var(--teal)"}}>{result.submitted||0}</div>
+        <div style={{fontWeight:700,fontSize:16,marginBottom:8}}>submissions sent to {active.title}</div>
+        {result.skipped>0&&<div style={{color:"var(--t3)",fontSize:12.5,marginBottom:8}}>Skipped {result.skipped}: {Object.entries(r).map(([k,v])=>v+" "+(lab[k]||k)).join(" · ")}</div>}
+        <p style={{color:"var(--t2)",fontSize:13,maxWidth:460,margin:"6px auto 18px",lineHeight:1.5}}>They're in the CD's submissions next to the self-submitted actors. Nobody was emailed and no free submissions were used.</p>
+        <button className="btn-p btn-sm" onClick={back}>Back to castings</button>
+      </div>
+    </div>);
+  }
+
+  // ── Match review
+  if(active){
+    const roles=match?.roles||[];
+    const r=roles[roleIdx];
+    const {n,people}=totals();
+    return(<div>{head}
+      <button onClick={back} style={{background:"none",border:"none",color:"var(--teal-dk)",fontWeight:700,fontSize:13,padding:0,marginBottom:12,cursor:"pointer",fontFamily:"inherit"}}>← All castings</button>
+      <div style={{fontWeight:800,fontSize:18}}>{active.title}</div>
+      <div style={{color:"var(--t3)",fontSize:12.5,marginTop:2}}>{[active.type,active.location,active.cd?.company_name||active.cd?.display_name,active.deadline?"Deadline "+csDay(active.deadline):null].filter(Boolean).join(" · ")}</div>
+      {matching&&<div className="card" style={{marginTop:16,textAlign:"center",padding:"32px 20px"}}>
+        <div style={{fontWeight:700}}>Finding matches…</div>
+        <div style={{color:"var(--t3)",fontSize:12.5,marginTop:4}}>AI is reading every matching profile against each role. This can take up to a minute.</div>
+      </div>}
+      {matchErr&&<div style={{background:"rgba(214,59,59,0.08)",border:"1px solid var(--red)",borderRadius:8,padding:"10px 14px",color:"var(--red)",fontSize:13,marginTop:14}}>{matchErr}</div>}
+      {match&&!match.ai&&<div style={{background:"#FFF7E6",border:"1px solid #EFD9AE",color:"#6B5324",borderRadius:8,padding:"9px 13px",fontSize:12.5,marginTop:14}}>AI wasn't available, so these are matched on age and gender only. Check descriptions yourself before submitting.</div>}
+      {match&&match.ai&&match.ai_unrated>0&&<div style={{background:"#FFF7E6",border:"1px solid #EFD9AE",color:"#6B5324",borderRadius:8,padding:"9px 13px",fontSize:12.5,marginTop:14}}>AI couldn't rate {match.ai_unrated} actor{match.ai_unrated===1?"":"s"}. They're marked "Matches age & gender" and still selected.</div>}
+      {match&&!roles.length&&<div className="card" style={{marginTop:16,color:"var(--t3)"}}>This casting has no roles.</div>}
+      {r&&<>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"16px 0 12px"}}>
+          {roles.map((x,k)=>{const c=Object.values(sel[x.id]||{}).filter(Boolean).length;return(
+            <button key={x.id} onClick={()=>setRoleIdx(k)} style={{textAlign:"left",padding:"8px 12px",borderRadius:10,border:"1px solid "+(k===roleIdx?"var(--teal)":"var(--bdr)"),boxShadow:k===roleIdx?"0 0 0 2px rgba(42,132,114,.15)":"none",background:"var(--s1)",cursor:"pointer",fontFamily:"inherit"}}>
+              <div style={{fontWeight:700,fontSize:13}}>{x.name}</div>
+              <div style={{color:"var(--t3)",fontSize:11.5}}>{c} of {x.candidates.length} selected</div>
+            </button>);})}
+        </div>
+        <div className="card">
+          <div style={{fontWeight:800,fontSize:15}}>{r.name}</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",margin:"8px 0"}}>
+            {[r.gender||"Any gender",r.age_range?"Ages "+r.age_range:"Any age",r.ethnicity].filter(Boolean).map(t=><span key={t} style={{background:"var(--s2)",color:"var(--t2)",fontSize:11.5,fontWeight:600,padding:"3px 9px",borderRadius:99}}>{t}</span>)}
+          </div>
+          {r.description&&<p style={{color:"var(--t2)",fontSize:13,lineHeight:1.5,margin:"4px 0 0",whiteSpace:"pre-wrap"}}>{r.description}</p>}
+          {(()=>{
+            const yes=r.candidates.filter(x=>x.fit!=="no"),no=r.candidates.filter(x=>x.fit==="no");
+            const card=(x)=>{const on=!!(sel[r.id]||{})[x.id],f=CSS_FIT[x.fit]||CSS_FIT.unrated;return(
+              <label key={x.id} style={{display:"flex",gap:10,alignItems:"flex-start",padding:10,border:"1px solid var(--bdr)",borderRadius:11,background:"#fff",cursor:"pointer",opacity:on?1:.5,minWidth:0}}>
+                <input type="checkbox" checked={on} onChange={()=>tog(r.id,x.id)} style={{accentColor:"var(--teal)",width:16,height:16,marginTop:3,flexShrink:0}}/>
+                <img src={x.headshot} alt="" loading="lazy" style={{width:46,height:56,objectFit:"cover",borderRadius:8,flexShrink:0,background:"var(--s2)"}}/>
+                <div style={{minWidth:0}}>
+                  <div style={{fontWeight:700,fontSize:13.5,display:"flex",flexWrap:"wrap",gap:6,alignItems:"center"}}>{x.name}<span style={{background:f.bg,color:f.fg,fontSize:10.5,fontWeight:800,padding:"2px 7px",borderRadius:5}}>{f.label}</span></div>
+                  <div style={{color:"var(--t3)",fontSize:11.5}}>{[x.age,x.location,x.premium?"Premium":"Free"].filter(v=>v!==null&&v!=="").join(" · ")}</div>
+                  {x.reason&&<div style={{color:"var(--t2)",fontSize:12,marginTop:3,lineHeight:1.4}}>{x.reason}</div>}
+                </div>
+              </label>);};
+            return(<>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap",margin:"16px 0 8px"}}>
+                <b style={{fontSize:14}}>{yes.length} match{yes.length===1?"":"es"}, best fit first</b>
+                <span style={{fontSize:12.5}}><button onClick={()=>setRoleAll(r,true)} style={{background:"none",border:"none",color:"var(--teal-dk)",fontWeight:700,cursor:"pointer",padding:0,fontFamily:"inherit"}}>Select all</button> · <button onClick={()=>setRoleAll(r,false)} style={{background:"none",border:"none",color:"var(--teal-dk)",fontWeight:700,cursor:"pointer",padding:0,fontFamily:"inherit"}}>Clear</button></span>
+              </div>
+              {yes.length?<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>{yes.map(card)}</div>:<div style={{color:"var(--t3)",fontSize:13}}>No matching actors for this role.</div>}
+              <details style={{marginTop:14,borderTop:"1px dashed var(--bdr)",paddingTop:12}}>
+                <summary style={{cursor:"pointer",fontWeight:700,fontSize:13,color:"var(--t2)"}}>Not included ({no.length+r.counts.already_applied+r.counts.opted_out+r.counts.no_headshot})</summary>
+                <ul style={{margin:"8px 0 10px",paddingLeft:18,color:"var(--t2)",fontSize:12.5,lineHeight:1.7}}>
+                  <li>Already applied themselves: {r.counts.already_applied}</li>
+                  <li>Turned off CastSlate Submit: {r.counts.opted_out}</li>
+                  <li>No headshot on profile: {r.counts.no_headshot}</li>
+                  <li>AI says not a fit: {no.length}{no.length?" (tick anyone below to add them back)":""}</li>
+                </ul>
+                {no.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8}}>{no.map(card)}</div>}
+              </details>
+            </>);
+          })()}
+        </div>
+        <div style={{position:"sticky",bottom:12,marginTop:16,background:"var(--acc)",color:"#fff",borderRadius:12,padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",boxShadow:"0 8px 24px rgba(0,0,0,.18)",zIndex:5}}>
+          <div><div style={{fontWeight:800,fontSize:15}}>{n} submission{n===1?"":"s"} · {people} {people===1?"person":"people"}</div><div style={{color:"rgba(255,255,255,.7)",fontSize:12}}>Across {roles.length} role{roles.length===1?"":"s"}. Actors are not emailed, and no free submissions are used.</div></div>
+          <button onClick={submit} disabled={!n||submitting} style={{background:"#EAC080",color:"var(--acc)",border:"none",borderRadius:8,padding:"10px 18px",fontWeight:700,fontSize:13,cursor:n&&!submitting?"pointer":"default",opacity:n&&!submitting?1:.5,fontFamily:"inherit"}}>{submitting?"Submitting…":"Submit to CD"}</button>
+        </div>
+      </>}
+    </div>);
+  }
+
+  // ── Casting list
+  return(<div>{head}
+    {loadErr&&<div style={{color:"var(--red)",fontSize:13,marginBottom:12}}>{loadErr}</div>}
+    {castings===null?<div style={{color:"var(--t3)"}}>Loading castings…</div>:
+     !castings.length?<div className="card" style={{color:"var(--t3)"}}>No live castings from approved casting directors right now. Castings posted by Office Casting or the generator never appear here.</div>:
+     <div style={{display:"grid",gap:10}}>
+      {castings.map(c=>(<div key={c.id} className="card" style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap",padding:"14px 16px",opacity:c.has_nudity?.6:1}}>
+        <div style={{flex:1,minWidth:200}}>
+          <div style={{fontWeight:800,fontSize:15}}>{c.title}</div>
+          <div style={{color:"var(--t3)",fontSize:12.5,marginTop:2}}>{[c.type,c.location,c.cd?.company_name||c.cd?.display_name,(c.roles||[]).length+" role"+((c.roles||[]).length===1?"":"s"),c.deadline?"Deadline "+csDay(c.deadline):null].filter(Boolean).join(" · ")}</div>
+          {counts[c.id]>0&&<div style={{color:"var(--teal-dk)",fontSize:12,fontWeight:700,marginTop:4}}>{counts[c.id]} submitted by CastSlate so far</div>}
+          {c.has_nudity&&<div style={{color:"var(--t3)",fontSize:12,marginTop:4}}>Has nudity, so actors must apply themselves.</div>}
+        </div>
+        <button className="btn-teal" disabled={!!c.has_nudity} style={{opacity:c.has_nudity?.45:1,cursor:c.has_nudity?"default":"pointer"}} onClick={()=>findMatches(c)}>{counts[c.id]>0?"Find more matches":"Find matches"}</button>
+      </div>))}
+     </div>}
+  </div>);
+}
+
 function AdminNavLink({current,target,label,onClick,badge}){
   const active=current===target;
   return(<button onClick={()=>onClick(target)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,border:"none",background:active?"var(--acc)":"transparent",color:active?"#fff":"var(--t1)",fontSize:13,fontWeight:active?700:500,cursor:"pointer",marginBottom:4,fontFamily:"inherit"}}>
