@@ -3222,11 +3222,11 @@ body.sheet-push .b2t-cube{display:none;}
    homepage Featured cards (.fcs-card-v2, cc-*) are untouched. No backticks
    or dollar-brace in this CSS: it lives inside a JS template literal. */
 .b5-card{position:relative;overflow:hidden;border-radius:14px;background:var(--s1);border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
-.b5-stripe{height:10px;background:repeating-linear-gradient(-45deg,#241F19 0 14px,var(--s1) 14px 28px);}
 .b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;}
 .b5-main{padding:24px 26px;display:grid;gap:10px;align-content:start;min-width:0;}
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
-.b5-pickpill .ti{color:#B08327;}
+.b5-pickpill{overflow:hidden;}
+.b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;}
 .b5-tag{font-size:12.5px;font-weight:600;color:var(--t2);background:var(--s2);border-radius:6px;padding:3px 8px;white-space:nowrap;}
@@ -14669,10 +14669,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
-              {isFeat&&<div className="b5-stripe" aria-hidden="true"/>}
               <div className={"b5-grid"+(isArchived?" cs-archived-dim":"")}>
                 <div className="b5-main">
-                  {isFeat&&<div><span className="b5-pickpill"><Ico n="star" s={12}/> CastSlate Pick</span></div>}
+                  {isFeat&&<div><span className="b5-pickpill"><span className="b5-clap" aria-hidden="true"/>CastSlate Pick</span></div>}
                   <div className="b5-head">
                     {/* The title opens the sheet at every width (the card-level
                         click is off on phones so a scroll tap can't open one). */}
