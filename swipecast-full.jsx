@@ -3238,8 +3238,10 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-story-wrap{border-left:3px solid #EAC080;padding:2px 0 2px 12px;max-width:70ch;}
 .b5-story{margin:0;font-size:14.5px;line-height:1.55;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
 .b5-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px;}
-.b5-ghost{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;font-size:14.5px;background:transparent;color:var(--teal);border:1.5px solid var(--teal);border-radius:10px;padding:10px 17px;cursor:pointer;}
-.b5-ghost:hover{background:var(--teal);color:#fff;}
+/* Ink, not teal (owner-approved 2026-09-26): green on the card means Apply only;
+   the breakdown button is the calm secondary step, sized near Apply. */
+.b5-ghost{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;background:transparent;color:#1A1A2E;border:1.25px solid #1A1A2E;border-radius:8px;padding:6px 13px;cursor:pointer;}
+.b5-ghost:hover{background:#1A1A2E;color:#fff;}
 .b5-side{border-left:1px solid var(--bdr);padding:6px 22px;display:flex;flex-direction:column;justify-content:center;}
 .b5-role{display:grid;grid-template-columns:4px minmax(0,1fr);gap:0 12px;padding:10px 0;align-items:center;}
 .b5-role .b5-bar{grid-row:1 / span 2;}
