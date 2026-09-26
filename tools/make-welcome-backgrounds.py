@@ -9,6 +9,7 @@ Writes email/backgrounds/*.jpg. Approved 2026-09-22:
   welcome-premium-projector.jpg  "Projector beam"     behind premiumWelcomeHtml
   confirm-signup-door.jpg        "Open door" (2026-09-25) behind the Supabase confirm-signup template
   welcome-cd-midnight.jpg        "Midnight & Gold" (2026-09-26) behind cdWelcomeHtml (casting directors)
+  confirm-signup-cd-sapphire.jpg "Sapphire & Silver" (2026-09-26) behind the CASTING-DIRECTOR branch of confirm-signup
 
 HOW THEY ARE USED. Each image is the background of the outermost table of its
 email, anchored centre-top, no-repeat, on the usual cream (CS_CREAM). The card
@@ -43,6 +44,8 @@ PREMIUM = dict(H=2950, FADE_START=2300, FADE_END=2870)
 CONFIRM = dict(H=1140, FADE_START=550, FADE_END=920)
 # Casting-director welcome. Card bottom measured at 1363px on desktop (2026-09-26).
 CD = dict(H=1450, FADE_START=880, FADE_END=1360)
+# Confirm-signup, casting-director branch — same card as CONFIRM (measured 2026-09-26).
+CONFIRM_CD = dict(H=1140, FADE_START=550, FADE_END=920)
 
 
 def fade_mask(H, f0, f1, edge=160):
@@ -166,6 +169,15 @@ def main():
                        (760, (168, 165, 170)), (930, (232, 226, 215)), (1040, CREAM)],
                   (222, 182, 96), 0.32),
          "welcome-cd-midnight.jpg", CD)
+    # Confirm signup, casting directors: "Sapphire & Silver" (approved 2026-09-26,
+    # demo 3, La La Land) — twilight blue gels with one soft dusk-pink wash.
+    save(stage_gels(CONFIRM_CD, (232, 236, 244), [
+        (620, 250, 640, 420, (86, 128, 196), 0.62),
+        (1820, 280, 640, 440, (214, 168, 196), 0.55),
+        (480, 920, 560, 400, (150, 176, 220), 0.60),
+        (1900, 960, 520, 380, (120, 140, 190), 0.45),
+        (1200, 620, 420, 300, (226, 222, 236), 0.55),
+    ]), "confirm-signup-cd-sapphire.jpg", CONFIRM_CD)
 
 
 if __name__ == "__main__":
