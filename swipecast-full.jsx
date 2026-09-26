@@ -3254,7 +3254,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-bm:hover,.b5-bm.on{color:var(--teal);}
 .b5-bm:hover{background:var(--s2);}
 .b5-bm svg{width:17px;height:17px;}
-.b5-apply{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:13.5px;color:#fff;background:var(--teal);border:0;border-radius:8px;padding:7px 16px;cursor:pointer;white-space:nowrap;}
+.b5-apply{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:12.5px;color:#fff;background:var(--teal);border:0;border-radius:7px;padding:5px 12px;cursor:pointer;white-space:nowrap;}
 .b5-apply:hover{background:#206557;}
 .b5-more{font-size:13.5px;color:var(--t2);font-weight:600;padding:8px 0 4px 16px;}
 .b5-bm:focus-visible,.b5-apply:focus-visible,.b5-ghost:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
