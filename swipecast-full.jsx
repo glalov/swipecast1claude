@@ -24155,7 +24155,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Training & Skills</h3>
           <div className="form-group"><label className="label">Training / Education</label><input className="input" placeholder="e.g. BFA Acting, NYU Tisch · Meisner Technique" value={f.training} onChange={e=>up("training",e.target.value)}/></div>
-          <div className="form-group"><label className="label">Special Skills (comma separated)</label><input className="input" placeholder="Stage Combat, Fluent Spanish, Horseback Riding, Guitar…" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
+          <div className="form-group"><label className="label">Special Skills</label>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,flexWrap:"wrap",border:"1.5px solid var(--bdr)",borderRadius:9,padding:"10px 12px",background:"var(--s1)"}}>
+              <span style={{fontSize:13,color:"var(--t2)"}}>{selectedSkills.length+extraSkills.filter(x=>String(x||"").trim()).length?`${selectedSkills.length+extraSkills.filter(x=>String(x||"").trim()).length} skills selected`:"Skills, accents and languages now have their own tab."}</span>
+              <button type="button" className="btn-s btn-sm" onClick={()=>{setTab("skills");window.scrollTo({top:0,behavior:"smooth"});}}>Edit skills &amp; languages <Tri/></button>
+            </div></div>
           <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         </div>
 
