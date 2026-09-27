@@ -12030,6 +12030,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // "Back to castings" told the reader the button did something it does not.
   const backLabel=t(backKey||'casting.back');
   const [applyRole,setApplyRole]=useState(null);
+  const [roleBriefOpen,setRoleBriefOpen]=useState(false);
+  useEffect(()=>{setRoleBriefOpen(false);},[applyRole?.name]);
   // Roles render as the Ledger Unfold up to ROLE_BOARD_MIN-1, and as the Casting
   // Board (rail + swapping panel) at or above it.
   // The Ledger is the default on purpose: choosing a role is a COMPARISON task,
@@ -12919,6 +12921,40 @@ Free submission used
             </div>
             <p style={{color:"var(--t3)",fontSize:12,marginBottom:16}}>{c.title} · {c.prod}</p>
 
+            {/* The role — first, so actors know who they're auditioning as before
+                writing a cover note (2026-09-27; many arrive straight from the
+                get-matched popup without reading the casting page). */}
+            {(()=>{
+              const r=applyRole;
+              const facets=[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange)].filter(Boolean);
+              const total=roleTotalPay(r);
+              const sfx=(u)=>u==="flat"?" flat":u==="week"?"/wk":u==="hour"?"/hr":"/day";
+              const pay=total!=null?`${fmtMoney(r.rate_amount)}${sfx(r.rate_unit)}`:(String(r.pay||"").trim().length<=28?String(r.pay||"").trim():"");
+              const story=String(c.synopsis||c.tagline||"").trim();
+              const d=(x)=>{if(!x)return null;const t=new Date(String(x).length===10?x+"T12:00:00Z":x);return isNaN(t)?null:t;};
+              const s0=d(c.shoot_start),s1=d(c.shoot_end);
+              const md=(t)=>t.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});
+              const when=s0?(s1&&s1-s0>0?(s0.getUTCMonth()===s1.getUTCMonth()?`${md(s0)}–${s1.getUTCDate()}`:`${md(s0)} – ${md(s1)}`):md(s0)):"";
+              const where=String(c.shoot_location||c.location||"").trim();
+              const shoots=[when&&`Shoots ${when}`,where&&(when?`in ${where}`:`Shoots in ${where}`)].filter(Boolean).join(" ");
+              const long=String(r.desc||"").length>150||story.length>170;
+              const clamp=(lines)=>long&&!roleBriefOpen?{display:"-webkit-box",WebkitLineClamp:lines,WebkitBoxOrient:"vertical",overflow:"hidden"}:{};
+              return <div style={{marginBottom:20}}>
+                <label className="label">The role</label>
+                <div style={{border:"1px solid var(--bdr)",background:"#fff",borderRadius:14,padding:"14px 16px"}}>
+                  <div style={{fontSize:17,fontWeight:800,letterSpacing:-.3}}>{r.name}</div>
+                  {(facets.length>0||pay)&&<div style={{display:"flex",gap:6,flexWrap:"wrap",margin:"8px 0 10px"}}>
+                    {[...facets,pay].filter(Boolean).map((f,fi)=><span key={fi} style={{fontSize:12,fontWeight:600,background:"var(--s2)",color:"var(--t2)",padding:"3px 9px",borderRadius:999}}>{f}</span>)}
+                  </div>}
+                  {r.desc&&<p style={{fontSize:14.5,lineHeight:1.6,color:"var(--t1)",margin:0,...clamp(2)}}>{r.desc}</p>}
+                  {(story||shoots)&&<div style={{marginTop:12,paddingTop:12,borderTop:"1px dashed var(--bdr)",fontSize:13.5,lineHeight:1.55,color:"var(--t2)",...clamp(3)}}>
+                    <b style={{color:"var(--t1)"}}>The project:</b> <i>{c.title}</i>{c.type?`, ${String(c.type).toLowerCase()}`:""}.{story?` ${story}`:""}{story&&!/[.!?]$/.test(story)?".":""}{shoots?` ${shoots}.`:""}
+                  </div>}
+                  {long&&<button type="button" onClick={()=>setRoleBriefOpen(v=>!v)} style={{background:"none",border:0,padding:0,marginTop:8,fontFamily:"inherit",fontSize:13,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:4}}>{roleBriefOpen?"Show less":"Read more"} <Ico n={roleBriefOpen?"chevron-up":"chevron-down"} s={14}/></button>}
+                </div>
+              </div>;
+            })()}
+
             {/* Audition Instructions */}
             {hasInstr&&<div style={{background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.2)",borderRadius:12,padding:"14px 16px",marginBottom:20}}>
               <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1.2,color:"var(--acc)",marginBottom:10}}>Audition Instructions</div>
@@ -12945,8 +12981,10 @@ Free submission used
 
             {applyErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{applyErr}</div>}
 
-            {/* Audition Video — primary element */}
-            <div className="form-group">
+            {/* Audition Video — Premium members only up here; free members get one
+                quiet line after the cover note instead of an upsell box between
+                them and Submit (2026-09-27). */}
+            {isPremium&&<div className="form-group">
               <label className="label" style={{marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
                 Your Audition Video
                 {!hasInstr&&<span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(recommended)</span>}
@@ -12994,7 +13032,7 @@ Free submission used
                     :<p style={{fontSize:13,color:"var(--t3)"}}>No submission format available.</p>)}
                 </div>
               )}
-            </div>
+            </div>}
 
             {/* Headshot selector */}
             <div className="form-group">
@@ -13015,9 +13053,13 @@ Free submission used
 
             {/* Cover note — optional, secondary */}
             <div className="form-group" style={{marginBottom:0}}>
-              <label className="label">{t('search.coverNote')} <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(optional — 2 sentences max)</span></label>
-              <textarea className="textarea" placeholder="One specific reason you're right for this role." value={coverNote} onChange={e=>setCoverNote(e.target.value)}/>
+              <label className="label">{t('search.coverNote')} <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(2 sentences max)</span></label>
+              <textarea className="textarea" placeholder={`One thing about ${(()=>{const nm=String(applyRole.name||"").trim();const first=nm.split(/[\s(–-]/)[0]||nm;return nm&&nm===nm.toUpperCase()&&/[A-Z]/.test(nm)?first.charAt(0)+first.slice(1).toLowerCase():(first||"this role");})()} you connect with.`} value={coverNote} onChange={e=>setCoverNote(e.target.value)}/>
             </div>
+            {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap",marginTop:16,padding:"11px 14px",border:"1px dashed var(--bdr)",borderRadius:10,fontSize:13.5,color:"var(--t2)"}}>
+              <span style={{display:"inline-flex",alignItems:"center",gap:6}}><Ico n="video" s={16}/>Add an audition video <span style={{color:"var(--t3)"}}>· Premium</span></span>
+              <button type="button" onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("membership");}} style={{background:"none",border:0,padding:0,fontFamily:"inherit",fontSize:13.5,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer",whiteSpace:"nowrap"}}>Learn more ▸</button>
+            </div>}
 
             <div style={{display:"flex",gap:12,marginTop:20}}>
               <button className="btn-teal" style={{flex:1,opacity:myPhotos.length===0?0.5:1}} onClick={submitApp} disabled={submitting||myPhotos.length===0}>{submitting?"Submitting Audition…":myPhotos.length===0?"Add a headshot to apply":<>Submit My Audition <Tri/></>}</button>
