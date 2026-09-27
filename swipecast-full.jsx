@@ -7743,10 +7743,10 @@ function ResetPasswordPage({onNavigate,session}){
 // ═══════════════════════════════════════════
 function AboutPage({onNavigate}){
   return(<div className="page">
-    <div className="info-hero"><div className="section-label">About</div><h1>Casting Should Be<br/>Fair for Everyone</h1><p>CastSlate was born out of frustration. Actors shouldn't be overcharged just to be seen — and they shouldn't be buried in a grid of 200 headshots either. We built a Tinder-style casting platform where every submission is reviewed one-by-one, and the monthly price is a fraction of what legacy sites charge.</p></div>
+    <div className="info-hero"><div className="section-label">About</div><h1>Casting Should Be<br/>Fair for Everyone</h1><p>CastSlate was born out of frustration. Actors shouldn't be overcharged just to be seen — and they shouldn't be buried in a grid of 200 headshots either. We built a Tinder-style casting platform where every submission is reviewed one-by-one, and the price is well below what legacy sites charge.</p></div>
     <div className="grid-2" style={{maxWidth:800,margin:"0 auto 60px"}}>
-      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Our Mission</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Democratize the casting process. Remove financial barriers for talent. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
-      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The Problem We Solve</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Legacy platforms charge actors around $30/month — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. CastSlate fixes both.</p></div>
+      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Our Mission</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Democratize the casting process. Keep professional casting affordable for working actors. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
+      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The Problem We Solve</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Legacy platforms can cost actors hundreds of dollars a year — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. CastSlate fixes both.</p></div>
     </div>
     <div style={{maxWidth:800,margin:"0 auto 60px"}}>
       <div style={{textAlign:"center",marginBottom:28}}>
