@@ -12351,6 +12351,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       console.log("[apply] success for role:",roleId);
       // Meta Pixel: application submitted — key funnel event for ads optimization
       try{if(window.fbq)window.fbq('trackCustom','SubmitApplication');}catch(_){}
+      try{window.dispatchEvent(new CustomEvent("sc:applied",{detail:{castingId:casting.id,castingTitle:casting.title,roleName:applyRole?.name||""}}));}catch(_){}
       setApplied(p=>new Set([...p,applyRole.idx]));
       setUsedCount(n=>n+1);
       setApplyOk(true);
@@ -13037,7 +13038,8 @@ Free submission used
       myPhotos={myPhotos}
       isDbCasting={isDbCasting}
       onClose={()=>setAuditionRole(null)}
-      onSubmitted={()=>{setApplied(p=>new Set([...p,auditionRole.role.idx]));setUsedCount(n=>n+1);}}
+      onSubmitted={()=>{setApplied(p=>new Set([...p,auditionRole.role.idx]));setUsedCount(n=>n+1);
+        try{window.dispatchEvent(new CustomEvent("sc:applied",{detail:{castingId:casting.id,castingTitle:casting.title,roleName:auditionRole?.role?.name||""}}));}catch(_){}}}
     />}
 
     <Footer onNavigate={onNavigate}/></div>);
@@ -20492,6 +20494,210 @@ function HeadshotStep({session,displayName,onSaved,onSkip}){
       onConfirm={(blob)=>{setPick(null);save(blob);}}
     />}
   </>);
+}
+
+// ─── GetMatchedFlow (2026-09-27) — what a new actor sees AFTER the headshot.
+//     Most actors uploaded a photo, left every stat empty and never submitted
+//     (140 of 470 signups in 60 days). Actors with photo + height + playable
+//     range submitted 74% of the time. So: three quick basics (saved straight
+//     to the profile) → up to 3 live roles they fit → apply → "Submitted!".
+//     Never mentions the free-submission limit (owner rule 2026-09-24: showing
+//     the scarcity before the first apply lowered submissions).
+//     Matching reuses effectiveOpenTo/roleGenderAllowed; tiers never pad:
+//     exact overlap → close fit (≤5 yrs, labelled) → open-to-all-ages roles.
+const GM_GOLD={background:"#EAC080",color:"#1A1A2E",border:"none",borderRadius:10,padding:"13px 20px",fontWeight:700,fontSize:15,cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"inherit"};
+function gmParseRange(s){if(s==null)return null;const str=String(s).toLowerCase().trim();if(!str)return null;
+  if(/all ages|open|any/.test(str)){const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];return[0,Infinity];}
+  const mr=str.match(/(\d+)\s*[-–—]\s*(\d+)/);if(mr)return[parseInt(mr[1],10),parseInt(mr[2],10)];
+  const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];
+  const m1=str.match(/(\d+)/);if(m1){const n=parseInt(m1[1],10);return[n,n];}return null;}
+const gmFmtRange=(r)=>!r?"":r[1]===Infinity?`${r[0]}+`:`${r[0]}–${r[1]}`;
+function gmBasicsDone(p){
+  if(!p)return false;
+  const auth=(Array.isArray(p.authentic_genders)&&p.authentic_genders.length)||(Array.isArray(p.open_to_role_genders)&&p.open_to_role_genders.length);
+  return !!(auth&&p.age_play_min&&p.age_play_max&&String(p.height||"").trim());
+}
+async function gmFindMatches(prof,uid){
+  const lo=parseInt(prof.age_play_min,10),hi=parseInt(prof.age_play_max,10);
+  if(!(lo>0&&hi>=lo))return[];
+  const {data}=await window.sb.from("castings")
+    .select("id,slug,title,type,location,pay,deadline,expires_at,go_live_at,has_nudity,roles(id,name,gender,age_range,role_type)")
+    .eq("status","open").eq("published",true)
+    .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
+    .order("created_at",{ascending:false}).limit(150);
+  let declinesNudity=false,applied=new Set();
+  try{const {data:pp}=await window.sb.from("profile_private").select("nudity_partial,nudity_full").eq("user_id",uid).maybeSingle();
+    declinesNudity=!!pp&&pp.nudity_partial===false&&pp.nudity_full===false;}catch(_){}
+  try{const {data:ap}=await window.sb.from("applications").select("casting_id").eq("talent_id",uid);(ap||[]).forEach(a=>a&&a.casting_id&&applied.add(a.casting_id));}catch(_){}
+  const openTo=effectiveOpenTo(prof);
+  const home=(String(prof.location||"").trim()||"New York, NY").toLowerCase();
+  const homeCity=home.split(",")[0].trim();
+  const out={exact:[],close:[],open:[]};
+  for(const c of (data||[])){
+    if(!c||applied.has(c.id)||castingIsExpired(c))continue;
+    if(declinesNudity&&c.has_nudity===true)continue;
+    const cl=String(c.location||"").toLowerCase();
+    const locScore=homeCity&&cl.split(",")[0].trim()===homeCity?3:(homeCity&&cl.includes(homeCity)?2:0);
+    let best=null;
+    for(const r of (c.roles||[])){
+      if(!r||!r.id||!roleGenderAllowed(r.gender,openTo))continue;
+      const rr=gmParseRange(r.age_range)||[0,Infinity];
+      const gap=rr[0]>hi?rr[0]-hi:(rr[1]<lo?lo-rr[1]:0);
+      const isOpen=/background|extra/i.test(String(r.role_type||"")+" "+String(c.type||""))||(rr[0]<=21&&rr[1]-rr[0]>=40);
+      const tier=gap===0?(isOpen?"open":"exact"):(gap<=5?"close":null);
+      if(!tier)continue;
+      const rank={exact:0,close:1,open:2}[tier];
+      const score=locScore+(/lead|principal/i.test(String(r.role_type||""))?1:0);
+      if(!best||rank<best.rank||(rank===best.rank&&(tier==="close"?gap<best.gap:score>best.score)))best={c,r,rr,tier,rank,gap,score};
+    }
+    if(best)out[best.tier].push(best);
+  }
+  const dl=(x)=>{const t=x.c.deadline?new Date(x.c.deadline).getTime():Infinity;return isNaN(t)?Infinity:t;};
+  out.exact.sort((a,b)=>b.score-a.score||dl(a)-dl(b));
+  out.close.sort((a,b)=>a.gap-b.gap||b.score-a.score);
+  out.open.sort((a,b)=>b.score-a.score);
+  return [...out.exact,...out.close,...out.open].slice(0,3);
+}
+function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply,onSkip,onClose,onNavigate,done}){
+  const uid=session?.user?.id;
+  const seed=profileStatsFields(myProfile||{});
+  const [mode,setMode]=useState(done?"done":startMode);
+  const [auth,setAuth]=useState(seed.authentic_genders||[]);
+  const [min,setMin]=useState(String(seed.age_play_min||""));
+  const [max,setMax]=useState(String(seed.age_play_max||""));
+  const [height,setHeight]=useState(myProfile?.height||"");
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState("");
+  const [prof,setProf]=useState(myProfile);
+  const [matches,setMatches]=useState(null);
+  const [extras,setExtras]=useState(null);
+  useEffect(()=>{if(done)setMode("done");},[done]);
+  useEffect(()=>{
+    if(mode!=="matches"||!prof||!uid)return;
+    let alive=true;setMatches(null);
+    gmFindMatches(prof,uid).then(m=>{if(alive)setMatches(m);}).catch(()=>{if(alive)setMatches([]);});
+    return()=>{alive=false;};
+  },[mode,prof,uid]);
+  useEffect(()=>{
+    if(mode!=="done"&&!(mode==="matches"&&matches&&!matches.length))return;
+    if(!uid||extras)return;
+    (async()=>{let credits=0;try{const {count}=await window.sb.from("talent_credits").select("id",{count:"exact",head:true}).eq("user_id",uid);credits=count||0;}catch(_){}
+      setExtras({credits});})();
+  },[mode,matches,uid,extras]);
+  const lo=parseInt(min,10),hi=parseInt(max,10);
+  const ready=auth.length>0&&lo>0&&hi>=lo&&hi<=99&&!!height;
+  const saveBasics=async()=>{
+    if(!ready||busy||!uid)return;
+    setBusy(true);setErr("");
+    try{
+      const {data,error}=await window.sb.from("profiles")
+        .update({authentic_genders:auth,age_play_min:lo,age_play_max:hi,height})
+        .eq("id",uid)
+        .select("id,gender,location,height,authentic_genders,open_to_role_genders,age_play_min,age_play_max,age_range,membership_status")
+        .single();
+      if(error)throw error;
+      setProf(p=>({...(p||{}),...data}));
+      onSaved&&onSaved();
+      if(showMatches)setMode("matches");else onClose();
+    }catch(e){setErr((e&&e.message)||"That didn't save. Please try again.");}
+    finally{setBusy(false);}
+  };
+  const p=myProfile||{};
+  const skillsOk=(Array.isArray(p.skills)&&p.skills.length>0)||(Array.isArray(p.languages)&&p.languages.length>0);
+  const photosOk=Array.isArray(p.additional_photos)&&p.additional_photos.length>0;
+  const checklist=[
+    {l:"Headshot",ok:true},
+    {l:"Basics — roles, age range, height",ok:true},
+    {l:"Skills & languages",ok:skillsOk},
+    {l:"Credits & training",ok:(extras&&extras.credits>0)||!!String(p.training||"").trim()},
+    {l:"More photos",ok:photosOk},
+  ];
+  const goProfile=()=>{onClose();onNavigate&&onNavigate("my-profile");};
+  const Dots=({n})=><div style={{display:"flex",gap:6,marginBottom:18}}>{[1,2,3].map(i=><i key={i} style={{height:4,flex:1,borderRadius:4,background:i<=n?"var(--teal)":"var(--s2)"}}/>)}</div>;
+  const Kicker=({icon,children})=><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--teal-dk)",marginBottom:6,display:"flex",alignItems:"center",gap:6}}><Ico n={icon} s={14}/>{children}</div>;
+  const H=({children})=><h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.6,margin:"0 0 6px",lineHeight:1.2}}>{children}</h2>;
+  const Lead=({children})=><p style={{fontSize:14.5,color:"var(--t2)",margin:"0 0 20px",lineHeight:1.5}}>{children}</p>;
+  const Link=({onClick,children})=><button type="button" onClick={onClick} disabled={busy} style={{display:"block",width:"100%",textAlign:"center",marginTop:12,fontSize:13,color:"var(--t3)",textDecoration:"underline",cursor:"pointer",background:"none",border:0,fontFamily:"inherit"}}>{children}</button>;
+  const Check=()=><ul style={{listStyle:"none",padding:0,margin:"0 0 18px"}}>{checklist.map(it=>(
+    <li key={it.l} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderTop:"1px solid var(--bdr)",fontSize:14,color:it.ok?"var(--t3)":"var(--t1)"}}>
+      <Ico n={it.ok?"circle-check-filled":"circle-dashed"} s={20} style={{color:it.ok?"var(--teal)":"var(--t3)"}}/>{it.l}
+      {!it.ok&&<button type="button" onClick={goProfile} style={{marginLeft:"auto",background:"none",border:0,fontFamily:"inherit",fontSize:13,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer"}}>Add ▸</button>}
+    </li>))}</ul>;
+  const fitLine=(x)=>x.tier==="exact"
+    ?<div style={{margin:"10px 0",padding:"8px 10px",background:"rgba(42,132,114,.08)",borderRadius:8,fontSize:13,color:"var(--teal-dk)",display:"flex",gap:6,alignItems:"center"}}><Ico n="user-check" s={16}/><span>You fit: <b style={{color:"var(--t1)"}}>{x.r.name}</b>{x.r.role_type?` · ${x.r.role_type}`:""}{x.r.age_range?` · ${gmFmtRange(x.rr)}`:""}</span></div>
+    :x.tier==="close"
+    ?<div style={{margin:"10px 0",padding:"8px 10px",background:"rgba(232,144,42,.1)",borderRadius:8,fontSize:13,color:"#9A5B12",display:"flex",gap:6,alignItems:"center"}}><Ico n="arrows-horizontal" s={16}/><span><b>Close fit</b> · {x.r.name} is {gmFmtRange(x.rr)}, you play {min}–{max}</span></div>
+    :<div style={{margin:"10px 0",padding:"8px 10px",background:"var(--s2)",borderRadius:8,fontSize:13,color:"var(--t2)",display:"flex",gap:6,alignItems:"center"}}><Ico n="users" s={16}/><span><b>Open to all ages</b> · {x.r.name}{x.r.role_type?` · ${x.r.role_type}`:""}</span></div>;
+  let body;
+  if(mode==="basics"){
+    body=<>
+      <Dots n={1}/>
+      {p.headshot_url&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"rgba(42,132,114,.08)",borderRadius:10,marginBottom:18,fontSize:13.5,color:"var(--teal-dk)",fontWeight:600}}>
+        <img src={p.headshot_url} alt="" style={{width:40,height:50,objectFit:"cover",borderRadius:7}}/><span style={{display:"flex",alignItems:"center",gap:6}}><Ico n="circle-check" s={16}/>Headshot uploaded</span></div>}
+      <Kicker icon="target-arrow">Step 1 of 3 · 30 seconds</Kicker>
+      <H>Now let's find roles you fit.</H>
+      <Lead>Three quick answers and we'll show you the castings you're right for, right now.</Lead>
+      <div style={{marginBottom:18}}><label className="label">Roles I'm authentic to</label><ChipPicker options={AUTHENTIC_OPTS} value={auth} onChange={setAuth}/></div>
+      <div style={{display:"flex",gap:18,flexWrap:"wrap",marginBottom:18}}>
+        <div><label className="label">Age range I can play</label>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:80}} placeholder="From" value={min} onChange={e=>setMin(e.target.value)}/>
+            <span style={{color:"var(--t3)",fontSize:13}}>to</span>
+            <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:80}} placeholder="To" value={max} onChange={e=>setMax(e.target.value)}/>
+          </div></div>
+        <div style={{flex:"1 1 160px"}}><label className="label">Height</label>
+          <select className="select" style={{width:"100%"}} value={height} onChange={e=>setHeight(e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div>
+      </div>
+      {err&&<div style={{background:"rgba(214,59,59,0.09)",color:"#B03030",padding:"10px 13px",borderRadius:9,fontSize:12.5,marginBottom:12}}>{err}</div>}
+      <button type="button" style={{...GM_GOLD,width:"100%",opacity:ready&&!busy?1:.45,cursor:ready&&!busy?"pointer":"not-allowed"}} disabled={!ready||busy} onClick={saveBasics}>{busy?"Saving…":<>{showMatches?"Show my matches":"Save"} <Tri/></>}</button>
+      <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"var(--t3)",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Ico n="device-floppy" s={13}/>Saved to your profile automatically</div>
+      <Link onClick={onSkip}>Skip for now</Link>
+    </>;
+  }else if(mode==="matches"){
+    const n=matches?matches.length:0,allExact=n>0&&matches.every(x=>x.tier==="exact");
+    const range=`${prof?.age_play_min||min}–${prof?.age_play_max||max}`;
+    body=matches===null?<><Dots n={2}/><div style={{padding:"40px 0",textAlign:"center",color:"var(--t2)",fontSize:14}}>Finding roles you fit…</div></>
+    :!n?<>
+      <Dots n={2}/>
+      <Kicker icon="calendar-time">Step 2 of 3</Kicker>
+      <H>No roles in your range are open today.</H>
+      <Lead>New castings go up every day. Your matches will show on your dashboard as they arrive. Meanwhile, finish your profile so casting directors can find <i>you</i>.</Lead>
+      <Check/>
+      <button type="button" style={{...GM_GOLD,width:"100%"}} onClick={goProfile}>Finish my profile <Tri/></button>
+      <Link onClick={()=>{onClose();onNavigate&&onNavigate("search");}}>Browse all castings</Link>
+    </>:<>
+      <Dots n={2}/>
+      <Kicker icon="sparkles">Step 2 of 3</Kicker>
+      <H>{allExact?`Your ${n} best match${n>1?"es":""} right now`:"Roles you could book right now"}</H>
+      <Lead>Picked for you, plays {range}.{allExact?"":` Fewer roles in your range are open today, so we've included ${matches.some(x=>x.tier==="close")?(matches.some(x=>x.tier==="open")?"close fits and roles open to all ages":"close fits"):"roles open to all ages"} too.`}</Lead>
+      {matches.map(x=>(
+        <div key={x.c.id} style={{border:"1px solid var(--bdr)",borderRadius:14,padding:"14px 16px",marginBottom:10,background:"#fff"}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
+            <div style={{minWidth:0}}><div style={{fontWeight:800,fontSize:16,lineHeight:1.25}}>{x.c.title}</div>
+              <div style={{fontSize:12.5,color:"var(--t3)",marginTop:2}}>{[x.c.location,(()=>{if(!x.c.deadline)return "Rolling";const ch=castingCountdown(x.c.deadline);if(ch&&!ch.expired&&ch.days<=14)return ch.label;const d=new Date(String(x.c.deadline).length===10?x.c.deadline+"T12:00:00Z":x.c.deadline);return isNaN(d)?"":"Closes "+d.toLocaleDateString("en-US",{month:"short",day:"numeric"});})()].filter(Boolean).join(" · ")}</div></div>
+            {x.c.type&&<span style={{fontSize:11,fontWeight:700,background:"var(--s2)",color:"var(--t2)",padding:"3px 8px",borderRadius:6,whiteSpace:"nowrap"}}>{x.c.type}</span>}
+          </div>
+          {fitLine(x)}
+          {x.c.pay&&<div style={{fontSize:13,color:"var(--t2)",marginBottom:12,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{x.c.pay}</div>}
+          <button type="button" style={{...GM_GOLD,padding:"10px 16px",fontSize:14}} onClick={()=>onApply(x.c,x.r)}>Submit to this role <Tri/></button>
+        </div>))}
+      <Link onClick={()=>{onClose();onNavigate&&onNavigate("search");}}>See all castings instead</Link>
+    </>;
+  }else{
+    body=<>
+      <Dots n={3}/>
+      <div style={{width:56,height:56,borderRadius:"50%",background:"var(--teal)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><Ico n="check" s={30}/></div>
+      <Kicker icon="circle-check">Step 3 of 3</Kicker>
+      <H>Submitted{done?.roleName?` for ${done.roleName}`:""}!</H>
+      <Lead>The casting director{done?.castingTitle?<> for <b style={{color:"var(--t1)"}}>{done.castingTitle}</b></>:""} reviews every submission. Make sure your profile is ready when they open it:</Lead>
+      <Check/>
+      <button type="button" style={{...GM_GOLD,width:"100%"}} onClick={goProfile}>Finish my profile <Tri/></button>
+      <Link onClick={()=>{onClose();onNavigate&&onNavigate("dashboard");}}>Go to my dashboard</Link>
+    </>;
+  }
+  return(<BodyPortal><div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
+    <div className="modal" style={{maxWidth:540,width:"100%",padding:"26px 24px 22px",margin:"auto"}}>{body}</div>
+  </div></BodyPortal>);
 }
 
 // ─── FixedTooltip — portal-style fixed tooltip that escapes overflow:hidden containers
@@ -49334,6 +49540,60 @@ function App(){
     try{localStorage.setItem("sc_hs_step_skip_"+session.user.id,headshotStepDayKey);}catch(_){}
     setHeadshotStepOff(true);
   };
+  // ─── Get-matched flow (after the headshot) — see GetMatchedFlow.
+  // For talent WITH a headshot who either haven't filled the three basics or
+  // have never submitted. Once a day until done; "Skip for now" settles the day.
+  const [gmAppCount,setGmAppCount]=useState(null); // null = loading
+  const [gmOff,setGmOff]=useState(false);
+  const [gmAwait,setGmAwait]=useState(false);     // user tapped Submit from the flow
+  const [gmDone,setGmDone]=useState(null);        // {castingTitle,roleName} → Step 3
+  const [gmOpen,setGmOpen]=useState(null);        // mode frozen when the flow opens
+  useEffect(()=>{
+    const uid=session?.user?.id;
+    if(!uid||myProfile?.user_type!=="talent"){setGmAppCount(null);return;}
+    let alive=true;
+    window.sb.from("applications").select("id",{count:"exact",head:true}).eq("talent_id",uid)
+      .then(({count,error})=>{if(alive)setGmAppCount(error?null:(count||0));});
+    return()=>{alive=false;};
+  },[session?.user?.id,myProfile?.user_type]);
+  useEffect(()=>{
+    const onApplied=(e)=>{
+      setGmAppCount(n=>(n||0)+1);
+      if(!gmAwait)return;
+      const d=(e&&e.detail)||{};
+      setGmAwait(false);
+      setTimeout(()=>setGmDone({castingTitle:d.castingTitle||"",roleName:d.roleName||""}),1600); // let the apply modal close first
+    };
+    window.addEventListener("sc:applied",onApplied);
+    return()=>window.removeEventListener("sc:applied",onApplied);
+  },[gmAwait]);
+  const gmBasicsMissing=!gmBasicsDone(myProfile);
+  const gmIsPremium=myProfile?.membership_status==="active";
+  const gmCanMatch=gmAppCount===0||(gmIsPremium&&gmAppCount!=null);
+  const gmAllowedHere=headshotStepAllowedHere&&!["auth-gate","casting-gate","casting-detail","my-profile","membership","pricing","terms","privacy","unsubscribed","reset-password"].includes(page);
+  const gmSkippedToday=(()=>{try{return !!session?.user?.id&&localStorage.getItem("sc_gm_skip_"+session.user.id)===headshotStepDayKey;}catch(_){return false;}})();
+  const gmWanted=(()=>{
+    if(!authReady||!session?.user?.id||!myProfile||myProfile.id!==session.user.id)return false;
+    if(myProfile.user_type!=="talent"||!myProfile.headshot_url)return false;
+    if(myProfile.banned||myProfile.suspended)return false;
+    if(myProfile.account_status&&myProfile.account_status!=="active")return false;
+    if(gmAppCount==null)return false;
+    return gmBasicsMissing||gmAppCount===0;
+  })();
+  useEffect(()=>{
+    if(gmOpen||gmOff||gmDone||gmAwait||!gmWanted||!gmAllowedHere||showHeadshotStep||gmSkippedToday)return;
+    setGmOpen({mode:gmBasicsMissing?"basics":"matches",showMatches:gmCanMatch});
+  },[gmWanted,gmAllowedHere,showHeadshotStep,gmSkippedToday,gmOff,gmDone,gmAwait]);// eslint-disable-line
+  const closeGm=()=>{setGmOpen(null);setGmOff(true);setGmDone(null);};
+  const skipGm=()=>{try{localStorage.setItem("sc_gm_skip_"+session.user.id,headshotStepDayKey);}catch(_){}closeGm();};
+  const gmApply=async(c,r)=>{
+    setGmOpen(null);setGmOff(true);setGmAwait(true);
+    const full=await fetchFullCasting(c.id);
+    if(!full){setGmAwait(false);viewCastingById(c.id);return;}
+    setPendingApply({casting:full,role:{id:r.id,name:r.name}});
+    setPrevPage(page);setViewingCasting(full);window.scrollTo(0,0);setPage("casting-detail");
+    pushHist("casting-detail",{slug:full.slug||String(full.id)});
+  };
 
   const navT=(key)=>(TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
   return(
@@ -49589,6 +49849,19 @@ function App(){
         displayName={myProfile?.display_name}
         onSaved={()=>{setHeadshotStepOff(true);loadProfile(session?.user?.id);}}
         onSkip={dismissHeadshotStep}
+      />}
+      {(gmOpen||gmDone)&&!showHeadshotStep&&<GetMatchedFlow
+        key={gmDone?"done":"flow"}
+        session={session}
+        myProfile={myProfile}
+        startMode={gmOpen?.mode||"matches"}
+        showMatches={!!gmOpen?.showMatches}
+        done={gmDone}
+        onSaved={()=>loadProfile(session?.user?.id)}
+        onApply={gmApply}
+        onSkip={skipGm}
+        onClose={closeGm}
+        onNavigate={navigate}
       />}
       {/* ── Mobile debug panel — visible when URL contains ?debug ── */}
       {(()=>{
