@@ -162,7 +162,7 @@ ${inner}
 function email1(firstName: string, uid: string, planLabel: string, planOffer: string): string {
   const inner = header("Almost there") + hero(1) + `
   <tr><td style="padding:22px 34px 4px;text-align:center;">
-    <h1 style="margin:0 0 12px;font-family:${SERIF};font-size:30px;font-weight:700;color:${C.ink};letter-spacing:-0.5px;line-height:1.22;">You were one step<br/>from Premium, ${esc(firstName)}.</h1>
+    <h1 style="margin:0 0 12px;font-family:${SERIF};font-size:30px;font-weight:700;color:${C.ink};letter-spacing:-0.5px;line-height:1.22;">You were one step<br/>from Premium${firstName ? `, ${esc(firstName)}` : ""}.</h1>
     <p style="margin:0 auto;font-size:15.5px;line-height:1.7;color:${C.body};max-width:420px;">Your ${esc(planLabel)} is still sitting in checkout. It takes about 20 seconds to finish &mdash; your details are already there.</p></td></tr>
   <tr><td style="padding:22px 34px 0;">
     <div style="font-size:10px;font-weight:800;color:${C.brand};letter-spacing:1.3px;text-transform:uppercase;margin-bottom:9px;">Your signup &middot; 90% complete</div>
@@ -181,7 +181,7 @@ function email1(firstName: string, uid: string, planLabel: string, planOffer: st
     </td></tr></table></td></tr>
   <tr><td style="height:20px;"></td></tr>`
   + csFooterStripe(C.brand);
-  return docShell(`You were one step from Premium, ${firstName}`, inner, csFooterA("You started a Premium signup on CastSlate.", C.brand, unsubUrl(uid)));
+  return docShell(`You were one step from Premium${firstName ? `, ${firstName}` : ""}`, inner, csFooterA("You started a Premium signup on CastSlate.", C.brand, unsubUrl(uid)));
 }
 
 // ── ② Locked out ──
@@ -194,7 +194,9 @@ function email2(firstName: string, uid: string, attempts: number, castings: {tit
   const intro = attempts>=3
     ? `You've opened checkout <b style="color:${C.ink};">${attempts} times</b>. Meanwhile these roles went live this week &mdash; and Premium members were first in line for every one.`
     : `You started signing up for Premium but didn't finish. Meanwhile these roles went live this week &mdash; and Premium members were first in line for every one.`;
-  const head = attempts>=3 ? `You keep coming back,<br/>${esc(firstName)}. So does the work.` : `${esc(firstName)}, the work<br/>didn't wait for you.`;
+  const head = attempts>=3
+    ? (firstName ? `You keep coming back,<br/>${esc(firstName)}. So does the work.` : `You keep coming back.<br/>So does the work.`)
+    : (firstName ? `${esc(firstName)}, the work<br/>didn't wait for you.` : `The work<br/>didn't wait for you.`);
   const inner = header("Premium locked") + hero(2) + `
   <tr><td style="padding:22px 34px 4px;text-align:center;">
     <h1 style="margin:0 0 12px;font-family:${SERIF};font-size:29px;font-weight:700;color:${C.ink};letter-spacing:-0.5px;line-height:1.22;">${head}</h1>
@@ -205,14 +207,14 @@ function email2(firstName: string, uid: string, attempts: number, castings: {tit
   <tr><td style="padding:4px 30px 0;">${studioStrip()}</td></tr>
   <tr><td style="height:22px;"></td></tr>`
   + csFooterStripe(C.brand);
-  return docShell(`${firstName}, these castings went live without you`, inner, csFooterA("You reached Premium checkout on CastSlate.", C.brand, unsubUrl(uid)));
+  return docShell(firstName ? `${firstName}, these castings went live without you` : "These castings went live without you", inner, csFooterA("You reached Premium checkout on CastSlate.", C.brand, unsubUrl(uid)));
 }
 
 // ── ③ Founder note ──
 function email3(firstName: string, uid: string): string {
   const inner = header("A note from us") + hero(3) + `
   <tr><td style="padding:24px 38px 4px;">
-    <h1 style="margin:0 0 16px;font-family:${SERIF};font-size:25px;font-weight:700;color:${C.ink};letter-spacing:-0.3px;line-height:1.3;">A quick note, ${esc(firstName)} &mdash;</h1>
+    <h1 style="margin:0 0 16px;font-family:${SERIF};font-size:25px;font-weight:700;color:${C.ink};letter-spacing:-0.3px;line-height:1.3;">A quick note${firstName ? `, ${esc(firstName)}` : ""} &mdash;</h1>
     <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">We noticed you started signing up for Premium but didn't finish. No pressure at all &mdash; we just wanted to make sure nothing broke on our end.</p>
     <p style="margin:0 0 14px;font-size:15.5px;line-height:1.72;color:${C.body};">Here's the honest pitch: free accounts get one submission — the first one, and that's it. That's fine to test the waters, but the actors booking work are the ones applying the day a role drops. Premium unlocks unlimited submissions, every casting the moment it posts, our 650+ talent agency &amp; management directory, and your shareable TapeLink card.</p>
     <p style="margin:0 0 4px;font-size:15.5px;line-height:1.72;color:${C.body};">Whenever you're ready, it's right here. Takes about 20 seconds and you're in.</p></td></tr>
@@ -231,10 +233,16 @@ function email3(firstName: string, uid: string): string {
     </td></tr></table></td></tr>
   <tr><td style="height:20px;"></td></tr>`
   + csFooterStripe(C.brand);
-  return docShell(`A quick note, ${firstName}`, inner, csFooterA("You're getting this because you started a Premium signup.", C.brand, unsubUrl(uid)));
+  return docShell(`A quick note${firstName ? `, ${firstName}` : ""}`, inner, csFooterA("You're getting this because you started a Premium signup.", C.brand, unsubUrl(uid)));
 }
 
-function firstNameOf(displayName: unknown): string { return String(displayName ?? "").split(" ")[0].trim() || "there"; }
+// Greeting name (2026-09-27) — same rule as send-notification-email: "" for a
+// handle (digits, _, @, .) or bare initials; the copy then drops the name.
+function firstNameOf(displayName: unknown): string {
+  const w = (String(displayName ?? "").trim().split(/\s+/)[0] ?? "").replace(/_+$/, "");
+  if (!w || /[0-9_@.]/.test(w) || !/[aeiouy]/i.test(w) || w.replace(/[^\p{L}]/gu, "").length < 2) return "";
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}
 function planLabelOf(planKey: unknown): string {
   const k = String(planKey ?? "monthly").toLowerCase();
   if (k.includes("year") || k.includes("annual")) return "yearly plan";
@@ -248,9 +256,10 @@ function planOfferOf(planKey: unknown): string {
   return "$17.99/month · cancel anytime";
 }
 function subjectFor(step: number, firstName: string): string {
-  if (step===1) return `You were one step from Premium, ${firstName}`;
-  if (step===2) return `${firstName}, these castings went live without you`;
-  return `A quick note, ${firstName} — CastSlate`;
+  const nm = firstName ? `, ${firstName}` : "";
+  if (step===1) return `You were one step from Premium${nm}`;
+  if (step===2) return firstName ? `${firstName}, these castings went live without you` : "These castings went live without you";
+  return `A quick note${nm} — CastSlate`;
 }
 function buildFor(step: number, firstName: string, uid: string, planLabel: string, planOffer: string, attempts: number, castings: {title:string;meta:string}[], moreCount: number): string {
   if (step===1) return email1(firstName, uid, planLabel, planOffer);
@@ -310,9 +319,9 @@ serve(async (req) => {
       const { list, more } = await lockedCastings();
       const cast = list.length ? list : [{title:"Netflix Feature — Supporting Lead",meta:"Los Angeles · SAG-AFTRA · Rate hidden"},{title:"National Commercial — Principal",meta:"Remote self-tape · Paid"}];
       const items:SendArgs[] = [
-        { to:[to_email], subject:subjectFor(1,"there"), html:email1("there","test-uid","monthly plan","$17.99/month · cancel anytime") },
-        { to:[to_email], subject:subjectFor(2,"there"), html:email2("there","test-uid",9,cast,more||14) },
-        { to:[to_email], subject:subjectFor(3,"there"), html:email3("there","test-uid") },
+        { to:[to_email], subject:subjectFor(1,""), html:email1("","test-uid","monthly plan","$17.99/month · cancel anytime") },
+        { to:[to_email], subject:subjectFor(2,""), html:email2("","test-uid",9,cast,more||14) },
+        { to:[to_email], subject:subjectFor(3,""), html:email3("","test-uid") },
       ];
       const r = await sendBatch(items);
       return res({ ok:true, test:true, to:to_email, results:r });

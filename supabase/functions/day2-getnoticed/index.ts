@@ -105,6 +105,15 @@ async function sendBatch(items: SendArgs[]): Promise<SendResult[]> {
   } catch (e) { return items.map(() => ({ ok:false, id:null, err:String(e), status:500 })); }
 }
 
+// Greeting name (2026-09-27) — same rule as send-notification-email: "" for a
+// handle (digits, _, @, .) or bare initials, so the copy drops the name instead
+// of saying "…, Misha_a" or "…, there".
+function greetName(raw: unknown): string {
+  const w = (String(raw ?? "").trim().split(/\s+/)[0] ?? "").replace(/_+$/, "");
+  if (!w || /[0-9_@.]/.test(w) || !/[aeiouy]/i.test(w) || w.replace(/[^\p{L}]/gu, "").length < 2) return "";
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}
+
 const has = (v: unknown) => v !== null && v !== undefined && String(v).trim() !== "";
 
 // deno-lint-ignore no-explicit-any
@@ -237,7 +246,7 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
         </tr></table>
       </td></tr>
 
-      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">Casting directors see finished profiles first, ${first}. You're most of the way there &mdash; ${remaining} and you're in the running.</p></td></tr>
+      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">Casting directors see finished profiles first${first ? `, ${first}` : ""}. You're most of the way there &mdash; ${remaining} and you're in the running.</p></td></tr>
 
       <tr><td class="cs-pad" style="padding:22px 30px 0">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -309,9 +318,10 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
 }
 
 function subjectFor(pct: number, first: string): string {
+  const nm = first ? `, ${first}` : "";
   return pct === 0
-    ? `Let's get you noticed on CastSlate, ${first}`
-    : `You're ${pct}% of the way to getting noticed, ${first}`;
+    ? `Let's get you noticed on CastSlate${nm}`
+    : `You're ${pct}% of the way to getting noticed${nm}`;
 }
 
 serve(async (req) => {
@@ -357,8 +367,8 @@ serve(async (req) => {
     if (action === "test") {
       if (!to_email) return res({error:"to_email required"},400);
       const sample = assess({ headshot_url:"x", height:"5'10\"", weight:"160", skills:[], bio:"", credits:"Some credits", reel_url:null, slate_video_url:null, resume_url:null });
-      const html = buildEmail("there", sample, "test");
-      const r = await sendEmail({ from:FROM_EMAIL, to:[to_email], replyTo:CONTACT_EMAIL, subject:subjectFor(sample.pct,"there"), html });
+      const html = buildEmail("", sample, "test");
+      const r = await sendEmail({ from:FROM_EMAIL, to:[to_email], replyTo:CONTACT_EMAIL, subject:subjectFor(sample.pct,""), html });
       if (!r.ok) return res({error:r.err},500);
       return res({ ok:true, test:true, to:to_email, provider_id:r.id });
     }
@@ -370,7 +380,8 @@ serve(async (req) => {
     // deno-lint-ignore no-explicit-any
     for (const p of rows as any[]) {
       const a = assess(p);
-      outbox.push({ userId:p.id, email:p.email, subject:subjectFor(a.pct, p.first_name||"there"), html:buildEmail(p.first_name||"there", a, p.id) });
+      const first = greetName(p.first_name);
+      outbox.push({ userId:p.id, email:p.email, subject:subjectFor(a.pct, first), html:buildEmail(first, a, p.id) });
     }
 
     const logs: Record<string,unknown>[] = [];
