@@ -12022,6 +12022,15 @@ function PayNoteIcon({s=28}){
   );
 }
 
+// Role name as it reads in a sentence (2026-09-27): ALL-CAPS breakdown names
+// ("SARAH", "THE MECHANIC") become "Sarah" / "The Mechanic"; anything else is
+// left exactly as the casting director typed it.
+function niceRoleName(name){
+  const nm=String(name||"").trim();
+  if(!nm)return "";
+  if(nm===nm.toUpperCase()&&/[A-Z]/.test(nm))return nm.toLowerCase().replace(/(^|[\s(\-–])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
+  return nm;
+}
 function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting,backKey}){
   const t=useT();
   const {lang}=useLanguage();
@@ -12301,7 +12310,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         console.log("[apply] demo casting, local-only mark applied");
         setApplied(p=>new Set([...p,applyRole.idx]));
         setApplyOk(true);
-        setTimeout(()=>{setApplyRole(null);setApplyOk(false);},1200);
+        setTimeout(()=>{setApplyRole(null);setApplyOk(false);},2500);
         return;
       }
       const roleId=realRoleIds[applyRole.idx];
@@ -12357,7 +12366,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setApplied(p=>new Set([...p,applyRole.idx]));
       setUsedCount(n=>n+1);
       setApplyOk(true);
-      setTimeout(()=>{setApplyRole(null);setApplyOk(false);},1400);
+      setTimeout(()=>{setApplyRole(null);setApplyOk(false);},2500); // long enough to read the confirmation
     }catch(e){
       console.warn("[apply] threw:",e?.message||e);
       const raw=(e?.message||"").toLowerCase();
@@ -12911,13 +12920,13 @@ Free submission used
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
             <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
-            <h2 style={{marginBottom:8,fontSize:22}}>Audition Submitted</h2>
-            <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>Your audition for <strong>{applyRole.name}</strong> has been submitted to the casting director. This is your first-round audition — no meeting required.</p>
+            <h2 style={{marginBottom:8,fontSize:22}}>{(()=>{const rn=niceRoleName(applyRole.name);return rn&&rn.length<=26?`Submitted for ${rn}`:"Submission sent";})()}</h2>
+            <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.65}}>Your {videoNoteUrl?"audition":"submission"} for <strong>{applyRole.name}</strong> is with the casting director. They review every submission and will reach out if they want to see more.</p>
           </div>:
           <>
             <div style={{marginBottom:4,display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:20}}><Ico n="movie" s={22}/></span>
-              <h2 style={{margin:0,fontSize:20,fontWeight:800}}>Audition for {applyRole.name}</h2>
+              <h2 style={{margin:0,fontSize:20,fontWeight:800}}>{videoNoteUrl?"Audition for":"Submit for"} {applyRole.name}</h2>
             </div>
             <p style={{color:"var(--t3)",fontSize:12,marginBottom:16}}>{c.title} · {c.prod}</p>
 
@@ -13054,7 +13063,7 @@ Free submission used
             {/* Cover note — optional, secondary */}
             <div className="form-group" style={{marginBottom:0}}>
               <label className="label">{t('search.coverNote')} <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(2 sentences max)</span></label>
-              <textarea className="textarea" placeholder={`One thing about ${(()=>{const nm=String(applyRole.name||"").trim();const first=nm.split(/[\s(–-]/)[0]||nm;return nm&&nm===nm.toUpperCase()&&/[A-Z]/.test(nm)?first.charAt(0)+first.slice(1).toLowerCase():(first||"this role");})()} you connect with.`} value={coverNote} onChange={e=>setCoverNote(e.target.value)}/>
+              <textarea className="textarea" placeholder={`One thing about ${niceRoleName(applyRole.name)||"this role"} you connect with.`} value={coverNote} onChange={e=>setCoverNote(e.target.value)}/>
             </div>
             {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap",marginTop:16,padding:"11px 14px",border:"1px dashed var(--bdr)",borderRadius:10,fontSize:13.5,color:"var(--t2)"}}>
               <span style={{display:"inline-flex",alignItems:"center",gap:6}}><Ico n="video" s={16}/>Add an audition video <span style={{color:"var(--t3)"}}>· Premium</span></span>
@@ -13062,7 +13071,10 @@ Free submission used
             </div>}
 
             <div style={{display:"flex",gap:12,marginTop:20}}>
-              <button className="btn-teal" style={{flex:1,opacity:myPhotos.length===0?0.5:1}} onClick={submitApp} disabled={submitting||myPhotos.length===0}>{submitting?"Submitting Audition…":myPhotos.length===0?"Add a headshot to apply":<>Submit My Audition <Tri/></>}</button>
+              <button className="btn-teal" style={{flex:1,opacity:myPhotos.length===0?0.5:1}} onClick={submitApp} disabled={submitting||myPhotos.length===0}>{submitting?"Submitting…":myPhotos.length===0?"Add a headshot to apply":(()=>{
+                // Free members send a headshot + note, so "audition" only when a video is attached.
+                const rn=niceRoleName(applyRole.name);const who=rn&&rn.length<=26?rn:"this role";
+                return <>{videoNoteUrl?`Submit my audition for ${who}`:`Submit for ${who}`} <Tri/></>;})()}</button>
               <button className="btn-s" onClick={()=>setApplyRole(null)} disabled={submitting}>{t('cancel')}</button>
             </div>
           </>
@@ -20547,6 +20559,28 @@ function HeadshotStep({session,displayName,onSaved,onSkip}){
 //     the scarcity before the first apply lowered submissions).
 //     Matching reuses effectiveOpenTo/roleGenderAllowed; tiers never pad:
 //     exact overlap → close fit (≤5 yrs, labelled) → open-to-all-ages roles.
+// Comedy & tragedy masks (drawn for CastSlate 2026-09-27, owner-approved "B · large
+// soft watermark"). Original artwork — not a stock icon. Sits behind the popup's
+// content at ~10% opacity so it adds theatre feel without competing with the text.
+function MasksMark({width=250,stroke="#111",strokeWidth=4.5,style}){
+  const face="M6 16 C24 6 64 6 82 16 C86 44 76 70 60 88 C54 95 48 99 44 100 C40 99 34 95 28 88 C12 70 2 44 6 16 Z";
+  return <svg viewBox="0 0 170 120" width={width} fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={style}>
+    <g transform="translate(70 4) rotate(16 44 52)">
+      <path d={face} fill="#fff"/>
+      <path d="M16 30 C24 22 34 23 38 30"/><path d="M50 30 C54 23 64 22 72 30"/>
+      <path d="M18 44 C24 52 34 52 38 42 C32 46 24 47 18 44 Z" fill={stroke} strokeWidth={strokeWidth*.55}/>
+      <path d="M50 42 C54 52 64 52 70 44 C64 47 56 46 50 42 Z" fill={stroke} strokeWidth={strokeWidth*.55}/>
+      <path d="M26 73 C32 57 58 57 64 73 C54 66 36 66 26 73 Z" fill="#fff"/>
+    </g>
+    <g transform="translate(4 8) rotate(-14 44 52)">
+      <path d={face} fill="#fff"/>
+      <path d="M14 30 C22 24 32 24 38 30"/><path d="M50 30 C56 24 66 24 74 30"/>
+      <path d="M16 46 C22 36 34 36 38 46 C32 42 22 42 16 46 Z" fill={stroke} strokeWidth={strokeWidth*.55}/>
+      <path d="M50 46 C54 36 66 36 72 46 C66 42 56 42 50 46 Z" fill={stroke} strokeWidth={strokeWidth*.55}/>
+      <path d="M18 60 C28 86 60 86 70 60 C58 70 30 70 18 60 Z" fill="#fff"/>
+    </g>
+  </svg>;
+}
 const GM_GOLD={background:"#EAC080",color:"#1A1A2E",border:"none",borderRadius:10,padding:"13px 20px",fontWeight:700,fontSize:15,cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"inherit"};
 function gmParseRange(s){if(s==null)return null;const str=String(s).toLowerCase().trim();if(!str)return null;
   if(/all ages|open|any/.test(str)){const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];return[0,Infinity];}
@@ -20730,7 +20764,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
       <Dots n={3}/>
       <div style={{width:56,height:56,borderRadius:"50%",background:"var(--teal)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><Ico n="check" s={30}/></div>
       <Kicker icon="circle-check">Step 3 of 3</Kicker>
-      <H>Submitted{done?.roleName?` for ${done.roleName}`:""}!</H>
+      <H>Submitted{done?.roleName?` for ${niceRoleName(done.roleName)}`:""}!</H>
       <Lead>The casting director{done?.castingTitle?<> for <b style={{color:"var(--t1)"}}>{done.castingTitle}</b></>:""} reviews every submission. Make sure your profile is ready when they open it:</Lead>
       <Check/>
       <button type="button" style={{...GM_GOLD,width:"100%"}} onClick={goProfile}>Finish my profile <Tri/></button>
@@ -20738,7 +20772,10 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
     </>;
   }
   return(<BodyPortal><div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
-    <div className="modal" style={{maxWidth:540,width:"100%",padding:"26px 24px 22px",margin:"auto"}}>{body}</div>
+    <div className="modal" style={{maxWidth:540,width:"100%",padding:"26px 24px 22px",margin:"auto",position:"relative",overflow:"hidden",isolation:"isolate"}}>
+      <div aria-hidden="true" style={{position:"absolute",right:-34,top:96,lineHeight:0,pointerEvents:"none",transform:"rotate(-6deg)",opacity:.1,zIndex:0}}><MasksMark/></div>
+      <div style={{position:"relative",zIndex:1}}>{body}</div>
+    </div>
   </div></BodyPortal>);
 }
 
@@ -49604,7 +49641,7 @@ function App(){
       if(!gmAwait)return;
       const d=(e&&e.detail)||{};
       setGmAwait(false);
-      setTimeout(()=>setGmDone({castingTitle:d.castingTitle||"",roleName:d.roleName||""}),1600); // let the apply modal close first
+      setTimeout(()=>setGmDone({castingTitle:d.castingTitle||"",roleName:d.roleName||""}),2600); // right after the apply confirmation (2.5s) closes
     };
     window.addEventListener("sc:applied",onApplied);
     return()=>window.removeEventListener("sc:applied",onApplied);
