@@ -1914,6 +1914,11 @@ const SKILL_GROUPS=[
 ];
 const ALL_PROFILE_SKILLS=SKILL_GROUPS.flatMap(g=>g.items);
 const PROFILE_ACCENTS=["American - General","American - Southern","American - New York","American - Boston","American - Midwest","British - RP","British - Cockney","British - Northern","Irish","Scottish","Welsh","Australian","New Zealand","South African","Canadian","French","German","Italian","Spanish","Latin American","Russian","Eastern European","Middle Eastern","Indian","Caribbean / Jamaican","Nigerian","East Asian"];
+// Disabilities (2026-09-27) — modelled on Actors Access. Stored in
+// profile_private (never on the public profiles row); read via get_disabilities,
+// which answers only the actor, admins and signed-in casting directors.
+const PROFILE_DISABILITIES=["Amputee - Arm","Amputee - Leg","Amputee - Single","Amputee - Double","Autism Spectrum Disorder (ASD)","Blind or Low Vision","Cerebral Palsy","Deaf or Hard of Hearing","Down Syndrome","Intellectual Disability","Little Person","Mobility Disability","Wheelchair User"];
+const PROFILE_ASSISTIVE_DEVICES=["Cane","White Cane","Crutches - Forearm","Crutches - Underarm","Hearing Aid","Leg Braces","Mobility Scooter","Prosthetic Limb - Arm","Prosthetic Limb - Leg","Service Animal","Voice Box / Mechanical Larynx","Walker","Wheelchair - Manual","Wheelchair - Power"];
 const PROFILE_LANGUAGES=["English","Spanish","French","German","Italian","Portuguese","Russian","Ukrainian","Polish","Czech","Slovak","Bulgarian","Greek","Dutch","Danish","Swedish","Hebrew","Arabic","Farsi","Kurdish","Turkish","Hindi","Urdu","Bengali","Punjabi","Mandarin","Cantonese","Japanese","Korean","Vietnamese","Indonesian","Tagalog","Haitian Creole","Swahili","Yoruba","ASL (American Sign Language)"];
 // Old free-text / old-list skills -> the new canonical names. Anything not
 // recognised is kept as an "additional skill", never dropped.
@@ -13332,6 +13337,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const [uploadedVideos,setUploadedVideos]=useState([]);
   const [freshProfile,setFreshProfile]=useState(null);
   const [bodyMods,setBodyMods]=useState(null);
+  const [disab,setDisab]=useState(null); // get_disabilities — actor, admins, signed-in CDs only
   const [showAllMedia,setShowAllMedia]=useState(false);
   const [mediaViewer,setMediaViewer]=useState(null); // {items:[{type,url,title?}], idx}
 
@@ -13348,6 +13354,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       }catch(_){}
       try{
         if(session?.user){const {data:bm}=await window.sb.rpc("get_body_mods",{p_talent:talentDbId});if(Array.isArray(bm)&&bm[0])setBodyMods(bm[0]);}
+        if(session?.user){const {data:dz}=await window.sb.rpc("get_disabilities",{p_talent:talentDbId});setDisab(Array.isArray(dz)&&dz[0]?dz[0]:null);}
       }catch(_){}
       try{
         const {data}=await window.sb.from("talent_credits")
@@ -13763,6 +13770,18 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           {mods.map(([k,v])=><span key={k}>{k}: <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
           <span style={{fontSize:11,color:"var(--t3)"}}>· visible only to casting directors this actor submitted to</span>
         </div>}
+      </div>;})()}
+
+    {/* ── DISABILITIES ── private: only returned by get_disabilities to the
+        actor, admins and signed-in casting directors. Never on the public view. */}
+    {(()=>{const d=disab||{};const dl=Array.isArray(d.disabilities)?d.disabilities:[];const al=Array.isArray(d.assistive_devices)?d.assistive_devices:[];const other=(d.disability_other||"").trim();
+      if(!dl.length&&!al.length&&!other)return null;
+      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+        {sectionHead("Disabilities",<span style={{fontSize:11,color:"var(--t3)"}}>Visible only to casting directors</span>)}
+        {dl.length>0&&<div className="chips" style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:al.length||other?14:0}}>{dl.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div>}
+        {al.length>0&&<><div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:other?14:0}}>{al.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div></>}
+        {other&&<p style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{other}</p>}
       </div>;})()}
 
     {/* ── STRUCTURED CREDITS (from DB) ── */}
@@ -23533,7 +23552,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const [selectedSkills,setSelectedSkills]=useState([]); // canonical picks from SKILL_GROUPS
   const [extraSkills,setExtraSkills]=useState([]); // additional free-text skills
   // Size-card private answers live in profile_private (owner-only RLS).
-  const [priv,setPriv]=useState({has_tattoos:null,has_piercings:null,nudity_partial:null,nudity_full:null});
+  const [priv,setPriv]=useState({has_tattoos:null,has_piercings:null,nudity_partial:null,nudity_full:null,disabilities:null,assistive_devices:null,disability_other:null});
   const [privLoaded,setPrivLoaded]=useState(false);
   const [skillQ,setSkillQ]=useState("");
   const [customSkill,setCustomSkill]=useState("");
@@ -23610,8 +23629,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
        setSelectedSkills(c.picked);setExtraSkills(c.extra);
        setF(x=>({...x,accents:c.accents,languages:c.languages}));}
       if(profile.user_type!=="cd"&&profile.id)(async()=>{try{
-        const {data}=await window.sb.from("profile_private").select("has_tattoos,has_piercings,nudity_partial,nudity_full").eq("user_id",profile.id).maybeSingle();
-        if(data)setPriv({has_tattoos:data.has_tattoos,has_piercings:data.has_piercings,nudity_partial:data.nudity_partial,nudity_full:data.nudity_full});
+        const {data}=await window.sb.from("profile_private").select("has_tattoos,has_piercings,nudity_partial,nudity_full,disabilities,assistive_devices,disability_other").eq("user_id",profile.id).maybeSingle();
+        if(data)setPriv({has_tattoos:data.has_tattoos,has_piercings:data.has_piercings,nudity_partial:data.nudity_partial,nudity_full:data.nudity_full,disabilities:data.disabilities||null,assistive_devices:data.assistive_devices||null,disability_other:data.disability_other||null});
       }catch(_){}finally{setPrivLoaded(true);}})();else setPrivLoaded(true);
       setSlateVideoUrl(profile.slate_video_url||"");
     }
@@ -23820,7 +23839,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       const {error}=await withTimeout(window.sb.from("profiles").update(patch).eq("id",session.user.id),30000,"Save");
       if(error)throw error;
       if(!isCD&&Object.values(priv).some(v=>v!==null)){
-        const {error:pe}=await withTimeout(window.sb.from("profile_private").upsert({user_id:session.user.id,...priv,updated_at:new Date().toISOString()},{onConflict:"user_id"}),30000,"Save");
+        const dOther=(priv.disability_other||"").trim().slice(0,200)||null;
+        if(dOther&&containsContactInfo(dOther)){showErr(CONTACT_INFO_MSG);return false;}
+        const privRow={...priv,disability_other:dOther};
+        const {error:pe}=await withTimeout(window.sb.from("profile_private").upsert({user_id:session.user.id,...privRow,updated_at:new Date().toISOString()},{onConflict:"user_id"}),30000,"Save");
         if(pe)throw pe;
       }
       setSavedKey(editKey); // the state as it was when Save was pressed
@@ -24077,6 +24099,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<button className={`tab ${tab==="showcase"?"active":""}`} onClick={()=>setTab("showcase")}>Showcase Order</button>}
       {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills & Languages ({selectedSkills.length+extraSkills.filter(x=>String(x||"").trim()).length})</button>}
       {!isCD&&<button className={`tab ${tab==="size"?"active":""}`} onClick={()=>setTab("size")}>Size Card</button>}
+      {!isCD&&<button className={`tab ${tab==="disabilities"?"active":""}`} onClick={()=>setTab("disabilities")}>Disabilities</button>}
       {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
       {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links{!isPremium?" · Premium":""}</button>}
       {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
@@ -24664,6 +24687,19 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <div style={{marginTop:16}}><button className="btn-p" onClick={()=>save()} disabled={saving}>{saving?"Saving…":"Save Size Card"}</button></div>
       </div>
     </>}
+
+    {/* ── DISABILITIES TAB ── optional; profile_private, CDs-only via get_disabilities */}
+    {tab==="disabilities"&&!isCD&&<div className="card" style={{padding:24,marginBottom:16}}>
+      <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Disabilities <span style={{fontSize:10,fontWeight:800,letterSpacing:".8px",textTransform:"uppercase",padding:"2px 7px",borderRadius:99,background:"#E8E6F7",color:"#4A45A0",marginLeft:6,verticalAlign:"middle"}}>Casting directors only</span></h3>
+      <p style={{fontSize:12.5,color:"var(--t3)",marginBottom:18,lineHeight:1.55}}>Completely optional. Adding this helps casting directors find you for authentic casting. It's never on your public profile — only signed-in casting directors can see it, and you can change or remove it any time.</p>
+      <label className="label">Disability</label>
+      <ChipPicker options={PROFILE_DISABILITIES} value={priv.disabilities||[]} onChange={v=>setPriv(p=>({...p,disabilities:v}))}/>
+      <label className="label" style={{marginTop:20}}>Assistive devices</label>
+      <ChipPicker options={PROFILE_ASSISTIVE_DEVICES} value={priv.assistive_devices||[]} onChange={v=>setPriv(p=>({...p,assistive_devices:v}))}/>
+      <label className="label" style={{marginTop:20}}>Not listed? Describe it in your own words</label>
+      <input className="input" maxLength={200} placeholder="Optional" value={priv.disability_other||""} onChange={e=>setPriv(p=>({...p,disability_other:e.target.value}))}/>
+      <div style={{marginTop:18}}><button className="btn-p" onClick={()=>save()} disabled={saving}>{saving?"Saving…":"Save"}</button></div>
+    </div>}
 
     {/* ── CREDITS TAB ── */}
     {tab==="credits"&&!isCD&&<>
