@@ -214,6 +214,19 @@ interface NotifyRequest {
   shortlists?: number;
 }
 
+// Greeting name (2026-09-27): the first word of display_name, or "" when it is
+// not a usable name — a handle (digits, _, @, .) or bare initials ("K", "D.A.",
+// "MHG"). A trailing underscore is dropped ("Renee_" → "Renee"). Callers drop the
+// name when it is empty ("Welcome to CastSlate", "Hi there,") — never "…, there".
+// Names are already capitalized at the source (profiles_nice_display_name).
+function greetName(displayName: unknown): string {
+  const w = (String(displayName ?? "").trim().split(/\s+/)[0] ?? "").replace(/_+$/, "");
+  if (!w || /[0-9_@.]/.test(w) || !/[aeiouy]/i.test(w) || w.replace(/[^\p{L}]/gu, "").length < 2) return "";
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}
+const hiLine = (n: string) => n ? `Hi ${esc(n)},` : "Hi there,";
+const withName = (n: string) => n ? `, ${esc(n)}` : "";
+
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -296,7 +309,7 @@ function inboxMessageHtml(firstName: string, fromName?: string, projectName?: st
     : `You received a new message${about}. Open your inbox to read it and reply.`;
   return emailShell({
     tone: "teal", tag: "New message", heading: "You have a new message",
-    greeting: `Hi ${firstName},`, body,
+    greeting: hiLine(firstName), body,
     cta: "Open inbox", href: "/inbox",
     foot: "You're receiving this because you have an account on CastSlate.",
   });
@@ -306,7 +319,7 @@ function classInvitationHtml(firstName: string, classTitle: string, instructorNa
   const sub = instructorName ? `with ${esc(instructorName)}` : undefined;
   return emailShell({
     tone: "amber", tag: "Private invitation", heading: "You've been personally selected",
-    body: "Our team reviewed your profile and selected you for a private, one-on-one training session with a top industry professional. Spots are limited and offered by invitation only.",
+    body: `${firstName ? `Hi ${esc(firstName)}` : "Hi there"} &mdash; our team reviewed your profile and selected you for a private, one-on-one training session with a top industry professional. Spots are limited and offered by invitation only.`,
     mid: csBlock("amber", "Private invitation", esc(classTitle), sub),
     cta: "View my invitation", href: "/talent-dashboard",
     foot: "You're receiving this because a private invitation was sent to your CastSlate account.",
@@ -320,7 +333,7 @@ function bookingApprovedHtml(firstName: string, classTitle: string, slotLabel?: 
   const href = classId ? `/classes?class=${encodeURIComponent(classId)}` : "/classes";
   return emailShell({
     tone: "green", tag: "Approved", heading: "You're approved — reserve your seat",
-    greeting: `Good news, ${firstName} —`,
+    greeting: firstName ? `Good news, ${esc(firstName)} —` : "Good news —",
     body: "Your booking request for the session below was approved. Your spot is held for <strong>48 hours</strong> — complete payment to lock it in.",
     mid: csBlock("green", "Session", esc(classTitle), parts.join(" &middot; ") || undefined),
     cta: "Complete payment", href,
@@ -332,7 +345,7 @@ function bookingDeclinedHtml(firstName: string, classTitle: string, adminNote?: 
   const note = adminNote ? `<br/><br/>${esc(adminNote)}` : "";
   return emailShell({
     tone: "stone", tag: "Update", heading: "An update on your booking request",
-    greeting: `Hi ${firstName},`,
+    greeting: hiLine(firstName),
     body: `Thanks for your interest in <strong>${esc(classTitle)}</strong>. Unfortunately we couldn't approve your request this time — this session filled up quickly. New dates are opening soon.${note}`,
     cta: "Browse classes", href: "/classes",
     foot: "You're receiving this because you requested a class booking on CastSlate.",
@@ -343,7 +356,7 @@ function monthlyCheckinHtml(firstName: string, task?: string): string {
   return emailShell({
     tone: "amber", foil: true, tag: "Manager Mode &middot; Monthly check-in",
     heading: "Your monthly career note is ready",
-    body: "Your personalized Manager Mode check-in is waiting in your inbox — one focused step for the month ahead.",
+    body: `${firstName ? `Hi ${esc(firstName)}` : "Hi there"} &mdash; your personalized Manager Mode check-in is waiting in your inbox — one focused step for the month ahead.`,
     mid: task ? csBlock("amber", "This month's task", esc(task)) : undefined,
     cta: "Open my note", href: "/inbox",
     foot: "You're receiving this because Manager Mode is on for your account.",
@@ -425,7 +438,7 @@ function premiumWelcomeHtml(firstName: string): string {
       </td></tr>
       ${heroStill(PREMIUM_STILL, "#A8472A", "#1A1A2E")}
       <tr><td class="pw-pad" style="padding:36px 36px 8px">
-        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate Premium, ${firstName} 🎬</h1>
+        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate Premium${withName(firstName)} 🎬</h1>
         <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">You're all set. Premium unlocks everything you need to get seen — and the more complete your profile, the more castable you become.</p>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#555">Here's how to get the most out of it:</p>
       </td></tr>
@@ -577,7 +590,7 @@ function newActorWelcomeHtml(firstName: string): string {
       ${heroStill(WELCOME_STILL, "#A8472A", "#1A1A2E")}
 
       <tr><td class="row-pad" style="padding:36px 36px 8px">
-        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate, ${firstName} 🎬</h1>
+        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate${withName(firstName)} 🎬</h1>
         <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">Your account is live. You&rsquo;re about <strong>two minutes</strong> from being ready to apply to real castings — here&rsquo;s all it takes.</p>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#555">Follow these three steps in order:</p>
       </td></tr>
@@ -671,7 +684,7 @@ function cdWelcomeHtml(firstName: string): string {
       ${heroStill(CD_WELCOME_STILL, "#9C7A2E", "#1A1A2E")}
 
       <tr><td class="row-pad" style="padding:36px 36px 8px">
-        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate, ${firstName} 🎬</h1>
+        <h1 style="margin:0 0 14px;font-size:25px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Welcome to CastSlate${withName(firstName)} 🎬</h1>
         <p style="margin:0 0 10px;font-size:16px;line-height:1.65;color:#555">Your casting account is ready. You&rsquo;re a few minutes from putting your first role in front of actors — here&rsquo;s the whole process.</p>
         <p style="margin:0 0 24px;font-size:15px;line-height:1.65;color:#555">Three steps, in this order:</p>
       </td></tr>
@@ -756,7 +769,7 @@ function castingLiveHtml(firstName: string, c: LiveCasting): string {
 
       <tr><td class="row-pad" style="padding:34px 36px 6px">
         <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${acc};margin:0 0 8px">Approved</div>
-        <h1 class="h1" style="margin:0 0 12px;font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Your casting is live, ${esc(firstName)}</h1>
+        <h1 class="h1" style="margin:0 0 12px;font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">Your casting is live${withName(firstName)}</h1>
         <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#555">Our team reviewed your post and approved it. Actors on CastSlate can now find it and submit to your roles.</p>
       </td></tr>
 
@@ -838,7 +851,7 @@ function postingApprovedHtml(firstName: string, company: string | null): string 
 
       <tr><td class="row-pad" style="padding:34px 36px 6px">
         <div style="font-size:10.5px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:${acc};margin:0 0 8px">Posting access</div>
-        <h1 class="h1" style="margin:0 0 12px;font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">You&rsquo;re approved to post, ${esc(firstName)}</h1>
+        <h1 class="h1" style="margin:0 0 12px;font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-0.5px">You&rsquo;re approved to post${withName(firstName)}</h1>
         <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#555">Our team reviewed your casting account and turned on posting. You can now publish castings for actors on CastSlate.</p>
       </td></tr>
 
@@ -1044,12 +1057,12 @@ function clampText(v: string, n: number): string {
 function shortlistSubject(firstName: string, projectName?: string, roleName?: string): string {
   return projectName && roleName
     ? `You’re shortlisted for ${clampText(roleName, 24)} in ‘${clampText(projectName, 40)}’`
-    : `${firstName}, you've been shortlisted on CastSlate`;
+    : (firstName ? `${firstName}, you've been shortlisted on CastSlate` : "You've been shortlisted on CastSlate");
 }
 function holdSubject(firstName: string, projectName?: string): string {
   return projectName
     ? `Still in the running for ‘${clampText(projectName, 40)}’`
-    : `${firstName}, your profile was reviewed on CastSlate`;
+    : (firstName ? `${firstName}, your profile was reviewed on CastSlate` : "Your profile was reviewed on CastSlate");
 }
 
 function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string, portrait?: string): string {
@@ -1084,7 +1097,7 @@ function applicationSelectedHtml(firstName: string, projectName?: string, roleNa
         </td></tr>`;
   return decisionEmail({
     tone: SHORTLIST_TONE,
-    headTop: "You&rsquo;ve been", headAccent: "shortlisted",
+    headTop: firstName ? `${esc(firstName)}, you&rsquo;ve been` : "You&rsquo;ve been", headAccent: "shortlisted",
     body: `${reviewer} shortlisted you${forRole}. Your submission stood out &mdash; you're on the short list to move forward.`,
     title,
     preheader: `${cdName ? esc(cdName) : "A casting director"} picked you out of the submissions. Here&rsquo;s what happens next.`,
@@ -1099,7 +1112,7 @@ function applicationHoldHtml(firstName: string, projectName?: string, roleName?:
   const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
   return decisionEmail({
     tone: HOLD_TONE,
-    headTop: "Your profile was", headAccent: "reviewed",
+    headTop: firstName ? `${esc(firstName)}, your profile was` : "Your profile was", headAccent: "reviewed",
     body: `${reviewer} opened your submission${forRole} and moved you to under consideration ` +
           `&mdash; you're still in for the role while they finalize casting. Nothing is needed from you right now.`,
     title,
@@ -1154,7 +1167,7 @@ function activityDigestHtml(firstName: string, profileViews: number, profilePct:
   return decisionEmail({
     tone: t,
     kicker: "Daily recap",
-    headTop: "You&rsquo;re getting", headAccent: `noticed, ${esc(firstName)}`,
+    headTop: "You&rsquo;re getting", headAccent: `noticed${withName(firstName)}`,
     body: "Here's the attention your work drew on CastSlate in the last day.",
     title: "", mid,
     cta: "View my dashboard", href: "/talent-dashboard",
@@ -1260,7 +1273,7 @@ serve(async (req) => {
     // Transactional & payment-critical: respect only the master email toggle,
     // not the per-message preference. This is what tells talent to go pay.
     if (type === "booking_approved" || type === "booking_declined") {
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       const emailMasterEnabled = profile.notification_email !== false;
 
       if (!emailMasterEnabled) {
@@ -1297,7 +1310,7 @@ serve(async (req) => {
     // email toggle AND the per-type application preference. Passes (holds) and
     // rejections never reach this function — they stay silent by design.
     if (type === "application_selected") {
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       const emailEnabled = profile.notification_email !== false && profile.notification_applications !== false;
       if (!emailEnabled) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
@@ -1341,7 +1354,7 @@ serve(async (req) => {
     // Softer sibling of the shortlist email, fired when a CD moves an actor to
     // Hold. Same opt-out gating as the shortlist email.
     if (type === "application_hold") {
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       const emailEnabled = profile.notification_email !== false && profile.notification_applications !== false;
       if (!emailEnabled) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
@@ -1371,7 +1384,7 @@ serve(async (req) => {
     //    profile-completion %. Non-premium only (PREMIUM_EMAIL_BLOCKED above).
     //    Gated on the applications preference, same opt-out as shortlists. ──
     if (type === "activity_digest") {
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       const emailEnabled = profile.notification_email !== false && profile.notification_applications !== false;
       if (!emailEnabled) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
@@ -1408,7 +1421,7 @@ serve(async (req) => {
 
     // ── Premium welcome (fired once when a user pays for Premium) ──────────
     if (type === "premium_welcome") {
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       const emailMasterEnabled = profile.notification_email !== false;
       if (!emailMasterEnabled) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
@@ -1440,7 +1453,7 @@ serve(async (req) => {
       if (profile.can_post_castings !== true || !["cd", "producer", "studio", "creator"].includes(String(profile.user_type))) {
         return json({ ok: false, results: { email: "skipped:not_approved_industry_account" } });
       }
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       if (profile.notification_email === false) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
       }
@@ -1475,7 +1488,7 @@ serve(async (req) => {
       if (!c || c.cd_id !== to_user_id) {
         return json({ ok: false, results: { email: "skipped:casting_not_owned_by_recipient" } });
       }
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       if (profile.notification_email === false) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
       }
@@ -1514,7 +1527,7 @@ serve(async (req) => {
     if (type === "new_actor_welcome" || type === "cd_welcome") {
       const isIndustry = type === "cd_welcome" ||
         INDUSTRY_TYPES.includes(String((profile as { user_type?: string }).user_type || "").toLowerCase());
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       const emailMasterEnabled = profile.notification_email !== false;
       if (!emailMasterEnabled) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
@@ -1542,7 +1555,7 @@ serve(async (req) => {
     // ── Monthly Manager Mode check-in nudge (premium-only; fired alongside the
     //    in-app note). Short email that drives the member back into the app. ──
     if (type === "weekly_checkin") {
-      const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+      const firstName = greetName(profile.display_name);
       const emailMasterEnabled = profile.notification_email !== false;
       if (!emailMasterEnabled) {
         return json({ ok: true, results: { email: "skipped:notifications_disabled_by_user" } });
@@ -1607,7 +1620,7 @@ serve(async (req) => {
       }
     }
 
-    const firstName = (profile.display_name ?? "").split(" ")[0].trim() || "there";
+    const firstName = greetName(profile.display_name);
     const results: Record<string, unknown> = {};
 
     const emailMasterEnabled = profile.notification_email !== false;
@@ -1627,7 +1640,7 @@ serve(async (req) => {
           const toEmail = authData.user.email;
           const subject = type === "inbox_message"
             ? "New message on CastSlate"
-            : `${firstName}, you've been personally invited — CastSlate`;
+            : (firstName ? `${firstName}, you've been personally invited — CastSlate` : "You've been personally invited — CastSlate");
           const html = type === "inbox_message"
             ? inboxMessageHtml(firstName, resolvedFromName, projectName)
             : classInvitationHtml(firstName, class_title?.trim() || "a class", instructor_name?.trim() || undefined);
