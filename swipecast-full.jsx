@@ -2487,6 +2487,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .credit-row{display:grid;grid-template-columns:70px minmax(180px,1.2fr) minmax(120px,.8fr) minmax(200px,1fr);column-gap:28px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr);}
 .credit-row:last-child{border-bottom:none;}
 .age-box{border:1px dashed var(--bdr);border-radius:12px;padding:14px;}
+.gm-spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(26,26,46,.25);border-top-color:#1A1A2E;border-radius:50%;animation:gm-spin .8s linear infinite;}
+@keyframes gm-spin{to{transform:rotate(360deg)}}
 .age-box-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;}
 .age-warn{margin-top:10px;padding:9px 12px;border-radius:8px;background:rgba(232,144,42,.1);color:var(--amber-dk);font-size:12.5px;line-height:1.45;}
 .age-vis{display:flex;flex-direction:column;gap:6px;}
@@ -20647,6 +20649,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   const [prof,setProf]=useState(myProfile);
   const [matches,setMatches]=useState(null);
   const [extras,setExtras]=useState(null);
+  const [opening,setOpening]=useState(null); // casting id whose apply form is loading
   useEffect(()=>{if(done)setMode("done");},[done]);
   useEffect(()=>{
     if(mode!=="matches"||!prof||!uid)return;
@@ -20755,7 +20758,11 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
           </div>
           {fitLine(x)}
           {x.c.pay&&<div style={{fontSize:13,color:"var(--t2)",marginBottom:12,overflow:"hidden",textOverflow:"ellipsis",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{x.c.pay}</div>}
-          <button type="button" style={{...GM_GOLD,padding:"10px 16px",fontSize:14}} onClick={()=>onApply(x.c,x.r)}>Submit to this role <Tri/></button>
+          <button type="button" disabled={!!opening}
+            style={{...GM_GOLD,padding:"10px 16px",fontSize:14,minWidth:196,opacity:opening&&opening!==x.c.id?.5:1,cursor:opening?"default":"pointer"}}
+            onClick={()=>{if(opening)return;setOpening(x.c.id);onApply(x.c,x.r);}}>
+            {opening===x.c.id?<><span className="gm-spin"/> Opening the role…</>:<>Submit to this role <Tri/></>}
+          </button>
         </div>))}
       <Link onClick={()=>{onClose();onNavigate&&onNavigate("search");}}>See all castings instead</Link>
     </>;
@@ -49665,10 +49672,19 @@ function App(){
   },[gmWanted,gmAllowedHere,showHeadshotStep,gmSkippedToday,gmOff,gmDone,gmAwait]);// eslint-disable-line
   const closeGm=()=>{setGmOpen(null);setGmOff(true);setGmDone(null);};
   const skipGm=()=>{try{localStorage.setItem("sc_gm_skip_"+session.user.id,headshotStepDayKey);}catch(_){}closeGm();};
+  // Handover (2026-09-27): the popup stays up showing "Opening the role…" while the
+  // casting loads behind it, and closes in the same render the apply form opens
+  // (CastingDetailPage consumes pendingApply right before handleApply) — no blank
+  // moment in between. An 8s cap closes it anyway if the form never opens.
+  const [gmHandoff,setGmHandoff]=useState(false);
+  const closeGmHandoff=()=>{setGmHandoff(false);setGmOpen(null);setGmOff(true);};
+  useEffect(()=>{if(gmHandoff&&!pendingApply)closeGmHandoff();},[gmHandoff,pendingApply]);// eslint-disable-line
+  useEffect(()=>{if(!gmHandoff)return;const t=setTimeout(closeGmHandoff,8000);return()=>clearTimeout(t);},[gmHandoff]);// eslint-disable-line
   const gmApply=async(c,r)=>{
-    setGmOpen(null);setGmOff(true);setGmAwait(true);
+    setGmAwait(true);
     const full=await fetchFullCasting(c.id);
-    if(!full){setGmAwait(false);viewCastingById(c.id);return;}
+    if(!full){setGmAwait(false);setGmOpen(null);setGmOff(true);viewCastingById(c.id);return;}
+    setGmHandoff(true);
     setPendingApply({casting:full,role:{id:r.id,name:r.name}});
     setPrevPage(page);setViewingCasting(full);window.scrollTo(0,0);setPage("casting-detail");
     pushHist("casting-detail",{slug:full.slug||String(full.id)});
