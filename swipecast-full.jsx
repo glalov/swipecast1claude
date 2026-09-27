@@ -1947,7 +1947,24 @@ function profileStatsFields(p){
       :(openTo?openTo.map(g=>AUTH_FROM_ROLE[g]).filter(Boolean):defaultOpenToRoleGenders(p?.gender).map(g=>AUTH_FROM_ROLE[g]).filter(Boolean)),
     authentic_touched:Array.isArray(p?.authentic_genders)||!!openTo,
     age_play_min:p?.age_play_min??"",age_play_max:p?.age_play_max??"",
+    size_set:p?.size_set==="women"||p?.size_set==="men"?p.size_set:(String(p?.gender||"").match(/female|woman/i)?"women":"men"),
+    sizes:p?.sizes&&typeof p.sizes==="object"&&!Array.isArray(p.sizes)?p.sizes:{},
+    wardrobe_notes:p?.wardrobe_notes||"",
   };
+}
+
+// ─── Size card (2026-09-26) ─────────────────────────────────────────────────
+// profiles.size_set picks the chart; profiles.sizes stores {label: value}.
+// Labels are the storage keys — never rename one without migrating sizes.
+const numRange=(a,b,st=1)=>{const o=[];for(let v=a;v<=b+1e-9;v+=st)o.push(String(+v.toFixed(1)));return o;};
+const BODY_TYPES=["Slim","Athletic / Toned","Average","Muscular","Curvy","Plus-size","Heavyset","Petite","Tall / Lean"];
+const SIZE_FIELDS={
+  men:[["Shirt",["XS","S","M","L","XL","XXL","3XL"]],["Neck",numRange(13,20,0.5)],["Sleeve",numRange(30,38)],["Jacket chest",numRange(34,56)],["Jacket length",["Short","Regular","Long","Extra long"]],["Waist",numRange(26,50)],["Inseam",numRange(26,38)],["Shoe size (US)",numRange(6,16,0.5)],["Shoe width",["Narrow","Medium","Wide","Extra wide"]],["Hat",["6 3/4","6 7/8","7","7 1/8","7 1/4","7 3/8","7 1/2","7 5/8","7 3/4","S","M","L","XL"]],["Gloves",["XS","S","M","L","XL"]]],
+  women:[["Dress",["00","0","2","4","6","8","10","12","14","16","18","20","22","24"]],["Top",["XXS","XS","S","M","L","XL","XXL"]],["Bust",numRange(28,50)],["Cup",["AA","A","B","C","D","DD","DDD / F","G","H"]],["Waist",numRange(22,44)],["Hips",numRange(30,52)],["Pants",["00","0","2","4","6","8","10","12","14","16","18","20"]],["Inseam",numRange(26,36)],["Shoe size (US)",numRange(4,13,0.5)],["Shoe width",["Narrow","Medium","Wide","Extra wide"]],["Hat",["S","M","L","XL"]],["Gloves",["XS","S","M","L","XL"]]],
+};
+function YesNo({value,onChange}){
+  return <div className="otrg-row">{[["Yes",true],["No",false]].map(([l,v])=>(
+    <button key={l} type="button" className={"otrg-chip"+(value===v?" on":"")} aria-pressed={value===v} onClick={()=>onChange(value===v?null:v)}>{l}</button>))}</div>;
 }
 // Tap-to-select chips (reuses the "Roles I'm open to" style).
 function ChipPicker({options,value,onChange}){
@@ -13288,6 +13305,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const [dbCredits,setDbCredits]=useState(null);
   const [uploadedVideos,setUploadedVideos]=useState([]);
   const [freshProfile,setFreshProfile]=useState(null);
+  const [bodyMods,setBodyMods]=useState(null);
   const [showAllMedia,setShowAllMedia]=useState(false);
   const [mediaViewer,setMediaViewer]=useState(null); // {items:[{type,url,title?}], idx}
 
@@ -13301,6 +13319,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           .select("*")
           .eq("id",talentDbId).maybeSingle();
         if(data)setFreshProfile(data);
+      }catch(_){}
+      try{
+        if(session?.user){const {data:bm}=await window.sb.rpc("get_body_mods",{p_talent:talentDbId});if(Array.isArray(bm)&&bm[0])setBodyMods(bm[0]);}
       }catch(_){}
       try{
         const {data}=await window.sb.from("talent_credits")
@@ -13687,6 +13708,27 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
         {lng.length>0&&<>{sectionHead("Languages")}<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:acc.length?14:0}}>{lng.map(pill)}</div></>}
         {acc.length>0&&<>{sectionHead("Accents")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{acc.map(pill)}</div></>}
+      </div>;})()}
+
+    {/* ── SIZE CARD ── (sizes + wardrobe notes are public; tattoos/piercings
+        come from get_body_mods, which only answers the actor, admins and CDs
+        the actor submitted to. Nudity is never shown here.) */}
+    {(()=>{const sz=freshProfile?.sizes&&typeof freshProfile.sizes==="object"?freshProfile.sizes:{};
+      const set=freshProfile?.size_set==="women"?"women":"men";
+      const rows=(SIZE_FIELDS[set]||[]).map(([k])=>[k.replace(" (US)",""),sz[k]]).filter(([,v])=>v);
+      const notes=(freshProfile?.wardrobe_notes||"").trim();
+      const mods=bodyMods?[["Visible tattoos",bodyMods.has_tattoos],["Visible piercings",bodyMods.has_piercings]].filter(([,v])=>v===true||v===false):[];
+      if(!rows.length&&!notes&&!mods.length)return null;
+      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+        {sectionHead(set==="women"?"Size card · Women's":"Size card · Men's")}
+        {rows.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:"10px 14px"}}>
+          {rows.map(([k,v])=><div key={k}><div style={{fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:2}}>{k}</div><div style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{v}</div></div>)}
+        </div>}
+        {notes&&<div style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><strong style={{color:"var(--t1)"}}>Notes to wardrobe:</strong> {notes}</div>}
+        {mods.length>0&&<div style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
+          {mods.map(([k,v])=><span key={k}>{k}: <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
+          <span style={{fontSize:11,color:"var(--t3)"}}>· visible only to casting directors this actor submitted to</span>
+        </div>}
       </div>;})()}
 
     {/* ── STRUCTURED CREDITS (from DB) ── */}
@@ -16334,15 +16376,21 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const loadRecommended=useCallback(async()=>{
     try{
       const{data}=await window.sb.from("castings")
-        .select("id,title,type,location,deadline,roles(id,name,gender,age_range)")
+        .select("id,title,type,location,deadline,has_nudity,roles(id,name,gender,age_range)")
         .eq("status","open").eq("published",true)
         .order("created_at",{ascending:false}).limit(100);
+      // Size card: an explicit "No" to BOTH partial and full nudity means
+      // castings that include nudity are not recommended. Unanswered = unchanged.
+      let declinesNudity=false;
+      try{const {data:pp}=await window.sb.from("profile_private").select("nudity_partial,nudity_full").eq("user_id",uid).maybeSingle();
+        declinesNudity=!!pp&&pp.nudity_partial===false&&pp.nudity_full===false;}catch(_){}
       // NEVER recommend expired castings. status="open"/published can still be
       // true on a casting whose deadline has already passed, so filter by
       // deadline here (day granularity, matching fmtDeadline's "Closed" logic):
       // keep no-deadline (ongoing) + today + future; drop anything past.
       const _nowMs=Date.now();
       const castingsList=(data||[]).filter(c=>{
+        if(c&&declinesNudity&&c.has_nudity===true)return false;
         if(!c||!c.deadline)return true;
         const t=new Date(c.deadline).getTime();
         return isNaN(t)||Math.ceil((t-_nowMs)/86400000)>=0;
@@ -23449,6 +23497,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const [socialLinks,setSocialLinks]=useState({});      // social_links jsonb
   const [selectedSkills,setSelectedSkills]=useState([]); // canonical picks from SKILL_GROUPS
   const [extraSkills,setExtraSkills]=useState([]); // additional free-text skills
+  // Size-card private answers live in profile_private (owner-only RLS).
+  const [priv,setPriv]=useState({has_tattoos:null,has_piercings:null,nudity_partial:null,nudity_full:null});
+  const [privLoaded,setPrivLoaded]=useState(false);
   const [skillQ,setSkillQ]=useState("");
   const [customSkill,setCustomSkill]=useState("");
   const [dbCredits,setDbCredits]=useState([]);           // talent_credits rows
@@ -23523,6 +23574,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {const c=classifyProfileSkills(profile.skills,profile.accents,profile.languages);
        setSelectedSkills(c.picked);setExtraSkills(c.extra);
        setF(x=>({...x,accents:c.accents,languages:c.languages}));}
+      if(profile.user_type!=="cd"&&profile.id)(async()=>{try{
+        const {data}=await window.sb.from("profile_private").select("has_tattoos,has_piercings,nudity_partial,nudity_full").eq("user_id",profile.id).maybeSingle();
+        if(data)setPriv({has_tattoos:data.has_tattoos,has_piercings:data.has_piercings,nudity_partial:data.nudity_partial,nudity_full:data.nudity_full});
+      }catch(_){}finally{setPrivLoaded(true);}})();else setPrivLoaded(true);
       setSlateVideoUrl(profile.slate_video_url||"");
     }
   },[profile]);
@@ -23658,16 +23713,16 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   // profile has loaded, and again after every successful save.
   // Order-insensitive: tapping a chip on and off again is "no change".
   const sortedArr=v=>Array.isArray(v)&&v.every(x=>typeof x==="string")?[...v].sort():v;
-  const editKey=JSON.stringify([Object.fromEntries(Object.entries(f).map(([k,v])=>[k,sortedArr(v)])),sortedArr(selectedSkills),sortedArr(extraSkills.map(x=>String(x||"").trim()).filter(Boolean))]);
+  const editKey=JSON.stringify([Object.fromEntries(Object.entries(f).map(([k,v])=>[k,sortedArr(v)])),sortedArr(selectedSkills),sortedArr(extraSkills.map(x=>String(x||"").trim()).filter(Boolean)),priv]);
   // The first load sorts old skills with a follow-up setF, so the baseline is
   // taken one tick later, after that render has settled.
   const [savedKey,setSavedKey]=useState(null);
   const editKeyRef=useRef(editKey);editKeyRef.current=editKey;
   useEffect(()=>{
-    if(!profileInitializedRef.current||savedKey!==null)return;
+    if(!profileInitializedRef.current||!privLoaded||savedKey!==null)return;
     const t=setTimeout(()=>setSavedKey(editKeyRef.current),0);
     return()=>clearTimeout(t);
-  },[editKey,savedKey]);
+  },[editKey,savedKey,privLoaded]);
   const isDirty=savedKey!==null&&savedKey!==editKey;
   useEffect(()=>{
     if(!isDirty)return;
@@ -23700,6 +23755,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         age_play_max:Number.isFinite(ageMax)&&ageMax>0?ageMax:null,
         accents:Array.isArray(f.accents)?f.accents:[],
         languages:Array.isArray(f.languages)?f.languages:[],
+        size_set:f.size_set==="women"?"women":"men",
+        // Only the chosen chart's answers are kept, so switching charts can't
+        // leave stale values from the other one on the profile.
+        sizes:Object.fromEntries((SIZE_FIELDS[f.size_set==="women"?"women":"men"]||[]).map(([k])=>[k,(f.sizes||{})[k]]).filter(([,v])=>v)),
+        wardrobe_notes:(f.wardrobe_notes||"").trim()||null,
         height:f.height||null,weight:f.weight||null,hair:f.hair||null,eyes:f.eyes||null,
         agent:f.agent||null,training:f.training||null,
         skills:mergedSkills,
@@ -23723,6 +23783,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       };
       const {error}=await withTimeout(window.sb.from("profiles").update(patch).eq("id",session.user.id),30000,"Save");
       if(error)throw error;
+      if(!isCD&&Object.values(priv).some(v=>v!==null)){
+        const {error:pe}=await withTimeout(window.sb.from("profile_private").upsert({user_id:session.user.id,...priv,updated_at:new Date().toISOString()},{onConflict:"user_id"}),30000,"Save");
+        if(pe)throw pe;
+      }
       setSavedKey(editKey); // the state as it was when Save was pressed
       if(!opts.silent){setMsg("Profile saved.");window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>setMsg(""),3000);}
       onReload&&onReload();
@@ -23976,6 +24040,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Videos ({mediaItems.length}{!isPremium?" · Premium":""})</button>}
       {!isCD&&<button className={`tab ${tab==="showcase"?"active":""}`} onClick={()=>setTab("showcase")}>Showcase Order</button>}
       {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills & Languages ({selectedSkills.length+extraSkills.filter(x=>String(x||"").trim()).length})</button>}
+      {!isCD&&<button className={`tab ${tab==="size"?"active":""}`} onClick={()=>setTab("size")}>Size Card</button>}
       {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
       {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links{!isPremium?" · Premium":""}</button>}
       {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
@@ -24519,6 +24584,42 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       <span>You have unsaved changes</span>
       <button type="button" onClick={()=>save()} disabled={saving} style={{background:"#fff",color:"#1A1A2E",border:"none",borderRadius:9,padding:"8px 16px",fontWeight:800,fontSize:13,cursor:"pointer",whiteSpace:"nowrap"}}>{saving?"Saving…":"Save changes"}</button>
     </div>}
+
+    {tab==="size"&&!isCD&&<>
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Measurements</h3>
+        <p style={{fontSize:12,color:"var(--t3)",marginBottom:14}}>Wardrobe uses these to pull clothes before your fitting. Pick what you know — everything is optional.</p>
+        <div className="otrg-row" style={{marginBottom:16}}>
+          {[["men","Men's sizes"],["women","Women's sizes"]].map(([v,l])=><button key={v} type="button" className={"otrg-chip"+(f.size_set===v?" on":"")} onClick={()=>up("size_set",v)}>{l}</button>)}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))",gap:14}}>
+          <div><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height||""} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h}>{h}</option>)}</select></div>
+          <div><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight||""} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w}>{w}</option>)}</select></div>
+          <div><label className="label">Body type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option>{BODY_TYPES.map(b=><option key={b}>{b}</option>)}</select></div>
+          {(SIZE_FIELDS[f.size_set]||[]).map(([k,opts])=>(
+            <div key={f.size_set+k}><label className="label">{k}</label><select className="select" style={{width:"100%"}} value={(f.sizes||{})[k]||""} onChange={e=>{const v=e.target.value;setF(x=>({...x,sizes:{...(x.sizes||{}),[k]:v}}));}}><option value="">Select</option>{opts.map(o=><option key={o}>{o}</option>)}</select></div>
+          ))}
+        </div>
+      </div>
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Body modifications <span style={{fontSize:10,fontWeight:800,letterSpacing:".8px",textTransform:"uppercase",padding:"2px 7px",borderRadius:99,background:"#E8E6F7",color:"#4A45A0",marginLeft:6,verticalAlign:"middle"}}>Private</span></h3>
+        <p style={{fontSize:12,color:"var(--t3)",marginBottom:12}}>Only shown to a casting director you've submitted to. Never on your public profile.</p>
+        {[["has_tattoos","Do you have visible tattoos?"],["has_piercings","Do you have visible piercings?"]].map(([k,l])=>(
+          <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,padding:"10px 0",borderTop:"1px solid var(--bdr)"}}><span style={{fontSize:14}}>{l}</span><YesNo value={priv[k]} onChange={v=>setPriv(p=>({...p,[k]:v}))}/></div>))}
+      </div>
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Nudity <span style={{fontSize:10,fontWeight:800,letterSpacing:".8px",textTransform:"uppercase",padding:"2px 7px",borderRadius:99,background:"#E8E6F7",color:"#4A45A0",marginLeft:6,verticalAlign:"middle"}}>Private</span></h3>
+        <p style={{fontSize:12,color:"var(--t3)",marginBottom:12}}>Never shown to anyone. If you answer No to both, castings that include nudity won't be recommended to you. Every casting with nudity is labelled.</p>
+        {[["nudity_partial","Partial nudity"],["nudity_full","Full nudity"]].map(([k,l])=>(
+          <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,padding:"10px 0",borderTop:"1px solid var(--bdr)"}}><span style={{fontSize:14}}>{l}</span><YesNo value={priv[k]} onChange={v=>setPriv(p=>({...p,[k]:v}))}/></div>))}
+      </div>
+      <div className="card" style={{padding:24,marginBottom:16}}>
+        <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Notes to wardrobe</h3>
+        <p style={{fontSize:12,color:"var(--t3)",marginBottom:10}}>Anything that helps a costume department — e.g. "between sizes on jackets", "allergic to wool". Shown with your size card.</p>
+        <textarea className="textarea" maxLength={400} style={{minHeight:80}} value={f.wardrobe_notes||""} onChange={e=>up("wardrobe_notes",e.target.value)} placeholder="Optional"/>
+        <div style={{marginTop:16}}><button className="btn-p" onClick={()=>save()} disabled={saving}>{saving?"Saving…":"Save Size Card"}</button></div>
+      </div>
+    </>}
 
     {/* ── CREDITS TAB ── */}
     {tab==="credits"&&!isCD&&<>
