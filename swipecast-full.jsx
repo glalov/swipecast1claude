@@ -1896,6 +1896,66 @@ const GENDER_IDENTITY_OPTS = [
 ];
 const isCustomGender = g => {const v=(g||"").trim();return !!v&&!GENDER_IDENTITY_OPTS.some(o=>o.value===v);};
 
+// ─── Profile stats (2026-09-26) ─────────────────────────────────────────────
+// Pick-several lists modelled on the industry-standard profile. The DB keeps
+// the old single-value columns in sync (profiles_stats_sync), so everything
+// that reads ethnicity / union_status / open_to_role_genders / age_range keeps
+// working; these arrays are the source of truth the editor writes.
+const PROFILE_ETHNICITIES=["African","Black","East Asian","Eastern European","Filipino","Hispanic / Latino","Indigenous / Native American","Mediterranean","Middle Eastern","Mixed Ethnicity","North African","Pacific Islander","South Asian","Southeast Asian","West Indies / Caribbean","White"];
+const PROFILE_UNIONS=["Non-Union","SAG-AFTRA","SAG-AFTRA Eligible","AEA","AEA (EMC)","AGMA","AGVA","ACTRA","ACTRA Apprentice","UBCP/ACTRA","UBCP/ACTRA Apprentice","CAEA","CAEA Apprentice","UDA","UDA/ACTRA","UDA Stagiaire","BAE","AAE","AABP","Financial Core"];
+// v = stored in profiles.authentic_genders; the DB derives the matcher's
+// Male/Female/Non-Binary from it (trans women -> Female roles, etc.).
+const AUTHENTIC_OPTS=[{v:"Woman",label:"Woman / Girl"},{v:"Transgender Woman",label:"Transgender Woman / Girl"},{v:"Man",label:"Man / Boy"},{v:"Transgender Man",label:"Transgender Man / Boy"},{v:"Nonbinary",label:"Nonbinary"}];
+const AUTH_FROM_ROLE={Male:"Man",Female:"Woman","Non-Binary":"Nonbinary"};
+const SKILL_GROUPS=[
+  {key:"acting",title:"Acting & on-camera",items:["Commercial Acting","Comedy","Drama","Improvisation","Cold Reading","Monologues","Self-Tape","Musical Theatre","Classical Theatre","Shakespeare","Stand-up Comedy","Sketch Comedy","Physical Comedy","Crying on Cue","Voice Acting","Voiceover","Motion Capture","Host / Presenter","Public Speaking","Teleprompter","Ear Prompter","Modeling","Runway","Stand-in","Background / Extra"]},
+  {key:"athletic",title:"Athletic",items:["Aerobics","Archery","Badminton","Baseball","Basketball","Baton Twirling","Billiards / Pool","Boating - Sail","Boating - Engine","Body Building","Body Surfing","Bowling","Boxing","Canoeing","Cheerleading","Combat - Actual Service","Combat - Stage","Contortionist","Cricket","Cycling","Cycling - Mountain Biking","Cycling - Unicycle","Diving","Equestrian - General","Equestrian - Dressage","Equestrian - English","Equestrian - Racing","Equestrian - Reining","Equestrian - Rodeo","Equestrian - Show Jumping","Equestrian - Western","Fencing","Figure Skating","Fishing","Fitness / Gym","Fly Fishing","Football","Frisbee","Golf","Gymnastics","Hacky Sack","Handball","Hang Gliding","Hula Hoop","Ice Hockey","Ice Skating","Jet Ski","Jockey","Jump Rope","Jump Rope - Double Dutch","Karate","Kayaking","Kickboxing","Lacrosse","Lifeguard","Martial Arts","Martial Arts - Aikido","Martial Arts - Brazilian Jiu-Jitsu","Martial Arts - Jiu-Jitsu","Martial Arts - Judo","Martial Arts - Kendo","Martial Arts - Kung Fu","Martial Arts - Mixed (MMA)","Martial Arts - Muay Thai","Martial Arts - Taekwondo","Martial Arts - Tai Chi","Military - Air Force","Military - Army","Military - Coast Guard","Military - Marines","Military - Navy","Motorcycle Riding","Mountain Climbing","Parkour","Pilot - Balloon","Pilot - Glider","Pilot - Helicopter","Pilot - Single Engine","Pilot - Twin / Jet","Ping Pong","Pogo Stick","Racquetball","Rappelling","Rock Climbing","Rodeo - Bull Riding","Roller Hockey","Roller Skating","Rollerblading","Rugby","Running - General","Running - Long Distance","Running - Sprint","Sailing","Scuba Diving","Sculling","Segway","Shooting - Handgun","Shooting - Rifle","Shooting - Skeet / Trap","Skateboarding","Skateboarding - Stunts","Skydiving","Snorkeling","Snow Skiing","Snow Skiing - Competition","Snowboarding","Snowmobile","Soccer","Softball","Speed Skating","Squash","Surfing","Swimming - General","Swimming - Backstroke","Swimming - Breaststroke","Swimming - Butterfly","Swimming - Diving","Swimming - Freestyle","Swimming - Synchronized","Sword Fighting","Tennis","Track & Field","Trampoline","Volleyball","Water Skiing","Weight Lifting","Wind Surfing","Wrestling","Yoga"]},
+  {key:"performance",title:"Performance, music & special",items:["Accordion","Acoustic Bass","Auctioneer","Autoharp","Bagpipes","Banjo","Bartender - Flair","Bassoon","Bongos","Brass Instruments","Cello","Chef","Chef - Pastry","Clarinet","Clowning","Conga","Dancer","Dance - Acro","Dance - Argentine Tango","Dance - Ballet","Dance - Ballroom","Dance - Belly","Dance - Bhangra","Dance - Bolero","Dance - Breakdance","Dance - Cha Cha","Dance - Flamenco","Dance - Hip Hop","Dance - Jazz","Dance - Line / Country","Dance - Mambo","Dance - Modern","Dance - Pole","Dance - Rumba","Dance - Salsa","Dance - Samba","Dance - Swing","Dance - Tango","Dance - Tap","Disc Jockey","Drag Performer","Drums","Dulcimer","Fiddle","Firearms Handling","Flute","French Horn","Gamer (Console)","Guitar","Guitar - Bass","Harmonica","Impressionist","Juggler","Licensed Driver","Magician","Medical Equipment","Mime","Motorcyclist","Orchestral Strings","Organ","Percussion","Piano","Precision Driver","Saxophone","Singer","Square Dance Caller","Stunts","Trombone","Trumpet","Tuba","Ukulele","Ventriloquist","Violin","Vocal Range - Soprano","Vocal Range - Mezzo Soprano","Vocal Range - Alto","Vocal Range - Tenor","Vocal Range - Baritone","Vocal Range - Bari-Tenor","Vocal Range - Bass","Vocal Style - Belt","Vocal Style - Legit","Vocal Style - Rapper","Whistler","Wind Instruments"]},
+];
+const ALL_PROFILE_SKILLS=SKILL_GROUPS.flatMap(g=>g.items);
+const PROFILE_ACCENTS=["American - General","American - Southern","American - New York","American - Boston","American - Midwest","British - RP","British - Cockney","British - Northern","Irish","Scottish","Welsh","Australian","New Zealand","South African","Canadian","French","German","Italian","Spanish","Latin American","Russian","Eastern European","Middle Eastern","Indian","Caribbean / Jamaican","Nigerian","East Asian"];
+const PROFILE_LANGUAGES=["English","Spanish","French","German","Italian","Portuguese","Russian","Ukrainian","Polish","Czech","Slovak","Bulgarian","Greek","Dutch","Danish","Swedish","Hebrew","Arabic","Farsi","Kurdish","Turkish","Hindi","Urdu","Bengali","Punjabi","Mandarin","Cantonese","Japanese","Korean","Vietnamese","Indonesian","Tagalog","Haitian Creole","Swahili","Yoruba","ASL (American Sign Language)"];
+// Old free-text / old-list skills -> the new canonical names. Anything not
+// recognised is kept as an "additional skill", never dropped.
+const SKILL_ALIASES={"singing":"Singer","sing":"Singer","singer":"Singer","vocals":"Singer","swimming":"Swimming - General","swim":"Swimming - General","improv":"Improvisation","general improv":"Improvisation","dancing":"Dancer","dance":"Dancer","dancer":"Dancer","stage combat":"Combat - Stage","combat":"Combat - Stage","driving":"Licensed Driver","driver":"Licensed Driver","driver's license":"Licensed Driver","driver’s license":"Licensed Driver","horseback riding":"Equestrian - General","horse back riding":"Equestrian - General","horseback rider":"Equestrian - General","fitness / athletics":"Fitness / Gym","fitness":"Fitness / Gym","athletics":"Fitness / Gym","firearms training":"Firearms Handling","firearms":"Firearms Handling","stunt":"Stunts","stuntman":"Stunts","teleprompting":"Teleprompter","voice over":"Voiceover","voice overs":"Voiceover","voice-acting":"Voice Acting","hosting":"Host / Presenter","host":"Host / Presenter","presenting":"Host / Presenter","musicaltheater":"Musical Theatre","musical theater":"Musical Theatre","weightlifting":"Weight Lifting","weightlifter":"Weight Lifting","running":"Running - General","boxer":"Boxing","rap":"Vocal Style - Rapper","rapping":"Vocal Style - Rapper","soprano":"Vocal Range - Soprano","tenor":"Vocal Range - Tenor","baritone":"Vocal Range - Baritone","dj":"Disc Jockey","earprompting":"Ear Prompter","karate":"Karate","kickboxing":"Kickboxing","muay thai":"Martial Arts - Muay Thai","skiing":"Snow Skiing","ski":"Snow Skiing","scuba diving":"Scuba Diving","roller skating":"Roller Skating","rollerskate":"Roller Skating","roller-skating":"Roller Skating","snowboarder":"Snowboarding","surfer":"Surfing","skateboard":"Skateboarding","pingpong":"Ping Pong","juggling":"Juggler","clown":"Clowning","comedian":"Stand-up Comedy","ballet":"Dance - Ballet","salsa":"Dance - Salsa","tap":"Dance - Tap","hip hop":"Dance - Hip Hop","hiphop":"Dance - Hip Hop","bartending":"Bartender - Flair","bartender":"Bartender - Flair","pianist":"Piano","playing piano":"Piano","bass guitar":"Guitar - Bass","cycling":"Cycling","cyclist":"Cycling","billiards":"Billiards / Pool","motorcycle":"Motorcycle Riding","cold reading":"Cold Reading","public speaking":"Public Speaking","voice acting":"Voice Acting"};
+const ACCENT_ALIASES={"american accent":"American - General","british accent":"British - RP","british accents":"British - RP","british":"British - RP","standard british (rp)":"British - RP","cockney":"British - Cockney","southern":"American - Southern","southern accent":"American - Southern","nyc accent":"American - New York","true ny accent":"American - New York","new york":"American - New York","newyork":"American - New York","brooklyn":"American - New York","boston":"American - Boston","irish":"Irish","scottish":"Scottish","southafrican":"South African","italian accent":"Italian"};
+const LANGUAGE_WORDS=[["spanish","Spanish"],["español","Spanish"],["french","French"],["italian","Italian"],["german","German"],["russian","Russian"],["ukrainian","Ukrainian"],["portuguese","Portuguese"],["português","Portuguese"],["mandarin","Mandarin"],["chinese","Mandarin"],["cantonese","Cantonese"],["japanese","Japanese"],["korean","Korean"],["arabic","Arabic"],["hindi","Hindi"],["tagalog","Tagalog"],["czech","Czech"],["slovak","Slovak"],["dutch","Dutch"],["danish","Danish"],["polish","Polish"],["kurdish","Kurdish"],["indonesian","Indonesian"],["hebrew","Hebrew"],["haitian","Haitian Creole"],["creole","Haitian Creole"],["bulgarian","Bulgarian"],["greek","Greek"],["english","English"],["sign language","ASL (American Sign Language)"],["asl","ASL (American Sign Language)"]];
+const LANGUAGE_CUE=/\b(fluent|language|speak|speaker|speaks|native|basic|intermediate|conversational|beginner|bilingual|advanced)\b|\(|^\s*[a-zà-ÿ\- ]+\s*$/i;
+function classifyProfileSkills(skills,accents,languages){
+  const picked=[],extra=[],acc=new Set(Array.isArray(accents)?accents:[]),lang=new Set(Array.isArray(languages)?languages:[]);
+  const lowerSkill=new Map(ALL_PROFILE_SKILLS.map(x=>[x.toLowerCase(),x]));
+  for(const raw of (Array.isArray(skills)?skills:[])){
+    const t=String(raw||"").trim();if(!t)continue;
+    const k=t.toLowerCase().replace(/[.\s]+$/,"");
+    const canon=lowerSkill.get(k)||SKILL_ALIASES[k];
+    if(canon){if(!picked.includes(canon))picked.push(canon);continue;}
+    if(ACCENT_ALIASES[k]){acc.add(ACCENT_ALIASES[k]);continue;}
+    // Short "Fluent Spanish" / "French (Basic)" style entries become languages.
+    const words=k.split(/\s+/).length;
+    const hits=LANGUAGE_WORDS.filter(([w])=>new RegExp("(^|[^a-zà-ÿ])"+w+"([^a-zà-ÿ]|$)").test(k)).map(([,L])=>L);
+    if(hits.length&&words<=5&&LANGUAGE_CUE.test(k)&&!/accent/.test(k)){hits.forEach(L=>lang.add(L));continue;}
+    if(!extra.includes(t))extra.push(t);
+  }
+  return {picked,extra,accents:[...acc],languages:[...lang]};
+}
+function profileStatsFields(p){
+  const openTo=Array.isArray(p?.open_to_role_genders)?p.open_to_role_genders:null;
+  return {
+    ethnicities:Array.isArray(p?.ethnicities)?p.ethnicities.filter(e=>PROFILE_ETHNICITIES.includes(e)):[],
+    unions:Array.isArray(p?.unions)?p.unions:(p?.union_status?String(p.union_status).split("/").map(x=>x.trim()).filter(Boolean):[]),
+    authentic_genders:Array.isArray(p?.authentic_genders)?p.authentic_genders
+      :(openTo?openTo.map(g=>AUTH_FROM_ROLE[g]).filter(Boolean):defaultOpenToRoleGenders(p?.gender).map(g=>AUTH_FROM_ROLE[g]).filter(Boolean)),
+    authentic_touched:Array.isArray(p?.authentic_genders)||!!openTo,
+    age_play_min:p?.age_play_min??"",age_play_max:p?.age_play_max??"",
+  };
+}
+// Tap-to-select chips (reuses the "Roles I'm open to" style).
+function ChipPicker({options,value,onChange}){
+  const cur=Array.isArray(value)?value:[];
+  return <div className="otrg-row">{options.map(o=>{const v=typeof o==="string"?o:o.v,label=typeof o==="string"?o:o.label;const on=cur.includes(v);
+    return <button key={v} type="button" className={"otrg-chip"+(on?" on":"")} aria-pressed={on} onClick={()=>onChange(on?cur.filter(x=>x!==v):[...cur,v])}>{label}</button>;})}</div>;
+}
+
 // ─── Role-gender matching ───────────────────────────────────────────────────
 // Identity and castability are two different questions and must not share a
 // field. profiles.gender answers "who am I" and is what casting directors read.
@@ -4323,7 +4383,9 @@ a.news-card{text-decoration:none;color:inherit;}
 .otrg-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
 .otrg-chip{font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:100px;cursor:pointer;background:var(--s2);color:var(--t2);border:1.5px solid var(--bdr);transition:background .16s,border-color .16s,color .16s;}
 .otrg-chip:hover{border-color:#464A73;color:#464A73;}
-.otrg-chip.on{background:rgba(70,74,115,.1);border-color:#464A73;color:#2E3050;}
+.otrg-chip.on{background:#464A73;border-color:#464A73;color:#fff;}
+.otrg-chip.on::before{content:"✓";margin-right:5px;}
+.otrg-chip.on:hover{background:#3A3E63;color:#fff;}
 .otrg-note{font-size:11.5px;color:var(--t3);margin-top:7px;line-height:1.5;}
 /* Recommended for You cards (layout D, approved 2026-09-23; Apply navy softened
    to #464A73 on 2026-09-23 — #2E3050 read as near-black against the cream).
@@ -13609,6 +13671,15 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       </div>
     </div>}
 
+    {/* ── ACCENTS & LANGUAGES ── */}
+    {(()=>{const acc=Array.isArray(freshProfile?.accents)?freshProfile.accents:[];const lng=Array.isArray(freshProfile?.languages)?freshProfile.languages:[];
+      if(!acc.length&&!lng.length)return null;
+      const pill=(x,i)=><span key={i} style={{padding:"5px 14px",background:"#EDE8DC",border:"1px solid #C9C3B2",borderRadius:20,fontSize:12.5,color:"#1A1A2E",fontWeight:600,display:"inline-block"}}>{x}</span>;
+      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+        {lng.length>0&&<>{sectionHead("Languages")}<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:acc.length?14:0}}>{lng.map(pill)}</div></>}
+        {acc.length>0&&<>{sectionHead("Accents")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{acc.map(pill)}</div></>}
+      </div>;})()}
+
     {/* ── STRUCTURED CREDITS (from DB) ── */}
     {hasStructuredCredits&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
@@ -14636,7 +14707,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // merged into search results once any real data exists.
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
-  const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&t.union!==f.union)return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
+  const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!String(t.union||"").split("/").map(x=>x.trim()).includes(f.union))return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
   const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
@@ -23360,7 +23431,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const [cropState,setCropState]=useState(null);
   const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots (legacy)
   const [socialLinks,setSocialLinks]=useState({});      // social_links jsonb
-  const [selectedSkills,setSelectedSkills]=useState([]); // skills array
+  const [selectedSkills,setSelectedSkills]=useState([]); // canonical picks from SKILL_GROUPS
+  const [extraSkills,setExtraSkills]=useState([]); // additional free-text skills
+  const [skillQ,setSkillQ]=useState("");
   const [customSkill,setCustomSkill]=useState("");
   const [dbCredits,setDbCredits]=useState([]);           // talent_credits rows
   const [creditForm,setCreditForm]=useState({category:"Film & TV",production_title:"",role:"",director_or_company:"",location:"",credit_year:"",website_url:""});
@@ -23394,7 +23467,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     show_exact_age:profile?.show_exact_age!==false,
     drivers_license:profile?.drivers_license||"",passport:profile?.passport||"",
     self_recording_setup:profile?.self_recording_setup||"",self_recording_other:profile?.self_recording_other||"",
-    talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[]
+    talent_types:Array.isArray(profile?.talent_types)?profile.talent_types:[],
+    ...profileStatsFields(profile),accents:[],languages:[]
   }));
   // A stored gender outside the preset list (legacy "Other", or a self-described one)
   // reopens the custom text box instead of silently showing an empty select.
@@ -23420,7 +23494,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         show_exact_age:profile.show_exact_age!==false,
         drivers_license:profile.drivers_license||"",passport:profile.passport||"",
         self_recording_setup:profile.self_recording_setup||"",self_recording_other:profile.self_recording_other||"",
-        talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[]
+        talent_types:Array.isArray(profile.talent_types)?profile.talent_types:[],
+        ...profileStatsFields(profile)
       }));
       setGenderCustom(isCustomGender(profile.gender));
       // Filter the main headshot out of additional_photos to prevent duplication in the gallery.
@@ -23429,7 +23504,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       const vl=profile.video_links||[];
       const slots=["","","","",""];vl.forEach((v,i)=>{if(i<5)slots[i]=v;});setVideos(slots);
       setSocialLinks(profile.social_links&&typeof profile.social_links==="object"?profile.social_links:{});
-      setSelectedSkills(Array.isArray(profile.skills)?profile.skills:[]);
+      {const c=classifyProfileSkills(profile.skills,profile.accents,profile.languages);
+       setSelectedSkills(c.picked);setExtraSkills(c.extra);
+       setF(x=>({...x,accents:c.accents,languages:c.languages}));}
       setSlateVideoUrl(profile.slate_video_url||"");
     }
   },[profile]);
@@ -23569,20 +23646,30 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     try{
       const videoSlots=profile?.membership_status==="active"?PREMIUM_PLAN.videos:FREE_PLAN.videos;
     const vl=videos.slice(0,videoSlots).filter(v=>v.trim());
-      // Merge selected skills with any freetext skills from the old field
-      const skillsFromText=f.skills?f.skills.split(",").map(s=>s.trim()).filter(Boolean):[];
-      const mergedSkills=[...new Set([...selectedSkills,...skillsFromText])];
+      // Picked skills first, then the additional free-text ones. The old
+      // comma-string (f.skills) is NOT merged back in — classifyProfileSkills
+      // already sorted every old value into picks, languages, accents or extras.
+      const mergedSkills=[...new Set([...selectedSkills,...extraSkills.map(x=>String(x||"").trim()).filter(Boolean)])];
+      const ageMin=parseInt(f.age_play_min,10),ageMax=parseInt(f.age_play_max,10);
       const patch={
         display_name:f.display_name.trim()||null,bio:f.bio||null,location:f.location||null,
-        age:f.age?parseInt(f.age):null,gender:f.gender||null,ethnicity:f.ethnicity||null,
-        open_to_role_genders:Array.isArray(f.open_to_role_genders)?f.open_to_role_genders:null,
+        age:f.age?parseInt(f.age):null,gender:f.gender||null,
+        // ethnicity / union_status / open_to_role_genders / age_range are derived
+        // from these by the profiles_stats_sync trigger — never sent directly.
+        ethnicities:Array.isArray(f.ethnicities)?f.ethnicities:[],
+        unions:Array.isArray(f.unions)?f.unions:[],
+        ...(f.authentic_touched?{authentic_genders:Array.isArray(f.authentic_genders)?f.authentic_genders:[]}:{}),
+        age_play_min:Number.isFinite(ageMin)&&ageMin>0?ageMin:null,
+        age_play_max:Number.isFinite(ageMax)&&ageMax>0?ageMax:null,
+        accents:Array.isArray(f.accents)?f.accents:[],
+        languages:Array.isArray(f.languages)?f.languages:[],
         height:f.height||null,weight:f.weight||null,hair:f.hair||null,eyes:f.eyes||null,
-        union_status:f.union_status||null,agent:f.agent||null,training:f.training||null,
+        agent:f.agent||null,training:f.training||null,
         skills:mergedSkills,
         instagram:f.instagram||null,
         company_name:f.company_name||null,company_role:f.company_role||null,website:f.website||null,
         credits:f.credits||null,video_links:vl,
-        body_type:f.body_type||null,age_range:f.age_range||null,
+        body_type:f.body_type||null,
         // Only real archetypes go in the array — the "Other…" entry is a UI
         // marker, never persisted, so a reload can't reorder it into the list.
         casting_types:(Array.isArray(f.casting_types)?f.casting_types:[]).filter(t=>ALL_CASTING_ARCHETYPES.includes(t)),
@@ -23848,7 +23935,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<button className={`tab ${tab==="photos"?"active":""}`} onClick={()=>setTab("photos")}>{isPremium?`Gallery Photos (${photos.length})`:`Photos (${allPhotos.length}/1)`}</button>}
       {!isCD&&<button className={`tab ${tab==="videos"?"active":""}`} onClick={()=>setTab("videos")}>Videos ({mediaItems.length}{!isPremium?" · Premium":""})</button>}
       {!isCD&&<button className={`tab ${tab==="showcase"?"active":""}`} onClick={()=>setTab("showcase")}>Showcase Order</button>}
-      {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills ({selectedSkills.length})</button>}
+      {!isCD&&<button className={`tab ${tab==="skills"?"active":""}`} onClick={()=>setTab("skills")}>Skills & Languages ({selectedSkills.length+extraSkills.filter(x=>String(x||"").trim()).length})</button>}
       {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
       {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links{!isPremium?" · Premium":""}</button>}
       {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
@@ -23883,7 +23970,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
-          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}<div style={{marginTop:14}}><label className="label">Roles I'm open to</label><div className="otrg-row">{ROLE_GENDERS.map(g=>{const cur=Array.isArray(f.open_to_role_genders)?f.open_to_role_genders:defaultOpenToRoleGenders(f.gender);const on=cur.includes(g);return(<button key={g} type="button" className={"otrg-chip"+(on?" on":"")} aria-pressed={on} onClick={()=>{const next=on?cur.filter(x=>x!==g):ROLE_GENDERS.filter(x=>cur.includes(x)||x===g);up("open_to_role_genders",next);}}>{g}</button>);})}</div><div className="otrg-note">This decides which roles we recommend to you — casting directors still see your gender above. Roles marked open to all genders are always included.{!Array.isArray(f.open_to_role_genders)&&<> Set from your gender; change it any time.</>}</div></div></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/>
+          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}<div style={{marginTop:14}}><label className="label">Roles I'm authentic to</label><ChipPicker options={AUTHENTIC_OPTS} value={f.authentic_genders} onChange={v=>setF(x=>({...x,authentic_genders:v,authentic_touched:true}))}/><div className="otrg-note">Select all that apply. This decides which roles we recommend to you — casting directors still see your gender above. Roles open to all genders are always included.{!f.authentic_touched&&<> Set from your gender; change it any time.</>}</div></div></div><div className="form-group"><label className="label">Age</label><input className="input" type="number" min="1" max="120" value={f.age} onChange={e=>up("age",e.target.value)}/>
             <label className="checkbox-row" style={{marginTop:9,marginBottom:0,alignItems:"flex-start"}}>
               <input type="checkbox" style={{marginTop:2}} checked={f.show_exact_age!==false} onChange={e=>up("show_exact_age",e.target.checked)}/>
               <span>Show my exact age on my profile</span>
@@ -23897,7 +23984,17 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           </div></div>
           <div className="form-row"><div className="form-group"><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div></div>
           <div className="form-row"><div className="form-group"><label className="label">Hair Color</label><select className="select" style={{width:"100%"}} value={f.hair} onChange={e=>up("hair",e.target.value)}><option value="">Select</option>{HAIR_COLORS.map(h=><option key={h} value={h}>{h}</option>)}</select></div><div className="form-group"><label className="label">Eye Color</label><select className="select" style={{width:"100%"}} value={f.eyes} onChange={e=>up("eyes",e.target.value)}><option value="">Select</option>{EYE_COLORS.map(ec=><option key={ec} value={ec}>{ec}</option>)}</select></div></div>
-          <div className="form-row"><div className="form-group"><label className="label">Ethnicity</label><select className="select" style={{width:"100%"}} value={f.ethnicity} onChange={e=>up("ethnicity",e.target.value)}><option value="">Select</option>{ETHNICITIES.map(et=><option key={et} value={et}>{et}</option>)}</select></div><div className="form-group"><label className="label">Union Status</label><select className="select" style={{width:"100%"}} value={f.union_status} onChange={e=>up("union_status",e.target.value)}><option>Non-Union</option><option>SAG-AFTRA</option><option>AEA</option><option>SAG-AFTRA / AEA</option><option>ACTRA</option></select></div></div>
+          <div className="form-group"><label className="label">Age range I can play</label>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:90}} placeholder="From" value={f.age_play_min} onChange={e=>up("age_play_min",e.target.value)}/>
+              <span style={{color:"var(--t3)",fontSize:13}}>to</span>
+              <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:90}} placeholder="To" value={f.age_play_max} onChange={e=>up("age_play_max",e.target.value)}/>
+            </div>
+            <div className="otrg-note">The ages you can believably play on camera. Used to match you to roles.</div></div>
+          <div className="form-group"><label className="label">Ethnic appearance</label><ChipPicker options={PROFILE_ETHNICITIES} value={f.ethnicities} onChange={v=>up("ethnicities",v)}/>
+            <div className="otrg-note">Select all that apply.{!(f.ethnicities||[]).length&&(profile?.ethnicity||"").trim()&&<> Currently on your profile: <strong>{profile.ethnicity}</strong>.</>}</div></div>
+          <div className="form-group"><label className="label">Union status</label><ChipPicker options={PROFILE_UNIONS} value={f.unions} onChange={v=>up("unions",v)}/>
+            <div className="otrg-note">Select every union you belong to or are eligible for.</div></div>
           <div className="form-row"><div className="form-group"><label className="label">Body Type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option><option>Slim</option><option>Athletic / Toned</option><option>Average</option><option>Muscular</option><option>Curvy</option><option>Plus-size</option><option>Heavyset</option><option>Petite</option><option>Tall / Lean</option></select></div><div className="form-group"><label className="label">Type Range</label><TypeRangeSelect value={f.casting_types} other={f.casting_type_other} onChange={v=>up("casting_types",v)} onOtherChange={v=>up("casting_type_other",v)}/></div></div>
           <div className="form-group"><label className="label">Talent Types (select all that apply)</label><div style={{display:"flex",gap:16,flexWrap:"wrap",marginTop:6}}>{["Film","TV","Theater","Commercial","Modeling","Voiceover"].map(t=>{const arr=Array.isArray(f.talent_types)?f.talent_types:(f.talent_types?[f.talent_types]:[]);const on=arr.includes(t);return(<label key={t} className="checkbox-row"><input type="checkbox" checked={on} onChange={()=>up("talent_types",on?arr.filter(x=>x!==t):[...arr,t])}/>{t}</label>);})}</div></div>
         </div>
@@ -24354,28 +24451,27 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     {/* ── SKILLS TAB ── */}
     {tab==="skills"&&!isCD&&<div className="card" style={{padding:24}}>
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Skills</h3>
-      <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Select skills that appear as pills on your public profile. Save Profile to apply changes.</p>
-      {/* Selected pills */}
-      {selectedSkills.length>0&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
-        {selectedSkills.map((s,i)=>(
-          <span key={i} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",background:"var(--acc)",color:"#fff",borderRadius:20,fontSize:12,fontWeight:600}}>
-            {s}
-            <button onClick={()=>setSelectedSkills(p=>p.filter(x=>x!==s))} style={{background:"none",border:"none",color:"rgba(255,255,255,0.8)",cursor:"pointer",padding:0,fontSize:13,lineHeight:1}}>×</button>
-          </span>
-        ))}
-      </div>}
-      {/* Predefined list */}
-      <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
-        {SKILLS_LIST.filter(s=>s!=="Other"&&!selectedSkills.includes(s)).map(s=>(
-          <button key={s} onClick={()=>setSelectedSkills(p=>[...p,s])} style={{padding:"3px 9px",background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:20,fontSize:11,color:"var(--t1)",cursor:"pointer",fontWeight:500}}>+ {s}</button>
-        ))}
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:12}}>Tap everything you can do on camera. Casting directors search by these, and they show on your public profile.</p>
+      <input className="input" style={{marginBottom:10}} placeholder="Search skills — e.g. piano, fencing, tap" value={skillQ} onChange={e=>setSkillQ(e.target.value)}/>
+      {selectedSkills.length>0&&<div style={{marginBottom:6}}><ChipPicker options={selectedSkills} value={selectedSkills} onChange={setSelectedSkills}/></div>}
+      {SKILL_GROUPS.map(g=>{const q=skillQ.trim().toLowerCase();const items=q?g.items.filter(x=>x.toLowerCase().includes(q)):g.items;if(q&&!items.length)return null;
+        return <div key={g.key} style={{marginTop:18}}><label className="label">{g.title}</label><ChipPicker options={items} value={selectedSkills} onChange={v=>setSelectedSkills(ALL_PROFILE_SKILLS.filter(x=>v.includes(x)))}/></div>;})}
+      <div style={{marginTop:22}}><label className="label">Additional skills</label>
+        <div className="otrg-note" style={{marginTop:0,marginBottom:8}}>Anything not listed above — one per box.</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:8}}>
+          {[...extraSkills,...Array(Math.max(0,8-extraSkills.length)).fill("")].map((v,i)=>(
+            <input key={i} className="input" maxLength={80} value={v} placeholder="Add a skill" onChange={e=>{const val=e.target.value;setExtraSkills(p=>{const n=[...p];while(n.length<=i)n.push("");n[i]=val;return n;});}}/>
+          ))}
+        </div>
+        <button type="button" className="btn-s btn-sm" style={{marginTop:8}} onClick={()=>setExtraSkills(p=>[...p,...Array(Math.max(0,8-p.length)).fill(""),""])}>+ Add another</button>
       </div>
-      {/* Custom skill */}
-      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:16}}>
-        <input className="input" style={{flex:1}} placeholder='Add custom skill…' value={customSkill} onChange={e=>setCustomSkill(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customSkill.trim()){setSelectedSkills(p=>[...p,customSkill.trim()]);setCustomSkill("");}}}/>
-        <button className="btn-s btn-sm" onClick={()=>{if(customSkill.trim()){setSelectedSkills(p=>[...p,customSkill.trim()]);setCustomSkill("");}}}>Add</button>
-      </div>
-      <button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Skills"}</button>
+      <h3 style={{fontSize:15,fontWeight:700,margin:"28px 0 4px"}}>Accents &amp; Languages</h3>
+      <p style={{fontSize:12,color:"var(--t3)",marginBottom:12}}>Accents you can do convincingly, and languages you speak.</p>
+      <label className="label">Accents &amp; dialects</label>
+      <ChipPicker options={PROFILE_ACCENTS} value={f.accents} onChange={v=>up("accents",v)}/>
+      <label className="label" style={{marginTop:18}}>Languages</label>
+      <ChipPicker options={PROFILE_LANGUAGES} value={f.languages} onChange={v=>up("languages",v)}/>
+      <div style={{marginTop:22}}><button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Skills & Languages"}</button></div>
     </div>}
 
     {/* ── CREDITS TAB ── */}
