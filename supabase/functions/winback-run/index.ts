@@ -238,8 +238,13 @@ function email3(firstName: string, uid: string): string {
 
 // Greeting name (2026-09-27) — same rule as send-notification-email: "" for a
 // handle (digits, _, @, .) or bare initials; the copy then drops the name.
+// Company-sounding names → "" too; (brackets)/"quotes" ignored first. Same rule as
+// public.greeting_name() and greetName() in send-notification-email.
+const COMPANY_WORD = /(^|[^\p{L}])(llc|inc|ltd|corp|co|company|productions?|studios?|films|pictures|media|entertainment|casting|agency|management|models|records|tv|official)([^\p{L}]|$)/iu;
 function firstNameOf(displayName: unknown): string {
-  const w = (String(displayName ?? "").trim().split(/\s+/)[0] ?? "").replace(/_+$/, "");
+  const core = String(displayName ?? "").replace(/\([^)]*\)|“[^”]*”|"[^"]*"/g, " ");
+  if (COMPANY_WORD.test(core)) return "";
+  const w = (core.trim().split(/\s+/)[0] ?? "").replace(/_+$/, "");
   if (!w || /[0-9_@.]/.test(w) || !/[aeiouy]/i.test(w) || w.replace(/[^\p{L}]/gu, "").length < 2) return "";
   return w.charAt(0).toUpperCase() + w.slice(1);
 }

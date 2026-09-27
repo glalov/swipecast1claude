@@ -219,8 +219,14 @@ interface NotifyRequest {
 // "MHG"). A trailing underscore is dropped ("Renee_" → "Renee"). Callers drop the
 // name when it is empty ("Welcome to CastSlate", "Hi there,") — never "…, there".
 // Names are already capitalized at the source (profiles_nice_display_name).
+// Company-sounding names ("Office Casting", "Ethans Tv", "MHG LLC") also return "".
+// Text in (brackets) or "quotes" is ignored first, so "Alex Lighting (Lighting Co.)"
+// still greets Alex. Same rule as public.greeting_name() in the database.
+const COMPANY_WORD = /(^|[^\p{L}])(llc|inc|ltd|corp|co|company|productions?|studios?|films|pictures|media|entertainment|casting|agency|management|models|records|tv|official)([^\p{L}]|$)/iu;
 function greetName(displayName: unknown): string {
-  const w = (String(displayName ?? "").trim().split(/\s+/)[0] ?? "").replace(/_+$/, "");
+  const core = String(displayName ?? "").replace(/\([^)]*\)|“[^”]*”|"[^"]*"/g, " ");
+  if (COMPANY_WORD.test(core)) return "";
+  const w = (core.trim().split(/\s+/)[0] ?? "").replace(/_+$/, "");
   if (!w || /[0-9_@.]/.test(w) || !/[aeiouy]/i.test(w) || w.replace(/[^\p{L}]/gu, "").length < 2) return "";
   return w.charAt(0).toUpperCase() + w.slice(1);
 }

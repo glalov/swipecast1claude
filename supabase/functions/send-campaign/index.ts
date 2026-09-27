@@ -232,7 +232,7 @@ serve(async (req) => {
       const addUtm = (html: string) => html.replace(/href="(https?:\/\/(?:www\.)?castslate\.com[^"]*)"/gi, (_m: string, url: string) => { if (/[?&]utm_source=/i.test(url)) return `href="${url}"`; const sep = url.includes("?") ? "&" : "?"; return `href="${url}${sep}utm_source=email&utm_medium=campaign&utm_campaign=${encodeURIComponent(utmCampaign)}"`; });
       // First-name personalization: {{FIRST_NAME}} → recipient's first name, with a
       // friendly "there" fallback for blank or handle-style names (e.g. "user8").
-      const firstNameOf = (name?: string | null) => { const first = ((name ?? "").trim().split(/\s+/)[0] || "").replace(/_+$/, ""); if (!first || /[0-9_@.]/.test(first) || first.length > 20 || !/[aeiouy]/i.test(first) || first.replace(/[^\p{L}]/gu, "").length < 2) return "there"; return first.charAt(0).toUpperCase() + first.slice(1); };
+      const firstNameOf = (name?: string | null) => { const core = (name ?? "").replace(/\([^)]*\)|“[^”]*”|"[^"]*"/g, " "); if (/(^|[^\p{L}])(llc|inc|ltd|corp|co|company|productions?|studios?|films|pictures|media|entertainment|casting|agency|management|models|records|tv|official)([^\p{L}]|$)/iu.test(core)) return "there"; const first = (core.trim().split(/\s+/)[0] || "").replace(/_+$/, ""); if (!first || /[0-9_@.]/.test(first) || first.length > 20 || !/[aeiouy]/i.test(first) || first.replace(/[^\p{L}]/gu, "").length < 2) return "there"; return first.charAt(0).toUpperCase() + first.slice(1); };
 
       // ── {{CASTINGS}} — live listings, resolved once per batch ──────────────
       // A campaign's HTML is written weeks before it finishes sending, so any
