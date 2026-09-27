@@ -13478,7 +13478,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     ["Gender",freshProfile?.gender||talent.gender],
     ["Ethnicity",freshProfile?.ethnicity||talent.ethnicity],
     ["Body",freshProfile?.body_type||talent.body_type],
-    ["Plays",playsFallback],
+    // Always the actor's "Age range I can play" (age_range is kept in sync
+    // with age_play_min/max). Casting types still render as chips below.
+    ["Plays ages",(freshProfile?.age_range||talent.age_range||"").replace(/\s*-\s*/,"–")],
   ].filter(([,v])=>v);
 
   const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
@@ -13666,9 +13668,16 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {/* ── SKILLS ── */}
     {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Skills")}
-      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-        {skills.map((s,i)=><span key={i} style={{padding:"5px 14px",background:"#EDE8DC",border:"1px solid #C9C3B2",borderRadius:20,fontSize:12.5,color:"#1A1A2E",fontWeight:600,letterSpacing:"0.02em",boxShadow:"0 1px 2px rgba(0,0,0,0.06)",display:"inline-block"}}>{s}</span>)}
-      </div>
+      {/* Grouped exactly like the editor (SKILL_GROUPS), in the editor's order;
+          anything the actor typed themselves comes last under "Additional". */}
+      {(()=>{const pill=(x,i)=><span key={i} style={{padding:"5px 14px",background:"#EDE8DC",border:"1px solid #C9C3B2",borderRadius:20,fontSize:12.5,color:"#1A1A2E",fontWeight:600,letterSpacing:"0.02em",boxShadow:"0 1px 2px rgba(0,0,0,0.06)",display:"inline-block"}}>{x}</span>;
+        const have=new Set(skills);
+        const groups=SKILL_GROUPS.map(g=>({title:g.title,items:g.items.filter(x=>have.has(x))})).filter(g=>g.items.length);
+        const extra=skills.filter(x=>!ALL_PROFILE_SKILLS.includes(x));
+        if(extra.length)groups.push({title:groups.length?"Additional skills":"",items:extra});
+        return groups.map((g,gi)=><div key={gi} style={{marginTop:gi?14:0}}>
+          {g.title&&<div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>{g.title}</div>}
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{g.items.map(pill)}</div></div>);})()}
     </div>}
 
     {/* ── ACCENTS & LANGUAGES ── */}
@@ -13811,7 +13820,7 @@ function PublicTalentProfilePage({slug,onNavigate,session,myProfile}){
 }
 
 // ─── Copy-link + view buttons shown on MyProfilePage ─────────────────────────
-function PublicProfileButtons({slug}){
+function PublicProfileButtons({slug,beforeOpen}){
   const [copied,setCopied]=useState(false);
   if(!slug)return(<button style={{background:"var(--s2)",color:"var(--t3)",border:"1px solid var(--bdr)",borderRadius:7,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"default"}} disabled>Setting up profile URL…</button>);
   const url=`${window.location.origin}/talent/${encodeURIComponent(slug)}`;
@@ -13824,7 +13833,14 @@ function PublicProfileButtons({slug}){
     <button style={{background:"var(--s2)",color:"var(--t2)",border:"1px solid var(--bdr)",borderRadius:7,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer",transition:"color .15s"}} onClick={copy}>
       {copied?"Link copied!":"Copy Profile Link"}
     </button>
-    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={()=>window.open(`/talent/${encodeURIComponent(slug)}`,"_blank")}><Ico n="eye" s={22}/> View Public Profile <Tri/></button>
+    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={async()=>{const url=`/talent/${encodeURIComponent(slug)}`;
+      // Unsaved edits must be on the page the actor is about to look at. The tab
+      // is opened first (synchronously) so the popup blocker allows it.
+      if(!beforeOpen){window.open(url,"_blank");return;}
+      const w=window.open("about:blank","_blank");
+      const ok=await beforeOpen();
+      if(!ok){if(w)w.close();return;}
+      if(w)w.location.href=url;else window.location.href=url;}}><Ico n="eye" s={22}/> View Public Profile <Tri/></button>
   </>);
 }
 
@@ -23638,10 +23654,31 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   // 30-second hard timeout so UI never stays "Saving…" forever if network hangs
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const showErr=(m)=>{setErr(m);window.scrollTo({top:0,behavior:"smooth"});};
-  const save=async()=>{
+  // Unsaved-changes tracking: a snapshot of the form + skills taken once the
+  // profile has loaded, and again after every successful save.
+  // Order-insensitive: tapping a chip on and off again is "no change".
+  const sortedArr=v=>Array.isArray(v)&&v.every(x=>typeof x==="string")?[...v].sort():v;
+  const editKey=JSON.stringify([Object.fromEntries(Object.entries(f).map(([k,v])=>[k,sortedArr(v)])),sortedArr(selectedSkills),sortedArr(extraSkills.map(x=>String(x||"").trim()).filter(Boolean))]);
+  // The first load sorts old skills with a follow-up setF, so the baseline is
+  // taken one tick later, after that render has settled.
+  const [savedKey,setSavedKey]=useState(null);
+  const editKeyRef=useRef(editKey);editKeyRef.current=editKey;
+  useEffect(()=>{
+    if(!profileInitializedRef.current||savedKey!==null)return;
+    const t=setTimeout(()=>setSavedKey(editKeyRef.current),0);
+    return()=>clearTimeout(t);
+  },[editKey,savedKey]);
+  const isDirty=savedKey!==null&&savedKey!==editKey;
+  useEffect(()=>{
+    if(!isDirty)return;
+    const h=e=>{e.preventDefault();e.returnValue="";};
+    window.addEventListener("beforeunload",h);
+    return()=>window.removeEventListener("beforeunload",h);
+  },[isDirty]);
+  const save=async(opts={})=>{
     setErr("");setMsg("");
-    if(containsContactInfo(f.bio)||containsContactInfo(f.credits)){showErr(CONTACT_INFO_MSG);return;}
-    if(profile?.user_type==="cd"&&!String(f.company_name||"").trim()){showErr("Please enter your company or production — actors see it on your castings.");return;}
+    if(containsContactInfo(f.bio)||containsContactInfo(f.credits)){showErr(CONTACT_INFO_MSG);return false;}
+    if(profile?.user_type==="cd"&&!String(f.company_name||"").trim()){showErr("Please enter your company or production — actors see it on your castings.");return false;}
     setSaving(true);
     try{
       const videoSlots=profile?.membership_status==="active"?PREMIUM_PLAN.videos:FREE_PLAN.videos;
@@ -23686,8 +23723,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       };
       const {error}=await withTimeout(window.sb.from("profiles").update(patch).eq("id",session.user.id),30000,"Save");
       if(error)throw error;
-      setMsg("Profile saved.");window.scrollTo({top:0,behavior:"smooth"});onReload&&onReload();setTimeout(()=>setMsg(""),3000);
-    }catch(e){showErr(e.message||"Could not save.");}finally{setSaving(false);}
+      setSavedKey(editKey); // the state as it was when Save was pressed
+      if(!opts.silent){setMsg("Profile saved.");window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>setMsg(""),3000);}
+      onReload&&onReload();
+      return true;
+    }catch(e){showErr(e.message||"Could not save.");return false;}finally{setSaving(false);}
   };
   // ── Slate video helpers ──
   const saveSlateUrl=async(url)=>{
@@ -23926,7 +23966,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── PUBLIC PROFILE BUTTONS (talent only) ── */}
     {!isCD&&<div style={{marginBottom:16,display:"flex",justifyContent:"flex-end",gap:8,alignItems:"center"}}>
-      <PublicProfileButtons slug={profile.public_slug}/>
+      <PublicProfileButtons slug={profile.public_slug} beforeOpen={()=>isDirty?save({silent:true}):Promise.resolve(true)}/>
     </div>}
 
     {/* ── TABS ── */}
@@ -24472,6 +24512,12 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       <label className="label" style={{marginTop:18}}>Languages</label>
       <ChipPicker options={PROFILE_LANGUAGES} value={f.languages} onChange={v=>up("languages",v)}/>
       <div style={{marginTop:22}}><button className="btn-p" onClick={save} disabled={saving}>{saving?"Saving…":"Save Skills & Languages"}</button></div>
+    </div>}
+
+    {/* Unsaved-changes bar — picks made on any tab stay local until saved. */}
+    {isDirty&&<div role="status" style={{position:"fixed",left:"50%",bottom:18,transform:"translateX(-50%)",zIndex:300,display:"flex",alignItems:"center",gap:14,background:"#1A1A2E",color:"#fff",borderRadius:14,padding:"10px 12px 10px 18px",boxShadow:"0 10px 30px rgba(0,0,0,.25)",maxWidth:"calc(100vw - 32px)",fontSize:13.5,fontWeight:600}}>
+      <span>You have unsaved changes</span>
+      <button type="button" onClick={()=>save()} disabled={saving} style={{background:"#fff",color:"#1A1A2E",border:"none",borderRadius:9,padding:"8px 16px",fontWeight:800,fontSize:13,cursor:"pointer",whiteSpace:"nowrap"}}>{saving?"Saving…":"Save changes"}</button>
     </div>}
 
     {/* ── CREDITS TAB ── */}
