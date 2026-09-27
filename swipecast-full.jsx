@@ -2473,11 +2473,19 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .credits-list{width:100%;}
 .credit-row{display:grid;grid-template-columns:70px minmax(180px,1.2fr) minmax(120px,.8fr) minmax(200px,1fr);column-gap:28px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr);}
 .credit-row:last-child{border-bottom:none;}
+.pp-chip{display:inline-block;padding:4px 11px;background:var(--s2);border-radius:999px;font-size:12.5px;font-weight:500;line-height:1.4;color:var(--t1);}
+.pp-cred-cat{margin-bottom:18px;}.pp-cred-cat:last-child{margin-bottom:0;}
+.pp-cred-catlbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:8px;}
+.pp-cred .credit-row{grid-template-columns:56px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr);column-gap:20px;align-items:baseline;padding:11px 0;}
+.pp-cred .credit-row:last-child{padding-bottom:2px;}
+.pp-cred .pp-cred-head{padding:0 0 6px;font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;}
+.pp-cred .credit-year{padding-top:0;}.pp-cred .credit-title{font-size:14.5px;}
+.pp-cred .credit-role{padding-top:0;font-size:13.5px;font-weight:500;color:var(--t1);}.pp-cred .credit-meta{color:var(--t2);}
 .credit-year{color:var(--t3);font-size:13px;font-weight:500;white-space:nowrap;padding-top:2px;}
 .credit-title{font-weight:700;font-size:15px;color:var(--t1);line-height:1.3;}
 .credit-role{font-size:13px;color:#444;padding-top:2px;}
 .credit-meta{font-size:13px;color:#666;}
-@media(max-width:640px){.credit-row{display:block;padding:12px 0;}.credit-year{font-size:12px;color:var(--t3);margin-bottom:2px;}.credit-title{font-size:14px;font-weight:700;margin-bottom:2px;}.credit-role{font-size:13px;color:#444;margin-bottom:2px;}.credit-meta{font-size:12px;color:#666;}}
+@media(max-width:640px){.credit-row{display:block;padding:12px 0;}.credit-year{font-size:12px;color:var(--t3);margin-bottom:2px;}.credit-title{font-size:14px;font-weight:700;margin-bottom:2px;}.credit-role{font-size:13px;color:#444;margin-bottom:2px;}.credit-meta{font-size:12px;color:#666;}.pp-cred .pp-cred-head{display:none;}.pp-cred .credit-row{padding:10px 0;}}
 .swipe-layout{display:grid;grid-template-columns:1fr 380px;gap:32px;min-height:70vh;width:100%;}
 .folder-cards-grid{display:grid;gap:12px;grid-template-columns:repeat(4,1fr);}
 @media(max-width:900px){.folder-cards-grid{grid-template-columns:repeat(2,1fr);}}
@@ -13497,12 +13505,14 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     ["Eyes",freshProfile?.eyes||talent.eyes],
     ["Age",displayAge(freshProfile&&freshProfile.age?freshProfile:talent)],
     ["Gender",freshProfile?.gender||talent.gender],
-    ["Ethnicity",freshProfile?.ethnicity||talent.ethnicity],
     ["Body",freshProfile?.body_type||talent.body_type],
     // Always the actor's "Age range I can play" (age_range is kept in sync
     // with age_play_min/max). Casting types still render as chips below.
     ["Plays ages",(freshProfile?.age_range||talent.age_range||"").replace(/\s*-\s*/,"–")],
   ].filter(([,v])=>v);
+  // Ethnicity gets its own line under the grid — multi-select values are long
+  // and used to wrap into a tall column that stretched the whole stats row.
+  const ethnicityText=String(freshProfile?.ethnicity||talent.ethnicity||"").split(/\s*,\s*/).filter(Boolean).join(" · ");
 
   const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
 
@@ -13640,13 +13650,19 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
         {/* Appearance stats */}
         {statsData.length>0&&(
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))",gap:"6px 16px",marginBottom:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(96px,1fr))",gap:"10px 16px",marginBottom:ethnicityText?0:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
             {statsData.map(([l,v])=>(
               <div key={l}>
                 <div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:1}}>{l}</div>
                 <div style={{fontSize:14,fontWeight:600,color:"var(--t1)"}}>{v}</div>
               </div>
             ))}
+          </div>
+        )}
+        {ethnicityText&&(
+          <div style={{display:"flex",gap:10,alignItems:"baseline",flexWrap:"wrap",margin:"12px 0 14px",paddingTop:10,borderTop:statsData.length?"1px dashed var(--bdr)":"1px solid var(--bdr)"}}>
+            <div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",flexShrink:0}}>Ethnicity</div>
+            <div style={{fontSize:14,fontWeight:600,color:"var(--t1)",lineHeight:1.45,minWidth:0}}>{ethnicityText}</div>
           </div>
         )}
 
@@ -13691,7 +13707,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       {sectionHead("Skills")}
       {/* Grouped exactly like the editor (SKILL_GROUPS), in the editor's order;
           anything the actor typed themselves comes last under "Additional". */}
-      {(()=>{const pill=(x,i)=><span key={i} style={{padding:"5px 14px",background:"#EDE8DC",border:"1px solid #C9C3B2",borderRadius:20,fontSize:12.5,color:"#1A1A2E",fontWeight:600,letterSpacing:"0.02em",boxShadow:"0 1px 2px rgba(0,0,0,0.06)",display:"inline-block"}}>{x}</span>;
+      {(()=>{const pill=(x,i)=><span key={i} className="pp-chip">{x}</span>;
         const have=new Set(skills);
         const groups=SKILL_GROUPS.map(g=>({title:g.title,items:g.items.filter(x=>have.has(x))})).filter(g=>g.items.length);
         const extra=skills.filter(x=>!ALL_PROFILE_SKILLS.includes(x));
@@ -13704,7 +13720,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {/* ── ACCENTS & LANGUAGES ── */}
     {(()=>{const acc=Array.isArray(freshProfile?.accents)?freshProfile.accents:[];const lng=Array.isArray(freshProfile?.languages)?freshProfile.languages:[];
       if(!acc.length&&!lng.length)return null;
-      const pill=(x,i)=><span key={i} style={{padding:"5px 14px",background:"#EDE8DC",border:"1px solid #C9C3B2",borderRadius:20,fontSize:12.5,color:"#1A1A2E",fontWeight:600,display:"inline-block"}}>{x}</span>;
+      const pill=(x,i)=><span key={i} className="pp-chip">{x}</span>;
       return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
         {lng.length>0&&<>{sectionHead("Languages")}<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:acc.length?14:0}}>{lng.map(pill)}</div></>}
         {acc.length>0&&<>{sectionHead("Accents")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{acc.map(pill)}</div></>}
@@ -13737,9 +13753,10 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         {sectionHead("Credits & Experience")}
         {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
       </div>
-      <div className="credits-list">{CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
-        <div key={cat} style={{marginBottom:20}}>
-          <div style={{fontSize:12,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:8,paddingBottom:6,borderBottom:"1px solid var(--bdr)"}}>{cat}</div>
+      <div className="credits-list pp-cred">{CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
+        <div key={cat} className="pp-cred-cat">
+          <div className="pp-cred-catlbl">{cat}</div>
+          <div className="credit-row pp-cred-head"><div>Year</div><div>Project</div><div>Role</div><div>Production Company · Location</div></div>
           {creditsByCategory[cat].map((c,i)=>(
             <div key={c.id||i} className="credit-row">
               <div className="credit-year">{c.credit_year||"—"}</div>
@@ -13762,7 +13779,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
       </div>
       {legacyCredits.length>0
-        ?<div className="credits-list">
+        ?<div className="credits-list pp-cred">
+            <div className="credit-row pp-cred-head"><div>Year</div><div>Project</div><div>Role</div><div>Type</div></div>
             {legacyCredits.map((c,i)=>(
               <div key={i} className="credit-row">
                 <div className="credit-year">{c.year||"—"}</div>
