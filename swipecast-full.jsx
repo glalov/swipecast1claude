@@ -2490,6 +2490,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Get-matched slides (2026-09-27, owner picked "Slide" in the demo): the old card
    leaves to the left while the next arrives from the right, together — the screen is
    never empty, so nothing reads as a blink. transform-only, ~360ms. */
+/* Overlays in this journey: same tint as .modal-overlay but NO backdrop blur — the blur
+   repainting under moving cards stuttered, and blur on/off between popups flashed. */
+.gm-ov{background:rgba(0,0,0,.5)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;overflow-x:hidden;}
+.gm-ov.gm-clear{background:transparent!important;pointer-events:none;}
+.gm-ov.gm-clear .modal{pointer-events:auto;}
+.gm-rise,.gm-s-in,.gm-s-out{will-change:transform;backface-visibility:hidden;}
 .gm-rise{animation:gmRise .32s cubic-bezier(.22,.8,.3,1) both;}
 .gm-s-in{animation:gmSIn .36s cubic-bezier(.22,.8,.3,1) both;}
 .gm-s-out{animation:gmSOut .36s cubic-bezier(.22,.8,.3,1) both;pointer-events:none;}
@@ -12940,7 +12946,7 @@ Free submission used
       const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
       const allowUpload=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="upload");
       return(
-      <BodyPortal><div className="modal-overlay" style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
+      <BodyPortal><div className={"modal-overlay"+(applySlideIn||applyLeaving?" gm-ov":"")} style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
             <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
@@ -20136,7 +20142,7 @@ function CheckInViewModal({message,onClose,onNavigate,onRead}){
 // ─── New Casting creation modal — writes to castings + roles tables
 // ─── Headshot / photo cropper — zoom + pan + crop to fixed aspect before upload.
 // Emits a JPEG blob via onConfirm(blob). Self-contained — no external libs.
-function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
+function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm,plain}){
   const [imgUrl,setImgUrl]=useState("");
   const [imgEl,setImgEl]=useState(null);
   const [loaded,setLoaded]=useState(false);
@@ -20283,7 +20289,7 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm}){
     }catch(e){setBusy(false);console.warn("[crop] error",e);onClose();}
   };
 
-  return(<div className="modal-overlay" onClick={()=>!busy&&onClose()}>
+  return(<div className={"modal-overlay"+(plain?" gm-ov":"")} onClick={()=>!busy&&onClose()}>
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:540,padding:22}}>
       <h3 style={{fontSize:17,fontWeight:700,marginBottom:4}}>{label}</h3>
       <p style={{color:"var(--t2)",fontSize:12,marginBottom:14}}>Drag the image to reposition. Use the slider to zoom. The visible frame is exactly what casting directors will see.</p>
@@ -20502,8 +20508,8 @@ function HeadshotStep({session,displayName,onSaved,onSkip,leaving}){
   return(<>
     {/* Hidden outright while cropping — ImageCropModal is its own .modal-overlay at
         a lower z-index, so leaving this mounted would bury it. */}
-    {!pick&&<div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",overflowX:"hidden",alignItems:"flex-start"}}>
-      <div className={"modal"+(leaving?" gm-s-out":"")} style={{maxWidth:430,padding:"28px 26px",margin:"auto",textAlign:"center"}}>
+    {<div className={"modal-overlay gm-ov"+(pick?" gm-clear":"")} style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
+      <div className={"modal"+(leaving?" gm-s-out":"")} style={{maxWidth:430,padding:"28px 26px",margin:"auto",textAlign:"center",visibility:pick?"hidden":"visible"}}>
         <div style={{fontSize:10.5,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--amber-dk)",marginBottom:10}}>Last step</div>
         <h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.8,margin:"0 0 8px"}}>
           {first?`Add your headshot, ${first}`:"Add your headshot"}
@@ -20567,6 +20573,7 @@ function HeadshotStep({session,displayName,onSaved,onSkip,leaving}){
     {pick&&<ImageCropModal
       file={pick}
       aspect={0.8}
+      plain
       label="Position your headshot"
       onClose={()=>setPick(null)}
       onConfirm={(blob)=>{setPick(null);save(blob);}}
@@ -20681,13 +20688,14 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   useEffect(()=>{
     if(mode!=="matches"||!prof||!uid)return;
     let alive=true;setMatches(null);
-    gmFindMatches(prof,uid).then(m=>{if(alive)setMatches(m);}).catch(()=>{if(alive)setMatches([]);});
+    const t0=Date.now(),after=(fn)=>setTimeout(fn,Math.max(0,400-(Date.now()-t0))); // don't swap content mid-slide
+    gmFindMatches(prof,uid).then(m=>after(()=>{if(alive)setMatches(m);})).catch(()=>after(()=>{if(alive)setMatches([]);}));
     return()=>{alive=false;};
   },[mode,prof,uid]);
   useEffect(()=>{
     if(mode!=="done"&&!(mode==="matches"&&matches&&!matches.length))return;
     if(!uid||extras)return;
-    (async()=>{let credits=0;try{const {count}=await window.sb.from("talent_credits").select("id",{count:"exact",head:true}).eq("user_id",uid);credits=count||0;}catch(_){}
+    (async()=>{await new Promise(r=>setTimeout(r,420)); /* after the slide */ let credits=0;try{const {count}=await window.sb.from("talent_credits").select("id",{count:"exact",head:true}).eq("user_id",uid);credits=count||0;}catch(_){}
       setExtras({credits});})();
   },[mode,matches,uid,extras]);
   const lo=parseInt(min,10),hi=parseInt(max,10);
@@ -20814,7 +20822,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   // `clear`: while another popup underneath is still leaving/arriving, this overlay adds
   // no tint or blur of its own (two stacked backdrops would flash darker).
   const enterCls=mode===firstMode?(enterFromSide?"gm-s-in":"gm-rise"):"gm-s-in";
-  return(<BodyPortal><div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",overflowX:"hidden",alignItems:"flex-start",...(clear?{background:"transparent",backdropFilter:"none",WebkitBackdropFilter:"none"}:{})}}>
+  return(<BodyPortal><div className={"modal-overlay gm-ov"+(clear?" gm-clear":"")} style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
     <div style={{display:"grid",width:"100%",maxWidth:540,margin:"auto"}}>
       {out&&card(out.body,"gm-s-out",out.key)}
       {card(body,leaving?"gm-s-out":enterCls,"step-"+mode)}
@@ -49733,7 +49741,7 @@ function App(){
   const [hsLeaving,setHsLeaving]=useState(false);
   const [gmPhotoUrl,setGmPhotoUrl]=useState("");
   const photoSaved=(url)=>{
-    const uid=session?.user?.id;loadProfile(uid);
+    const uid=session?.user?.id;setTimeout(()=>loadProfile(uid),450); // after the slide — a reload mid-slide stuttered
     const p=myProfile||{};
     const needBasics=!gmBasicsDone(p);
     const canMatch=gmAppCount==null||gmAppCount===0||p.membership_status==="active";
