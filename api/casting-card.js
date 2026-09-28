@@ -233,7 +233,7 @@ module.exports = async (req, res) => {
   // @vercel/og 0.8.5, vendored: this repo deploys without an npm install, so a
   // package dependency is never present at runtime. The bundle has no imports
   // beyond Node built-ins and reads its wasm/font from its own folder.
-  const { ImageResponse } = await import("./_vendor/vercel-og/index.node.js");
+  const { ImageResponse } = await import("./_vendor/vercel-og/index.node.mjs");
   const img = new ImageResponse(tree, { width: 1200, height: 630, fonts });
   const buf = Buffer.from(await img.arrayBuffer());
 
