@@ -3432,6 +3432,29 @@ body.sheet-push .b2t-cube{display:none;}
   .cs-share-btn{width:28px;height:28px;}
   .cs-share-btn::after{content:"";position:absolute;inset:-8px 0;}
 }
+/* Phone-only Facebook preview sheet: shows the exact card before handing the
+   link to the share sheet, because Facebook's Feed composer shows a blank box. */
+.fbsp-dim{position:fixed;inset:0;background:rgba(26,26,46,.45);z-index:10050;animation:fbspFade .25s ease;}
+.fbsp{position:fixed;left:0;right:0;bottom:0;z-index:10051;background:var(--s1);border-radius:20px 20px 0 0;
+  padding:10px 16px calc(18px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;
+  box-shadow:0 -8px 30px rgba(26,26,46,.18);animation:fbspUp .32s cubic-bezier(.2,.8,.2,1);}
+@keyframes fbspFade{from{opacity:0}to{opacity:1}}
+@keyframes fbspUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.fbsp-grab{width:38px;height:4px;border-radius:4px;background:var(--bdr);margin:0 auto 12px;}
+.fbsp-top{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.fbsp-top h3{margin:0;font-size:16px;font-weight:800;letter-spacing:-.2px;color:var(--t1);}
+.fbsp-ic{width:30px;height:30px;border-radius:8px;background:#1877F2;color:#fff;display:flex;align-items:center;justify-content:center;flex:none;}
+.fbsp-sub{font-size:12.5px;color:var(--t2);margin:0 0 12px;line-height:1.45;}
+.fbsp-post{border:1px solid #dddfe2;border-radius:10px;overflow:hidden;background:#fff;}
+.fbsp-img{aspect-ratio:1200/630;background:#1A1A2E center/cover no-repeat;}
+.fbsp-meta{background:#F0F2F5;padding:8px 10px 9px;}
+.fbsp-dom{font-size:10.5px;color:#65676B;letter-spacing:.02em;text-transform:uppercase;}
+.fbsp-t{font-size:13px;font-weight:700;color:#050505;line-height:1.3;margin-top:1px;}
+.fbsp-note{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;color:var(--t3);line-height:1.45;margin:11px 2px 14px;}
+.fbsp-note svg{flex:none;margin-top:1px;color:var(--teal);}
+.fbsp-go{width:100%;height:48px;border:none;border-radius:12px;background:#1877F2;color:#fff;font:700 15px 'DM Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;}
+.fbsp-cancel{width:100%;height:42px;border:none;background:none;color:var(--t2);font:600 13.5px 'DM Sans',sans-serif;margin-top:4px;cursor:pointer;}
 .cd-deadline-row{display:flex;justify-content:flex-end;margin:0 0 10px;}
 .cd-deadline{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
   letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
@@ -12171,6 +12194,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [savingCasting,setSavingCasting]=useState(false);
   const [copyLinkOk,setCopyLinkOk]=useState(false);
   const [showSendMenu,setShowSendMenu]=useState(false);
+  const [fbSharePreview,setFbSharePreview]=useState(false);
   const sendMenuRef=useRef(null);
   const submittingRef=useRef(false);
   const [auditionRole,setAuditionRole]=useState(null); // {role, roleId, instr} when AuditionModal open
@@ -12560,14 +12584,26 @@ Free submission used
             // sheet is the reliable path: pick Facebook and its composer opens
             // with the casting card attached. Owner approved 2026-09-28.
             // Browsers without navigator.share fall back to the sharer link.
+            // Facebook's Feed composer then shows only a bare "castslate.com"
+            // box (the card appears once posted), so phones first get our own
+            // preview sheet showing the exact card, and its button opens the
+            // share sheet (owner approved 2026-09-28).
             const shareFacebookTouch=(e)=>{
               if(!navigator.share)return false;
               e.preventDefault();
+              setFbSharePreview(true);
+              return true;
+            };
+            // Same image api/casting-og.js gives Facebook: the casting's photo,
+            // else its generated card.
+            const firstImg=Array.isArray(casting.casting_images)&&casting.casting_images.length?(typeof casting.casting_images[0]==="string"?casting.casting_images[0]:casting.casting_images[0]&&casting.casting_images[0].url):"";
+            const previewImg=casting.casting_image_url||firstImg||`/api/casting-card?slug=${encodeURIComponent(casting.slug)}&v=2`;
+            const continueToFacebook=()=>{
               // URL ONLY: with a title/text alongside, Facebook's iOS share
               // extension took the text and dropped the link - its composer
               // opened empty, no card (owner, iPhone, 2026-09-28).
               navigator.share({url:castingUrl}).catch(()=>{});
-              return true;
+              setFbSharePreview(false);
             };
             const openShare=(e,href,net)=>{
               e.preventDefault();
@@ -12589,6 +12625,30 @@ Free submission used
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 1.5h3.7l-8 9.2 9.4 12.4h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.8L0 1.5h7.6l5.2 6.9 6.1-6.9zm-1.3 19.4h2L6.5 3.6H4.3l13.3 17.3z"/></svg>
                   <span className="cs-share-lbl">Post</span>
                 </a>
+                {fbSharePreview&&<BodyPortal>
+                  <div className="fbsp-dim" onClick={()=>setFbSharePreview(false)}/>
+                  <div className="fbsp" role="dialog" aria-modal="true" aria-label="Share on Facebook">
+                    <div className="fbsp-grab"/>
+                    <div className="fbsp-top">
+                      <span className="fbsp-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 8.5V6.6c0-.9.6-1.1 1-1.1h2.6V1.6L14 1.5c-4 0-4.9 3-4.9 4.9v2.1H6.8v4h2.3V22.5H14V12.5h3.3l.4-4z"/></svg></span>
+                      <h3>Share on Facebook</h3>
+                    </div>
+                    <p className="fbsp-sub">This is how your post will look. The casting card is attached automatically.</p>
+                    <div className="fbsp-post">
+                      <div className="fbsp-img" style={{backgroundImage:`url("${previewImg}")`}} role="img" aria-label={`${c.title} casting card`}/>
+                      <div className="fbsp-meta">
+                        <div className="fbsp-dom">castslate.com</div>
+                        <div className="fbsp-t">{c.title}{c.type?` (${c.type})`:""} — Now Casting on CastSlate</div>
+                      </div>
+                    </div>
+                    <div className="fbsp-note"><Ico n="info-circle" s={14}/><span>Facebook's post screen may show just a "castslate.com" box while you write. The card above still appears once you post.</span></div>
+                    <button className="fbsp-go" onClick={continueToFacebook}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 8.5V6.6c0-.9.6-1.1 1-1.1h2.6V1.6L14 1.5c-4 0-4.9 3-4.9 4.9v2.1H6.8v4h2.3V22.5H14V12.5h3.3l.4-4z"/></svg>
+                      Continue to Facebook
+                    </button>
+                    <button className="fbsp-cancel" onClick={()=>setFbSharePreview(false)}>Cancel</button>
+                  </div>
+                </BodyPortal>}
               </span>);
           })()}
         </div>
