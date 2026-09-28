@@ -22747,12 +22747,14 @@ function NewsArticlePage({slug,onNavigate}){
 // ═══════════════════════════════════════════
 // CASTING ACROSS EVERY FORMAT — premium video-card carousel
 // Real production footage (Pexels + Coverr · free commercial license · no AI),
-// pre-cropped 3:4 clips served from /video-formats/reel2/. Slow auto-slide (never
+// pre-cropped 3:4 clips served from /video-formats/reel3/. Slow auto-slide (never
 // pauses on hover); every clip autoplays muted/looping from page load.
 // reel2 (2026-09-25): Feature Films / Theater / Student Films use the full-length
 // Pexels originals (8089117 37s, 9419426 22s, 9810800 18s) instead of 8s trims;
 // Theater, Student, Commercials, Voiceover, Indie and Modeling are stabilized
 // (ffmpeg vidstab, smoothing 40). Modeling is the owner-supplied 30s clip.
+// reel3 (2026-09-28): same clips, but each file's last 0.5-0.75s crossfades
+// into its opening frames, so the native loop restart is seamless, not a cut.
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
@@ -22886,7 +22888,7 @@ function FormatReel(){
     return function(){ offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
-  // Clips live in /video-formats/reel2/ (was loop/): pre-cropped to
+  // Clips live in /video-formats/reel3/ (was reel2/, loop/): pre-cropped to
   // the card's 3:4 frame at full source resolution. The old files were the same
   // 8s shot repeated to 60s at 16:9 (25MB total, most of it cropped away).
   // New folder = new URLs, so nobody is served the old immutable-cached files.
@@ -22894,9 +22896,9 @@ function FormatReel(){
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
         <div className="fmt-track">
-          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel2/'+c.file+'.mp4'; return (
+          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel3/'+c.file+'.mp4'; return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
-              <img className="fmt-poster" src={'/video-formats/reel2/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+              <img className="fmt-poster" src={'/video-formats/reel3/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
               <video className="fmt-video" src={first?url:undefined} data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
@@ -23351,7 +23353,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <BufferedLoopVideo src="/assets/video/casting-director-set-v2.mp4" poster="/assets/video/casting-director-set-poster-v2.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <BufferedLoopVideo src="/assets/video/casting-director-set-v3.mp4" poster="/assets/video/casting-director-set-poster-v3.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
