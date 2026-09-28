@@ -17,7 +17,6 @@ const SUPABASE_ANON_KEY =
   "sb_publishable_J8nl68IlCex_G9sjNQX1kQ_vsb7AzNc";
 
 const ORIGIN = "https://www.castslate.com";
-const DEFAULT_IMAGE = `${ORIGIN}/og-image.png`;
 
 function escapeAttr(str) {
   return String(str == null ? "" : str)
@@ -68,14 +67,17 @@ async function fetchCasting(slug) {
   return Array.isArray(rows) && rows.length ? rows[0] : null;
 }
 
-function castingImage(c) {
+// The casting's own photo when it has one; otherwise a card generated for this
+// casting by api/casting-card.js (title, type, pay, roles). Most castings have
+// no photo, and a feed of identical logo cards was the old fallback.
+function castingImage(c, slug) {
   if (c.casting_image_url) return c.casting_image_url;
   if (Array.isArray(c.casting_images) && c.casting_images.length) {
     const first = c.casting_images[0];
     if (typeof first === "string") return first;
     if (first && first.url) return first.url;
   }
-  return DEFAULT_IMAGE;
+  return `${ORIGIN}/api/casting-card?slug=${encodeURIComponent(slug)}`;
 }
 
 function injectMeta(html, c, slug) {
@@ -85,9 +87,10 @@ function injectMeta(html, c, slug) {
     c.synopsis ||
     `${c.title}${c.prod ? ` by ${c.prod}` : ""}${c.location ? ` — ${c.location}` : ""}. Apply free on CastSlate.`;
   const desc = truncate(descSource, 200);
-  const image = castingImage(c);
+  const image = castingImage(c, slug);
   const pageUrl = `${ORIGIN}/casting/${encodeURIComponent(slug)}`;
-  const usingCastingImage = image !== DEFAULT_IMAGE;
+  // Generated cards are exactly 1200x630, so the shell's dimension tags stay.
+  const usingCastingImage = !image.startsWith(`${ORIGIN}/api/casting-card`);
 
   const T = escapeAttr(title);
   const D = escapeAttr(desc);

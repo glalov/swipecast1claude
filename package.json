@@ -2,5 +2,8 @@
   "name": "castslate",
   "version": "0.1.0",
   "private": true,
-  "description": "CastSlate — casting platform where every headshot gets seen."
+  "description": "CastSlate \u2014 casting platform where every headshot gets seen.",
+  "dependencies": {
+    "@vercel/og": "0.8.5"
+  }
 }

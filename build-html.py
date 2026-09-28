@@ -306,15 +306,15 @@ def render_page(title, desc, canonical, extra_preload=""):
   <meta property="og:title" content="{title}"/>
   <meta property="og:description" content="{desc}"/>
   <meta property="og:url" content="{canonical}"/>
-  <meta property="og:image" content="https://www.castslate.com/og-image.png"/>
+  <meta property="og:image" content="https://www.castslate.com/og-card.png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:image:alt" content="CastSlate — Casting, finally built for actors"/>
+  <meta property="og:image:alt" content="CastSlate — Open casting calls for actors"/>
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="{title}"/>
   <meta name="twitter:description" content="{desc}"/>
-  <meta name="twitter:image" content="https://www.castslate.com/og-image.png"/>
+  <meta name="twitter:image" content="https://www.castslate.com/og-card.png"/>
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico?v=6" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=6"/>

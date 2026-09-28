@@ -79,15 +79,15 @@
   <meta property="og:title" content="Talent Agency & Management Directory — 650+ Agencies in LA & NYC"/>
   <meta property="og:description" content="CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."/>
   <meta property="og:url" content="https://www.castslate.com/agency-directory"/>
-  <meta property="og:image" content="https://www.castslate.com/og-image.png"/>
+  <meta property="og:image" content="https://www.castslate.com/og-card.png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:image:alt" content="CastSlate — Casting, finally built for actors"/>
+  <meta property="og:image:alt" content="CastSlate — Open casting calls for actors"/>
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Talent Agency & Management Directory — 650+ Agencies in LA & NYC"/>
   <meta name="twitter:description" content="CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."/>
-  <meta name="twitter:image" content="https://www.castslate.com/og-image.png"/>
+  <meta name="twitter:image" content="https://www.castslate.com/og-card.png"/>
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico?v=6" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=6"/>
@@ -125,7 +125,7 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260928-011335"/>
+  <link rel="preload" as="script" href="/app.js?v=20260928-014135"/>
   <link rel="preload" as="image" href="/logos/warner.svg"/>
   <link rel="preload" as="image" href="/logos/universal.svg"/>
   <link rel="preload" as="image" href="/logos/disney.svg"/>
@@ -134,15 +134,15 @@
   <link rel="preload" as="image" href="/logos/marvel.svg"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260928-011335 -->
-  <meta name="build-version" content="20260928-011335"/>
+  <!-- BUILD: 20260928-014135 -->
+  <meta name="build-version" content="20260928-014135"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260928-011335";
+        var B="20260928-014135";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -580,7 +580,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260928-011335"
+        "/app.js?v=20260928-014135"
       ];
       function step(){
         var it=STEPS.shift();
@@ -621,7 +621,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260928-011335';
+      s.src='/castoria.js?v=20260928-014135';
       s.async=true;
       document.body.appendChild(s);
     }

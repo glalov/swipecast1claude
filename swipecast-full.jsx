@@ -3411,6 +3411,23 @@ body.sheet-push .b2t-cube{display:none;}
    Replaced a five-block stack (apply card / facts grid / At a Glance /
    Where & When) that carried four borders, three heading styles, and stated
    the deadline twice - once as a countdown, once as a date. */
+/* Share on Facebook / X (Actors Access style): small brand tiles at the right
+   end of the Save / Send row on desktop; on phones they drop to their own row
+   as two full-width labelled buttons, easier to hit with a thumb. */
+.cs-share{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--t2);font-weight:500;}
+.cs-share-btn{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  color:#fff;text-decoration:none;font-size:13px;font-weight:700;transition:transform .15s ease,filter .15s ease;}
+.cs-share-btn:hover{transform:translateY(-1px);filter:brightness(1.08);}
+.cs-share-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.cs-share-btn.fb{background:#1877F2;}
+.cs-share-btn.x{background:#000;}
+.cs-share-lbl{display:none;}
+@media (max-width:900px){
+  .cs-share{margin-left:0;width:100%;gap:8px;padding-bottom:6px;}
+  .cs-share-pre{display:none;}
+  .cs-share-btn{flex:1;width:auto;height:40px;border-radius:999px;}
+  .cs-share-lbl{display:inline;}
+}
 .cd-deadline-row{display:flex;justify-content:flex-end;margin:0 0 10px;}
 .cd-deadline{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
   letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
@@ -12520,6 +12537,33 @@ Free submission used
               </button>}
             </div>}
           </div>
+          {isDbCasting&&casting?.slug&&(()=>{
+            // Facebook builds the post from the page's OG tags (api/casting-og.js:
+            // the casting's photo, or its generated card); X gets text + link.
+            // Logged-out X users log in first and land back on this compose box.
+            const roleCt=(c.roles||[]).length;
+            const xText=`NOW CASTING: ${c.title}${c.type?` (${c.type})`:""}${roleCt>1?` — ${roleCt} roles open`:""}. Apply on CastSlate 👇`;
+            const fbHref=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(castingUrl)}`;
+            const xHref=`https://x.com/intent/post?text=${encodeURIComponent(xText)}&url=${encodeURIComponent(castingUrl)}`;
+            const openShare=(e,href)=>{
+              e.preventDefault();
+              const w=600,h=560,l=Math.max(0,(window.screen.width-w)/2),t=Math.max(0,(window.screen.height-h)/2);
+              const win=window.open(href,"cs-share",`width=${w},height=${h},left=${l},top=${t}`);
+              if(!win)window.location.href=href;
+            };
+            return(
+              <span className="cs-share">
+                <span className="cs-share-pre">Share:</span>
+                <a className="cs-share-btn fb" href={fbHref} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" onClick={e=>openShare(e,fbHref)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 8.5V6.6c0-.9.6-1.1 1-1.1h2.6V1.6L14 1.5c-4 0-4.9 3-4.9 4.9v2.1H6.8v4h2.3V22.5H14V12.5h3.3l.4-4z"/></svg>
+                  <span className="cs-share-lbl">Share</span>
+                </a>
+                <a className="cs-share-btn x" href={xHref} target="_blank" rel="noopener noreferrer" aria-label="Post on X" onClick={e=>openShare(e,xHref)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 1.5h3.7l-8 9.2 9.4 12.4h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.8L0 1.5h7.6l5.2 6.9 6.1-6.9zm-1.3 19.4h2L6.5 3.6H4.3l13.3 17.3z"/></svg>
+                  <span className="cs-share-lbl">Post</span>
+                </a>
+              </span>);
+          })()}
         </div>
       );
     })()}
