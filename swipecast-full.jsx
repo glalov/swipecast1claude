@@ -12549,15 +12549,16 @@ Free submission used
             const xText=`NOW CASTING: ${c.title}${c.type?` (${c.type})`:""}${roleCt>1?` — ${roleCt} roles open`:""}. Apply on CastSlate 👇`;
             const fbHref=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(castingUrl)}`;
             const xHref=`https://x.com/intent/post?text=${encodeURIComponent(xText)}&url=${encodeURIComponent(castingUrl)}`;
-            // Desktop: centred pop-up like Actors Access. Phones/tablets: no
-            // pop-up at all - let the link open normally (new tab, or the
-            // Facebook / X app via universal links). iOS ignores pop-up sizes
-            // and can silently reuse a named background tab, so the pop-up
-            // path looked like "nothing happens" on phones (2026-09-28).
+            // Desktop: centred pop-up like Actors Access. Phones/tablets: go to
+            // Facebook / X in THIS tab (Back returns to the casting). Pop-ups
+            // and even target=_blank new tabs did nothing on the owner's phone
+            // (2026-09-28): in-app browsers and home-screen web apps often
+            // refuse new tabs, but a same-tab navigation always goes through,
+            // and hands off to the Facebook / X app when it is installed.
             const openShare=(e,href)=>{
-              const touch=window.matchMedia&&window.matchMedia("(hover: none), (pointer: coarse)").matches;
-              if(touch)return;
               e.preventDefault();
+              const touch=window.matchMedia&&window.matchMedia("(hover: none), (pointer: coarse)").matches;
+              if(touch){window.location.assign(href);return;}
               const w=600,h=560,l=Math.max(0,(window.screen.width-w)/2),t=Math.max(0,(window.screen.height-h)/2);
               const win=window.open(href,"_blank",`width=${w},height=${h},left=${l},top=${t}`);
               if(!win)window.location.href=href;
