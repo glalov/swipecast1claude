@@ -3412,21 +3412,25 @@ body.sheet-push .b2t-cube{display:none;}
    Where & When) that carried four borders, three heading styles, and stated
    the deadline twice - once as a countdown, once as a date. */
 /* Share on Facebook / X (Actors Access style): small brand tiles at the right
-   end of the Save / Send row on desktop; on phones they drop to their own row
-   as two full-width labelled buttons, easier to hit with a thumb. */
+   end of the Save / Send row. Phones keep the same tiles (owner's pick "A",
+   2026-09-28; full-width pills were too big), a touch smaller with a tighter
+   row so they fit beside Save / Send down to ~360px; narrower than that the
+   row wraps and they sit on their own line. */
 .cs-share{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--t2);font-weight:500;}
 .cs-share-btn{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;gap:7px;
   color:#fff;text-decoration:none;font-size:13px;font-weight:700;transition:transform .15s ease,filter .15s ease;}
 .cs-share-btn:hover{transform:translateY(-1px);filter:brightness(1.08);}
 .cs-share-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.cs-share-btn{position:relative;}
 .cs-share-btn.fb{background:#1877F2;}
 .cs-share-btn.x{background:#000;}
 .cs-share-lbl{display:none;}
 @media (max-width:900px){
-  .cs-share{margin-left:0;width:100%;gap:8px;padding-bottom:6px;}
+  .cs-actrow{gap:12px!important;}
+  .cs-share{gap:6px;}
   .cs-share-pre{display:none;}
-  .cs-share-btn{flex:1;width:auto;height:40px;border-radius:999px;}
-  .cs-share-lbl{display:inline;}
+  .cs-share-btn{width:28px;height:28px;}
+  .cs-share-btn::after{content:"";position:absolute;inset:-8px 0;}
 }
 .cd-deadline-row{display:flex;justify-content:flex-end;margin:0 0 10px;}
 .cd-deadline{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
@@ -12497,7 +12501,7 @@ Free submission used
       if(roleNames.length>0)emailBody+=`\n\nROLES: ${roleNames.join(", ")}`;
       const mailtoHref=`mailto:?subject=${encodeURIComponent(c.title)}&body=${encodeURIComponent(emailBody)}`;
       return(
-        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:6,flexWrap:"wrap"}}>
+        <div className="cs-actrow" style={{display:"flex",alignItems:"center",gap:16,marginBottom:6,flexWrap:"wrap"}}>
           {isDbCasting&&<button
             disabled={savingCasting}
             onClick={handleToggleSave}
