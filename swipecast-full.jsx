@@ -12555,9 +12555,21 @@ Free submission used
             // (2026-09-28): in-app browsers and home-screen web apps often
             // refuse new tabs, but a same-tab navigation always goes through,
             // and hands off to the Facebook / X app when it is installed.
-            const openShare=(e,href)=>{
+            // Facebook on phones: the Facebook app (and m.facebook) ignore
+            // sharer.php links - they just open the feed. The phone's own share
+            // sheet is the reliable path: pick Facebook and its composer opens
+            // with the casting card attached. Owner approved 2026-09-28.
+            // Browsers without navigator.share fall back to the sharer link.
+            const shareFacebookTouch=(e)=>{
+              if(!navigator.share)return false;
+              e.preventDefault();
+              navigator.share({title:c.title,url:castingUrl}).catch(()=>{});
+              return true;
+            };
+            const openShare=(e,href,net)=>{
               e.preventDefault();
               const touch=window.matchMedia&&window.matchMedia("(hover: none), (pointer: coarse)").matches;
+              if(touch&&net==="fb"&&shareFacebookTouch(e))return;
               if(touch){window.location.assign(href);return;}
               const w=600,h=560,l=Math.max(0,(window.screen.width-w)/2),t=Math.max(0,(window.screen.height-h)/2);
               const win=window.open(href,"_blank",`width=${w},height=${h},left=${l},top=${t}`);
@@ -12566,11 +12578,11 @@ Free submission used
             return(
               <span className="cs-share">
                 <span className="cs-share-pre">Share:</span>
-                <a className="cs-share-btn fb" href={fbHref} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" onClick={e=>openShare(e,fbHref)}>
+                <a className="cs-share-btn fb" href={fbHref} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" onClick={e=>openShare(e,fbHref,"fb")}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 8.5V6.6c0-.9.6-1.1 1-1.1h2.6V1.6L14 1.5c-4 0-4.9 3-4.9 4.9v2.1H6.8v4h2.3V22.5H14V12.5h3.3l.4-4z"/></svg>
                   <span className="cs-share-lbl">Share</span>
                 </a>
-                <a className="cs-share-btn x" href={xHref} target="_blank" rel="noopener noreferrer" aria-label="Post on X" onClick={e=>openShare(e,xHref)}>
+                <a className="cs-share-btn x" href={xHref} target="_blank" rel="noopener noreferrer" aria-label="Post on X" onClick={e=>openShare(e,xHref,"x")}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 1.5h3.7l-8 9.2 9.4 12.4h-7.4l-5.8-7.6-6.6 7.6H.5l8.6-9.8L0 1.5h7.6l5.2 6.9 6.1-6.9zm-1.3 19.4h2L6.5 3.6H4.3l13.3 17.3z"/></svg>
                   <span className="cs-share-lbl">Post</span>
                 </a>
