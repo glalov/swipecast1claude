@@ -35,7 +35,7 @@
   ],
   "functions": {
     "api/casting-og.js": { "includeFiles": "index.html" },
-    "api/casting-card.js": { "includeFiles": "api/_fonts/**" }
+    "api/casting-card.js": { "includeFiles": "api/{_fonts,_vendor}/**" }
   },
   "headers": [
     {
