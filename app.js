@@ -1183,7 +1183,7 @@ body.sheet-push .b2t-cube{display:none;}
 }
 /* Phone-only Facebook preview sheet: shows the exact card before handing the
    link to the share sheet, because Facebook's Feed composer shows a blank box. */
-body.fbsp-open #castoria-root{visibility:hidden;}
+body.fbsp-open #castoria-root{display:none!important;}
 .fbsp-dim{position:fixed;inset:0;background:rgba(26,26,46,.45);z-index:10050;animation:fbspFade .25s ease;}
 .fbsp{position:fixed;left:0;right:0;bottom:0;z-index:10051;background:var(--s1);border-radius:20px 20px 0 0;
   padding:10px 16px calc(18px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto;
