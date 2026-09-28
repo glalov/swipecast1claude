@@ -12549,10 +12549,17 @@ Free submission used
             const xText=`NOW CASTING: ${c.title}${c.type?` (${c.type})`:""}${roleCt>1?` — ${roleCt} roles open`:""}. Apply on CastSlate 👇`;
             const fbHref=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(castingUrl)}`;
             const xHref=`https://x.com/intent/post?text=${encodeURIComponent(xText)}&url=${encodeURIComponent(castingUrl)}`;
+            // Desktop: centred pop-up like Actors Access. Phones/tablets: no
+            // pop-up at all - let the link open normally (new tab, or the
+            // Facebook / X app via universal links). iOS ignores pop-up sizes
+            // and can silently reuse a named background tab, so the pop-up
+            // path looked like "nothing happens" on phones (2026-09-28).
             const openShare=(e,href)=>{
+              const touch=window.matchMedia&&window.matchMedia("(hover: none), (pointer: coarse)").matches;
+              if(touch)return;
               e.preventDefault();
               const w=600,h=560,l=Math.max(0,(window.screen.width-w)/2),t=Math.max(0,(window.screen.height-h)/2);
-              const win=window.open(href,"cs-share",`width=${w},height=${h},left=${l},top=${t}`);
+              const win=window.open(href,"_blank",`width=${w},height=${h},left=${l},top=${t}`);
               if(!win)window.location.href=href;
             };
             return(
