@@ -128,6 +128,10 @@ function injectMeta(html, c, slug) {
       `<meta property="og:image" content="${IMG}"/>`
     )
     .replace(
+      /<meta\s+property="og:image:secure_url"\s+content="[^"]*"\s*\/?>/i,
+      `<meta property="og:image:secure_url" content="${IMG}"/>`
+    )
+    .replace(
       /<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/?>/i,
       `<meta property="og:image:alt" content="${ALT}"/>`
     )
@@ -153,7 +157,9 @@ function injectMeta(html, c, slug) {
   if (usingCastingImage) {
     out = out
       .replace(/\s*<meta\s+property="og:image:width"\s+content="[^"]*"\s*\/?>/i, "")
-      .replace(/\s*<meta\s+property="og:image:height"\s+content="[^"]*"\s*\/?>/i, "");
+      .replace(/\s*<meta\s+property="og:image:height"\s+content="[^"]*"\s*\/?>/i, "")
+      // A casting photo may be JPEG/WebP; the shell's type tag says PNG.
+      .replace(/\s*<meta\s+property="og:image:type"\s+content="[^"]*"\s*\/?>/i, "");
   }
 
   return out;

@@ -307,6 +307,8 @@ def render_page(title, desc, canonical, extra_preload=""):
   <meta property="og:description" content="{desc}"/>
   <meta property="og:url" content="{canonical}"/>
   <meta property="og:image" content="https://www.castslate.com/og-card.png"/>
+  <meta property="og:image:secure_url" content="https://www.castslate.com/og-card.png"/>
+  <meta property="og:image:type" content="image/png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
   <meta property="og:image:alt" content="CastSlate — Open casting calls for actors"/>

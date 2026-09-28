@@ -80,6 +80,8 @@
   <meta property="og:description" content="CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."/>
   <meta property="og:url" content="https://www.castslate.com/manager-mode"/>
   <meta property="og:image" content="https://www.castslate.com/og-card.png"/>
+  <meta property="og:image:secure_url" content="https://www.castslate.com/og-card.png"/>
+  <meta property="og:image:type" content="image/png"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
   <meta property="og:image:alt" content="CastSlate — Open casting calls for actors"/>
@@ -125,18 +127,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20260928-045146"/>
+  <link rel="preload" as="script" href="/app.js?v=20260928-045732"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20260928-045146 -->
-  <meta name="build-version" content="20260928-045146"/>
+  <!-- BUILD: 20260928-045732 -->
+  <meta name="build-version" content="20260928-045732"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20260928-045146";
+        var B="20260928-045732";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -574,7 +576,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20260928-045146"
+        "/app.js?v=20260928-045732"
       ];
       function step(){
         var it=STEPS.shift();
@@ -615,7 +617,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20260928-045146';
+      s.src='/castoria.js?v=20260928-045732';
       s.async=true;
       document.body.appendChild(s);
     }
