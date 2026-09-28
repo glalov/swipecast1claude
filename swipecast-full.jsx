@@ -20671,6 +20671,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   const bodyRef=useRef(null);
   const [out,setOut]=useState(null);
   const [firstMode]=useState(()=>done?"done":startMode);
+  const [entryCls]=useState(()=>enterFromSide?"gm-s-in":"gm-rise"); // fixed at mount — changing it later replays an entrance (the blink)
   const goMode=(next)=>{setOut({body:bodyRef.current,key:"o"+Date.now()});setMode(next);setTimeout(()=>setOut(null),380);};
   const seed=profileStatsFields(myProfile||{});
   const [mode,setMode]=useState(done?"done":startMode);
@@ -20679,6 +20680,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   const [max,setMax]=useState(String(seed.age_play_max||""));
   const [height,setHeight]=useState(myProfile?.height||"");
   const [busy,setBusy]=useState(false);
+  const [busyLabel,setBusyLabel]=useState("Saving…");
   const [err,setErr]=useState("");
   const [prof,setProf]=useState(myProfile);
   const [matches,setMatches]=useState(null);
@@ -20686,10 +20688,11 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   const [opening,setOpening]=useState(null); // casting id whose apply form is loading
   useEffect(()=>{if(done)setMode("done");},[done]);
   useEffect(()=>{
-    if(mode!=="matches"||!prof||!uid)return;
-    let alive=true;setMatches(null);
-    const t0=Date.now(),after=(fn)=>setTimeout(fn,Math.max(0,400-(Date.now()-t0))); // don't swap content mid-slide
-    gmFindMatches(prof,uid).then(m=>after(()=>{if(alive)setMatches(m);})).catch(()=>after(()=>{if(alive)setMatches([]);}));
+    // Only when the popup OPENS on the matches step; from Step 1 the matches are
+    // fetched before the slide (saveBasics) so the card never grows after arriving.
+    if(mode!=="matches"||!prof||!uid||matches!==null)return;
+    let alive=true;
+    gmFindMatches(prof,uid).then(m=>{if(alive)setMatches(m);}).catch(()=>{if(alive)setMatches([]);});
     return()=>{alive=false;};
   },[mode,prof,uid]);
   useEffect(()=>{
@@ -20702,7 +20705,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   const ready=auth.length>0&&lo>0&&hi>=lo&&hi<=99&&!!height;
   const saveBasics=async()=>{
     if(!ready||busy||!uid)return;
-    setBusy(true);setErr("");
+    setBusy(true);setErr("");setBusyLabel("Saving…");
     try{
       const {data,error}=await window.sb.from("profiles")
         .update({authentic_genders:auth,age_play_min:lo,age_play_max:hi,height})
@@ -20710,9 +20713,14 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
         .select("id,gender,location,height,authentic_genders,open_to_role_genders,age_play_min,age_play_max,age_range,membership_status")
         .single();
       if(error)throw error;
-      setProf(p=>({...(p||{}),...data}));
+      const merged={...(prof||{}),...data};
+      setProf(merged);
       onSaved&&onSaved();
-      if(showMatches)goMode("matches");else onClose();
+      if(showMatches){
+        setBusyLabel("Finding your matches…");
+        let m=[];try{m=await gmFindMatches(merged,uid);}catch(_){}
+        setMatches(m);goMode("matches");
+      }else onClose();
     }catch(e){setErr((e&&e.message)||"That didn't save. Please try again.");}
     finally{setBusy(false);}
   };
@@ -20764,7 +20772,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
           <select className="select" style={{width:"100%"}} value={height} onChange={e=>setHeight(e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div>
       </div>
       {err&&<div style={{background:"rgba(214,59,59,0.09)",color:"#B03030",padding:"10px 13px",borderRadius:9,fontSize:12.5,marginBottom:12}}>{err}</div>}
-      <button type="button" style={{...GM_GOLD,width:"100%",opacity:ready&&!busy?1:.45,cursor:ready&&!busy?"pointer":"not-allowed"}} disabled={!ready||busy} onClick={saveBasics}>{busy?"Saving…":<>{showMatches?"Show my matches":"Save"} <Tri/></>}</button>
+      <button type="button" style={{...GM_GOLD,width:"100%",opacity:ready&&!busy?1:.45,cursor:ready&&!busy?"pointer":"not-allowed"}} disabled={!ready||busy} onClick={saveBasics}>{busy?busyLabel:<>{showMatches?"Show my matches":"Save"} <Tri/></>}</button>
       <div style={{textAlign:"center",marginTop:8,fontSize:12,color:"var(--t3)",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><Ico n="device-floppy" s={13}/>Saved to your profile automatically</div>
       <Link onClick={onSkip}>Skip for now</Link>
     </>;
@@ -20814,6 +20822,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
       <Link onClick={()=>{onClose();onNavigate&&onNavigate("dashboard");}}>Go to my dashboard</Link>
     </>;
   }
+  if(mode==="matches"&&matches===null&&firstMode==="matches"&&!out)return null;
   bodyRef.current=body;
   const card=(content,cls,key)=>(<div key={key} className={"modal "+cls} style={{maxWidth:540,width:"100%",padding:"26px 24px 22px",position:"relative",overflow:"hidden",isolation:"isolate",gridArea:"1 / 1"}}>
       <div aria-hidden="true" style={{position:"absolute",right:-34,top:96,lineHeight:0,pointerEvents:"none",transform:"rotate(-6deg)",opacity:.1,zIndex:0}}><MasksMark/></div>
@@ -20821,7 +20830,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
     </div>);
   // `clear`: while another popup underneath is still leaving/arriving, this overlay adds
   // no tint or blur of its own (two stacked backdrops would flash darker).
-  const enterCls=mode===firstMode?(enterFromSide?"gm-s-in":"gm-rise"):"gm-s-in";
+  const enterCls=mode===firstMode?entryCls:"gm-s-in";
   return(<BodyPortal><div className={"modal-overlay gm-ov"+(clear?" gm-clear":"")} style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
     <div style={{display:"grid",width:"100%",maxWidth:540,margin:"auto"}}>
       {out&&card(out.body,"gm-s-out",out.key)}
@@ -49745,7 +49754,11 @@ function App(){
     const p=myProfile||{};
     const needBasics=!gmBasicsDone(p);
     const canMatch=gmAppCount==null||gmAppCount===0||p.membership_status==="active";
-    if(p.user_type==="talent"&&gmAllowedHere&&!gmSkippedToday&&!gmOff&&(needBasics||canMatch)){
+    if(p.user_type==="talent"&&gmAllowedHere&&!gmSkippedToday&&!gmOff&&!needBasics&&canMatch){
+      // Basics already done → the popup opens on the matches, which load first; no card
+      // to slide in yet, so close the photo step normally and let the popup rise in.
+      setHeadshotStepOff(true);setGmPhotoUrl(url||"");setGmOpen({mode:"matches",showMatches:true});
+    }else if(p.user_type==="talent"&&gmAllowedHere&&!gmSkippedToday&&!gmOff&&needBasics){
       setGmPhotoUrl(url||"");
       setGmOpen({mode:needBasics?"basics":"matches",showMatches:canMatch});
       setGmEnter(true);setGmClear(true);setHsLeaving(true);
