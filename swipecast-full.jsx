@@ -2487,6 +2487,20 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .credit-row{display:grid;grid-template-columns:70px minmax(180px,1.2fr) minmax(120px,.8fr) minmax(200px,1fr);column-gap:28px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr);}
 .credit-row:last-child{border-bottom:none;}
 .age-box{border:1px dashed var(--bdr);border-radius:12px;padding:14px;}
+/* Get-matched slides (2026-09-27, owner picked "Slide" in the demo): the old card
+   leaves to the left while the next arrives from the right, together — the screen is
+   never empty, so nothing reads as a blink. transform-only, ~360ms. */
+.gm-rise{animation:gmRise .32s cubic-bezier(.22,.8,.3,1) both;}
+.gm-s-in{animation:gmSIn .36s cubic-bezier(.22,.8,.3,1) both;}
+.gm-s-out{animation:gmSOut .36s cubic-bezier(.22,.8,.3,1) both;pointer-events:none;}
+.gm-fill{animation:gmFill .45s cubic-bezier(.22,.8,.3,1) .15s both;transform-origin:left;}
+.gm-pop{animation:gmPop .42s cubic-bezier(.3,1.6,.5,1) .2s both;}
+@keyframes gmRise{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes gmSIn{from{transform:translateX(calc(50vw + 320px))}to{transform:none}}
+@keyframes gmSOut{to{transform:translateX(calc(-50vw - 320px))}}
+@keyframes gmFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes gmPop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.gm-rise,.gm-s-in,.gm-s-out,.gm-fill,.gm-pop{animation:none!important}}
 .gm-spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(26,26,46,.25);border-top-color:#1A1A2E;border-radius:50%;animation:gm-spin .8s linear infinite;}
 @keyframes gm-spin{to{transform:rotate(360deg)}}
 .age-box-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;}
@@ -12041,6 +12055,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // "Back to castings" told the reader the button did something it does not.
   const backLabel=t(backKey||'casting.back');
   const [applyRole,setApplyRole]=useState(null);
+  const [applySlideIn,setApplySlideIn]=useState(false);  // arrived from the get-matched popup
+  const [applyLeaving,setApplyLeaving]=useState(false);  // sliding out to the flow's last step
   const [roleBriefOpen,setRoleBriefOpen]=useState(false);
   useEffect(()=>{setRoleBriefOpen(false);},[applyRole?.name]);
   // Roles render as the Ledger Unfold up to ROLE_BOARD_MIN-1, and as the Casting
@@ -12195,6 +12211,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setAuditionRole({role:{...r,idx:i},roleId,instr});
       return;
     }
+    {let slide=false;try{slide=!!window.__csSlideApply;window.__csSlideApply=false;}catch(_){}setApplySlideIn(slide);setApplyLeaving(false);}
     setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
   };
   useEffect(()=>{
@@ -12368,7 +12385,12 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setApplied(p=>new Set([...p,applyRole.idx]));
       setUsedCount(n=>n+1);
       setApplyOk(true);
-      setTimeout(()=>{setApplyRole(null);setApplyOk(false);},2500); // long enough to read the confirmation
+      {let flow=false;try{flow=!!window.__csFlowAwait;}catch(_){}
+        if(flow){
+          setTimeout(()=>{setApplyLeaving(true);try{window.dispatchEvent(new CustomEvent("sc:apply-leaving"));}catch(_){}},2130);
+          setTimeout(()=>{setApplyRole(null);setApplyOk(false);setApplyLeaving(false);try{window.dispatchEvent(new CustomEvent("sc:apply-closed"));}catch(_){}},2500);
+        }else setTimeout(()=>{setApplyRole(null);setApplyOk(false);},2500); // long enough to read the confirmation
+      }
     }catch(e){
       console.warn("[apply] threw:",e?.message||e);
       const raw=(e?.message||"").toLowerCase();
@@ -12918,7 +12940,7 @@ Free submission used
       const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
       const allowUpload=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="upload");
       return(
-      <BodyPortal><div className="modal-overlay" onClick={()=>!submitting&&setApplyRole(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
+      <BodyPortal><div className="modal-overlay" style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
             <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
@@ -20429,7 +20451,7 @@ function CompanyStep({uid,displayName,initialRole,onSaved,onCancel}){
   </div>);
 }
 
-function HeadshotStep({session,displayName,onSaved,onSkip}){
+function HeadshotStep({session,displayName,onSaved,onSkip,leaving}){
   const [pick,setPick]=useState(null);   // File|Blob passed to ImageCropModal
   const [cam,setCam]=useState(false);
   const [busy,setBusy]=useState(false);
@@ -20480,8 +20502,8 @@ function HeadshotStep({session,displayName,onSaved,onSkip}){
   return(<>
     {/* Hidden outright while cropping — ImageCropModal is its own .modal-overlay at
         a lower z-index, so leaving this mounted would bury it. */}
-    {!pick&&<div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
-      <div className="modal" style={{maxWidth:430,padding:"28px 26px",margin:"auto",textAlign:"center"}}>
+    {!pick&&<div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",overflowX:"hidden",alignItems:"flex-start"}}>
+      <div className={"modal"+(leaving?" gm-s-out":"")} style={{maxWidth:430,padding:"28px 26px",margin:"auto",textAlign:"center"}}>
         <div style={{fontSize:10.5,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--amber-dk)",marginBottom:10}}>Last step</div>
         <h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.8,margin:"0 0 8px"}}>
           {first?`Add your headshot, ${first}`:"Add your headshot"}
@@ -20636,8 +20658,13 @@ async function gmFindMatches(prof,uid){
   out.open.sort((a,b)=>b.score-a.score);
   return [...out.exact,...out.close,...out.open].slice(0,3);
 }
-function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply,onSkip,onClose,onNavigate,done}){
+function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply,onSkip,onClose,onNavigate,done,enterFromSide,clear,leaving,photoUrl}){
   const uid=session?.user?.id;
+  // Slides: `out` holds the previous step's content while it slides away.
+  const bodyRef=useRef(null);
+  const [out,setOut]=useState(null);
+  const [firstMode]=useState(()=>done?"done":startMode);
+  const goMode=(next)=>{setOut({body:bodyRef.current,key:"o"+Date.now()});setMode(next);setTimeout(()=>setOut(null),380);};
   const seed=profileStatsFields(myProfile||{});
   const [mode,setMode]=useState(done?"done":startMode);
   const [auth,setAuth]=useState(seed.authentic_genders||[]);
@@ -20677,7 +20704,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
       if(error)throw error;
       setProf(p=>({...(p||{}),...data}));
       onSaved&&onSaved();
-      if(showMatches)setMode("matches");else onClose();
+      if(showMatches)goMode("matches");else onClose();
     }catch(e){setErr((e&&e.message)||"That didn't save. Please try again.");}
     finally{setBusy(false);}
   };
@@ -20692,7 +20719,8 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
     {l:"More photos",ok:photosOk},
   ];
   const goProfile=()=>{onClose();onNavigate&&onNavigate("my-profile");};
-  const Dots=({n})=><div style={{display:"flex",gap:6,marginBottom:18}}>{[1,2,3].map(i=><i key={i} style={{height:4,flex:1,borderRadius:4,background:i<=n?"var(--teal)":"var(--s2)"}}/>)}</div>;
+  const Dots=({n})=><div style={{display:"flex",gap:6,marginBottom:18}}>{[1,2,3].map(i=><i key={i} style={{height:4,flex:1,borderRadius:4,background:"var(--s2)",overflow:"hidden",display:"block"}}>
+    {i<=n&&<b className={i===n?"gm-fill":""} style={{display:"block",height:"100%",background:"var(--teal)"}}/>}</i>)}</div>;
   const Kicker=({icon,children})=><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--teal-dk)",marginBottom:6,display:"flex",alignItems:"center",gap:6}}><Ico n={icon} s={14}/>{children}</div>;
   const H=({children})=><h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.6,margin:"0 0 6px",lineHeight:1.2}}>{children}</h2>;
   const Lead=({children})=><p style={{fontSize:14.5,color:"var(--t2)",margin:"0 0 20px",lineHeight:1.5}}>{children}</p>;
@@ -20711,8 +20739,8 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   if(mode==="basics"){
     body=<>
       <Dots n={1}/>
-      {p.headshot_url&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"rgba(42,132,114,.08)",borderRadius:10,marginBottom:18,fontSize:13.5,color:"var(--teal-dk)",fontWeight:600}}>
-        <img src={p.headshot_url} alt="" style={{width:40,height:50,objectFit:"cover",borderRadius:7}}/><span style={{display:"flex",alignItems:"center",gap:6}}><Ico n="circle-check" s={16}/>Headshot uploaded</span></div>}
+      {(p.headshot_url||photoUrl)&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"rgba(42,132,114,.08)",borderRadius:10,marginBottom:18,fontSize:13.5,color:"var(--teal-dk)",fontWeight:600}}>
+        <img src={p.headshot_url||photoUrl} alt="" style={{width:40,height:50,objectFit:"cover",borderRadius:7}}/><span style={{display:"flex",alignItems:"center",gap:6}}><Ico n="circle-check" s={16}/>Headshot uploaded</span></div>}
       <Kicker icon="target-arrow">Step 1 of 3 · 30 seconds</Kicker>
       <H>Now let's find roles you fit.</H>
       <Lead>Three quick answers and we'll show you the castings you're right for, right now.</Lead>
@@ -20769,7 +20797,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   }else{
     body=<>
       <Dots n={3}/>
-      <div style={{width:56,height:56,borderRadius:"50%",background:"var(--teal)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><Ico n="check" s={30}/></div>
+      <div className="gm-pop" style={{width:56,height:56,borderRadius:"50%",background:"var(--teal)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14}}><Ico n="check" s={30}/></div>
       <Kicker icon="circle-check">Step 3 of 3</Kicker>
       <H>Submitted{done?.roleName?` for ${niceRoleName(done.roleName)}`:""}!</H>
       <Lead>The casting director{done?.castingTitle?<> for <b style={{color:"var(--t1)"}}>{done.castingTitle}</b></>:""} reviews every submission. Make sure your profile is ready when they open it:</Lead>
@@ -20778,10 +20806,18 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
       <Link onClick={()=>{onClose();onNavigate&&onNavigate("dashboard");}}>Go to my dashboard</Link>
     </>;
   }
-  return(<BodyPortal><div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
-    <div className="modal" style={{maxWidth:540,width:"100%",padding:"26px 24px 22px",margin:"auto",position:"relative",overflow:"hidden",isolation:"isolate"}}>
+  bodyRef.current=body;
+  const card=(content,cls,key)=>(<div key={key} className={"modal "+cls} style={{maxWidth:540,width:"100%",padding:"26px 24px 22px",position:"relative",overflow:"hidden",isolation:"isolate",gridArea:"1 / 1"}}>
       <div aria-hidden="true" style={{position:"absolute",right:-34,top:96,lineHeight:0,pointerEvents:"none",transform:"rotate(-6deg)",opacity:.1,zIndex:0}}><MasksMark/></div>
-      <div style={{position:"relative",zIndex:1}}>{body}</div>
+      <div style={{position:"relative",zIndex:1}}>{content}</div>
+    </div>);
+  // `clear`: while another popup underneath is still leaving/arriving, this overlay adds
+  // no tint or blur of its own (two stacked backdrops would flash darker).
+  const enterCls=mode===firstMode?(enterFromSide?"gm-s-in":"gm-rise"):"gm-s-in";
+  return(<BodyPortal><div className="modal-overlay" style={{zIndex:400,padding:16,overflowY:"auto",overflowX:"hidden",alignItems:"flex-start",...(clear?{background:"transparent",backdropFilter:"none",WebkitBackdropFilter:"none"}:{})}}>
+    <div style={{display:"grid",width:"100%",maxWidth:540,margin:"auto"}}>
+      {out&&card(out.body,"gm-s-out",out.key)}
+      {card(body,leaving?"gm-s-out":enterCls,"step-"+mode)}
     </div>
   </div></BodyPortal>);
 }
@@ -49642,16 +49678,28 @@ function App(){
       .then(({count,error})=>{if(alive)setGmAppCount(error?null:(count||0));});
     return()=>{alive=false;};
   },[session?.user?.id,myProfile?.user_type]);
+  const gmDoneInfoRef=useRef(null);
   useEffect(()=>{
     const onApplied=(e)=>{
       setGmAppCount(n=>(n||0)+1);
       if(!gmAwait)return;
       const d=(e&&e.detail)||{};
       setGmAwait(false);
-      setTimeout(()=>setGmDone({castingTitle:d.castingTitle||"",roleName:d.roleName||""}),2600); // right after the apply confirmation (2.5s) closes
+      gmDoneInfoRef.current={castingTitle:d.castingTitle||"",roleName:d.roleName||""};
+      // Normal path: the apply confirmation fires sc:apply-leaving at ~2.1s and the last
+      // step slides in over it. Fallback (audition-sides modal has its own Done button):
+      setTimeout(()=>{if(gmDoneInfoRef.current){setGmDone(gmDoneInfoRef.current);gmDoneInfoRef.current=null;try{window.__csFlowAwait=false;}catch(_){}}},3000);
     };
+    const onLeaving=()=>{
+      if(!gmDoneInfoRef.current)return;
+      setGmEnter(true);setGmClear(true);setGmDone(gmDoneInfoRef.current);gmDoneInfoRef.current=null;
+      try{window.__csFlowAwait=false;}catch(_){}
+    };
+    const onClosed=()=>{setGmClear(false);setTimeout(()=>setGmEnter(false),60);};
     window.addEventListener("sc:applied",onApplied);
-    return()=>window.removeEventListener("sc:applied",onApplied);
+    window.addEventListener("sc:apply-leaving",onLeaving);
+    window.addEventListener("sc:apply-closed",onClosed);
+    return()=>{window.removeEventListener("sc:applied",onApplied);window.removeEventListener("sc:apply-leaving",onLeaving);window.removeEventListener("sc:apply-closed",onClosed);};
   },[gmAwait]);
   const gmBasicsMissing=!gmBasicsDone(myProfile);
   const gmIsPremium=myProfile?.membership_status==="active";
@@ -49677,14 +49725,41 @@ function App(){
   // (CastingDetailPage consumes pendingApply right before handleApply) — no blank
   // moment in between. An 8s cap closes it anyway if the form never opens.
   const [gmHandoff,setGmHandoff]=useState(false);
+  // Slide choreography (see .gm-s-in / .gm-s-out): which popup is entering/leaving and
+  // whether the top overlay should hold its tint back while one underneath is still up.
+  const [gmEnter,setGmEnter]=useState(false);
+  const [gmClear,setGmClear]=useState(false);
+  const [gmLeaving,setGmLeaving]=useState(false);
+  const [hsLeaving,setHsLeaving]=useState(false);
+  const [gmPhotoUrl,setGmPhotoUrl]=useState("");
+  const photoSaved=(url)=>{
+    const uid=session?.user?.id;loadProfile(uid);
+    const p=myProfile||{};
+    const needBasics=!gmBasicsDone(p);
+    const canMatch=gmAppCount==null||gmAppCount===0||p.membership_status==="active";
+    if(p.user_type==="talent"&&gmAllowedHere&&!gmSkippedToday&&!gmOff&&(needBasics||canMatch)){
+      setGmPhotoUrl(url||"");
+      setGmOpen({mode:needBasics?"basics":"matches",showMatches:canMatch});
+      setGmEnter(true);setGmClear(true);setHsLeaving(true);
+      setTimeout(()=>{setHeadshotStepOff(true);setHsLeaving(false);setGmClear(false);},370);
+      setTimeout(()=>setGmEnter(false),420);
+    }else setHeadshotStepOff(true);
+  };
   const closeGmHandoff=()=>{setGmHandoff(false);setGmOpen(null);setGmOff(true);};
-  useEffect(()=>{if(gmHandoff&&!pendingApply)closeGmHandoff();},[gmHandoff,pendingApply]);// eslint-disable-line
+  useEffect(()=>{
+    if(!gmHandoff||pendingApply)return;
+    // The apply form just opened underneath: slide this popup away over it.
+    setGmClear(true);setGmLeaving(true);
+    const t=setTimeout(()=>{closeGmHandoff();setGmLeaving(false);setGmClear(false);},370);
+    return()=>clearTimeout(t);
+  },[gmHandoff,pendingApply]);// eslint-disable-line
   useEffect(()=>{if(!gmHandoff)return;const t=setTimeout(closeGmHandoff,8000);return()=>clearTimeout(t);},[gmHandoff]);// eslint-disable-line
   const gmApply=async(c,r)=>{
-    setGmAwait(true);
+    setGmAwait(true);try{window.__csFlowAwait=true;}catch(_){}
     const full=await fetchFullCasting(c.id);
     if(!full){setGmAwait(false);setGmOpen(null);setGmOff(true);viewCastingById(c.id);return;}
     setGmHandoff(true);
+    try{window.__csSlideApply=true;}catch(_){}  // the apply form enters from the side
     setPendingApply({casting:full,role:{id:r.id,name:r.name}});
     setPrevPage(page);setViewingCasting(full);window.scrollTo(0,0);setPage("casting-detail");
     pushHist("casting-detail",{slug:full.slug||String(full.id)});
@@ -49942,10 +50017,11 @@ function App(){
       {showHeadshotStep&&<HeadshotStep
         session={session}
         displayName={myProfile?.display_name}
-        onSaved={()=>{setHeadshotStepOff(true);loadProfile(session?.user?.id);}}
+        onSaved={photoSaved}
         onSkip={dismissHeadshotStep}
+        leaving={hsLeaving}
       />}
-      {(gmOpen||gmDone)&&!showHeadshotStep&&<GetMatchedFlow
+      {(gmOpen||gmDone)&&(!showHeadshotStep||hsLeaving)&&<GetMatchedFlow
         key={gmDone?"done":"flow"}
         session={session}
         myProfile={myProfile}
@@ -49957,6 +50033,10 @@ function App(){
         onSkip={skipGm}
         onClose={closeGm}
         onNavigate={navigate}
+        enterFromSide={gmEnter}
+        clear={gmClear}
+        leaving={gmLeaving}
+        photoUrl={gmPhotoUrl}
       />}
       {/* ── Mobile debug panel — visible when URL contains ?debug ── */}
       {(()=>{
