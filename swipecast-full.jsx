@@ -23275,7 +23275,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <BufferedLoopVideo src="/assets/video/actor-journey-set-v2.mp4" poster="/assets/video/actor-journey-set-poster-v2.jpg" aria-label="Real film set footage showing crew preparing a camera setup"/>
+          <BufferedLoopVideo src="/assets/video/actor-journey-set-v3.mp4" poster="/assets/video/actor-journey-set-poster-v3.jpg" aria-label="Actors on a film set as the clapperboard marks the take, with the camera and boom mic rolling"/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
