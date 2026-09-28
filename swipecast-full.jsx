@@ -12211,7 +12211,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       setShowUpgradePrompt(true);
       return;
     }
-    const roleId=realRoleIds[i];
+    const roleId=(isDbCasting&&r&&r.id)||realRoleIds[i];
     const instr=roleId?roleInstructions[roleId]:null;
     // Roles with PDF sides use the full AuditionModal (official takes, practice mode, etc.)
     if(isDbCasting&&instr&&instr.sides_pdf_url){
@@ -12254,7 +12254,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       }
     }
     if(isDbCasting){
-      const {data:roles}=await window.sb.from("roles").select("id,name,role_type,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
+      // est_days MUST be selected: compareRoles orders by it, and without it this map
+      // sorted differently from the displayed roles, so index i pointed at a different
+      // role (actors saw role A and were filed under role B). Fixed 2026-09-28.
+      const {data:roles}=await window.sb.from("roles").select("id,name,role_type,est_days,sides_pdf_url,direction_notes,slate_instructions,video_length_limit,audition_deadline,wardrobe_notes,submission_type,allow_multiple_takes,official_takes_allowed,submission_mode").eq("casting_id",casting.id);
       const map={};const instrMap={};
       (roles||[]).slice().sort(compareRoles).forEach((r,idx)=>{
         map[idx]=r.id;
@@ -12339,7 +12342,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
         setTimeout(()=>{setApplyRole(null);setApplyOk(false);},2500);
         return;
       }
-      const roleId=realRoleIds[applyRole.idx];
+      const roleId=(applyRole&&applyRole.id)||realRoleIds[applyRole.idx]; // the role the actor clicked
       if(!roleId){setApplyErr("This role is no longer available. Please refresh the page and try again.");return;}
       if(myPhotos.length===0){setApplyErr("A headshot is required to apply. Add at least one photo to your profile, then submit.");return;}
       if(!selectedPhoto){setApplyErr("Please pick a photo to submit with your application.");return;}
@@ -12941,7 +12944,7 @@ Free submission used
     </div>}
 
     {applyRole&&(()=>{
-      const roleId=realRoleIds[applyRole.idx];
+      const roleId=(applyRole&&applyRole.id)||realRoleIds[applyRole.idx];
       const instr=roleId?roleInstructions[roleId]:null;
       const hasInstr=instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes);
       const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
