@@ -20824,15 +20824,18 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   }
   if(mode==="matches"&&matches===null&&firstMode==="matches"&&!out)return null;
   bodyRef.current=body;
-  const card=(content,cls,key)=>(<div key={key} className={"modal "+cls} style={{maxWidth:540,width:"100%",padding:"26px 24px 22px",position:"relative",overflow:"hidden",isolation:"isolate",gridArea:"1 / 1"}}>
+  // maxHeight:none — .modal caps at 85vh with its own scroll, but overflow:hidden (for the
+  // watermark) killed that scroll and cut off the 3rd role on phones. The card now grows
+  // to full height and the overlay itself scrolls.
+  const card=(content,cls,key)=>(<div key={key} className={"modal "+cls} style={{maxWidth:540,width:"100%",maxHeight:"none",padding:"26px 24px 22px",position:"relative",overflow:"hidden",isolation:"isolate",gridArea:"1 / 1"}}>
       <div aria-hidden="true" style={{position:"absolute",right:-34,top:96,lineHeight:0,pointerEvents:"none",transform:"rotate(-6deg)",opacity:.1,zIndex:0}}><MasksMark/></div>
       <div style={{position:"relative",zIndex:1}}>{content}</div>
     </div>);
   // `clear`: while another popup underneath is still leaving/arriving, this overlay adds
   // no tint or blur of its own (two stacked backdrops would flash darker).
   const enterCls=mode===firstMode?entryCls:"gm-s-in";
-  return(<BodyPortal><div className={"modal-overlay gm-ov"+(clear?" gm-clear":"")} style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
-    <div style={{display:"grid",width:"100%",maxWidth:540,margin:"auto"}}>
+  return(<BodyPortal><div className={"modal-overlay gm-ov"+(clear?" gm-clear":"")} style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain"}}>
+    <div style={{display:"grid",width:"100%",maxWidth:540,margin:"auto",paddingBottom:24}}>
       {out&&card(out.body,"gm-s-out",out.key)}
       {card(body,leaving?"gm-s-out":enterCls,"step-"+mode)}
     </div>
