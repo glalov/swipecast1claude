@@ -3456,6 +3456,23 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fbsp-go{width:100%;height:48px;border:none;border-radius:12px;background:#1877F2;color:#fff;font:700 15px 'DM Sans',sans-serif;
   display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;}
 .fbsp-cancel{width:100%;height:42px;border:none;background:none;color:var(--t2);font:600 13.5px 'DM Sans',sans-serif;margin-top:4px;cursor:pointer;}
+/* Cast Me As, layout A: photo cards for types with media, chips for the rest. */
+.cma-hl{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,220px));gap:14px;margin-bottom:22px;}
+@media (max-width:900px){.cma-hl{grid-template-columns:repeat(2,minmax(0,1fr));}}
+.cma-card{position:relative;display:block;width:100%;padding:0;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+  aspect-ratio:4/5;background:var(--s3);cursor:zoom-in;text-align:left;font:inherit;transition:transform .2s ease,box-shadow .2s ease;}
+.cma-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(26,26,46,.14);}
+.cma-card:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.cma-card img,.cma-card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;}
+.cma-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(20,18,30,.82) 100%);}
+.cma-t{position:absolute;left:14px;right:14px;bottom:12px;z-index:1;color:#fff;font-size:17px;font-weight:800;letter-spacing:-.3px;line-height:1.15;}
+.cma-n{display:block;font-size:12px;font-weight:500;font-style:italic;opacity:.9;margin-top:4px;letter-spacing:0;}
+.cma-meta{position:absolute;top:10px;right:10px;z-index:1;display:flex;gap:5px;}
+.cma-meta span{font-size:10.5px;font-weight:700;color:#fff;background:rgba(20,18,30,.55);border-radius:999px;padding:3px 8px;display:inline-flex;align-items:center;gap:4px;}
+.cma-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.3px;color:var(--t3);margin:0 0 10px;}
+.cma-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.cma-chip{font-size:14px;font-weight:600;color:var(--t1);background:var(--s2);border:1px solid var(--bdr);border-radius:999px;padding:8px 15px;}
+.cma-chip em{font-weight:500;color:var(--t2);}
 .cd-deadline-row{display:flex;justify-content:flex-end;margin:0 0 10px;}
 .cd-deadline{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
   letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
@@ -23853,54 +23870,46 @@ function CastMeAsSection({talentId}){
 
   if(loading||entries.length===0)return null;
 
+  // Layout "A" (owner-approved 2026-09-28): types backed by a photo or clip get
+  // a full-bleed photo card; everything else is a chip under "Also plays". The
+  // old one-card-per-type grid stretched every row to its tallest card, so most
+  // actors (many types, few photos) showed rows of empty boxes.
+  const mediaOf=entry=>{
+    const photos=Array.isArray(entry.supporting_photo_urls)?entry.supporting_photo_urls.filter(Boolean):[];
+    return{photos,clip:entry.mood_clip_url||""};
+  };
+  const openViewer=(entry,startIdx)=>{
+    const{photos,clip}=mediaOf(entry);
+    const items=[...(clip?[{type:"video",url:clip}]:[]),...photos.map(u=>({type:"photo",url:u}))];
+    setMediaViewer({items,idx:startIdx||0});
+  };
+  const featured=entries.filter(e=>{const m=mediaOf(e);return m.photos.length>0||!!m.clip;});
+  const plain=entries.filter(e=>!featured.includes(e));
   return(<div className="card mt-20">
     {mediaViewer&&<MediaViewer items={mediaViewer.items} startIdx={mediaViewer.idx} onClose={()=>setMediaViewer(null)}/>}
     <h3 style={{fontSize:18,fontWeight:700,marginBottom:4}}>Cast Me As</h3>
     <p style={{fontSize:13,color:"var(--t3)",marginBottom:20}}>Casting identity — the energies and archetypes this actor plays best.</p>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16}}>
-      {entries.map(entry=>{
-        const photos=Array.isArray(entry.supporting_photo_urls)?entry.supporting_photo_urls.filter(Boolean):[];
-        const hasClip=!!entry.mood_clip_url;
-        return(<div key={entry.id} style={{border:"1px solid var(--bdr)",borderRadius:12,overflow:"hidden",background:"var(--s1)",display:"flex",flexDirection:"column"}}>
-          {/* header */}
-          <div style={{padding:"14px 16px 10px",borderBottom:"1px solid var(--bdr)"}}>
-            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:4}}>Cast Me As</div>
-            <div style={{fontSize:17,fontWeight:800,letterSpacing:"-0.3px",color:"var(--t1)",marginBottom:entry.role_note?6:0}}>{entry.casting_type}</div>
-            {entry.role_note&&<p style={{fontSize:13,color:"var(--t2)",lineHeight:1.5,margin:0,fontStyle:"italic"}}>"{entry.role_note}"</p>}
-          </div>
-
-          {/* mood clip — click opens full-screen modal */}
-          {hasClip&&<div style={{background:"#000",position:"relative",cursor:"pointer"}} onClick={()=>{
-              const items=[{type:"video",url:entry.mood_clip_url},...photos.map(u=>({type:"photo",url:u}))];
-              setMediaViewer({items,idx:0});
-            }}>
-            <video src={`${entry.mood_clip_url}#t=0.1`} muted playsInline style={{width:"100%",maxHeight:200,display:"block",objectFit:"cover",opacity:0.7,pointerEvents:"none"}}/>
-            <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>▶</div>
-            </div>
-            <div style={{position:"absolute",bottom:8,right:10,background:"rgba(0,0,0,0.6)",color:"#fff",fontSize:10,padding:"2px 7px",borderRadius:4,fontWeight:600}}>clip</div>
-          </div>}
-
-          {/* supporting photos — larger, clickable */}
-          {photos.length>0&&<div style={{display:"flex",gap:6,padding:"10px 12px",background:"var(--s2)",flexWrap:"wrap"}}>
-            {photos.map((u,i)=>(
-              <img key={i} src={u} alt="" onClick={()=>{
-                const items=[...(hasClip?[{type:"video",url:entry.mood_clip_url}]:[]),...photos.map(p=>({type:"photo",url:p}))];
-                const idx=hasClip?i+1:i;
-                setMediaViewer({items,idx});
-              }}
-                style={{width:88,height:110,objectFit:"cover",borderRadius:8,border:"1px solid var(--bdr)",cursor:"zoom-in",flexShrink:0}}/>
-            ))}
-          </div>}
-
-          {/* footer tags */}
-          <div style={{padding:"10px 14px",display:"flex",gap:6,flexWrap:"wrap"}}>
-            {hasClip&&<span style={{fontSize:10,background:"rgba(99,60,180,0.1)",color:"#5b3ecb",border:"1px solid rgba(99,60,180,0.2)",borderRadius:20,padding:"2px 8px",fontWeight:600}}>clip</span>}
-            {photos.length>0&&<span style={{fontSize:10,background:"var(--s2)",color:"var(--t3)",border:"1px solid var(--bdr)",borderRadius:20,padding:"2px 8px"}}>{photos.length} photo{photos.length>1?"s":""}</span>}
-          </div>
-        </div>);
+    {featured.length>0&&<div className="cma-hl" style={plain.length?undefined:{marginBottom:0}}>
+      {featured.map(entry=>{
+        const{photos,clip}=mediaOf(entry);
+        return(<button type="button" key={entry.id} className="cma-card" onClick={()=>openViewer(entry,0)} aria-label={`${entry.casting_type} — open media`}>
+          {photos.length>0
+            ?<img src={photos[0]} alt="" loading="lazy" decoding="async"/>
+            :<video src={`${clip}#t=0.1`} muted playsInline preload="metadata" aria-hidden="true"/>}
+          <span className="cma-meta">
+            {clip&&<span><Ico n="player-play" s={11}/> clip</span>}
+            {photos.length>0&&<span>{photos.length} photo{photos.length>1?"s":""}</span>}
+          </span>
+          <span className="cma-t">{entry.casting_type}{entry.role_note&&<span className="cma-n">"{entry.role_note}"</span>}</span>
+        </button>);
       })}
-    </div>
+    </div>}
+    {plain.length>0&&<>
+      {featured.length>0&&<div className="cma-lbl">Also plays</div>}
+      <div className="cma-chips">
+        {plain.map(entry=>(<span key={entry.id} className="cma-chip">{entry.casting_type}{entry.role_note&&<em> — "{entry.role_note}"</em>}</span>))}
+      </div>
+    </>}
   </div>);
 }
 
