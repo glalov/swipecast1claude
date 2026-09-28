@@ -48,7 +48,7 @@ function clip(str, max) {
   // Cut on a word boundary so a pay line never ends "…smallest pa…".
   const cut = s.slice(0, max - 1);
   const sp = cut.lastIndexOf(" ");
-  return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,;:·—-]+$/, "") + "…";
+  return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,;:.·—-]+$/, "") + "…";
 }
 
 async function fetchCasting(slug) {

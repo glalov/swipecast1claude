@@ -77,7 +77,10 @@ function castingImage(c, slug) {
     if (typeof first === "string") return first;
     if (first && first.url) return first.url;
   }
-  return `${ORIGIN}/api/casting-card?slug=${encodeURIComponent(slug)}`;
+  // v= is part of the image URL Facebook caches. Bump it to make Facebook
+  // fetch every card again: it keeps a failed image fetch per URL, which is
+  // why 2:17 A.M stayed blank after the card's broken first deploy.
+  return `${ORIGIN}/api/casting-card?slug=${encodeURIComponent(slug)}&v=2`;
 }
 
 function injectMeta(html, c, slug) {
