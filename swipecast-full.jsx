@@ -12563,7 +12563,10 @@ Free submission used
             const shareFacebookTouch=(e)=>{
               if(!navigator.share)return false;
               e.preventDefault();
-              navigator.share({title:c.title,url:castingUrl}).catch(()=>{});
+              // URL ONLY: with a title/text alongside, Facebook's iOS share
+              // extension took the text and dropped the link - its composer
+              // opened empty, no card (owner, iPhone, 2026-09-28).
+              navigator.share({url:castingUrl}).catch(()=>{});
               return true;
             };
             const openShare=(e,href,net)=>{
