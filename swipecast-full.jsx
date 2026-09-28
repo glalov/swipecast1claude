@@ -24493,12 +24493,18 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
           <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}<div style={{marginTop:14}}><label className="label">Roles I'm authentic to</label><ChipPicker options={AUTHENTIC_OPTS} value={f.authentic_genders} onChange={v=>setF(x=>({...x,authentic_genders:v,authentic_touched:true}))}/><div className="otrg-note">Select all that apply. This decides which roles we recommend to you — casting directors still see your gender above. Roles open to all genders are always included.{!f.authentic_touched&&<> Set from your gender; change it any time.</>}</div></div></div><div className="form-group"><div className="age-box">
             <div className="age-box-row">
-              <div><label className="label">Your age</label><input className="input" type="number" min="1" max="120" style={{width:90}} value={f.age} onChange={e=>up("age",e.target.value)}/></div>
+              <div><label className="label">Your age</label><input className="input" type="number" min="1" max="120" inputMode="numeric" style={{width:90,fontSize:16}} value={f.age} onChange={e=>up("age",e.target.value)}/></div>
               <div><label className="label">Age range I can play</label>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:80}} placeholder="From" value={f.age_play_min} onChange={e=>up("age_play_min",e.target.value)}/>
+                  {/* Dropdowns like the get-matched popup (owner 2026-09-28): 16px so iOS
+                      doesn't zoom; "To" only offers ages at or above "From". */}
+                  <select className="select" style={{width:96,fontSize:16}} aria-label="Youngest age you can play" value={String(f.age_play_min??"")}
+                    onChange={e=>{const v=e.target.value;setF(x=>({...x,age_play_min:v,...(v&&x.age_play_max&&parseInt(x.age_play_max,10)<parseInt(v,10)?{age_play_max:v}:{})}));}}>
+                    <option value="">From</option>{GM_AGES.map(a=><option key={a} value={String(a)}>{a}</option>)}</select>
                   <span style={{color:"var(--t3)",fontSize:13}}>to</span>
-                  <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:80}} placeholder="To" value={f.age_play_max} onChange={e=>up("age_play_max",e.target.value)}/>
+                  <select className="select" style={{width:96,fontSize:16}} aria-label="Oldest age you can play" value={String(f.age_play_max??"")}
+                    onChange={e=>up("age_play_max",e.target.value)}>
+                    <option value="">To</option>{GM_AGES.filter(a=>!f.age_play_min||a>=parseInt(f.age_play_min,10)).map(a=><option key={a} value={String(a)}>{a}</option>)}</select>
                 </div></div>
             </div>
             <div className="otrg-note">Your real age is only used to confirm you're 18+ and to match you to roles. <strong>Casting directors see the range you can play.</strong></div>
