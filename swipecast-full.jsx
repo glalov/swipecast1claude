@@ -2494,6 +2494,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    repainting under moving cards stuttered, and blur on/off between popups flashed. */
 .gm-ov{background:rgba(0,0,0,.5)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;overflow-x:hidden;}
 .gm-ov.gm-clear{background:transparent!important;pointer-events:none;}
+.gm-ov input,.gm-ov select,.gm-ov textarea{font-size:16px!important;}
 .gm-ov.gm-clear .modal{pointer-events:auto;}
 .gm-rise,.gm-s-in,.gm-s-out{will-change:transform;backface-visibility:hidden;}
 .gm-rise{animation:gmRise .32s cubic-bezier(.22,.8,.3,1) both;}
@@ -20612,6 +20613,7 @@ function MasksMark({width=250,stroke="#111",strokeWidth=4.5,style}){
     </g>
   </svg>;
 }
+const GM_AGES=Array.from({length:99},(_,i)=>i+1); // 1–99, same bounds the profile editor accepts
 const GM_GOLD={background:"#EAC080",color:"#1A1A2E",border:"none",borderRadius:10,padding:"13px 20px",fontWeight:700,fontSize:15,cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"inherit"};
 function gmParseRange(s){if(s==null)return null;const str=String(s).toLowerCase().trim();if(!str)return null;
   if(/all ages|open|any/.test(str)){const mp=str.match(/(\d+)\s*\+/);if(mp)return[parseInt(mp[1],10),Infinity];return[0,Infinity];}
@@ -20764,12 +20766,19 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
       <div style={{display:"flex",gap:18,flexWrap:"wrap",marginBottom:18}}>
         <div><label className="label">Age range I can play</label>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:80}} placeholder="From" value={min} onChange={e=>setMin(e.target.value)}/>
+            {/* Dropdowns (owner 2026-09-28): quicker than typing, and 16px text so iOS
+                doesn't zoom in on focus (it zooms any field under 16px). "To" only
+                offers ages at or above "From". */}
+            <select className="select" style={{width:96,fontSize:16}} value={min} aria-label="Youngest age you can play"
+              onChange={e=>{const v=e.target.value;setMin(v);if(v&&max&&parseInt(max,10)<parseInt(v,10))setMax(v);}}>
+              <option value="">From</option>{GM_AGES.map(a=><option key={a} value={String(a)}>{a}</option>)}</select>
             <span style={{color:"var(--t3)",fontSize:13}}>to</span>
-            <input className="input" type="number" min="1" max="99" inputMode="numeric" style={{width:80}} placeholder="To" value={max} onChange={e=>setMax(e.target.value)}/>
+            <select className="select" style={{width:96,fontSize:16}} value={max} aria-label="Oldest age you can play"
+              onChange={e=>setMax(e.target.value)}>
+              <option value="">To</option>{GM_AGES.filter(a=>!min||a>=parseInt(min,10)).map(a=><option key={a} value={String(a)}>{a}</option>)}</select>
           </div></div>
         <div style={{flex:"1 1 160px"}}><label className="label">Height</label>
-          <select className="select" style={{width:"100%"}} value={height} onChange={e=>setHeight(e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div>
+          <select className="select" style={{width:"100%",fontSize:16}} value={height} onChange={e=>setHeight(e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div>
       </div>
       {err&&<div style={{background:"rgba(214,59,59,0.09)",color:"#B03030",padding:"10px 13px",borderRadius:9,fontSize:12.5,marginBottom:12}}>{err}</div>}
       <button type="button" style={{...GM_GOLD,width:"100%",opacity:ready&&!busy?1:.45,cursor:ready&&!busy?"pointer":"not-allowed"}} disabled={!ready||busy} onClick={saveBasics}>{busy?busyLabel:<>{showMatches?"Show my matches":"Save"} <Tri/></>}</button>
