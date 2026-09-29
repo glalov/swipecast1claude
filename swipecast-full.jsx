@@ -23531,11 +23531,11 @@ function NewsArticlePage({slug,onNavigate}){
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
-  {cat:"Theater",desc:"Live performance.",file:"theater",icon:"masks"},
+  {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:"megaphone"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student",icon:"cap"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:"mic"},
-  {cat:"Music Videos",desc:"Performance. Style. Story.",file:"modeling",icon:"music"},
+  {cat:"Theater",desc:"Performance. Style. Story.",file:"stage",icon:"masks"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
 ];
 const FORMAT_ICONS={
