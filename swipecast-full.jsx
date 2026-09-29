@@ -26318,7 +26318,6 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     {key:"subscription",label:"Subscription Info",icon:"credit-card"},
     {key:"billing",label:"Payment & Billing",icon:"building-bank"},
     {key:"notifications",label:"Notifications",icon:"bell"},
-    ...(isTalent?[{key:"casting-emails",label:"Casting Email Preferences",icon:"movie"}]:[]),
     {key:"privacy",label:"Privacy & Security",icon:"lock"},
     {key:"deactivation",label:"Deactivation & Deletion",icon:"alert-triangle"},
   ];
@@ -26408,26 +26407,6 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
       if(error)throw error;
       await onReload();
       showMsg("Notification preferences saved.");
-    }catch(e){showMsg(e.message||"Save failed.",true);}
-    finally{setSaving(false);}
-  };
-
-  const saveCastingEmailPrefs=async()=>{
-    if(!uid)return;
-    setSaving(true);
-    try{
-      const{error}=await window.sb.from("email_preferences").upsert({
-        user_id:uid,
-        casting_digest_enabled:emailPref.casting_digest_enabled,
-        frequency:emailPref.frequency,
-        preferred_cities:emailPref.preferred_cities,
-        preferred_project_types:emailPref.preferred_project_types,
-        paid_only:emailPref.paid_only,
-        union_preference:emailPref.union_preference,
-        updated_at:new Date().toISOString()
-      },{onConflict:"user_id"});
-      if(error)throw error;
-      showMsg("Casting email preferences saved.");
     }catch(e){showMsg(e.message||"Save failed.",true);}
     finally{setSaving(false);}
   };
@@ -26736,145 +26715,6 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
 
   const PROJECT_TYPES_OPTIONS=["Film","TV","Commercial","Theater","Short Film","Modeling","Indie Film","Web Series","Broadway","Music Video","Voiceover"];
 
-  const renderCastingEmails=()=>{
-    const toggleProjectType=(t)=>setEmailPref(p=>({
-      ...p,
-      preferred_project_types:p.preferred_project_types.includes(t)
-        ?p.preferred_project_types.filter(x=>x!==t)
-        :[...p.preferred_project_types,t]
-    }));
-    const addCity=()=>{
-      const c=(emailPref.cityInput||"").trim();
-      if(!c||emailPref.preferred_cities.includes(c))return;
-      setEmailPref(p=>({...p,preferred_cities:[...p.preferred_cities,c],cityInput:""}));
-    };
-    const removeCity=(c)=>setEmailPref(p=>({...p,preferred_cities:p.preferred_cities.filter(x=>x!==c)}));
-
-    return(
-    <div>
-      <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Casting Email Preferences</h2>
-      <p style={{color:"var(--t2)",fontSize:14,marginBottom:28}}>Customize when and how CastSlate emails you about new casting matches.</p>
-      {msg&&<div style={{background:"rgba(27,135,62,0.08)",border:"1px solid var(--grn)",borderRadius:8,padding:"10px 14px",color:"var(--grn)",fontSize:13,marginBottom:16}}>{msg}</div>}
-      {err&&<div style={{background:"rgba(214,59,59,0.08)",border:"1px solid var(--red)",borderRadius:8,padding:"10px 14px",color:"var(--red)",fontSize:13,marginBottom:16}}>{err}</div>}
-
-      {/* Master toggle */}
-      <div className="card" style={{marginBottom:16}}>
-        <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
-          <input type="checkbox" checked={emailPref.casting_digest_enabled}
-            onChange={e=>setEmailPref(p=>({...p,casting_digest_enabled:e.target.checked}))}
-            style={{accentColor:"var(--acc)",width:17,height:17,marginTop:2,flexShrink:0}}/>
-          <div>
-            <div style={{fontWeight:700,fontSize:15}}>Send me casting matches</div>
-            <div style={{color:"var(--t2)",fontSize:13,marginTop:3}}>Receive a digest email when new castings match your profile. You'll only be emailed when there are real, active matches — no filler.</div>
-          </div>
-        </label>
-      </div>
-
-      {emailPref.casting_digest_enabled&&(<>
-        {/* Frequency */}
-        <div className="card" style={{marginBottom:16}}>
-          <div style={{fontWeight:700,marginBottom:12}}>Email Frequency</div>
-          {[
-            {val:"daily",label:"Daily",desc:"Get matches as they come in, up to once per day"},
-            {val:"every_other_day",label:"Every Other Day",desc:"A digest every two days — less noise, still current"},
-            {val:"weekly",label:"Weekly",desc:"One digest per week with your best matches"},
-            {val:"off",label:"Off",desc:"Pause match emails without changing other settings"},
-          ].map(({val,label,desc})=>(
-            <label key={val} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"10px 0",borderBottom:"1px solid var(--bdr)",cursor:"pointer"}}>
-              <input type="radio" name="digest-freq" value={val} checked={emailPref.frequency===val}
-                onChange={()=>setEmailPref(p=>({...p,frequency:val}))}
-                style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2,flexShrink:0}}/>
-              <div>
-                <div style={{fontWeight:600,fontSize:14}}>{label}</div>
-                <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{desc}</div>
-              </div>
-            </label>
-          ))}
-        </div>
-
-        {/* Preferred cities */}
-        <div className="card" style={{marginBottom:16}}>
-          <div style={{fontWeight:700,marginBottom:4}}>Preferred Cities / Locations</div>
-          <p style={{color:"var(--t2)",fontSize:12,marginBottom:12}}>We'll prioritize castings in these cities. Leave empty to receive matches from all locations.</p>
-          <div style={{display:"flex",gap:8,marginBottom:12}}>
-            <input className="input" placeholder="e.g. New York, NY" value={emailPref.cityInput||""}
-              onChange={e=>setEmailPref(p=>({...p,cityInput:e.target.value}))}
-              onKeyDown={e=>e.key==="Enter"&&addCity()}
-              style={{flex:1}}/>
-            <button className="btn-s btn-sm" onClick={addCity}>Add</button>
-          </div>
-          {emailPref.preferred_cities.length>0&&(
-            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-              {emailPref.preferred_cities.map(c=>(
-                <span key={c} style={{background:"var(--s2)",border:"1px solid var(--bdr)",padding:"4px 10px",borderRadius:20,fontSize:12,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
-                  {c}
-                  <span onClick={()=>removeCity(c)} style={{cursor:"pointer",color:"var(--t3)",lineHeight:1,fontSize:14}}>×</span>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Project types */}
-        <div className="card" style={{marginBottom:16}}>
-          <div style={{fontWeight:700,marginBottom:4}}>Project Types</div>
-          <p style={{color:"var(--t2)",fontSize:12,marginBottom:12}}>Filter to only the project types you're interested in. Select all that apply — or none to receive every type.</p>
-          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-            {PROJECT_TYPES_OPTIONS.map(t=>{
-              const on=emailPref.preferred_project_types.includes(t);
-              return(
-                <button key={t} onClick={()=>toggleProjectType(t)}
-                  style={{padding:"6px 13px",borderRadius:20,border:`1px solid ${on?"var(--acc)":"var(--bdr)"}`,
-                    background:on?"rgba(107,62,203,0.08)":"transparent",
-                    color:on?"var(--acc)":"var(--t2)",fontSize:12,fontWeight:on?700:500,cursor:"pointer",fontFamily:"inherit"}}>
-                  {t}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="card" style={{marginBottom:16}}>
-          <div style={{fontWeight:700,marginBottom:14}}>Filters</div>
-          <div className="form-group" style={{marginBottom:14}}>
-            <label className="label">Union preference</label>
-            <select className="input" value={emailPref.union_preference}
-              onChange={e=>setEmailPref(p=>({...p,union_preference:e.target.value}))}
-              style={{maxWidth:260}}>
-              <option value="any">Any (union + non-union)</option>
-              <option value="union">Union only (SAG-AFTRA, AEA)</option>
-              <option value="non_union">Non-union only</option>
-            </select>
-          </div>
-          <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer"}}>
-            <input type="checkbox" checked={emailPref.paid_only}
-              onChange={e=>setEmailPref(p=>({...p,paid_only:e.target.checked}))}
-              style={{accentColor:"var(--acc)",width:16,height:16,marginTop:2,flexShrink:0}}/>
-            <div>
-              <div style={{fontWeight:600,fontSize:14}}>Paid projects only</div>
-              <div style={{color:"var(--t2)",fontSize:12,marginTop:2}}>Only include castings that list compensation</div>
-            </div>
-          </label>
-        </div>
-      </>)}
-
-      <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-        <button className="btn-p btn-sm" disabled={saving} onClick={saveCastingEmailPrefs}>
-          {saving?"Saving…":"Save Preferences"}
-        </button>
-        {!emailPref.casting_digest_enabled&&(
-          <div style={{background:"rgba(214,59,59,0.07)",borderRadius:7,padding:"6px 12px",fontSize:12,color:"var(--red)"}}>
-            Casting match emails are off. Enable above to receive matches.
-          </div>
-        )}
-      </div>
-      <div style={{marginTop:20,padding:"12px 16px",background:"var(--s2)",borderRadius:8,fontSize:12,color:"var(--t3)",lineHeight:1.7}}>
-        You can also unsubscribe from any digest email using the unsubscribe link in the email footer. To manage all notification settings, visit the <span style={{color:"var(--acc)",cursor:"pointer"}} onClick={()=>setSection("notifications")}>Notifications</span> section.
-      </div>
-    </div>
-  );};
-
   const renderPrivacy=()=>(
     <div>
       <h2 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:6}}>Privacy & Security</h2>
@@ -27062,7 +26902,6 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     if(section==="subscription")return renderSubscription();
     if(section==="billing")return renderBilling();
     if(section==="notifications")return renderNotifications();
-    if(section==="casting-emails")return renderCastingEmails();
     if(section==="privacy")return renderPrivacy();
     if(section==="deactivation")return renderDeactivation();
     return null;
@@ -48227,14 +48066,11 @@ function UnsubscribedPage({onNavigate}){
         </div>
         <h1 style={{fontSize:22,fontWeight:800,color:"var(--t1)",marginBottom:12,letterSpacing:-0.3}}>You're unsubscribed</h1>
         <p style={{fontSize:15,color:"var(--t2)",lineHeight:1.7,marginBottom:28}}>
-          You won't receive casting match emails from CastSlate anymore. You can re-enable recommendations anytime in your account settings.
+          You won't receive casting match emails from CastSlate anymore.
         </p>
         <button className="btn-p" onClick={()=>onNavigate("account-settings")} style={{marginBottom:20}}>
           Manage Preferences
         </button>
-        <p style={{fontSize:12,color:"var(--t3)",lineHeight:1.6}}>
-          Changed your mind? Go to Account Settings → Casting Email Preferences to turn emails back on.
-        </p>
       </div>
     </div>
   );
