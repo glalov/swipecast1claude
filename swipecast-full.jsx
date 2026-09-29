@@ -24127,7 +24127,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <BufferedLoopVideo src="/assets/video/casting-director-set-v3.mp4" poster="/assets/video/casting-director-set-poster-v3.jpg" aria-label="Realistic stock footage of a filmmaker recording on a professional set with lights and camera equipment" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <BufferedLoopVideo src="/assets/video/casting-director-set-v4.mp4" poster="/assets/video/casting-director-set-poster-v4.jpg" aria-label="Behind-the-scenes footage from a real film set: a camera operator filming two actors in a scene beside a small plane" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
