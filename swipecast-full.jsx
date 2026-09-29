@@ -21433,6 +21433,94 @@ function PvMissingList({missing}){
   </div>;
 }
 
+// In-browser camera recorder for the intro video. Phones use the native camera
+// (capture="user"); desktop browsers ignore capture and open the file picker,
+// so on a computer this records from the webcam instead. ~1.5 Mbps keeps a
+// 60-second clip around 11 MB, well under the 50 MB upload limit.
+const PV_REC_MAX=60;
+function pvIsTouch(){try{return window.matchMedia("(pointer:coarse)").matches;}catch(_){return false;}}
+function PvRecorder({onUse,onClose}){
+  const liveRef=useRef(null);
+  const streamRef=useRef(null);
+  const recRef=useRef(null);
+  const chunksRef=useRef([]);
+  const tickRef=useRef(null);
+  const [phase,setPhase]=useState("starting"); // starting | ready | recording | review | error
+  const [secs,setSecs]=useState(0);
+  const [clip,setClip]=useState(null); // {url,blob,type,secs}
+  const [msg,setMsg]=useState("");
+  const secsRef=useRef(0);
+  const stopAll=()=>{try{clearInterval(tickRef.current);}catch(_){}try{(streamRef.current?.getTracks()||[]).forEach(t=>t.stop());}catch(_){}};
+  useEffect(()=>{
+    let dead=false;
+    (async()=>{
+      try{
+        if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined")throw new Error("unsupported");
+        const st=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},facingMode:"user"},audio:true});
+        if(dead){st.getTracks().forEach(t=>t.stop());return;}
+        streamRef.current=st;
+        if(liveRef.current){liveRef.current.srcObject=st;liveRef.current.play().catch(()=>{});}
+        setPhase("ready");
+      }catch(e){
+        setPhase("error");
+        setMsg(e&&e.message==="unsupported"?"This browser can't record video. Please upload a video instead."
+          :"We couldn't open your camera. Allow camera and microphone access for castslate.com in your browser settings, or upload a video instead.");
+      }
+    })();
+    return()=>{dead=true;stopAll();};
+  },[]);
+  const start=()=>{
+    const st=streamRef.current;if(!st)return;
+    const types=["video/mp4;codecs=avc1,mp4a","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
+    const type=types.find(t=>{try{return MediaRecorder.isTypeSupported(t);}catch(_){return false;}})||"";
+    let r;
+    try{r=new MediaRecorder(st,{...(type?{mimeType:type}:{}),videoBitsPerSecond:1500000});}
+    catch(_){r=new MediaRecorder(st);}
+    chunksRef.current=[];
+    r.ondataavailable=e=>{if(e.data&&e.data.size)chunksRef.current.push(e.data);};
+    r.onstop=()=>{
+      const t=(r.mimeType||type||"video/webm").split(";")[0];
+      const blob=new Blob(chunksRef.current,{type:t});
+      setClip(c=>{if(c?.url)URL.revokeObjectURL(c.url);return {url:URL.createObjectURL(blob),blob,type:t,secs:secsRef.current};});
+      setPhase("review");
+    };
+    recRef.current=r;r.start(1000);
+    secsRef.current=0;setSecs(0);setPhase("recording");
+    tickRef.current=setInterval(()=>{secsRef.current+=1;setSecs(secsRef.current);if(secsRef.current>=PV_REC_MAX)stop();},1000);
+  };
+  const stop=()=>{try{clearInterval(tickRef.current);}catch(_){}try{if(recRef.current&&recRef.current.state!=="inactive")recRef.current.stop();}catch(_){}};
+  const again=()=>{if(clip?.url)URL.revokeObjectURL(clip.url);setClip(null);setSecs(0);setPhase("ready");setTimeout(()=>{if(liveRef.current&&streamRef.current){liveRef.current.srcObject=streamRef.current;liveRef.current.play().catch(()=>{});}},30);};
+  const use=()=>{
+    if(!clip)return;
+    const ext=clip.type.includes("mp4")?"mp4":"webm";
+    const file=new File([clip.blob],`intro-video-${Date.now()}.${ext}`,{type:clip.type});
+    stopAll();onUse(file,clip.secs);
+  };
+  const close=()=>{stopAll();if(clip?.url)URL.revokeObjectURL(clip.url);onClose();};
+  const mmss=(n)=>`${Math.floor(n/60)}:${String(n%60).padStart(2,"0")}`;
+  return ReactDOM.createPortal(<div className="modal-overlay" style={{zIndex:600}} onClick={close}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:560,padding:22}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+      <h3 style={{fontSize:17,fontWeight:800,margin:0}}>Record your intro video</h3>
+      <button type="button" className="btn-s btn-sm" onClick={close}>Close</button>
+    </div>
+    <p style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.55,margin:"0 0 12px"}}>Say your name, what the project is, why you want to make it, and when and where you plan to shoot. 30–60 seconds is perfect.</p>
+    <div style={{position:"relative",background:"#111",borderRadius:12,overflow:"hidden",aspectRatio:"16/9"}}>
+      {phase!=="review"&&<video ref={liveRef} muted playsInline autoPlay style={{width:"100%",height:"100%",objectFit:"cover",transform:"scaleX(-1)",display:phase==="error"?"none":"block"}}/>}
+      {phase==="review"&&clip&&<video src={clip.url} controls playsInline style={{width:"100%",height:"100%",objectFit:"contain",background:"#000"}}/>}
+      {phase==="starting"&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13}}>Opening your camera…</div>}
+      {phase==="error"&&<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,padding:24,textAlign:"center",lineHeight:1.5}}>{msg}</div>}
+      {phase==="recording"&&<div style={{position:"absolute",top:10,left:10,background:"rgba(192,57,43,0.92)",color:"#fff",fontSize:12,fontWeight:800,padding:"4px 10px",borderRadius:99}}>● REC {mmss(secs)} / {mmss(PV_REC_MAX)}</div>}
+    </div>
+    <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+      {phase==="ready"&&<button type="button" className="btn-p" style={{flex:1}} onClick={start}>● Start recording</button>}
+      {phase==="recording"&&<button type="button" className="btn-p" style={{flex:1,background:"#c0392b"}} onClick={stop} disabled={secs<3}>■ Stop{secs<3?"…":""}</button>}
+      {phase==="review"&&<><button type="button" className="btn-p" style={{flex:1}} onClick={use}>Use this video</button><button type="button" className="btn-s" onClick={again}>Record again</button></>}
+      {phase==="error"&&<button type="button" className="btn-p" style={{flex:1}} onClick={close}>OK</button>}
+    </div>
+    {phase==="review"&&clip&&clip.secs<20&&<p style={{fontSize:12,color:"#8a5210",marginTop:8}}>That's only {clip.secs} seconds. Most reviewers need at least 30 to get a sense of the project.</p>}
+  </div></div>,document.body);
+}
+
 // Part 1 — sits near the top of the form, right after Project Type.
 function ProjectVerifyWho({uid,v,setV,track,missing}){
   const isMobile=pvIsMobile();
@@ -21441,19 +21529,20 @@ function ProjectVerifyWho({uid,v,setV,track,missing}){
   const [codeIn,setCodeIn]=useState({});
   const [codeMsg,setCodeMsg]=useState({});
   const [codeBusy,setCodeBusy]=useState("");
+  const [recFor,setRecFor]=useState(null); // proof key the desktop webcam recorder is open for
   const setVal=(k,val)=>setV(p=>({...p,vals:{...p.vals,[k]:val}}));
   const bad=(missing||[]).some(x=>x.box==="pv-who");
   const lvl=pvLevel(v);
   const trusted=pvTrusted(track);
   const pickPath=(k)=>setV(prev=>prev.path===k?prev:{...prev,path:k,first:null,vals:{},venueType:"",hl:false,open:k==="indie"?null:PV_PATHS[k].proofs[0].k});
 
-  const upload=async(k,file,isVideo)=>{
+  const upload=async(k,file,isVideo,knownSecs)=>{
     if(!file)return;
     setUpErr(e=>({...e,[k]:""}));
     if(file.size>PV_MAX_UPLOAD){setUpErr(e=>({...e,[k]:isVideo?"That video is over 50 MB. Record a shorter clip (30–60 seconds) or at a lower quality.":"That file is over 50 MB."}));return;}
     setUpBusy(k);
     try{
-      const secs=isVideo?await pvVideoSeconds(file):null;
+      const secs=isVideo?(knownSecs!=null?knownSecs:await pvVideoSeconds(file)):null;
       const path=`${uid}/${Date.now()}_${String(file.name||"upload").replace(/[^a-zA-Z0-9._-]/g,"_")}`;
       const {error}=await window.sb.storage.from("casting-verification").upload(path,file,{upsert:false,contentType:file.type||undefined});
       if(error)throw error;
@@ -21496,8 +21585,10 @@ function ProjectVerifyWho({uid,v,setV,track,missing}){
     return <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
       <label style={dropStyle}><Ico n="upload" s={18}/>{upBusy===p.k?"Uploading…":isVideo?"Upload video":"Upload file"}
         <input type="file" accept={accept} style={{display:"none"}} disabled={!!upBusy} onChange={e=>{const f=e.target.files?.[0];e.target.value="";upload(p.k,f,isVideo);}}/></label>
-      {isVideo&&<label style={{...dropStyle,borderStyle:"solid",flex:"0 1 auto"}}><Ico n="camera" s={18}/>Record now
-        <input type="file" accept="video/*" capture="user" style={{display:"none"}} disabled={!!upBusy} onChange={e=>{const f=e.target.files?.[0];e.target.value="";upload(p.k,f,true);}}/></label>}
+      {isVideo&&(pvIsTouch()
+        ?<label style={{...dropStyle,borderStyle:"solid",flex:"0 1 auto"}}><Ico n="camera" s={18}/>Record now
+          <input type="file" accept="video/*" capture="user" style={{display:"none"}} disabled={!!upBusy} onChange={e=>{const f=e.target.files?.[0];e.target.value="";upload(p.k,f,true);}}/></label>
+        :<button type="button" style={{...dropStyle,borderStyle:"solid",flex:"0 1 auto",font:"inherit",fontWeight:600,fontSize:13}} disabled={!!upBusy} onClick={()=>setRecFor(p.k)}><Ico n="camera" s={18}/>Record now</button>)}
     </div>;
   };
   const proofBody=(p)=>{
@@ -21548,6 +21639,7 @@ function ProjectVerifyWho({uid,v,setV,track,missing}){
 
   const showStrongHl=v.hl&&pvNeedsStrong(v);
   return(<div id="pv-who" style={pvBoxSt(bad)}>{pvTag(bad)}
+    {recFor&&<PvRecorder onClose={()=>setRecFor(null)} onUse={(file,secs)=>{const k=recFor;setRecFor(null);upload(k,file,true,secs);}}/>}
     <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Who's making this project? <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"var(--teal-dk)",background:"rgba(42,132,114,0.1)",padding:"3px 9px",borderRadius:99,marginLeft:6,verticalAlign:2}}><Ico n="lock" s={13}/> Private, never shown to actors</span></h3>
     <p style={pvLead}>Every casting is reviewed by a person before it goes live. You don't need a company, a school or any credits, and we'll never ask for your script. Just show us <b>one</b> thing that proves the project is real.</p>
     <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:8}}>
