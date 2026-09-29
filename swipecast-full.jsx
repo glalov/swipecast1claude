@@ -9307,7 +9307,7 @@ function PricingSocialProof({onViewCasting}){
     (async()=>{
       try{
         const {data}=await window.sb.from("castings")
-          .select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope")
+          .select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,submission_requirements,synopsis,tagline,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,creator_path,audition_mode")
           .eq("published",true).in("status",["open","active","published"])
           .order("featured",{ascending:false}).order("created_at",{ascending:false}).limit(16);
         if(!alive)return;
@@ -12787,7 +12787,9 @@ Free submission used
               {fact("pay","coin",t('casting.pay'),cdEmph(payText,"pay"),true)}
               {fact("shoots","movie",t('casting.shoots'),c.shoots)}
               {fact("reh","clock",t('casting.rehearsal'),c.rehearsal)}
-              {fact("af","video",t('casting.auditionFormat'),c.auditionFormat,true)}
+              {fact("af","video",t('casting.auditionFormat'),c.auditionFormat||PV_MODE_LABEL[c.audition_mode],true)}
+              {/* Who's making it — from the creator's project verification. */}
+              {fact("madeby",PV_PATHS[c.creator_path]?.icon||"movie","Made by",PV_PATHS[c.creator_path]?.seen,true)}
               {fact("ww","calendar","Where & When",cdEmph(wwLine,"date"),true)}
               {/* The note is status, not an address - on the end of the
                   Where & When sentence it read as part of the location. */}
@@ -14932,7 +14934,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         shoot_location:c.shoot_location||null,
         schedule_note:c.schedule_note||null,
         crew_credits:c.crew_credits||null,
-        talent_scope:c.talent_scope||null,
+        talent_scope:c.talent_scope||null,creator_path:c.creator_path||null,audition_mode:c.audition_mode||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
           name:r.name,
@@ -18896,6 +18898,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
         <div className="card-flat">{visibleCastings.map(c=>{
           const isPendingReview=c.status==="pending_review";
           const isRejected=c.status==="rejected";
+          const isNeedsInfo=c.status==="needs_info";
           const isOpen=c.status==="open";
           const isClosed=c.status==="closed";
           const isArchived=c.status==="archived";
@@ -18904,6 +18907,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(200,137,0,0.12)",color:"#c88900"}}>PENDING REVIEW</span>
             :isRejected
             ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>REJECTED</span>
+            :isNeedsInfo
+            ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(37,99,235,0.1)",color:"#2553b8"}}>NEEDS MORE INFO</span>
             :isScheduled
             ?<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"rgba(var(--acc-rgb,100,149,237),0.14)",color:"var(--acc)"}}>SCHEDULED</span>
             :isOpen
@@ -18941,6 +18946,11 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             </div>}
             {isRejected&&<div style={{marginTop:10,padding:"8px 12px",background:"rgba(192,57,43,0.07)",border:"1px solid rgba(192,57,43,0.2)",borderRadius:8,fontSize:12,color:"#c0392b",lineHeight:1.5}}>
               <Ico n="x" s={24}/> <strong>Not approved.</strong> This casting was not approved. Edit it to address any issues, then resubmit for review.
+            </div>}
+            {isNeedsInfo&&<div style={{marginTop:10,padding:"10px 12px",background:"#F3F6FD",border:"1px solid #c9d6f2",borderRadius:8,fontSize:12.5,color:"var(--t2)",lineHeight:1.55}}>
+              <strong style={{color:"#2553b8"}}>“{c.title}” needs one more thing before it can go live.</strong>
+              <NeedsInfoNote castingId={c.id}/>
+              <button className="btn-p btn-sm" style={{marginTop:10,fontSize:12}} onClick={()=>setEditCasting(c)}>Update &amp; resubmit</button>
             </div>}
           </div>);
         })}</div>}
@@ -21260,6 +21270,438 @@ function CastingCreatorVerificationBanner({myProfile}){
 //     - open castings: save and remain open (no re-approval needed)
 //     - pending_review: save and remain pending
 //     - rejected: save then optionally resubmit (→ pending_review)
+// ─── Project verification (2026-09-28) ─────────────────────────────────────
+// Shown on Post New Casting and on Edit/Resubmit for castings that are not yet
+// approved. The creator says WHO is making the project (company / student /
+// independent creator), gives proof the project is real (never a script), says
+// HOW auditions happen, and confirms the audition standards. Proof, venue
+// address and the admin's "needs more info" note live in casting_verifications
+// (CD + admin only); uploads go to the private casting-verification bucket.
+// castings.creator_path + castings.audition_mode are the only public parts —
+// actors see them as "Made by" and "Audition format" on the casting page.
+// The admin review screen is AdminCastingVerification.
+const PV_PATHS={
+  company:{label:"Production company",seen:"Production company",icon:"building",desc:"A studio, production company, agency or brand",proofs:[
+    {k:"email",strong:true,t:"Company email",d:"We send a code to an address at your company's domain",in:"email"},
+    {k:"imdb",strong:true,t:"IMDb / IMDbPro",d:"Project, company or director page",in:"url",ph:"https://www.imdb.com/title/…"},
+    {k:"sag",strong:true,t:"SAG-AFTRA signatory #",d:"Your project's production number",in:"text",ph:"e.g. 0123456"},
+    {k:"ins",strong:true,t:"Insurance or film permit",d:"Certificate of insurance or a location/film permit",in:"file"},
+    {k:"web",t:"Company or project website",d:"A page that mentions this project",in:"url",ph:"https://…"},
+    {k:"press",t:"Festival, grant, crowdfunding or press",d:"Any public page about the project",in:"url",ph:"https://…"},
+    {k:"social",t:"Project social media",d:"Instagram, TikTok, Facebook, etc.",in:"url",ph:"https://instagram.com/…"},
+    {k:"deck",t:"One page of the project",d:"Title page, pitch deck or lookbook cover. One page is enough",in:"file"}]},
+  student:{label:"Student project",seen:"Student project",icon:"school",desc:"Class, thesis or film-school production",proofs:[
+    {k:"edu",strong:true,t:"School email",d:"We send a code to your .edu (or school) address",in:"email"},
+    {k:"sid",strong:true,t:"Student ID or enrollment letter",d:"Photo of your current student ID or an enrollment letter",in:"file"},
+    {k:"advisor",t:"Instructor or advisor",d:"Name and school email of your teacher or thesis advisor",in:"ref2"},
+    {k:"course",t:"Class or program page",d:"A link to the course, program or thesis listing",in:"url",ph:"https://…"},
+    {k:"deck",t:"One page of the project",d:"Title page, treatment, mood board or shot list",in:"file"}]},
+  indie:{label:"Independent creator",seen:"Independent project",icon:"movie",desc:"Just you (and friends). Self-produced, first projects welcome",proofs:[
+    {k:"video",req:true,t:"30–60 second intro video",d:"You on camera: who you are and what you're making",in:"video"},
+    {k:"made",t:"Something you've made for this project",d:"Mood board, shot list, one page, location photos, test footage",in:"file"},
+    {k:"work",t:"Your past work",d:"Links to anything you've made before (shorts, reels, photos, even phone videos)",in:"url",ph:"https://vimeo.com/… or https://youtube.com/…"},
+    {k:"collab",t:"Someone making it with you",d:"Name and link for a DP, co-writer, producer or crew member",in:"ref"},
+    {k:"page",t:"Project page",d:"Crowdfunding, Instagram, or website for this project",in:"url",ph:"https://…"}]}
+};
+const PV_MODES=[["selftape","Self-tape only","Actors record and upload through CastSlate"],["virtual","Virtual","Live video call (Zoom, Meet, etc.)"],["inperson","In person","At a studio, rental space, office or campus"]];
+const PV_MODE_LABEL={selftape:"Self-tape",virtual:"Virtual (video call)",inperson:"In person"};
+const PV_VENUES={
+  company:[["office","Production office"],["studio","Casting or rehearsal studio"],["rental","Rented space (community center, library room)"]],
+  student:[["campus","Campus space (classroom, studio, theater)"],["studio","Casting or rehearsal studio"],["rental","Rented space (community center, library room)"]],
+  indie:[["studio","Rented rehearsal / casting studio"],["rental","Community center or library room"]],
+  indieTrusted:[["office","Office or production space"],["studio","Rented rehearsal / casting studio"],["rental","Community center or library room"]]
+};
+const PV_STANDARDS=[
+  "No auditions or meetings in private homes, apartments or hotel rooms.",
+  "No nudity or partial nudity at any first audition.",
+  "Actors are never charged a fee to audition, book or be considered.",
+  "A parent or guardian is present for anyone under 18.",
+  "I'll keep first contact with actors on CastSlate messages."
+];
+const PV_RISKY_VENUE=/\b(home|my house|private house|apartment|apt\.?|my place|hotel|motel|inn|hostel|airbnb|vrbo|residence|bedroom|condo)\b/i;
+const PV_MAX_UPLOAD=50*1024*1024;
+function pvBlank(){return {path:null,first:null,proofs:{},vals:{},mode:null,venueType:"",venueName:"",venueAddr:"",firstLook:false,std:PV_STANDARDS.map(()=>false)};}
+// Rebuild form state from a saved casting_verifications row.
+function pvFromRecord(rec){
+  if(!rec)return pvBlank();
+  const v=pvBlank();
+  v.path=rec.creator_path||null;v.first=rec.first_project??null;v.mode=rec.audition_mode||null;
+  v.venueType=rec.venue_type||"";v.venueName=rec.venue_name||"";v.venueAddr=rec.venue_address||"";v.firstLook=!!rec.first_look;
+  v.std=PV_STANDARDS.map(()=>!!rec.standards_ack_at);
+  (Array.isArray(rec.proofs)?rec.proofs:[]).forEach(p=>{if(p&&p.k){v.proofs[p.k]=true;v.vals[p.k]=p.val;}});
+  if(v.path==="indie")v.proofs.video=true;
+  return v;
+}
+function pvList(v){return v.path?PV_PATHS[v.path].proofs.filter(p=>!(v.path==="indie"&&v.first===true&&p.k==="work")):[];}
+function pvFilled(p,val){
+  if(!val)return false;
+  if(p.in==="email")return !!(val.email&&val.codeId);
+  if(p.in==="file"||p.in==="video")return !!val.path;
+  if(p.in==="ref"||p.in==="ref2")return !!(String(val.name||"").trim()&&String(val.link||"").trim());
+  return !!String(val).trim();
+}
+function pvDone(v){return pvList(v).filter(p=>v.proofs[p.k]&&pvFilled(p,v.vals[p.k]));}
+// "none" | "light" | "strong" | "indie_ok"
+function pvLevel(v){
+  if(!v.path)return "none";
+  const d=pvDone(v);
+  if(v.path==="indie"){if(v.first===null)return "none";return d.some(p=>p.k==="video")&&d.length>=2?"indie_ok":"none";}
+  if(d.some(p=>p.strong))return "strong";
+  return d.length?"light":"none";
+}
+// track = {completed, reports} from cd_track_record; trusted indie creators get company-level in-person rules.
+function pvTrusted(track){return !!track&&track.completed>=2&&track.reports===0;}
+function pvValidate(v,track){
+  if(!v.path)return "Tell us who's making this project (in “Help us confirm your project”).";
+  if(v.path==="indie"&&v.first===null)return "Tell us whether this is your first project.";
+  if(pvLevel(v)==="none")return v.path==="indie"?"Add your intro video plus one more item, so we can confirm your project.":"Please share at least one thing that shows your project is real (in “Help us confirm your project”).";
+  if(!v.mode)return "Choose how auditions will happen.";
+  if(v.mode==="inperson"){
+    if(!v.venueType)return "Choose the type of space for in-person auditions.";
+    if(!v.venueName.trim()||!v.venueAddr.trim())return "Add the name and address of the audition space.";
+    if(PV_RISKY_VENUE.test(v.venueName+" "+v.venueAddr))return "In-person auditions must be at a studio, rental space, office or campus, not a home or hotel.";
+    if(v.path==="indie"&&!pvTrusted(track)&&!v.firstLook)return "Independent in-person castings start with a self-tape or video-call round. Please confirm that.";
+    if(v.path!=="indie"&&pvLevel(v)!=="strong")return v.path==="student"?"In-person student auditions need a school email or student ID.":"In-person auditions need a proof marked STRONG, or switch to self-tape or virtual.";
+  }
+  if(v.std.some(x=>!x))return "Please confirm each of the audition standards.";
+  return "";
+}
+function pvToRecord(v){
+  const proofs=pvDone(v).map(p=>({k:p.k,t:p.t,strong:!!p.strong,in:p.in,val:v.vals[p.k]}));
+  const ip=v.mode==="inperson";
+  return {creator_path:v.path,first_project:v.path==="indie"?v.first:null,proofs,audition_mode:v.mode,
+    venue_type:ip?v.venueType||null:null,venue_name:ip?v.venueName.trim()||null:null,venue_address:ip?v.venueAddr.trim()||null:null,
+    first_look:ip&&v.path==="indie"?!!v.firstLook:null,standards_ack_at:v.std.every(Boolean)?new Date().toISOString():null};
+}
+async function pvSave(castingId,cdId,v){
+  if(!v.path||!v.mode)return null;
+  const rec={casting_id:castingId,cd_id:cdId,...pvToRecord(v)};
+  const {error}=await window.sb.from("casting_verifications").upsert(rec,{onConflict:"casting_id"});
+  return error||null;
+}
+function pvVideoSeconds(file){
+  return new Promise(res=>{
+    try{
+      const el=document.createElement("video");el.preload="metadata";
+      const url=URL.createObjectURL(file);
+      const done=(s)=>{try{URL.revokeObjectURL(url);}catch(_){}res(s);};
+      el.onloadedmetadata=()=>done(isFinite(el.duration)?Math.round(el.duration):null);
+      el.onerror=()=>done(null);
+      setTimeout(()=>done(null),6000);
+      el.src=url;
+    }catch(_){res(null);}
+  });
+}
+
+const pvBox={position:"relative",border:"1.5px solid var(--teal)",background:"rgba(42,132,114,0.05)",borderRadius:14,padding:"20px 18px 16px",margin:"24px 0 0"};
+const pvLead={fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:"6px 0 14px"};
+const pvCard=(on)=>({display:"flex",gap:10,alignItems:"flex-start",textAlign:"left",background:on?"#fff":"var(--s1)",border:"1px solid "+(on?"var(--teal)":"var(--bdr)"),boxShadow:on?"inset 0 0 0 1px var(--teal)":"none",borderRadius:10,padding:"11px 12px",cursor:"pointer",font:"inherit",fontSize:13,color:"var(--t1)",minWidth:0,width:"100%"});
+const pvChip=(bg,fg)=>({display:"inline-block",fontSize:9.5,fontWeight:800,letterSpacing:.6,color:fg,background:bg,padding:"1px 6px",borderRadius:99,marginLeft:5,verticalAlign:1});
+const pvNote=(kind)=>kind==="warn"
+  ?{marginTop:10,background:"rgba(192,57,43,0.08)",border:"1px solid rgba(192,57,43,0.25)",color:"#a93226",fontSize:12.5,lineHeight:1.5,padding:"10px 12px",borderRadius:8}
+  :{marginTop:10,background:"rgba(232,144,42,0.1)",border:"1px solid rgba(232,144,42,0.3)",color:"#8a5210",fontSize:12.5,lineHeight:1.5,padding:"10px 12px",borderRadius:8};
+
+function ProjectVerifySection({uid,v,setV,track}){
+  const isMobile=typeof window!=="undefined"&&window.innerWidth<640;
+  const [upBusy,setUpBusy]=useState("");
+  const [upErr,setUpErr]=useState({});
+  const [codeIn,setCodeIn]=useState({});
+  const [codeMsg,setCodeMsg]=useState({});
+  const [codeBusy,setCodeBusy]=useState("");
+  const set=(patch)=>setV(p=>({...p,...patch}));
+  const setVal=(k,val)=>setV(p=>({...p,vals:{...p.vals,[k]:val}}));
+  const trusted=pvTrusted(track);
+  const lvl=pvLevel(v);
+  const pickPath=(p)=>setV(prev=>prev.path===p?prev:{...prev,path:p,first:null,proofs:p==="indie"?{video:true}:{},vals:{},venueType:""});
+  const toggleProof=(p)=>{if(p.req)return;setV(prev=>({...prev,proofs:{...prev.proofs,[p.k]:!prev.proofs[p.k]}}));};
+
+  const upload=async(k,file,isVideo)=>{
+    if(!file)return;
+    setUpErr(e=>({...e,[k]:""}));
+    if(file.size>PV_MAX_UPLOAD){setUpErr(e=>({...e,[k]:isVideo?"That video is over 50 MB. Record a shorter clip (30–60 seconds) or at a lower quality.":"That file is over 50 MB."}));return;}
+    setUpBusy(k);
+    try{
+      const secs=isVideo?await pvVideoSeconds(file):null;
+      const path=`${uid}/${Date.now()}_${String(file.name||"upload").replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+      const {error}=await window.sb.storage.from("casting-verification").upload(path,file,{upsert:false,contentType:file.type||undefined});
+      if(error)throw error;
+      setVal(k,{path,name:file.name||"upload",size:file.size,...(secs!=null?{seconds:secs}:{})});
+    }catch(e){setUpErr(x=>({...x,[k]:"Upload failed: "+(e.message||e)}));}
+    finally{setUpBusy("");}
+  };
+  const sendCode=async(p)=>{
+    const email=String((v.vals[p.k]||{}).email||"").trim();
+    setCodeBusy(p.k);setCodeMsg(m=>({...m,[p.k]:""}));
+    try{
+      const {data,error}=await window.sb.functions.invoke("proof-email-code",{body:{action:"send",email,kind:p.k==="edu"?"school":"company"}});
+      let msg=data?.error;
+      if(error){try{const b=await error.context?.json();msg=b?.error||error.message;}catch(_){msg=error.message;}}
+      if(msg){setCodeMsg(m=>({...m,[p.k]:msg}));return;}
+      setVal(p.k,{email,sent:true});
+      setCodeMsg(m=>({...m,[p.k]:"Code sent. Check that inbox (and spam)."}));
+    }finally{setCodeBusy("");}
+  };
+  const confirmCode=async(p)=>{
+    const email=String((v.vals[p.k]||{}).email||"").trim();
+    setCodeBusy(p.k);
+    try{
+      const {data,error}=await window.sb.functions.invoke("proof-email-code",{body:{action:"verify",email,code:codeIn[p.k]||""}});
+      let msg=data?.error;
+      if(error){try{const b=await error.context?.json();msg=b?.error||error.message;}catch(_){msg=error.message;}}
+      if(msg||!data?.id){setCodeMsg(m=>({...m,[p.k]:msg||"That didn't work. Try again."}));return;}
+      setVal(p.k,{email,sent:true,codeId:data.id});
+      setCodeMsg(m=>({...m,[p.k]:""}));
+    }finally{setCodeBusy("");}
+  };
+
+  const fileRow=(p,val,accept,isVideo)=>{
+    if(val&&val.path)return <div style={{display:"flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600,flexWrap:"wrap"}}>
+      <span style={{color:"var(--grn)"}}><Ico n="check" s={18}/></span>{val.name}{val.seconds!=null&&<span style={{color:"var(--t3)",fontWeight:500}}>({Math.floor(val.seconds/60)}:{String(val.seconds%60).padStart(2,"0")})</span>}
+      <button type="button" className="btn-s btn-sm" style={{marginLeft:"auto"}} onClick={()=>setVal(p.k,null)}>Remove</button></div>;
+    const dropStyle={display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"10px 14px",borderRadius:8,border:"2px dashed var(--bdr)",background:"var(--s2)",color:"var(--t2)",fontWeight:600,fontSize:13,cursor:upBusy?"default":"pointer",flex:1,minWidth:150};
+    return <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+      <label style={dropStyle}><Ico n="upload" s={18}/>{upBusy===p.k?"Uploading…":isVideo?"Upload video":"Upload file"}
+        <input type="file" accept={accept} style={{display:"none"}} disabled={!!upBusy} onChange={e=>{const f=e.target.files?.[0];e.target.value="";upload(p.k,f,isVideo);}}/></label>
+      {isVideo&&<label style={{...dropStyle,borderStyle:"solid",flex:"0 1 auto"}}><Ico n="camera" s={18}/>Record now
+        <input type="file" accept="video/*" capture="user" style={{display:"none"}} disabled={!!upBusy} onChange={e=>{const f=e.target.files?.[0];e.target.value="";upload(p.k,f,true);}}/></label>}
+    </div>;
+  };
+
+  const proofInput=(p)=>{
+    const val=v.vals[p.k];
+    const lbl=<label className="label" style={{marginBottom:8}}>{p.t}</label>;
+    let body;
+    if(p.in==="email"){
+      const cur=val||{};
+      if(cur.codeId)body=<div style={{fontSize:13,fontWeight:600}}><span style={{color:"var(--grn)"}}><Ico n="check" s={18}/> Confirmed</span> {cur.email}</div>;
+      else body=<>
+        <div style={{display:"flex",gap:8}}><input className="input" value={cur.email||""} placeholder={p.k==="edu"?"you@school.edu":"you@yourcompany.com"} onChange={e=>setVal(p.k,{email:e.target.value})}/>
+          <button type="button" className="btn-s btn-sm" style={{whiteSpace:"nowrap"}} disabled={codeBusy===p.k||!String(cur.email||"").trim()} onClick={()=>sendCode(p)}>{codeBusy===p.k&&!cur.sent?"Sending…":cur.sent?"Resend":"Send code"}</button></div>
+        {cur.sent&&<div style={{display:"flex",gap:8,marginTop:8}}><input className="input" inputMode="numeric" maxLength={6} value={codeIn[p.k]||""} placeholder="6-digit code" onChange={e=>setCodeIn(c=>({...c,[p.k]:e.target.value.replace(/\D/g,"")}))}/>
+          <button type="button" className="btn-p btn-sm" disabled={codeBusy===p.k||(codeIn[p.k]||"").length!==6} onClick={()=>confirmCode(p)}>{codeBusy===p.k?"Checking…":"Confirm"}</button></div>}
+        <p className="help" style={{fontSize:11,color:codeMsg[p.k]&&!/^Code sent/.test(codeMsg[p.k])?"#c0392b":"var(--t3)",marginTop:6,lineHeight:1.5}}>{codeMsg[p.k]||(p.k==="edu"?"Your school-issued address.":"Gmail, Yahoo and other free addresses don't count here. Use another option instead.")}</p>
+      </>;
+    }else if(p.in==="video"){
+      body=<>
+        <ul style={{margin:"0 0 10px",paddingLeft:18,fontSize:12,color:"var(--t2)",lineHeight:1.6}}><li>Your name and where you're based</li><li>What the project is, in a sentence or two</li><li>Why you want to make it</li><li>When and where you plan to shoot</li></ul>
+        {fileRow(p,val,"video/*",true)}
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:6,lineHeight:1.5}}>A phone video is perfect (under 50 MB). Only CastSlate admins see it. We compare it with your ID check, and that's all it's used for.</p>
+      </>;
+    }else if(p.in==="file"){
+      body=fileRow(p,val,".pdf,image/*,video/*",false);
+    }else if(p.in==="ref"||p.in==="ref2"){
+      const r=val||{};
+      body=<><div className="form-row" style={{marginBottom:0}}><input className="input" value={r.name||""} placeholder="Full name" onChange={e=>setVal(p.k,{...r,name:e.target.value})}/><input className="input" value={r.link||""} placeholder={p.in==="ref2"?"Their school email":"Instagram, IMDb, website or portfolio link"} onChange={e=>setVal(p.k,{...r,link:e.target.value})}/></div>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:6}}>We may reach out to them to confirm.</p></>;
+    }else{
+      body=<input className="input" value={val||""} placeholder={p.ph||""} onChange={e=>setVal(p.k,e.target.value)}/>;
+    }
+    return <div key={p.k} style={{background:"#fff",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px"}}>{lbl}{body}
+      {upErr[p.k]&&<p style={{fontSize:12,color:"#c0392b",marginTop:6}}>{upErr[p.k]}</p>}</div>;
+  };
+
+  const meter=(()=>{
+    if(!v.path)return null;
+    let tone="none",txt;
+    if(v.path==="indie"){
+      const d=pvDone(v),hasV=d.some(p=>p.k==="video");
+      tone=lvl==="indie_ok"?"good":(hasV||d.length)?"mid":"none";
+      txt=v.first===null?"Tell us if this is your first project."
+        :lvl==="indie_ok"?(trusted?"✓ You're all set. Any audition type is open to you.":"✓ You're all set. Self-tape and virtual auditions are open to you. In-person auditions work at a rented studio or community space.")
+        :!hasV?"Add your intro video, plus one more item.":"✓ Intro video added. Now add one more item.";
+    }else{
+      tone=lvl==="strong"?"good":lvl==="light"?"mid":"none";
+      txt=lvl==="strong"?"✓ Strong proof. Any audition type is allowed."
+        :lvl==="light"?"✓ Proof added. Enough for self-tape or virtual auditions. In-person auditions need a STRONG proof."
+        :"Pick at least one and fill it in to continue.";
+    }
+    const st=tone==="good"?{background:"rgba(29,123,68,0.1)",color:"#1d7b44"}:tone==="mid"?{background:"rgba(232,144,42,0.12)",color:"#9a5a10"}:{background:"var(--s2)",color:"var(--t3)"};
+    return <div style={{...st,marginTop:14,fontSize:12.5,fontWeight:600,padding:"10px 12px",borderRadius:9,lineHeight:1.45}}>{txt}</div>;
+  })();
+
+  const venues=PV_VENUES[v.path==="indie"&&trusted?"indieTrusted":(v.path||"indie")];
+  const risky=v.mode==="inperson"&&PV_RISKY_VENUE.test(v.venueName+" "+v.venueAddr);
+  const newTag=<span style={{position:"absolute",top:-10,left:16,background:"var(--teal)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"3px 9px",borderRadius:99}}>REQUIRED</span>;
+
+  return(<>
+    {/* 1 · Who's making this + proof */}
+    <div style={pvBox}>{newTag}
+      <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Help us confirm your project <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"var(--teal-dk)",background:"rgba(42,132,114,0.1)",padding:"3px 9px",borderRadius:99,marginLeft:6,verticalAlign:2}}><Ico n="lock" s={13}/> Private, never shown to actors</span></h3>
+      <p style={pvLead}>Every casting on CastSlate is reviewed by a person before it goes live. This protects actors, and it protects real productions from being crowded out by fakes. You don't need a company, a school or any credits. We'll never ask for your script.</p>
+      <label className="label">Who's making this project?</label>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:8}}>
+        {Object.entries(PV_PATHS).map(([k,P])=><button type="button" key={k} onClick={()=>pickPath(k)} style={{...pvCard(v.path===k),display:"block",padding:"14px 12px",borderRadius:12}}>
+          <span style={{display:"block",marginBottom:6,color:"var(--teal-dk)"}}><Ico n={P.icon} s={22}/></span>
+          <b style={{display:"block",fontSize:13.5}}>{k==="company"?"A production company":k==="student"?"A student project":"Independent creator"}</b>
+          <small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:3,lineHeight:1.4}}>{P.desc}</small></button>)}
+      </div>
+      {v.path&&<p style={{fontSize:11.5,color:"var(--t3)",margin:"8px 0 14px"}}>Actors will see this casting labelled <b style={{display:"inline-block",fontSize:10.5,fontWeight:800,padding:"2px 8px",borderRadius:99,background:"var(--s2)",color:"var(--t2)",marginLeft:2}}>{PV_PATHS[v.path].seen}</b>. No label is better or worse. It just tells actors what kind of set to expect.</p>}
+      {v.path==="indie"&&<>
+        <div style={{background:"#fff",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:13,fontWeight:600}}>
+          <span>Is this your first project?</span>
+          <span style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {[[true,"Yes, my first"],[false,"I've made things before"]].map(([val,l])=><button type="button" key={l} onClick={()=>setV(p=>{const pr={...p.proofs};if(val)delete pr.work;return {...p,first:val,proofs:pr};})} style={{fontSize:13,padding:"7px 16px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:v.first===val?"var(--acc)":"var(--s2)",color:v.first===val?"#fff":"var(--t2)"}}>{l}</button>)}
+          </span>
+        </div>
+        {v.first===true&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}><b>Welcome, first projects are exactly what CastSlate is for.</b> You don't need a company, a school or credits. Show us <b>you</b> (a short intro video) and <b>one thing you've already started</b> for this project. That's it.</div>}
+        {v.first===false&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}>Great. Linking your past work is the quickest way through review.</div>}
+      </>}
+      {v.path&&<>
+        <label className="label" style={{marginTop:4}}>{v.path==="indie"?"Your intro video, plus at least one more":"Share at least one"}</label>
+        <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:8}}>
+          {pvList(v).map(p=>{const on=!!v.proofs[p.k];return <button type="button" key={p.k} onClick={()=>toggleProof(p)} style={{...pvCard(on),cursor:p.req?"default":"pointer"}}>
+            <span style={{flex:"0 0 18px",height:18,borderRadius:5,border:"1.5px solid "+(on?"var(--teal)":"var(--bdr)"),background:on?"var(--teal)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",marginTop:1,color:"#fff"}}>{on&&<Ico n="check" s={13}/>}</span>
+            <span style={{minWidth:0}}><b style={{display:"block",fontSize:13}}>{p.t}{p.strong&&<span style={pvChip("rgba(29,123,68,0.1)","#1d7b44")}>STRONG</span>}{p.req&&<span style={pvChip("rgba(232,144,42,0.15)","#8a5210")}>REQUIRED</span>}</b>
+              <small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:2,lineHeight:1.35}}>{p.d}</small></span></button>;})}
+        </div>
+        {pvList(v).some(p=>v.proofs[p.k])&&<div style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>{pvList(v).filter(p=>v.proofs[p.k]).map(proofInput)}</div>}
+        {meter}
+      </>}
+    </div>
+
+    {/* 2 · How auditions happen */}
+    <div style={pvBox}>{newTag}
+      <h3 style={{fontSize:16,fontWeight:700,margin:0}}>How will auditions happen? <span style={{color:"#c0392b"}}>*</span></h3>
+      <p style={{...pvLead,marginBottom:12}}>Actors see this on the casting page, so they know what to expect before they apply.</p>
+      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:8}}>
+        {PV_MODES.map(([k,t,d])=><button type="button" key={k} onClick={()=>set({mode:k})} style={{...pvCard(v.mode===k),display:"block"}}><b style={{display:"block",fontSize:13}}>{t}</b><small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:3,lineHeight:1.35}}>{d}</small></button>)}
+      </div>
+      {v.mode==="inperson"&&<div style={{marginTop:14}}>
+        <div className="form-group" style={{marginBottom:12}}><label className="label">Type of space *</label>
+          <select className="select" style={{width:"100%"}} value={v.venueType} onChange={e=>set({venueType:e.target.value})}><option value="">Choose…</option>{venues.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></div>
+        <div className="form-row" style={{marginBottom:0}}>
+          <div><label className="label">Name of the space *</label><input className="input" value={v.venueName} onChange={e=>set({venueName:e.target.value})} placeholder="e.g. Pearl Studios, Room 4B"/></div>
+          <div><label className="label">Street address *</label><input className="input" value={v.venueAddr} onChange={e=>set({venueAddr:e.target.value})} placeholder="e.g. 500 8th Ave, New York, NY"/></div>
+        </div>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>The address is for CastSlate's review. Share it with actors yourself when you invite them in.</p>
+        {risky&&<div style={pvNote("warn")}>This looks like a home, apartment or hotel. CastSlate auditions can't happen in private residences or hotel rooms. Please use a studio, rental space, office or campus, or switch to self-tape or virtual.</div>}
+        {v.path==="indie"&&!trusted&&<div style={pvNote()}>For independent creators, in-person auditions happen at a rented studio or community space, <b>after</b> a first round online. Rehearsal rooms in most cities rent by the hour (around $20–30). After 2 completed castings on CastSlate with no reports, these limits are lifted.</div>}
+        {v.path&&v.path!=="indie"&&lvl!=="strong"&&<div style={pvNote()}>{v.path==="student"?"In-person student auditions need a school email or student ID above. Or switch to self-tape or virtual.":<>In-person castings need a proof marked <b>STRONG</b> above. Self-tape and virtual castings can go live with any proof.</>}</div>}
+        {v.path==="indie"&&!trusted&&<label style={{display:"flex",gap:10,alignItems:"flex-start",padding:"10px 0 0",fontSize:13,lineHeight:1.45,cursor:"pointer",color:"var(--t2)"}}><input type="checkbox" checked={v.firstLook} onChange={e=>set({firstLook:e.target.checked})} style={{marginTop:2,width:16,height:16,accentColor:"var(--teal)",flex:"0 0 16px"}}/>The first round will be a self-tape or video call. Only actors I've already seen get invited in person.</label>}
+      </div>}
+    </div>
+
+    {/* 3 · Audition standards */}
+    <div style={pvBox}>{newTag}
+      <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Our audition standards <span style={{color:"#c0392b"}}>*</span></h3>
+      <p style={{...pvLead,marginBottom:4}}>These follow standard SAG-AFTRA audition practice. Please confirm each one.</p>
+      {PV_STANDARDS.map((s,i)=><label key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",fontSize:13,lineHeight:1.45,cursor:"pointer",color:"var(--t2)"}}>
+        <input type="checkbox" checked={!!v.std[i]} onChange={e=>setV(p=>({...p,std:p.std.map((x,j)=>j===i?e.target.checked:x)}))} style={{marginTop:2,width:16,height:16,accentColor:"var(--teal)",flex:"0 0 16px"}}/>{s}</label>)}
+    </div>
+  </>);
+}
+
+// Admin: everything the creator gave us, plus risk flags, on the Review modal.
+function AdminCastingVerification({casting}){
+  const [rec,setRec]=useState(undefined);
+  const [prof,setProf]=useState(null);
+  const [track,setTrack]=useState(null);
+  const [codes,setCodes]=useState({});
+  const [urls,setUrls]=useState({});
+  useEffect(()=>{let dead=false;(async()=>{
+    const [{data:r},{data:p},{data:t}]=await Promise.all([
+      window.sb.from("casting_verifications").select("*").eq("casting_id",casting.id).maybeSingle(),
+      window.sb.from("profiles").select("email,created_at,identity_verified,verification_status,verification_session_id,verification_provider").eq("id",casting.cd_id).maybeSingle(),
+      window.sb.rpc("cd_track_record",{p_cd:casting.cd_id})
+    ]);
+    if(dead)return;
+    setRec(r||null);setProf(p||null);setTrack(Array.isArray(t)?t[0]:t||null);
+    const proofs=Array.isArray(r?.proofs)?r.proofs:[];
+    const ids=proofs.map(x=>x?.val?.codeId).filter(Boolean);
+    if(ids.length){const {data:c}=await window.sb.from("proof_email_codes").select("id,email,verified_at,user_id").in("id",ids);if(!dead)setCodes(Object.fromEntries((c||[]).map(x=>[x.id,x])));}
+    const files=proofs.filter(x=>x?.val?.path);
+    const out={};
+    for(const f of files){const {data:s}=await window.sb.storage.from("casting-verification").createSignedUrl(f.val.path,3600);if(s?.signedUrl)out[f.k]=s.signedUrl;}
+    if(!dead)setUrls(out);
+  })();return()=>{dead=true;};},[casting.id,casting.cd_id]);
+
+  if(rec===undefined)return <div style={{fontSize:13,color:"var(--t3)",marginBottom:16}}>Loading project verification…</div>;
+  const box={border:"1.5px solid var(--teal)",borderRadius:12,padding:16,marginBottom:16,background:"rgba(42,132,114,0.04)"};
+  const sec={fontSize:11,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",margin:"16px 0 8px"};
+  const flagSt={r:{background:"rgba(192,57,43,0.08)",color:"#a93226"},a:{background:"rgba(232,144,42,0.1)",color:"#8a5210"},g:{background:"rgba(29,123,68,0.08)",color:"#1d7b44"}};
+  const text=[casting.title,casting.tagline,casting.synopsis,casting.type].join(" ");
+  const pay=String(casting.pay||"");
+  const acctDays=prof?.created_at?Math.floor((Date.now()-new Date(prof.created_at).getTime())/864e5):null;
+  const freeMail=/@(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|msn|icloud|me|aol|proton|protonmail)\./i.test(prof?.email||"");
+  const f=[];
+  if(!rec){
+    f.push(["r","No project verification on file. This casting was submitted before the new form, or without it. Use “Needs more info” to ask for proof."]);
+  }else{
+    const proofs=Array.isArray(rec.proofs)?rec.proofs:[];
+    const strong=proofs.some(p=>p.strong&&(p.in!=="email"||codes[p.val?.codeId]?.verified_at));
+    if(rec.creator_path==="indie"){
+      const vid=proofs.find(p=>p.k==="video");
+      if(vid)f.push(["g","Intro video provided. Compare the face with the Didit selfie"]);else f.push(["r","No intro video"]);
+      if(rec.first_project)f.push(["a","First-time creator (normal for this path, not a problem on its own)"]);
+      if(vid&&vid.val?.seconds!=null&&vid.val.seconds<10)f.push(["r",`Intro video is only ${vid.val.seconds} seconds`]);
+      f.push([proofs.length>=2?"g":"r",proofs.length+" proof item"+(proofs.length===1?"":"s")]);
+    }else f.push(strong?["g","Strong proof provided"]:["a","Only light proof"]);
+    proofs.filter(p=>p.in==="email").forEach(p=>{const c=codes[p.val?.codeId];if(!c||!c.verified_at||c.user_id!==casting.cd_id)f.push(["r",`${p.t} was not confirmed by code`]);});
+    if(rec.audition_mode==="inperson"){
+      f.push([rec.creator_path==="indie"?"a":"g",`In person at ${rec.venue_name||"—"}${rec.creator_path==="indie"&&rec.first_look?" · first round online ✓":""}`]);
+      if(PV_RISKY_VENUE.test((rec.venue_name||"")+" "+(rec.venue_address||"")))f.push(["r","Venue looks like a home or hotel"]);
+    }else f.push(["g",(rec.audition_mode==="virtual"?"Virtual":"Self-tape only")+" auditions, no in-person contact"]);
+    if(!rec.standards_ack_at)f.push(["r","Audition standards not confirmed"]);
+  }
+  if(acctDays!=null&&acctDays<7)f.push(["r",`Account is ${acctDays} day${acctDays===1?"":"s"} old`]);
+  if(freeMail)f.push(["a","Account uses a free email address"]);
+  if(casting.has_nudity)f.push(["r","Nudity / intimate content flagged"]);
+  if(/unpaid|tfp|exposure|trade/i.test(pay)&&/model|swim|lingerie|boudoir|bikini|glamou?r/i.test(text))f.push(["r","Unpaid + modeling / swimwear"]);
+  else if(/unpaid|tfp|exposure/i.test(pay))f.push(["a","Unpaid (common for student and first projects)"]);
+  if(/\b(girls|ladies|sexy|hot (girls|women|guys))\b/i.test(text))f.push(["r","Wording targets looks or a narrow young group (“girls”, “ladies”, “sexy”)"]);
+  if(/whatsapp|telegram|snapchat|text me|dm me|signal app|\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}/i.test(text))f.push(["r","Tries to move contact off CastSlate (phone / WhatsApp in the text)"]);
+  if(String(casting.synopsis||"").trim().length<60)f.push(["a","Very short project summary"]);
+  if(track&&track.reports>0)f.push(["r",`${track.reports} report${track.reports===1?"":"s"} against this creator`]);
+  const reds=f.filter(x=>x[0]==="r").length;
+  const P=rec?PV_PATHS[rec.creator_path]:null;
+
+  return(<div style={box}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+      <div style={{fontWeight:800,fontSize:15}}><Ico n="shield-check" s={20}/> Project verification</div>
+      <span style={{fontSize:11,fontWeight:800,padding:"3px 10px",borderRadius:99,...(reds?flagSt.r:flagSt.g)}}>{reds?`${reds} RED FLAG${reds===1?"":"S"}`:"NO RED FLAGS"}</span>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10,background:"var(--s2)",borderRadius:10,padding:"12px 14px",marginTop:12,fontSize:12.5}}>
+      <div><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>Who's making it</div><b>{P?P.label+(rec.creator_path==="indie"?(rec.first_project?" · first project":" · has made things before"):""):"—"}</b></div>
+      <div><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>Account</div><b style={{overflowWrap:"anywhere"}}>{prof?.email||"—"}{acctDays!=null?` · ${acctDays}d old`:""}</b></div>
+      <div><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>ID check</div><b style={{color:prof?.identity_verified?"#1d7b44":"#c0392b"}}>{prof?.identity_verified?"Passed":"Not passed"}</b>{prof?.verification_session_id&&<div style={{fontSize:10.5,color:"var(--t3)",overflowWrap:"anywhere"}}>Didit session {prof.verification_session_id}</div>}</div>
+      <div><div style={{fontSize:10,textTransform:"uppercase",letterSpacing:1,color:"var(--t3)"}}>Track record</div><b>{track?`${track.completed} completed · ${track.reports} report${track.reports===1?"":"s"}`:"—"}</b></div>
+    </div>
+    <p style={{fontSize:12,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>Their legal name is in the <a href="https://business.didit.me" target="_blank" rel="noopener noreferrer" style={{color:"var(--teal-dk)",fontWeight:700}}>Didit console ↗</a>. Check it on the <a href="https://www.nsopw.gov/" target="_blank" rel="noopener noreferrer" style={{color:"var(--teal-dk)",fontWeight:700}}>national sex-offender registry (NSOPW) ↗</a> before approving in-person castings.</p>
+    <div style={sec}>Risk check</div>
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>{f.map(([c,t],i)=><div key={i} style={{...flagSt[c],display:"flex",gap:9,fontSize:13,lineHeight:1.4,padding:"8px 11px",borderRadius:8}}><span>{c==="r"?"●":c==="a"?"▲":"✓"}</span><span>{t}</span></div>)}</div>
+    {rec&&<>
+      <div style={sec}>Proof</div>
+      {(rec.proofs||[]).length===0&&<div style={{fontSize:13,color:"var(--t3)"}}>None given.</div>}
+      {(rec.proofs||[]).map((p,i)=>{
+        const val=p.val;let shown,link=null;
+        if(p.in==="email"){const c=codes[val?.codeId];shown=<>{val?.email} {c?.verified_at&&c.user_id===casting.cd_id?<span style={{color:"#1d7b44",fontWeight:700}}>· code confirmed ✓</span>:<span style={{color:"#c0392b",fontWeight:700}}>· not confirmed</span>}</>;}
+        else if(p.in==="file"||p.in==="video"){shown=<>{val?.name}{val?.seconds!=null?` (${val.seconds}s)`:""}</>;link=urls[p.k];}
+        else if(p.in==="ref"||p.in==="ref2"){shown=`${val?.name||""} · ${val?.link||""}`;if(/^https?:\/\//i.test(val?.link||""))link=val.link;}
+        else{shown=String(val||"");if(/^https?:\/\//i.test(shown))link=shown;}
+        return <div key={i} style={{border:"1px solid var(--bdr)",borderRadius:9,background:"#fff",padding:"10px 12px",marginBottom:6,fontSize:13}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center"}}>
+            <span style={{minWidth:0}}><b>{p.t}</b>{p.strong&&<span style={pvChip("rgba(29,123,68,0.1)","#1d7b44")}>STRONG</span>}<br/><span style={{color:"var(--t3)",fontSize:12,overflowWrap:"anywhere"}}>{shown}</span></span>
+            {link&&<a href={link} target="_blank" rel="noopener noreferrer" style={{color:"var(--teal-dk)",fontWeight:700,textDecoration:"none",whiteSpace:"nowrap",fontSize:12.5}}>Open ↗</a>}
+          </div>
+          {p.in==="video"&&urls[p.k]&&<video src={urls[p.k]} controls playsInline preload="metadata" style={{width:"100%",maxHeight:320,borderRadius:8,marginTop:8,background:"#000"}}/>}
+        </div>;
+      })}
+      <div style={sec}>Auditions</div>
+      <div style={{fontSize:13,lineHeight:1.6,color:"var(--t2)"}}><b style={{color:"var(--t1)"}}>{PV_MODE_LABEL[rec.audition_mode]||"—"}</b>
+        {rec.audition_mode==="inperson"&&<> · {(PV_VENUES[rec.creator_path]||[]).concat(PV_VENUES.indieTrusted).find(x=>x[0]===rec.venue_type)?.[1]||rec.venue_type} · {rec.venue_name}, {rec.venue_address}</>}
+        <br/>{rec.standards_ack_at?"All 5 audition standards confirmed.":"Audition standards NOT confirmed."}</div>
+      {rec.review_note&&<><div style={sec}>Last note sent to creator</div><div style={{fontSize:13,color:"var(--t2)",whiteSpace:"pre-wrap"}}>{rec.review_note}</div></>}
+    </>}
+  </div>);
+}
+
+// CD dashboard: the admin's "needs more info" note on a returned casting.
+function NeedsInfoNote({castingId}){
+  const [note,setNote]=useState("");
+  useEffect(()=>{let dead=false;window.sb.from("casting_verifications").select("review_note").eq("casting_id",castingId).maybeSingle().then(({data})=>{if(!dead)setNote(data?.review_note||"");});return()=>{dead=true;};},[castingId]);
+  return note?<div style={{marginTop:6,whiteSpace:"pre-wrap",color:"var(--t1)"}}>“{note}”</div>:null;
+}
+
 function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   const isAdmin=myProfile&&["admin","super_admin"].includes(myProfile.user_type);
   // Security: only the owner (or admin) may edit
@@ -21283,6 +21725,24 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   const [err,setErr]=useState("");
   const [busy,setBusy]=useState(false);
   const [uploadingImg,setUploadingImg]=useState(false);
+  // Project verification: shown until the casting has been approved once.
+  const showPv=!isAdmin&&["draft","pending_review","rejected","needs_info"].includes(casting.status);
+  const [pv,setPv]=useState(pvBlank);
+  const [track,setTrack]=useState(null);
+  useEffect(()=>{
+    if(!showPv)return;
+    let dead=false;
+    (async()=>{
+      const [{data:r},{data:t}]=await Promise.all([
+        window.sb.from("casting_verifications").select("*").eq("casting_id",casting.id).maybeSingle(),
+        window.sb.rpc("cd_track_record",{p_cd:casting.cd_id||uid})
+      ]);
+      if(dead)return;
+      if(r)setPv(pvFromRecord(r));
+      const tt=Array.isArray(t)?t[0]:t;if(tt)setTrack(tt);
+    })();
+    return()=>{dead=true;};
+  },[casting.id]);
   const [f,setF]=useState({
     title:casting.title||"",prod:casting.prod||"",type:casting.type||"Film & TV",
     location:casting.location||"",pay:casting.pay||"",union:casting.union_status||"SAG-AFTRA",
@@ -21405,11 +21865,12 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     const goLive=resolveGoLive(f.go_live_at,utcISOToNYLocal(casting.go_live_at));
     if(goLive.err){setErr(goLive.err);return;}
     const goLiveISO=goLive.iso;
+    if(showPv&&resubmit){const pe=pvValidate(pv,track);if(pe){setErr(pe);return;}}
     setBusy(true);
     try{
       // Determine new status: open → open; pending_review → pending_review; rejected + resubmit → pending_review
       let newStatus=casting.status;
-      if(resubmit&&casting.status==="rejected")newStatus="pending_review";
+      if(resubmit&&(casting.status==="rejected"||casting.status==="needs_info"))newStatus="pending_review";
       const patch={
         title:f.title.trim(),prod:f.prod||null,type:f.type,location:f.location||null,
         pay:f.pay||null,union_status:f.union||null,deadline:f.deadline||null,go_live_at:goLiveISO,
@@ -21425,9 +21886,11 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
         casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,
         casting_images:castingImages,
         status:newStatus,updated_at:new Date().toISOString(),
+        ...(showPv&&pv.path&&pv.mode?{creator_path:pv.path,audition_mode:pv.mode}:{}),
       };
       const{error:cErr}=await window.sb.from("castings").update(patch).eq("id",casting.id);
       if(cErr)throw cErr;
+      if(showPv){const ve=await pvSave(casting.id,casting.cd_id||uid,pv);if(ve)throw ve;}
       // Diff roles
       const originalIds=new Set((casting.roles||[]).map(r=>r.id));
       const keptIds=new Set(roles.filter(r=>r.id).map(r=>r.id));
@@ -21449,6 +21912,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   };
 
   const isRejected=casting.status==="rejected";
+  const isNeedsInfo=casting.status==="needs_info";
   const isPending=casting.status==="pending_review";
   const isLive=casting.status==="open";
   return(<div className="modal-overlay" onClick={()=>!busy&&!uploadingImg&&!roles.some(r=>r._uploadingPdf)&&onClose()}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:700,maxHeight:"90vh",overflowY:"auto"}}>
@@ -21458,11 +21922,13 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
         {isLive&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(46,204,113,0.12)",color:"#1d7b44"}}>LIVE — changes go live immediately</span>}
         {isPending&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(200,137,0,0.12)",color:"#c88900"}}>PENDING REVIEW</span>}
         {isRejected&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(192,57,43,0.1)",color:"#c0392b"}}>REJECTED — edit and resubmit</span>}
+        {isNeedsInfo&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:99,background:"rgba(37,99,235,0.1)",color:"#2553b8"}}>NEEDS MORE INFO</span>}
       </div>
     </div>
     {isLive&&<p style={{color:"var(--t2)",fontSize:13,marginTop:4,marginBottom:20}}>Your casting is live. Editing it will update immediately — no admin re-approval needed.</p>}
     {isPending&&<p style={{color:"var(--t2)",fontSize:13,marginTop:4,marginBottom:20}}>Your casting is awaiting admin approval. You can edit it while it's pending.</p>}
     {isRejected&&<p style={{color:"var(--t2)",fontSize:13,marginTop:4,marginBottom:20}}>Edit your casting below, then click <strong>Resubmit for Review</strong> to send it back to admin.</p>}
+    {isNeedsInfo&&<div style={{margin:"8px 0 20px",padding:"12px 14px",background:"#F3F6FD",border:"1px solid #c9d6f2",borderRadius:10,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><strong style={{color:"#2553b8"}}>CastSlate needs one more thing before this can go live.</strong><NeedsInfoNote castingId={casting.id}/><div style={{marginTop:6}}>Update the casting below, then click <strong>Resubmit for Review</strong>.</div></div>}
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
     <div className="form-group"><label className="label">Project Title *</label><input className="input" value={f.title} onChange={e=>setField("title",e.target.value)}/></div>
@@ -21590,8 +22056,11 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       </div>);})}
     </div>
 
+    {showPv&&<ProjectVerifySection uid={uid} v={pv} setV={setPv} track={track}/>}
+    {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:20}}>{err}</div>}
+
     <div style={{display:"flex",gap:12,marginTop:24,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
-      {isRejected
+      {(isRejected||isNeedsInfo)
         ?<><button className="btn-p" style={{flex:1}} onClick={()=>save(true)} disabled={busy||uploadingImg}>{busy?"Saving…":"Resubmit for Review"}</button>
            <button className="btn-s" onClick={()=>save(false)} disabled={busy||uploadingImg}>{busy?"Saving…":"Save Draft"}</button></>
         :<button className="btn-p" style={{flex:1}} onClick={()=>save(false)} disabled={busy||uploadingImg}>{busy?"Saving…":isLive?"Save Changes (Live)":"Save Changes"}</button>}
@@ -21620,6 +22089,11 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [verifyMsg,setVerifyMsg]=useState("");
   const [verifying,setVerifying]=useState(false);
   const [verifyDebug,setVerifyDebug]=useState(null);
+  // Project verification (see ProjectVerifySection). Kept in the same localStorage draft.
+  const [pv,setPv]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.pv&&typeof p.pv==="object")return {...pvBlank(),...p.pv};}}catch(_){}return pvBlank();});
+  const [track,setTrack]=useState(null);
+  const [pvWarn,setPvWarn]=useState("");
+  useEffect(()=>{if(isAdmin||!uid)return;window.sb.rpc("cd_track_record",{p_cd:uid}).then(({data})=>{const t=Array.isArray(data)?data[0]:data;if(t)setTrack(t);});},[uid,isAdmin]);
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
   const addRole=()=>setRoles(p=>[...p,{...BLANK_ROLE}]);
@@ -21641,7 +22115,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const hasDraft=f.title.trim()||f.prod.trim()||f.synopsis.trim()||f.tagline.trim()||f.location.trim()||roles.some(r=>r.name.trim()||r.description.trim());
 
   // Persist draft to localStorage on every field change — survives remounts caused by background refreshes.
-  useEffect(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify({f,roles}));}catch(_){}}, [f,roles]);
+  useEffect(()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify({f,roles,pv}));}catch(_){}}, [f,roles,pv]);
 
   // Confirm before closing if the user has typed anything.
   const handleClose=()=>{
@@ -21788,13 +22262,15 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     if(!roles.length||!roles[0].name.trim()){setErr("At least one role with a name is required.");return;}
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     if(!f.go_live_at){setErr("Go Live Date & Time is required.");return;}
+    if(!isAdmin){const pe=pvValidate(pv,track);if(pe){setErr(pe);return;}}
     const goLive=resolveGoLive(f.go_live_at);
     if(goLive.err){setErr(goLive.err);return;}
     const goLiveISO=goLive.iso;
     setBusy(true);
     try{
       const payload={cd_id:uid,title:f.title.trim(),type:f.type,prod:f.prod||null,tagline:f.tagline||null,synopsis:f.synopsis||null,location:f.location||null,pay:f.pay||null,union_status:f.union,deadline:f.deadline||null,go_live_at:goLiveISO,has_nudity:!!f.has_nudity,nudity_details:f.has_nudity?(f.nudity_details||null):null,status:"pending_review",published:false,casting_website_url:f.casting_website_url.trim()||null,casting_image_url:castingImages[0]?.url||null,casting_image_path:castingImages[0]?.path||null,casting_images:castingImages,
-        shoot_start:f.shoot_start||null,shoot_end:f.shoot_end||null,shoot_location:(f.shoot_location||"").trim()||null,schedule_note:(f.schedule_note||"").trim()||null,talent_scope:f.talent_scope||null};
+        shoot_start:f.shoot_start||null,shoot_end:f.shoot_end||null,shoot_location:(f.shoot_location||"").trim()||null,schedule_note:(f.schedule_note||"").trim()||null,talent_scope:f.talent_scope||null,
+        ...(isAdmin?{}:{creator_path:pv.path,audition_mode:pv.mode})};
       const {data:casting,error:cErr}=await window.sb.from("castings").insert(payload).select().single();
       if(cErr)throw cErr;
       const rolePayload=roles.filter(r=>r.name.trim()).map(r=>{
@@ -21819,6 +22295,10 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         if(rErr)throw rErr;
         insertedRoles=rdata||[];
       }
+      if(!isAdmin){
+        const ve=await pvSave(casting.id,uid,pv);
+        if(ve)setPvWarn("Your casting was submitted, but your project proof didn't save ("+(ve.message||ve)+"). Open the casting from your dashboard, click Edit, and add it again.");
+      }
       setInserted({...casting,roles:insertedRoles});
       clearDraft(); // draft submitted — safe to clear
       setStep(2);
@@ -21829,6 +22309,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
       <div className="check"><Ico n="check" s={24}/></div>
       <h3>Casting Submitted</h3>
       <p>Your casting has been submitted for admin review. It will appear publicly once approved.</p>
+      {pvWarn&&<p style={{color:"#c0392b",fontSize:13,marginTop:10}}>{pvWarn}</p>}
       <button type="button" className="btn-p mt-20" onClick={()=>{clearDraft();onPosted(inserted);}}>Back to Dashboard</button>
     </div>:<>
       <h2>Post New Casting</h2>
@@ -22037,6 +22518,9 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         </div>)}
       </div>
 
+      {!isAdmin&&<ProjectVerifySection uid={uid} v={pv} setV={setPv} track={track}/>}
+      {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:20}}>{err}</div>}
+
       <div style={{display:"flex",gap:12,marginTop:24}}>
         <button type="button" className="btn-p" style={{flex:1}} onClick={submit} disabled={busy||uploadingImg}>{busy?"Submitting…":uploadingImg?"Uploading image…":"Submit for Review"}</button>
         <button type="button" className="btn-s" onClick={handleClose} disabled={busy||uploadingImg}>Cancel</button>
@@ -22101,7 +22585,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
       const timeout=new Promise((_,rej)=>{tid=setTimeout(()=>rej(new Error("FCS timed out after 10s")),10000);});
       const {data,error}=await Promise.race([
         window.sb.from("castings")
-          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,creator_path,audition_mode,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq("status","open").eq("published",true)
           // Scheduled publishing: exclude castings whose go-live time hasn't arrived yet.
           .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
@@ -22151,7 +22635,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         shoot_location:c.shoot_location||null,
         schedule_note:c.schedule_note||null,
         crew_credits:c.crew_credits||null,
-        talent_scope:c.talent_scope||null,
+        talent_scope:c.talent_scope||null,creator_path:c.creator_path||null,audition_mode:c.audition_mode||null,
         roles:(c.roles||[]).map(r=>({
           id:r.id||null,
           name:r.name,
@@ -40737,7 +41221,7 @@ function AdminCastingGenerator({session}){
       // selected here, or the form loads it as undefined, renders blank, and the
       // next save writes NULL over good data. The editor also re-fetches its own
       // full row on open as a backstop, but keep this list complete regardless.
-      fetchAllRows(()=>window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits").order("created_at",{ascending:false})).then(data=>({data})).catch(error=>({error})),
+      fetchAllRows(()=>window.sb.from("castings").select("id,title,type,prod,posted_by_label,casting_director_name,location,pay,union_status,status,published,is_admin_created,admin_verified,expires_at,go_live_at,submission_requirements,synopsis,tagline,has_nudity,nudity_details,casting_website_url,casting_image_url,casting_image_path,casting_images,created_at,updated_at,deadline,featured,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,creator_path,audition_mode,crew_credits").order("created_at",{ascending:false})).then(data=>({data})).catch(error=>({error})),
       fetchAllRows(()=>window.sb.from("roles").select("casting_id,name,description,gender,role_type,age_range,ethnicity,pay")).then(data=>({data})).catch(error=>({error})),
       fetchAllRows(()=>window.sb.from("casting_generator_seen").select("key,kind,meta,created_at"),{key:"key"}).then(data=>({data})).catch(error=>({error}))
     ]);
@@ -40956,7 +41440,7 @@ function AdminCastingGenerator({session}){
       // to move with it — otherwise the shoot location contradicts the new location.
       shoot_start:fresh.shoot_start||null,shoot_end:fresh.shoot_end||null,
       shoot_location:fresh.shoot_location||null,schedule_note:fresh.schedule_note||null,
-      talent_scope:fresh.talent_scope||null,
+      talent_scope:fresh.talent_scope||null,creator_path:fresh.creator_path||null,audition_mode:fresh.audition_mode||null,
       status:"draft",published:false,updated_at:new Date().toISOString()
     }).eq("id",c.id);
     if(!error){
@@ -41005,7 +41489,7 @@ function AdminCastingGenerator({session}){
       shoot_end:updated.shoot_end||null,
       shoot_location:(updated.shoot_location||"").trim()||null,
       schedule_note:(updated.schedule_note||"").trim()||null,
-      talent_scope:updated.talent_scope||null,
+      talent_scope:updated.talent_scope||null,creator_path:updated.creator_path||null,audition_mode:updated.audition_mode||null,
       updated_at:new Date().toISOString()
     };
     // ── Admin "revive an expired listing" ────────────────────────────────
@@ -44134,6 +44618,7 @@ function AdminCastings({onPendingCountChange}){
   const [editCasting,setEditCasting]=useState(null);
   const [busy,setBusy]=useState(null); // casting id + action key currently in flight
   const [tab,setTab]=useState("pending"); // "pending" | "all" | "active" | "other"
+  const [infoNote,setInfoNote]=useState(null); // "Needs more info" draft for the open Review modal (null = closed)
 
   const reload=useCallback(async()=>{
     setLoading(true);
@@ -44203,6 +44688,17 @@ function AdminCastings({onPendingCountChange}){
     reload();
   };
 
+  // Send back to the creator with a note (shown on their dashboard; no email).
+  const requestInfo=async(c,note)=>{
+    const key=c.id+":status";
+    setBusy(key);
+    const {error}=await window.sb.rpc("admin_request_casting_info",{p_casting_id:c.id,p_note:note});
+    setBusy(null);
+    if(error){showMsg("Failed: "+error.message,"error");return false;}
+    showMsg(`"${c.title}" sent back to the creator for more info.`,"info");
+    reload();return true;
+  };
+
   const doDelete=async(c)=>{
     if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all roles, and all submissions. Cannot be undone.`))return;
     const key=c.id+":delete";
@@ -44260,7 +44756,7 @@ function AdminCastings({onPendingCountChange}){
           const isPending=c.status==="pending_review";
           const statusColor=isPending?"#c88900":c.status==="open"?"#1d7b44":c.status==="rejected"?"#c0392b":"var(--t2)";
           const statusBg=isPending?"rgba(200,137,0,0.12)":c.status==="open"?"rgba(46,204,113,0.12)":c.status==="rejected"?"rgba(192,57,43,0.1)":"var(--s2)";
-          const statusLabel=isPending?"PENDING REVIEW":c.status==="open"?"ACTIVE":c.status.toUpperCase();
+          const statusLabel=isPending?"PENDING REVIEW":c.status==="open"?"ACTIVE":c.status==="needs_info"?"NEEDS MORE INFO":c.status.toUpperCase();
           const postedByType=c.profiles?.user_type||"cd";
           const typeLabel=postedByType==="admin"||postedByType==="super_admin"?"Admin"
             :postedByType==="cd"?(c.profiles?.company_name?"Production Company":"Casting Director")
@@ -44301,7 +44797,7 @@ function AdminCastings({onPendingCountChange}){
     }
 
     {/* Review / View modal */}
-    {viewCasting&&<div className="modal-overlay" onClick={()=>setViewCasting(null)}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:720,maxHeight:"92vh",overflowY:"auto"}}>
+    {viewCasting&&<div className="modal-overlay" onClick={()=>{setViewCasting(null);setInfoNote(null);}}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:720,maxHeight:"92vh",overflowY:"auto"}}>
       <div className="flex-between" style={{marginBottom:16}}>
         <h2 style={{marginBottom:0}}>{viewCasting.title}</h2>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -44322,6 +44818,8 @@ function AdminCastings({onPendingCountChange}){
         <div><strong style={{color:"var(--t1)"}}>Submitted:</strong> {new Date(viewCasting.created_at).toLocaleString()}</div>
         <div><strong style={{color:"var(--t1)"}}>Casting ID:</strong> <code style={{fontSize:10}}>{viewCasting.id}</code></div>
       </div>
+
+      {!viewCasting.is_admin_created&&viewCasting.cd_id&&<AdminCastingVerification casting={viewCasting}/>}
 
       {/* Core fields */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"10px 20px",fontSize:13,marginBottom:16}}>
@@ -44369,10 +44867,19 @@ function AdminCastings({onPendingCountChange}){
         <button className="btn-s" onClick={()=>{setEditCasting(viewCasting);setViewCasting(null);}}><Ico n="pencil" s={22}/> Edit</button>
         {viewCasting.status==="pending_review"&&<>
           <button className="btn-s" style={{color:"#fff",background:"#1d7b44",borderColor:"#1d7b44",fontWeight:700}} onClick={()=>{publishCasting(viewCasting);setViewCasting(null);}}><Ico n="check" s={24}/> Publish</button>
+          {!viewCasting.is_admin_created&&<button className="btn-s" style={{color:"#2553b8",borderColor:"#c9d6f2"}} onClick={()=>setInfoNote(n=>n==null?"Thanks for submitting! Before this can go live, could you add ":n)}>Needs more info</button>}
           <button className="btn-s" style={{color:"#fff",background:"#c0392b",borderColor:"#c0392b"}} onClick={()=>{setStatus(viewCasting,"rejected");setViewCasting(null);}}><Ico n="x" s={24}/> Reject</button>
         </>}
-        <button className="btn-p" style={{marginLeft:"auto"}} onClick={()=>setViewCasting(null)}>Close</button>
+        <button className="btn-p" style={{marginLeft:"auto"}} onClick={()=>{setViewCasting(null);setInfoNote(null);}}>Close</button>
       </div>
+      {infoNote!=null&&viewCasting.status==="pending_review"&&<div style={{marginTop:14,padding:14,border:"1px solid #c9d6f2",background:"#F3F6FD",borderRadius:10}}>
+        <label className="label">Message to the creator (shown on their dashboard, no email)</label>
+        <textarea className="textarea" style={{minHeight:80}} value={infoNote} onChange={e=>setInfoNote(e.target.value)}/>
+        <div style={{display:"flex",gap:8,marginTop:8}}>
+          <button className="btn-p btn-sm" disabled={!infoNote.trim()||busy===viewCasting.id+":status"} onClick={async()=>{if(await requestInfo(viewCasting,infoNote.trim())){setInfoNote(null);setViewCasting(null);}}}>{busy===viewCasting.id+":status"?"Sending…":"Send to creator"}</button>
+          <button className="btn-s btn-sm" onClick={()=>setInfoNote(null)}>Cancel</button>
+        </div>
+      </div>}
     </div></div>}
 
     {editCasting&&<EditCastingModal casting={editCasting} onClose={()=>setEditCasting(null)} onSaved={()=>{setEditCasting(null);reload();}}/>}
@@ -49367,7 +49874,7 @@ function App(){
     if(!castingId)return null;
     try{
       const{data,error}=await window.sb.from("castings")
-        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+        .select("id,slug,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,casting_image_url,casting_image_path,casting_images,casting_website_url,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,creator_path,audition_mode,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
         .eq("id",castingId).maybeSingle();
       if(error||!data)return null;
       const c={
@@ -49384,7 +49891,7 @@ function App(){
         casting_website_url:data.casting_website_url||null,
         shoot_start:data.shoot_start||null,shoot_end:data.shoot_end||null,
         shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,crew_credits:data.crew_credits||null,
-        talent_scope:data.talent_scope||null,
+        talent_scope:data.talent_scope||null,creator_path:data.creator_path||null,audition_mode:data.audition_mode||null,
         roles:(data.roles||[]).map(r=>({
           id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
           ageRange:r.age_range||"",gender:r.gender||"Any",
@@ -49640,7 +50147,7 @@ function App(){
         const isUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         const field=isUUID?"id":"slug";
         const {data,error}=await window.sb.from("castings")
-          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
+          .select("id,title,type,prod,tagline,synopsis,location,pay,deadline,expires_at,go_live_at,created_at,union_status,featured,is_admin_created,admin_verified,cd_id,status,published,has_nudity,nudity_details,casting_image_url,casting_image_path,casting_images,casting_website_url,slug,shoot_start,shoot_end,shoot_location,schedule_note,talent_scope,creator_path,audition_mode,crew_credits,roles(id,name,description,gender,age_range,ethnicity,pay,role_type,rate_amount,rate_unit,est_days,required_media,prescreen),profiles:cd_id(display_name,company_name,headshot_url,verified,identity_verified,background_check_status,can_post_castings,verification_status)")
           .eq(field,slug).maybeSingle();
         if(cancelled||error||!data)return;
         // Guard: hide pending/unpublished AND not-yet-live (scheduled) castings from
@@ -49672,7 +50179,7 @@ function App(){
           // browse-list one or At a Glance / Where & When silently vanish there.
           shoot_start:data.shoot_start||null,shoot_end:data.shoot_end||null,
           shoot_location:data.shoot_location||null,schedule_note:data.schedule_note||null,crew_credits:data.crew_credits||null,
-          talent_scope:data.talent_scope||null,
+          talent_scope:data.talent_scope||null,creator_path:data.creator_path||null,audition_mode:data.audition_mode||null,
           roles:(data.roles||[]).map(r=>({
             id:r.id||null,name:r.name||"",desc:r.description||"",type:r.role_type||"Supporting",
             ageRange:r.age_range||"",gender:r.gender||"Any",
