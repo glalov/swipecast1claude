@@ -21279,22 +21279,24 @@ function CastingCreatorVerificationBanner({myProfile}){
 // (CD + admin only); uploads go to the private casting-verification bucket.
 // castings.creator_path + castings.audition_mode are the only public parts —
 // actors see them as "Made by" and "Audition format" on the casting page.
-// The admin review screen is AdminCastingVerification.
+// The admin review screen is AdminCastingVerification. Part 1 (ProjectVerifyWho) sits
+// right after Project Type; part 2 (ProjectVerifyAuditions) sits above Submit.
 const PV_PATHS={
+  // Proofs are listed easiest-first: a plain link leads each list.
   company:{label:"Production company",seen:"Production company",icon:"building",desc:"A studio, production company, agency or brand",proofs:[
-    {k:"email",strong:true,t:"Company email",d:"We send a code to an address at your company's domain",in:"email"},
+    {k:"web",t:"Company or project website",d:"A page that mentions this project",in:"url",ph:"https://…"},
     {k:"imdb",strong:true,t:"IMDb / IMDbPro",d:"Project, company or director page",in:"url",ph:"https://www.imdb.com/title/…"},
+    {k:"email",strong:true,t:"Company email",d:"We send a code to an address at your company's domain",in:"email"},
     {k:"sag",strong:true,t:"SAG-AFTRA signatory #",d:"Your project's production number",in:"text",ph:"e.g. 0123456"},
     {k:"ins",strong:true,t:"Insurance or film permit",d:"Certificate of insurance or a location/film permit",in:"file"},
-    {k:"web",t:"Company or project website",d:"A page that mentions this project",in:"url",ph:"https://…"},
     {k:"press",t:"Festival, grant, crowdfunding or press",d:"Any public page about the project",in:"url",ph:"https://…"},
     {k:"social",t:"Project social media",d:"Instagram, TikTok, Facebook, etc.",in:"url",ph:"https://instagram.com/…"},
     {k:"deck",t:"One page of the project",d:"Title page, pitch deck or lookbook cover. One page is enough",in:"file"}]},
   student:{label:"Student project",seen:"Student project",icon:"school",desc:"Class, thesis or film-school production",proofs:[
+    {k:"course",t:"Class or program page",d:"A link to the course, program or thesis listing",in:"url",ph:"https://…"},
     {k:"edu",strong:true,t:"School email",d:"We send a code to your .edu (or school) address",in:"email"},
     {k:"sid",strong:true,t:"Student ID or enrollment letter",d:"Photo of your current student ID or an enrollment letter",in:"file"},
     {k:"advisor",t:"Instructor or advisor",d:"Name and school email of your teacher or thesis advisor",in:"ref2"},
-    {k:"course",t:"Class or program page",d:"A link to the course, program or thesis listing",in:"url",ph:"https://…"},
     {k:"deck",t:"One page of the project",d:"Title page, treatment, mood board or shot list",in:"file"}]},
   indie:{label:"Independent creator",seen:"Independent project",icon:"movie",desc:"Just you (and friends). Self-produced, first projects welcome",proofs:[
     {k:"video",req:true,t:"30–60 second intro video",d:"You on camera: who you are and what you're making",in:"video"},
@@ -21312,24 +21314,24 @@ const PV_VENUES={
   indieTrusted:[["office","Office or production space"],["studio","Rented rehearsal / casting studio"],["rental","Community center or library room"]]
 };
 const PV_STANDARDS=[
-  "No auditions or meetings in private homes, apartments or hotel rooms.",
-  "No nudity or partial nudity at any first audition.",
-  "Actors are never charged a fee to audition, book or be considered.",
-  "A parent or guardian is present for anyone under 18.",
-  "I'll keep first contact with actors on CastSlate messages."
+  "No auditions or meetings in private homes, apartments or hotel rooms",
+  "No nudity or partial nudity at any first audition",
+  "Actors are never charged a fee to audition, book or be considered",
+  "A parent or guardian is present for anyone under 18",
+  "First contact with actors stays on CastSlate messages"
 ];
 const PV_RISKY_VENUE=/\b(home|my house|private house|apartment|apt\.?|my place|hotel|motel|inn|hostel|airbnb|vrbo|residence|bedroom|condo)\b/i;
 const PV_MAX_UPLOAD=50*1024*1024;
-function pvBlank(){return {path:null,first:null,proofs:{},vals:{},mode:null,venueType:"",venueName:"",venueAddr:"",firstLook:false,std:PV_STANDARDS.map(()=>false)};}
+// open = which proof row is expanded, hl = highlight the STRONG rows (both UI-only, never saved).
+function pvBlank(){return {path:null,first:null,vals:{},mode:null,venueType:"",venueName:"",venueAddr:"",firstLook:false,agreed:false,open:null,hl:false};}
 // Rebuild form state from a saved casting_verifications row.
 function pvFromRecord(rec){
   if(!rec)return pvBlank();
   const v=pvBlank();
   v.path=rec.creator_path||null;v.first=rec.first_project??null;v.mode=rec.audition_mode||null;
   v.venueType=rec.venue_type||"";v.venueName=rec.venue_name||"";v.venueAddr=rec.venue_address||"";v.firstLook=!!rec.first_look;
-  v.std=PV_STANDARDS.map(()=>!!rec.standards_ack_at);
-  (Array.isArray(rec.proofs)?rec.proofs:[]).forEach(p=>{if(p&&p.k){v.proofs[p.k]=true;v.vals[p.k]=p.val;}});
-  if(v.path==="indie")v.proofs.video=true;
+  v.agreed=!!rec.standards_ack_at;
+  (Array.isArray(rec.proofs)?rec.proofs:[]).forEach(p=>{if(p&&p.k)v.vals[p.k]=p.val;});
   return v;
 }
 function pvList(v){return v.path?PV_PATHS[v.path].proofs.filter(p=>!(v.path==="indie"&&v.first===true&&p.k==="work")):[];}
@@ -21340,7 +21342,8 @@ function pvFilled(p,val){
   if(p.in==="ref"||p.in==="ref2")return !!(String(val.name||"").trim()&&String(val.link||"").trim());
   return !!String(val).trim();
 }
-function pvDone(v){return pvList(v).filter(p=>v.proofs[p.k]&&pvFilled(p,v.vals[p.k]));}
+// A proof counts as chosen as soon as it is filled in — there is no separate tick.
+function pvDone(v){return pvList(v).filter(p=>pvFilled(p,v.vals[p.k]));}
 // "none" | "light" | "strong" | "indie_ok"
 function pvLevel(v){
   if(!v.path)return "none";
@@ -21351,27 +21354,32 @@ function pvLevel(v){
 }
 // track = {completed, reports} from cd_track_record; trusted indie creators get company-level in-person rules.
 function pvTrusted(track){return !!track&&track.completed>=2&&track.reports===0;}
-function pvValidate(v,track){
-  if(!v.path)return "Tell us who's making this project (in “Help us confirm your project”).";
-  if(v.path==="indie"&&v.first===null)return "Tell us whether this is your first project.";
-  if(pvLevel(v)==="none")return v.path==="indie"?"Add your intro video plus one more item, so we can confirm your project.":"Please share at least one thing that shows your project is real (in “Help us confirm your project”).";
-  if(!v.mode)return "Choose how auditions will happen.";
-  if(v.mode==="inperson"){
-    if(!v.venueType)return "Choose the type of space for in-person auditions.";
-    if(!v.venueName.trim()||!v.venueAddr.trim())return "Add the name and address of the audition space.";
-    if(PV_RISKY_VENUE.test(v.venueName+" "+v.venueAddr))return "In-person auditions must be at a studio, rental space, office or campus, not a home or hotel.";
-    if(v.path==="indie"&&!pvTrusted(track)&&!v.firstLook)return "Independent in-person castings start with a self-tape or video-call round. Please confirm that.";
-    if(v.path!=="indie"&&pvLevel(v)!=="strong")return v.path==="student"?"In-person student auditions need a school email or student ID.":"In-person auditions need a proof marked STRONG, or switch to self-tape or virtual.";
+function pvNeedsStrong(v){return v.mode==="inperson"&&!!v.path&&v.path!=="indie"&&pvLevel(v)!=="strong";}
+// Everything still missing, all at once: [{t, box, field}]. box/field are element ids to jump to.
+function pvMissing(v,track){
+  const m=[];
+  if(!v.path)m.push({t:"Who's making this project",box:"pv-who"});
+  else if(v.path==="indie"&&v.first===null)m.push({t:"Whether this is your first project",box:"pv-who"});
+  else if(pvLevel(v)==="none")m.push({t:v.path==="indie"?"Your intro video plus one more item":"One piece of proof that the project is real",box:"pv-who"});
+  if(!v.mode)m.push({t:"How auditions will happen",box:"pv-aud"});
+  else if(v.mode==="inperson"){
+    if(pvNeedsStrong(v))m.push({t:v.path==="student"?"A school email or student ID (needed for in-person auditions)":"A STRONG proof (needed for in-person auditions)",box:"pv-who"});
+    if(!v.venueType)m.push({t:"Type of audition space",box:"pv-aud",field:"pv-vtype"});
+    if(!v.venueName.trim())m.push({t:"Name of the audition space",box:"pv-aud",field:"pv-vname"});
+    if(!v.venueAddr.trim())m.push({t:"Street address of the audition space",box:"pv-aud",field:"pv-vaddr"});
+    if(PV_RISKY_VENUE.test(v.venueName+" "+v.venueAddr))m.push({t:"A studio, office or campus (not a home or hotel)",box:"pv-aud",field:"pv-vname"});
+    if(v.path==="indie"&&!pvTrusted(track)&&!v.firstLook)m.push({t:"Confirm the first round is a self-tape or video call",box:"pv-aud"});
   }
-  if(v.std.some(x=>!x))return "Please confirm each of the audition standards.";
-  return "";
+  if(!v.agreed)m.push({t:"Agree to the audition standards",box:"pv-std"});
+  return m;
 }
+function pvValidate(v,track){const m=pvMissing(v,track);return m.length?m[0].t:"";}
 function pvToRecord(v){
   const proofs=pvDone(v).map(p=>({k:p.k,t:p.t,strong:!!p.strong,in:p.in,val:v.vals[p.k]}));
   const ip=v.mode==="inperson";
   return {creator_path:v.path,first_project:v.path==="indie"?v.first:null,proofs,audition_mode:v.mode,
     venue_type:ip?v.venueType||null:null,venue_name:ip?v.venueName.trim()||null:null,venue_address:ip?v.venueAddr.trim()||null:null,
-    first_look:ip&&v.path==="indie"?!!v.firstLook:null,standards_ack_at:v.std.every(Boolean)?new Date().toISOString():null};
+    first_look:ip&&v.path==="indie"?!!v.firstLook:null,standards_ack_at:v.agreed?new Date().toISOString():null};
 }
 async function pvSave(castingId,cdId,v){
   if(!v.path||!v.mode)return null;
@@ -21392,28 +21400,42 @@ function pvVideoSeconds(file){
     }catch(_){res(null);}
   });
 }
+function pvJump(id){try{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"center"});}catch(_){}}
 
-const pvBox={position:"relative",border:"1.5px solid var(--teal)",background:"rgba(42,132,114,0.05)",borderRadius:14,padding:"20px 18px 16px",margin:"24px 0 0"};
+const pvBoxSt=(bad)=>({position:"relative",border:"1.5px solid "+(bad?"#c0392b":"var(--teal)"),boxShadow:bad?"0 0 0 3px rgba(192,57,43,0.12)":"none",background:"rgba(42,132,114,0.05)",borderRadius:14,padding:"20px 18px 16px",margin:"8px 0 22px",transition:"border-color .2s,box-shadow .2s"});
+const pvTag=(bad)=><span style={{position:"absolute",top:-10,left:16,background:bad?"#c0392b":"var(--teal)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"3px 9px",borderRadius:99}}>REQUIRED</span>;
 const pvLead={fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:"6px 0 14px"};
-const pvCard=(on)=>({display:"flex",gap:10,alignItems:"flex-start",textAlign:"left",background:on?"#fff":"var(--s1)",border:"1px solid "+(on?"var(--teal)":"var(--bdr)"),boxShadow:on?"inset 0 0 0 1px var(--teal)":"none",borderRadius:10,padding:"11px 12px",cursor:"pointer",font:"inherit",fontSize:13,color:"var(--t1)",minWidth:0,width:"100%"});
+const pvCard=(on)=>({display:"block",textAlign:"left",background:on?"#fff":"var(--s1)",border:"1px solid "+(on?"var(--teal)":"var(--bdr)"),boxShadow:on?"inset 0 0 0 1px var(--teal)":"none",borderRadius:12,padding:"13px 12px",cursor:"pointer",font:"inherit",fontSize:13,color:"var(--t1)",minWidth:0,width:"100%"});
 const pvChip=(bg,fg)=>({display:"inline-block",fontSize:9.5,fontWeight:800,letterSpacing:.6,color:fg,background:bg,padding:"1px 6px",borderRadius:99,marginLeft:5,verticalAlign:1});
 const pvNote=(kind)=>kind==="warn"
   ?{marginTop:10,background:"rgba(192,57,43,0.08)",border:"1px solid rgba(192,57,43,0.25)",color:"#a93226",fontSize:12.5,lineHeight:1.5,padding:"10px 12px",borderRadius:8}
-  :{marginTop:10,background:"rgba(232,144,42,0.1)",border:"1px solid rgba(232,144,42,0.3)",color:"#8a5210",fontSize:12.5,lineHeight:1.5,padding:"10px 12px",borderRadius:8};
+  :{marginTop:10,background:"rgba(232,144,42,0.1)",border:"1px solid rgba(232,144,42,0.35)",color:"#8a5210",fontSize:12.5,lineHeight:1.5,padding:"10px 12px",borderRadius:8};
+const pvIsMobile=()=>typeof window!=="undefined"&&window.innerWidth<640;
+const pvBadField={borderColor:"#c0392b",boxShadow:"0 0 0 3px rgba(192,57,43,0.12)"};
 
-function ProjectVerifySection({uid,v,setV,track}){
-  const isMobile=typeof window!=="undefined"&&window.innerWidth<640;
+// "Still needed" list shown beside Submit once the creator has tried to submit.
+// It recomputes on every render, so items disappear as they are filled in.
+function PvMissingList({missing}){
+  if(!missing||!missing.length)return null;
+  return <div style={{background:"rgba(192,57,43,0.08)",border:"1px solid rgba(192,57,43,0.3)",color:"#a93226",borderRadius:10,padding:"12px 14px",fontSize:13,marginTop:18,lineHeight:1.7}}>
+    <b>Almost there. Still needed:</b>
+    {missing.map((x,i)=><div key={i}>• <a onClick={()=>pvJump(x.field||x.box)} style={{color:"#a93226",fontWeight:700,textDecoration:"underline",cursor:"pointer"}}>{x.t}</a></div>)}
+  </div>;
+}
+
+// Part 1 — sits near the top of the form, right after Project Type.
+function ProjectVerifyWho({uid,v,setV,track,missing}){
+  const isMobile=pvIsMobile();
   const [upBusy,setUpBusy]=useState("");
   const [upErr,setUpErr]=useState({});
   const [codeIn,setCodeIn]=useState({});
   const [codeMsg,setCodeMsg]=useState({});
   const [codeBusy,setCodeBusy]=useState("");
-  const set=(patch)=>setV(p=>({...p,...patch}));
   const setVal=(k,val)=>setV(p=>({...p,vals:{...p.vals,[k]:val}}));
-  const trusted=pvTrusted(track);
+  const bad=(missing||[]).some(x=>x.box==="pv-who");
   const lvl=pvLevel(v);
-  const pickPath=(p)=>setV(prev=>prev.path===p?prev:{...prev,path:p,first:null,proofs:p==="indie"?{video:true}:{},vals:{},venueType:""});
-  const toggleProof=(p)=>{if(p.req)return;setV(prev=>({...prev,proofs:{...prev.proofs,[p.k]:!prev.proofs[p.k]}}));};
+  const trusted=pvTrusted(track);
+  const pickPath=(k)=>setV(prev=>prev.path===k?prev:{...prev,path:k,first:null,vals:{},venueType:"",hl:false,open:k==="indie"?"video":PV_PATHS[k].proofs[0].k});
 
   const upload=async(k,file,isVideo)=>{
     if(!file)return;
@@ -21429,13 +21451,17 @@ function ProjectVerifySection({uid,v,setV,track}){
     }catch(e){setUpErr(x=>({...x,[k]:"Upload failed: "+(e.message||e)}));}
     finally{setUpBusy("");}
   };
+  const callCode=async(body)=>{
+    const {data,error}=await window.sb.functions.invoke("proof-email-code",{body});
+    let msg=data?.error;
+    if(error){try{const b=await error.context?.json();msg=b?.error||error.message;}catch(_){msg=error.message;}}
+    return {data,msg};
+  };
   const sendCode=async(p)=>{
     const email=String((v.vals[p.k]||{}).email||"").trim();
     setCodeBusy(p.k);setCodeMsg(m=>({...m,[p.k]:""}));
     try{
-      const {data,error}=await window.sb.functions.invoke("proof-email-code",{body:{action:"send",email,kind:p.k==="edu"?"school":"company"}});
-      let msg=data?.error;
-      if(error){try{const b=await error.context?.json();msg=b?.error||error.message;}catch(_){msg=error.message;}}
+      const {msg}=await callCode({action:"send",email,kind:p.k==="edu"?"school":"company"});
       if(msg){setCodeMsg(m=>({...m,[p.k]:msg}));return;}
       setVal(p.k,{email,sent:true});
       setCodeMsg(m=>({...m,[p.k]:"Code sent. Check that inbox (and spam)."}));
@@ -21445,9 +21471,7 @@ function ProjectVerifySection({uid,v,setV,track}){
     const email=String((v.vals[p.k]||{}).email||"").trim();
     setCodeBusy(p.k);
     try{
-      const {data,error}=await window.sb.functions.invoke("proof-email-code",{body:{action:"verify",email,code:codeIn[p.k]||""}});
-      let msg=data?.error;
-      if(error){try{const b=await error.context?.json();msg=b?.error||error.message;}catch(_){msg=error.message;}}
+      const {data,msg}=await callCode({action:"verify",email,code:codeIn[p.k]||""});
       if(msg||!data?.id){setCodeMsg(m=>({...m,[p.k]:msg||"That didn't work. Try again."}));return;}
       setVal(p.k,{email,sent:true,codeId:data.id});
       setCodeMsg(m=>({...m,[p.k]:""}));
@@ -21466,127 +21490,140 @@ function ProjectVerifySection({uid,v,setV,track}){
         <input type="file" accept="video/*" capture="user" style={{display:"none"}} disabled={!!upBusy} onChange={e=>{const f=e.target.files?.[0];e.target.value="";upload(p.k,f,true);}}/></label>}
     </div>;
   };
-
-  const proofInput=(p)=>{
+  const proofBody=(p)=>{
     const val=v.vals[p.k];
-    const lbl=<label className="label" style={{marginBottom:8}}>{p.t}</label>;
-    let body;
     if(p.in==="email"){
       const cur=val||{};
-      if(cur.codeId)body=<div style={{fontSize:13,fontWeight:600}}><span style={{color:"var(--grn)"}}><Ico n="check" s={18}/> Confirmed</span> {cur.email}</div>;
-      else body=<>
+      if(cur.codeId)return <div style={{fontSize:13,fontWeight:600}}><span style={{color:"var(--grn)"}}><Ico n="check" s={18}/> Confirmed</span> {cur.email}</div>;
+      return <>
         <div style={{display:"flex",gap:8}}><input className="input" value={cur.email||""} placeholder={p.k==="edu"?"you@school.edu":"you@yourcompany.com"} onChange={e=>setVal(p.k,{email:e.target.value})}/>
           <button type="button" className="btn-s btn-sm" style={{whiteSpace:"nowrap"}} disabled={codeBusy===p.k||!String(cur.email||"").trim()} onClick={()=>sendCode(p)}>{codeBusy===p.k&&!cur.sent?"Sending…":cur.sent?"Resend":"Send code"}</button></div>
         {cur.sent&&<div style={{display:"flex",gap:8,marginTop:8}}><input className="input" inputMode="numeric" maxLength={6} value={codeIn[p.k]||""} placeholder="6-digit code" onChange={e=>setCodeIn(c=>({...c,[p.k]:e.target.value.replace(/\D/g,"")}))}/>
           <button type="button" className="btn-p btn-sm" disabled={codeBusy===p.k||(codeIn[p.k]||"").length!==6} onClick={()=>confirmCode(p)}>{codeBusy===p.k?"Checking…":"Confirm"}</button></div>}
-        <p className="help" style={{fontSize:11,color:codeMsg[p.k]&&!/^Code sent/.test(codeMsg[p.k])?"#c0392b":"var(--t3)",marginTop:6,lineHeight:1.5}}>{codeMsg[p.k]||(p.k==="edu"?"Your school-issued address.":"Gmail, Yahoo and other free addresses don't count here. Use another option instead.")}</p>
+        <p style={{fontSize:11,color:codeMsg[p.k]&&!/^Code sent/.test(codeMsg[p.k])?"#c0392b":"var(--t3)",marginTop:6,lineHeight:1.5}}>{codeMsg[p.k]||(p.k==="edu"?"Your school-issued address.":"Gmail, Yahoo and other free addresses don't count here. Pick another option instead.")}</p>
       </>;
-    }else if(p.in==="video"){
-      body=<>
-        <ul style={{margin:"0 0 10px",paddingLeft:18,fontSize:12,color:"var(--t2)",lineHeight:1.6}}><li>Your name and where you're based</li><li>What the project is, in a sentence or two</li><li>Why you want to make it</li><li>When and where you plan to shoot</li></ul>
-        {fileRow(p,val,"video/*",true)}
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:6,lineHeight:1.5}}>A phone video is perfect (under 50 MB). Only CastSlate admins see it. We compare it with your ID check, and that's all it's used for.</p>
-      </>;
-    }else if(p.in==="file"){
-      body=fileRow(p,val,".pdf,image/*,video/*",false);
-    }else if(p.in==="ref"||p.in==="ref2"){
-      const r=val||{};
-      body=<><div className="form-row" style={{marginBottom:0}}><input className="input" value={r.name||""} placeholder="Full name" onChange={e=>setVal(p.k,{...r,name:e.target.value})}/><input className="input" value={r.link||""} placeholder={p.in==="ref2"?"Their school email":"Instagram, IMDb, website or portfolio link"} onChange={e=>setVal(p.k,{...r,link:e.target.value})}/></div>
-        <p style={{fontSize:11,color:"var(--t3)",marginTop:6}}>We may reach out to them to confirm.</p></>;
-    }else{
-      body=<input className="input" value={val||""} placeholder={p.ph||""} onChange={e=>setVal(p.k,e.target.value)}/>;
     }
-    return <div key={p.k} style={{background:"#fff",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px"}}>{lbl}{body}
-      {upErr[p.k]&&<p style={{fontSize:12,color:"#c0392b",marginTop:6}}>{upErr[p.k]}</p>}</div>;
+    if(p.in==="video")return <>
+      <div style={{fontSize:12,color:"var(--t2)",lineHeight:1.6,marginBottom:8}}>Say your name, what the project is, why you want to make it, and when and where you plan to shoot. A phone video is perfect (under 50 MB).</div>
+      {fileRow(p,val,"video/*",true)}
+      <p style={{fontSize:11,color:"var(--t3)",marginTop:6,lineHeight:1.5}}>Only CastSlate admins see it. We compare it with your ID check, and that's all it's used for.</p>
+    </>;
+    if(p.in==="file")return fileRow(p,val,".pdf,image/*,video/*",false);
+    if(p.in==="ref"||p.in==="ref2"){
+      const r=val||{};
+      return <><div className="form-row" style={{marginBottom:0}}><input className="input" value={r.name||""} placeholder="Full name" onChange={e=>setVal(p.k,{...r,name:e.target.value})}/><input className="input" value={r.link||""} placeholder={p.in==="ref2"?"Their school email":"Instagram, IMDb, website or portfolio link"} onChange={e=>setVal(p.k,{...r,link:e.target.value})}/></div>
+        <p style={{fontSize:11,color:"var(--t3)",marginTop:6}}>We may reach out to them to confirm.</p></>;
+    }
+    return <input className="input" value={val||""} placeholder={p.ph||""} onChange={e=>setVal(p.k,e.target.value)}/>;
   };
 
   const meter=(()=>{
-    if(!v.path)return null;
-    let tone="none",txt;
+    if(!v.path||(v.path==="indie"&&v.first===null))return null;
+    let tone,txt;
     if(v.path==="indie"){
       const d=pvDone(v),hasV=d.some(p=>p.k==="video");
       tone=lvl==="indie_ok"?"good":(hasV||d.length)?"mid":"none";
-      txt=v.first===null?"Tell us if this is your first project."
-        :lvl==="indie_ok"?(trusted?"✓ You're all set. Any audition type is open to you.":"✓ You're all set. Self-tape and virtual auditions are open to you. In-person auditions work at a rented studio or community space.")
+      txt=lvl==="indie_ok"?(trusted?"✓ You're all set. Any audition type is open to you.":"✓ You're all set. Self-tape and virtual auditions are open to you. In-person auditions work at a rented studio or community space.")
         :!hasV?"Add your intro video, plus one more item.":"✓ Intro video added. Now add one more item.";
     }else{
-      tone=lvl==="strong"?"good":lvl==="light"?"mid":"none";
+      tone=lvl==="strong"?"good":lvl==="light"?"good":"none";
       txt=lvl==="strong"?"✓ Strong proof. Any audition type is allowed."
-        :lvl==="light"?"✓ Proof added. Enough for self-tape or virtual auditions. In-person auditions need a STRONG proof."
-        :"Pick at least one and fill it in to continue.";
+        :lvl==="light"?"✓ That's enough for self-tape or virtual auditions. In-person auditions also need a STRONG proof."
+        :"Open any option above and fill it in. One is enough.";
     }
     const st=tone==="good"?{background:"rgba(29,123,68,0.1)",color:"#1d7b44"}:tone==="mid"?{background:"rgba(232,144,42,0.12)",color:"#9a5a10"}:{background:"var(--s2)",color:"var(--t3)"};
-    return <div style={{...st,marginTop:14,fontSize:12.5,fontWeight:600,padding:"10px 12px",borderRadius:9,lineHeight:1.45}}>{txt}</div>;
+    return <div style={{...st,marginTop:12,fontSize:12.5,fontWeight:600,padding:"10px 12px",borderRadius:9,lineHeight:1.45}}>{txt}</div>;
   })();
 
+  const showStrongHl=v.hl&&pvNeedsStrong(v);
+  return(<div id="pv-who" style={pvBoxSt(bad)}>{pvTag(bad)}
+    <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Who's making this project? <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"var(--teal-dk)",background:"rgba(42,132,114,0.1)",padding:"3px 9px",borderRadius:99,marginLeft:6,verticalAlign:2}}><Ico n="lock" s={13}/> Private, never shown to actors</span></h3>
+    <p style={pvLead}>Every casting is reviewed by a person before it goes live. You don't need a company, a school or any credits, and we'll never ask for your script. Just show us <b>one</b> thing that proves the project is real.</p>
+    <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:8}}>
+      {Object.entries(PV_PATHS).map(([k,P])=><button type="button" key={k} onClick={()=>pickPath(k)} style={pvCard(v.path===k)}>
+        <span style={{display:"block",marginBottom:6,color:"var(--teal-dk)"}}><Ico n={P.icon} s={22}/></span>
+        <b style={{display:"block",fontSize:13.5}}>{k==="company"?"A production company":k==="student"?"A student project":"Independent creator"}</b>
+        <small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:3,lineHeight:1.4}}>{P.desc}</small></button>)}
+    </div>
+    {v.path&&<p style={{fontSize:11.5,color:"var(--t3)",margin:"8px 0 14px"}}>Actors will see <b style={{display:"inline-block",fontSize:10.5,fontWeight:800,padding:"2px 8px",borderRadius:99,background:"var(--s2)",color:"var(--t2)"}}>{PV_PATHS[v.path].seen}</b> on the casting. No label is better or worse.</p>}
+    {v.path==="indie"&&<>
+      <div style={{background:"#fff",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:13,fontWeight:600}}>
+        <span>Is this your first project?</span>
+        <span style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {[[true,"Yes, my first"],[false,"I've made things before"]].map(([val,l])=><button type="button" key={l} onClick={()=>setV(p=>({...p,first:val,open:"video"}))} style={{fontSize:13,padding:"7px 16px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:v.first===val?"var(--acc)":"var(--s2)",color:v.first===val?"#fff":"var(--t2)"}}>{l}</button>)}
+        </span>
+      </div>
+      {v.first===true&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}><b>Welcome, first projects are exactly what CastSlate is for.</b> Show us <b>you</b> (a short intro video) and <b>one thing you've already started</b> for this project. That's it.</div>}
+      {v.first===false&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}>Great. Linking your past work is the quickest way through review.</div>}
+    </>}
+    {v.path&&(v.path!=="indie"||v.first!==null)&&<>
+      <label className="label" style={{marginTop:4}}>{v.path==="indie"?"Your intro video, plus one more":"Pick one, easiest first"}</label>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {pvList(v).map(p=>{
+          const done=pvFilled(p,v.vals[p.k]),open=v.open===p.k,hl=showStrongHl&&p.strong;
+          return <div key={p.k} id={"pv-row-"+p.k} style={{border:"1px solid "+(done?"var(--grn)":open?"var(--teal)":"var(--bdr)"),background:open||done?"#fff":"var(--s1)",borderRadius:10,overflow:"hidden",boxShadow:hl?"0 0 0 3px rgba(234,192,128,0.9)":"none"}}>
+            <button type="button" onClick={()=>setV(x=>({...x,open:x.open===p.k?null:p.k}))} style={{display:"flex",gap:10,alignItems:"center",padding:"11px 12px",cursor:"pointer",width:"100%",background:"none",border:0,textAlign:"left",font:"inherit",fontSize:13,color:"var(--t1)"}}>
+              <span style={{flex:"0 0 20px",height:20,borderRadius:"50%",border:"1.5px solid "+(done?"var(--grn)":"var(--bdr)"),background:done?"var(--grn)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff"}}>{done&&<Ico n="check" s={13}/>}</span>
+              <span style={{minWidth:0,flex:1}}><b style={{fontSize:13}}>{p.t}</b>{p.strong&&<span style={pvChip("rgba(29,123,68,0.1)","#1d7b44")}>STRONG</span>}{p.req&&<span style={pvChip("rgba(232,144,42,0.15)","#8a5210")}>REQUIRED</span>}
+                <small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:1,lineHeight:1.35}}>{p.d}</small></span>
+              <span style={{color:"var(--t3)"}}><Ico n={open?"chevron-up":"chevron-down"} s={16}/></span>
+            </button>
+            {open&&<div style={{padding:isMobile?"0 12px 12px":"0 12px 12px 42px"}}>{proofBody(p)}{upErr[p.k]&&<p style={{fontSize:12,color:"#c0392b",marginTop:6}}>{upErr[p.k]}</p>}</div>}
+          </div>;
+        })}
+      </div>
+      {meter}
+    </>}
+  </div>);
+}
+
+// Part 2 — how auditions happen + the standards; sits at the bottom, above Submit.
+function ProjectVerifyAuditions({v,setV,track,missing}){
+  const isMobile=pvIsMobile();
+  const set=(patch)=>setV(p=>({...p,...patch}));
+  const trusted=pvTrusted(track);
+  const badAud=(missing||[]).some(x=>x.box==="pv-aud");
+  const badStd=(missing||[]).some(x=>x.box==="pv-std");
+  const badField=(id)=>(missing||[]).some(x=>x.field===id)?pvBadField:{};
   const venues=PV_VENUES[v.path==="indie"&&trusted?"indieTrusted":(v.path||"indie")];
   const risky=v.mode==="inperson"&&PV_RISKY_VENUE.test(v.venueName+" "+v.venueAddr);
-  const newTag=<span style={{position:"absolute",top:-10,left:16,background:"var(--teal)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"3px 9px",borderRadius:99}}>REQUIRED</span>;
-
+  const needStrong=pvNeedsStrong(v);
+  const showWhere=()=>{
+    const first=PV_PATHS[v.path].proofs.find(p=>p.strong);
+    setV(p=>({...p,hl:true,open:first.k}));
+    setTimeout(()=>pvJump("pv-row-"+first.k),60);
+  };
   return(<>
-    {/* 1 · Who's making this + proof */}
-    <div style={pvBox}>{newTag}
-      <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Help us confirm your project <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"var(--teal-dk)",background:"rgba(42,132,114,0.1)",padding:"3px 9px",borderRadius:99,marginLeft:6,verticalAlign:2}}><Ico n="lock" s={13}/> Private, never shown to actors</span></h3>
-      <p style={pvLead}>Every casting on CastSlate is reviewed by a person before it goes live. This protects actors, and it protects real productions from being crowded out by fakes. You don't need a company, a school or any credits. We'll never ask for your script.</p>
-      <label className="label">Who's making this project?</label>
-      <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:8}}>
-        {Object.entries(PV_PATHS).map(([k,P])=><button type="button" key={k} onClick={()=>pickPath(k)} style={{...pvCard(v.path===k),display:"block",padding:"14px 12px",borderRadius:12}}>
-          <span style={{display:"block",marginBottom:6,color:"var(--teal-dk)"}}><Ico n={P.icon} s={22}/></span>
-          <b style={{display:"block",fontSize:13.5}}>{k==="company"?"A production company":k==="student"?"A student project":"Independent creator"}</b>
-          <small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:3,lineHeight:1.4}}>{P.desc}</small></button>)}
-      </div>
-      {v.path&&<p style={{fontSize:11.5,color:"var(--t3)",margin:"8px 0 14px"}}>Actors will see this casting labelled <b style={{display:"inline-block",fontSize:10.5,fontWeight:800,padding:"2px 8px",borderRadius:99,background:"var(--s2)",color:"var(--t2)",marginLeft:2}}>{PV_PATHS[v.path].seen}</b>. No label is better or worse. It just tells actors what kind of set to expect.</p>}
-      {v.path==="indie"&&<>
-        <div style={{background:"#fff",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:13,fontWeight:600}}>
-          <span>Is this your first project?</span>
-          <span style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {[[true,"Yes, my first"],[false,"I've made things before"]].map(([val,l])=><button type="button" key={l} onClick={()=>setV(p=>{const pr={...p.proofs};if(val)delete pr.work;return {...p,first:val,proofs:pr};})} style={{fontSize:13,padding:"7px 16px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:v.first===val?"var(--acc)":"var(--s2)",color:v.first===val?"#fff":"var(--t2)"}}>{l}</button>)}
-          </span>
-        </div>
-        {v.first===true&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}><b>Welcome, first projects are exactly what CastSlate is for.</b> You don't need a company, a school or credits. Show us <b>you</b> (a short intro video) and <b>one thing you've already started</b> for this project. That's it.</div>}
-        {v.first===false&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}>Great. Linking your past work is the quickest way through review.</div>}
-      </>}
-      {v.path&&<>
-        <label className="label" style={{marginTop:4}}>{v.path==="indie"?"Your intro video, plus at least one more":"Share at least one"}</label>
-        <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"1fr 1fr",gap:8}}>
-          {pvList(v).map(p=>{const on=!!v.proofs[p.k];return <button type="button" key={p.k} onClick={()=>toggleProof(p)} style={{...pvCard(on),cursor:p.req?"default":"pointer"}}>
-            <span style={{flex:"0 0 18px",height:18,borderRadius:5,border:"1.5px solid "+(on?"var(--teal)":"var(--bdr)"),background:on?"var(--teal)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",marginTop:1,color:"#fff"}}>{on&&<Ico n="check" s={13}/>}</span>
-            <span style={{minWidth:0}}><b style={{display:"block",fontSize:13}}>{p.t}{p.strong&&<span style={pvChip("rgba(29,123,68,0.1)","#1d7b44")}>STRONG</span>}{p.req&&<span style={pvChip("rgba(232,144,42,0.15)","#8a5210")}>REQUIRED</span>}</b>
-              <small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:2,lineHeight:1.35}}>{p.d}</small></span></button>;})}
-        </div>
-        {pvList(v).some(p=>v.proofs[p.k])&&<div style={{marginTop:12,display:"flex",flexDirection:"column",gap:10}}>{pvList(v).filter(p=>v.proofs[p.k]).map(proofInput)}</div>}
-        {meter}
-      </>}
-    </div>
-
-    {/* 2 · How auditions happen */}
-    <div style={pvBox}>{newTag}
+    <div id="pv-aud" style={pvBoxSt(badAud)}>{pvTag(badAud)}
       <h3 style={{fontSize:16,fontWeight:700,margin:0}}>How will auditions happen? <span style={{color:"#c0392b"}}>*</span></h3>
       <p style={{...pvLead,marginBottom:12}}>Actors see this on the casting page, so they know what to expect before they apply.</p>
       <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:8}}>
-        {PV_MODES.map(([k,t,d])=><button type="button" key={k} onClick={()=>set({mode:k})} style={{...pvCard(v.mode===k),display:"block"}}><b style={{display:"block",fontSize:13}}>{t}</b><small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:3,lineHeight:1.35}}>{d}</small></button>)}
+        {PV_MODES.map(([k,t,d])=><button type="button" key={k} onClick={()=>set({mode:k,hl:false})} style={{...pvCard(v.mode===k),padding:12,borderRadius:10}}><b style={{display:"block",fontSize:13}}>{t}</b><small style={{display:"block",fontSize:11.5,color:"var(--t3)",marginTop:3,lineHeight:1.35}}>{d}</small></button>)}
       </div>
       {v.mode==="inperson"&&<div style={{marginTop:14}}>
-        <div className="form-group" style={{marginBottom:12}}><label className="label">Type of space *</label>
-          <select className="select" style={{width:"100%"}} value={v.venueType} onChange={e=>set({venueType:e.target.value})}><option value="">Choose…</option>{venues.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></div>
+        {needStrong&&<div style={pvNote()}><b>In person needs one STRONG proof.</b> {v.path==="student"?"Add your school email or student ID":"Add a company email, IMDb page, SAG-AFTRA number or insurance"} above, or switch to self-tape.
+          <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}><button type="button" className="btn-s btn-sm" onClick={showWhere}>Show me where</button><button type="button" className="btn-s btn-sm" onClick={()=>set({mode:"selftape",hl:false})}>Switch to self-tape</button></div></div>}
+        {v.path==="indie"&&!trusted&&<div style={pvNote()}>Independent creators audition in person at a rented studio or community space, <b>after</b> a first round online. Rehearsal rooms in most cities rent by the hour (around $20–30). After 2 completed castings on CastSlate with no reports, this limit is lifted.</div>}
+        <div className="form-group" style={{margin:"14px 0 12px"}}><label className="label">Type of space *</label>
+          <select id="pv-vtype" className="select" style={{width:"100%",...badField("pv-vtype")}} value={v.venueType} onChange={e=>set({venueType:e.target.value})}><option value="">Choose…</option>{venues.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></div>
         <div className="form-row" style={{marginBottom:0}}>
-          <div><label className="label">Name of the space *</label><input className="input" value={v.venueName} onChange={e=>set({venueName:e.target.value})} placeholder="e.g. Pearl Studios, Room 4B"/></div>
-          <div><label className="label">Street address *</label><input className="input" value={v.venueAddr} onChange={e=>set({venueAddr:e.target.value})} placeholder="e.g. 500 8th Ave, New York, NY"/></div>
+          <div><label className="label">Name of the space *</label><input id="pv-vname" className="input" style={badField("pv-vname")} value={v.venueName} onChange={e=>set({venueName:e.target.value})} placeholder="e.g. Pearl Studios, Room 4B"/></div>
+          <div><label className="label">Street address *</label><input id="pv-vaddr" className="input" style={badField("pv-vaddr")} value={v.venueAddr} onChange={e=>set({venueAddr:e.target.value})} placeholder="e.g. 500 8th Ave, New York, NY"/></div>
         </div>
         <p style={{fontSize:11,color:"var(--t3)",marginTop:4}}>The address is for CastSlate's review. Share it with actors yourself when you invite them in.</p>
         {risky&&<div style={pvNote("warn")}>This looks like a home, apartment or hotel. CastSlate auditions can't happen in private residences or hotel rooms. Please use a studio, rental space, office or campus, or switch to self-tape or virtual.</div>}
-        {v.path==="indie"&&!trusted&&<div style={pvNote()}>For independent creators, in-person auditions happen at a rented studio or community space, <b>after</b> a first round online. Rehearsal rooms in most cities rent by the hour (around $20–30). After 2 completed castings on CastSlate with no reports, these limits are lifted.</div>}
-        {v.path&&v.path!=="indie"&&lvl!=="strong"&&<div style={pvNote()}>{v.path==="student"?"In-person student auditions need a school email or student ID above. Or switch to self-tape or virtual.":<>In-person castings need a proof marked <b>STRONG</b> above. Self-tape and virtual castings can go live with any proof.</>}</div>}
-        {v.path==="indie"&&!trusted&&<label style={{display:"flex",gap:10,alignItems:"flex-start",padding:"10px 0 0",fontSize:13,lineHeight:1.45,cursor:"pointer",color:"var(--t2)"}}><input type="checkbox" checked={v.firstLook} onChange={e=>set({firstLook:e.target.checked})} style={{marginTop:2,width:16,height:16,accentColor:"var(--teal)",flex:"0 0 16px"}}/>The first round will be a self-tape or video call. Only actors I've already seen get invited in person.</label>}
+        {v.path==="indie"&&!trusted&&<label style={{display:"flex",gap:10,alignItems:"flex-start",padding:"12px 0 0",fontSize:13,lineHeight:1.45,cursor:"pointer",color:"var(--t2)"}}><input type="checkbox" checked={v.firstLook} onChange={e=>set({firstLook:e.target.checked})} style={{marginTop:2,width:16,height:16,accentColor:"var(--teal)",flex:"0 0 16px"}}/>The first round will be a self-tape or video call. Only actors I've already seen get invited in person.</label>}
       </div>}
     </div>
 
-    {/* 3 · Audition standards */}
-    <div style={pvBox}>{newTag}
-      <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Our audition standards <span style={{color:"#c0392b"}}>*</span></h3>
-      <p style={{...pvLead,marginBottom:4}}>These follow standard SAG-AFTRA audition practice. Please confirm each one.</p>
-      {PV_STANDARDS.map((s,i)=><label key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",fontSize:13,lineHeight:1.45,cursor:"pointer",color:"var(--t2)"}}>
-        <input type="checkbox" checked={!!v.std[i]} onChange={e=>setV(p=>({...p,std:p.std.map((x,j)=>j===i?e.target.checked:x)}))} style={{marginTop:2,width:16,height:16,accentColor:"var(--teal)",flex:"0 0 16px"}}/>{s}</label>)}
+    <div id="pv-std" style={pvBoxSt(badStd)}>{pvTag(badStd)}
+      <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Audition standards</h3>
+      <p style={{...pvLead,marginBottom:12}}>Standard SAG-AFTRA audition practice.</p>
+      <label style={{display:"flex",gap:10,alignItems:"flex-start",fontSize:13.5,fontWeight:600,cursor:"pointer",lineHeight:1.45}}>
+        <input type="checkbox" checked={!!v.agreed} onChange={e=>set({agreed:e.target.checked})} style={{marginTop:3,width:18,height:18,accentColor:"var(--teal)",flex:"0 0 18px"}}/>I agree to CastSlate's audition standards:</label>
+      <ul style={{margin:"10px 0 0 28px",padding:0,listStyle:"none",fontSize:12.5,color:"var(--t2)",lineHeight:1.8}}>
+        {PV_STANDARDS.map((s,i)=><li key={i}><span style={{color:"var(--teal)",fontWeight:800,marginRight:8}}>·</span>{s}</li>)}
+      </ul>
     </div>
   </>);
 }
@@ -21729,6 +21766,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
   const showPv=!isAdmin&&["draft","pending_review","rejected","needs_info"].includes(casting.status);
   const [pv,setPv]=useState(pvBlank);
   const [track,setTrack]=useState(null);
+  const [pvTried,setPvTried]=useState(false); // show the "still needed" list after a failed resubmit
   useEffect(()=>{
     if(!showPv)return;
     let dead=false;
@@ -21865,7 +21903,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     const goLive=resolveGoLive(f.go_live_at,utcISOToNYLocal(casting.go_live_at));
     if(goLive.err){setErr(goLive.err);return;}
     const goLiveISO=goLive.iso;
-    if(showPv&&resubmit){const pe=pvValidate(pv,track);if(pe){setErr(pe);return;}}
+    if(showPv&&resubmit){const miss=pvMissing(pv,track);if(miss.length){setPvTried(true);pvJump(miss[0].field||miss[0].box);return;}}
     setBusy(true);
     try{
       // Determine new status: open → open; pending_review → pending_review; rejected + resubmit → pending_review
@@ -21911,6 +21949,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
     }catch(e){setErr(e.message||"Save failed.");}finally{setBusy(false);}
   };
 
+  const pvMiss=showPv&&pvTried?pvMissing(pv,track):[];
   const isRejected=casting.status==="rejected";
   const isNeedsInfo=casting.status==="needs_info";
   const isPending=casting.status==="pending_review";
@@ -21936,6 +21975,7 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       <div><label className="label">Production Company</label><input className="input" value={f.prod} onChange={e=>setField("prod",e.target.value)}/></div>
       <div><label className="label">Project Type</label><select className="select" style={{width:"100%"}} value={f.type} onChange={e=>setField("type",e.target.value)}>{f.type&&!PROJECT_TYPE_OPTIONS.includes(f.type)&&<option value={f.type}>{f.type}</option>}{PROJECT_TYPE_OPTIONS.map(t=><option key={t} value={t}>{t}</option>)}</select></div>
     </div>
+    {showPv&&<ProjectVerifyWho uid={uid} v={pv} setV={setPv} track={track} missing={pvMiss}/>}
     <div className="form-row">
       <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)} placeholder="City, State"/></div>
       <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)} placeholder="e.g. $150/day"/><div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>{PAY_PRESETS.map(p=><button type="button" key={p} onClick={()=>setField("pay",p)} style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",background:f.pay===p?"var(--acc)":"var(--s2)",color:f.pay===p?"#fff":"var(--t2)",cursor:"pointer",fontWeight:500}}>{p}</button>)}</div></div>
@@ -22056,7 +22096,8 @@ function CreatorEditCastingModal({casting,uid,myProfile,onClose,onSaved}){
       </div>);})}
     </div>
 
-    {showPv&&<ProjectVerifySection uid={uid} v={pv} setV={setPv} track={track}/>}
+    {showPv&&<ProjectVerifyAuditions v={pv} setV={setPv} track={track} missing={pvMiss}/>}
+    <PvMissingList missing={pvMiss}/>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:20}}>{err}</div>}
 
     <div style={{display:"flex",gap:12,marginTop:24,paddingTop:16,borderTop:"1px solid var(--bdr)",flexWrap:"wrap"}}>
@@ -22089,10 +22130,11 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
   const [verifyMsg,setVerifyMsg]=useState("");
   const [verifying,setVerifying]=useState(false);
   const [verifyDebug,setVerifyDebug]=useState(null);
-  // Project verification (see ProjectVerifySection). Kept in the same localStorage draft.
+  // Project verification (ProjectVerifyWho + ProjectVerifyAuditions). Kept in the same localStorage draft.
   const [pv,setPv]=useState(()=>{try{const d=localStorage.getItem(DRAFT_KEY);if(d){const p=JSON.parse(d);if(p?.pv&&typeof p.pv==="object")return {...pvBlank(),...p.pv};}}catch(_){}return pvBlank();});
   const [track,setTrack]=useState(null);
   const [pvWarn,setPvWarn]=useState("");
+  const [pvTried,setPvTried]=useState(false); // show the "still needed" list after a failed submit
   useEffect(()=>{if(isAdmin||!uid)return;window.sb.rpc("cd_track_record",{p_cd:uid}).then(({data})=>{const t=Array.isArray(data)?data[0]:data;if(t)setTrack(t);});},[uid,isAdmin]);
   const setField=(k,v)=>setF(p=>({...p,[k]:v}));
   const setRole=(i,k,v)=>setRoles(p=>p.map((r,idx)=>idx===i?{...r,[k]:v}:r));
@@ -22193,6 +22235,8 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     }finally{setVerifying(false);}
   };
 
+  const pvMiss=!isAdmin&&pvTried?pvMissing(pv,track):[];
+
   // Blocked — verification required
   if(!canPost){
     return(<div className="modal-overlay" onClick={onClose}><div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520,textAlign:"center",padding:"44px 36px"}}>
@@ -22262,7 +22306,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
     if(!roles.length||!roles[0].name.trim()){setErr("At least one role with a name is required.");return;}
     if(f.casting_website_url.trim()&&!/^https?:\/\//i.test(f.casting_website_url.trim())){setErr("Website URL must start with https:// or http://");return;}
     if(!f.go_live_at){setErr("Go Live Date & Time is required.");return;}
-    if(!isAdmin){const pe=pvValidate(pv,track);if(pe){setErr(pe);return;}}
+    if(!isAdmin){const miss=pvMissing(pv,track);if(miss.length){setPvTried(true);pvJump(miss[0].field||miss[0].box);return;}}
     const goLive=resolveGoLive(f.go_live_at);
     if(goLive.err){setErr(goLive.err);return;}
     const goLiveISO=goLive.iso;
@@ -22325,6 +22369,7 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         </select></div>
       </div>
       {f.type&&PROJECT_TYPES.find(pt=>pt.value===f.type)&&<p style={{fontSize:11,color:"var(--t3)",marginTop:-8,marginBottom:12}}>{PROJECT_TYPES.find(pt=>pt.value===f.type).desc}</p>}
+      {!isAdmin&&<ProjectVerifyWho uid={uid} v={pv} setV={setPv} track={track} missing={pvMiss}/>}
       <div className="form-row">
         <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setField("location",e.target.value)} placeholder="City, State"/></div>
         <div><label className="label">Pay / Rate</label><input className="input" value={f.pay} onChange={e=>setField("pay",e.target.value)} placeholder="e.g. $150/day, $20/hour, Negotiable"/><div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>{PAY_PRESETS.map(p=><button type="button" key={p} onClick={()=>setField("pay",p)} style={{fontSize:11,padding:"4px 10px",borderRadius:999,border:"1px solid var(--bdr)",background:f.pay===p?"var(--acc)":"var(--s2)",color:f.pay===p?"#fff":"var(--t2)",cursor:"pointer",fontWeight:500}}>{p}</button>)}</div></div>
@@ -22518,7 +22563,8 @@ function NewCastingModal({onClose,onPosted,uid,myProfile}){
         </div>)}
       </div>
 
-      {!isAdmin&&<ProjectVerifySection uid={uid} v={pv} setV={setPv} track={track}/>}
+      {!isAdmin&&<ProjectVerifyAuditions v={pv} setV={setPv} track={track} missing={pvMiss}/>}
+      <PvMissingList missing={pvMiss}/>
       {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginTop:20}}>{err}</div>}
 
       <div style={{display:"flex",gap:12,marginTop:24}}>
