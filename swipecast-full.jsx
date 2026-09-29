@@ -23535,7 +23535,7 @@ const FORMAT_CARDS=[
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:"megaphone"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student",icon:"cap"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:"mic"},
-  {cat:"Modeling",desc:"Print. Editorial. Runway.",file:"modeling",icon:"camera"},
+  {cat:"Music Videos",desc:"Performance. Style. Story.",file:"modeling",icon:"music"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
 ];
 const FORMAT_ICONS={
@@ -23544,6 +23544,7 @@ const FORMAT_ICONS={
   megaphone:'<path d="M3 11v2a1 1 0 0 0 1 1h2l3 4 .5-.2V7.2L9 7H6a1 1 0 0 0-1 1"/><path d="M9 7l9-4v18l-9-4"/><path d="M18 8a3 3 0 0 1 0 8"/>',
   cap:'<path d="M12 4 2 9l10 5 10-5-10-5Z"/><path d="M6 11v4c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4"/><path d="M22 9v4"/>',
   camera:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/>',
+  music:'<path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M9 17V4h10v13"/><path d="M9 8h10"/>',
   mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/>',
   star:'<path d="M12 3l2.6 5.6L20.5 9.4l-4.2 4 1 5.9L12 16.6 6.7 19.3l1-5.9-4.2-4 5.9-.8L12 3Z"/>',
 };
