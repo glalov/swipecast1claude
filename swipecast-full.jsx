@@ -3023,6 +3023,17 @@ body.sheet-push .b2t-cube{display:none;}
   .tabs{width:100%;overflow-x:auto;display:flex;flex-wrap:nowrap;}
   .tab{flex:1 0 auto;white-space:nowrap;}
 }
+/* Phones only (2026-09-29, owner-approved demo): the swipe demo moves up right under
+   the headline so it is on screen when the page opens. Order: pill, headline, swipe
+   card, subtitle, CTA buttons, ticks. The copy column becomes display:contents so its
+   children and the swipe column share one flex column. iPad portrait (761-900) and
+   desktop keep the original order. */
+@media (max-width:760px){
+  .landing-hero{display:flex !important;flex-direction:column !important;gap:18px !important;}
+  .lh-hero-copy{display:contents;}
+  .lh-hero-swipe{order:3;width:100%;margin:4px 0 6px;}
+  .lh-hero-copy>.landing-hero-desc,.lh-hero-copy>.lh-hero-ctas,.lh-hero-copy>.lh-hero-ticks{order:4;}
+}
 @media(max-width:768px){
   /* Account Settings sidebar → stacked */
   .account-settings-layout{grid-template-columns:1fr !important;gap:16px !important;}
@@ -24018,14 +24029,14 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
 
   return(<>
     {/* ───────── HERO ───────── */}
-    <section className="landing-hero" style={{padding:"44px 40px 14px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"start"}}><div>
+    <section className="landing-hero" style={{padding:"44px 40px 14px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"start"}}><div className="lh-hero-copy">
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
       <h1 className="landing-hero-title" style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:58,lineHeight:1.12,letterSpacing:-0.1,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
       <p className="landing-hero-desc">{tr('landing.heroDesc')}</p>
-      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{withTri(heroPrimary.label)}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
-      <div style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.quickSignup')}</span></div>
+      <div className="lh-hero-ctas" style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{withTri(heroPrimary.label)}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
+      <div className="lh-hero-ticks" style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.quickSignup')}</span></div>
     </div>
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
+    <div className="lh-hero-swipe" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
       <LandingSwipe onNavigate={onNavigate} ctaTo={heroPrimary.to} ctaLabel={heroPrimary.label}/>
     </div>
     </section>
