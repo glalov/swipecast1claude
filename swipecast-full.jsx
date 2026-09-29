@@ -21299,7 +21299,7 @@ const PV_PATHS={
     {k:"advisor",t:"Instructor or advisor",d:"Name and school email of your teacher or thesis advisor",in:"ref2"},
     {k:"deck",t:"One page of the project",d:"Title page, treatment, mood board or shot list",in:"file"}]},
   indie:{label:"Independent creator",seen:"Independent project",icon:"movie",desc:"Just you (and friends). Self-produced, first projects welcome",proofs:[
-    {k:"video",req:true,t:"30–60 second intro video",d:"You on camera: who you are and what you're making",in:"video"},
+    {k:"video",t:"30–60 second intro video",d:"You on camera: who you are and what you're making",in:"video"},
     {k:"made",t:"Something you've made for this project",d:"Mood board, shot list, one page, location photos, test footage",in:"file"},
     {k:"work",t:"Your past work",d:"Links to anything you've made before (shorts, reels, photos, even phone videos)",in:"url",ph:"https://vimeo.com/… or https://youtube.com/…"},
     {k:"collab",t:"Someone making it with you",d:"Name and link for a DP, co-writer, producer or crew member",in:"ref"},
@@ -21334,7 +21334,17 @@ function pvFromRecord(rec){
   (Array.isArray(rec.proofs)?rec.proofs:[]).forEach(p=>{if(p&&p.k)v.vals[p.k]=p.val;});
   return v;
 }
-function pvList(v){return v.path?PV_PATHS[v.path].proofs.filter(p=>!(v.path==="indie"&&v.first===true&&p.k==="work")):[];}
+// Independent creators: a FIRST project needs the intro video (nothing else to show yet);
+// someone who has made things before needs a past-work link instead — no upload at all.
+function pvList(v){
+  if(!v.path)return [];
+  const all=PV_PATHS[v.path].proofs;
+  if(v.path!=="indie")return all;
+  if(v.first===true)return all.filter(p=>p.k!=="work").map(p=>p.k==="video"?{...p,req:true}:p);
+  const work=all.find(p=>p.k==="work"),video=all.find(p=>p.k==="video");
+  return [{...work,req:true},...all.filter(p=>p.k!=="work"&&p.k!=="video"),{...video,t:"30–60 second intro video (optional)"}];
+}
+function pvIndieKey(v){return v.first===true?"video":"work";}
 function pvFilled(p,val){
   if(!val)return false;
   if(p.in==="email")return !!(val.email&&val.codeId);
@@ -21348,7 +21358,7 @@ function pvDone(v){return pvList(v).filter(p=>pvFilled(p,v.vals[p.k]));}
 function pvLevel(v){
   if(!v.path)return "none";
   const d=pvDone(v);
-  if(v.path==="indie"){if(v.first===null)return "none";return d.some(p=>p.k==="video")&&d.length>=2?"indie_ok":"none";}
+  if(v.path==="indie"){if(v.first===null)return "none";return d.some(p=>p.k===pvIndieKey(v))&&d.length>=2?"indie_ok":"none";}
   if(d.some(p=>p.strong))return "strong";
   return d.length?"light":"none";
 }
@@ -21360,7 +21370,7 @@ function pvMissing(v,track){
   const m=[];
   if(!v.path)m.push({t:"Who's making this project",box:"pv-who"});
   else if(v.path==="indie"&&v.first===null)m.push({t:"Whether this is your first project",box:"pv-who"});
-  else if(pvLevel(v)==="none")m.push({t:v.path==="indie"?"Your intro video plus one more item":"One piece of proof that the project is real",box:"pv-who"});
+  else if(pvLevel(v)==="none")m.push({t:v.path==="indie"?(v.first?"Your intro video plus one more item":"A link to your past work plus one more item"):"One piece of proof that the project is real",box:"pv-who"});
   if(!v.mode)m.push({t:"How auditions will happen",box:"pv-aud"});
   else if(v.mode==="inperson"){
     if(pvNeedsStrong(v))m.push({t:v.path==="student"?"A school email or student ID (needed for in-person auditions)":"A STRONG proof (needed for in-person auditions)",box:"pv-who"});
@@ -21435,7 +21445,7 @@ function ProjectVerifyWho({uid,v,setV,track,missing}){
   const bad=(missing||[]).some(x=>x.box==="pv-who");
   const lvl=pvLevel(v);
   const trusted=pvTrusted(track);
-  const pickPath=(k)=>setV(prev=>prev.path===k?prev:{...prev,path:k,first:null,vals:{},venueType:"",hl:false,open:k==="indie"?"video":PV_PATHS[k].proofs[0].k});
+  const pickPath=(k)=>setV(prev=>prev.path===k?prev:{...prev,path:k,first:null,vals:{},venueType:"",hl:false,open:k==="indie"?null:PV_PATHS[k].proofs[0].k});
 
   const upload=async(k,file,isVideo)=>{
     if(!file)return;
@@ -21521,10 +21531,11 @@ function ProjectVerifyWho({uid,v,setV,track,missing}){
     if(!v.path||(v.path==="indie"&&v.first===null))return null;
     let tone,txt;
     if(v.path==="indie"){
-      const d=pvDone(v),hasV=d.some(p=>p.k==="video");
-      tone=lvl==="indie_ok"?"good":(hasV||d.length)?"mid":"none";
+      const d=pvDone(v),key=pvIndieKey(v),hasKey=d.some(p=>p.k===key);
+      tone=lvl==="indie_ok"?"good":(hasKey||d.length)?"mid":"none";
       txt=lvl==="indie_ok"?(trusted?"✓ You're all set. Any audition type is open to you.":"✓ You're all set. Self-tape and virtual auditions are open to you. In-person auditions work at a rented studio or community space.")
-        :!hasV?"Add your intro video, plus one more item.":"✓ Intro video added. Now add one more item.";
+        :v.first?(!hasKey?"Add your intro video, plus one more item.":"✓ Intro video added. Now add one more item.")
+        :(!hasKey?"Add a link to your past work, plus one more item. No upload needed.":"✓ Past work added. Now add one more item.");
     }else{
       tone=lvl==="strong"?"good":lvl==="light"?"good":"none";
       txt=lvl==="strong"?"✓ Strong proof. Any audition type is allowed."
@@ -21550,14 +21561,14 @@ function ProjectVerifyWho({uid,v,setV,track,missing}){
       <div style={{background:"#fff",border:"1px solid var(--bdr)",borderRadius:10,padding:"12px 14px",marginBottom:12,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap",fontSize:13,fontWeight:600}}>
         <span>Is this your first project?</span>
         <span style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {[[true,"Yes, my first"],[false,"I've made things before"]].map(([val,l])=><button type="button" key={l} onClick={()=>setV(p=>({...p,first:val,open:"video"}))} style={{fontSize:13,padding:"7px 16px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:v.first===val?"var(--acc)":"var(--s2)",color:v.first===val?"#fff":"var(--t2)"}}>{l}</button>)}
+          {[[true,"Yes, my first"],[false,"I've made things before"]].map(([val,l])=><button type="button" key={l} onClick={()=>setV(p=>({...p,first:val,open:val?"video":"work"}))} style={{fontSize:13,padding:"7px 16px",borderRadius:999,border:"1px solid var(--bdr)",cursor:"pointer",fontWeight:600,background:v.first===val?"var(--acc)":"var(--s2)",color:v.first===val?"#fff":"var(--t2)"}}>{l}</button>)}
         </span>
       </div>
       {v.first===true&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}><b>Welcome, first projects are exactly what CastSlate is for.</b> Show us <b>you</b> (a short intro video) and <b>one thing you've already started</b> for this project. That's it.</div>}
-      {v.first===false&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}>Great. Linking your past work is the quickest way through review.</div>}
+      {v.first===false&&<div style={{background:"rgba(234,192,128,0.22)",border:"1px solid rgba(234,192,128,0.6)",color:"#6b4a12",borderRadius:10,padding:"11px 13px",fontSize:12.5,lineHeight:1.5,marginBottom:12}}>Great. Add a <b>link to your past work</b> and <b>one more thing</b> (a project page or someone making it with you). No upload needed.</div>}
     </>}
     {v.path&&(v.path!=="indie"||v.first!==null)&&<>
-      <label className="label" style={{marginTop:4}}>{v.path==="indie"?"Your intro video, plus one more":"Pick one, easiest first"}</label>
+      <label className="label" style={{marginTop:4}}>{v.path==="indie"?(v.first?"Your intro video, plus one more":"A link to your past work, plus one more"):"Pick one, easiest first"}</label>
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
         {pvList(v).map(p=>{
           const done=pvFilled(p,v.vals[p.k]),open=v.open===p.k,hl=showStrongHl&&p.strong;
@@ -21668,7 +21679,9 @@ function AdminCastingVerification({casting}){
     const strong=proofs.some(p=>p.strong&&(p.in!=="email"||codes[p.val?.codeId]?.verified_at));
     if(rec.creator_path==="indie"){
       const vid=proofs.find(p=>p.k==="video");
-      if(vid)f.push(["g","Intro video provided. Compare the face with the Didit selfie"]);else f.push(["r","No intro video"]);
+      if(vid)f.push(["g","Intro video provided. Compare the face with the Didit selfie"]);
+      else if(rec.first_project)f.push(["r","No intro video (required for first-time creators)"]);
+      else f.push([proofs.some(p=>p.k==="work")?"a":"r",proofs.some(p=>p.k==="work")?"No intro video (optional for creators who've made things before). Check their past work":"No intro video and no past work"]);
       if(rec.first_project)f.push(["a","First-time creator (normal for this path, not a problem on its own)"]);
       if(vid&&vid.val?.seconds!=null&&vid.val.seconds<10)f.push(["r",`Intro video is only ${vid.val.seconds} seconds`]);
       f.push([proofs.length>=2?"g":"r",proofs.length+" proof item"+(proofs.length===1?"":"s")]);
