@@ -2541,6 +2541,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .s-card{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);user-select:none;touch-action:pan-y;box-shadow:0 8px 30px rgba(0,0,0,0.08);}
 .s-card img{width:100%;height:56%;object-fit:cover;pointer-events:none;}
 .s-card-info{padding:14px 18px;overflow-y:auto;max-height:44%;}
+/* CD review deck only (.cd-crop): photo box is 4:5, the same shape as the headshot
+   cropper, so CDs see the actor's crop exactly as saved. Landing demo + admin deck
+   keep the base rules above. Full Screen sizes its width in JSX to stay 4:5. */
+.swipe-card-wrap.cd-crop{height:615px;}
+.cd-crop .s-card img{height:auto;aspect-ratio:4/5;display:block;}
+.cd-crop .s-card-info{max-height:190px;}
 .s-card-info h3{font-size:18px;font-weight:700;margin-bottom:3px;}
 .s-card-meta{color:var(--t2);font-size:12px;margin-bottom:8px;}
 .s-card-tags{display:flex;gap:5px;flex-wrap:wrap;}
@@ -18526,7 +18532,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     // The full profile view (one click away) fetches live uploaded videos from profile_media.
     return(<>
       <div className="sw-counter">{counts.pending} pending · reviewing {Math.min(si+1,pendingList.length)} of {pendingList.length} · Role: {app.roles?.name||activeRole?.name||"—"}</div>
-      <div className="swipe-card-wrap" style={fsMode?{width:"min(560px,90vw)",height:"min(760px,78vh)"}:{}}>
+      <div className="swipe-card-wrap cd-crop" style={fsMode?{width:"min(560px,90vw,calc(min(760px,78vh) * 0.52))",height:"min(760px,78vh)"}:{}}>
         {nextApp&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}>
           <img src={nimg} alt="" style={fsMode?{height:"65%"}:{}}/><div className="s-card-info"><h3>{nt.display_name||"Applicant"}</h3></div>
         </div>}
