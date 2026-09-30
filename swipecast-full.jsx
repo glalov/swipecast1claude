@@ -111,7 +111,7 @@ const TRANSLATIONS = {
     'landing.heroDesc':'A visual-first platform where indie filmmakers and undiscovered talent meet — browsed one profile at a time, never lost in a grid.',
     'landing.heroDesc2':'',
     'landing.heroTagline':'',
-    'landing.createProfile':'Create My Free Profile →','landing.iAmCD':'I\'m a Casting Director',
+    'landing.createProfile':'Create My Free Profile →','landing.createProfileShort':'Create Free Profile →','landing.iAmCD':'I\'m a Casting Director',
     'landing.openDashboard':'Open Dashboard →','landing.browseCastings':'Browse Castings →',
     'landing.myProfile':'My Profile',
     'landing.freeAccount':'Free actor account — upgrade to Premium from $10.75/mo',
@@ -360,7 +360,7 @@ const TRANSLATIONS = {
     'landing.heroDesc':'Una plataforma visual donde cineastas independientes y talento por descubrir se encuentran — explorado perfil por perfil, nunca perdido en una cuadrícula.',
     'landing.heroDesc2':'',
     'landing.heroTagline':'',
-    'landing.createProfile':'Crear mi perfil gratis →','landing.iAmCD':'Soy director de casting',
+    'landing.createProfile':'Crear mi perfil gratis →','landing.createProfileShort':'Crear perfil gratis →','landing.iAmCD':'Soy director de casting',
     'landing.openDashboard':'Abrir panel →','landing.browseCastings':'Ver convocatorias →',
     'landing.myProfile':'Mi perfil',
     'landing.freeAccount':'Cuenta gratuita — mejora a Premium desde $10.75/mes',
@@ -3033,7 +3033,15 @@ body.sheet-push .b2t-cube{display:none;}
   .lh-hero-copy{display:contents;}
   .lh-hero-swipe{order:3;width:100%;margin:4px 0 6px;}
   .lh-hero-copy>.landing-hero-desc,.lh-hero-copy>.lh-hero-ctas,.lh-hero-copy>.lh-hero-ticks{order:4;}
+  /* Phones: the two hero CTAs sit side by side at equal width (2026-09-29, owner-approved
+     demo). Short label "Create Free Profile" so both fit down to 320px; text scales
+     12-14px with the viewport. */
+  .lh-hero-ctas{flex-wrap:nowrap !important;gap:10px !important;width:100%;}
+  .lh-hero-ctas>button{flex:1 1 0;min-width:0;white-space:nowrap;padding:14px 8px !important;font-size:clamp(12px,3.5vw,14px) !important;justify-content:center;text-align:center;}
+  .lh-hero-ctas .lh-cta-full{display:none;}
+  .lh-hero-ctas .lh-cta-short{display:inline;}
 }
+.lh-cta-short{display:none;}
 @media(max-width:768px){
   /* Account Settings sidebar → stacked */
   .account-settings-layout{grid-template-columns:1fr !important;gap:16px !important;}
@@ -23997,7 +24005,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
   const userKind=(myProfile?.user_type||"").toLowerCase();
   const isCDish=["cd","admin","super_admin","producer","studio"].includes(userKind);
   const heroPrimary=!isLoggedIn
-    ?{label:tr('landing.createProfile'),to:"register-talent"}
+    ?{label:tr('landing.createProfile'),short:tr('landing.createProfileShort'),to:"register-talent"}
     : isCDish
       ?{label:tr('landing.openDashboard'),to:"dashboard"}
       :{label:tr('landing.browseCastings'),to:"search"};
@@ -24033,7 +24041,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
       <h1 className="landing-hero-title" style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:58,lineHeight:1.12,letterSpacing:-0.1,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
       <p className="landing-hero-desc">{tr('landing.heroDesc')}</p>
-      <div className="lh-hero-ctas" style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{withTri(heroPrimary.label)}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
+      <div className="lh-hero-ctas" style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.short?<><span className="lh-cta-full">{withTri(heroPrimary.label)}</span><span className="lh-cta-short">{withTri(heroPrimary.short)}</span></>:withTri(heroPrimary.label)}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
       <div className="lh-hero-ticks" style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.noCreditCard')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.quickSignup')}</span></div>
     </div>
     <div className="lh-hero-swipe" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
