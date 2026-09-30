@@ -150,16 +150,21 @@ function weeklyTip(): { text:string; n:number } {
   return { text: WEEKLY_TIPS[week % WEEKLY_TIPS.length], n: week };
 }
 
-// ── Teal Signal tone ────────────────────────────────────────────────────────
-// Same shape as the DecisionTone objects in send-notification-email. Kept flat
-// because this function only ever wears one tone — if a second is ever added,
-// lift it to that shared shape first rather than forking the colours.
+// ── Warm tone (2026-09-30, owner-approved demo) ─────────────────────────────
+// Was "Teal Signal" (teal band, teal cards) — the owner found it cold. Now: navy
+// header like the welcome emails, a film still, gold for progress/accents, warm
+// cream cards, and teal kept ONLY for the "Finish my profile" button.
 const T = {
-  band:   "#0E5E5A", band2: "#17817A", foot: "#0A3E3B",
-  onDark: "#7FD8CF", onCream: "#0F5F5A",
-  rule:   "#29A79C", rule0: "rgba(14,94,90,0)",
-  kicker: "#0F6B65", card: "#E8F5F3", cardBd: "#CBE7E2", cta: "#0F5F5A",
+  band:   "#1A1A2E", band2: "#2D2D44", foot: "#12121F",
+  onDark: "#EAC080", onCream: "#9A6414",
+  rule:   "#EAC080", rule0: "rgba(234,192,128,0)",
+  kicker: "#8A5A12", card: "#FBF3E4", cardBd: "#EFDDBB", cta: "#2A8472",
 };
+// One fixed still (like the welcome emails, not the upsell rotation). Warm frame,
+// readable face, a young actor. A plain <img> at natural 16:9 — see heroStill() in
+// send-notification-email for why not a CSS background.
+const DAY2_STILL = { url: "https://image.tmdb.org/t/p/w1280/jwBiY1kE5089i2WpfS1MHDYp3VO.jpg", film: "Lady Bird", year: 2017 };
+const GOLD = "#D29A38";
 
 // Round 26px icon chip — the checklist equivalent of the recap email's stat chips.
 function chip(bg: string, color: string, glyph: string, border?: string): string {
@@ -169,7 +174,7 @@ function chip(bg: string, color: string, glyph: string, border?: string): string
             </td>`;
 }
 const todoRow  = (label: string) => `<tr>${chip("#FFFFFF", T.kicker, "&#9675;", T.cardBd)}<td style="vertical-align:middle;padding:5px 0;font-size:15px;line-height:1.45;color:#1A1A2E;font-weight:600">${label}</td></tr>`;
-const doneRow  = (label: string) => `<tr>${chip(T.band2, "#FFFFFF", "&#10003;")}<td style="vertical-align:middle;padding:5px 0;font-size:14.5px;line-height:1.45;color:#8C8C9E;text-decoration:line-through">${label}</td></tr>`;
+const doneRow  = (label: string) => `<tr>${chip(GOLD, "#FFFFFF", "&#10003;")}<td style="vertical-align:middle;padding:5px 0;font-size:14.5px;line-height:1.45;color:#8C8C9E;text-decoration:line-through">${label}</td></tr>`;
 const bonusRow = (label: string) => `<tr>${chip("#FFFFFF", T.kicker, "&#9734;", T.cardBd)}<td style="vertical-align:middle;padding:5px 0;font-size:14.5px;line-height:1.45;color:#5A5A72">${label} <span style="font-size:11.5px;font-style:italic;color:#9A9AAE">optional</span></td></tr>`;
 const listLabel = (t: string, muted = false) =>
   `<div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${muted ? "#9A9AAE" : T.kicker};margin:16px 0 10px">${t}</div>`;
@@ -187,6 +192,10 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
   const headTop    = pct === 0 ? "You&rsquo;re moments away" : `You&rsquo;re ${pct}% of the way`;
   const headAccent = pct === 0 ? "from getting noticed" : "to getting noticed";
   const remaining  = missing.length === 1 ? "one more detail" : `${missing.length} more details`;
+  // Follows the real percentage — it used to say "You're most of the way there" even at 20%.
+  const progressLine = pct >= 80 ? "Just one more step &mdash; add it and you&rsquo;re in the running."
+    : pct >= 50 ? `You&rsquo;re more than halfway &mdash; ${remaining} and you&rsquo;re in the running.`
+    : `A few details and you&rsquo;re in the running &mdash; ${remaining} to go.`;
 
   const missingBlock = missing.length
     ? `${listLabel("Still to add")}<table width="100%" cellpadding="0" cellspacing="0">${missing.map(c=>todoRow(c.label)).join("")}</table>` : "";
@@ -223,7 +232,7 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
   <!--[if mso]><table width="560" cellpadding="0" cellspacing="0"><tr><td><![endif]-->
     <table width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:560px;background:#FCFAF7;border-radius:16px;overflow:hidden;box-shadow:0 1px 0 #EAE2D1">
 
-      <tr><td class="cs-pad" style="background:${T.band};background:linear-gradient(115deg,${T.band2} 0%,${T.band} 62%,${T.band2} 100%);padding:22px 30px">
+      <tr><td class="cs-pad" style="background:${T.band};padding:22px 30px">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td style="vertical-align:middle"><table cellpadding="0" cellspacing="0"><tr>
             <td style="vertical-align:middle;padding-right:14px"><img class="cs-mark" src="${APP_URL}/logo-email-tile.png" width="46" height="46" alt="CastSlate" style="display:block;border-radius:11px"/></td>
@@ -233,7 +242,9 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
         </tr></table>
       </td></tr>
 
+      <tr><td style="padding:0;line-height:0;background:${T.band}"><img src="${DAY2_STILL.url}" width="560" alt="" style="display:block;width:100%;height:auto;border:0"/></td></tr>
       <tr><td style="height:4px;line-height:4px;font-size:0;background:${T.rule};background:linear-gradient(90deg,${T.onDark},${T.rule} 52%,${T.rule0})">&nbsp;</td></tr>
+      <tr><td style="padding:12px 30px 0;text-align:center"><div style="font-size:10px;letter-spacing:.4px;color:#9A8C78">Still: <em>${DAY2_STILL.film}</em> (${DAY2_STILL.year})</div></td></tr>
 
       <tr><td class="cs-pad" style="padding:34px 30px 0">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -241,12 +252,12 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
             <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">${headTop}<br/><span style="color:${T.onCream}">${headAccent}</span></h1>
           </td>
           <td class="cs-badge-cell" align="right" style="vertical-align:top;width:112px">
-            <img class="cs-badge" src="${APP_URL}/email-progress-badge.png" width="104" height="80" alt="" style="display:block;border:0"/>
+            <img class="cs-badge" src="${APP_URL}/email-progress-badge-gold.png" width="104" height="80" alt="" style="display:block;border:0"/>
           </td>
         </tr></table>
       </td></tr>
 
-      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">Casting directors see finished profiles first${first ? `, ${first}` : ""}. You're most of the way there &mdash; ${remaining} and you're in the running.</p></td></tr>
+      <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">Casting directors see finished profiles first${first ? `, ${first}` : ""}. ${progressLine}</p></td></tr>
 
       <tr><td class="cs-pad" style="padding:22px 30px 0">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -256,7 +267,7 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
               <td align="right" style="vertical-align:middle"><span style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;color:${T.onCream};line-height:1">${pct}%</span></td>
             </tr></table>
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;background:#FFFFFF;border:1px solid ${T.cardBd};border-radius:999px"><tr>
-              <td width="${fillPct}%" style="height:10px;background:${T.band2};border-radius:999px;font-size:0;line-height:0">&nbsp;</td>
+              <td width="${fillPct}%" style="height:10px;background:${GOLD};background:linear-gradient(90deg,#E8C27E,${GOLD});border-radius:999px;font-size:0;line-height:0">&nbsp;</td>
               <td style="font-size:0;line-height:0">&nbsp;</td>
             </tr></table>
           </td></tr></table>
@@ -303,7 +314,7 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
         <div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${T.kicker};margin:0 0 10px">This week's tip</div>
         <table width="100%" cellpadding="0" cellspacing="0" style="background:${T.band};border-radius:12px"><tr><td style="padding:22px 24px">
           <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:0;color:${T.onDark};height:16px">&ldquo;</div>
-          <p style="margin:8px 0 12px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:16px;line-height:1.55;color:#F2FBF9">${tip.text}</p>
+          <p style="margin:8px 0 12px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:16px;line-height:1.55;color:#F7EFE0">${tip.text}</p>
           <div style="font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:${T.onDark}">Rotates weekly &middot; Tip #${tip.n}</div>
         </td></tr></table>
       </td></tr>
