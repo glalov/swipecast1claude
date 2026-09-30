@@ -14,6 +14,7 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/casting/:slug", "destination": "/api/casting-og?slug=:slug" },
+    { "source": "/casting-calls/:key", "destination": "/api/landing?key=:key" },
     { "source": "/browse-castings", "destination": "/browse-castings.html" },
     { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/classes", "destination": "/classes.html" },
@@ -35,6 +36,7 @@
   ],
   "functions": {
     "api/casting-og.js": { "includeFiles": "index.html" },
+    "api/landing.js": { "includeFiles": "index.html" },
     "api/casting-card.js": { "includeFiles": "api/{_fonts,_vendor}/**" }
   },
   "headers": [

@@ -14796,6 +14796,41 @@ function canonCastingCity(loc){
   return l.split(",")[0].trim().replace(/\b([a-z])/g,ch=>ch.toUpperCase());
 }
 
+// Search landing pages (2026-09-30): /casting-calls/<key> opens Browse Castings
+// pre-filtered, with the section label swapped for the page's name. The server
+// side (api/landing.js) serves the same title/description/canonical and a
+// crawler list of the matching live castings. KEEP THE TWO LISTS IN SYNC: same
+// keys, same labels, same match rules, or Google sees one list and people another.
+const LANDING_PAGES={
+  "new-york":{label:"Casting Calls in New York",title:"Casting Calls in New York City — Open Auditions | CastSlate"},
+  "film":{label:"Film Casting Calls",title:"Film Casting Calls — Feature, Indie, Short & Student Films | CastSlate"},
+  "student-films":{label:"Student Film Casting Calls",title:"Student Film Casting Calls & Auditions | CastSlate"},
+  "short-films":{label:"Short Film Casting Calls",title:"Short Film Casting Calls & Auditions | CastSlate"},
+  "commercials":{label:"Commercial Casting Calls",title:"Commercial Casting Calls — Ads, Branded & Print | CastSlate"},
+  "tv-and-streaming":{label:"TV & Streaming Casting Calls",title:"TV & Streaming Series Casting Calls | CastSlate"},
+  "non-union":{label:"Non-Union Casting Calls",title:"Non-Union Casting Calls & Acting Jobs | CastSlate"},
+  "sag-aftra":{label:"SAG-AFTRA Casting Calls",title:"SAG-AFTRA Casting Calls & Union Acting Jobs | CastSlate"},
+  "theater":{label:"Theater Casting Calls",title:"Theater Casting Calls & Stage Auditions | CastSlate"},
+};
+function landingMatches(c,key){
+  const type=String(c?.type||""),union=String(c?.union??c?.union_status??"");
+  switch(key){
+    case "new-york":return canonCastingCity(c?.location)==="New York";
+    case "film":return /film|feature|proof of concept|pitch trailer/i.test(type);
+    case "student-films":return /student/i.test(type);
+    case "short-films":return /short/i.test(type);
+    case "commercials":return /commercial|branded|product demo|print|hosting|presenter/i.test(type);
+    case "tv-and-streaming":return /\btv\b|series|pilot|streaming|television/i.test(type);
+    case "non-union":return /non[- ]?union|welcome/i.test(union);
+    case "sag-aftra":return /sag/i.test(union);
+    case "theater":return /theat(er|re)|broadway|stage|musical/i.test(type);
+    default:return true;
+  }
+}
+function urlToLandingKey(){
+  try{const m=window.location.pathname.match(/^\/casting-calls\/([a-z-]+)\/?$/);return m&&LANDING_PAGES[m[1]]?m[1]:null;}catch(_){return null;}
+}
+
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
@@ -15147,12 +15182,13 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const locOptions=Object.entries(locCounts).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
   if(f.location&&!locCounts[f.location])locOptions.push([f.location,0]);
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!String(t.union||"").split("/").map(x=>x.trim()).includes(f.union))return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
-  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&canonCastingCity(c.location)!==f.location)return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
+  const landingKey=urlToLandingKey();
+  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(landingKey&&!landingMatches(c,landingKey))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&canonCastingCity(c.location)!==f.location)return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
   return(<div className="page page-wide page-browse">
-    <div className="section-label">{t('search.title')}</div>
+    <div className="section-label">{landingKey?<>{LANDING_PAGES[landingKey].label}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
     <>
       {/* Full-height loading placeholder — only during initial load (no cached data).
@@ -49134,6 +49170,8 @@ function setPageSEO(page,opts){
   // fell through to the generic defaults and set canonical to the HOMEPAGE, so
   // after rendering, Google saw every casting page as a copy of "/".
   if(page==="casting-detail"&&!opts?.title)return;
+  // Same for a search landing page (/casting-calls/<key>): api/landing.js set its head.
+  if(page==="search"&&!opts&&urlToLandingKey())return;
   const seo=PAGE_SEO[page];
   let title=seo?seo.title:"CastSlate";
   let desc=seo?seo.desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time.";
@@ -49177,6 +49215,7 @@ const PATH_PAGE=Object.fromEntries(Object.entries(PAGE_PATH).map(([k,v])=>[v,k])
 function urlToPage(){
   const path=window.location.pathname;
   if(/^\/casting\//.test(path))return"casting-detail";
+  if(urlToLandingKey())return"search";
   if(/^\/talent\//.test(path))return"talent-public";
   if(/^\/news\//.test(path))return"news-article";
   return PATH_PAGE[path]||"home";
