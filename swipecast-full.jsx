@@ -14774,6 +14774,19 @@ function matchesLocationFilter(castingLoc,selectedFilter){
   return locHasTerm(loc,sel);
 }
 
+// Browse "All Locations" dropdown (2026-09-30, owner-approved demo): built from the
+// castings themselves, not a fixed list. Each casting maps to ONE city label: the NY
+// and LA metro terms above fold into "New York" / "Los Angeles" (same grouping the old
+// fixed options used); anything else is the text before the first comma, whitespace
+// collapsed, words capitalised ("Philadelphia, PA" -> "Philadelphia").
+function canonCastingCity(loc){
+  const l=String(loc||"").replace(/\s+/g," ").trim();
+  if(!l)return "";
+  if(matchesLocationFilter(l,"new york"))return "New York";
+  if(matchesLocationFilter(l,"los angeles"))return "Los Angeles";
+  return l.split(",")[0].trim().replace(/\b([a-z])/g,ch=>ch.toUpperCase());
+}
+
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
@@ -15117,8 +15130,15 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // merged into search results once any real data exists.
   const allCastings=dbCastings.length>0?dbCastings:[];
   const allTalent=dbTalent.length>0?dbTalent:[];
+  // Location options = cities with LIVE castings (bucket 0), busiest first, with counts.
+  // Picking a city still lists its expired castings below the live ones, like every filter.
+  const locCounts={};
+  allCastings.forEach(c=>{if(castingIsScheduled(c)||castingSortBucket(c)!==0)return;const k=canonCastingCity(c.location);if(k)locCounts[k]=(locCounts[k]||0)+1;});
+  const locOptions=Object.entries(locCounts).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+  if(f.location&&!locCounts[f.location])locOptions.push([f.location,0]);
+  const locTotal=Object.values(locCounts).reduce((x,y)=>x+y,0);
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!String(t.union||"").split("/").map(x=>x.trim()).includes(f.union))return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
-  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&!matchesLocationFilter(c.location,f.location))return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
+  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&canonCastingCity(c.location)!==f.location)return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
@@ -15139,7 +15159,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           </div>
         /* Normal state — castings loaded, or background-refreshing with cached list showing */
         :<>
-          <div className="filter-row"><select className="select" value={f.type} onChange={e=>setF(x=>({...x,type:e.target.value}))}><option value="">{t('search.allTypes')}</option><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">{t('search.allLocations')}</option><option value="New York">New York</option><option value="Los Angeles">Los Angeles</option><option value="Atlanta">Atlanta</option><option value="Miami">Miami</option></select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">{t('search.allUnion')}</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
+          <div className="filter-row"><select className="select" value={f.type} onChange={e=>setF(x=>({...x,type:e.target.value}))}><option value="">{t('search.allTypes')}</option><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">{t('search.allLocations')}{locTotal?` (${locTotal})`:""}</option>{locOptions.map(([city,n])=><option key={city} value={city}>{city}{n?` (${n})`:""}</option>)}</select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">{t('search.allUnion')}</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
           {fetchErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
             <span>{t('search.refreshErr')} {fetchErr}{dbCastings.length>0?" "+t('search.showingCached'):""}</span>
             <button className="btn-s btn-sm" onClick={()=>{setFetchErr("");setRefreshTick(tk=>tk+1);}}>{t('search.retryShort')}</button>
