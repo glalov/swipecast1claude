@@ -2603,6 +2603,31 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 @media(max-width:600px){.sw-hint-text{display:none;}.sw-hint-text-mobile{display:block;}}
 .sw-overlay{position:absolute;top:16px;left:0;right:0;text-align:center;font-family:'DM Sans',sans-serif;font-weight:800;font-size:28px;letter-spacing:-0.5px;pointer-events:none;z-index:10;text-shadow:0 2px 10px rgba(0,0,0,.4);}
 .sw-counter{text-align:center;color:var(--t2);font-size:13px;margin-bottom:12px;}
+.cd-sub-panel{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:18px 20px;margin-top:30px;max-height:calc(100vh - 140px);overflow-y:auto;}
+/* margin-top 30px = the "N pending · reviewing" line (18px) + its 12px gap, so the panel top sits level with the card top */
+.swipe-layout .sw-counter{height:18px;line-height:18px;}
+.cd-sub-panel h4{font-size:16px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;}
+.cd-sub-panel h4 small{font-size:12px;color:var(--t3);font-weight:600;text-align:right;}
+.cd-sub-blk{margin-bottom:16px;}
+.cd-sub-blk:last-child{margin-bottom:0;}
+.cd-sub-lab{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;}
+.cd-sub-note{font-size:14px;line-height:1.55;color:var(--t2);font-style:italic;background:var(--s2);border-radius:10px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;}
+.cd-sub-vid{width:100%;border-radius:10px;background:#111;display:block;aspect-ratio:16/9;}
+.cd-sub-takes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.cd-sub-takes button{font:inherit;font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:1px solid var(--bdr);background:#fff;cursor:pointer;color:var(--t1);}
+.cd-sub-takes button.on{background:var(--acc);color:#fff;border-color:var(--acc);}
+.cd-sub-empty{font-size:13px;color:var(--t3);font-style:italic;text-align:center;padding:14px 0;}
+.cd-sub-hint{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.cd-sub-hint span{font-size:10.5px;font-weight:700;color:#5a3cb4;background:rgba(99,60,180,0.08);border:1px solid rgba(99,60,180,0.22);padding:3px 8px;border-radius:20px;}
+.cd-sub-hint em{font-style:normal;font-size:10.5px;font-weight:600;color:var(--t3);}
+.cd-sub-flash{animation:cdSubFlash .5s ease;}
+@keyframes cdSubFlash{0%{box-shadow:0 0 0 0 rgba(99,60,180,.35)}100%{box-shadow:0 0 0 10px rgba(99,60,180,0)}}
+.cd-sub-sheetbtn{display:none;margin-top:10px;font:inherit;font-weight:700;font-size:13px;padding:9px 16px;border-radius:9px;background:rgba(99,60,180,0.08);border:1px solid rgba(99,60,180,0.3);color:#5a3cb4;cursor:pointer;}
+.cd-sub-scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9200;}
+.cd-sub-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9201;background:var(--s1);border-radius:20px 20px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.2);padding:10px 18px calc(24px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto;animation:cdSubUp .3s cubic-bezier(.3,.9,.4,1);}
+.cd-sub-sheet .cd-sub-grab{width:40px;height:5px;border-radius:3px;background:var(--bdr);margin:0 auto 10px;}
+@keyframes cdSubUp{from{transform:translateY(100%)}to{transform:none}}
+@media(max-width:900px){.cd-sub-panel{display:none;}.cd-sub-sheetbtn{display:inline-block;}}
 .cb-sidebar{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px;overflow-y:auto;max-height:80vh;}
 .cb-sidebar h3{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
 .cb-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;margin-bottom:6px;cursor:pointer;transition:background .2s;}
@@ -17974,6 +17999,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   // The swipe card registers its fly-off here so the ✕ / ⏸ / ✓ buttons animate the
   // card out (same motion as the landing demo) before the decision lands.
   const cardFlyRef=useRef(null);
+  const [cdSubSheet,setCdSubSheet]=useState(false);
   const swipeDecide=(action)=>{if(cardFlyRef.current)cardFlyRef.current(action);else decide(action);};
   // Track whether the first data load has completed. Background refreshes (polling,
   // focus, realtime) must NOT set loading=true after the first load — that triggers
@@ -18449,6 +18475,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     if(prevStatus===nextStatus)return;
 
     decidingRef.current=true;
+    setCdSubSheet(false);
     setSavingErr("");
     const ts=new Date().toISOString();
     // Optimistic local update
@@ -18586,7 +18613,12 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
           {t.slate_video_url&&(
             <button
               onPointerDown={e=>e.stopPropagation()}
-              onClick={e=>{e.stopPropagation();openApplicationVideoFromApp(app,{url:t.slate_video_url,name:t.display_name||"Applicant",takeLabel:"Slate"});}}
+              onClick={e=>{e.stopPropagation();
+                // Play the slate in the submission panel; phones open the sheet; fall back to the old viewer.
+                const blk=[...document.querySelectorAll('.cd-sub-panel [data-cd-slate]')].find(b=>b.offsetParent);
+                if(blk){blk.scrollIntoView({behavior:"smooth",block:"center"});const v=blk.querySelector("video");if(v)v.play().catch(()=>{});}
+                else if(window.innerWidth<=900){setCdSubSheet(true);}
+                else openApplicationVideoFromApp(app,{url:t.slate_video_url,name:t.display_name||"Applicant",takeLabel:"Slate"});}}
               style={{position:"absolute",top:10,right:10,zIndex:15,display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:20,background:"rgba(0,0,0,0.65)",color:"#fff",fontSize:11,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",letterSpacing:.4,backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)"}}
             >▶ Slate</button>
           )}
@@ -18598,18 +18630,8 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               {t.union_status&&<span style={{background:"rgba(26,26,46,.08)",color:"var(--acc)"}}>{t.union_status}</span>}
             </div>
             {credits&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)"}}>{credits.slice(0,fsMode?200:140)}{credits.length>(fsMode?200:140)?"…":""}</p>}
-            {app.cover_note&&<p style={{marginTop:8,fontSize:fsMode?13:12,color:"var(--t2)",fontStyle:"italic"}}>"{String(app.cover_note).slice(0,fsMode?220:160)}{String(app.cover_note).length>(fsMode?220:160)?"…":""}"</p>}
-            {/* Audition takes (official self-tape system) */}
-            {(()=>{const sub=app.audition_submissions;if(!sub)return null;const allTakes=(sub.audition_takes||[]).sort((a,b)=>a.take_number-b.take_number);const displayTakes=sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(t=>t.id===sub.selected_take_id):allTakes;if(!displayTakes.length)return null;return(<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="movie" s={22}/> Audition Take{displayTakes.length>1?'s':''}</div>{displayTakes.map(tk=>(<button key={tk.id} onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.stopPropagation();openApplicationVideoFromApp(app,{url:tk.video_url,name:t.display_name||"Applicant",takeLabel:`Take ${tk.take_number}`});}} style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"6px 12px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center",marginBottom:4}}>▶ Watch Take {tk.take_number}</button>))}</div>);})()}
-            {!app.audition_submissions&&app.video_note_url&&<div style={{marginTop:10,background:"rgba(99,60,180,0.08)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"8px 12px"}}>
-              <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:6}}><Ico n="video" s={22}/> Video Note Included</div>
-              <button
-                onPointerDown={e=>e.stopPropagation()}
-                onClick={e=>{e.stopPropagation();openApplicationVideoFromApp(app,{url:app.video_note_url,name:t.display_name||"Applicant"});}}
-                style={{display:"flex",alignItems:"center",gap:6,fontSize:fsMode?13:12,fontWeight:700,padding:"7px 14px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%",justifyContent:"center"}}>
-                ▶ Play Video Note
-              </button>
-            </div>}
+            {/* Note / video note / slate / takes live in the "This submission" panel; the card just flags them. */}
+            {(()=>{const p=cdSubmissionParts(app);const c=[];if(p.note)c.push("Note");if(p.videoNote)c.push("Video note");if(p.slate)c.push("Slate");if(p.takes.length)c.push(p.takes.length>1?`${p.takes.length} takes`:"Audition take");if(!c.length)return null;return <div className="cd-sub-hint">{c.map(x=><span key={x}>{x}</span>)}<em>{typeof window!=="undefined"&&window.innerWidth<=900?"↓ below":"→ see right"}</em></div>;})()}
           </div>
         </div>
       </div>
@@ -18868,22 +18890,22 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
                   <button className="btn-s btn-sm" onClick={()=>{const next=!fsMode;setFsMode(next);if(!next)setCdProfileOverlay(null);}} title={fsMode?"Return to normal view":"Review actors in distraction-free full screen"}>{fsMode?"⊡ Normal View":"Full Screen"}</button>
                   {lastUndo&&<button className="btn-s btn-sm" onClick={undo}>↩ Undo — {lastUndo.name} ({lastUndo.newStatus})</button>}
                 </div>
+                {(()=>{const p=cdSubmissionParts(pendingList[si]);const n=(p.note?1:0)+(p.videoNote?1:0)+(p.slate?1:0)+(p.takes.length?1:0);return <div style={{textAlign:"center"}}><button className="cd-sub-sheetbtn" style={n?{}:{opacity:.55}} onClick={()=>setCdSubSheet(true)}>Note &amp; videos{n?` (${n})`:""}</button></div>;})()}
                 <p style={{textAlign:"center",fontSize:11,color:"var(--t3)",marginTop:8}}>Swipe left = reject · swipe up = hold · swipe right = select</p>
               </div>
-              {!fsMode&&<div className="cb-sidebar">
-                <h3>Selected <span className="tag tag-grn">{counts.selected}</span></h3>
-                {counts.selected===0?<div className="cb-empty">Swipe right or press <Ico n="check" s={24}/> to shortlist.</div>:
-                submissions.filter(s=>s.status==='selected').slice(0,10).map((a,i)=>
-                  <div key={a.id||i} className="cb-item" style={{flexDirection:"column",alignItems:"stretch"}}>
-                    <div style={{display:"flex",gap:10,alignItems:"center",cursor:"pointer"}} onClick={()=>openTalentProfileFromApp(a)}>
-                      <img src={a.selected_photo_url||a.profiles?.headshot_url||"https://placehold.co/80x100/e5e5e5/999?text=?"} alt={a.profiles?.display_name||""} style={{width:52,height:66,objectFit:"cover",borderRadius:6}}/>
-                      <div className="cb-item-info" style={{flex:1}}><h4>{a.profiles?.display_name||"Applicant"}</h4><p>{[cardAge(a.profiles),a.profiles?.gender,a.profiles?.location].filter(Boolean).join(" · ")}</p></div>
-                    </div>
-                    <div style={{display:"flex",gap:6,marginTop:8}}>
-                      <button className="btn-p btn-sm" style={{flex:1,fontSize:11,padding:"6px 10px"}} onClick={()=>handleMsgClick(a)}><Ico n="message-circle" s={22}/> Message</button>
-                    </div>
-                  </div>)}
-              </div>}
+              <div className="cd-sub-panel cd-sub-flash" key={"sub:"+(pendingList[si]?.id||si)} style={fsMode?{width:"min(400px,92vw)",alignSelf:"flex-start",marginTop:0}:{}}>
+                <CdSubmissionBody key={pendingList[si]?.id||si} app={pendingList[si]} onPlay={a=>notifyAdminGeneratedApplicationActivity(a,"video_view")}/>
+              </div>
+              {cdSubSheet&&pendingList[si]&&<>
+                <div className="cd-sub-scrim" onClick={()=>setCdSubSheet(false)}/>
+                <div className="cd-sub-sheet cd-sub-panel-sheet">
+                  <div className="cd-sub-grab"/>
+                  <button className="btn-s btn-sm" style={{float:"right"}} onClick={()=>setCdSubSheet(false)}>Close</button>
+                  <div className="cd-sub-panel" style={{display:"block",border:"none",padding:0,margin:0,maxHeight:"none",background:"none"}}>
+                    <CdSubmissionBody key={"sheet:"+(pendingList[si]?.id||si)} app={pendingList[si]} onPlay={a=>notifyAdminGeneratedApplicationActivity(a,"video_view")}/>
+                  </div>
+                </div>
+              </>}
             </div>}
         </>:<>
           {/* Search + sort for non-pending folders */}
@@ -23202,6 +23224,37 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 // the crop was measured in had exactly this wrapper, so this also makes the
 // live card match the framing the owner approved, pixel for pixel.
 // Unzoomed cards render the bare <img> exactly as before — untouched.
+// CD review deck — "This submission" panel (2026-09-30, owner-approved demo). Holds the
+// actor's note to casting, video note, slate and audition takes beside the swipe card
+// (and in a bottom sheet on phones) instead of cramming them into the card. Top-level
+// so a parent re-render never remounts it mid-video.
+function cdSubmissionParts(app){
+  const t=app?.profiles||{};
+  const sub=app?.audition_submissions;
+  const allTakes=sub?[...(sub.audition_takes||[])].sort((a,b)=>a.take_number-b.take_number):[];
+  const takes=sub&&sub.submission_mode==='best_take'&&sub.selected_take_id?allTakes.filter(x=>x.id===sub.selected_take_id):allTakes;
+  return {note:app?.cover_note?String(app.cover_note):"",videoNote:!sub&&app?.video_note_url?app.video_note_url:"",slate:t.slate_video_url||"",takes};
+}
+function CdSubmissionBody({app,onPlay}){
+  const {note,videoNote,slate,takes}=cdSubmissionParts(app);
+  const [take,setTake]=useState(0);
+  const played=useRef({});
+  const once=(k)=>()=>{if(played.current[k])return;played.current[k]=true;if(onPlay)onPlay(app);};
+  const name=app?.profiles?.display_name||"Applicant";
+  if(!app)return <><h4>This submission</h4><div className="cd-sub-empty">Nothing left to review.</div></>;
+  const tk=takes[Math.min(take,takes.length-1)];
+  return(<>
+    <h4>This submission <small>{name}</small></h4>
+    {!note&&!videoNote&&!slate&&!takes.length&&<div className="cd-sub-empty">No note or videos with this submission.</div>}
+    {note&&<div className="cd-sub-blk"><div className="cd-sub-lab">Note to casting</div><div className="cd-sub-note">"{note}"</div></div>}
+    {videoNote&&<div className="cd-sub-blk"><div className="cd-sub-lab">Video note</div><video className="cd-sub-vid" src={videoNote} controls playsInline preload="metadata" onPlay={once("vn")}/></div>}
+    {slate&&<div className="cd-sub-blk" data-cd-slate="1"><div className="cd-sub-lab">Slate</div><video className="cd-sub-vid" src={slate} controls playsInline preload="metadata" onPlay={once("slate")}/></div>}
+    {takes.length>0&&<div className="cd-sub-blk"><div className="cd-sub-lab">Audition take{takes.length>1?"s":""}</div>
+      {takes.length>1&&<div className="cd-sub-takes">{takes.map((x,k)=><button key={x.id||k} className={k===take?"on":""} onClick={()=>setTake(k)}>Take {x.take_number}</button>)}</div>}
+      {tk&&<video key={tk.id||tk.video_url} className="cd-sub-vid" src={tk.video_url} controls playsInline preload="metadata" onPlay={once("take")}/>}
+    </div>}
+  </>);
+}
 function SwipeCardPhoto({t,alt="",draggable}){
   const pos=t.pos||"center 8%";
   const base={width:"100%",height:"100%",objectFit:"cover",objectPosition:pos,display:"block"};
