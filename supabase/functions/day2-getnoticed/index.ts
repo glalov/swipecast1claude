@@ -160,10 +160,25 @@ const T = {
   rule:   "#EAC080", rule0: "rgba(234,192,128,0)",
   kicker: "#8A5A12", card: "#FBF3E4", cardBd: "#EFDDBB", cta: "#2A8472",
 };
-// One fixed still (like the welcome emails, not the upsell rotation). Warm frame,
-// readable face, a young actor. A plain <img> at natural 16:9 — see heroStill() in
-// send-notification-email for why not a CSS background.
-const DAY2_STILL = { url: "https://image.tmdb.org/t/p/w1280/jwBiY1kE5089i2WpfS1MHDYp3VO.jpg", film: "Lady Bird", year: 2017 };
+// Fixed stills (like the welcome emails, not the upsell rotation), matched to the
+// actor's gender so they can picture themselves (owner's picks, 2026-09-30): one
+// young actor, readable face, warm light. No gender / non-binary / anything else
+// gets the neutral frame with a man AND a woman, so nobody feels misread.
+// A plain <img> at natural 16:9 — see heroStill() in send-notification-email.
+type Still = { url: string; film: string; year: number };
+const STILLS: Record<"female"|"male"|"neutral", Still> = {
+  female:  { url: "https://image.tmdb.org/t/p/w1280/jwBiY1kE5089i2WpfS1MHDYp3VO.jpg", film: "Lady Bird", year: 2017 },
+  male:    { url: "https://image.tmdb.org/t/p/w1280/4Xh2a1WeTp6b8Ksvug0pAMbX3dT.jpg", film: "Call Me by Your Name", year: 2017 },
+  neutral: { url: "https://image.tmdb.org/t/p/w1280/iJONcj9JxINueHtfvuXmQ4ddPnD.jpg", film: "Past Lives", year: 2023 },
+};
+// Stored gender values (never rewritten — see profile option lists): exact matches
+// only, because "female" contains "male".
+function stillFor(gender: unknown): Still {
+  const g = String(gender ?? "").trim().toLowerCase();
+  if (g === "female" || g === "woman" || g === "trans woman") return STILLS.female;
+  if (g === "male" || g === "man" || g === "trans man" || g === "transgender/ftm male") return STILLS.male;
+  return STILLS.neutral;
+}
 const GOLD = "#D29A38";
 
 // Round 26px icon chip — the checklist equivalent of the recap email's stat chips.
@@ -180,7 +195,7 @@ const listLabel = (t: string, muted = false) =>
   `<div style="font-size:10.5px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${muted ? "#9A9AAE" : T.kicker};margin:16px 0 10px">${t}</div>`;
 
 interface Assessed { core:{label:string;done:boolean}[]; bonus:{label:string;done:boolean}[]; pct:number; }
-function buildEmail(first: string, a: Assessed, userId: string): string {
+function buildEmail(first: string, a: Assessed, userId: string, still: Still = STILLS.neutral): string {
   const { core, bonus, pct } = a;
   const missing      = core.filter(c=>!c.done);
   const done         = core.filter(c=>c.done);
@@ -242,9 +257,9 @@ function buildEmail(first: string, a: Assessed, userId: string): string {
         </tr></table>
       </td></tr>
 
-      <tr><td style="padding:0;line-height:0;background:${T.band}"><img src="${DAY2_STILL.url}" width="560" alt="" style="display:block;width:100%;height:auto;border:0"/></td></tr>
+      <tr><td style="padding:0;line-height:0;background:${T.band}"><img src="${still.url}" width="560" alt="" style="display:block;width:100%;height:auto;border:0"/></td></tr>
       <tr><td style="height:4px;line-height:4px;font-size:0;background:${T.rule};background:linear-gradient(90deg,${T.onDark},${T.rule} 52%,${T.rule0})">&nbsp;</td></tr>
-      <tr><td style="padding:12px 30px 0;text-align:center"><div style="font-size:10px;letter-spacing:.4px;color:#9A8C78">Still: <em>${DAY2_STILL.film}</em> (${DAY2_STILL.year})</div></td></tr>
+      <tr><td style="padding:12px 30px 0;text-align:center"><div style="font-size:10px;letter-spacing:.4px;color:#9A8C78">Still: <em>${still.film}</em> (${still.year})</div></td></tr>
 
       <tr><td class="cs-pad" style="padding:34px 30px 0">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
@@ -378,7 +393,7 @@ serve(async (req) => {
     if (action === "test") {
       if (!to_email) return res({error:"to_email required"},400);
       const sample = assess({ headshot_url:"x", height:"5'10\"", weight:"160", skills:[], bio:"", credits:"Some credits", reel_url:null, slate_video_url:null, resume_url:null });
-      const html = buildEmail("", sample, "test");
+      const html = buildEmail("", sample, "test", stillFor(body.gender));
       const r = await sendEmail({ from:FROM_EMAIL, to:[to_email], replyTo:CONTACT_EMAIL, subject:subjectFor(sample.pct,""), html });
       if (!r.ok) return res({error:r.err},500);
       return res({ ok:true, test:true, to:to_email, provider_id:r.id });
@@ -389,10 +404,19 @@ serve(async (req) => {
     interface Out { userId:string; email:string; subject:string; html:string; }
     const outbox: Out[] = [];
     // deno-lint-ignore no-explicit-any
+    // Gender picks the still. day2_eligible_actors doesn't return it, so read it here
+    // (chunked so the id list never makes the request URL too long).
+    const genderById: Record<string, string> = {};
+    // deno-lint-ignore no-explicit-any
+    const ids = (rows as any[]).map(r => r.id);
+    for (let i = 0; i < ids.length; i += 200) {
+      const { data: gs } = await sb.from("profiles").select("id,gender").in("id", ids.slice(i, i + 200));
+      for (const g of (gs ?? []) as { id: string; gender: string | null }[]) genderById[g.id] = g.gender ?? "";
+    }
     for (const p of rows as any[]) {
       const a = assess(p);
       const first = greetName(p.first_name);
-      outbox.push({ userId:p.id, email:p.email, subject:subjectFor(a.pct, first), html:buildEmail(first, a, p.id) });
+      outbox.push({ userId:p.id, email:p.email, subject:subjectFor(a.pct, first), html:buildEmail(first, a, p.id, stillFor(genderById[p.id])) });
     }
 
     const logs: Record<string,unknown>[] = [];
