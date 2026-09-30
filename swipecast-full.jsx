@@ -17971,6 +17971,10 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   const [editCasting,setEditCasting]=useState(null);
   const [closingId,setClosingId]=useState(null);
   const decidingRef=useRef(false);
+  // The swipe card registers its fly-off here so the ✕ / ⏸ / ✓ buttons animate the
+  // card out (same motion as the landing demo) before the decision lands.
+  const cardFlyRef=useRef(null);
+  const swipeDecide=(action)=>{if(cardFlyRef.current)cardFlyRef.current(action);else decide(action);};
   // Track whether the first data load has completed. Background refreshes (polling,
   // focus, realtime) must NOT set loading=true after the first load — that triggers
   // the early-return loader which unmounts the whole tree including NewCastingModal,
@@ -18527,21 +18531,33 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
   // ─── Review card (swipe deck, pending only)
   const ReviewCard=()=>{
     const [dx,setDx]=useState(0);const [dy,setDy]=useState(0);const [dr,setDr]=useState(false);
+    const [fly,setFly]=useState(null);const flying=useRef(false);
     const sx=useRef(0);const sy=useRef(0);
     const app=pendingList[si];const nextApp=pendingList[si+1];
+    // Fly-off (2026-09-30, matches the landing demo): Select exits right, Reject left,
+    // Hold straight up; the next card rises from behind. The decision is applied once the
+    // card has left (0.26s / 0.32s) because applying it re-renders the deck on the next
+    // actor. Reduced-motion users skip the animation.
+    const flyOut=(action)=>{
+      if(flying.current||decidingRef.current)return;
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){decide(action);return;}
+      flying.current=true;setDr(false);setFly(action);
+      setTimeout(()=>{decide(action);setFly(null);flying.current=false;},action==='hold'?320:260);
+    };
+    cardFlyRef.current=app?flyOut:null;
     if(!app)return null;
     const t=app.profiles||{};
     const nt=nextApp?.profiles||t;
     const img=app.selected_photo_url||t.headshot_url||"https://placehold.co/400x500/e5e5e5/999?text=No+Headshot";
     const nimg=nextApp?.selected_photo_url||nt.headshot_url||img;
     const horizDom=Math.abs(dx)>Math.abs(dy);
-    const ac = horizDom ? (dx>60?"select":dx<-60?"reject":null) : (dy<-60?"hold":null);
+    const ac = fly || (horizDom ? (dx>60?"select":dx<-60?"reject":null) : (dy<-60?"hold":null));
     const end=()=>{
       setDr(false);
       if(Math.abs(dx)>100 && Math.abs(dx)>Math.abs(dy)){
-        if(dx>0)decide('select');else decide('reject');
+        if(dx>0)flyOut('select');else flyOut('reject');
       } else if(dy<-90){
-        decide('hold');
+        flyOut('hold');
       } else {
         setDx(0);setDy(0);
       }
@@ -18552,12 +18568,14 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     return(<>
       <div className="sw-counter">{counts.pending} pending · reviewing {Math.min(si+1,pendingList.length)} of {pendingList.length} · Role: {app.roles?.name||activeRole?.name||"—"}</div>
       <div className="swipe-card-wrap cd-crop" style={fsMode?{width:"min(560px,90vw,calc(min(760px,78vh) * 0.52))",height:"min(760px,78vh)"}:{}}>
-        {nextApp&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}>
+        {nextApp&&<div className="s-card" style={fly?{transform:"scale(1) translateY(0)",opacity:1,zIndex:1,transition:"transform .26s cubic-bezier(.34,1.3,.64,1), opacity .22s"}:{transform:"scale(.94) translateY(10px)",opacity:.4,zIndex:1}}>
           <img src={nimg} alt="" style={fsMode?{height:"65%"}:{}}/><div className="s-card-info"><h3>{nt.display_name||"Applicant"}</h3></div>
         </div>}
         <div className="s-card"
-          style={{transform:`translate(${dx}px, ${Math.min(dy,0)}px) rotate(${dx*.035}deg)`,transition:dr?"none":"transform .35s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}}
-          onPointerDown={e=>{setDr(true);sx.current=e.clientX;sy.current=e.clientY;}}
+          style={fly
+            ?{transform:fly==='hold'?"translateY(-700px) scale(.9)":`translateX(${fly==='select'?560:-560}px) rotate(${fly==='select'?20:-20}deg)`,opacity:0,transition:fly==='hold'?"transform .32s cubic-bezier(.4,0,.6,1), opacity .28s":"transform .26s cubic-bezier(.4,0,.6,1), opacity .22s",zIndex:2,pointerEvents:"none"}
+            :{transform:`translate(${dx}px, ${Math.min(dy,0)}px) rotate(${dx*.035}deg)`,transition:dr?"none":"transform .35s cubic-bezier(.34,1.56,.64,1)",zIndex:2,cursor:dr?"grabbing":"grab"}}
+          onPointerDown={e=>{if(flying.current)return;setDr(true);sx.current=e.clientX;sy.current=e.clientY;}}
           onPointerMove={e=>{if(dr){setDx(e.clientX-sx.current);setDy(e.clientY-sy.current);}}}
           onPointerUp={end} onPointerCancel={end}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="reject"?1:0}}>REJECT</div>
@@ -18841,9 +18859,9 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
               <div className="swipe-area" style={fsMode?{width:"100%",maxWidth:720}:{}}>
                 <ReviewCard key={(fsMode?"fs:":"") + (pendingList[si]?.id||si)}/>
                 <div className="swipe-btns" style={fsMode?{gap:24,marginTop:8}:{}}>
-                  <button className="sw-btn pass" onClick={()=>decide('reject')} title="Reject (swipe left)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="x" s={24}/></button>
-                  <button className="sw-btn save" style={fsMode?{background:"rgba(200,137,0,0.15)",color:"#c88900",width:68,height:68,fontSize:26}:{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>decide('hold')} title="Hold (swipe up)">⏸</button>
-                  <button className="sw-btn yes" onClick={()=>decide('select')} title="Select (swipe right)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="check" s={24}/></button>
+                  <button className="sw-btn pass" onClick={()=>swipeDecide('reject')} title="Reject (swipe left)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="x" s={24}/></button>
+                  <button className="sw-btn save" style={fsMode?{background:"rgba(200,137,0,0.15)",color:"#c88900",width:68,height:68,fontSize:26}:{background:"rgba(200,137,0,0.15)",color:"#c88900"}} onClick={()=>swipeDecide('hold')} title="Hold (swipe up)">⏸</button>
+                  <button className="sw-btn yes" onClick={()=>swipeDecide('select')} title="Select (swipe right)" style={fsMode?{width:68,height:68,fontSize:26}:{}}><Ico n="check" s={24}/></button>
                 </div>
                 <div style={{textAlign:"center",marginTop:12,display:"flex",gap:10,justifyContent:"center",alignItems:"center",flexWrap:"wrap"}}>
                   <button className="btn-s btn-sm" onClick={()=>{if(!pendingList[si])return;if(fsMode)setFsMode(false);openTalentProfileFromApp(pendingList[si]);}} >View full profile</button>
