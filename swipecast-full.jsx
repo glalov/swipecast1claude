@@ -3410,6 +3410,8 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-card{position:relative;overflow:hidden;border-radius:14px;background:var(--s1);border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
 .b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;}
 .b5-main{padding:24px 26px;display:grid;gap:10px;align-content:start;min-width:0;}
+.cs-pick{display:inline-flex;align-items:center;gap:7px;background:#fff;color:#241F19;font-family:inherit;font-size:13px;line-height:16.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 20px 2px 18px;border:1px solid #E8D3A6;border-radius:999px;box-shadow:0 1px 2px rgba(138,90,18,.10);white-space:nowrap;}
+.cs-pick i{color:#C9993F;font-size:12px;line-height:1;}
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
 .b5-pickpill{overflow:hidden;}
 .b5-card.b5-pick{border-color:#D8CEB8;}
@@ -12546,7 +12548,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     </div>
 
     <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-      {castingIsPick(c)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#FBF4E4",color:"#6E4E12",border:"1px solid #E7D3A6",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
+      {castingIsPick(c)&&<PickBadge/>}
       <span style={{display:"inline-flex",alignItems:"center",padding:"4px 11px",background:"#F0EBE1",color:"#4A443B",border:"1px solid #E4DCCB",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}>{translateCastingType(c.type,lang)}</span>
     </div>
     <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={isDbCasting?{kind:"casting",id:c.id}:null}/>
@@ -14253,7 +14255,7 @@ function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
         {casting&&(
           <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:12,padding:"16px 20px",marginBottom:20}}>
             <div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}>
-              {castingIsPick(casting)&&<span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",background:"#FBF4E4",color:"#6E4E12",border:"1px solid #E7D3A6",borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:"0.08em",textTransform:"uppercase"}}><Ico n="star" s={24}/> Cast Slate Pick</span>}
+              {castingIsPick(casting)&&<PickBadge/>}
               {casting.type&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.type}</span>}
               {casting.union&&<span className="badge" style={{background:"var(--s3)",color:"var(--t2)"}}>{casting.union}</span>}
             </div>
@@ -14724,6 +14726,13 @@ function castingFeaturedRank(casting){
 // stored, so it lapses on its own the moment the deadline passes: nothing to
 // unset by hand, no cron, and admin's `featured` flag is left untouched so the
 // pick returns intact if the casting is ever reopened or its deadline extended.
+// The one CastSlate Pick badge (2026-09-30, owner's pick "7" from the badge demo):
+// white chip, gold hairline, gold star, normal case. 13px/2px 20px 2px 18px padding makes
+// it exactly the size of the old striped pill (151x22.5). Used on Browse, the casting
+// page, the gate page and the talent-dashboard spotlight. Change it here only.
+function PickBadge({label="CastSlate Pick"}){
+  return <span className="cs-pick"><i className="ti ti-star-filled" aria-hidden="true"/>{label}</span>;
+}
 function castingIsPick(casting){
   return !!(casting&&casting.featured===true&&casting.status!=="archived"&&!castingIsExpired(casting));
 }
@@ -15204,7 +15213,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={"b5-grid"+(isArchived?" cs-archived-dim":"")}>
                 <div className="b5-main">
-                  {isFeat&&<div><span className="b5-pickpill"><span className="b5-clap" aria-hidden="true"/>CastSlate Pick</span></div>}
+                  {isFeat&&<div><PickBadge/></div>}
                   <div className="b5-head">
                     {/* The title opens the sheet at every width (the card-level
                         click is off on phones so a scroll tap can't open one). */}
@@ -17459,17 +17468,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
                       {/* Badge */}
                       <div style={{marginBottom:12}}>
-                        <span style={{
-                          display:"inline-flex",alignItems:"center",gap:6,
-                          background:"linear-gradient(90deg,#c8a84b,#e2c46a)",
-                          color:"#2a1f00",fontSize:9,fontWeight:800,
-                          letterSpacing:1.5,textTransform:"uppercase",
-                          padding:"5px 12px 5px 10px",borderRadius:20,
-                          boxShadow:"0 2px 10px rgba(180,140,40,0.28)",
-                        }}>
-                          <span style={{width:5,height:5,borderRadius:"50%",background:"#2a1f00",display:"inline-block",flexShrink:0}}/>
-                          {isNew?"New CastSlate Pick":"CastSlate Pick"}
-                        </span>
+                        <PickBadge label={isNew?"New CastSlate Pick":"CastSlate Pick"}/>
                       </div>
 
                       {/* Eyebrow */}
