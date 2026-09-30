@@ -83,6 +83,8 @@ jsx_raw = open("swipecast-full.jsx", "r", encoding="utf-8").read()
 jsx_raw = re.sub(r'^\s*import\s+.*?from\s+["\'][^"\']+["\'];?\s*\n', '', jsx_raw, count=1, flags=re.MULTILINE)
 jsx_raw = jsx_raw.replace("export default function App", "function App")
 jsx_raw += "\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));\n"
+# SEO crawler block (#cs-seo, sits NEXT TO #root) goes as soon as the app mounts.
+jsx_raw += "\ntry{var __seo=document.getElementById('cs-seo');if(__seo)__seo.remove();}catch(_){}\n"
 
 # ── Compile at build time, with retries ──────────────────────────────────────
 # Production MUST ship the pre-compiled app.js. The in-browser Babel path
@@ -225,6 +227,12 @@ def route_preload_tags(path):
 # initial server-served HTML now declares the correct canonical for each URL,
 # which is what Google indexes.
 def render_page(title, desc, canonical, extra_preload=""):
+    # Crawler text block (2026-09-30): the page's own heading + summary, NEXT TO
+    # #root (never inside — the intro curtain and boot watchdog read any child of
+    # #root as "React mounted"). Visually hidden; the app removes it on mount.
+    import html as _h
+    _seo_h1 = _h.escape(title.split(" | ")[0], quote=False)
+    _seo_p = _h.escape(desc, quote=False)
     return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -656,6 +664,7 @@ def render_page(title, desc, canonical, extra_preload=""):
     <button onclick="window.location.reload()">Reload</button>
   </div>
   <div id="root"></div>
+  <div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0"><h1>{_seo_h1}</h1><p>{_seo_p}</p></div>
   <!-- Crawlable fallback for search engines that don't execute JavaScript -->
   <noscript>
     <div style="font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 24px;color:#1B1C20;">
@@ -916,21 +925,21 @@ def render_page(title, desc, canonical, extra_preload=""):
 # server HTML and the client-side setPageSEO() agree exactly.
 ROUTES = [
     ("index.html",            "/",                "CastSlate: Casting Calls, Auditions & Acting Jobs — Film, TV & Theater", "CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time. Free forever for actors."),
-    ("browse-castings.html",  "/browse-castings", "Browse Castings", "Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."),
-    ("pricing.html",          "/pricing",         "Pricing", "CastSlate is free forever for actors. Upgrade to Premium from $10.75/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
-    ("classes.html",          "/classes",         "Acting Classes", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
-    ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit", "There's no secret actor toolkit — just talent, and the right places to be found. Find agencies, apply to castings that fit, and run your own career with CastSlate."),
-    ("resources.html",        "/resources",       "Resources", "Guides and resources for actors and casting directors on the CastSlate platform."),
-    ("trust-safety.html",     "/trust-safety",    "Trust & Safety", "CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."),
-    ("pay-talent.html",       "/pay-talent",      "Pay Talent", "Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."),
-    ("about.html",            "/about",           "About", "CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."),
-    ("blog.html",             "/blog",            "Blog", "Casting industry news, actor tips, and platform updates from the CastSlate team."),
-    ("careers.html",          "/careers",         "Careers", "Join the team building the future of casting. Open roles at CastSlate."),
-    ("contact.html",          "/contact",         "Contact", "Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."),
-    ("faq.html",              "/faq",             "FAQ", "Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."),
-    ("terms.html",            "/terms",           "Terms of Use", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
-    ("privacy.html",          "/privacy",         "Privacy Policy", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
-    ("manager-mode.html",     "/manager-mode",    "Manager Mode", "CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
+    ("browse-castings.html",  "/browse-castings", "Casting Calls & Auditions in NYC and Nationwide | CastSlate", "Browse open casting calls for film, TV, theater, and commercials. Submit your actor profile to roles that match your look and skills."),
+    ("pricing.html",          "/pricing",         "Pricing — Free to Join, Premium from $10.75/mo | CastSlate", "CastSlate is free forever for actors. Upgrade to Premium from $10.75/mo for unlimited submissions, Actor Slate Video, Actor Business Card, Manager Mode, and more. See all plans and what's included."),
+    ("classes.html",          "/classes",         "Acting Classes in NYC & Online | CastSlate", "Online and in-person acting classes taught by working industry professionals. Sharpen your craft and get camera-ready."),
+    ("actor-toolkit.html",    "/actor-toolkit",   "Actor Toolkit: Agencies, Castings & Career Tools | CastSlate", "There's no secret actor toolkit — just talent, and the right places to be found. Find agencies, apply to castings that fit, and run your own career with CastSlate."),
+    ("resources.html",        "/resources",       "Resources for Actors & Casting Directors | CastSlate", "Guides and resources for actors and casting directors on the CastSlate platform."),
+    ("trust-safety.html",     "/trust-safety",    "Trust & Safety for Actors and Casting Teams | CastSlate", "CastSlate trust and safety guidance for actors, models, casting teams, and producers, including audition fee warnings, compensation labels, privacy protections, and how to report suspicious activity."),
+    ("pay-talent.html",       "/pay-talent",      "Pay Talent — Actor Payments for Productions | CastSlate", "Fast, secure talent payments for casting directors and producers. Pay actors directly through CastSlate."),
+    ("about.html",            "/about",           "About CastSlate — The Casting Platform Built for Actors", "CastSlate is a modern casting platform built for working actors and the industry professionals who discover them."),
+    ("blog.html",             "/blog",            "Casting News & Actor Tips — CastSlate Blog", "Casting industry news, actor tips, and platform updates from the CastSlate team."),
+    ("careers.html",          "/careers",         "Careers at CastSlate", "Join the team building the future of casting. Open roles at CastSlate."),
+    ("contact.html",          "/contact",         "Contact CastSlate", "Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."),
+    ("faq.html",              "/faq",             "FAQ — How CastSlate Works for Actors & Casting Directors", "Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."),
+    ("terms.html",            "/terms",           "Terms of Use | CastSlate", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
+    ("privacy.html",          "/privacy",         "Privacy Policy | CastSlate", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
+    ("manager-mode.html",     "/manager-mode",    "Manager Mode — Career Check-ins for Actors | CastSlate", "CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
     ("agency-directory.html", "/agency-directory", "Talent Agency & Management Directory \u2014 650+ Agencies in LA & NYC", "CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."),
     ("tapelink.html",         "/tapelink",        "TapeLink: Self-Tape Auditions Built Into Casting", "TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."),
 ]

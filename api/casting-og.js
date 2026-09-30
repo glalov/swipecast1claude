@@ -54,7 +54,7 @@ async function fetchCasting(slug) {
     `${SUPABASE_URL}/rest/v1/castings` +
     `?slug=eq.${encodeURIComponent(slug)}` +
     `&status=eq.open&published=eq.true` +
-    `&select=title,type,prod,tagline,synopsis,location,casting_image_url,casting_images,slug` +
+    `&select=id,title,type,prod,tagline,synopsis,location,pay,union_status,deadline,shoot_start,shoot_end,casting_image_url,casting_images,slug` +
     `&limit=1`;
   const resp = await fetch(url, {
     headers: {
@@ -65,6 +65,76 @@ async function fetchCasting(slug) {
   if (!resp.ok) return null;
   const rows = await resp.json();
   return Array.isArray(rows) && rows.length ? rows[0] : null;
+}
+
+// Roles for the crawler text block (anon-readable, same data the page shows).
+async function fetchRoles(castingId) {
+  if (!castingId) return [];
+  const url =
+    `${SUPABASE_URL}/rest/v1/roles` +
+    `?casting_id=eq.${encodeURIComponent(castingId)}` +
+    `&select=name,role_type,gender,age_range,pay,description` +
+    `&order=created_at.asc&limit=40`;
+  try {
+    const resp = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if (!resp.ok) return [];
+    const rows = await resp.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function escapeText(str) {
+  return String(str == null ? "" : str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function fmtDate(d) {
+  if (!d) return "";
+  const t = new Date(String(d).length <= 10 ? `${d}T12:00:00Z` : d);
+  if (isNaN(t)) return "";
+  return t.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+// SEO text block (2026-09-30). The app is client-rendered, so the HTML crawlers
+// first receive had ~150 characters of text. This puts the casting's real
+// content (the same things the page shows — no company/producer names) into a
+// visually-hidden block NEXT TO #root. It must never go INSIDE #root: the intro
+// curtain and the boot watchdog treat any child of #root as "React mounted".
+// The app removes #cs-seo as soon as it mounts, so visitors never see it.
+function buildSeoBlock(c, roles, slug) {
+  const e = escapeText;
+  const facts = [
+    c.type && `Project type: ${c.type}`,
+    c.location && `Location: ${c.location}`,
+    c.union_status && `Union status: ${c.union_status}`,
+    c.pay && `Pay: ${String(c.pay).trim()}`,
+    c.shoot_start && `Shoots: ${fmtDate(c.shoot_start)}${c.shoot_end ? ` – ${fmtDate(c.shoot_end)}` : ""}`,
+    c.deadline && `Apply by: ${fmtDate(c.deadline)}`,
+  ].filter(Boolean);
+  const roleItems = roles
+    .map((r) => {
+      const spec = [r.role_type, r.gender, r.age_range, r.pay].filter(Boolean).join(" · ");
+      return `<li><strong>${e(r.name || "Role")}</strong>${spec ? ` — ${e(spec)}` : ""}${
+        r.description ? `<p>${e(truncate(r.description, 400))}</p>` : ""
+      }</li>`;
+    })
+    .join("");
+  return `<div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0;white-space:normal">
+<article>
+<h1>${e(c.title)}${c.type ? ` (${e(c.type)})` : ""} — Casting Call</h1>
+${c.tagline ? `<p>${e(c.tagline)}</p>` : ""}
+<ul>${facts.map((f) => `<li>${e(f)}</li>`).join("")}</ul>
+${c.synopsis ? `<h2>About the project</h2><p>${e(truncate(c.synopsis, 1500))}</p>` : ""}
+${roleItems ? `<h2>Roles</h2><ul>${roleItems}</ul>` : ""}
+<p><a href="${ORIGIN}/casting/${encodeURIComponent(slug)}">Apply free on CastSlate</a> · <a href="${ORIGIN}/browse-castings">Browse more casting calls</a></p>
+</article>
+</div>`;
 }
 
 // The casting's own photo when it has one; otherwise a card generated for this
@@ -185,7 +255,17 @@ module.exports = async (req, res) => {
   try {
     if (slug) {
       const casting = await fetchCasting(slug);
-      if (casting) finalHtml = injectMeta(html, casting, slug);
+      if (casting) {
+        finalHtml = injectMeta(html, casting, slug);
+        const roles = await fetchRoles(casting.id);
+        const block = buildSeoBlock(casting, roles, slug);
+        // Right after the empty #root, never inside it (see buildSeoBlock).
+        // Drop the shell's generic page block first (h1 + p, no nested divs).
+        finalHtml = finalHtml.replace(/\s*<div id="cs-seo"[^>]*><h1>[\s\S]*?<\/p><\/div>/, "");
+        if (finalHtml.includes('<div id="root"></div>')) {
+          finalHtml = finalHtml.replace('<div id="root"></div>', '<div id="root"></div>\n  ' + block);
+        }
+      }
     }
   } catch (_) {
     // On any error, serve the unmodified shell (generic preview) — the app
