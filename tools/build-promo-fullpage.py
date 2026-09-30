@@ -67,8 +67,8 @@ COPY = {
         alt="Fluorescent-lit showroom interior",
         film="Backrooms", year="A24, 2026",
         kicker="Open this week",
-        headline="Liminal, tense, quietly wrong &mdash; <br/>and casting right now",
-        lede="Everyone wants the eerie stuff this year. The difference between watching it and being in it is a submission. These are the newest paid projects open on CastSlate &mdash; every one of them was still live the moment this email went out.",
+        headline="The strange ones <br/>are casting now",
+        lede="Unsettling stories need actors who can hold a quiet moment. These are the newest paid projects open on CastSlate, all still live when this email went out. Your submission is how you get in.",
     ),
 }
 
