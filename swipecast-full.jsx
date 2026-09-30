@@ -18521,6 +18521,24 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     setReloadTick(t=>t+1);
   };
 
+  // Per-card undo (2026-09-30): any Selected / Hold / Rejected actor can be sent back to
+  // Pending, i.e. back into the swipe deck. decide_application('pending') is silent: no
+  // email, clears reviewed_at. It cannot unsend a shortlist/hold email already sent.
+  const undoToPending=async(app)=>{
+    if(!app||app.status==='pending')return;
+    const prevStatus=app.status;setSavingErr("");
+    setSubmissions(p=>p.map(a=>a.id===app.id?{...a,status:'pending',reviewed_at:null}:a));
+    setLastUndo(u=>u&&u.appId===app.id?null:u);
+    const {error}=await window.sb.rpc("decide_application",{p_application:app.id,p_status:'pending'});
+    if(error){
+      console.warn("[review] undo-to-pending error:",error.message);
+      setSubmissions(p=>p.map(a=>a.id===app.id?{...a,status:prevStatus}:a));
+      setSavingErr("Could not undo that decision. Please try again.");
+      return;
+    }
+    setReloadTick(t=>t+1);
+  };
+
   // Move a specific application between folders (e.g. from Hold → Selected)
   const moveTo=(appId,action)=>{
     const app=submissions.find(a=>a.id===appId);
@@ -18678,6 +18696,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
             {a.status!=='rejected'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"5px 9px"}} onClick={()=>moveTo(a.id,'reject')}>→ Reject</button>}
             {a.status==='selected'&&<button className="btn-p btn-sm" style={{fontSize:11,padding:"5px 9px",marginLeft:"auto"}} onClick={()=>handleMsgClick(a)}><Ico n="message-circle" s={22}/> Message</button>}
           </div>
+          {a.status!=='pending'&&<button className="btn-s btn-sm" style={{fontSize:11,padding:"6px 9px",marginTop:6,width:"100%",justifyContent:"center"}} title="Send this actor back to Pending so you can review them again" onClick={()=>undoToPending(a)}>↩ Undo {a.status==='selected'?'select':a.status==='hold'?'hold':'reject'} (back to Pending)</button>}
         </div>
       </div>
     );
