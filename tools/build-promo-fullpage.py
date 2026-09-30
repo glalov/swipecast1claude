@@ -60,7 +60,7 @@ COPY = {
         lede="Quiet dread, long takes, one unbearable close-up &mdash; it&rsquo;s the mode everything is shot in right now. These paid projects opened on CastSlate this week. All of them are free to submit to, and a real person reads every profile that comes in.",
     ),
     "backrooms": dict(
-        title="Liminal, tense, and casting this week",
+        title="Something strange just started casting",
         preheader="Three paid projects are open right now. Free to join, free to submit.",
         slot="Now casting",
         still="https://image.tmdb.org/t/p/w1280/1nIid8bKdfMBilvDtOy2vIdiSKo.jpg",

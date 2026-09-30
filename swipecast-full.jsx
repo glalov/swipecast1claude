@@ -42991,7 +42991,7 @@ const PROMO_TEMPLATES=[
    bg:"#33355A",fg:"#EAC080",mark:"CASTSLATE"},
   {id:"fullpage-backrooms",file:"/email/promo-fullpage-backrooms.html",name:"Full Page · Backrooms",
    blurb:"Upsell-style full width, Sage & Clay. Backrooms still, wide casting rows, dark guarantee band.",
-   subject:"Liminal, tense, and casting this week",
+   subject:"Something strange just started casting",
    bg:"#2F5B52",fg:"#E8A87C",mark:"CASTSLATE"},
   {id:"classic",file:"/email/promo-castings-campaign.html",name:"Classic Cards",
    blurb:"White shell, hero banner, three full casting cards with role tables.",
