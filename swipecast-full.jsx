@@ -49128,10 +49128,18 @@ const PAGE_SEO={
 };
 
 function setPageSEO(page,opts){
+  // Direct landing on /casting/:slug (App mount calls this with no opts): the
+  // server (api/casting-og.js) already wrote this casting's own title,
+  // description and canonical into <head>. Leave them. Before 2026-09-30 this
+  // fell through to the generic defaults and set canonical to the HOMEPAGE, so
+  // after rendering, Google saw every casting page as a copy of "/".
+  if(page==="casting-detail"&&!opts?.title)return;
   const seo=PAGE_SEO[page];
   let title=seo?seo.title:"CastSlate";
   let desc=seo?seo.desc:"CastSlate is a modern casting platform where actors get seen, submit to roles, and casting teams review talent one profile at a time.";
   let url="https://www.castslate.com"+(PAGE_PATH[page]||"/");
+  // Profile / article URLs have no fixed path: never point them at "/".
+  if((page==="talent-public"||page==="news-article")&&!PAGE_PATH[page]){try{url="https://www.castslate.com"+window.location.pathname;}catch(_){}}
 
   if(page==="casting-detail"&&opts?.title){
     title=opts.title;
