@@ -10499,7 +10499,8 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         <div className="section-label">Getting representation</div>
         <h2 className="agd-h2">Questions actors ask about agents and managers.</h2>
         <div className="agd-faq">
-          {AGD_FAQ.map(([q,a,badge],i)=><details key={i}><summary><span>{q}{badge&&<span className="agd-faq-badge">{badge}</span>}</span><span className="pm"><Ico n="plus" s={14}/></span></summary>
+          {/* The first card (the BEST ANSWER) starts open; React only sets "open" on mount, so readers can still close it. */}
+          {AGD_FAQ.map(([q,a,badge],i)=><details key={i} open={i===0}><summary><span>{q}{badge&&<span className="agd-faq-badge">{badge}</span>}</span><span className="pm"><Ico n="plus" s={14}/></span></summary>
             <div className="a">{a.split("\n\n").map((para,j)=><p key={j}>{para.split("**").map((t,k)=>k%2?<b key={k}>{t}</b>:t)}</p>)}</div></details>)}
         </div>
       </section>
