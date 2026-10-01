@@ -42676,6 +42676,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {isSuperAdmin&&<AdminNavLink current={section} target="monthly-event" label="Monthly Event Email" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="weekly-checkins" label="Monthly Check-Ins" onClick={goToSection}/>}
       {isSuperAdmin&&<AdminNavLink current={section} target="manager-mode" label="Manager Mode" onClick={goToSection}/>}
+      {isSuperAdmin&&<AdminNavLink current={section} target="seo-agent" label="SEO Agent" onClick={goToSection}/>}
       {/* Direct jump to the CD dashboard — admins inherit CD capabilities, so they post + review
           submissions from there using the exact same interface as regular casting directors. */}
       <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
@@ -42714,6 +42715,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
       {section==="monthly-event"&&isSuperAdmin&&<AdminMonthlyEvent session={session}/>}
       {section==="weekly-checkins"&&isSuperAdmin&&<AdminWeeklyCheckIns session={session}/>}
       {section==="manager-mode"&&isSuperAdmin&&<AdminManagerMode session={session}/>}
+      {section==="seo-agent"&&isSuperAdmin&&<AdminSeoAgent/>}
       <div style={{marginTop:40}}><Footer onNavigate={onNavigate}/></div>
     </div>
   </div>);
@@ -42730,6 +42732,59 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
 const CSS_FIT={strong:{label:"Strong fit",bg:"#E4F2EE",fg:"#206557"},good:{label:"Good fit",bg:"#EEF0F8",fg:"#3A3C80"},possible:{label:"Possible",bg:"#FBF1DF",fg:"#8A6420"},unrated:{label:"Matches age & gender",bg:"var(--s2)",fg:"var(--t2)"},no:{label:"Not a fit",bg:"rgba(214,59,59,0.08)",fg:"#B03030"}};
 // Deadlines are day-only strings; anchor at noon so no timezone shifts the day.
 const csDay=(d)=>{try{return new Date(String(d).slice(0,10)+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch(_){return d;}};
+// Admin → SEO Agent (2026-09-30). "Connect Google" uploads the Search Console
+// service-account key file straight into app_secrets via an admin-only RPC (the
+// browser reads the file locally; nothing else ever sees it). Also lists the pages
+// the weekly agent created. The agent itself is the seo-agent edge function.
+function AdminSeoAgent(){
+  const [st,setSt]=useState(null);
+  const [pages,setPages]=useState([]);
+  const [msg,setMsg]=useState("");
+  const [busy,setBusy]=useState(false);
+  const fileRef=useRef(null);
+  const load=useCallback(async()=>{
+    try{const {data,error}=await window.sb.rpc("admin_gsc_status");if(!error)setSt(data);}catch(_){}
+    try{const {data}=await window.sb.from("seo_landing_pages").select("key,title,source_query,created_at").order("created_at",{ascending:false});setPages(data||[]);}catch(_){}
+  },[]);
+  useEffect(()=>{load();},[load]);
+  const onFile=async(e)=>{
+    const f=e.target.files?.[0];e.target.value="";
+    if(!f)return;
+    setBusy(true);setMsg("");
+    try{
+      const text=await f.text();
+      const {data,error}=await window.sb.rpc("admin_set_gsc_service_account",{p_json:text});
+      if(error)setMsg("✕ "+(error.message||"Could not save the key."));
+      else{setMsg("✓ Connected as "+data+". The agent will use your real Google numbers from its next run.");load();}
+    }catch(err){setMsg("✕ Could not read that file.");}
+    setBusy(false);
+  };
+  const card={background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:"20px 22px",marginBottom:16};
+  return(<div>
+    <h2 className="section-title" style={{marginBottom:6}}>SEO Agent</h2>
+    <p style={{color:"var(--t2)",fontSize:14,margin:"0 0 18px",maxWidth:640,lineHeight:1.6}}>Every Monday the agent finds what actors search for on Google, creates casting-call pages for those searches (only when 3+ live castings match), notifies search engines and emails you a report. It never contacts anyone.</p>
+    <div style={card}>
+      <div style={{fontWeight:800,fontSize:16,marginBottom:6}}>Google Search Console</div>
+      {st?.connected
+        ?<p style={{margin:"0 0 12px",color:"var(--grn)",fontWeight:600}}>✓ Connected ({st.client_email})</p>
+        :<p style={{margin:"0 0 12px",color:"var(--t2)"}}>Not connected — the agent is guessing searches. Connect it so it uses your real Google numbers.</p>}
+      <input ref={fileRef} type="file" accept=".json,application/json" style={{display:"none"}} onChange={onFile}/>
+      <button className="btn-p" disabled={busy} onClick={()=>fileRef.current&&fileRef.current.click()}>{busy?"Saving…":st?.connected?"Replace key file":"Connect Google — choose key file"}</button>
+      <p style={{fontSize:12,color:"var(--t3)",margin:"10px 0 0",lineHeight:1.5}}>Pick the <b>.json</b> key file you downloaded from Google Cloud (in your Downloads folder). It's saved securely and never shown again.</p>
+      {msg&&<p style={{margin:"12px 0 0",fontWeight:600,color:msg.startsWith("✓")?"var(--grn)":"var(--red)"}}>{msg}</p>}
+      {st?.last_run&&<p style={{fontSize:12,color:"var(--t3)",margin:"12px 0 0"}}>Last run: {new Date(st.last_run.ran_at).toLocaleString()} · {st.last_run.pages_created||0} page(s) created</p>}
+    </div>
+    <div style={card}>
+      <div style={{fontWeight:800,fontSize:16,marginBottom:10}}>Pages the agent created ({pages.length})</div>
+      {pages.length===0?<p style={{margin:0,color:"var(--t3)"}}>None yet.</p>:
+        pages.map(p=><div key={p.key} style={{padding:"8px 0",borderTop:"1px solid var(--bdr)"}}>
+          <a href={"/casting-calls/"+p.key} target="_blank" rel="noopener" style={{fontWeight:700,color:"var(--teal)"}}>{p.title}</a>
+          <div style={{fontSize:12,color:"var(--t3)"}}>castslate.com/casting-calls/{p.key}{p.source_query?` · for "${p.source_query}"`:""}</div>
+        </div>)}
+    </div>
+  </div>);
+}
+
 function AdminCastslateSubmit(){
   const [castings,setCastings]=useState(null);
   const [counts,setCounts]=useState({});
