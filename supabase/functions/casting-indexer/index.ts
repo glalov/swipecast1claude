@@ -133,7 +133,15 @@ async function run(sb: any) {
           });
           googleStatus.set(kind + ":" + c.id, String(r.status));
           if (r.ok) google++;
-          else if (r.status === 403) { notes.push("Google refused (403): add the service account as an OWNER of the Search Console property."); break; }
+          else if (r.status === 403) {
+            // 403 has two common causes: the Indexing API isn't enabled in the Google Cloud
+            // project, or the service account isn't an Owner of the Search Console property.
+            const why = (await r.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 300);
+            notes.push(/has not been used|is disabled|SERVICE_DISABLED|accessNotConfigured/i.test(why)
+              ? "Google refused (403): turn on the Indexing API in Google Cloud. " + why
+              : "Google refused (403): the service account must be an OWNER in Search Console. " + why);
+            break;
+          }
           else if (r.status === 429) { notes.push("Google daily quota reached; the rest go next run."); break; }
         }
       } catch (e) { notes.push(String(e).slice(0, 200)); }
