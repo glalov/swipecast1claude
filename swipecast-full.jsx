@@ -44956,6 +44956,18 @@ function AdminCastings({onPendingCountChange}){
     reload();return true;
   };
 
+  // "Real casting from a real casting director" — admin-entered castings the owner
+  // confirms are genuine openings get Google Jobs data + the Google indexing notice
+  // (api/casting-og.js, casting-indexer). CD-posted castings always count as real.
+  const toggleRealHirer=async(c)=>{
+    const next=!c.real_hirer;
+    const {error}=await window.sb.from("castings").update({real_hirer:next}).eq("id",c.id);
+    if(error){showMsg("Failed: "+error.message,"error");return;}
+    setViewCasting(v=>v&&v.id===c.id?{...v,real_hirer:next}:v);
+    showMsg(next?`"${c.title}" marked as a real casting. It will be listed on Google Jobs.`:`"${c.title}" is no longer listed on Google Jobs.`,"info");
+    reload();
+  };
+
   const doDelete=async(c)=>{
     if(!confirm(`DELETE casting "${c.title}"?\n\nThis permanently removes the casting, all roles, and all submissions. Cannot be undone.`))return;
     const key=c.id+":delete";
@@ -45025,6 +45037,7 @@ function AdminCastings({onPendingCountChange}){
                 {c.featured&&<span style={{color:"var(--acc)",fontSize:10,fontWeight:700}}><Ico n="star" s={24}/> FEATURED</span>}
                 <span style={{color:statusColor,background:statusBg,fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99}}>{statusLabel}</span>
                 {castingIsScheduled(c)&&<span style={{color:"var(--acc)",background:"rgba(var(--acc-rgb,100,149,237),0.14)",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99}}>SCHEDULED</span>}
+                {(c.is_admin_created!==true||c.real_hirer)&&<span title="Real opening: listed on Google Jobs" style={{color:"#1d7b44",background:"rgba(29,123,68,0.1)",fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:99}}>GOOGLE JOBS</span>}
               </div>
               <div style={{fontSize:12,color:"var(--t3)",marginTop:3,lineHeight:1.6}}>
                 {c.type||"—"} · {c.location||"—"} · {c.roles?.length||0} role{c.roles?.length===1?"":"s"} · {c.pay||"—"} · {c.union_status||"—"}
@@ -45077,6 +45090,10 @@ function AdminCastings({onPendingCountChange}){
       </div>
 
       {!viewCasting.is_admin_created&&viewCasting.cd_id&&<AdminCastingVerification casting={viewCasting}/>}
+      {viewCasting.is_admin_created&&<label style={{display:"flex",gap:10,alignItems:"flex-start",padding:"12px 14px",border:"1px solid "+(viewCasting.real_hirer?"rgba(29,123,68,0.35)":"var(--bdr)"),background:viewCasting.real_hirer?"rgba(29,123,68,0.06)":"var(--s2)",borderRadius:10,marginBottom:16,cursor:"pointer",fontSize:13,lineHeight:1.5}}>
+        <input type="checkbox" checked={!!viewCasting.real_hirer} onChange={()=>toggleRealHirer(viewCasting)} style={{marginTop:3,width:16,height:16,accentColor:"#1d7b44",flex:"0 0 16px"}}/>
+        <span><strong>Real casting from a real casting director</strong><br/><span style={{color:"var(--t3)",fontSize:12}}>Ticked: listed on Google Jobs and sent to Google straight away. Leave unticked for castings made with the Casting Generator. Google only allows genuine openings.</span></span>
+      </label>}
 
       {/* Core fields */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"10px 20px",fontSize:13,marginBottom:16}}>

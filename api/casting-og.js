@@ -54,7 +54,7 @@ async function fetchCasting(slug) {
     `${SUPABASE_URL}/rest/v1/castings` +
     `?slug=eq.${encodeURIComponent(slug)}` +
     `&status=eq.open&published=eq.true` +
-    `&select=id,title,type,prod,tagline,synopsis,location,pay,union_status,deadline,expires_at,shoot_start,shoot_end,casting_image_url,casting_images,slug,is_admin_created,created_at,approved_at,casting_director_name,posted_by_label` +
+    `&select=id,title,type,prod,tagline,synopsis,location,pay,union_status,deadline,expires_at,shoot_start,shoot_end,casting_image_url,casting_images,slug,is_admin_created,real_hirer,created_at,approved_at,casting_director_name,posted_by_label` +
     `&limit=1`;
   const resp = await fetch(url, {
     headers: {
@@ -138,13 +138,15 @@ ${roleItems ? `<h2>Roles</h2><ul>${roleItems}</ul>` : ""}
 }
 
 // Google job-listing data (schema.org JobPosting), 2026-09-30.
-// ONLY for castings posted by real casting directors (is_admin_created false).
-// Platform-created castings must NEVER get it: Google's job-posting policy
-// requires genuine openings from a real hirer, and a violation can be a manual
-// action against the whole site. Owner agreed to this rule on 2026-09-30.
+// ONLY for real openings: castings a casting director posted themselves
+// (is_admin_created false), or castings entered from the admin account that the
+// owner marked "Real casting from a real casting director" (real_hirer, 2026-10-01).
+// Unmarked platform castings (e.g. Casting Generator) must NEVER get it: Google's
+// job-posting policy requires genuine openings from a real hirer, and a violation
+// can be a manual action against the whole site.
 const US_STATES = { AL:1,AK:1,AZ:1,AR:1,CA:1,CO:1,CT:1,DE:1,FL:1,GA:1,HI:1,ID:1,IL:1,IN:1,IA:1,KS:1,KY:1,LA:1,ME:1,MD:1,MA:1,MI:1,MN:1,MS:1,MO:1,MT:1,NE:1,NV:1,NH:1,NJ:1,NM:1,NY:1,NC:1,ND:1,OH:1,OK:1,OR:1,PA:1,RI:1,SC:1,SD:1,TN:1,TX:1,UT:1,VT:1,VA:1,WA:1,WV:1,WI:1,WY:1,DC:1 };
 function jobPostingLd(c, roles, slug) {
-  if (!c || c.is_admin_created === true) return "";
+  if (!c || (c.is_admin_created === true && c.real_hirer !== true)) return "";
   const loc = String(c.location || "").trim();
   const remote = /remote|self[- ]?tape|virtual|online/i.test(loc);
   const [city, st] = loc.split(",").map((x) => (x || "").trim());

@@ -5,8 +5,9 @@
 //   1. Finds castings that went live recently (approved, published, go-live
 //      reached) and have not been announced yet (seo_index_pings, one row per URL).
 //   2. IndexNow (Bing, Yandex, Seznam, Naver…) for every new casting URL.
-//   3. Google Indexing API for castings posted by REAL casting directors only —
-//      those are the pages carrying JobPosting data (api/casting-og.js), which is
+//   3. Google Indexing API for real openings only — castings a CD posted, or admin
+//      castings the owner marked real_hirer. Those are the pages carrying
+//      JobPosting data (api/casting-og.js), which is
 //      the only page type Google lets this API be used for. Also re-notifies
 //      Google once when such a casting closes, so the job listing drops quickly.
 //      Needs app_secrets.gsc_service_account, and that service account must be an
@@ -48,7 +49,8 @@ async function googleToken(sa: { client_email: string; private_key: string }): P
   return d.access_token;
 }
 
-type C = { id: string; slug: string; is_admin_created: boolean | null; status: string; deadline: string | null; expires_at: string | null };
+type C = { id: string; slug: string; is_admin_created: boolean | null; real_hirer?: boolean | null; status: string; deadline: string | null; expires_at: string | null };
+const isRealJob = (c: C) => c.is_admin_created !== true || c.real_hirer === true;
 const urlOf = (slug: string) => `${ORIGIN}/casting/${encodeURIComponent(slug)}`;
 
 // deno-lint-ignore no-explicit-any
@@ -60,7 +62,7 @@ async function run(sb: any) {
 
   // Live castings that became public in the lookback window.
   const { data: live, error: liveErr } = await sb.from("castings")
-    .select("id,slug,is_admin_created,status,deadline,expires_at,approved_at,go_live_at")
+    .select("id,slug,is_admin_created,real_hirer,status,deadline,expires_at,approved_at,go_live_at")
     .eq("status", "open").eq("published", true).not("slug", "is", null).not("approved_at", "is", null)
     .or(`approved_at.gte.${since},go_live_at.gte.${since}`)
     .limit(1000);
@@ -83,7 +85,7 @@ async function run(sb: any) {
   const googledIds = (googled || []).filter((g: { url: string }) => !closedSeen.has(g.url)).map((g: { casting_id: string }) => g.casting_id);
   let closed: C[] = [];
   if (googledIds.length) {
-    const { data: rows } = await sb.from("castings").select("id,slug,is_admin_created,status,deadline,expires_at").in("id", googledIds);
+    const { data: rows } = await sb.from("castings").select("id,slug,is_admin_created,real_hirer,status,deadline,expires_at").in("id", googledIds);
     closed = ((rows || []) as C[]).filter((c) => c.status !== "open" || (c.deadline && c.deadline < today) || (c.expires_at && c.expires_at <= nowIso));
   }
 
@@ -106,14 +108,14 @@ async function run(sb: any) {
   let retry: C[] = [];
   const pendIds = (pend || []).map((p: { casting_id: string }) => p.casting_id).filter(Boolean);
   if (pendIds.length) {
-    const { data: rows } = await sb.from("castings").select("id,slug,is_admin_created,status,deadline,expires_at,go_live_at").in("id", pendIds);
-    retry = ((rows || []) as (C & { go_live_at: string | null })[]).filter((c) => c.is_admin_created !== true && c.status === "open" && isLive(c));
+    const { data: rows } = await sb.from("castings").select("id,slug,is_admin_created,real_hirer,status,deadline,expires_at,go_live_at").in("id", pendIds);
+    retry = ((rows || []) as (C & { go_live_at: string | null })[]).filter((c) => isRealJob(c) && c.status === "open" && isLive(c));
   }
 
   // Google Indexing API — real-CD castings only (JobPosting pages).
   const googleStatus = new Map<string, string>();
   const forGoogle = [
-    ...toAnnounce.filter((c) => c.is_admin_created !== true).map((c) => ({ c, kind: "new" })),
+    ...toAnnounce.filter(isRealJob).map((c) => ({ c, kind: "new" })),
     ...retry.map((c) => ({ c, kind: "retry" })),
     ...closed.map((c) => ({ c, kind: "closed" })),
   ].slice(0, GOOGLE_MAX_PER_RUN);
@@ -142,8 +144,8 @@ async function run(sb: any) {
   // announced if IndexNow accepted it; Google-only failures are retried next run.
   const rows = [
     ...(indexnow ? toAnnounce.map((c) => ({ url: urlOf(c.slug), casting_id: c.id, kind: "new", indexnow_at: nowIso,
-      // Platform-made castings never go to Google (no JobPosting) — mark them so retries skip them.
-      google_status: c.is_admin_created === true ? "skip" : (googleStatus.get("new:" + c.id) ?? null) })) : []),
+      // Castings not marked as real openings never go to Google (no JobPosting) — mark them so retries skip them.
+      google_status: !isRealJob(c) ? "skip" : (googleStatus.get("new:" + c.id) ?? null) })) : []),
     ...closed.filter((c) => googleStatus.get("closed:" + c.id) === "200").map((c) => ({ url: urlOf(c.slug), casting_id: c.id, kind: "closed", google_status: "200" })),
   ];
   if (rows.length) await sb.from("seo_index_pings").upsert(rows, { onConflict: "url,kind" });
