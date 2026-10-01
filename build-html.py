@@ -959,9 +959,9 @@ def _agd_seo():
     more = ("<p>354 talent agencies and 309 management companies in Los Angeles, Beverly Hills and New York, "
             "with office addresses, websites, SAG-AFTRA franchised status, company size and how each takes submissions.</p>"
             "<h2>Questions actors ask about agents and managers</h2>"
-            + "".join(f"<h3>{e(q)}</h3><p>{e(a)}</p>" for q, a in faq))
+            + "".join(f"<h3>{e(it[0])}</h3>" + "".join(f"<p>{e(p).replace('**', '')}</p>" for p in it[1].split(chr(10)*2)) for it in faq))
     ld = {"@context": "https://schema.org", "@type": "FAQPage",
-          "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
+          "mainEntity": [{"@type": "Question", "name": it[0], "acceptedAnswer": {"@type": "Answer", "text": it[1].replace("**", "").replace(chr(10)*2, " ")}} for it in faq]}
     head = '  <script type="application/ld+json">' + _j.dumps(ld, ensure_ascii=False).replace("</", "<\\/") + "</script>\n"
     return more, head
 _AGD_MORE, _AGD_LD = _agd_seo()

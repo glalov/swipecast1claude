@@ -5153,6 +5153,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-faq summary .pm{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;transition:transform .2s;}
 .agd-faq details[open] summary .pm{transform:rotate(45deg);}
 .agd-faq .a{padding:0 0 18px;font-size:14px;line-height:1.75;color:var(--t2);max-width:720px;}
+.agd-faq .a p{margin:0 0 12px;}
+.agd-faq .a p:last-child{margin:0;}
+.agd-faq .a b{color:var(--t1);}
+.agd-faq-badge{display:inline-block;background:#EAC080;color:#1A1A2E;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:5px;margin-left:8px;vertical-align:3px;white-space:nowrap;}
 .agd-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:22px;transition:transform .22s,border-color .22s;}
 .agd-card:hover{transform:translateY(-3px);border-color:var(--amber-dk);}
 .agd-card h5{margin:0 0 6px;font-size:15px;font-weight:800;}
@@ -10242,8 +10246,11 @@ function TapeLinkPage({onNavigate}){
 // Agencies Directory FAQ (2026-10-01). Answers what actors search for about getting
 // representation. build-html.py reads this array (keep it valid JSON: double quotes,
 // no trailing comma) and puts the same Q&A into the page HTML for Google.
+// Answers may use a blank line (\n\n) between paragraphs and **bold**; an optional
+// third item is a badge shown on that question (e.g. "Best answer").
 const AGD_FAQ=[
-  ["How do I get an acting agent?","Get your materials ready first: a professional headshot, a résumé, and a short reel or a couple of self-tapes. Then pick agencies that suit where you are in your career and that say they accept submissions, and send each one a short, personal note through the route they ask for (email, online form or post). Keep working while you wait. Classes, student films and showcases give agents something new to see, and a referral from a casting director, coach or another client is often what gets a submission opened."],
+  ["How do I get an acting agent?","Get your materials ready first: a professional headshot, a résumé, and a short reel or a couple of self-tapes. Then comes the hard part: knowing **who to send them to**. Most actors spend years piecing that together on their own, guessing which agencies are real, which are still open, and which would even look at someone new.\n\nThat's exactly what the **CastSlate Agencies Directory** hands you. **650+ talent agencies and management companies** in Los Angeles, Beverly Hills and New York, kept up to date rather than copied once and left to go stale, so companies that close are taken out. Each one is sorted by size (**small and boutique, mid-size or major**), marked if it's **SAG-AFTRA franchised**, and comes with its current **office address, website, and how it takes submissions**: by post, email, online form or referral. You'll know who's who, who to write to first, and exactly how to reach them.\n\nThen send each one a short, personal note through the route they ask for, and keep working while you wait. Classes, student films and showcases give agents something new to see.","Best answer"],
+
   ["What's the difference between a talent agent and a manager?","A talent agent submits you for auditions and negotiates your bookings, and is usually paid around 10% of what you earn. In states like New York and California, talent agencies must be licensed. A manager guides your career more broadly: your materials, your type, and finding you an agent. Managers often take on newer actors and usually charge 10–20%. Many working actors have both."],
   ["Do real agents or managers charge a fee to sign you?","No. Legitimate agents and managers are paid a commission only when you are paid for work. If they ask you for an upfront fee or a monthly fee to represent you, that's a red flag. Walk away."],
   ["What should I send in a submission?","Your headshot, your résumé, a link to your reel or self-tapes, and two or three sentences: who you are, what you're right for, and why you chose them. Keep it short, follow each agency's own instructions exactly, and send one at a time rather than a mass email."],
@@ -10492,7 +10499,8 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         <div className="section-label">Getting representation</div>
         <h2 className="agd-h2">Questions actors ask about agents and managers.</h2>
         <div className="agd-faq">
-          {AGD_FAQ.map(([q,a],i)=><details key={i}><summary>{q}<span className="pm"><Ico n="plus" s={14}/></span></summary><div className="a">{a}</div></details>)}
+          {AGD_FAQ.map(([q,a,badge],i)=><details key={i}><summary><span>{q}{badge&&<span className="agd-faq-badge">{badge}</span>}</span><span className="pm"><Ico n="plus" s={14}/></span></summary>
+            <div className="a">{a.split("\n\n").map((para,j)=><p key={j}>{para.split("**").map((t,k)=>k%2?<b key={k}>{t}</b>:t)}</p>)}</div></details>)}
         </div>
       </section>
       <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">
