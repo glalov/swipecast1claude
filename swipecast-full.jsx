@@ -14812,6 +14812,13 @@ const LANDING_PAGES={
   "sag-aftra":{label:"SAG-AFTRA Casting Calls",title:"SAG-AFTRA Casting Calls & Union Acting Jobs | CastSlate"},
   "theater":{label:"Theater Casting Calls",title:"Theater Casting Calls & Stage Auditions | CastSlate"},
 };
+// Pages the weekly SEO agent creates live in the seo_landing_pages table; api/landing.js
+// injects the page's rules as window.__CS_LANDING on first load.
+function landingDef(key){
+  if(LANDING_PAGES[key])return LANDING_PAGES[key];
+  try{const d=window.__CS_LANDING;return d&&d.key===key?d:null;}catch(_){return null;}
+}
+function landingRe(src){if(!src)return null;try{return new RegExp(String(src).slice(0,200),"i");}catch(_){return null;}}
 function landingMatches(c,key){
   const type=String(c?.type||""),union=String(c?.union??c?.union_status??"");
   switch(key){
@@ -14824,11 +14831,19 @@ function landingMatches(c,key){
     case "non-union":return /non[- ]?union|welcome/i.test(union);
     case "sag-aftra":return /sag/i.test(union);
     case "theater":return /theat(er|re)|broadway|stage|musical/i.test(type);
-    default:return true;
+    default:{
+      const d=landingDef(key);if(!d||LANDING_PAGES[key])return true;
+      if(d.city&&canonCastingCity(c?.location)!==d.city)return false;
+      const t=landingRe(d.type_re),u=landingRe(d.union_re),x=landingRe(d.text_re);
+      if(d.type_re&&!(t&&t.test(type)))return false;
+      if(d.union_re&&!(u&&u.test(union)))return false;
+      if(d.text_re&&!(x&&x.test(`${c?.title||""} ${c?.tagline||c?.desc||""}`)))return false;
+      return true;
+    }
   }
 }
 function urlToLandingKey(){
-  try{const m=window.location.pathname.match(/^\/casting-calls\/([a-z-]+)\/?$/);return m&&LANDING_PAGES[m[1]]?m[1]:null;}catch(_){return null;}
+  try{const m=window.location.pathname.match(/^\/casting-calls\/([a-z0-9-]+)\/?$/);return m&&landingDef(m[1])?m[1]:null;}catch(_){return null;}
 }
 
 // Module-level cache so Browse Castings shows instantly from any entry point
@@ -15188,7 +15203,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
   return(<div className="page page-wide page-browse">
-    <div className="section-label">{landingKey?<>{LANDING_PAGES[landingKey].label}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:t('search.title')}</div>
+    <div className="section-label">{landingKey?<>{landingDef(landingKey)?.label||t('search.title')}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
     <>
       {/* Full-height loading placeholder — only during initial load (no cached data).

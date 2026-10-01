@@ -45,6 +45,39 @@ function isNewYork(loc) {
   const l = String(loc || "").replace(/\s+/g, " ").trim().toLowerCase();
   return !!l && (locHasTerm(l, "new york") || NY_TERMS.some((t) => locHasTerm(l, t)));
 }
+const LA_TERMS = ["los angeles","los angeles, ca","los angeles,ca","la","l.a.","hollywood","west hollywood","weho","burbank","glendale","pasadena","santa monica","culver city","studio city","north hollywood","noho","long beach","compton","inglewood","torrance","hawthorne","el segundo","manhattan beach","hermosa beach","redondo beach","venice","marina del rey","playa vista","playa del rey","westwood","brentwood","bel air","beverly hills","west la","koreatown","echo park","silver lake","los feliz","atwater village","eagle rock","highland park","monterey park","alhambra","arcadia","san gabriel","the valley","sherman oaks","encino","van nuys","reseda","chatsworth","thousand oaks","calabasas","malibu","pomona","ontario","rancho cucamonga","san bernardino"];
+function canonCity(loc) {
+  const l = String(loc || "").replace(/\s+/g, " ").trim();
+  if (!l) return "";
+  if (isNewYork(l)) return "New York";
+  const low = l.toLowerCase();
+  if (locHasTerm(low, "los angeles") || LA_TERMS.some((t) => locHasTerm(low, t))) return "Los Angeles";
+  return l.split(",")[0].trim().replace(/\b([a-z])/g, (ch) => ch.toUpperCase());
+}
+function safeRe(src) {
+  if (!src) return null;
+  try { return new RegExp(String(src).slice(0, 200), "i"); } catch (_) { return null; }
+}
+// Rule-based match for agent-created pages (seo_landing_pages): every rule set must match.
+function matchRules(c, r) {
+  if (r.city && canonCity(c.location) !== r.city) return false;
+  const t = safeRe(r.type_re), u = safeRe(r.union_re), x = safeRe(r.text_re);
+  if (r.type_re && !(t && t.test(String(c.type || "")))) return false;
+  if (r.union_re && !(u && u.test(String(c.union_status || "")))) return false;
+  if (r.text_re && !(x && x.test(`${c.title || ""} ${c.tagline || ""}`))) return false;
+  return true;
+}
+async function fetchDbPages(key) {
+  const url = `${SUPABASE_URL}/rest/v1/seo_landing_pages?select=key,label,title,description,city,type_re,union_re,text_re` +
+    `&active=eq.true${key ? `&key=eq.${encodeURIComponent(key)}` : ""}&limit=500`;
+  try {
+    const r = await fetch(url, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
+    if (!r.ok) return [];
+    const rows = await r.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch (_) { return []; }
+}
+
 function matches(c, key) {
   const type = String(c.type || ""), union = String(c.union_status || "");
   switch (key) {
@@ -91,8 +124,8 @@ async function fetchLive() {
   return Array.isArray(rows) ? rows : [];
 }
 
-function inject(html, key, list) {
-  const P = PAGES[key];
+function inject(html, key, list, dyn) {
+  const P = PAGES[key] || { label: dyn.label, title: dyn.title, desc: dyn.description };
   const url = `${ORIGIN}/casting-calls/${key}`;
   const T = esc(P.title), D = esc(P.desc), U = esc(url);
   let out = html
@@ -117,24 +150,33 @@ ${items ? `<h2>Open now (${list.length})</h2><ul>${items}</ul>` : `<p>No open ca
 <h2>More casting calls</h2><ul>${others}</ul>
 </div>`;
   out = out.replace(/\s*<div id="cs-seo"[^>]*><h1>[\s\S]*?<\/p><\/div>/, "");
+  // Agent-created pages: hand the rules to the app so Browse filters the same way.
+  if (dyn) {
+    const cfg = { key, label: dyn.label, city: dyn.city || null, type_re: dyn.type_re || null, union_re: dyn.union_re || null, text_re: dyn.text_re || null };
+    out = out.replace("</head>", `<script>window.__CS_LANDING=${JSON.stringify(cfg).replace(/</g, "\\u003c")};</script>\n</head>`);
+  }
   if (out.includes('<div id="root"></div>')) out = out.replace('<div id="root"></div>', '<div id="root"></div>\n  ' + block);
   return out;
 }
 
 module.exports = async (req, res) => {
-  const key = String((req.query && req.query.key) || "").toLowerCase().replace(/[^a-z-]/g, "");
+  const key = String((req.query && req.query.key) || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
   const html = readIndexHtml();
   if (!html) { res.statusCode = 302; res.setHeader("Location", "/browse-castings"); res.end(); return; }
+  let dyn = null;
   if (!PAGES[key]) {
-    // Unknown landing key: send people to Browse rather than a blank page.
-    res.statusCode = 301; res.setHeader("Location", "/browse-castings"); res.end(); return;
+    dyn = key ? (await fetchDbPages(key))[0] || null : null;
+    if (!dyn) {
+      // Unknown landing key: send people to Browse rather than a blank page.
+      res.statusCode = 301; res.setHeader("Location", "/browse-castings"); res.end(); return;
+    }
   }
   let finalHtml = html;
   try {
-    const live = (await fetchLive()).filter((c) => matches(c, key));
-    finalHtml = inject(html, key, live);
+    const live = (await fetchLive()).filter((c) => (dyn ? matchRules(c, dyn) : matches(c, key)));
+    finalHtml = inject(html, key, live, dyn);
   } catch (_) {
-    finalHtml = inject(html, key, []);
+    finalHtml = inject(html, key, [], dyn);
   }
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -146,3 +188,6 @@ module.exports = async (req, res) => {
 
 module.exports.PAGES = PAGES;
 module.exports.matches = matches;
+module.exports.matchRules = matchRules;
+module.exports.fetchDbPages = fetchDbPages;
+module.exports.fetchLive = fetchLive;

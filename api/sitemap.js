@@ -76,7 +76,7 @@ async function fetchCastings() {
   const nowIso = new Date().toISOString();
   const url =
     `${SUPABASE_URL}/rest/v1/castings` +
-    `?select=slug,updated_at,created_at,type,location,union_status,expires_at,deadline` +
+    `?select=slug,updated_at,created_at,type,location,union_status,expires_at,deadline,title,tagline` +
     `&status=eq.open&published=eq.true` +
     `&slug=not.is.null` +
     `&or=(go_live_at.is.null,go_live_at.lte.${encodeURIComponent(nowIso)})` +
@@ -125,13 +125,20 @@ module.exports = async (req, res) => {
   // Search landing pages (/casting-calls/<key>, api/landing.js): listed only
   // when at least 3 live castings match, so Google never gets a thin page.
   try {
-    const { PAGES, matches } = require("./landing.js");
+    const { PAGES, matches, matchRules, fetchDbPages } = require("./landing.js");
     const nowIso = new Date().toISOString(), today = nowIso.slice(0, 10);
     const live = castings.filter((c) =>
       (!c.expires_at || c.expires_at > nowIso) && (!c.deadline || String(c.deadline).slice(0, 10) >= today));
     for (const key of Object.keys(PAGES)) {
       if (live.filter((c) => matches(c, key)).length >= 3) {
         entries.push(urlEntry({ loc: `/casting-calls/${key}`, changefreq: "daily", priority: "0.8" }));
+      }
+    }
+    // Pages the weekly SEO agent created (seo_landing_pages), same >= 3 rule.
+    for (const d of await fetchDbPages()) {
+      if (PAGES[d.key] || !/^[a-z0-9-]+$/.test(d.key)) continue;
+      if (live.filter((c) => matchRules(c, d)).length >= 3) {
+        entries.push(urlEntry({ loc: `/casting-calls/${d.key}`, changefreq: "daily", priority: "0.7" }));
       }
     }
   } catch (_) { /* landing pages are optional in the sitemap */ }
