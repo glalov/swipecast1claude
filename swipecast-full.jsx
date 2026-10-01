@@ -5145,6 +5145,14 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* Without this the three cards stayed in a 3-column grid at 375px: ~120px wide
    each, a 438px-wide block inside a 375px viewport, clipped on the right. */
 @media(max-width:900px){.agd-trust{grid-template-columns:1fr;}}
+.agd-faq{display:flex;flex-direction:column;gap:10px;max-width:820px;}
+.agd-faq details{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:0 20px;}
+.agd-faq details[open]{border-color:var(--teal);}
+.agd-faq summary{list-style:none;cursor:pointer;padding:17px 0;font-size:15.5px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:14px;color:var(--t1);}
+.agd-faq summary::-webkit-details-marker{display:none;}
+.agd-faq summary .pm{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+.agd-faq details[open] summary .pm{transform:rotate(45deg);}
+.agd-faq .a{padding:0 0 18px;font-size:14px;line-height:1.75;color:var(--t2);max-width:720px;}
 .agd-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:22px;transition:transform .22s,border-color .22s;}
 .agd-card:hover{transform:translateY(-3px);border-color:var(--amber-dk);}
 .agd-card h5{margin:0 0 6px;font-size:15px;font-weight:800;}
@@ -10231,6 +10239,18 @@ function TapeLinkPage({onNavigate}){
 // SAG-AFTRA franchised, size tier, agency vs management, cities, office
 // addresses, website, submission route, approach note). Do not add a field to
 // this page that the directory does not hold — see TAD_SUB / TAD_GROUPS.
+// Agencies Directory FAQ (2026-10-01). Answers what actors search for about getting
+// representation. build-html.py reads this array (keep it valid JSON: double quotes,
+// no trailing comma) and puts the same Q&A into the page HTML for Google.
+const AGD_FAQ=[
+  ["How do I get an acting agent?","Get your materials ready first: a professional headshot, a résumé, and a short reel or a couple of self-tapes. Then pick agencies that suit where you are in your career and that say they accept submissions, and send each one a short, personal note through the route they ask for (email, online form or post). Keep working while you wait. Classes, student films and showcases give agents something new to see, and a referral from a casting director, coach or another client is often what gets a submission opened."],
+  ["What's the difference between a talent agent and a manager?","A talent agent submits you for auditions and negotiates your bookings, and is usually paid around 10% of what you earn. In states like New York and California, talent agencies must be licensed. A manager guides your career more broadly: your materials, your type, and finding you an agent. Managers often take on newer actors and usually charge 10–20%. Many working actors have both."],
+  ["Do real agents or managers charge a fee to sign you?","No. Legitimate agents and managers are paid a commission only when you are paid for work. Being asked to pay upfront to join, or being required to buy photos or classes from them before they'll represent you, is a red flag. Walk away."],
+  ["What should I send in a submission?","Your headshot, your résumé, a link to your reel or self-tapes, and two or three sentences: who you are, what you're right for, and why you chose them. Keep it short, follow each agency's own instructions exactly, and send one at a time rather than a mass email."],
+  ["Do I need to be in SAG-AFTRA to get an agent?","No. Many agencies represent non-union actors. Agencies that are SAG-AFTRA franchised have agreed to follow the union's rules when representing members. The CastSlate directory marks which offices are franchised."],
+  ["Can I submit to agencies in another city?","Yes. Where you live doesn't decide who you can approach. An actor in New York can write to a Los Angeles office and the other way round. If a company is interested, they'll arrange a meeting or a self-tape."],
+  ["How does the CastSlate Agencies Directory help?","It lists 650+ talent agencies and management companies in Los Angeles, Beverly Hills and New York. For each one: office addresses, website, SAG-AFTRA franchised status, company size, and how they take submissions. It's included with CastSlate Premium."]
+];
 const AGD_FIELDS=[
   ["Mailing address","Every office"],
   ["Second office","LA + NY where both"],
@@ -10466,6 +10486,13 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           <div className="agd-card"><div className="ic"><Ico n="check" s={18}/></div><h5>Checked against the franchised list</h5><p>SAG-AFTRA franchised offices are marked, verified against the union's own list rather than whatever a blog post said three years ago.</p></div>
           <div className="agd-card"><div className="ic"><Ico n="layout-list" s={18}/></div><h5>Sorted by size</h5><p>Small and boutique, mid-size, major and management are separated, so you know who to write to first.</p></div>
           <div className="agd-card"><div className="ic"><Ico n="refresh" s={18}/></div><h5>Re-checked, and pruned</h5><p>Companies that have closed since the last pass are removed rather than left in to pad the number.</p></div>
+        </div>
+      </section>
+      <section className="agd-blk" style={{paddingTop:0}}>
+        <div className="section-label">Getting representation</div>
+        <h2 className="agd-h2">Questions actors ask about agents and managers.</h2>
+        <div className="agd-faq">
+          {AGD_FAQ.map(([q,a],i)=><details key={i}><summary>{q}<span className="pm"><Ico n="plus" s={14}/></span></summary><div className="a">{a}</div></details>)}
         </div>
       </section>
       <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">

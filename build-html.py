@@ -226,7 +226,7 @@ def route_preload_tags(path):
 # still patches these client-side on SPA navigation via setPageSEO(), but the
 # initial server-served HTML now declares the correct canonical for each URL,
 # which is what Google indexes.
-def render_page(title, desc, canonical, extra_preload=""):
+def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld=""):
     # Crawler text block (2026-09-30): the page's own heading + summary, NEXT TO
     # #root (never inside — the intro curtain and boot watchdog read any child of
     # #root as "React mounted"). Visually hidden; the app removes it on mount.
@@ -359,7 +359,7 @@ def render_page(title, desc, canonical, extra_preload=""):
   <script type="application/ld+json">
   {{"@context":"https://schema.org","@type":"WebApplication","name":"CastSlate","url":"https://www.castslate.com","applicationCategory":"EntertainmentApplication","operatingSystem":"Web","offers":{{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Free actor account. Premium plans from $10.75/month."}},"description":"A modern casting platform where actors submit to roles and casting directors review talent one profile at a time."}}
   </script>
-{head_vendor}{preload_tags}{extra_preload}
+{head_ld}{head_vendor}{preload_tags}{extra_preload}
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 {babel_cdn}
   <!-- BUILD: {BUILD_VERSION} -->
@@ -664,7 +664,7 @@ def render_page(title, desc, canonical, extra_preload=""):
     <button onclick="window.location.reload()">Reload</button>
   </div>
   <div id="root"></div>
-  <div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0"><h1>{_seo_h1}</h1><p>{_seo_p}</p></div>
+  <div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0"><h1>{_seo_h1}</h1><p>{_seo_p}</p>{seo_more}</div>
   <!-- Crawlable fallback for search engines that don't execute JavaScript -->
   <noscript>
     <div style="font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 24px;color:#1B1C20;">
@@ -944,10 +944,33 @@ ROUTES = [
     ("tapelink.html",         "/tapelink",        "TapeLink: Self-Tape Auditions Built Into Casting", "TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."),
 ]
 
+# ── Agencies Directory: FAQ for Google (2026-10-01) ─────────────────────────
+# The questions/answers are read straight from AGD_FAQ in swipecast-full.jsx, so
+# the visible FAQ and what Google reads can never drift apart. They go into the
+# page's crawler text block and a schema.org FAQPage in <head>.
+def _agd_seo():
+    import html as _h, json as _j, re as _re
+    m = _re.search(r"const AGD_FAQ=(\[.*?\]);\n", open("swipecast-full.jsx", encoding="utf-8").read(), _re.S)
+    if not m:
+        print("  ! AGD_FAQ not found in the JSX — /agency-directory built without FAQ text")
+        return "", ""
+    faq = _j.loads(m.group(1))
+    e = lambda t: _h.escape(t, quote=False)
+    more = ("<p>354 talent agencies and 309 management companies in Los Angeles, Beverly Hills and New York, "
+            "with office addresses, websites, SAG-AFTRA franchised status, company size and how each takes submissions.</p>"
+            "<h2>Questions actors ask about agents and managers</h2>"
+            + "".join(f"<h3>{e(q)}</h3><p>{e(a)}</p>" for q, a in faq))
+    ld = {"@context": "https://schema.org", "@type": "FAQPage",
+          "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}
+    head = '  <script type="application/ld+json">' + _j.dumps(ld, ensure_ascii=False).replace("</", "<\\/") + "</script>\n"
+    return more, head
+_AGD_MORE, _AGD_LD = _agd_seo()
+
 for filename, path, title, desc in ROUTES:
     canonical = SITE + ("/" if path == "/" else path)
+    extra = (_AGD_MORE, _AGD_LD) if path == "/agency-directory" else ("", "")
     open(filename, "w", encoding="utf-8").write(
-        render_page(title, desc, canonical, route_preload_tags(path)))
+        render_page(title, desc, canonical, route_preload_tags(path), *extra))
 
 # ── Deploy-safety self-check ─────────────────────────────────────────────────
 # A production build must load the pre-compiled /app.js. If index.html ever

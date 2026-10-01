@@ -255,12 +255,18 @@ function esc(s: string) { return String(s).replace(/&/g, "&amp;").replace(/</g, 
 async function report(r: { notes: string[]; impressions: number; clicks: number; created: string[]; retitled: string[]; queries?: Row[] }) {
   if (!RESEND_API_KEY) return;
   const top = (r.queries || []).sort((a, b) => b.clicks - a.clicks || b.impressions - a.impressions).slice(0, 10);
+  // Representation searches (2026-10-01): feeds the Agencies Directory FAQ. Real
+  // Search Console data only — in no-key mode the queries are Gemini's guesses.
+  const rep = (r.impressions || r.clicks) ? (r.queries || [])
+    .filter((q) => /\b(agent|agents|agency|agencies|manager|managers|management|representation|represent)\b/i.test(q.keys[0]) && !/castslate/i.test(q.keys[0]))
+    .sort((a, b) => b.impressions - a.impressions).slice(0, 10) : [];
   const html = `<div style="font-family:-apple-system,Arial,sans-serif;font-size:14px;color:#1A1A2E;max-width:620px">
 <h2 style="margin:0 0 6px">CastSlate on Google — weekly report</h2>
 ${r.impressions || r.clicks ? `<p style="margin:0 0 12px">Last 28 days: <b>${r.impressions.toLocaleString()}</b> times shown in Google results, <b>${r.clicks.toLocaleString()}</b> clicks to the site.</p>` : `<p style="margin:0 0 12px">Google click numbers appear here once Search Console is connected.</p>`}
 ${r.created.length ? `<p style="margin:0 0 8px"><b>New pages created:</b><br/>${r.created.map((k) => `<a href="${ORIGIN}/casting-calls/${k}">${ORIGIN}/casting-calls/${k}</a>`).join("<br/>")}</p>` : `<p style="margin:0 0 8px">No new pages this week.</p>`}
 ${r.retitled.length ? `<p style="margin:0 0 8px"><b>Titles improved:</b> ${r.retitled.map(esc).join(", ")}</p>` : ""}
 ${r.notes.length ? `<p style="margin:0 0 8px;color:#8A5A12">${r.notes.map(esc).join("<br/>")}</p>` : ""}
+${rep.length ? `<h3 style="margin:16px 0 6px">Actors searching about agents &amp; managers</h3><p style="margin:0 0 6px;color:#5A5A72;font-size:13px">Searches that showed CastSlate. Any question here the Agencies Directory FAQ doesn't answer yet is worth adding to it.</p><table style="border-collapse:collapse;font-size:13px">${rep.map((q) => `<tr><td style="padding:3px 12px 3px 0">${esc(q.keys[0])}</td><td style="padding:3px 8px;color:#5A5A72">${q.impressions} shown</td><td style="padding:3px 8px;color:#5A5A72">${q.clicks} clicks</td></tr>`).join("")}</table>` : ""}
 ${top.length && (r.impressions || r.clicks) ? `<h3 style="margin:16px 0 6px">Top searches</h3><table style="border-collapse:collapse;font-size:13px">${top.map((q) => `<tr><td style="padding:3px 12px 3px 0">${esc(q.keys[0])}</td><td style="padding:3px 8px;color:#5A5A72">${q.impressions} shown</td><td style="padding:3px 8px;color:#5A5A72">${q.clicks} clicks</td></tr>`).join("")}</table>` : ""}
 </div>`;
   await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
