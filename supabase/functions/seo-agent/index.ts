@@ -94,11 +94,14 @@ async function gscQuery(token: string, dims: string[], start: string, end: strin
 }
 
 // ── Gemini ────────────────────────────────────────────────────────────────────
-async function gemini(key: string, system: string, prompt: string): Promise<unknown> {
+async function gemini(key: string, system: string, prompt: string, search = false): Promise<unknown> {
+  // Google Search grounding can't be combined with JSON mode, so in search mode
+  // the JSON is pulled out of the text instead.
   const body = JSON.stringify({
     system_instruction: { parts: [{ text: system }] },
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.4, maxOutputTokens: 4096, responseMimeType: "application/json" },
+    generationConfig: { temperature: 0.4, maxOutputTokens: 4096, ...(search ? {} : { responseMimeType: "application/json" }) },
+    ...(search ? { tools: [{ google_search: {} }] } : {}),
   });
   for (const model of GEMINI_MODELS) {
     try {
@@ -107,7 +110,10 @@ async function gemini(key: string, system: string, prompt: string): Promise<unkn
       if (!r.ok) { console.error("[seo] gemini", model, r.status); continue; }
       const d = await r.json();
       const text = (d?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join("");
-      try { return JSON.parse(text.replace(/```json|```/g, "").trim()); } catch { /* next */ }
+      const clean = text.replace(/```json|```/g, "").trim();
+      try { return JSON.parse(clean); } catch { /* try the outermost {...} */ }
+      const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
+      if (a >= 0 && b > a) { try { return JSON.parse(clean.slice(a, b + 1)); } catch { /* next */ } }
     } catch (e) { console.error("[seo] gemini fail", model, String(e)); }
   }
   return null;
@@ -126,27 +132,38 @@ Return JSON {"title":"<= 60 chars, ends with | CastSlate","description":"<= 155 
 // deno-lint-ignore no-explicit-any
 async function run(sb: any) {
   const notes: string[] = [];
-  const { data: saRow } = await sb.from("app_secrets").select("value").eq("key", "gsc_service_account").maybeSingle();
-  if (!saRow?.value) return { notes: ["Search Console is not connected yet — nothing to analyse."], impressions: 0, clicks: 0, created: [], retitled: [] };
-  const token = await gscToken(JSON.parse(saRow.value));
-
-  const end = new Date(Date.now() - 3 * 86400000), start = new Date(end.getTime() - 27 * 86400000);
-  const [queries, pages] = await Promise.all([
-    gscQuery(token, ["query"], day(start), day(end), 1000),
-    gscQuery(token, ["page"], day(start), day(end), 1000),
-  ]);
-  const impressions = pages.reduce((a, r) => a + r.impressions, 0), clicks = pages.reduce((a, r) => a + r.clicks, 0);
-
-  // weekly snapshot for the last 7 days, per page
-  const wkStart = new Date(end.getTime() - 6 * 86400000);
-  const week = await gscQuery(token, ["page"], day(wkStart), day(end), 1000);
-  if (week.length) {
-    await sb.from("seo_page_stats").upsert(week.map((r) => ({ page: r.keys[0], week_start: day(wkStart), impressions: r.impressions, clicks: r.clicks, position: Math.round(r.position * 10) / 10 })), { onConflict: "page,week_start" });
-  }
-
   let key: string | null = null;
   try { const { data } = await sb.rpc("news_get_gemini_key"); if (typeof data === "string" && data) key = data; } catch { /* */ }
-  if (!key) { notes.push("No Gemini key — skipped page creation."); return { notes, impressions, clicks, created: [], retitled: [], queries }; }
+  if (!key) return { notes: ["No Gemini key — nothing done."], impressions: 0, clicks: 0, created: [], retitled: [] };
+
+  // Real Search Console numbers when connected; otherwise ("no-key mode") Gemini's
+  // Google Search finds what actors commonly search for, and the same page-creation
+  // pipeline runs on those. Title tests need real click data, so they wait for the key.
+  const { data: saRow } = await sb.from("app_secrets").select("value").eq("key", "gsc_service_account").maybeSingle();
+  let queries: Row[] = [], pages: Row[] = [];
+  let impressions = 0, clicks = 0;
+  const gscMode = !!saRow?.value;
+  if (gscMode) {
+    const token = await gscToken(JSON.parse(saRow.value));
+    const end = new Date(Date.now() - 3 * 86400000), start = new Date(end.getTime() - 27 * 86400000);
+    [queries, pages] = await Promise.all([
+      gscQuery(token, ["query"], day(start), day(end), 1000),
+      gscQuery(token, ["page"], day(start), day(end), 1000),
+    ]);
+    impressions = pages.reduce((a, r) => a + r.impressions, 0); clicks = pages.reduce((a, r) => a + r.clicks, 0);
+    const wkStart = new Date(end.getTime() - 6 * 86400000);
+    const week = await gscQuery(token, ["page"], day(wkStart), day(end), 1000);
+    if (week.length) {
+      await sb.from("seo_page_stats").upsert(week.map((r) => ({ page: r.keys[0], week_start: day(wkStart), impressions: r.impressions, clicks: r.clicks, position: Math.round(r.position * 10) / 10 })), { onConflict: "page,week_start" });
+    }
+  } else {
+    notes.push("Running without Search Console data (no key) — search ideas come from Google Search via Gemini.");
+    const out = await gemini(key, "You research what people type into Google when looking for acting work. Use Google Search. Reply with ONLY JSON.",
+      `Find 30 specific, real Google search phrases that actors in the United States (especially New York City) use to find casting calls, auditions or acting jobs — e.g. by city/borough, project type (student film, short film, commercial, theater, web series), union status, age group or role type. Return {"queries":["...", ...]} — lowercase phrases only.`, true) as { queries?: string[] } | null;
+    queries = (out?.queries || []).filter((q) => typeof q === "string" && q.length < 90).slice(0, 40)
+      .map((q) => ({ keys: [q.toLowerCase().trim()], clicks: 0, impressions: 5, ctr: 0, position: 0 }));
+    if (!queries.length) notes.push("Google Search via Gemini returned no ideas this week.");
+  }
 
   // live castings (same definition of live as Browse / api/landing.js)
   const nowIso = new Date().toISOString(), today = nowIso.slice(0, 10);
@@ -240,14 +257,14 @@ async function report(r: { notes: string[]; impressions: number; clicks: number;
   const top = (r.queries || []).sort((a, b) => b.clicks - a.clicks || b.impressions - a.impressions).slice(0, 10);
   const html = `<div style="font-family:-apple-system,Arial,sans-serif;font-size:14px;color:#1A1A2E;max-width:620px">
 <h2 style="margin:0 0 6px">CastSlate on Google — weekly report</h2>
-<p style="margin:0 0 12px">Last 28 days: <b>${r.impressions.toLocaleString()}</b> times shown in Google results, <b>${r.clicks.toLocaleString()}</b> clicks to the site.</p>
+${r.impressions || r.clicks ? `<p style="margin:0 0 12px">Last 28 days: <b>${r.impressions.toLocaleString()}</b> times shown in Google results, <b>${r.clicks.toLocaleString()}</b> clicks to the site.</p>` : `<p style="margin:0 0 12px">Google click numbers appear here once Search Console is connected.</p>`}
 ${r.created.length ? `<p style="margin:0 0 8px"><b>New pages created:</b><br/>${r.created.map((k) => `<a href="${ORIGIN}/casting-calls/${k}">${ORIGIN}/casting-calls/${k}</a>`).join("<br/>")}</p>` : `<p style="margin:0 0 8px">No new pages this week.</p>`}
 ${r.retitled.length ? `<p style="margin:0 0 8px"><b>Titles improved:</b> ${r.retitled.map(esc).join(", ")}</p>` : ""}
 ${r.notes.length ? `<p style="margin:0 0 8px;color:#8A5A12">${r.notes.map(esc).join("<br/>")}</p>` : ""}
-${top.length ? `<h3 style="margin:16px 0 6px">Top searches</h3><table style="border-collapse:collapse;font-size:13px">${top.map((q) => `<tr><td style="padding:3px 12px 3px 0">${esc(q.keys[0])}</td><td style="padding:3px 8px;color:#5A5A72">${q.impressions} shown</td><td style="padding:3px 8px;color:#5A5A72">${q.clicks} clicks</td></tr>`).join("")}</table>` : ""}
+${top.length && (r.impressions || r.clicks) ? `<h3 style="margin:16px 0 6px">Top searches</h3><table style="border-collapse:collapse;font-size:13px">${top.map((q) => `<tr><td style="padding:3px 12px 3px 0">${esc(q.keys[0])}</td><td style="padding:3px 8px;color:#5A5A72">${q.impressions} shown</td><td style="padding:3px 8px;color:#5A5A72">${q.clicks} clicks</td></tr>`).join("")}</table>` : ""}
 </div>`;
   await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: "CastSlate SEO Agent <notifications@castslate.com>", to: [REPORT_TO], subject: `Google this month: ${r.clicks} clicks · ${r.created.length} new page${r.created.length === 1 ? "" : "s"}`, html }) }).catch(() => {});
+    body: JSON.stringify({ from: "CastSlate SEO Agent <notifications@castslate.com>", to: [REPORT_TO], subject: r.impressions || r.clicks ? `Google this month: ${r.clicks} clicks · ${r.created.length} new page${r.created.length === 1 ? "" : "s"}` : `SEO agent: ${r.created.length} new page${r.created.length === 1 ? "" : "s"} this week`, html }) }).catch(() => {});
 }
 
 Deno.serve(async (req) => {
