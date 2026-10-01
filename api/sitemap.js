@@ -38,7 +38,7 @@ const STATIC_PAGES = [
   { loc: "/actor-toolkit", changefreq: "weekly", priority: "0.8" },
   { loc: "/manager-mode", changefreq: "monthly", priority: "0.8" },
   { loc: "/tapelink", changefreq: "monthly", priority: "0.8" },
-  { loc: "/agency-directory", changefreq: "monthly", priority: "0.9" },
+  { loc: "/agency-directory", changefreq: "monthly", priority: "0.9", lastmod: "2026-10-01" }, // FAQ + full crawler text added
   { loc: "/resources", changefreq: "weekly", priority: "0.7" },
   { loc: "/trust-safety", changefreq: "monthly", priority: "0.7" },
   { loc: "/pay-talent", changefreq: "monthly", priority: "0.7" },

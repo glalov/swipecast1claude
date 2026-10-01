@@ -956,7 +956,29 @@ def _agd_seo():
         return "", ""
     faq = _j.loads(m.group(1))
     e = lambda t: _h.escape(t, quote=False)
-    more = ("<p>354 talent agencies and 309 management companies in Los Angeles, Beverly Hills and New York, "
+    # The page's own visible copy (hero, section headings, cards, field list), read
+    # from AgencyDirectoryPage so Google gets exactly what visitors read. Anything
+    # holding a JSX expression ({...}) is skipped rather than half-rendered.
+    src = open("swipecast-full.jsx", encoding="utf-8").read()
+    pa, pb = src.find("function AgencyDirectoryPage("), src.find("function StudiosPage(")
+    page = src[pa:pb] if pa >= 0 and pb > pa else ""
+    clean = lambda x: " ".join(x.split()) if x and "{" not in x and "<" not in x else ""
+    body = []
+    for cls in ("agd-h1", "agd-coasts", "agd-lede"):
+        x = _re.search(r'className="%s"[^>]*>(.*?)</' % cls, page, _re.S)
+        if x and clean(x.group(1)): body.append(f"<p>{e(clean(x.group(1)))}</p>")
+    for x in _re.finditer(r'className="agd-h2"[^>]*>(.*?)</h2>(?:\s*<p className="agd-sub"[^>]*>(.*?)</p>)?', page, _re.S):
+        h2, sub = clean(x.group(1)), clean(x.group(2) or "")
+        if h2 and not h2.startswith("Questions actors ask"):  # the FAQ heading goes with the Q&A below
+            body.append(f"<h2>{e(h2)}</h2>" + (f"<p>{e(sub)}</p>" if sub else ""))
+    for x in _re.finditer(r"<h5>(.*?)</h5><p>(.*?)</p>", page, _re.S):
+        if clean(x.group(1)) and clean(x.group(2)): body.append(f"<h3>{e(clean(x.group(1)))}</h3><p>{e(clean(x.group(2)))}</p>")
+    fm = _re.search(r"const AGD_FIELDS=(\[.*?\]);\n", src, _re.S)
+    if fm:
+        try: body.append("<ul>" + "".join(f"<li>{e(a)}: {e(b)}</li>" for a, b in _j.loads(fm.group(1))) + "</ul>")
+        except Exception: pass
+    more = ("".join(body) +
+            "<p>354 talent agencies and 309 management companies in Los Angeles, Beverly Hills and New York, "
             "with office addresses, websites, SAG-AFTRA franchised status, company size and how each takes submissions.</p>"
             "<h2>Questions actors ask about agents and managers</h2>"
             + "".join(f"<h3>{e(it[0])}</h3>" + "".join(f"<p>{e(p).replace('**', '')}</p>" for p in it[1].split(chr(10)*2)) for it in faq))
