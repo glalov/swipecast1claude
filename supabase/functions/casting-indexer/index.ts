@@ -12,6 +12,8 @@
 //      Google once when such a casting closes, so the job listing drops quickly.
 //      Needs app_secrets.gsc_service_account, and that service account must be an
 //      OWNER of the Search Console property; until then this step is skipped.
+//   4. When an announced casting expires or closes, IndexNow is told once more so
+//      other engines re-read the page (it serves noindex once expired).
 //
 // POST {secret, action:"run"}; secret = app_secrets.seo_agent_secret (same as seo-agent).
 
@@ -89,6 +91,30 @@ async function run(sb: any) {
     closed = ((rows || []) as C[]).filter((c) => c.status !== "open" || (c.deadline && c.deadline < today) || (c.expires_at && c.expires_at <= nowIso));
   }
 
+  // Announced castings that have since expired or closed → tell IndexNow once, so
+  // Bing & co. re-read the page (it now says noindex) instead of waiting to recrawl.
+  const { data: annRows } = await sb.from("seo_index_pings").select("casting_id").eq("kind", "new").limit(5000);
+  const { data: expDone } = await sb.from("seo_index_pings").select("url").eq("kind", "expired").limit(5000);
+  const expSeen = new Set((expDone || []).map((d: { url: string }) => d.url));
+  const annIds = (annRows || []).map((r: { casting_id: string }) => r.casting_id).filter(Boolean);
+  let expiredNow: C[] = [];
+  for (let i = 0; i < annIds.length; i += 200) {
+    const { data: rows } = await sb.from("castings").select("id,slug,is_admin_created,real_hirer,status,deadline,expires_at").in("id", annIds.slice(i, i + 200));
+    expiredNow = expiredNow.concat(((rows || []) as C[]).filter((c) => c.slug && !expSeen.has(urlOf(c.slug)) &&
+      (c.status !== "open" || (c.deadline && c.deadline < today) || (c.expires_at && c.expires_at <= nowIso))));
+  }
+  let expiredPinged = 0;
+  if (expiredNow.length) {
+    const r = await fetch("https://api.indexnow.org/indexnow", {
+      method: "POST", headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ host: "www.castslate.com", key: INDEXNOW_KEY, keyLocation: `${ORIGIN}/${INDEXNOW_KEY}.txt`, urlList: expiredNow.map((c) => urlOf(c.slug)) }),
+    }).catch((e) => { notes.push("IndexNow (expired) failed: " + String(e)); return null; });
+    if (r && (r.status === 200 || r.status === 202)) {
+      expiredPinged = expiredNow.length;
+      await sb.from("seo_index_pings").upsert(expiredNow.map((c) => ({ url: urlOf(c.slug), casting_id: c.id, kind: "expired", indexnow_at: nowIso })), { onConflict: "url,kind" });
+    } else if (r) notes.push(`IndexNow (expired) answered ${r.status}`);
+  }
+
   // IndexNow — every newly live casting (plus Browse, which lists it).
   let indexnow = 0;
   if (toAnnounce.length) {
@@ -162,7 +188,7 @@ async function run(sb: any) {
     if (st) await sb.from("seo_index_pings").update({ google_status: st }).eq("url", urlOf(c.slug)).eq("kind", "new");
   }
 
-  return { announced: toAnnounce.length, indexnow, google, retried: retry.length, closed: closed.length, notes };
+  return { announced: toAnnounce.length, indexnow, google, retried: retry.length, closed: closed.length, expired: expiredPinged, notes };
 }
 
 Deno.serve(async (req) => {
