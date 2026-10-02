@@ -320,9 +320,18 @@ module.exports = async (req, res) => {
       const casting = await fetchCasting(slug);
       if (casting) {
         finalHtml = injectMeta(html, casting, slug);
+        // Expired castings (2026-10-02): the page still opens for old links, but
+        // Google is asked not to show it in search, and it gets no job listing.
+        // Status often stays "open" after the date passes, so check the dates.
+        const nowIso = new Date().toISOString();
+        const expired = (casting.expires_at && casting.expires_at <= nowIso) ||
+          (casting.deadline && String(casting.deadline).slice(0, 10) < nowIso.slice(0, 10));
+        if (expired) {
+          finalHtml = finalHtml.replace(/<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i, '<meta name="robots" content="noindex, follow"/>');
+        }
         const roles = await fetchRoles(casting.id);
         const block = buildSeoBlock(casting, roles, slug);
-        const job = jobPostingLd(casting, roles, slug);
+        const job = expired ? "" : jobPostingLd(casting, roles, slug);
         if (job) finalHtml = finalHtml.replace("</head>", `  ${job}\n</head>`);
         // Right after the empty #root, never inside it (see buildSeoBlock).
         // Drop the shell's generic page block first (h1 + p, no nested divs).

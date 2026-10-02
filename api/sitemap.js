@@ -143,8 +143,14 @@ module.exports = async (req, res) => {
     }
   } catch (_) { /* landing pages are optional in the sitemap */ }
 
+  // Only castings that are still live (2026-10-02). Expired ones used to stay in
+  // here because their status remains "open" after the date passes, so Google
+  // kept showing closed castings. Same live rule as Browse / the landing pages.
+  const nowIso2 = new Date().toISOString(), today2 = nowIso2.slice(0, 10);
+  const liveCastings = castings.filter((c) =>
+    (!c.expires_at || c.expires_at > nowIso2) && (!c.deadline || String(c.deadline).slice(0, 10) >= today2));
   const seen = new Set();
-  for (const c of castings) {
+  for (const c of liveCastings) {
     const slug = String(c.slug || "").trim();
     // Same character class api/casting-og.js sanitizes to, so we never publish
     // a URL that function would reject.
