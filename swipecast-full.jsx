@@ -23414,7 +23414,7 @@ const LANDING_SWIPE_DEMO=[
   // throwing the crop away. w=1200 keeps the 3:2 source at retina size (86KB).
   // Photo: Pexels #4668550 by Vlada Karpovich.
   {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"https://images.pexels.com/photos/4668550/pexels-photo-4668550.jpeg?auto=compress&cs=tinysrgb&w=1200",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
-  {id:20,name:"Julian J. West",age:30,gender:"Male",height:"6'0\"",pos:"center 10%",img:"https://images.unsplash.com/photo-1587397845856-e6cf49176c70?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Drama","Screen Acting","Stage Combat"]},
+  {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
   {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
