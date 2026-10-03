@@ -10469,7 +10469,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           </div>
         </div>
         <div><div className="agd-phone"><div className="agd-notch"/><div className="agd-scr">
-          <div className="top"><img alt="" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=640&h=760&fit=crop&q=80"/><div className="tg">▶ Slate video · 0:32</div></div>
+          <div className="top"><img alt="" src="/assets/agd-cards/agd-phone-headshot.jpg"/><div className="tg">▶ Slate video · 0:32</div></div>
           <div className="info">
             <h6>Your profile</h6>
             <div className="mt">Opens the moment they scan your card</div>
