@@ -1,10 +1,12 @@
 -- Agency Directory intro email (agd-intro edge function). Applied live 2026-10-02.
--- Eligibility: free, confirmed, talent/actor, 72h-14d old, has a headshot, not
+-- Eligibility: free, confirmed, talent/actor, 3h-14d old (headshot NOT required), not
 -- suppressed / opted out, and not already logged under 'agency_directory_v1'.
-create or replace function public.agd_intro_eligible(p_limit integer default 200)
-returns table(id uuid, first_name text, email text)
+drop function if exists public.agd_intro_eligible(integer);
+create function public.agd_intro_eligible(p_limit integer default 200)
+returns table(id uuid, first_name text, email text, has_headshot boolean)
 language sql security definer set search_path to 'public' as $fn$
-  select p.id, public.greeting_name(p.display_name) as first_name, lower(u.email) as email
+  select p.id, public.greeting_name(p.display_name) as first_name, lower(u.email) as email,
+         (p.headshot_url is not null and p.headshot_url <> '') as has_headshot
   from public.profiles p
   join auth.users u on u.id = p.id
   where p.user_type in ('talent','actor')
@@ -18,7 +20,6 @@ language sql security definer set search_path to 'public' as $fn$
     and p.created_at >= timestamptz '2026-10-02 22:30:00+00'
     and (p.membership_status is null or p.membership_status <> 'active')
     and coalesce(p.notification_email,true) = true
-    and p.headshot_url is not null and p.headshot_url <> ''
     and lower(u.email) not in (select lower(e.email) from public.email_unsubscribes e where e.email is not null)
     and not exists (select 1 from public.email_preferences ep
                     where ep.user_id = p.id and (ep.announce_optout = true or ep.unsubscribed_at is not null))

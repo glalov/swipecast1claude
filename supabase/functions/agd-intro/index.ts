@@ -14,8 +14,7 @@
 //
 // WHO: public.agd_intro_eligible() is the single source of truth — confirmed email,
 // talent/actor, active account, FREE (premium is never pitched their own perk),
-// 3h+ old but under 14 days old (so it never reaches back at old accounts), has a
-// headshot (the pitch is "mail your card", and the card needs a photo), notifications
+// 3h+ old but under 14 days old (so it never reaches back at old accounts), notifications
 // on, not suppressed/unsubscribed/announce_optout, and NOT already in
 // member_announce_logs under the same announce key as the first Agency Directory
 // mailing — so nobody who got that one is mailed again.
@@ -98,7 +97,10 @@ const A = {
   btn:"linear-gradient(90deg,#F2643A,#DB3F86)", shadow:"rgba(120,40,90,.28)",
 };
 
-function introHtml(first: string, unsubUrl: string): string {
+// hasHeadshot=false only changes step 2: "Add your photo" instead of "your card has your photo".
+// (Owner, 2026-10-03: everyone new gets it; 83% have a photo, and gating on one would
+// mail people at odd times or never.)
+function introHtml(first: string, unsubUrl: string, hasHeadshot = true): string {
   const T = A;
   const step = (n: number, t: string, b: string) =>
     `<tr><td valign="top" style="width:46px;padding:0 0 18px"><table cellpadding="0" cellspacing="0" role="presentation"><tr><td align="center" valign="middle" style="width:34px;height:34px;border-radius:17px;background:${T.barSolid};background:${T.bar};font-size:15px;font-weight:800;color:#fff;line-height:34px">${n}</td></tr></table></td>
@@ -135,7 +137,9 @@ function introHtml(first: string, unsubUrl: string): string {
   <p style="margin:0 0 26px;font-size:16.5px;line-height:1.65;color:${T.body}">Unlock the Agency Directory and put your card in their hands.</p>
   <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
    ${step(1,"Unlock the Agency Directory","663 agencies and managers in LA and New York, with the address, website and how each one takes submissions.")}
-   ${step(2,"Mail them your card","Your CastSlate actor card has your photo and a QR code. Send it from anywhere in the U.S.")}
+   ${hasHeadshot
+     ? step(2,"Mail them your card","Your CastSlate actor card has your photo and a QR code. Send it from anywhere in the U.S.")
+     : step(2,"Add your photo, then mail your card","Upload a headshot and your CastSlate actor card is ready, with your photo and a QR code. Send it from anywhere in the U.S.")}
    ${step(3,"One scan, your whole profile","They scan the code and see your photos, reel and resume.")}
   </table>
  </td></tr>
@@ -216,7 +220,7 @@ Deno.serve(async (req) => {
     const to = String(body.to_email ?? "").trim();
     if (!to) return res({ error:"to_email required" }, 400);
     const first = String(body.first_name ?? "Marian").trim() || "there";
-    const r = await sendBatch([{ email:to, subject:`[TEST] ${SUBJECT}`, html:introHtml(first, `${UNSUB_BASE}?action=unsubscribe&uid=preview`) }]);
+    const r = await sendBatch([{ email:to, subject:`[TEST] ${SUBJECT}`, html:introHtml(first, `${UNSUB_BASE}?action=unsubscribe&uid=preview`, body.has_headshot !== false) }]);
     return res({ ok:r.ok, error:r.err, to });
   }
 
@@ -228,7 +232,7 @@ Deno.serve(async (req) => {
 
   const { data: rows, error } = await sb.rpc("agd_intro_eligible", { p_limit: MAX_PER_RUN });
   if (error) return res({ error:`eligibility: ${error.message}` }, 500);
-  const people = (rows ?? []) as { id:string; first_name:string|null; email:string }[];
+  const people = (rows ?? []) as { id:string; first_name:string|null; email:string; has_headshot:boolean }[];
 
   if (action === "dry_run" || !inWindow) {
     return res({ ok:true, dry_run: action === "dry_run", sent:0, eligible:people.length, ny_hour:hourNow,
@@ -241,7 +245,7 @@ Deno.serve(async (req) => {
     const chunk = people.slice(i, i + 100);
     const r = await sendBatch(chunk.map((p) => ({
       email: p.email, subject: SUBJECT,
-      html: introHtml(p.first_name && p.first_name !== "there" ? p.first_name : "there", `${UNSUB_BASE}?action=unsubscribe&uid=${p.id}`),
+      html: introHtml(p.first_name && p.first_name !== "there" ? p.first_name : "there", `${UNSUB_BASE}?action=unsubscribe&uid=${p.id}`, p.has_headshot),
     })));
     if (!r.ok) { failed += chunk.length; console.error("agd-intro batch failed:", r.err); continue; }
     // Stamp the once-only guard ONLY after Resend accepted the batch.
