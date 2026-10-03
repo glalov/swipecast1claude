@@ -145,12 +145,25 @@ ${roleItems ? `<h2>Roles</h2><ul>${roleItems}</ul>` : ""}
 // job-posting policy requires genuine openings from a real hirer, and a violation
 // can be a manual action against the whole site.
 const US_STATES = { AL:1,AK:1,AZ:1,AR:1,CA:1,CO:1,CT:1,DE:1,FL:1,GA:1,HI:1,ID:1,IL:1,IN:1,IA:1,KS:1,KY:1,LA:1,ME:1,MD:1,MA:1,MI:1,MN:1,MS:1,MO:1,MT:1,NE:1,NV:1,NH:1,NJ:1,NM:1,NY:1,NC:1,ND:1,OH:1,OK:1,OR:1,PA:1,RI:1,SC:1,SD:1,TN:1,TX:1,UT:1,VT:1,VA:1,WA:1,WV:1,WI:1,WY:1,DC:1 };
+// Full state names and the biggest casting cities, so "New York, New York" or a bare
+// "Los Angeles" still gets an addressRegion. The old code took the first two letters of
+// whatever followed the comma, which turned "New York, New York" into "NE" (Nebraska).
+const STATE_NAMES = { alabama:"AL",alaska:"AK",arizona:"AZ",arkansas:"AR",california:"CA",colorado:"CO",connecticut:"CT",delaware:"DE",florida:"FL",georgia:"GA",hawaii:"HI",idaho:"ID",illinois:"IL",indiana:"IN",iowa:"IA",kansas:"KS",kentucky:"KY",louisiana:"LA",maine:"ME",maryland:"MD",massachusetts:"MA",michigan:"MI",minnesota:"MN",mississippi:"MS",missouri:"MO",montana:"MT",nebraska:"NE",nevada:"NV","new hampshire":"NH","new jersey":"NJ","new mexico":"NM","new york":"NY","north carolina":"NC","north dakota":"ND",ohio:"OH",oklahoma:"OK",oregon:"OR",pennsylvania:"PA","rhode island":"RI","south carolina":"SC","south dakota":"SD",tennessee:"TN",texas:"TX",utah:"UT",vermont:"VT",virginia:"VA",washington:"WA","west virginia":"WV",wisconsin:"WI",wyoming:"WY","district of columbia":"DC" };
+const CITY_STATE = { "new york":"NY","brooklyn":"NY","queens":"NY","manhattan":"NY","bronx":"NY","long island":"NY","los angeles":"CA","hollywood":"CA","san francisco":"CA","san diego":"CA","chicago":"IL","atlanta":"GA","austin":"TX","dallas":"TX","houston":"TX","miami":"FL","orlando":"FL","boston":"MA","philadelphia":"PA","pittsburgh":"PA","seattle":"WA","denver":"CO","nashville":"TN","new orleans":"LA","las vegas":"NV","albuquerque":"NM","detroit":"MI","portland":"OR","phoenix":"AZ","charlotte":"NC","washington":"DC" };
+function parseRegion(st, city) {
+  const t = String(st || "").trim();
+  if (/^[A-Za-z]{2}$/.test(t) && US_STATES[t.toUpperCase()]) return t.toUpperCase();
+  if (t && STATE_NAMES[t.toLowerCase()]) return STATE_NAMES[t.toLowerCase()];
+  const c = String(city || "").trim().toLowerCase();
+  return CITY_STATE[c];
+}
+
 function jobPostingLd(c, roles, slug) {
   if (!c || (c.is_admin_created === true && c.real_hirer !== true)) return "";
   const loc = String(c.location || "").trim();
   const remote = /remote|self[- ]?tape|virtual|online/i.test(loc);
   const [city, st] = loc.split(",").map((x) => (x || "").trim());
-  const region = st && US_STATES[st.toUpperCase().slice(0, 2)] ? st.toUpperCase().slice(0, 2) : undefined;
+  const region = parseRegion(st, city);
   const valid = c.expires_at || (c.deadline ? `${c.deadline}T23:59:59-05:00` : undefined);
   const hirer = String(c.casting_director_name || c.posted_by_label || c.prod || "").trim();
   if (!hirer || !valid) return ""; // Google requires both; skip rather than guess
@@ -195,6 +208,22 @@ function jobPostingLd(c, roles, slug) {
     const unit = String(rated[0].rate_unit).toLowerCase();
     const same = rated.filter((r) => String(r.rate_unit).toLowerCase() === unit).map((r) => Number(r.rate_amount));
     ld.baseSalary = { "@type": "MonetaryAmount", currency: "USD", value: { "@type": "QuantitativeValue", minValue: Math.min(...same), maxValue: Math.max(...same), unitText: UNIT[unit] } };
+  }
+  // No structured per-role rate? Read an explicit "$X/day", "$X per shoot day", "between $A and $B
+  // per day" figure out of the casting's pay text. Only when exactly one of hour/day/week is
+  // named; "paying up to $350" with no unit is skipped rather than guessed.
+  if (!ld.baseSalary) {
+    const payText = String(c.pay || "");
+    const unitM = payText.match(/(?:\/|\b(?:per|a|each)\s+(?:shoot\s+|work\s+)?)(hour|day|week)\b/gi);
+    const units = [...new Set((unitM || []).map((m) => m.replace(/^.*\b(hour|day|week)\b.*$/i, "$1").toLowerCase()))];
+    const amts = [...payText.matchAll(/\$\s?(\d[\d,]*(?:\.\d+)?)/g)].map((m) => Number(m[1].replace(/,/g, ""))).filter((n) => n > 0);
+    if (units.length === 1 && amts.length) {
+      const q = { "@type": "QuantitativeValue", unitText: UNIT[units[0]] };
+      if (amts.length >= 2) { q.minValue = Math.min(...amts); q.maxValue = Math.max(...amts); }
+      else if (/up to/i.test(payText)) q.maxValue = amts[0];
+      else q.value = amts[0];
+      ld.baseSalary = { "@type": "MonetaryAmount", currency: "USD", value: q };
+    }
   }
   const json = JSON.stringify(ld).replace(/</g, "\\u003c");
   return `<script type="application/ld+json">${json}</script>`;
