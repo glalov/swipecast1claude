@@ -23420,7 +23420,7 @@ const LANDING_SWIPE_DEMO=[
   {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
-  {id:6,name:"Roman Kovalenko",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
+  {id:6,name:"Yana Emmets",age:58,gender:"Female",height:"5'6\"",pos:"center 20%",img:"/assets/landing/yana-emmets.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
   {id:3,name:"Matthew Caldwell",age:28,gender:"Male",height:"6'0\"",pos:"center 50%",img:"/assets/landing/matthew-caldwell.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
