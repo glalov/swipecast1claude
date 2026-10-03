@@ -1159,8 +1159,8 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-card{position:relative;overflow:hidden;border-radius:14px;background:var(--s1);border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
 .b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;}
 .b5-main{padding:24px 26px;display:grid;gap:10px;align-content:start;min-width:0;}
-.cs-pick{display:inline-flex;align-items:center;gap:7px;background:#fff;color:#241F19;font-family:inherit;font-size:13px;line-height:16.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 20px 2px 18px;border:1px solid #E8D3A6;border-radius:999px;box-shadow:0 1px 2px rgba(138,90,18,.10);white-space:nowrap;}
-.cs-pick i{color:#C9993F;font-size:12px;line-height:1;}
+.cs-pick{display:inline-flex;align-items:center;gap:7px;background:#FBF1DA;color:#5A3E0C;font-family:inherit;font-size:13px;line-height:16.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 20px 2px 18px;border:1px solid #E8D3A6;border-radius:999px;white-space:nowrap;}
+.cs-pick i{color:#C48F2C;font-size:12px;line-height:1;}
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
 .b5-pickpill{overflow:hidden;}
 .b5-card.b5-pick{border-color:#D8CEB8;}
