@@ -23418,12 +23418,12 @@ const LANDING_SWIPE_DEMO=[
   {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
-  {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 73%",zoom:1.05,img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
+  {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
   {id:6,name:"Roman Kovalenko",age:29,gender:"Male",height:"5'10\"",pos:"center 18%",img:"https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Indie Film","Drama","Guitar"]},
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
-  {id:3,name:"Owen Fletcher",age:28,gender:"Male",height:"6'0\"",pos:"center 25%",img:"https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Drama","Film & TV","Screen Acting"]},
-  {id:11,name:"Georgie Nelson",age:26,gender:"Female",height:"5'11\"",pos:"center 18%",img:"https://images.unsplash.com/photo-1721956514577-f6c15d73e585?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Action","Commercial","Improv"]},
+  {id:3,name:"Matthew Caldwell",age:28,gender:"Male",height:"6'0\"",pos:"center 50%",img:"/assets/landing/matthew-caldwell.jpg",skills:["Drama","Film & TV","Screen Acting"]},
+  {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
 ];
 // Plays the entrance once per page load. Module-level so it survives in-app
 // navigation (Home → other page → Home doesn't replay), but resets on a real
