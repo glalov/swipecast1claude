@@ -13,6 +13,9 @@ language sql security definer set search_path to 'public' as $fn$
     and u.email is not null
     and p.created_at <= now() - interval '72 hours'
     and p.created_at >  now() - interval '14 days'
+    -- Launch cutoff: only accounts created from here on (launch minus 72h) are ever
+    -- mailed, so switching this on does not blast people who signed up before it existed.
+    and p.created_at >= timestamptz '2026-09-29 20:30:00+00'
     and (p.membership_status is null or p.membership_status <> 'active')
     and coalesce(p.notification_email,true) = true
     and p.headshot_url is not null and p.headshot_url <> ''
