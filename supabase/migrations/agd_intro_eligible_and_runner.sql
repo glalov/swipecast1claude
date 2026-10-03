@@ -11,11 +11,11 @@ language sql security definer set search_path to 'public' as $fn$
     and coalesce(p.account_status,'active') = 'active'
     and u.email_confirmed_at is not null
     and u.email is not null
-    and p.created_at <= now() - interval '72 hours'
+    and p.created_at <= now() - interval '3 hours'
     and p.created_at >  now() - interval '14 days'
     -- Launch cutoff: only accounts created from here on (launch minus 72h) are ever
     -- mailed, so switching this on does not blast people who signed up before it existed.
-    and p.created_at >= timestamptz '2026-09-29 20:30:00+00'
+    and p.created_at >= timestamptz '2026-10-02 22:30:00+00'
     and (p.membership_status is null or p.membership_status <> 'active')
     and coalesce(p.notification_email,true) = true
     and p.headshot_url is not null and p.headshot_url <> ''
@@ -31,5 +31,5 @@ revoke all on function public.agd_intro_eligible(integer) from public, anon, aut
 
 -- run_agd_intro() POSTs {action:"run"} to the edge function with the admin campaign
 -- secret (copied from run_day2_getnoticed at apply time; never stored in this repo).
--- Cron: select cron.schedule('agd-intro-hourly','5 * * * *','select public.run_agd_intro()');
--- The function itself only sends in the 2 PM America/New_York hour.
+-- Cron (every 15 min since 2026-10-03; was hourly): select cron.schedule('agd-intro-hourly','*/15 * * * *','select public.run_agd_intro()');
+-- The function itself only sends 8 AM-10 PM America/New_York. Timing is 3 HOURS after signup.

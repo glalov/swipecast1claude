@@ -1,19 +1,20 @@
 // agd-intro — Supabase Edge Function
 // The automated "Agency Directory" introduction email for NEW actors.
 //
-// Goes out ONCE per actor, on day 3 after they sign up, at 2 PM Eastern. Copy and
+// Goes out ONCE per actor, about 3 hours after they sign up (never overnight: sends
+// only 8 AM-10 PM Eastern, otherwise it waits for 8 AM). Copy and
 // look are the owner-approved "A · Golden Hour" demo (2026-10-02): a film still,
 // coral/gold/pink glow around the card, Malcolm Vey + Naya Bellamy sample cards.
 //
 // POST { action:"dry_run" }                  -> who would be mailed right now (no send)
 // POST { action:"test", to_email, first_name? } -> preview send to one address, never logged
-// POST { action:"run", force_hour? }          -> the hourly cron call. Sends only when it is
-//                                               2 PM in New York (DST-safe) unless force_hour:true.
+// POST { action:"run", force_hour? }          -> the cron call (every 15 min). Sends only between
+//                                               8 AM and 10 PM in New York (DST-safe) unless force_hour:true.
 // GET  ?action=unsubscribe&uid=<id>           -> opt out of announcements (announce_optout)
 //
 // WHO: public.agd_intro_eligible() is the single source of truth — confirmed email,
 // talent/actor, active account, FREE (premium is never pitched their own perk),
-// 72h+ old but under 14 days old (so it never reaches back at old accounts), has a
+// 3h+ old but under 14 days old (so it never reaches back at old accounts), has a
 // headshot (the pitch is "mail your card", and the card needs a photo), notifications
 // on, not suppressed/unsubscribed/announce_optout, and NOT already in
 // member_announce_logs under the same announce key as the first Agency Directory
@@ -67,8 +68,9 @@ const ADMIN_SECRET   = Deno.env.get("ADMIN_CAMPAIGN_SECRET") ?? "";
 // Same key as the first Agency Directory announcement, on purpose: anyone who got
 // that is skipped, and the admin Headshot Catalog button sees this send as "already sent".
 const ANNOUNCE_KEY = "agency_directory_v1";
-const VARIANT      = "intro_d3";
-const SEND_HOUR_NY = 14;               // 2 PM America/New_York
+const VARIANT      = "intro_3h";
+const WINDOW_START_NY = 8;            // earliest send hour, America/New_York
+const WINDOW_END_NY   = 22;           // no sends at or after 10 PM
 const MAX_PER_RUN  = 200;
 const UNSUB_BASE   = `${SUPABASE_URL}/functions/v1/agd-intro`;
 
@@ -220,9 +222,9 @@ Deno.serve(async (req) => {
 
   if (!["dry_run","run"].includes(action)) return res({ error:"Unknown action" }, 400);
 
-  // The hour gate: cron fires hourly, only the 2 PM New York run sends.
+  // Quiet hours: someone who signs up at midnight is mailed at 8 AM, not 3 AM.
   const hourNow = hourInNewYork();
-  const inWindow = hourNow === SEND_HOUR_NY || body.force_hour === true;
+  const inWindow = (hourNow >= WINDOW_START_NY && hourNow < WINDOW_END_NY) || body.force_hour === true;
 
   const { data: rows, error } = await sb.rpc("agd_intro_eligible", { p_limit: MAX_PER_RUN });
   if (error) return res({ error:`eligibility: ${error.message}` }, 500);
@@ -230,7 +232,7 @@ Deno.serve(async (req) => {
 
   if (action === "dry_run" || !inWindow) {
     return res({ ok:true, dry_run: action === "dry_run", sent:0, eligible:people.length, ny_hour:hourNow,
-      note: action === "run" ? `outside the ${SEND_HOUR_NY}:00 New York window; nothing sent` : undefined });
+      note: action === "run" ? `outside the ${WINDOW_START_NY}:00-${WINDOW_END_NY}:00 New York window; nothing sent` : undefined });
   }
   if (!people.length) return res({ ok:true, sent:0, eligible:0, ny_hour:hourNow });
 
