@@ -942,6 +942,9 @@ ROUTES = [
     ("manager-mode.html",     "/manager-mode",    "Manager Mode — Career Check-ins for Actors | CastSlate", "CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
     ("agency-directory.html", "/agency-directory", "Talent Agency & Management Directory \u2014 650+ Agencies in LA & NYC", "CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."),
     ("tapelink.html",         "/tapelink",        "TapeLink: Self-Tape Auditions Built Into Casting", "TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."),
+    ("login.html", "/login", "Sign In | CastSlate", "Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."),
+    ("register-talent.html", "/register-talent", "Create Your Free Actor Profile | CastSlate", "Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."),
+    ("register-cd.html", "/register-cd", "Post a Casting Call | CastSlate", "Post your casting call on CastSlate and review actor submissions one at a time. Start for free."),
 ]
 
 # ── Agencies Directory: FAQ for Google (2026-10-01) ─────────────────────────

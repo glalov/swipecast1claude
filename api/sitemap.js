@@ -39,6 +39,9 @@ const STATIC_PAGES = [
   { loc: "/manager-mode", changefreq: "monthly", priority: "0.8" },
   { loc: "/tapelink", changefreq: "monthly", priority: "0.8" },
   { loc: "/agency-directory", changefreq: "monthly", priority: "0.9", lastmod: "2026-10-01" }, // FAQ + full crawler text added
+  { loc: "/login", changefreq: "monthly", priority: "0.5" },
+  { loc: "/register-talent", changefreq: "monthly", priority: "0.7" },
+  { loc: "/register-cd", changefreq: "monthly", priority: "0.5" },
   { loc: "/resources", changefreq: "weekly", priority: "0.7" },
   { loc: "/trust-safety", changefreq: "monthly", priority: "0.7" },
   { loc: "/pay-talent", changefreq: "monthly", priority: "0.7" },
