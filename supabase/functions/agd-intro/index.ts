@@ -138,9 +138,9 @@ function introHtml(first: string, unsubUrl: string): string {
   </table>
  </td></tr>
 
- <tr><td class="p" style="padding:0 40px 8px" align="center">
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td align="center" style="background:#FBFAF6;border:1px solid ${T.line};border-radius:14px;padding:8px 8px">
-   <img src="${APP_URL}/email-actor-cards-v2.jpg" width="440" alt="Two CastSlate actor cards with QR codes" style="display:block;width:100%;max-width:440px;height:auto;border:0;margin:0 auto"/>
+ <tr><td class="p" style="padding:0 40px 0" align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td align="center" style="background:#FFF1EA;border:1px solid ${T.line};border-radius:14px;padding:0">
+   <img src="${APP_URL}/email-actor-cards-v3.jpg" width="520" alt="Two CastSlate actor cards with QR codes" style="display:block;width:100%;max-width:520px;height:auto;border:0;margin:0 auto;border-radius:13px"/>
   </td></tr></table>
  </td></tr>
 
