@@ -2949,36 +2949,35 @@ body.sheet-push .b2t-cube{display:none;}
   .tad-donts{grid-template-columns:1fr;}
   .tad-mlitem{grid-template-columns:26px 1fr;}
 }
-/* ── Casting Companies Directory dashboard card: "The Slate", Clapper Red ──
-   A clapperboard: striped clapper on top, chalk-ruled PROD / ROLL / TAKE board.
-   The clapper snaps once every 15s (first snap 1.5s after mount) and on hover;
-   the snap is the first ~0.55s of the 15s cycle, the rest is still. */
-.cdxs{position:relative;overflow:hidden;border-radius:16px;cursor:pointer;background:#7A1C24;border:1.5px solid #9E2A33;color:#FFF6EC;transition:transform .3s,box-shadow .3s;}
-.cdxs:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(60,12,18,.6);}
-.cdxs:focus-visible{outline:2px solid #F0B860;outline-offset:3px;}
-.cdxs-clap{position:relative;height:30px;background:repeating-linear-gradient(-45deg,#F7EBDD 0 16px,#5E141B 16px 32px);border-bottom:2px solid #F7EBDD;transform-origin:8px 100%;animation:cdxsEvery 15s cubic-bezier(.4,0,.3,1) 1.5s infinite;}
-.cdxs:hover .cdxs-clap{animation:cdxsSnap .55s cubic-bezier(.4,0,.3,1);}
-@keyframes cdxsSnap{0%{transform:rotate(0)}35%{transform:rotate(-13deg)}62%{transform:rotate(0)}74%{transform:rotate(-2deg)}100%{transform:rotate(0)}}
-@keyframes cdxsEvery{0%{transform:rotate(0)}1.3%{transform:rotate(-13deg)}2.3%{transform:rotate(0)}2.8%{transform:rotate(-2deg)}3.7%,100%{transform:rotate(0)}}
-.cdxs-hinge{position:absolute;left:6px;top:24px;width:12px;height:12px;border-radius:50%;background:#7A1C24;border:2px solid #F7EBDD;z-index:4;}
+/* ── Casting Companies Directory dashboard card: "The Slate", Chalk White ──
+   A clapperboard: cream board, black clapper stripes, chalk-ruled PROD / ROLL /
+   TAKE board. Owner's call 2026-10-04: chalk white, and the clapper does NOT
+   animate (it is a still image of a slate). Only the hover lift and the
+   blinking "rolling" dot move. */
+.cdxs{position:relative;overflow:hidden;border-radius:16px;cursor:pointer;background:#F7F2E8;border:1.5px solid #D9CFBC;color:#1A1A1F;transition:transform .3s,box-shadow .3s;}
+.cdxs:hover{transform:translateY(-3px);box-shadow:0 24px 48px -20px rgba(26,26,31,.35);}
+.cdxs:focus-visible{outline:2px solid #1A1A1F;outline-offset:3px;}
+.cdxs-clap{position:relative;height:30px;background:repeating-linear-gradient(-45deg,#1A1A1F 0 16px,#F7F2E8 16px 32px);border-bottom:2px solid #1A1A1F;}
+.cdxs-hinge{position:absolute;left:6px;top:24px;width:12px;height:12px;border-radius:50%;background:#F7F2E8;border:2px solid #1A1A1F;z-index:4;}
 .cdxs-in{position:relative;z-index:3;padding:18px 20px 20px;}
-.cdxs-kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#FFD9C2;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
-.cdxs-rec{width:7px;height:7px;border-radius:50%;background:#FF5A5F;box-shadow:0 0 8px #FF5A5F;animation:cdxsRec 1.6s steps(1) infinite;}
+.cdxs-kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#1A1A1F;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
+.cdxs-rec{width:7px;height:7px;border-radius:50%;background:#E5484D;box-shadow:0 0 6px rgba(229,72,77,.7);animation:cdxsRec 1.6s steps(1) infinite;}
 @keyframes cdxsRec{50%{opacity:.25;}}
 .cdxs-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.cdxs-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:#F7EBDD;color:#7A1C24;}
-.cdxs h3{font-weight:800;font-size:15.5px;color:#FFF6EC;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;line-height:1.3;}
-.cdxs p.cdxs-sub{font-size:13px;color:rgba(255,246,236,.82);margin:0 0 14px;line-height:1.55;}
-.cdxs-board{display:grid;grid-template-columns:1.3fr 1fr 1fr;border:1px solid rgba(255,246,236,.35);border-radius:6px;margin:0 0 14px;font-family:'Courier New',ui-monospace,monospace;}
-.cdxs-board div{padding:6px 8px;border-right:1px solid rgba(255,246,236,.35);min-width:0;}
+.cdxs-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:#1A1A1F;color:#F7F2E8;}
+.cdxs h3{font-weight:800;font-size:15.5px;color:#1A1A1F;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;line-height:1.3;}
+.cdxs p.cdxs-sub{font-size:13px;color:#4A4238;margin:0 0 14px;line-height:1.55;}
+.cdxs-board{display:grid;grid-template-columns:1.3fr 1fr 1fr;border:1px solid rgba(26,26,31,.25);border-radius:6px;margin:0 0 14px;font-family:'Courier New',ui-monospace,monospace;}
+.cdxs-board div{padding:6px 8px;border-right:1px solid rgba(26,26,31,.25);min-width:0;}
 .cdxs-board div:last-child{border-right:0;}
-.cdxs-board i{display:block;font-style:normal;font-size:7.5px;letter-spacing:.1em;white-space:nowrap;color:rgba(255,246,236,.55);}
-.cdxs-board b{display:block;font-size:17px;font-weight:700;color:#FFF6EC;margin-top:1px;}
+.cdxs-board i{display:block;font-style:normal;font-size:7.5px;letter-spacing:.1em;white-space:nowrap;color:#8A7F70;}
+.cdxs-board b{display:block;font-size:17px;font-weight:700;color:#1A1A1F;margin-top:1px;}
 .cdxs-board b.w{font-size:11.5px;}
-.cdxs-cta{width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:#F0B860;color:#1A1A2E;box-shadow:0 2px 10px -3px rgba(0,0,0,.45);transition:background .18s;}
-.cdxs-cta:hover{background:#F5C87E;}
-.cdxs-cta.open{background:rgba(255,246,236,.14);color:#FFF6EC;box-shadow:none;border:1px solid rgba(255,246,236,.3);}
-@media(prefers-reduced-motion:reduce){.cdxs-clap,.cdxs:hover .cdxs-clap,.cdxs-rec{animation:none!important;}.cdxs,.cdxs:hover{transform:none;}}
+.cdxs-cta{width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:#1A1A1F;color:#F0B860;box-shadow:0 2px 10px -3px rgba(0,0,0,.35);transition:background .18s;}
+.cdxs-cta:hover{background:#2C2C33;}
+.cdxs-cta.open{background:transparent;color:#1A1A1F;box-shadow:none;border:1.5px solid rgba(26,26,31,.35);}
+.cdxs-cta.open:hover{background:rgba(26,26,31,.05);}
+@media(prefers-reduced-motion:reduce){.cdxs-rec{animation:none!important;}.cdxs,.cdxs:hover{transform:none;}}
 /* ── Casting Companies Directory additions (reuses the .tad-* sheet) ── */
 .cdx-nosub{background:rgba(214,59,59,.08);color:#9B2C2C;}
 .tad-row.cdx-dim{opacity:.72;}
@@ -16986,10 +16985,9 @@ function CastingDirectoryCard({isPremium,onNavigate}){
   const listCount=picked.size+agPicked.size;
 
   return(<>
-    {/* "The Slate", Clapper Red (owner's pick, 2026-10-04). Deliberately unlike the
-        navy agency card above it: deep cinema red board, cream clapper stripes, and
-        its own motion (the clapper snaps every 15s and on hover), shared with no
-        other card in the column. Gold CTA kept so the two read as a Premium pair. */}
+    {/* "The Slate", Chalk White (owner's pick, 2026-10-04, replacing Clapper Red).
+        Cream board, black clapper stripes, deliberately unlike the navy agency card
+        above it. The clapper is still, not animated (owner's call). */}
     <div className="cdxs" onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
       <div className="cdxs-clap" aria-hidden="true"/>
