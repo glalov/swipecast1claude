@@ -141,7 +141,7 @@ function directoryNote(): string {
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${C.panel};border-radius:12px;"><tr>
       <td style="padding:15px 18px;">
         <div style="font-size:9.5px;font-weight:800;color:${C.brand};letter-spacing:1.4px;text-transform:uppercase;margin-bottom:6px;">Also included</div>
-        <div style="font-size:13.5px;line-height:1.6;color:${C.body};">The <b style="color:${C.ink};">650+ Talent Agency &amp; Management Directory</b> &mdash; LA and NY agencies with submission details, yours the moment you're in.</div>
+        <div style="font-size:13.5px;line-height:1.6;color:${C.body};">The <b style="color:${C.ink};">650+ Talent Agency &amp; Management Directory</b> and the <b style="color:${C.ink};">Casting Companies Directory</b> &mdash; LA and NY agencies and 131 active casting offices, with submission details, yours the moment you're in.</div>
       </td></tr></table></td></tr>`;
 }
 

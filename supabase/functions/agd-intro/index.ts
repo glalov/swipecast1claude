@@ -136,7 +136,7 @@ function introHtml(first: string, unsubUrl: string, hasHeadshot = true): string 
   <p style="margin:0 0 14px;font-size:16.5px;line-height:1.65;color:${T.body}">Hi ${esc(first)}, agents and managers in Hollywood and New York are always looking for fresh faces to put in films and TV shows. <b style="color:${T.ink}">You never know &mdash; you could be the next face they're looking for.</b></p>
   <p style="margin:0 0 26px;font-size:16.5px;line-height:1.65;color:${T.body}">Unlock the Agency Directory and put your card in their hands.</p>
   <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-   ${step(1,"Unlock the Agency Directory","663 agencies and managers in LA and New York, with the address, website and how each one takes submissions.")}
+   ${step(1,"Unlock the Agency Directory","663 agencies and managers in LA and New York, with the address, website and how each one takes submissions. Plus the Casting Companies Directory: 131 active casting offices, and which ones accept headshots.")}
    ${hasHeadshot
      ? step(2,"Mail them your card","Your CastSlate actor card has your photo and a QR code. Send it from anywhere in the U.S.")
      : step(2,"Add your photo, then mail your card","Upload a headshot and your CastSlate actor card is ready, with your photo and a QR code. Send it from anywhere in the U.S.")}

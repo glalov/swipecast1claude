@@ -287,6 +287,7 @@ const PERKS = [
   "Actor Business Card + QR code",
   "Manager Mode weekly check-ins",
   "Agency &amp; Manager Directory — 650+ in LA &amp; NY",
+  "Casting Companies Directory — 131 active offices in LA &amp; NY",
 ];
 
 // ── Project-type icon tiles (approved 2026-09-12, demo "A") ─────────────────
