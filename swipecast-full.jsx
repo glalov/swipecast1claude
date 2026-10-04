@@ -40838,13 +40838,16 @@ const ACG = (()=>{
     const needNN=Math.floor(3*m/10),needComm=Math.floor(m/10),needNarr=Math.floor(4*m/10),needFeat=Math.floor(m/10);
     const nn9=last9.filter(k=>!r10IsNarr(k)).length,nar9=last9.length-nn9,com9=last9.filter(r10IsComm).length,fe9=last9.filter(r10IsFeat).length;
     const types9=new Set(last9.map(r10Base));
+    // Graded by shortfall: coming off a board that broke a floor (all
+    // narrative, say), no single pick can mend the window, but the pick that
+    // closes the gap must still win.
     const viol=o=>{
       let v=0;
       if(types9.has(r10Base(o.k)))v+=8;
-      if(nn9+(r10IsNarr(o.k)?0:1)<needNN)v+=4;
-      if(com9+(r10IsComm(o.k)?1:0)<needComm)v+=4;
-      if(nar9+(r10IsNarr(o.k)?1:0)<needNarr)v+=2;
-      if(fe9+(r10IsFeat(o.k)?1:0)<needFeat)v+=2;
+      v+=4*Math.max(0,needNN-(nn9+(r10IsNarr(o.k)?0:1)));
+      v+=4*Math.max(0,needComm-(com9+(r10IsComm(o.k)?1:0)));
+      v+=2*Math.max(0,needNarr-(nar9+(r10IsNarr(o.k)?1:0)));
+      v+=2*Math.max(0,needFeat-(fe9+(r10IsFeat(o.k)?1:0)));
       return v;
     };
     cands.forEach(o=>{o.v=viol(o);});
