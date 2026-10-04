@@ -4606,6 +4606,9 @@ a.news-card{text-decoration:none;color:inherit;}
 @media (max-width:620px){.news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.news-sec{padding:42px 0 46px;}.news-block{margin-bottom:32px;}}
 /* ─── Talent Dashboard responsive grid ─── */
 .td-grid{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
+/* Recently Viewed: left column on desktop, right column (original spot) once the grid stacks. */
+.td-rv-mob{display:none;}
+@media(max-width:900px){.td-rv-desk{display:none;}.td-rv-mob{display:block;}}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
 @media(max-width:900px){
   .td-grid{grid-template-columns:1fr;}
@@ -17943,6 +17946,37 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     </div>);
   }
 
+  // Recently Viewed card — placed by CSS (.td-rv-desk / .td-rv-mob), see the right column.
+  const recentlyViewedCard=(
+    <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
+      <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>Recently Viewed</h3>
+      {rvLoading?(
+        <CastSlateLoader size="inline" text="Loading…"/>
+      ):recentlyViewed.length===0?(
+        <>
+          <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px"}}>You haven't viewed any casting calls yet.</p>
+          <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
+        </>
+      ):(
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+          {recentlyViewed.map(r=>{
+            const c=r.castings;
+            return(
+              <div key={r.casting_id} style={{padding:"10px 12px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,width:"100%",boxSizing:"border-box"}}>
+                <div style={{minWidth:0,flex:1,overflow:"hidden"}}>
+                  <div style={{fontWeight:600,fontSize:12,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
+                  <div style={{fontSize:11,color:"var(--t3)"}}>{c?.type}{c?.location?` · ${c.location}`:""}</div>
+                  <div style={{fontSize:10,color:"var(--t3)",marginTop:1}}>Viewed {fmtDate(r.viewed_at)}</div>
+                </div>
+                <button className="btn-s btn-sm" style={{fontSize:10,padding:"3px 8px",flexShrink:0}} onClick={()=>onViewCastingById?onViewCastingById(r.casting_id):onNavigate("search")}>View</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   return(
     <div className={"td-dash-outer"+(navSliding?" cs-slide-out":"")}>
 
@@ -18582,6 +18616,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               )}
             </div>
           </div>
+          <div className="td-rv-desk">{recentlyViewedCard}</div>
         </div>
 
         {/* ── RIGHT COLUMN ── */}
@@ -18698,34 +18733,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             mediaItems={null}
           />
 
-          {/* Recently Viewed Castings */}
-          <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
-            <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>Recently Viewed</h3>
-            {rvLoading?(
-              <CastSlateLoader size="inline" text="Loading…"/>
-            ):recentlyViewed.length===0?(
-              <>
-                <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px"}}>You haven't viewed any casting calls yet.</p>
-                <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
-              </>
-            ):(
-              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
-                {recentlyViewed.map(r=>{
-                  const c=r.castings;
-                  return(
-                    <div key={r.casting_id} style={{padding:"10px 12px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,width:"100%",boxSizing:"border-box"}}>
-                      <div style={{minWidth:0,flex:1,overflow:"hidden"}}>
-                        <div style={{fontWeight:600,fontSize:12,color:"var(--t1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c?.title||"Unknown"}</div>
-                        <div style={{fontSize:11,color:"var(--t3)"}}>{c?.type}{c?.location?` · ${c.location}`:""}</div>
-                        <div style={{fontSize:10,color:"var(--t3)",marginTop:1}}>Viewed {fmtDate(r.viewed_at)}</div>
-                      </div>
-                      <button className="btn-s btn-sm" style={{fontSize:10,padding:"3px 8px",flexShrink:0}} onClick={()=>onViewCastingById?onViewCastingById(r.casting_id):onNavigate("search")}>View</button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Recently Viewed Castings — on desktop (>900px) this renders in the LEFT
+              column under Saved Castings instead (2026-10-04: the right rail had grown
+              a card taller than the left after the Casting Directory card was added).
+              At <=900px the columns stack and it stays here, so the phone order is
+              unchanged. Same element, rendered in whichever slot is visible. */}
+          <div className="td-rv-mob">{recentlyViewedCard}</div>
         </div>
       </div>
     </div>
