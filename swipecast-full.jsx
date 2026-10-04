@@ -40351,8 +40351,15 @@ const ACG = (()=>{
     if(!c)return "";
     if(/^Back to School$/i.test(c))return "Back-to-School Retail";
     if(/\b(Shop|Store|Company|Bank|Firm|Chain|Gym|Restaurant|Hotel|Clinic|App|Service|Services|Brand|Market|Bakery|Salon|Studio|Retailer|Agency|Airline|Network|Hospital|Pharmacy|Insurer|School|University|Center|Club|Cafe|Diner|Deli|Grocer|Grocery|Dealership|Spa|Carrier|Transit|Rideshare|Retail|Library|Nonprofit|Museum|Academy|Course|Training|Program|Workshop|Practice|Optician|Yard|Lender|Preparer|Developer|Agency|Center|Department|Office|Authority|Board|Coalition|District|Co-op|Community|Line|Plan|Library)$/.test(c))return c;
+    // Round 10: only a PRODUCT is a brand. A festival, a school, a nonprofit,
+    // a hospital or a zoo is named as itself; a service is a company.
+    if(R10_ORG_CAT.test(c))return c;
+    if(/^Audiobook$/.test(c))return "Audiobook Publisher";
+    if(R10_SERVICE_CAT.test(c))return `${c} Company`;
     return `${c} ${pick(["Brand","Brand","Company"])}`;
   }
+  const R10_ORG_CAT=/(\w*shop|\w*store|Laundromat|Florist|Bodega|Bistro|Tavern|Bakehouse)$|\b(Dealer|Care|Barbershop|Station|Union|College|Pizzeria|Fair|Festival|House|System|Group|Plant|Co-op|Warehouse|Storage|Counter|Living|Series|Literacy|Education|Aid|Classes|Language|Zoo|Resort|Bureau|Rentals|Photo|Bar|Event|Lights|Supermarket|Opera|Theater|Church|Shelter|Rescue|Foundation|Charity|Council|Ministry|Lab|Kitchen|Hall|Park|Pool|Arena|Gallery|League|Team|Choir|Orchestra|Company)$/;
+  const R10_SERVICE_CAT=/\b(Insurance|Delivery|Loan|Provider|Telehealth|Telecom|Plans|Software|Builder|Share|Rental|Repair|Moving|Cleaning Service|Tutoring|Banking)$/;
   function r8Plural(w){
     const s=String(w||"");
     if(/man$/i.test(s))return s.replace(/man$/i,m=>m[0]==="M"?"Men":"men");
@@ -40391,9 +40398,11 @@ const ACG = (()=>{
       const base=`${lead?lead+" ":""}${f}`;
       const r=Math.random();
       let t=base,descCat=catN?`${d?d+" ":""}${catN}`:type==="Public Service Announcement"&&d?d:"";
-      if(!catN||r<0.25)t=who?`${base}, ${who}`:`${base}, ${cityW}`;
-      else if(r<0.40)t=`${base}, ${cityW}`;
-      else if(r<0.46&&V7_BRAND.test(type))t=`${d||pick(["Well-Known","Major","National"])} ${catN.replace(/ Company$/," Brand")}`.replace(/Brand Brand/,"Brand");
+      // Round 10: a title never ends on a role word ("...Promo Video, Moms");
+      // the place goes there instead, or nothing.
+      void who;
+      if(!catN||r<0.40)t=`${base}, ${cityW}`;
+      else if(r<0.46&&V7_BRAND.test(type)&&/ (Brand|Company)$/.test(catN)&&!R10_ORG_CAT.test(String(cat||""))&&!R10_SERVICE_CAT.test(String(cat||"")))t=`${d||pick(["Well-Known","Major","National"])} ${catN.replace(/ Company$/," Brand")}`.replace(/Brand Brand/,"Brand");
       else if(r<0.50&&/^(Social Media Ad|Influencer \/ UGC Content|Ad Campaign)$/.test(type))t=`${pick(["Social Campaign","Online Campaign"])} (NDA)`;
       t=t.replace(/\s{2,}/g," ").replace(/\b(Brand|Company) (Branded)\b/,"$2").trim();
       descCat=descCat.replace(/\b(Brand|Company)$/,m=>/^Branded/.test(f)?"":m).trim();
@@ -41204,7 +41213,11 @@ const ACG = (()=>{
      const t=quoted||bare;
      if(R10_TITLE_END.test(t.trim()))out.push("title ends on an article or preposition: "+item.title);
      if(R10_AT_ODD.test(t))out.push("title reads unnaturally: "+item.title);
-     if(/^untitled$/i.test(t))out.push("title is just Untitled");}
+     if(/^untitled$/i.test(t))out.push("title is just Untitled");
+     // Round 10 follow-up: a brand title never ends on a role word.
+     {const tail=clean((String(item.title||"").match(/,\s*([^,]+)$/)||[])[1]||"").replace(/s$/,"");
+      if(tail&&roles.some(r=>{const sl=clean(stripArticle(r._slot||r.name||"")).replace(/s$/,"");return sl&&(sl===tail||sl.split(" ").pop()===tail.split(" ").pop());}))out.push("title ends on a role word: "+item.title);
+      if(/\b(Festival|School|College|Nonprofit|Hospital|Zoo|Museum|Resort|Union|Church|Library) Brand\b/.test(String(item.title||"")+" "+String(item.synopsis||"").replace(/\b(\w)/g,m=>m.toUpperCase())))out.push("Brand added to a non-brand business: "+item.title);}}
     // Schedule note: an undated listing cannot promise fixed days, and TBD is
     // said once.
     {const note=String(item.schedule_note||"");
