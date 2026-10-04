@@ -2967,12 +2967,13 @@ body.sheet-push .b2t-cube{display:none;}
 .cdxs-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:#1A1A1F;color:#F7F2E8;}
 .cdxs h3{font-weight:800;font-size:15.5px;color:#1A1A1F;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;line-height:1.3;}
 .cdxs p.cdxs-sub{font-size:13px;color:#4A4238;margin:0 0 14px;line-height:1.55;}
-.cdxs-board{display:grid;grid-template-columns:1.3fr 1fr 1fr;border:1px solid rgba(26,26,31,.25);border-radius:6px;margin:0 0 14px;font-family:'Courier New',ui-monospace,monospace;}
-.cdxs-board div{padding:6px 8px;border-right:1px solid rgba(26,26,31,.25);min-width:0;}
+.cdxs-board{display:grid;grid-template-columns:1.25fr 1fr 1.15fr;border:1.5px solid rgba(26,26,31,.55);border-radius:6px;margin:0 0 14px;font-family:'Courier New',ui-monospace,monospace;}
+.cdxs-board div{padding:7px 9px;border-right:1.5px solid rgba(26,26,31,.55);min-width:0;display:flex;flex-direction:column;justify-content:space-between;}
 .cdxs-board div:last-child{border-right:0;}
-.cdxs-board i{display:block;font-style:normal;font-size:7.5px;letter-spacing:.1em;white-space:nowrap;color:#8A7F70;}
-.cdxs-board b{display:block;font-size:17px;font-weight:700;color:#1A1A1F;margin-top:1px;}
-.cdxs-board b.w{font-size:11.5px;}
+/* Labels in the site font, dark and bold: the old 7.5px light-grey Courier was unreadable, and 'TAKE · HEADSHOTS' overflowed its box. Labels may wrap to two lines. */
+.cdxs-board i{display:block;font-style:normal;font-family:'DM Sans',sans-serif;font-size:9px;font-weight:800;letter-spacing:.06em;line-height:1.25;color:#2B2622;}
+.cdxs-board b{display:block;font-size:18px;font-weight:700;color:#1A1A1F;margin-top:3px;}
+.cdxs-board b.w{font-size:12px;}
 .cdxs-cta{width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:#1A1A1F;color:#F0B860;box-shadow:0 2px 10px -3px rgba(0,0,0,.35);transition:background .18s;}
 .cdxs-cta:hover{background:#2C2C33;}
 .cdxs-cta.open{background:transparent;color:#1A1A1F;box-shadow:none;border:1.5px solid rgba(26,26,31,.35);}
@@ -17001,8 +17002,8 @@ function CastingDirectoryCard({isPremium,onNavigate}){
         <p className="cdxs-sub"><b>Casting offices</b> in LA &amp; New York — which ones accept headshots, and where to send your CastSlate card.</p>
         <div className="cdxs-board">
           <div><i>PROD.</i><b className="w">CASTING DIR.</b></div>
-          <div><i>ROLL · OFFICES</i><b>{counts.all}</b></div>
-          <div><i>TAKE · HEADSHOTS</i><b>{counts.acc}</b></div>
+          <div><i>OFFICES</i><b>{counts.all}</b></div>
+          <div><i>ACCEPT HEADSHOTS</i><b>{counts.acc}</b></div>
         </div>
         <button className={"cdxs-cta"+(isPremium?" open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
           {isPremium?<>Open the Directory <Tri/></>:<>Unlock the Directory <Tri/></>}
