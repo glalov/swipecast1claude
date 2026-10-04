@@ -34,6 +34,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claimSends, releaseSends } from "../_shared/send-guard.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -874,17 +875,28 @@ serve(async (req) => {
       outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:addUtm(buildEmail(first,batch,p.id,slot,runHero),slot) });
     }
 
+    // ── Universal repeat-send guard: one copy per slot per address per ~day,
+    //    enforced by the database even if premium_upsell_logs ever fails to write. ──
+    const guardKind=`premium_upsell_${slot}`;
+    const claimed=await claimSends(sb,guardKind,outbox.map((o)=>o.email),"20 hours");
+    if(!claimed) return res({error:"send-guard claim failed; nothing sent"},500);
+    const blocked=outbox.filter((o)=>!claimed.has(String(o.email).toLowerCase()));
+    if(blocked.length){ console.error(`[premium-upsell] send-guard blocked ${blocked.length} repeat recipient(s)`); skipReasons["send_guard_repeat"]=blocked.length; skipped+=blocked.length; }
+    const guarded=outbox.filter((o)=>claimed.has(String(o.email).toLowerCase()));
+
     // ── Phase 2: send in batches of 100 via Resend, log each result. ──
     const BATCH=100;
-    for(let i=0;i<outbox.length;i+=BATCH){
-      const group=outbox.slice(i,i+BATCH);
+    for(let i=0;i<guarded.length;i+=BATCH){
+      const group=guarded.slice(i,i+BATCH);
       const results=await sendBatch(group.map((o)=>({from:FROM_EMAIL,to:[o.email],replyTo:CONTACT_EMAIL,subject:o.subject,html:o.html,headers:{"List-Unsubscribe":`<${UNSUB_BASE}?action=unsubscribe&uid=${o.userId}&slot=${slot}>`,"List-Unsubscribe-Post":"List-Unsubscribe=One-Click"},tags:[{name:"campaign",value:"premium_upsell"},{name:"slot",value:slot==="evening"?"evening":"morning"},{name:"uid",value:o.userId}]})));
+      const failedEmails:string[]=[];
       group.forEach((o,idx)=>{
         const r=results[idx];
         if(r?.ok){ sent++; logs.push({user_id:o.userId,email:o.email,slot,status:"sent",provider_message_id:r.id}); }
-        else{ failed++; logs.push({user_id:o.userId,email:o.email,slot,status:"failed",error_message:r?.err}); }
+        else{ failed++; failedEmails.push(o.email); logs.push({user_id:o.userId,email:o.email,slot,status:"failed",error_message:r?.err}); }
       });
-      if(i+BATCH<outbox.length) await new Promise((r)=>setTimeout(r,600));
+      await releaseSends(sb,guardKind,failedEmails);
+      if(i+BATCH<guarded.length) await new Promise((r)=>setTimeout(r,600));
     }
 
     // ── Bulk-write logs. ──

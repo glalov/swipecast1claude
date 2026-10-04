@@ -27,6 +27,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claimSends, releaseSends } from "../_shared/send-guard.ts";
 
 const RESEND_API_KEY       = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
@@ -1226,11 +1227,12 @@ serve(async (req) => {
     // signed-in user's JWT (the app). An anon key alone resolves to no user and fails.
     const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
     let authorized = false;
+    let automatedCaller = false; // database / cron / service callers (not a signed-in user)
     if (bearer) {
-      if (SUPABASE_SERVICE_KEY && bearer === SUPABASE_SERVICE_KEY) authorized = true;
+      if (SUPABASE_SERVICE_KEY && bearer === SUPABASE_SERVICE_KEY) { authorized = true; automatedCaller = true; }
       if (!authorized) {
         const { data: secretRow } = await supabase.from("app_secrets").select("value").eq("key", "notify_fn_secret").maybeSingle();
-        if (secretRow?.value && bearer === secretRow.value) authorized = true;
+        if (secretRow?.value && bearer === secretRow.value) { authorized = true; automatedCaller = true; }
       }
       if (!authorized) {
         try {
@@ -1274,6 +1276,28 @@ serve(async (req) => {
         }
       }
     }
+
+    // ── Universal repeat-send guard for the AUTOMATED one-off / periodic emails
+    //    (welcomes, activity digest, monthly check-in, casting live, posting approved,
+    //    premium welcome). Claims the address in email_send_ledger before sending and
+    //    gives the claim back if the send fails, so a broken caller-side guard can never
+    //    mail the same person twice. Calls from a signed-in user (admin test copies, the
+    //    app itself) are not guarded. Event emails (shortlist, hold, booking, inbox)
+    //    are one-per-event and do not go through here. ──
+    const guardedSend = async (
+      kind: string, window: string, ref: string, payload: SendEmailArgs,
+    ): Promise<{ ok: boolean; err?: string | null; blocked?: boolean }> => {
+      const to = String(payload.to[0] || "");
+      if (automatedCaller) {
+        const claimed = await claimSends(supabase, kind, [to], window, ref);
+        if (!claimed) return { ok: false, err: "send_guard_claim_failed" };
+        if (!claimed.has(to.toLowerCase())) return { ok: true, blocked: true };
+      }
+      const sent = await sendEmail(payload);
+      if (!sent.ok && automatedCaller) await releaseSends(supabase, kind, [to], ref);
+      return sent;
+    };
+    const guardBlocked = () => json({ ok: true, results: { email: "skipped:send_guard_repeat" } });
 
     // ── Booking lifecycle notifications (approved / declined) ──────────────
     // Transactional & payment-critical: respect only the master email toggle,
@@ -1413,11 +1437,12 @@ serve(async (req) => {
         .select("headshot_url, height, weight, skills, bio, credits")
         .eq("id", to_user_id)
         .maybeSingle();
-      const sent = await sendEmail({
+      const sent = await guardedSend("activity_digest", "20 hours", "", {
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: "You're getting noticed on CastSlate",
         html: activityDigestHtml(firstName, pv, profileCompletionPct(checklist ?? {}), sl),
       });
+      if (sent.blocked) return guardBlocked();
       if (!sent.ok) {
         console.error("[send-notification-email] activity digest send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
@@ -1440,11 +1465,12 @@ serve(async (req) => {
       if (authErr || !authData?.user?.email) {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
-      const sent = await sendEmail({
+      const sent = await guardedSend("premium_welcome", "365 days", "", {
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: "Welcome to CastSlate Premium — here's how to get seen",
         html: premiumWelcomeHtml(firstName),
       });
+      if (sent.blocked) return guardBlocked();
       if (!sent.ok) {
         console.error("[send-notification-email] premium welcome send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
@@ -1470,11 +1496,12 @@ serve(async (req) => {
       if (authErr || !authData?.user?.email) {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
-      const sent = await sendEmail({
+      const sent = await guardedSend("posting_approved", "30 days", "", {
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: "You're approved to post castings on CastSlate",
         html: postingApprovedHtml(firstName, profile.company_name ?? null),
       });
+      if (sent.blocked) return guardBlocked();
       if (!sent.ok) {
         console.error("[send-notification-email] posting approved send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
@@ -1506,7 +1533,7 @@ serve(async (req) => {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
       const title = (c.title || "").trim() || "Your casting";
-      const sent = await sendEmail({
+      const sent = await guardedSend("casting_live", "365 days", String(casting_id), {
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: `Your casting is live: ${clampText(title, 60)}`,
         html: castingLiveHtml(firstName, {
@@ -1515,6 +1542,7 @@ serve(async (req) => {
           roles: Array.isArray((c as any).roles) ? (c as any).roles.length : 0,
         }),
       });
+      if (sent.blocked) return guardBlocked();
       if (!sent.ok) {
         console.error("[send-notification-email] casting live send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
@@ -1546,11 +1574,12 @@ serve(async (req) => {
       if (authErr || !authData?.user?.email) {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
-      const sent = await sendEmail({
+      const sent = await guardedSend("welcome", "365 days", "", {
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: isIndustry ? "Welcome to CastSlate — your casting account is ready" : "Welcome to CastSlate — let's get you cast 🎬",
         html: isIndustry ? cdWelcomeHtml(firstName) : newActorWelcomeHtml(firstName),
       });
+      if (sent.blocked) return guardBlocked();
       if (!sent.ok) {
         console.error("[send-notification-email] welcome send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });
@@ -1574,11 +1603,12 @@ serve(async (req) => {
       if (authErr || !authData?.user?.email) {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
-      const sent = await sendEmail({
+      const sent = await guardedSend("monthly_checkin", "20 days", "", {
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: "Your monthly CastSlate career note is ready",
         html: monthlyCheckinHtml(firstName, task?.trim() || undefined),
       });
+      if (sent.blocked) return guardBlocked();
       if (!sent.ok) {
         console.error("[send-notification-email] monthly check-in send error:", sent.err);
         return json({ ok: false, results: { email: `error:${sent.err}` } });

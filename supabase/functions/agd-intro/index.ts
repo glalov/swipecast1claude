@@ -26,6 +26,9 @@
 // FALSE because the unsubscribe link is a plain browser GET).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claimSends, releaseSends } from "../_shared/send-guard.ts";
+
+const GUARD_KIND = "agd_intro";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -240,14 +243,26 @@ Deno.serve(async (req) => {
   }
   if (!people.length) return res({ ok:true, sent:0, eligible:0, ny_hour:hourNow });
 
+  // Universal repeat-send guard: claim every address first; anyone already mailed
+  // in the last 365 days is dropped even if member_announce_logs failed to record them.
+  const claimed = await claimSends(sb, GUARD_KIND, people.map((p) => p.email), "365 days");
+  if (!claimed) return res({ ok:false, error:"send-guard claim failed; nothing sent" }, 500);
+  const guarded = people.filter((p) => claimed.has(p.email.toLowerCase()));
+  const blocked = people.length - guarded.length;
+  if (blocked) console.error(`agd-intro: send-guard blocked ${blocked} repeat recipient(s)`);
+
   let sent = 0, failed = 0;
-  for (let i = 0; i < people.length; i += 100) {
-    const chunk = people.slice(i, i + 100);
+  for (let i = 0; i < guarded.length; i += 100) {
+    const chunk = guarded.slice(i, i + 100);
     const r = await sendBatch(chunk.map((p) => ({
       email: p.email, subject: SUBJECT,
       html: introHtml(p.first_name && p.first_name !== "there" ? p.first_name : "there", `${UNSUB_BASE}?action=unsubscribe&uid=${p.id}`, p.has_headshot),
     })));
-    if (!r.ok) { failed += chunk.length; console.error("agd-intro batch failed:", r.err); continue; }
+    if (!r.ok) {
+      failed += chunk.length; console.error("agd-intro batch failed:", r.err);
+      await releaseSends(sb, GUARD_KIND, chunk.map((p) => p.email));
+      continue;
+    }
     // Stamp the once-only guard ONLY after Resend accepted the batch.
     const logRows = chunk.map((p, k) => ({
       announce_key: ANNOUNCE_KEY, user_id: p.id, email: p.email, variant: VARIANT, provider_id: r.ids[k] ?? null,
@@ -257,5 +272,5 @@ Deno.serve(async (req) => {
     if (logErr) console.error("agd-intro log failed (people WERE mailed):", logErr.message);
     sent += chunk.length;
   }
-  return res({ ok:true, sent, failed, eligible:people.length, ny_hour:hourNow });
+  return res({ ok:true, sent, failed, blocked, eligible:people.length, ny_hour:hourNow });
 });

@@ -21,6 +21,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claimSends, releaseSends } from "../_shared/send-guard.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -419,20 +420,31 @@ serve(async (req) => {
       outbox.push({ userId:p.id, email:p.email, subject:subjectFor(a.pct, first), html:buildEmail(first, a, p.id, stillFor(genderById[p.id])) });
     }
 
+    // Universal repeat-send guard: this email goes once per person, so the database
+    // refuses a second claim for 365 days even if day2_email_sent_at never gets written.
+    const GUARD_KIND = "day2_getnoticed";
+    const claimed = await claimSends(sb, GUARD_KIND, outbox.map((o)=>o.email), "365 days");
+    if (!claimed) return res({error:"send-guard claim failed; nothing sent"},500);
+    const blocked = outbox.length - outbox.filter((o)=>claimed.has(String(o.email).toLowerCase())).length;
+    if (blocked) console.error(`[day2] send-guard blocked ${blocked} repeat recipient(s)`);
+    const guarded = outbox.filter((o)=>claimed.has(String(o.email).toLowerCase()));
+
     const logs: Record<string,unknown>[] = [];
     const sentIds: string[] = [];
     let sent=0, failed=0;
     const BATCH=100;
-    for (let i=0;i<outbox.length;i+=BATCH) {
-      const group = outbox.slice(i,i+BATCH);
+    for (let i=0;i<guarded.length;i+=BATCH) {
+      const group = guarded.slice(i,i+BATCH);
       const results = await sendBatch(group.map((o)=>({ from:FROM_EMAIL, to:[o.email], replyTo:CONTACT_EMAIL, subject:o.subject, html:o.html,
         headers:{ "List-Unsubscribe":`<${UNSUB_BASE}?action=unsubscribe&uid=${o.userId}>`, "List-Unsubscribe-Post":"List-Unsubscribe=One-Click" } })));
+      const failedEmails: string[] = [];
       group.forEach((o,idx)=>{
         const r = results[idx];
         if (r?.ok) { sent++; sentIds.push(o.userId); logs.push({ user_id:o.userId, email:o.email, status:"sent", provider_message_id:r.id }); }
-        else { failed++; logs.push({ user_id:o.userId, email:o.email, status:"failed", error_message:r?.err }); }
+        else { failed++; failedEmails.push(o.email); logs.push({ user_id:o.userId, email:o.email, status:"failed", error_message:r?.err }); }
       });
-      if (i+BATCH<outbox.length) await new Promise((r)=>setTimeout(r,600));
+      await releaseSends(sb, GUARD_KIND, failedEmails);
+      if (i+BATCH<guarded.length) await new Promise((r)=>setTimeout(r,600));
     }
 
     for (let i=0;i<sentIds.length;i+=500) {
@@ -442,7 +454,7 @@ serve(async (req) => {
       try { await sb.from("day2_email_logs").insert(logs.slice(i,i+500)); } catch(e){ console.error("[day2] log insert failed",e); }
     }
 
-    const summary = { ok:true, sent, failed, total_eligible:rows.length };
+    const summary = { ok:true, sent, failed, blocked, total_eligible:rows.length };
     console.log("[day2-getnoticed] run complete", JSON.stringify(summary));
     return res(summary);
   } catch(e) {

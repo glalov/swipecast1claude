@@ -20,6 +20,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { claimSends, releaseSends } from "../_shared/send-guard.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -393,14 +394,29 @@ serve(async (req) => {
       outbox.push({ userId:c.user_id, email, step, subject:subjectFor(step,firstName), html });
     }
 
+    // Universal repeat-send guard: at most one win-back email per address every 6 days
+    // (the sequence is weekly by design), enforced by the database even if winback_logs
+    // ever fails to write. Single-user tests bypass it.
+    const GUARD_KIND = "winback";
+    let guarded = outbox;
+    if (!isDryTest) {
+      const claimed = await claimSends(sb, GUARD_KIND, outbox.map((o)=>o.email), "6 days");
+      if (!claimed) return res({error:"send-guard claim failed; nothing sent"},500);
+      guarded = outbox.filter((o)=>claimed.has(String(o.email).toLowerCase()));
+      const blocked = outbox.length - guarded.length;
+      if (blocked) { console.error(`[winback] send-guard blocked ${blocked} repeat recipient(s)`); skipped += blocked; skipReasons["send_guard_repeat"] = blocked; }
+    }
+
     const BATCH=100;
-    for (let i=0;i<outbox.length;i+=BATCH) {
-      const group = outbox.slice(i,i+BATCH);
+    for (let i=0;i<guarded.length;i+=BATCH) {
+      const group = guarded.slice(i,i+BATCH);
       const results = await sendBatch(group.map((o)=>({ to:[o.email], subject:o.subject, html:o.html, headers:{ "List-Unsubscribe":`<${UNSUB_BASE}?action=unsubscribe&uid=${o.userId}>`, "List-Unsubscribe-Post":"List-Unsubscribe=One-Click" } })));
+      const failedEmails:string[] = [];
       group.forEach((o,idx)=>{ const r=results[idx];
         if (r?.ok) { sent++; if(!isDryTest) logs.push({user_id:o.userId,email:o.email,step:o.step,status:"sent",provider_message_id:r.id}); }
-        else { failed++; if(!isDryTest) logs.push({user_id:o.userId,email:o.email,step:o.step,status:"failed",error_message:r?.err}); } });
-      if (i+BATCH<outbox.length) await new Promise((r)=>setTimeout(r,600));
+        else { failed++; failedEmails.push(o.email); if(!isDryTest) logs.push({user_id:o.userId,email:o.email,step:o.step,status:"failed",error_message:r?.err}); } });
+      if (!isDryTest) await releaseSends(sb, GUARD_KIND, failedEmails);
+      if (i+BATCH<guarded.length) await new Promise((r)=>setTimeout(r,600));
     }
 
     if (!isDryTest) { for (let i=0;i<logs.length;i+=500) { try { await sb.from("winback_logs").insert(logs.slice(i,i+500)); } catch(e){ console.error("[winback] log insert failed",e); } } }
