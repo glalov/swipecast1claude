@@ -24097,23 +24097,23 @@ const LANDING_SWIPE_DEMO=[
   // v4 (2026-09-25, owner's pick of three) = v3 with a +10% face-only midtone lift
   // (gamma .85 through a feathered ellipse on the face); background, hair, blazer untouched.
   {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v4.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
-  // Kira sits second, right after Nayara (2026-09-24), so one swipe shows the
-  // natural-headshot style. NOTE the image URL carries NO h=/fit=crop: the owner
-  // framed her against the ORIGINAL 3:2 photo in the fitter, and Pexels'
-  // server-side crop would re-frame the shot before object-position ever ran,
-  // throwing the crop away. w=1200 keeps the 3:2 source at retina size (86KB).
-  // Photo: Pexels #4668550 by Vlada Karpovich.
-  {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"https://images.pexels.com/photos/4668550/pexels-photo-4668550.jpeg?auto=compress&cs=tinysrgb&w=1200",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
+  // Order (owner-approved 2026-10-04): woman / man alternating from Nayara, with
+  // look-alikes kept apart and the older faces (46, 65, 38) spread through the deck.
   {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
-  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
-  {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
-  {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
+  // Kira's photo URL carries NO h=/fit=crop: the owner framed her against the
+  // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
+  // the shot before object-position ever ran, throwing the crop away. w=1200 keeps
+  // the 3:2 source at retina size (86KB). Photo: Pexels #4668550 by Vlada Karpovich.
+  {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"https://images.pexels.com/photos/4668550/pexels-photo-4668550.jpeg?auto=compress&cs=tinysrgb&w=1200",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
+  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
+  {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
+  {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
-  {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
   {id:3,name:"Matthew Caldwell",age:28,gender:"Male",height:"6'0\"",pos:"center 50%",img:"/assets/landing/matthew-caldwell.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
+  {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
 ];
 // Plays the entrance once per page load. Module-level so it survives in-app
 // navigation (Home → other page → Home doesn't replay), but resets on a real
