@@ -6,7 +6,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
   const DAY=86400000;
   const d=s=>{const x=String(s||"").slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(x)?new Date(x+"T12:00:00Z"):null;};
   const posted=L=>d(L._raw._postedAt)||d(L.created_at)||(()=>{const t=new Date();t.setUTCHours(12,0,0,0);return t;})();
-  const FN=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover)$/;
+  const FN=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover|Other)$/;
   const NARRATIVE=/^(Feature Film|Independent Film|Short Film|Student Film|TV Series|Streaming Series|Limited Series|Miniseries|TV Pilot|Web Series|Vertical Series|Theater|Off-Broadway Theater|Off-Off-Broadway Theater|Musical Theater|Animation|Video Game|Podcast \/ Audio Drama)$/;
   const isFnName=n=>/[A-Z]{2}/.test(String(n))&&/^[A-Z0-9][A-Z0-9 '’&\/.-]*( \([A-Z][a-z]+\))?$/.test(String(n));
   const isPersonName=n=>/^[A-Z][a-z'’.-]+( [A-Z]\.)? [A-Z][a-z'’-]+$/.test(String(n));
@@ -59,12 +59,16 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
   check(13,"r7_start_cluster","More than three listings share a shoot start date",null);
 
   // ── 3. Every role exists in the story ────────────────────────────────────
+  // Round 10: the rule as the owner now states it - a counterpart can be set
+  // up inside the role's own description ("keeps two kids calm"), by a
+  // possessive label ("Leonard's daughter"), and anyone on the payroll is
+  // someone a manager manages. Minors' guardian notes are not relationships.
   const PAIRS=[
-    [/\b(parent|mother|father|mom|dad|guardian|stepmother|stepfather)\b/i,/\b(child|children|kid|kids|son|daughter|baby|infant|toddler|teen|teenager|minor|pupil|student|patient)\b/i,"a child"],
+    [/\b(parent|mother|father|mom|dad|guardian|stepmother|stepfather)\b/i,/\b(child|children|kid|kids|son|daughter|baby|infant|toddler|teen|teenager|minor|pupil|student|patient|bride|groom)\b/i,"a child"],
     [/\b(son|daughter|stepson|stepdaughter)\b/i,/\b(parent|mother|father|mom|dad|guardian|grandmother|grandfather|grandparent)\b/i,"a parent"],
     [/\b(wife|husband|spouse|fiancée|fiancee|fiancé|fiance|newlywed|bride|groom)\b/i,/\b(wife|husband|spouse|fiancée|fiancee|fiancé|fiance|newlywed|bride|groom|partner|marriage|married|wedding)\b/i,"a spouse"],
     [/\b(brother|sister|sibling|twin)\b/i,/\b(brother|sister|sibling|twin)\b/i,"a sibling"],
-    [/\b(boss|supervisor|manager|foreman)\b/i,/\b(employee|worker|staff|staffer|assistant|intern|trainee|apprentice|crew|team|clerk|server|driver|technician|hand)\b/i,"someone who works for them"],
+    [/\b(boss|supervisor|manager|foreman)\b/i,/\b(employees?|workers?|staff|staffer|assistants?|interns?|trainees?|apprentices?|crew|team|clerks?|servers?|drivers?|technicians?|hands?|volunteers?|cashiers?|cooks?|nurses?|guards?|cleaners?|bartenders?|baristas?|mechanics?|tellers?|attendants?|porters?|dishwashers?|waiters?|waitress(es)?|movers?|couriers?|ushers?|janitors?|custodians?|coworkers?|colleagues?|new hire|pharmacists?|stockers?|housekeepers?|dispatchers?|operators?|engineers?|hosts?|line cooks?|bakers?|barbers?|stylists?|receptionists?|performers?|dancers?|actors?|cast|company members?)\b/i,"someone who works for them"],
     [/\b(caregiver|carer|home aide|caretaker)\b/i,/\b(patient|resident|client|elder|parent|mother|father|grandparent|child)\b/i,"the person they care for"]
   ];
   check(13,"r7_role_counterpart","A relationship role whose counterpart is nowhere in the cast or the summary",L=>{
@@ -73,11 +77,15 @@ module.exports=function register({check,addBoard,sentences,clean,famOf}){
     const slotOf=r=>(raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{})._slot||"";
     const syn=`${L.synopsis||""} ${L.tagline||""}`;
     const people=L.roles.filter(r=>!groupRole(L,r));
+    const noGuard=t=>String(t).replace(/\b(parent or guardian|guardian (required|present|on set|must)[^.]*)/gi," ");
     people.forEach(r=>{
-      const mine=`${slotOf(r)} ${r.description||""}`;
+      const slot=slotOf(r);
+      const mine=noGuard(`${slot} ${r.description||""}`);
+      const ownRest=noGuard(String(r.description||"").split(String(slot).replace(/^(the|a|an)\s+/i,"")||"\u0000").join(" "));
       PAIRS.forEach(([re,need,what])=>{
         if(!re.test(mine))return;
-        const ok=L.roles.some(o=>o.name!==r.name&&need.test(`${slotOf(o)} ${o.name||""} ${o.description||""}`))||need.test(syn)
+        const ok=L.roles.some(o=>o.name!==r.name&&need.test(`${slotOf(o)} ${o.name||""} ${o.description||""}`))||need.test(syn)||need.test(ownRest)
+          ||(/^[A-Z][a-z'’-]+['’]s\s/.test(slot)&&people.some(o=>o.name!==r.name&&slot.indexOf(String(o.name).split(/[ ,]/)[0])===0))
           ||(/\b(parent|mother|father|mom|dad|guardian)\b/i.test(mine)&&people.some(o=>o.name!==r.name&&parseInt(String(o.age_range).split("-")[1],10)<18));
         if(!ok)out.push({detail:`${r.name}: "${(mine.match(re)||[""])[0]}" with no ${what}`});
       });

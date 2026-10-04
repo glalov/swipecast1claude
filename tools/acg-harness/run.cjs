@@ -62,7 +62,7 @@ while(listings.length<N&&rounds<N){
     saved.schedule_note=(String(saved.schedule_note||"").match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[]).map(x=>x.trim()).filter(x=>!R8_TERSE.test(x)).join(" ");
     saved.synopsis=String(saved.synopsis).replace(/\b(Logline|Synopsis): /g,"$1 — ").replace(/\b(\w+) states: "([^"]*)"/g,(m,a,b)=>`${a} states — ${b}`);
     saved.title=String(saved.title).replace(/^Untitled /,"");
-    const FNT=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover)$/;
+    const FNT=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover|Other)$/;
     saved.roles.forEach((r,i)=>{const rr=roles[i]||{};if(rr._group||rr._job)return;if(FNT.test(saved.type))r.name=String(r.name).toUpperCase();else if(rr._person)r.name=rr._person;});
     listings.push(saved);
     if(ACG.seenRowsFor)ACG.seenRowsFor(raw).forEach(r=>seenRows.push(r));
@@ -111,7 +111,8 @@ const TYPE_WORDS={
   "Table Read":/table read/i,"Experimental Film":/experimental (film|short)/i,"Dance Project":/dance (film|piece|project|video|work)/i,"Performance Art":/performance(-| )art|performance piece/i,
   "Background / Extras":/background|extras/i,"Stand-In":/stand-in/i,"Body Double":/body double|double/i,"Stunts":/stunt/i,"Motion Capture":/motion[- ]capture|mocap/i,
   "Limited Series":/limited series/i,"Miniseries":/miniseries|mini-series/i,"Vertical Series":/vertical series|vertical drama|phone series/i,"Pilot Presentation":/pilot presentation|presentation pilot/i,
-  "Ad Campaign":/ad campaign|advertising campaign|\bcampaign\b/i
+  "Ad Campaign":/ad campaign|advertising campaign|\bcampaign\b/i,
+  "Other":/role-play|scenario|standardized patient/i
 };
 
 // ── Checks ──────────────────────────────────────────────────────────────────

@@ -81,7 +81,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
 
   // ── Part B: pay ───────────────────────────────────────────────────────────
   // Current published minimums (see V5_UNION in the generator for sources).
-  const MIN={"SAG-AFTRA":1283,"SAG-AFTRA Low Budget":834,"SAG-AFTRA Moderate Low Budget":449.05,"SAG-AFTRA Ultra Low Budget":256.60,"SAG-AFTRA New Media":256.60,"SAG-AFTRA Short Project Agreement":256.60,"SAG-AFTRA Commercial":822.30,"SAG-AFTRA Corporate/Educational":673,"SAG-AFTRA Interactive":1134.95};
+  const MIN={"SAG-AFTRA":1283,"SAG-AFTRA Low Budget":834,"SAG-AFTRA Moderate Low Budget":449.05,"SAG-AFTRA Ultra Low Budget":257,"SAG-AFTRA New Media":257,"SAG-AFTRA Short Project Agreement":257,"SAG-AFTRA Commercial":822.30,"SAG-AFTRA Corporate/Educational":673,"SAG-AFTRA Interactive":1134.95};
   check(9,"r3_union_minimum","Union listing below the agreement's current minimum (or an agreement with no verified rate)",L=>{
     const u=String(L.union_status||"");const out=[];
     if(!/^SAG-AFTRA|^AEA/.test(u))return out;
@@ -103,7 +103,7 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
   check(9,"r3_pay_repeat","Pay box wording (numbers ignored) or a pay sentence reused across listings",null);
 
   // ── Part C: dates ─────────────────────────────────────────────────────────
-  const LEN={"Commercial":[1,2],"Spec Commercial":[1,2],"Social Media Ad":[1,2],"Promo Video":[1,2],"Product Demo":[1,2],"Public Service Announcement":[1,2],"Ad Campaign":[1,2],"Branded Content":[1,2],"Influencer / UGC Content":[1,2],"Photo Shoot":[1,2],"Print Campaign":[1,2],"Modeling":[1,2],"Music Video":[1,2],"Short Film":[1,5],"Student Film":[1,4],"Proof of Concept":[1,3],"Pitch Trailer":[1,3],"Sizzle Reel":[1,3],"Web Series":[2,10],"Feature Film":[12,25],"Independent Film":[12,25],"TV Series":[10,30],"Streaming Series":[10,30],"Limited Series":[10,30],"Miniseries":[10,30],"Voiceover":[1,3],"Table Read":[1,1]};
+  const LEN={"Commercial":[1,2],"Spec Commercial":[1,2],"Social Media Ad":[1,2],"Promo Video":[1,2],"Product Demo":[1,2],"Public Service Announcement":[1,2],"Ad Campaign":[1,2],"Branded Content":[1,4],"Influencer / UGC Content":[1,2],"Photo Shoot":[1,2],"Print Campaign":[1,2],"Modeling":[1,2],"Music Video":[1,2],"Short Film":[1,5],"Student Film":[1,4],"Proof of Concept":[1,3],"Pitch Trailer":[1,3],"Sizzle Reel":[1,3],"Web Series":[2,10],"Feature Film":[12,25],"Independent Film":[12,25],"TV Series":[10,30],"Streaming Series":[10,30],"Limited Series":[10,30],"Miniseries":[10,30],"Voiceover":[1,3],"Table Read":[1,1]};
   check(9,"r3_shoot_length","Shoot length doesn't fit the project type",L=>{const b=LEN[L.type];if(!b)return[];const n=days(L);return n<b[0]||n>b[1]?[{detail:`${L.type}: ${n} days (want ${b[0]}–${b[1]})`}]:[];});
   check(9,"r3_stage_run","Theater rehearsal isn't 2–6 weeks plus a run",L=>{if(!/^(Theater|Off-Broadway Theater|Off-Off-Broadway Theater|Musical Theater)$/.test(L.type))return[];const p=plan(L);return p.weeks>=2&&p.weeks<=6&&p.perfs>=1?[]:[{detail:JSON.stringify({weeks:p.weeks,perfs:p.perfs})}];});
   check(9,"r3_window_fits","Shoot window doesn't fit the number of days (1-day shoot with a 7-day window and no 'between' note)",L=>{

@@ -5,12 +5,13 @@ module.exports=function register({check:check0,addBoard:addBoard0,real,sentences
   // Every round-8 check reads the listing as printed, not the legacy view.
   const check=(st,k,l,fn)=>check0(st,k,l,fn?(L=>fn(real(L))):null);
   const addBoard=(fn,labels)=>addBoard0((ls,add)=>fn(ls.map(real),add),labels);
-  const BRAND=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Product Demo|Corporate Video|Industrial \/ Training Video|Educational Video|Photo Shoot|Print Campaign|Modeling|Live Event|Promo Video|Ad Campaign|Public Service Announcement|Voiceover)$/;
+  const BRAND=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Product Demo|Corporate Video|Industrial \/ Training Video|Educational Video|Photo Shoot|Print Campaign|Modeling|Live Event|Promo Video|Ad Campaign|Public Service Announcement|Voiceover|Other)$/;
   const DOCU=/^(Documentary|Reality \/ Docu-Series|Lifestyle \/ Unscripted|Hosting \/ Presenter)$/;
   const JOB=/^(Background \/ Extras|Stand-In|Body Double|Stunts)$/;
-  const FN=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover)$/;
+  const FN=/^(Commercial|Spec Commercial|Branded Content|Social Media Ad|Influencer \/ UGC Content|Corporate Video|Industrial \/ Training Video|Educational Video|Product Demo|Public Service Announcement|Promo Video|Ad Campaign|Print Campaign|Photo Shoot|Modeling|Live Event|Background \/ Extras|Stand-In|Body Double|Stunts|Music Video|Voiceover|Other)$/;
   const kind=t=>BRAND.test(t)?"brand":DOCU.test(t)?"docu":JOB.test(t)?"job":"narr";
-  const FORMAT_WORD=/\b(Commercial|Ad|TVC|Content|Video|Videos|Short|Shoot|Campaign|UGC|Demo|Series|Photo|Print|Event|Activation|Promo|PSA|Announcement|Voiceover|Spot|Brand)\b/;
+  // Round 10: "Other" (role-play work) is titled "Role-Play Work" / "Scenario Actors".
+  const FORMAT_WORD=/\b(Commercial|Ad|TVC|Content|Video|Videos|Short|Shoot|Campaign|UGC|Demo|Series|Photo|Print|Event|Activation|Promo|PSA|Announcement|Voiceover|Spot|Brand|Role-Play|Actors)\b/;
   const POETIC=["Lobby Level","Present Tense","Long Way Home"];
   // Real brands / networks / streamers / trademarks (independent list).
   const REAL=/\b(Nike|Adidas|Coca-Cola|Pepsi|Starbucks|McDonald'?s|Burger King|Walmart|Costco|Home Depot|IKEA|Sephora|Maybelline|Gillette|Amazon|Google|YouTube|Facebook|Instagram|TikTok|Snapchat|Microsoft|Samsung|iPhone|Verizon|AT&T|T-Mobile|Netflix|Hulu|HBO|Disney|Pixar|Marvel|Paramount|Peacock|Showtime|NBC|CBS|ABC|CNN|ESPN|MTV|Spotify|Uber|Lyft|DoorDash|Airbnb|Marriott|Hilton|Toyota|Honda|Chevrolet|Tesla|BMW|Mercedes|Geico|State Farm|Allstate|Visa|Mastercard|PayPal|Budweiser|Heineken|Oreo|Doritos|Levi'?s|Gucci|Prada|Chanel|Peloton|FedEx|Lego|LEGO|Etsy|eBay|Zoom|Apple TV|Prime Video)\b/;
@@ -86,8 +87,9 @@ module.exports=function register({check:check0,addBoard:addBoard0,real,sentences
   });
 
   // ── Board level ───────────────────────────────────────────────────────────
-  const CAT={online:["Commercial","Branded Content","Ad Campaign","Spec Commercial","Public Service Announcement"],short:["Short Film"],tvc:["Commercial|tv"],photo:["Photo Shoot","Print Campaign","Modeling"],feature:["Feature Film","Independent Film"],social:["Social Media Ad","Influencer / UGC Content"],series:["Web Series","Vertical Series","TV Series","Streaming Series","TV Pilot"],corp:["Corporate Video","Industrial / Training Video"],demo:["Product Demo"],events:["Live Event","Promo Video"],stage:["Theater","Musical Theater","Off-Off-Broadway Theater"],music:["Music Video"],docu:["Documentary","Reality / Docu-Series"],student:["Student Film"],audio:["Voiceover","Animation","Podcast / Audio Drama","Video Game"]};
-  const WANT={online:25,short:12,tvc:9,photo:8,feature:8,social:8,series:5,corp:3,demo:3,events:3,stage:3,music:2,docu:3,student:3,audio:3,other:2};
+  // Round 10 (2026-10-04): the owner's groups per 100 replace the round-8 mix.
+  const CAT={narrative:["Feature Film","Independent Film","Short Film","Student Film","Experimental Film","Proof of Concept","Pitch Trailer","Sizzle Reel","TV Series","Streaming Series","TV Pilot","Limited Series","Miniseries","Pilot Presentation","Web Series","Vertical Series"],theater:["Theater","Off-Broadway Theater","Off-Off-Broadway Theater","Musical Theater","Workshop / Staged Reading","Table Read"],commercial:["Commercial","Commercial|tv","Spec Commercial","Ad Campaign","Social Media Ad","Influencer / UGC Content","Branded Content","Promo Video"],stills:["Photo Shoot","Print Campaign","Modeling"],voice:["Voiceover","Podcast / Audio Drama","Animation","Video Game","Motion Capture"],music:["Music Video"],corporate:["Corporate Video","Industrial / Training Video","Product Demo","Educational Video","Public Service Announcement"],docu:["Documentary","Reality / Docu-Series","Lifestyle / Unscripted","Hosting / Presenter","Live Event"]};
+  const WANT={narrative:50,theater:8,commercial:22,stills:6,voice:5,music:3,corporate:4,docu:2};
   const catOf=L=>{const k=L.type==="Commercial"&&/\bTV\b|\bTVC\b|Broadcast/.test(L.title)?"Commercial|tv":L.type;return Object.keys(CAT).find(c=>CAT[c].indexOf(k)>-1)||"other";};
   const PAYW={u200:10,b200:30,b500:25,b1000:20,b2500:8,ns:7};
   const band=L=>{if(/^Payment not specified/.test(L.pay))return "ns";const t=Math.max(0,...L.roles.map(r=>{const x=parseRoleRate(r.pay);return x?x.rate_amount:0;}));return !t||t<200?"u200":t<500?"b200":t<1000?"b500":t<2500?"b1000":"b2500";};
