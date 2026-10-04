@@ -211,8 +211,11 @@ SITE = "https://www.castslate.com"
 # Keep this route-scoped — preloading the studio strip on all 18 routes would
 # spend the budget on pages that never show it.
 STUDIO_LOGOS = ["warner", "universal", "disney", "sony", "paramount", "marvel"]
+CDX_STUDIO_LOGOS = ["netflix", "hbo", "appletv", "primevideo", "disneyplus", "nbc"]
 ROUTE_PRELOADS = {
     "/agency-directory": [(f"/logos/{n}.svg", "image") for n in STUDIO_LOGOS],
+    "/casting-directory": [(f"/logos/{n}.svg", "image") for n in CDX_STUDIO_LOGOS]
+                        + [(f"/assets/cdx-cards/cdx-card-{i}.jpg", "image") for i in (1, 2, 3)],
 }
 
 def route_preload_tags(path):
@@ -941,6 +944,7 @@ ROUTES = [
     ("privacy.html",          "/privacy",         "Privacy Policy | CastSlate", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
     ("manager-mode.html",     "/manager-mode",    "Manager Mode — Career Check-ins for Actors | CastSlate", "CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
     ("agency-directory.html", "/agency-directory", "Talent Agency & Management Directory \u2014 650+ Agencies in LA & NYC", "CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."),
+    ("casting-directory.html", "/casting-directory", "Casting Companies Directory \u2014 Active Casting Offices in LA & NYC", "CastSlate's Premium, hand-checked directory of active casting offices in Los Angeles and New York: each office's own submission policy, website and mailing address, with the offices that accept headshots listed first."),
     ("tapelink.html",         "/tapelink",        "TapeLink: Self-Tape Auditions Built Into Casting", "TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."),
     ("login.html", "/login", "Sign In | CastSlate", "Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."),
     ("register-talent.html", "/register-talent", "Create Your Free Actor Profile | CastSlate", "Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."),

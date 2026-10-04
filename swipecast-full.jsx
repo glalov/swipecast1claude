@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $10.75/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more.',
@@ -335,7 +335,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium (desde $10.75/mes) para postulaciones ilimitadas y más.',
@@ -2949,6 +2949,28 @@ body.sheet-push .b2t-cube{display:none;}
   .tad-donts{grid-template-columns:1fr;}
   .tad-mlitem{grid-template-columns:26px 1fr;}
 }
+/* ── Casting Companies Directory additions (reuses the .tad-* sheet) ── */
+.cdx-nosub{background:rgba(214,59,59,.08);color:#9B2C2C;}
+.tad-row.cdx-dim{opacity:.72;}
+.cdx-ok{color:#146B31;letter-spacing:.04em;margin-left:6px;}
+.cdx-unc{color:#9A5B0E;letter-spacing:.04em;margin-left:6px;}
+.cdx-an{font-size:11.5px;font-weight:700;color:#8a5210;background:rgba(232,144,42,.1);border-radius:6px;padding:4px 8px;width:fit-content;}
+.cdx-sizecard{display:flex;flex-direction:column;min-width:0;}
+.cdx-sample{position:relative;width:100%;min-width:0;margin:0 0 16px;overflow:hidden;border-radius:10px;filter:drop-shadow(0 10px 22px rgba(26,26,46,.13));}
+.cdx-chk{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--t2);cursor:pointer;user-select:none;}
+/* ── Nav "Directories" dropdown ── */
+.nav-links span.nav-dd{position:relative;display:inline-flex;align-items:center;}
+.nav-links span.nav-dd:focus{outline:none;}
+.nav-ddm{display:block;position:absolute;top:100%;left:50%;transform:translateX(-50%);padding-top:10px;z-index:60;width:330px;}
+.nav-ddm::before{content:"";position:absolute;top:10px;left:0;right:0;bottom:0;background:#fff;border:1px solid var(--bdr);border-radius:14px;box-shadow:0 18px 40px -14px rgba(26,26,46,.35);}
+.nav-ddm button{position:relative;display:grid;grid-template-columns:34px 1fr;column-gap:11px;align-items:center;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:10px 12px;margin:0;cursor:pointer;font-family:inherit;color:var(--t1);}
+.nav-ddm button:first-child{margin-top:6px;}.nav-ddm button:last-child{margin-bottom:6px;}
+.nav-ddm button:hover,.nav-ddm button.on{background:rgba(232,144,42,.1);}
+.nav-ddm .ic{grid-row:span 2;width:34px;height:34px;border-radius:9px;background:#1A1A2E;color:#F0B860;display:flex;align-items:center;justify-content:center;font-style:normal;}
+.nav-ddm b{font-size:13.5px;font-weight:800;color:#111114;}
+/* "New" tag on the Casting Directory (launch weeks only, remove the two <em className="nav-new">). */
+.nav-new{display:inline-block;vertical-align:2px;margin-left:7px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1;padding:3px 6px;border-radius:5px;background:#F0B860;color:#1A1A2E;}
+.nav-ddm small{font-size:11.5px;font-weight:500;color:var(--t3);margin-top:1px;}
 .success-msg .check{width:64px;height:64px;border-radius:50%;background:rgba(27,135,62,0.08);color:var(--grn);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
 .success-msg h3{font-size:22px;font-weight:800;margin-bottom:8px;}
 .success-msg p{color:var(--t2);font-size:14px;}
@@ -7127,6 +7149,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="manager-mode">{t('footer.managerMode')}</L>
             <L to="agency-directory">Agencies Directory</L>
+            <L to="casting-directory">Casting Directory</L>
             {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="resources">{t('footer.resources')}</L>
           </div>
@@ -10469,7 +10492,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           </div>
         </div>
         <div><div className="agd-phone"><div className="agd-notch"/><div className="agd-scr">
-          <div className="top"><img alt="" src="/assets/agd-cards/agd-phone-headshot.jpg"/><div className="tg">▶ Slate video · 0:32</div></div>
+          <div className="top"><img alt="" src="/assets/agd-cards/agd-phone-headshot.jpg"/><div className="tg">▶ Slate video · 0:07</div></div>
           <div className="info">
             <h6>Your profile</h6>
             <div className="mt">Opens the moment they scan your card</div>
@@ -10506,7 +10529,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
       </section>
       <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">
         <h2 className="agd-h2">The list opens the moment you upgrade.</h2>
-        <p>650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York — plus your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
+        <p>650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York, plus {CASTING_OFFICES.length} active casting offices, your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $17.99/mo"}</button>
         <div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>
       </div></section>
@@ -16295,9 +16318,10 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const [tier,setTier]=useState("all");
   const [city,setCity]=useState("all");
   const [copied,setCopied]=useState(null);
-  const readSet=(k)=>{try{return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}catch(_){return new Set();}};
-  const [picked,setPicked]=useState(()=>readSet(TAD_PICK_KEY));
-  const [sent,setSent]=useState(()=>readSet(TAD_SENT_KEY));
+  // Picks live in localStorage and are shared with the Casting Companies Directory's
+  // mailing list (see SharedMailList) — useNameSet keeps both sheets in sync.
+  const [picked,togglePick]=useNameSet(TAD_PICK_KEY);
+  const [cdPicked]=useNameSet(CDX_PICK_KEY);
 
   useEffect(()=>{
     if(!open)return;
@@ -16344,91 +16368,9 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     });
   },[q,tier,city]);
 
-  const toggleIn=(setter,key)=>(name)=>setter(prev=>{
-    const next=new Set(prev);
-    next.has(name)?next.delete(name):next.add(name);
-    try{localStorage.setItem(key,JSON.stringify([...next]));}catch(_){}
-    return next;
-  });
-  const togglePick=toggleIn(setPicked,TAD_PICK_KEY);
-  const toggleSent=toggleIn(setSent,TAD_SENT_KEY);
-
   const copyText=async(text,key)=>{
     try{await navigator.clipboard.writeText(text);setCopied(key);setTimeout(()=>setCopied(null),1400);}catch(_){}
   };
-  const myList=TALENT_AGENCIES.filter(a=>picked.has(a.n));
-  const copyAll=()=>{
-    const txt=myList.filter(a=>a.a.length).map(a=>a.n+"\n"+a.a.map(x=>x[1]).join("\n")).join("\n\n");
-    if(txt)copyText(txt,"__all");
-  };
-
-  // Print the mailing list ONLY. window.print() would print the whole dashboard behind
-  // the modal, so we render a clean standalone document into a hidden iframe instead.
-  const printList=()=>{
-    const esc=(v)=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-    const today=new Date().toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
-    const rows=myList.map(a=>{
-      const addr=a.a.length
-        ? a.a.map(x=>'<div class="ln"><span>'+esc(x[0])+'</span>'+esc(x[1])+'</div>').join("")
-        : '<div class="pend">Address withheld — we are re-confirming this one. Check the directory before sending.</div>';
-      const tags=[a.sag?"SAG-AFTRA franchised":"",a.pc?"Accepts postcards":""].filter(Boolean)
-        .map(t=>'<span class="tag">'+esc(t)+'</span>').join("");
-      return '<div class="item'+(sent.has(a.n)?" done":"")+'">'
-        +'<div class="box">'+(sent.has(a.n)?"&#10003;":"")+'</div>'
-        +'<div class="body"><h3>'+esc(a.n)+'</h3>'
-        +(tags?'<div class="tags">'+tags+'</div>':"")
-        +addr
-        +(sent.has(a.n)?'<div class="sent">Sent</div>':'<div class="todo">Not sent yet</div>')
-        +'</div></div>';
-    }).join("");
-    const doc='<!DOCTYPE html><html><head><meta charset="utf-8"><title>My Agency Mailing List</title><style>'
-      +'@page{margin:16mm;}'
-      +'*{box-sizing:border-box;}'
-      +'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#1A1A2E;font-size:12pt;}'
-      +'header{border-bottom:2px solid #1A1A2E;padding-bottom:10px;margin-bottom:18px;}'
-      +'h1{margin:0 0 4px;font-size:19pt;letter-spacing:-.3px;}'
-      +'header p{margin:0;font-size:9.5pt;color:#5A5A72;}'
-      +'.summary{font-size:10pt;color:#5A5A72;margin:0 0 16px;}'
-      +'.item{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #E5DFD2;page-break-inside:avoid;break-inside:avoid;}'
-      +'.item.done{color:#6b6b7d;}'
-      +'.box{width:15px;height:15px;border:1.5px solid #1A1A2E;border-radius:3px;flex:0 0 auto;margin-top:2px;text-align:center;line-height:13px;font-size:11px;}'
-      +'.body{flex:1;}'
-      +'h3{margin:0 0 3px;font-size:12.5pt;}'
-      +'.tags{margin:0 0 4px;}'
-      +'.tag{display:inline-block;font-size:7.5pt;font-weight:700;border:1px solid #C9C2B2;border-radius:3px;padding:1px 5px;margin-right:5px;color:#5A5A72;}'
-      +'.ln{font-size:10.5pt;line-height:1.45;margin-bottom:3px;}'
-      +'.ln span{display:block;font-size:7.5pt;letter-spacing:.08em;text-transform:uppercase;color:#8E8EA0;}'
-      +'.pend{font-size:10pt;font-style:italic;color:#8E8EA0;}'
-      +'.sent{font-size:9pt;font-weight:700;color:#146B31;margin-top:3px;}'
-      +'.todo{font-size:9pt;color:#8E8EA0;margin-top:3px;}'
-      +'footer{margin-top:20px;padding-top:10px;border-top:1px solid #E5DFD2;font-size:9pt;color:#5A5A72;line-height:1.5;}'
-      +'</style></head><body>'
-      +'<header><h1>My Agency Mailing List</h1>'
-      +'<p>CastSlate &middot; '+esc(today)+'</p></header>'
-      +'<p class="summary">'+myList.length+' '+(myList.length===1?"agency":"agencies")+' &middot; '
-      +myList.filter(a=>sent.has(a.n)).length+' sent &middot; '+myList.filter(a=>!sent.has(a.n)).length+' still to go</p>'
-      +rows
-      +'<footer><strong>One at a time.</strong> Five letters to agencies you actually researched will beat forty to everyone on the list. '
-      +'Write a short handwritten note on the back of your CastSlate card &mdash; one or two sentences, no biography.</footer>'
-      +'</body></html>';
-    const frame=document.createElement("iframe");
-    frame.setAttribute("aria-hidden","true");
-    frame.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
-    document.body.appendChild(frame);
-    const cleanup=()=>{try{document.body.removeChild(frame);}catch(_){}};
-    frame.onload=()=>{
-      try{
-        const w=frame.contentWindow;
-        w.focus();
-        w.onafterprint=cleanup;
-        w.print();
-        setTimeout(cleanup,60000);
-      }catch(_){cleanup();}
-    };
-    const d=frame.contentWindow.document;
-    d.open();d.write(doc);d.close();
-  };
-
   const row=(a)=>{
     const sub=TAD_SUB[a.s];
     // 305 of these entries have no website on file (the SAG-franchised offices, plus the
@@ -16530,7 +16472,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
             <div className="tad-tabs">
               <button className={tab==="agencies"?"on":""} onClick={()=>setTab("agencies")}>Companies <span className="pill">{counts.all}</span></button>
               <button className={tab==="tips"?"on":""} onClick={()=>setTab("tips")}>Tips &amp; Tricks <span className="pill">{counts.tips}</span></button>
-              <button className={tab==="list"?"on":""} onClick={()=>setTab("list")}>My Mailing List <span className="pill">{picked.size}</span></button>
+              <button className={tab==="list"?"on":""} onClick={()=>setTab("list")}>My Mailing List <span className="pill">{picked.size+cdPicked.size}</span></button>
             </div>
 
             {tab==="agencies"&&<>
@@ -16608,44 +16550,741 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
             {tab==="list"&&(!isPremium
               ? lockPane("Your mailing list is a Premium feature",
                   "Tick the agencies you want to write to and CastSlate keeps the list, the addresses and a record of who you've already sent to.")
-              : !myList.length
-                ? <div className="tad-mlempty">
-                    <div style={{marginBottom:12}}><Ico n="mail" s={32}/></div>
-                    <h4>Nothing on your list yet</h4>
-                    <p>Go to the <b>Agencies</b> tab and hit <b>+ Add to mailing list</b> on any agency marked <b>Mail OK</b>. They'll collect here with their addresses, so you can write them all in one sitting and tick them off as they go out.</p>
-                  </div>
-                : <>
-                  <div className="tad-mlhead">
-                    <div>
-                      <b>{myList.length} {myList.length===1?"agency":"agencies"} on your list</b><br/>
-                      <span>{myList.filter(a=>sent.has(a.n)).length} sent · {myList.filter(a=>!sent.has(a.n)).length} still to go</span>
-                    </div>
-                    <span style={{flex:1}}/>
-                    <button className="tad-b" onClick={copyAll}>{copied==="__all"?"Copied":"Copy all addresses"}</button>
-                    <button className="btn-p" style={{padding:"11px 18px",fontSize:12.5}} onClick={printList}>Print my list</button>
-                  </div>
-                  {myList.map(a=>(
-                    <div className={"tad-mlitem"+(sent.has(a.n)?" done":"")} key={a.n}>
-                      <div className={"tad-mlcb"+(sent.has(a.n)?" on":"")} onClick={()=>toggleSent(a.n)}>
-                        {sent.has(a.n)&&<Ico n="check" s={13}/>}
-                      </div>
-                      <div>
-                        <h4>{a.n}</h4>
-                        {a.a.length
-                          ? a.a.map(x=><div className="ad" key={x[0]}>{x[1]}</div>)
-                          : <div className="ad" style={{fontStyle:"italic",color:"var(--t3)"}}>Address withheld — we're re-confirming this one. Check the directory before sending.</div>}
-                        {a.pc?<div className="sentmark">Accepts postcards — your card can go on its own</div>:null}
-                        {sent.has(a.n)&&<div className="sentmark">Marked as sent</div>}
-                      </div>
-                      <button className="tad-b" onClick={()=>togglePick(a.n)}>Remove</button>
-                    </div>
-                  ))}
-                  <div className="tad-fn"><b>One at a time.</b> Five letters to agencies you actually researched will beat forty to everyone on the list. See Tip 04.</div>
-                </>)}
+              : <SharedMailList emptyHint={<>Go to the <b>Agencies</b> tab and hit <b>+ Add to mailing list</b> on any agency marked <b>Mail OK</b>.</>}/>)}
           </div>
       </div>
     </>,document.body)}
   </>);
+}
+
+// ═══════════════════════════════════════════
+// CASTING COMPANIES DIRECTORY (premium dashboard card + slide-in sheet)
+// Sister to the Talent Agency Directory: same card, same sheet, same toolbar.
+// Source, Oct 2026: IMDbPro casting companies in LA + NY, cut to real casting
+// offices (no extras/background, no studios/platforms/agencies) and to offices
+// with recent evidence of work (IMDbPro credits, ProductionList, Backstage,
+// own site). p = submission policy as the office publishes it (Backstage):
+// mail | both | email | web | inv | other | agents | no | "" (not published).
+// av = address status: v confirmed by the office's own site or ProductionList
+// 2026 · u IMDbPro only, shown as "Not yet confirmed" · x sources disagree,
+// address withheld · n none on file. an = a note shown under the address.
+// When re-checking, change av only on evidence — never flip u to v by eye.
+// ═══════════════════════════════════════════
+const CASTING_OFFICES=[
+{"n":"Amy Gossels Casting","c":["NY"],"w":"amygosselscasting.com","a":[["New York","175 E 74th St, 5F, New York, NY 10021"]],"av":"v","an":"","p":"mail","pt":"Headshot/resume by mail only. Union and nonunion. No drop-offs.","st":"active"},
+{"n":"Automatic Sweat","c":["LA"],"w":"automaticsweat.com","a":[["Los Angeles","2656 S La Cienega Blvd, Los Angeles, CA 90034"]],"av":"v","an":"Moved — IMDbPro still lists the old Wilshire office","p":"mail","pt":"Union only. Accepts headshot/resume/demo reel by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Barden/Schnee Casting","c":["NY","LA"],"w":"bardenschnee.com","a":[["Los Angeles","5068 Packard St, Los Angeles, CA 90019"]],"av":"v","an":"LA office moved; New York address withheld until confirmed","p":"mail","pt":"Accepts headshot/resume by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Jeff Hardwick Casting","c":["LA"],"w":"jeffhardwickcasting.com","a":[["Los Angeles","3940 Laurel Canyon Blvd, Ste 1158, Studio City, CA 91604"]],"av":"v","an":"","p":"mail","pt":"Union and nonunion. Accepts headshot/resume/demo reel by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Judy Keller Casting","c":["NY"],"w":"judykellercasting.com","a":[["New York","230 East 48th Street, PHS, New York, NY 10017"]],"av":"v","an":"Moved — IMDbPro still lists W 38th St","p":"both","pt":"Accepts headshot/resume by mail or email. No calls. No drop-offs.","st":"likely"},
+{"n":"Mark Teschner Casting","c":["LA"],"w":"markteschner.com","a":[["Los Angeles","4151 Prospect Ave, Los Angeles, CA 90027"]],"av":"v","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Morman Boling Casting","c":["LA"],"w":"mormanbolingcasting.com","a":[["Los Angeles","5455 Wilshire Blvd, Suite 1610, Los Angeles, CA 90036"]],"av":"v","an":"Moved — IMDbPro still lists the old West Hollywood office","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Calleri Jensen Davis","c":["NY"],"w":"callerijensendavis.com","a":[["New York","320 7th Avenue, #155, Brooklyn, NY 11215"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"likely"},
+{"n":"Carol Hanzel Casting","c":["NY"],"w":"carolhanzelcasting.com","a":[["New York","244 Fifth Ave., 2nd Fl. # 2067, New York, NY 10001"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"likely"},
+{"n":"Orpheus Casting Group","c":["NY"],"w":"orpheusgroupnyc.blogspot.com","a":[["New York office","1600 Broadway, Ste 410, New York, NY 10002"],["New York office","630 Ninth Ave., Ste. 411, New York, NY 10036"]],"av":"u","an":"","p":"both","pt":"Accepts headshot/resume by mail or email. No calls. No drop-offs.","st":"likely"},
+{"n":"Paladino Casting","c":["NY"],"w":"paladinocasting.com","a":[["New York","313 Church Street, 2nd Floor, New York, NY 10013"]],"av":"u","an":"","p":"both","pt":"Union and nonunion. Accepts headshot/resume by mail or email, email preferred. Accepts postcards and invitations. No calls. No drop-offs.","st":"active"},
+{"n":"Sanford Casting","c":["LA"],"w":"sanfordcasting.com","a":[["Los Angeles","645 W. 9th St., #507, Los Angeles, CA 90015"]],"av":"u","an":"","p":"both","pt":"Accepts headshot/resume by mail or email. No calls. No drop-offs.","st":"active"},
+{"n":"Stark Naked Productions","c":["NY"],"w":"starknakedproductions.com","a":[["New York","99-32 66th Road, #5N, New York, NY 11374"]],"av":"u","an":"","p":"both","pt":"Union and nonunion. Accepts headshot/resume by email or mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Susan Johnston Casting","c":["LA"],"w":"susanjohnstoncasting.com","a":[["Los Angeles","2355 Westwood Blvd, #381, Los Angeles, CA 90064"]],"av":"u","an":"","p":"both","pt":"Submissions accepted through email only. No mail. No calls. No drop-offs.","st":"active"},
+{"n":"The Telsey Office","c":["NY"],"w":"thetelseyoffice.com","a":[["New York","322 W 52nd Street, Box 2282, New York, NY 10019"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. Additional submission options may be available on a project to project basis. Accepts postcards and invitations. No calls. No drop-offs.","st":"active"},
+{"n":"Casting by Howard Meltzer","c":["LA"],"w":"castingbyhowardmeltzer.com","a":[],"av":"x","an":"Sources disagree on the building number","p":"mail","pt":"Accepts headshot/resume by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Michael Cassara Casting","c":["NY"],"w":"michaelcassara.net","a":[],"av":"n","an":"","p":"both","pt":"Union and nonunion. Accepts headshot/resume/demo reel by mail or email. Attends showcases. No calls. No drop-offs.","st":"active"},
+{"n":"Avy Kaufman Casting","c":["NY"],"w":"","a":[["New York","180 Varick Street, Suite 1604, New York, NY 10014"]],"av":"v","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Fern Champion Casting","c":["LA"],"w":"","a":[["Los Angeles","11050 Santa Monica Blvd, Los Angeles, CA 90025"]],"av":"v","an":"","p":"mail","pt":"Accepts headshot/resume by mail for specific roles only. No calls. No drop-offs.","st":"active"},
+{"n":"Firefly Casting","c":["LA"],"w":"","a":[["Los Angeles","6525 Sunset Boulevard, Suite 706, Los Angeles, CA 90028"]],"av":"v","an":"","p":"mail","pt":"Accepts headshot/resume/demo reel by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Sarah Finn Co.","c":["LA"],"w":"","a":[["Los Angeles","588 N Larchmont Blvd., Los Angeles, CA 90004"]],"av":"v","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Blanca Valdez Casting","c":["LA"],"w":"","a":[["Los Angeles","1001 N Poinsettia Pl, West Hollywood, CA 90046"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Carol Lefko Casting","c":["LA"],"w":"","a":[["Los Angeles","100 S. Doheny Drive #406, Los Angeles, CA 90048"]],"av":"u","an":"","p":"mail","pt":"Union only. Accepts headshot/resume by mail only. No calls.","st":"active"},
+{"n":"Cindi Rush Casting","c":["NY"],"w":"","a":[["New York","20 W 20th St, Ste 300, New York, NY 10011"]],"av":"u","an":"","p":"both","pt":"Accepts headshot/resume by mail or email. No drop-offs.","st":"active"},
+{"n":"Debra Zane Casting","c":["LA"],"w":"","a":[["Los Angeles","325 N. Larchmont Blvd., #308, Los Angeles, CA 90004"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume/demo reel by mail. No calls. No drop-offs.","st":"active"},
+{"n":"GO Casting","c":["LA"],"w":"","a":[["Los Angeles","6464 Sunset Blvd, Ste 970, Los Angeles, CA 90028"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Greenstein / Daniel Casting","c":["LA"],"w":"","a":[["Los Angeles","1030 Cole Avenue, Los Angeles, CA 90038"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Heidi Levitt Casting","c":["LA"],"w":"","a":[["Los Angeles","717 N. Cahuenga Blvd, Unit B1, Los Angeles, CA 90038"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Jeff Greenberg Casting","c":["LA"],"w":"","a":[["Los Angeles","10201 W Pico Blvd, Bldg 226, Room 115, Los Angeles, CA 90035"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Megan Foley Casting","c":["LA"],"w":"","a":[["Los Angeles","The Foley Marra Company, 11240 W. Magnolia, North Hllywood, CA 91601"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Wendy O'Brien Casting","c":["LA"],"w":"","a":[["Los Angeles","2233 Barry Ave, Los Angeles, CA 90064"]],"av":"u","an":"","p":"mail","pt":"Accepts headshot/resume by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Allison Jones Casting","c":["LA"],"w":"","a":[],"av":"x","an":"Sources disagree on the current address","p":"mail","pt":"Accepts Headshot/resume by mail. No calls. No drop-offs.","st":"active"},
+{"n":"Eyde Belasco Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No calls. No drop-offs.","st":"active"},
+{"n":"Lisa Miller Katz Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"mail","pt":"Accepts headshot/resume by mail only. No drop-offs.","st":"active"},
+{"n":"Middleton Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"mail","pt":"Headshot/resume by mail only. No calls. No drop-offs. Interviews by appointment only.","st":"active"},
+{"n":"Pam Dixon Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"mail","pt":"Accepts headshot/resume by mail. No calls.","st":"active"},
+{"n":"Adrienne Stern Casting","c":["NY"],"w":"adriennestern.com","a":[["New York","PO Box 1037, New York, NY 10028"]],"av":"v","an":"","p":"email","pt":"Headshot/resume by email only.","st":"active"},
+{"n":"Barbara McNamara Casting","c":["NY"],"w":"barbmcasting.com","a":[["New York","105 West 86th Street, #333, New York, NY 10024"]],"av":"v","an":"","p":"web","pt":"Union and nonunion. Accepts headshot/resume/demo reel by mail or submit through website. Accepts postcards and invitations. No calls. No drop-offs.","st":"active"},
+{"n":"Caroline Sinclair Casting","c":["NY","LA"],"w":"carolinesinclaircasting.com","a":[["New York office","720 Greenwich Street, Suite 7J, New York, NY 10014"],["Los Angeles office","Casting Society Of America, 1149 N Gower St Ste 110, Los Angeles, CA 90038"]],"av":"u","an":"","p":"email","pt":"Accepts headshot/resume by email only. No calls. No drop-offs.","st":"active"},
+{"n":"Gotham Casting","c":["NY"],"w":"gothamcasting.com","a":[["New York","251 W 39th Street, New York, NY 10018"]],"av":"u","an":"","p":"web","pt":"See website for submission instructions.","st":"likely"},
+{"n":"Henry Jaderlund Casting","c":["NY"],"w":"jaderlundcasting.com","a":[["New York office","Times Square, 1501 Broadway, Manhattan, New York City, NY 10036-5601"],["New York office","SoHo, 101 Avenue of the Americas, New York, NY 10013"]],"av":"u","an":"","p":"web","pt":"Submissions accepted by website only. Mailed submissions not accepted. No drop-offs.","st":"active"},
+{"n":"Laurie Records Casting","c":["LA"],"w":"laurierecordscasting.com","a":[["Los Angeles","200 South La Brea, 2nd Floor, Los Angeles, CA 90036"]],"av":"u","an":"","p":"email","pt":"Headshot/resume by email only. No calls. No drop-offs.","st":"likely"},
+{"n":"Amerifilm Casting","c":["NY"],"w":"amerifilmcasting.com","a":[],"av":"x","an":"Sources disagree on the current address","p":"email","pt":"Union and nonunion. Headshot/resume/demo reel by email. No calls. No drop-offs.","st":"active"},
+{"n":"Ken Lazer Casting","c":["NY"],"w":"kenlazercasting.com","a":[],"av":"n","an":"","p":"web","pt":"See website for submission details. No calls. No drop-offs.","st":"likely"},
+{"n":"Terry Berland Casting","c":["LA"],"w":"berlandcasting.com","a":[],"av":"x","an":"Sources disagree on the current address","p":"email","pt":"Accepts headshot/resume by email. No calls. No drop-offs.","st":"active"},
+{"n":"Wulf Casting","c":["NY"],"w":"wulfcasting.com","a":[],"av":"n","an":"","p":"email","pt":"Electronically to submissions email only, include name and current photos.","st":"likely"},
+{"n":"Jonathan Strauss Casting","c":["NY"],"w":"","a":[["New York","Chelsea Piers, Pier 62, Room 304, New York, NY 10011"]],"av":"v","an":"","p":"email","pt":"Headshot/resume by email only.","st":"active"},
+{"n":"Ivy Isenberg Casting","c":["LA"],"w":"","a":[["Los Angeles","444 N Larchmont Blvd, 206, Los Angeles, CA 90004"]],"av":"u","an":"","p":"email","pt":"Accepts headshot/resume by email. No calls. No drop-offs.","st":"active"},
+{"n":"Mark Sikes Casting","c":["LA"],"w":"","a":[["Los Angeles","8909 24th St, Los Angeles, CA 90034"]],"av":"u","an":"","p":"email","pt":"Accepts headshot/resume/demo reel by email only. No calls. No drop-offs.","st":"likely"},
+{"n":"Maura Fay Group","c":["LA"],"w":"","a":[["Los Angeles","1640 Fifth Ave., Suite 205, Santa Monica, CA 90401"]],"av":"u","an":"","p":"web","pt":"See website. Workshops occasionally offered.","st":"active"},
+{"n":"Melissa Skoff Casting","c":["LA"],"w":"","a":[["Los Angeles office","10107 Camarillo St, North Hollywood, CA 91601"],["Los Angeles office","11684 Ventura Blvd., Ste. 5141, Studio City, CA 91604"]],"av":"u","an":"","p":"email","pt":"Photos and resumes by email or call office. Accepts postcards and invitations. 8 years and older. Calls accepted. No drop-offs.","st":"likely"},
+{"n":"DMC Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"email","pt":"Accepts headshot/resume by email. Accepts postcards and invitations. No calls. No drop-offs.","st":"active"},
+{"n":"Dream Big Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"email","pt":"Accepts invitations by email. No calls. No drop-offs.","st":"active"},
+{"n":"Eve Battaglia Casting","c":["NY"],"w":"","a":[],"av":"n","an":"","p":"email","pt":"Headshot/resume by email. No drop-offs.","st":"active"},
+{"n":"Metal Flowers Media","c":["LA"],"w":"metalflowersmedia.com","a":[["Los Angeles","6715 Hollywood Boulevard, Suite 103, Hollywood, CA 90028"]],"av":"v","an":"","p":"","pt":"","st":"active"},
+{"n":"Binder Casting","c":["NY"],"w":"castingbyarc.com","a":[["New York","34-01 38th Avenue, Suite 302, New York, NY 11101"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Currently Casting","c":["LA"],"w":"currentlycasting.net","a":[["Los Angeles","13636 Ventura Blvd, Suite 411, Sherman Oaks, CA 91423"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Envision Casting","c":["LA"],"w":"envisioncasting.com","a":[["Los Angeles","7083 Hollywood Blvd, Los Angeles, CA 90028"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Findley Davidson Casting","c":["NY"],"w":"findleydavidsoncasting.com","a":[["New York","195 Chrystie Street, New York, NY 10002"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Gabrielle Schary Casting","c":["LA"],"w":"gabriellescharycasting.com","a":[["Los Angeles","5th Street Studios, 1216 5th Street, Santa Monica, CA 90401"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Impossible Casting","c":["NY"],"w":"impossiblecasting.com","a":[["New York","122 W. 26th St., Ste. 600, New York, NY 10001"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"McBryde Casting","c":["LA","NY"],"w":"mcbrydecasting.com","a":[["New York","666 Fifth Avenue, #115, New York, NY 10103"]],"av":"u","an":"","p":"","pt":"","st":"likely"},
+{"n":"Michael Donovan Casting","c":["LA"],"w":"michaeldonovancasting.net","a":[["Los Angeles","P.O. Box 349, Hollywood, CA 90078"]],"av":"u","an":"","p":"other","pt":"Union and nonunion. No calls. No drop-offs.","st":"likely"},
+{"n":"Picard Productions","c":["LA"],"w":"nicolepicard.com","a":[["Los Angeles","2500 4th Street, Santa Monica, CA 90405"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"SaYven Entertainment","c":["NY"],"w":"sayven.com","a":[["New York","928 Broadway, Suite 506, New York, NY 10010"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Uncut Casting Services","c":["LA"],"w":"launcut.com","a":[["Los Angeles","3877 Grand View Blvd Suite B, Los Angeles, CA 90066"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Arab American Casting","c":["LA"],"w":"arabamericancasting.com","a":[],"av":"n","an":"","p":"","pt":"","st":"active"},
+{"n":"Black Sheep Casting","c":["LA","NY"],"w":"blacksheepcasting.com","a":[],"av":"n","an":"","p":"","pt":"","st":"active"},
+{"n":"WC Casting","c":["NY"],"w":"wccasting.com","a":[],"av":"n","an":"","p":"","pt":"","st":"active"},
+{"n":"Broad Range Casting","c":["LA"],"w":"","a":[["Los Angeles","5631 Hollywood Blvd, Suite E, Hollywood, CA 90028"]],"av":"v","an":"","p":"","pt":"","st":"active"},
+{"n":"Caparelliotis Casting","c":["NY"],"w":"","a":[["New York","260 W 44th St, 3rd Floor, New York, NY 10036"]],"av":"v","an":"","p":"","pt":"","st":"active"},
+{"n":"CFB Casting","c":["LA"],"w":"","a":[["Los Angeles","8265 Sunset Blvd, West Hollywood, CA 90046"]],"av":"v","an":"","p":"","pt":"","st":"active"},
+{"n":"Estrin/Bergstein","c":["NY"],"w":"","a":[["New York","100 E. 4th St., 2nd Fl, New York, NY 10003"]],"av":"v","an":"","p":"","pt":"","st":"active"},
+{"n":"Gary Zuckerbrod Casting","c":["LA"],"w":"","a":[["Los Angeles","6735 Forest Lawn Dr, 4th Floor, Los Angeles, CA 90068"]],"av":"v","an":"","p":"","pt":"","st":"active"},
+{"n":"Stewart/Whitley","c":["NY"],"w":"","a":[["New York","213 W 35th St, #804, New York, NY 10001"]],"av":"v","an":"Moved — IMDbPro still lists 519 8th Ave","p":"","pt":"","st":"active"},
+{"n":"Aquila / Wood Casting","c":["LA"],"w":"","a":[["Los Angeles","1680 Vine St., Los Angeles, CA 90028"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Bonnie Finnegan Casting","c":["NY"],"w":"","a":[["New York","330 W 38th St, New York, NY 10018"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Brad Gilmore Casting","c":["LA"],"w":"","a":[["Los Angeles","646 N Beachwood Dr, Los Angeles, CA 90004"]],"av":"u","an":"","p":"","pt":"","st":"likely"},
+{"n":"Jeanne McCarthy Casting","c":["LA"],"w":"","a":[["Los Angeles","1750 Ocean Park Blvd, Ste 208, Santa Monica, CA 90405"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Johanna Ray and Associates","c":["LA"],"w":"","a":[["Los Angeles","1022 Palm Avenue, Suite #2, West Hollywood, CA 90069"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Judy Henderson & Associates Casting","c":["NY"],"w":"","a":[["New York","330 W 89th St, New York, NY 10024"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Liberman/Hirschfeld Casting","c":["LA"],"w":"","a":[["Los Angeles","5979 West 3rd Street, #204, Los Angeles, CA 90036"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Mackey/Sandrich Casting","c":["LA","NY"],"w":"","a":[["Los Angeles office","606 N. Larchmont Blvd., Ste. 4B, Los Angeles, CA 90004"],["New York office","42 West 38th Street, Suite 1001, New York, NY 10018"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Mikkelsen Casting","c":["LA"],"w":"","a":[["Los Angeles","5225 Wilshire Blvd., Ste. 501, Los Angeles, CA 90036"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"MSI Entertainment","c":["LA"],"w":"","a":[["Los Angeles","9229 Sunset Blvd., Ste. 710, Los Angeles, CA 90069"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Nancy Klopper Casting","c":["LA"],"w":"","a":[["Los Angeles","c/o CSA, 1149 N Gower St, Ste 110, Los Angeles, CA 90038"]],"av":"u","an":"","p":"","pt":"","st":"likely"},
+{"n":"Patrick Rush Casting","c":["LA"],"w":"","a":[["Los Angeles","3808 W Riverside Dr, Ste 201, Burbank, CA 91505"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Revolutionary Artists","c":["NY"],"w":"","a":[["New York","156 W. 81st, New York, NY 10024"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Roman Candle Casting","c":["NY"],"w":"","a":[["New York","200 E 10th St # 555, New York, NY 10003"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Sally Lear Casting","c":["LA"],"w":"","a":[["Los Angeles","c/o CSA, 1149 N Gower St. Ste 110, Los Angeles, CA 90038"]],"av":"u","an":"","p":"","pt":"","st":"likely"},
+{"n":"Tucker Meyerson Casting","c":["NY"],"w":"","a":[["New York","11 Broadway, Ste 415, New York, NY 10004"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Zane/Pillsbury Casting","c":["LA"],"w":"","a":[["Los Angeles","585 N Larchmont Blvd, Los Angeles, CA 90004"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"Zora DeHorter Casting","c":["LA"],"w":"","a":[["Los Angeles","6380 Wilshire Blvd., Suite 100, Los Angeles, CA 90048"]],"av":"u","an":"","p":"","pt":"","st":"active"},
+{"n":"BHR Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"","pt":"","st":"likely"},
+{"n":"Dixie / Daugherty Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"","pt":"","st":"likely"},
+{"n":"Eleni Larchanidou Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"","pt":"","st":"likely"},
+{"n":"Hamil Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"","pt":"","st":"active"},
+{"n":"JS Snyder & Associates Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"","pt":"","st":"active"},
+{"n":"Robi Reed & Associates","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"","pt":"","st":"active"},
+{"n":"ASG Casting","c":["LA"],"w":"asgcasting.com","a":[["Los Angeles","4200 Lankershim Blvd., Suite  202, North Hollywood, CA 91602"]],"av":"v","an":"","p":"agents","pt":"Union and nonunion. Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"likely"},
+{"n":"Ross Lacy Casting","c":["LA"],"w":"rosslacycasting.com","a":[["Los Angeles","200 S La Brea Ave, Los Angeles, CA 90036"]],"av":"v","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"likely"},
+{"n":"Barbara Bersell Casting","c":["LA"],"w":"bersellcasting.com","a":[["Los Angeles","2698 Greenfield Ave, Los Angeles, CA 90064"]],"av":"u","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"likely"},
+{"n":"Donald Case Casting","c":["NY"],"w":"donaldcasecasting.com","a":[["New York","192 Lexington Avenue, Suite 1004, New York, NY"]],"av":"u","an":"","p":"agents","pt":"Headshots/resumes through agents and managers only. All ages. Accepts postcards and invitations by mail.","st":"likely"},
+{"n":"Stephanie Klapper Casting","c":["NY"],"w":"klappercasting.com","a":[["New York","330 W 38th St, New York, NY 10018"]],"av":"u","an":"","p":"agents","pt":"Accepts submissions my mail through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Carmen Cuba Casting","c":["LA"],"w":"","a":[["Los Angeles","846 N Cahuenga Blvd, Bldg A, Rm 200, Los Angeles, CA 90038"]],"av":"v","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Chrystie Street Casting","c":["NY"],"w":"","a":[["New York","195 Chrystie St, Suite 402F, New York, NY 10002"]],"av":"v","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Rene Haynes Casting","c":["LA"],"w":"","a":[["Los Angeles","121 W Lexington Dr, Suite 301, Glendale, CA 91203"]],"av":"v","an":"","p":"agents","pt":"Submissions through agent or manager only. No drop-ins.","st":"active"},
+{"n":"Beth Melsky Casting","c":["NY"],"w":"","a":[["New York","49 West 37th St, 8th Floor, New York, NY 10018"]],"av":"u","an":"","p":"agents","pt":"Through agents and managers only. No calls. No drop-offs.","st":"likely"},
+{"n":"Francine Maisler & Associates","c":["LA"],"w":"","a":[["Los Angeles","10202 W Washington Blvd, Culver City, CA 90232"]],"av":"u","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Julie Ashton Casting","c":["LA"],"w":"","a":[["Los Angeles","6253 Hollywood Blvd, Ste 505, Hollywood, CA 90028"]],"av":"u","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Kathleen Chopin Casting","c":["NY"],"w":"","a":[["New York","12 W 32nd St, New York, NY 10001"]],"av":"u","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Vickie Thomas Casting","c":["LA"],"w":"","a":[["Los Angeles","8500 Wilshire Blvd, Beverly Hills, CA 90211"]],"av":"u","an":"","p":"agents","pt":"Accepts headshot/resume by email through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"April Webster & Associates","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Bowling/Miscia Casting","c":["NY"],"w":"","a":[],"av":"n","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Denise Chamian Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"agents","pt":"Accepts submissions through agents and managers only. No calls. No drop-offs.","st":"active"},
+{"n":"Danielle Eskinazi","c":["LA"],"w":"daniellecasting.com","a":[["Los Angeles","10950 Burbank Blvd, North Hollywood, CA 91601"]],"av":"v","an":"Moved — IMDbPro still lists an old c/o address","p":"no","pt":"Submissions through agents or managers only. No unsolicited emails. No calls. No drop-offs.","st":"likely"},
+{"n":"McCorkle Casting","c":["NY"],"w":"mccorklecasting.com","a":[["New York","575 8th Avenue, 18th Floor, New York, NY 10018"]],"av":"v","an":"","p":"no","pt":"Accepts headshot/resume by mail. No unsolicited demos. No calls. No drop-offs.","st":"active"},
+{"n":"Cricket Feet","c":["LA"],"w":"cricketfeet.com","a":[["Los Angeles","PO Box 1138, Santa Monica, CA 90406"]],"av":"u","an":"","p":"no","pt":"No unsolicited submissions. No calls.","st":"active"},
+{"n":"Kara Sullivan Casting (KSC)","c":["LA"],"w":"karasullivancasting.com","a":[["Los Angeles","350 N, La Jolla Ave, Los Angeles, CA"]],"av":"u","an":"","p":"no","pt":"No unsolicited submissions.","st":"active"},
+{"n":"Matthew Messinger Casting","c":["NY"],"w":"matthewmessingercasting.com","a":[["New York","244 W 72nd St, New York, NY 10023"]],"av":"u","an":"","p":"no","pt":"No unsolicited submissions. No drop-offs.","st":"likely"},
+{"n":"O'Haver & Company","c":["LA"],"w":"ohavercasting.com","a":[["Los Angeles","On Your Mark Studios, 13425 Ventura Blvd. 2nd Floor, Sherman Oaks, Los Angeles, CA 91423"]],"av":"u","an":"","p":"no","pt":"No unsolicited submissions. SAG-AFTRA and nonunion. No calls. No drop-offs.","st":"likely"},
+{"n":"Stuart Stone Casting","c":["LA","NY"],"w":"stonecasting.tv","a":[["Los Angeles office","c/o Castaway Studios, 8899 Beverly Blvd, Los Angeles, CA 90048"],["New York office","12 W 27th St, 10 North, New York, NY"],["Los Angeles office","8899 Beverly Blvd, West Hollywood, CA 90048"]],"av":"u","an":"","p":"no","pt":"No unsolicited emails. No calls. No drop-offs.","st":"likely"},
+{"n":"Beach / Katzman Casting","c":["LA"],"w":"","a":[["Los Angeles","606 N Larchmont Blvd, Suite 311, Los Angeles, CA 90004"]],"av":"v","an":"","p":"no","pt":"No unsolicited submissions. No calls. No drop-offs.","st":"active"},
+{"n":"Bialy / Thomas Casting","c":["LA"],"w":"","a":[["Los Angeles","1149 N Gower St, Suite 242, Los Angeles, CA 90038"]],"av":"v","an":"","p":"no","pt":"No unsolicited submissions. No calls. No drop-offs.","st":"active"},
+{"n":"Sheila Jaffe Casting","c":["LA"],"w":"","a":[["Los Angeles","6671 Sunset Blvd., Bldg. 1509 Ste. 104, Los Angeles, CA 90028"]],"av":"v","an":"","p":"no","pt":"No unsolicited submissions. No calls. No drop-offs.","st":"active"},
+{"n":"Deborah Kurtz Casting","c":["LA"],"w":"","a":[["Los Angeles","8899 Beverly Blvd, Suite 206, Los Angeles, CA 90048"]],"av":"u","an":"","p":"no","pt":"No unsolicited submissions. No calls. No drop-offs.","st":"likely"},
+{"n":"Mark Saks Casting","c":["NY"],"w":"","a":[["New York","180 Varick St., Ste. 419, New York, NY 10014"]],"av":"u","an":"","p":"no","pt":"No unsolicited submissions. No calls. No drop-offs.","st":"active"},
+{"n":"Atomic Honey","c":["LA","NY"],"w":"","a":[],"av":"n","an":"","p":"no","pt":"No unsolicited submissions.","st":"active"},
+{"n":"Dawn Hershey Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"no","pt":"Does not accept headshot/resume but accepts demo reel by email only. No calls. No drop-offs.","st":"active"},
+{"n":"Ferne Cassel Casting","c":["LA"],"w":"","a":[],"av":"n","an":"","p":"no","pt":"No unsolicited submissions.","st":"likely"},
+{"n":"Lynn Kressel Casting","c":["NY"],"w":"","a":[],"av":"n","an":"","p":"no","pt":"No unsolicited submissions. No calls. No drop-offs.","st":"active"}
+];
+const CDX_PICK_KEY="cs_casting_maillist_v1";
+const CDX_SENT_KEY="cs_casting_sent_v1";
+const CDX_POL={
+  mail:["tad-mail","mail","Accepts headshots by mail"],
+  both:["tad-mail","mail","Accepts headshots by mail or email"],
+  email:["tad-email","send","Headshots by email only — don't post"],
+  web:["tad-email","device-laptop","Submit through their website"],
+  inv:["tad-form","send","Invitations by email"],
+  other:["tad-form","info-circle","See their submission policy"],
+  "":["tad-form","eye","Policy not published — check first"],
+  agents:["tad-no","users","Agents & managers only"],
+  no:["cdx-nosub","ban","No unsolicited submissions"]
+};
+const CDX_ACC=new Set(["mail","both","email","web"]);
+const cdxGroup=a=>CDX_ACC.has(a.p)?(a.w?"accw":"acc"):(a.p==="agents"?"agents":a.p==="no"?"no":"unk");
+// Order is the reading order: the open doors first, the closed ones last.
+const CDX_GROUPS=[
+  ["accw","Accept headshots — with a website","Start here. These offices say they accept headshots directly, and each has a working website where you can read the details before you send anything."],
+  ["acc","Accept headshots","These offices accept headshots directly too, but have no working website on file. Use the Google link to double-check before you post."],
+  ["unk","Policy not published","No published submission policy. Look them up first — many only take submissions through agents."],
+  ["agents","Agents & managers only","These offices only take submissions from agents and managers. Don't mail them — reach them through representation."],
+  ["no","No unsolicited submissions","Listed so you know who they are. Please don't send anything unless they post a breakdown you fit."]
+];
+const CDX_TIPS=[
+  {k:"Where to start",h:"Start with the offices that ask for headshots",p:[
+    {t:"p",x:"The top of the list is every office that says it accepts headshots directly — by mail, by email or through its website. Those are the doors that are actually open. Read the exact policy on each row: <b>“by mail only”</b> means don't email, and <b>“email only”</b> means don't post."}]},
+  {k:"From anywhere",h:"It doesn't matter where you're mailing from",p:[
+    {t:"p",x:"New York, Los Angeles, another state or another country: the post reaches their desk all the same. Casting directors are looking for the right face and the right energy, not the nearest address."},
+    {t:"p",x:"If you're right for a role, distance won't stop them. The first meeting is usually a self-tape or a video call, and when a production wants you in the room, it can arrange the trip to its office in LA or New York, flight and hotel included."},
+    {t:"pull",x:"Don't rule yourself out because of a postcode. Let them decide."}]},
+  {k:"Choosing",h:"Mail the offices that cast your kind of work",p:[
+    {t:"p",x:"Before you add an office to your list, look up three or four of its recent projects. A commercial office, a theatre office and a feature-film office want very different actors."},
+    {t:"pull",x:"Ten offices that cast work you fit beat a hundred that don't."}]},
+  {k:"Etiquette",h:"Respect “agents only” and “no unsolicited”",p:[
+    {t:"p",x:"Those offices are on the list so you know who they are, not so you can mail them. Sending anyway doesn't make you look keen — it makes you look like someone who doesn't read instructions, and casting directors remember names."}]},
+  {k:"The card",h:"A card, not an envelope",p:[
+    {t:"p",x:"A CastSlate card goes straight onto a desk or a pinboard. An envelope has to be opened first, and most aren't. Write two lines by hand on the back. Nothing more."},
+    {t:"p",x:"For mailing, go bigger: the <b>Mailing Postcard (6 × 4 in)</b> or the <b>Agent Promo Card (7 × 5 in)</b>, both printed from your dashboard. The 3.5 × 2 in Business Card is made for handing over in person; in the post, the larger sizes are the ones that get pinned up."},
+    {t:"script",lbl:"Example note",x:"Loved your casting on [project]. I'm a [city]-based actor — my reel's on the QR code. I'd love to be on your radar for [type of role]."}]},
+  {k:"Follow-up",h:"Send again when you have news",p:[
+    {t:"p",x:"One card is easy to forget. A second one three or four months later — when you've booked something, shot a new reel or opened in a play — is what turns a stranger into a familiar face. Give them a reason each time."}]},
+  {k:"Never",h:"Don't call, don't drop by",p:[
+    {t:"dodont",do:["Follow each office's own policy exactly","Check the address on their site before posting","Submit properly when they post a breakdown"],
+     dont:["Phone the office","Turn up at the door","Email offices that ask for mail only"]}]}
+];
+
+// ── One mailing list across both directories ──
+// Agencies and casting offices keep their own localStorage keys (so the agency
+// list nobody asked us to touch keeps working), but both sheets render the same
+// <SharedMailList/>, and every write fires MAILLIST_EVT so an open card re-reads.
+const MAILLIST_EVT="cs-maillist";
+function readNameSet(k){try{return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}catch(_){return new Set();}}
+function writeNameSet(k,s){
+  try{localStorage.setItem(k,JSON.stringify([...s]));}catch(_){}
+  try{window.dispatchEvent(new Event(MAILLIST_EVT));}catch(_){}
+}
+function useNameSet(k){
+  const [s,setS]=useState(()=>readNameSet(k));
+  useEffect(()=>{
+    const f=()=>setS(readNameSet(k));
+    window.addEventListener(MAILLIST_EVT,f);
+    window.addEventListener("storage",f);
+    return()=>{window.removeEventListener(MAILLIST_EVT,f);window.removeEventListener("storage",f);};
+  },[k]);
+  const toggle=useCallback((n)=>{
+    const x=readNameSet(k);
+    x.has(n)?x.delete(n):x.add(n);
+    writeNameSet(k,x);
+  },[k]);
+  return [s,toggle];
+}
+
+function SharedMailList({emptyHint}){
+  const [agPick,toggleAgPick]=useNameSet(TAD_PICK_KEY);
+  const [agSent,toggleAgSent]=useNameSet(TAD_SENT_KEY);
+  const [cdPick,toggleCdPick]=useNameSet(CDX_PICK_KEY);
+  const [cdSent,toggleCdSent]=useNameSet(CDX_SENT_KEY);
+  const [copied,setCopied]=useState(false);
+  // Agencies keep their own shape: a.a is [[label,address]], a.v marks verified.
+  const ag=TALENT_AGENCIES.filter(a=>agPick.has(a.n)).map(a=>({kind:"ag",n:a.n,addr:a.v?a.a.map(x=>x[1]):[],pc:a.pc,sent:agSent.has(a.n)}));
+  const cd=CASTING_OFFICES.filter(a=>cdPick.has(a.n)).map(a=>({kind:"cd",n:a.n,addr:a.a.map(x=>x[1]),unconf:a.av!=="v",sent:cdSent.has(a.n)}));
+  const all=ag.concat(cd);
+  const toggleSent=(it)=>it.kind==="ag"?toggleAgSent(it.n):toggleCdSent(it.n);
+  const remove=(it)=>it.kind==="ag"?toggleAgPick(it.n):toggleCdPick(it.n);
+  const copyAll=async()=>{
+    const txt=all.filter(it=>it.addr.length).map(it=>it.n+"\n"+it.addr.join("\n")).join("\n\n");
+    try{await navigator.clipboard.writeText(txt);setCopied(true);setTimeout(()=>setCopied(false),1400);}catch(_){}
+  };
+  // Prints the list ONLY, via a hidden iframe — window.print() would print the dashboard.
+  const printList=()=>{
+    const esc=(v)=>String(v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    const today=new Date().toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+    const sect=(title,items)=>items.length?'<h2>'+esc(title)+'</h2>'+items.map(it=>
+      '<div class="item'+(it.sent?" done":"")+'"><div class="box">'+(it.sent?"&#10003;":"")+'</div><div class="body"><h3>'+esc(it.n)+'</h3>'
+      +(it.addr.length?it.addr.map(x=>'<div class="ln">'+esc(x)+'</div>').join(""):'<div class="pend">No confirmed address — check the directory before sending.</div>')
+      +(it.unconf&&it.addr.length?'<div class="pend">Address not yet confirmed — check their website first.</div>':"")
+      +(it.sent?'<div class="sent">Sent</div>':'<div class="todo">Not sent yet</div>')+'</div></div>').join(""):"";
+    const doc='<!DOCTYPE html><html><head><meta charset="utf-8"><title>My Mailing List</title><style>'
+      +'@page{margin:16mm;}*{box-sizing:border-box;}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#1A1A2E;font-size:12pt;}'
+      +'header{border-bottom:2px solid #1A1A2E;padding-bottom:10px;margin-bottom:14px;}h1{margin:0 0 4px;font-size:19pt;}header p{margin:0;font-size:9.5pt;color:#5A5A72;}'
+      +'h2{font-size:10pt;letter-spacing:.12em;text-transform:uppercase;color:#5A5A72;margin:18px 0 4px;}'
+      +'.item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #E5DFD2;break-inside:avoid;}.item.done{color:#6b6b7d;}'
+      +'.box{width:15px;height:15px;border:1.5px solid #1A1A2E;border-radius:3px;flex:0 0 auto;margin-top:2px;text-align:center;line-height:13px;font-size:11px;}'
+      +'h3{margin:0 0 3px;font-size:12.5pt;}.ln{font-size:10.5pt;line-height:1.45;}.pend{font-size:9.5pt;font-style:italic;color:#8E8EA0;}'
+      +'.sent{font-size:9pt;font-weight:700;color:#146B31;margin-top:3px;}.todo{font-size:9pt;color:#8E8EA0;margin-top:3px;}'
+      +'footer{margin-top:20px;padding-top:10px;border-top:1px solid #E5DFD2;font-size:9pt;color:#5A5A72;line-height:1.5;}'
+      +'</style></head><body><header><h1>My Mailing List</h1><p>CastSlate &middot; '+esc(today)+'</p></header>'
+      +sect("Talent agencies & management",ag)+sect("Casting offices",cd)
+      +'<footer><strong>One at a time.</strong> A handful of offices you actually researched will beat forty sent blind. Two handwritten lines on the back of your CastSlate card &mdash; nothing more.</footer></body></html>';
+    const frame=document.createElement("iframe");
+    frame.setAttribute("aria-hidden","true");
+    frame.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+    document.body.appendChild(frame);
+    const cleanup=()=>{try{document.body.removeChild(frame);}catch(_){}};
+    frame.onload=()=>{try{const w=frame.contentWindow;w.focus();w.onafterprint=cleanup;w.print();setTimeout(cleanup,60000);}catch(_){cleanup();}};
+    const d=frame.contentWindow.document;d.open();d.write(doc);d.close();
+  };
+  if(!all.length)return(
+    <div className="tad-mlempty">
+      <div style={{marginBottom:12}}><Ico n="mail" s={32}/></div>
+      <h4>Nothing on your list yet</h4>
+      <p>{emptyHint} Agencies and casting offices collect here together, with their addresses, so you can write them all in one sitting and tick them off as they go out.</p>
+    </div>);
+  const item=(it)=>(
+    <div className={"tad-mlitem"+(it.sent?" done":"")} key={it.kind+it.n}>
+      <div className={"tad-mlcb"+(it.sent?" on":"")} onClick={()=>toggleSent(it)}>{it.sent&&<Ico n="check" s={13}/>}</div>
+      <div>
+        <h4>{it.n}</h4>
+        {it.addr.length
+          ? it.addr.map(x=><div className="ad" key={x}>{x}</div>)
+          : <div className="ad" style={{fontStyle:"italic",color:"var(--t3)"}}>No confirmed address — check the directory before sending.</div>}
+        {it.unconf&&it.addr.length?<div className="ad" style={{fontStyle:"italic",color:"#9A5B0E"}}>Address not yet confirmed — check their website first.</div>:null}
+        {it.pc?<div className="sentmark">Accepts postcards — your card can go on its own</div>:null}
+        {it.sent&&<div className="sentmark">Marked as sent</div>}
+      </div>
+      <button className="tad-b" onClick={()=>remove(it)}>Remove</button>
+    </div>);
+  return(<>
+    <div className="tad-mlhead">
+      <div>
+        <b>{all.length} on your list</b><br/>
+        <span>{ag.length} {ag.length===1?"agency":"agencies"} · {cd.length} casting {cd.length===1?"office":"offices"} · {all.filter(it=>it.sent).length} sent</span>
+      </div>
+      <span style={{flex:1}}/>
+      <button className="tad-b" onClick={copyAll}>{copied?"Copied":"Copy all addresses"}</button>
+      <button className="btn-p" style={{padding:"11px 18px",fontSize:12.5}} onClick={printList}>Print my list</button>
+    </div>
+    {ag.length?<div className="tad-gh"><h3>Talent agencies &amp; management</h3><span className="ln"/><span className="ct">{ag.length}</span></div>:null}
+    {ag.map(item)}
+    {cd.length?<div className="tad-gh"><h3>Casting offices</h3><span className="ln"/><span className="ct">{cd.length}</span></div>:null}
+    {cd.map(item)}
+    <div className="tad-fn"><b>One at a time.</b> A handful of offices you actually researched will beat forty sent blind.</div>
+  </>);
+}
+
+function CastingDirectoryCard({isPremium,onNavigate}){
+  const [open,setOpen]=useState(false);
+  const [closing,setClosing]=useState(false);
+  const closeSheet=useCallback(()=>{
+    setClosing(true);
+    setTimeout(()=>{setOpen(false);setClosing(false);},460);
+  },[]);
+  const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
+  const [tab,setTab]=useState("offices");
+  const [q,setQ]=useState("");
+  const [pol,setPol]=useState("all");
+  const [city,setCity]=useState("all");
+  const [confOnly,setConfOnly]=useState(false);
+  const [copied,setCopied]=useState(null);
+  const [picked,togglePick]=useNameSet(CDX_PICK_KEY);
+  const [agPicked]=useNameSet(TAD_PICK_KEY);
+
+  useEffect(()=>{
+    if(!open)return;
+    const onKey=(e)=>{if(e.key==="Escape")closeSheet();};
+    window.addEventListener("keydown",onKey);
+    return()=>window.removeEventListener("keydown",onKey);
+  },[open,closeSheet]);
+  // Same page push as the agency sheet — see the note on TalentAgencyDirectoryCard.
+  useEffect(()=>{
+    const b=document.body;
+    if(open&&!closing)b.classList.add("sheet-push");
+    else b.classList.remove("sheet-push");
+    return()=>b.classList.remove("sheet-push");
+  },[open,closing]);
+
+  const counts=useMemo(()=>{
+    const c={all:CASTING_OFFICES.length,acc:0,agents:0,no:0,unk:0,conf:0,tips:CDX_TIPS.length};
+    CASTING_OFFICES.forEach(a=>{const g=cdxGroup(a);if(g==="accw"||g==="acc")c.acc++;else c[g]++;if(a.av==="v")c.conf++;});
+    return c;
+  },[]);
+  const shown=useMemo(()=>{
+    const needle=q.trim().toLowerCase();
+    return CASTING_OFFICES.filter(a=>{
+      const g=cdxGroup(a);
+      if(pol==="acc"&&g!=="accw"&&g!=="acc")return false;
+      if(pol!=="all"&&pol!=="acc"&&g!==pol)return false;
+      if(city!=="all"&&!a.c.includes(city))return false;
+      if(confOnly&&a.av!=="v")return false;
+      if(needle&&!(a.n+" "+a.pt+" "+a.a.map(x=>x[1]).join(" ")).toLowerCase().includes(needle))return false;
+      return true;
+    });
+  },[q,pol,city,confOnly]);
+
+  const copyText=async(text,key)=>{
+    try{await navigator.clipboard.writeText(text);setCopied(key);setTimeout(()=>setCopied(null),1400);}catch(_){}
+  };
+  const gUrl=(a)=>"https://www.google.com/search?q="+encodeURIComponent(a.n+" casting "+(a.c.includes("LA")?"Los Angeles":"New York"));
+
+  const row=(a)=>{
+    const P=CDX_POL[a.p]||CDX_POL[""];
+    const isPicked=picked.has(a.n);
+    const canMail=(a.p==="mail"||a.p==="both")&&a.a.length>0;
+    return(
+      <div key={a.n} className={"tad-row"+(isPicked?" pick":"")+(a.p==="no"?" cdx-dim":"")}>
+        <div>
+          <div className="tad-nm">
+            <h4>{a.n}</h4>
+            {a.c.map(x=><span key={x} className="tad-cityb">{x==="LA"?"Los Angeles":"New York"}</span>)}
+          </div>
+          <p className="tad-note">{a.pt?"“"+a.pt+"”":"No submission policy published."}</p>
+          {a.w
+            ? <a className="tad-web" href={"https://"+a.w} target="_blank" rel="noopener noreferrer">{a.w} ↗</a>
+            : <a className="tad-web tad-find" href={gUrl(a)} target="_blank" rel="noopener noreferrer">No website on file — search for them on Google ↗</a>}
+        </div>
+        <div className="tad-meta">
+          <span className={"tad-sc "+P[0]}><Ico n={P[1]} s={13}/>{P[2]}</span>
+          {a.a.length
+            ? a.a.map(x=><div key={x[0]+x[1]} className="tad-addr"><span className="lb">{x[0]}{a.av==="v"?<span className="cdx-ok">✓ Confirmed</span>:<span className="cdx-unc">Not yet confirmed</span>}</span>{x[1]}</div>)
+            : <div className="tad-pend">{a.av==="x"?"Address withheld — our sources disagree on where they are now.":"No street address on file."} <a className="tad-web" href={gUrl(a)} target="_blank" rel="noopener noreferrer">Search on Google ↗</a></div>}
+          {a.an?<div className="cdx-an">{a.an}</div>:null}
+          {a.a.length?(
+            <div className="tad-acts">
+              <button className="tad-b" onClick={()=>copyText(a.a.map(x=>x[1]).join("\n"),a.n)}>{copied===a.n?"Copied":"Copy address"}</button>
+              {canMail&&<button className={"tad-b add"+(isPicked?" on":"")} onClick={()=>togglePick(a.n)}>{isPicked?"On my list":"+ Add to mailing list"}</button>}
+            </div>
+          ):null}
+        </div>
+      </div>
+    );
+  };
+
+  const lockPane=(title,body)=>(
+    <div style={{textAlign:"center",padding:"56px 24px"}}>
+      <div style={{width:46,height:46,borderRadius:"50%",background:"var(--t1)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}><Ico n="lock" s={20}/></div>
+      <h3 style={{margin:"0 0 8px",fontSize:20,fontWeight:800,color:"var(--t1)"}}>{title}</h3>
+      <p style={{margin:"0 auto 18px",maxWidth:450,fontSize:13.5,color:"var(--t2)",lineHeight:1.6}}>{body}</p>
+      <button className="btn-p" onClick={()=>{setOpen(false);setClosing(false);onNavigate("membership");}}>Unlock with Premium <Tri/></button>
+    </div>
+  );
+  const listCount=picked.size+agPicked.size;
+
+  return(<>
+    <div className="tad-seal">
+    <div className="tad-card" onClick={openSheet} role="button" tabIndex={0}
+         onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
+      <TadNetwork/>
+      <p className="tad-kick"><span className="tad-dot"/>{isPremium?"Unlocked":"Premium Feature"}</p>
+      <div className="tad-hd">
+        <span className="tad-ic"><span className="tad-dial2"/><span className="tad-dial"/><Ico n="movie" s={22}/></span>
+        <h3>Casting Companies Directory<br/>+ Tips &amp; Tricks</h3>
+      </div>
+      <p className="tad-sub"><b>Casting offices</b> in LA &amp; New York — which ones accept headshots, and where to send your CastSlate card.</p>
+      <div className="tad-mini">
+        <div><b>{counts.all}</b><span>Active offices</span></div>
+        <div><b>{counts.acc}</b><span>Accept headshots</span></div>
+        <div><b>{counts.tips}</b><span>Insider tips</span></div>
+      </div>
+      <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
+        {isPremium?<>Open the Directory <Tri/></>:<>Unlock the Directory <Tri/></>}
+      </button>
+    </div>
+    </div>
+
+    {open&&ReactDOM.createPortal(<>
+      <div className={"cs-sheet-dim"+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
+      <div className={"tad-sheet"+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Casting Companies Directory">
+          <div className="tad-head">
+            <button className="tad-x" onClick={closeSheet}><Ico n="arrow-left" s={15}/>Back</button>
+            <div style={{fontSize:11,fontWeight:800,letterSpacing:"0.14em",textTransform:"uppercase",color:"#F0B860"}}>CastSlate Premium</div>
+            <h2>Casting Companies Directory</h2>
+            <p>Casting offices across Los Angeles and New York — the people who decide who gets seen for film, television, commercials and theatre. Sorted so the offices that accept headshots come first, with the website, the address and each office's own submission policy.</p>
+            <div className="tad-curated"><Ico n="star" s={13}/>Hand-checked by the CastSlate team — active offices with projects happening now</div>
+          </div>
+
+          <div className="tad-body">
+            <div className="tad-gate">
+              <h3>Why send your card to casting</h3>
+              <p>Casting directors watch thousands of self-tapes a month, almost all from actors they have never heard of. <b>The actors they call in first are the ones they already recognise.</b></p>
+              <p>A printed CastSlate card on their desk is how you become one of those faces. It costs a stamp, it carries your QR code straight to your reel and profile, and unlike an email it does not disappear under the next hundred.</p>
+              <p><b>It doesn't matter where you're mailing from.</b> New York, Los Angeles, another state or the other side of the world: if you're the right face for a role, they'll set up a video meeting, or arrange the flight and hotel to meet you in their office.</p>
+              <p>Not looking for roles yet, but for representation? That's the <b>Talent Agency &amp; Management Directory</b>, the card just above this one.</p>
+            </div>
+
+            <div className="tad-tabs">
+              <button className={tab==="offices"?"on":""} onClick={()=>setTab("offices")}>Casting offices <span className="pill">{counts.all}</span></button>
+              <button className={tab==="tips"?"on":""} onClick={()=>setTab("tips")}>Tips &amp; Tricks <span className="pill">{counts.tips}</span></button>
+              <button className={tab==="list"?"on":""} onClick={()=>setTab("list")}>My Mailing List <span className="pill">{listCount}</span></button>
+            </div>
+
+            {tab==="offices"&&<>
+              <div className="tad-bar">
+                <input className="tad-srch" placeholder="Search office, street or note…" value={q} onChange={e=>setQ(e.target.value)}/>
+                <div className="tad-seg">
+                  {[["all","All",counts.all],["acc","Accept headshots",counts.acc],["unk","Not published",counts.unk],["agents","Agents only",counts.agents],["no","No unsolicited",counts.no]].map(([v,label,n])=>
+                    <button key={v} className={pol===v?"on":""} onClick={()=>setPol(v)}>{label} <span className="n">{n}</span></button>)}
+                </div>
+                <div className="tad-seg">
+                  {[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]].map(([v,label])=>
+                    <button key={v} className={city===v?"on":""} onClick={()=>setCity(v)}>{label}</button>)}
+                </div>
+                <label className="cdx-chk"><input type="checkbox" checked={confOnly} onChange={e=>setConfOnly(e.target.checked)}/> Confirmed address only</label>
+              </div>
+              <div className="tad-res">Showing {shown.length} of {counts.all} active casting offices</div>
+
+              {!isPremium?(
+                <div className="tad-lockwrap">
+                  {/* Redacted, not just blurred — CSS blur is visual only. */}
+                  <div className="tad-rows">{CASTING_OFFICES.slice(0,5).map(a=>row({...a,a:[],w:"",pt:"",p:"",av:"n",an:""}))}</div>
+                  <div className="tad-lockover">
+                    <div className="lk"><Ico n="lock" s={20}/></div>
+                    <h3>{counts.all} active casting offices — and the {counts.acc} that accept headshots come first.</h3>
+                    <p>Each office's own submission policy, its website, and the address — confirmed against the office's own site wherever we could, and marked when we couldn't.</p>
+                    <div className="tad-stats">
+                      <div><b>{counts.all}</b><span>Casting offices</span></div>
+                      <div><b>{counts.acc}</b><span>Accept headshots</span></div>
+                      <div><b>LA + NY</b><span>Both coasts</span></div>
+                    </div>
+                    <button className="btn-p" onClick={()=>{setOpen(false);setClosing(false);onNavigate("membership");}}>Unlock with Premium <Tri/></button>
+                  </div>
+                </div>
+              ):(<>
+                <div className="tad-green">
+                  Read the policy on each row before you send anything. Where an office takes mail, send your CastSlate card. The Mailing Postcard (6 × 4 in) or the Agent Promo Card (7 × 5 in) land best, with two lines on the back by hand and no envelope. Where it says email only, don't post.
+                </div>
+                {CDX_GROUPS.map(([g,title,blurb])=>{
+                  const list=shown.filter(a=>cdxGroup(a)===g);
+                  if(!list.length)return null;
+                  return(<div key={g}>
+                    <div className="tad-gh"><h3>{title}</h3><span className="ln"/><span className="ct">{list.length}</span></div>
+                    <p className="tad-gsub">{blurb}</p>
+                    <div className="tad-rows">{list.map(row)}</div>
+                  </div>);
+                })}
+                {!shown.length&&<div style={{padding:"40px 0",textAlign:"center",color:"var(--t3)",fontSize:14}}>No casting offices match those filters.</div>}
+                <div className="tad-fn"><b>Curated by hand, not scraped.</b> Every office here was checked one by one by the CastSlate team to make sure it is an active casting office with projects happening now, not a closed office padding the number. Policies are quoted as each office publishes them. Offices move: if an address says “Not yet confirmed”, check their site before you post anything.</div>
+              </>)}
+            </>}
+
+            {tab==="tips"&&(!isPremium
+              ? lockPane(counts.tips+" tips for getting noticed by casting",
+                  "Which offices to start with, what to write on the back of your card, when to send again, and the etiquette that keeps your name on the right side of the desk.")
+              : <>
+                <div className="tad-tipsintro"><p><b>Casting directors are not agents.</b> An agent signs you; a casting director fills specific roles on specific projects. Your card doesn't ask them for anything — it puts your face and your QR code on their desk, so the next time a role fits, they already know you exist.</p></div>
+                {CDX_TIPS.map((tp,i)=>(
+                  <div className="tad-tipcard" key={tp.k}>
+                    <span className="num">Tip {String(i+1).padStart(2,"0")}</span>
+                    <p className="kicker">{tp.k}</p>
+                    <h4>{tp.h}</h4>
+                    {tp.p.map((b,j)=><TadTipBlock key={j} b={b}/>)}
+                  </div>
+                ))}
+              </>)}
+
+            {tab==="list"&&(!isPremium
+              ? lockPane("Your mailing list is a Premium feature",
+                  "Tick the casting offices and agencies you want to write to and CastSlate keeps one list, the addresses, and a record of who you've already sent to.")
+              : <SharedMailList emptyHint={<>Go to <b>Casting offices</b> and hit <b>+ Add to mailing list</b> on any office that accepts headshots by mail.</>}/>)}
+          </div>
+      </div>
+    </>,document.body)}
+  </>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE: CASTING COMPANIES DIRECTORY (/casting-directory) — public sales page
+// Shows what's inside and the counts; names, addresses and websites stay behind
+// Premium (the sample table is redacted, like /agency-directory's).
+// ═══════════════════════════════════════════
+const CDX_FIELDS=[
+  ["Submission policy","Quoted from each office"],
+  ["Accepts headshots?","Mail · Email · Website"],
+  ["Website","Checked it loads"],
+  ["Mailing address","Confirmed where possible"],
+  ["Active offices only","Checked one by one"],
+  ["Moved offices","Flagged"],
+  ["Coast","Los Angeles · New York"],
+  ["Agents-only offices","Marked — don't mail"],
+  ["One mailing list","With your agencies"]
+];
+const CDX_FAQ=[
+  ["What's the difference between a casting director and an agent?","A casting director works for the production: they find actors for specific roles on specific projects. An agent works for you: they submit you to casting directors and negotiate when you book. You approach an agent to be represented, and a casting office so they know you exist when the right role comes up."],
+  ["I don't live in Los Angeles or New York. Can I still mail them?","Yes, and you should. Where you live doesn't decide who you can approach. Actors post cards to LA and New York offices from all over the US and from around the world. If you're the right face and the right energy for a role, distance won't stop a casting office: the first step is usually a self-tape or a video call, and when a production wants you in the room, it can arrange the trip to its office, flight and hotel included."],
+  ["Can I send my headshot straight to a casting office?","Some offices welcome it, many don't. That's why every office in the directory shows its own submission policy: by mail, by email, through its website, agents and managers only, or no unsolicited submissions at all. The ones that accept headshots are listed first."],
+  ["Why send a card instead of an email?","An email lands in an inbox with a few hundred others. A CastSlate card lands on a desk: your headshot, your details and a QR code that opens your live profile with your reel. Where an office asks for email only, follow that instead."],
+  ["How do you know these offices are still active?","Every office on this list was checked one by one by the CastSlate team, by hand. We only keep offices that are active right now, with projects recently cast or in the works. Offices that have closed, gone quiet or stopped casting are taken off rather than left in to pad the number. Addresses are marked confirmed only once we have matched them against a current source, and each office's submission policy is shown as the office itself publishes it."]
+];
+// Hero fan for /casting-directory — its own three actors, so the two directory pages
+// don't show the same faces. Fictional names; photos pre-cropped to the card's
+// photo slot (400x662) like /assets/agd-cards. k2 is the middle card of the fan.
+// Logo strip for /casting-directory, built like AGD_STUDIOS (h = desktop px, hm = phone px,
+// a = aspect ratio from each SVG's own viewBox, so the row reserves its width before the
+// files arrive). Only networks/streamers that offices IN THIS DIRECTORY have cast for:
+// Netflix (Stranger Things, Carmen Cuba), HBO (Curb Your Enthusiasm, Allison Jones),
+// Apple TV+ (The Morning Show, Vickie Thomas), Prime Video (Mr. & Mrs. Smith, Carmen Cuba),
+// Disney+ (Loki, Sarah Finn; Daredevil: Born Again, Bowling/Miscia), NBC (Suits: LA,
+// Zane/Pillsbury). Past work, not a partnership; the line under the row says so.
+// If one of those offices leaves the list, re-check that its logo still has a credit behind it.
+// SVGs from Wikimedia Commons.
+const CDX_STUDIOS=[
+  {n:"Netflix",    f:"/logos/netflix.svg",   h:34,hm:20,a:3.700},
+  {n:"HBO",        f:"/logos/hbo.svg",       h:40,hm:23,a:2.427},
+  {n:"Apple TV+",  f:"/logos/appletv.svg",   h:40,hm:23,a:2.636},
+  {n:"Prime Video",f:"/logos/primevideo.svg",h:42,hm:24,a:3.249},
+  {n:"Disney+",    f:"/logos/disneyplus.svg",h:54,hm:31,a:1.842},
+  {n:"NBC",        f:"/logos/nbc.svg",       h:62,hm:36,a:1.015}
+];
+const CDX_CARDS=[
+  {name:"Darius Cole",head:"Actor · Film & TV",loc:"Los Angeles, CA",slug:"darius-cole",
+   tags:["Stage Combat","Improv"],img:"/assets/cdx-cards/cdx-card-1.jpg",pos:"center 30%"},
+  {name:"Elena Marsh",head:"Actor · Theatrical",loc:"New York, NY",slug:"elena-marsh",
+   tags:["Meisner","Period Drama"],img:"/assets/cdx-cards/cdx-card-2.jpg",pos:"center 40%"},
+  {name:"Luca Varga",head:"Actor · Film & TV",loc:"Los Angeles, CA",slug:"luca-varga",
+   tags:["Fluent Italian","Dance"],img:"/assets/cdx-cards/cdx-card-3.jpg",pos:"center 40%"}
+];
+// One sample per print size, drawn by the REAL studio component (ActorCardPreview) so
+// the page shows exactly what an actor prints. The preview is laid out at the width
+// the studio uses (390 business / 520 larger) and scaled to its column, because its
+// type sizes are fixed px and would crowd if the box were simply made narrower.
+const CDX_SAMPLES=[
+  {formatKey:"business",displayName:"Darius Cole",headline:"Actor · Film & TV",location:"Los Angeles, CA",tags:["Stage Combat","Improv"],unionStatus:"SAG-AFTRA",img:"/assets/cdx-cards/cdx-card-1.jpg",slug:"darius-cole",posY:30},
+  {formatKey:"postcard",displayName:"Elena Marsh",headline:"Actor · Theatrical",location:"New York, NY",tags:["Meisner","Period Drama"],unionStatus:"SAG-AFTRA",img:"/assets/cdx-cards/cdx-postcard-elena.jpg",slug:"elena-marsh",posY:40},
+  {formatKey:"agent",displayName:"Luca Varga",headline:"Actor · Film & TV",location:"Los Angeles, CA",tags:["Fluent Italian","Dance"],unionStatus:"Non-Union",img:"/assets/cdx-cards/cdx-card-3.jpg",slug:"luca-varga",posY:40}
+];
+function CdxCardSample({s}){
+  const base=s.formatKey==="business"?390:520;
+  const f=ABC_CARD_FORMATS[s.formatKey];
+  const ref=useRef(null);
+  const [w,setW]=useState(0);
+  useLayoutEffect(()=>{
+    const el=ref.current;if(!el)return;
+    const set=()=>setW(el.clientWidth);
+    set();
+    if(typeof ResizeObserver==="undefined")return;
+    const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect();
+  },[]);
+  const k=w?Math.min(1,w/base):0;
+  const qr="https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data="+encodeURIComponent("https://www.castslate.com/talent/"+s.slug);
+  return(
+    <div ref={ref} className="cdx-sample" style={{height:k?Math.round(base*f.height/f.width*k)+2:undefined,aspectRatio:k?undefined:f.width+"/"+f.height}} aria-hidden="true">
+      {k?<div style={{position:"absolute",top:0,left:0,width:base,transform:"scale("+k+")",transformOrigin:"top left",pointerEvents:"none"}}>
+        <ActorCardPreview formatKey={s.formatKey} side="front" displayName={s.displayName} headline={s.headline}
+          showLocation={true} location={s.location} tags={s.tags} showUnion={true} unionStatus={s.unionStatus}
+          headshotUrl={s.img} publicSlug={s.slug} qrDataUrl={qr} photoZoom={1} photoPosX={50} photoPosY={s.posY}/>
+      </div>:null}
+    </div>);
+}
+function CastingDirectoryPage({onNavigate,isPremium=false}){
+  const fanRef=useAgdDeal();
+  const isNarrow=useViewportWidth()<560;
+  const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
+  const cta=isPremium?"Open the directory":"Unlock the directory — $17.99/mo";
+  const n=CASTING_OFFICES.length;
+  const acc=CASTING_OFFICES.filter(a=>CDX_ACC.has(a.p)).length;
+  const la=CASTING_OFFICES.filter(a=>a.c.includes("LA")).length;
+  const ny=CASTING_OFFICES.filter(a=>a.c.includes("NY")).length;
+  const sample=CASTING_OFFICES.filter(a=>CDX_ACC.has(a.p)).slice(0,5).map((a,i)=>[a.c.length>1?"LA + New York":a.c[0]==="LA"?"Los Angeles":"New York",(CDX_POL[a.p]||CDX_POL[""])[2].replace(" — don't post",""),a.w?"On file":"—",[134,152,120,146,128][i]]);
+  return(<div className="page">
+    <div className="agd-herobg"><div className="agd-wrap">
+      <section className="agd-hero"><div className="agd-hero-grid">
+        <div>
+          <div className="agd-eyebrow"><span className="d"/>Included with Premium</div>
+          <h1 className="agd-h1">{n} active casting offices in Los Angeles and New York, and which ones want your headshot.</h1>
+          <div className="agd-cities">
+            <span className="agd-city">Los Angeles</span>
+            <span className="agd-city">New York</span>
+            <span className="agd-city">Worldwide</span>
+          </div>
+          <p className="agd-coasts">Mail from anywhere in the world. Where you live doesn't decide who you can approach: an actor in London, Toronto or Lagos can post a card to a Los Angeles or New York casting office just like someone down the street. If you're the right face and the right energy for a role, distance won't stop them. The first meeting is usually a self-tape or a video call, and when a production wants you in the room, it can arrange the trip to its office in LA or New York, flight and hotel included.</p>
+          <p className="agd-lede">Casting directors decide who gets seen for film, television, commercials and theatre. For every active office: its own submission policy, its website and its mailing address, sorted so the {acc} offices that accept headshots directly come first. Every office is checked by hand by our team: only active offices with projects happening now make the list. Send them your CastSlate card, and the next time a role fits, they already know your face.</p>
+          <div className="agd-ctas">
+            <button className="agd-btn gold" onClick={go}>{cta}</button>
+            <button className="agd-btn line" onClick={()=>{const el=document.getElementById("cdx-inside");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}}>See what's inside ↓</button>
+          </div>
+        </div>
+        <div className="agd-fan" ref={fanRef}>
+          {CDX_CARDS.map((c,i)=><AgdCard key={c.slug} c={c} k={"k"+(i+1)}/>)}
+        </div>
+      </div></section>
+    </div></div>
+
+    <div className="agd-studios">
+      <div className="k">Offices on this list have cast for</div>
+      <div className="row">
+        {CDX_STUDIOS.map(s=>(
+          <img key={s.f} src={s.f} alt={s.n}
+               fetchpriority="high" decoding="async" loading="eager"
+               style={{height:(isNarrow?s.hm:s.h)+"px",aspectRatio:String(s.a)}}/>
+        ))}
+      </div>
+      <div className="k" style={{margin:"14px auto 0",fontWeight:600,letterSpacing:".02em",textTransform:"none",fontSize:11,opacity:.75}}>Logos show past productions cast by offices in this directory. No affiliation or endorsement is implied.</div>
+    </div>
+
+    <div className="agd-wrap"><div className="agd-stats">
+      <div className="agd-stat"><div className="v">{n}</div><div className="l">Active casting offices</div></div>
+      <div className="agd-stat"><div className="v">{acc}</div><div className="l">Accept headshots</div></div>
+      <div className="agd-stat"><div className="v">{la}</div><div className="l">Los Angeles</div></div>
+      <div className="agd-stat"><div className="v">{ny}</div><div className="l">New York</div></div>
+    </div></div>
+
+    <div className="agd-wrap"><section className="agd-blk" id="cdx-inside"><div className="agd-flow">
+      <div>
+        <div className="section-label">What's behind the lock</div>
+        <h2 className="agd-h2">Every office, and whether it wants to hear from you.</h2>
+        <p className="agd-sub">A list of casting directors is easy to find. What isn't is which of them will actually open a headshot from an actor they've never met — and which ones will remember you for the wrong reason if you send one. These are the fields held on all {n}.</p>
+        <button className="agd-btn gold" onClick={go}>{cta}</button>
+      </div>
+      <div className="agd-marq"><div className="agd-marq-in">
+        {CDX_FIELDS.concat(CDX_FIELDS).map(([m,s],i)=>(
+          <div key={m+i} className="agd-field" aria-hidden={i>=CDX_FIELDS.length}><div className="m">{m}</div><div className="s">{s}</div></div>
+        ))}
+      </div></div>
+    </div></section></div>
+
+    <div className="agd-wrap"><section className="agd-blk" style={{paddingTop:0}}>
+      <div className="agd-table">
+        <div className="agd-row head"><div>Casting office</div><div>City</div><div>Submissions</div><div>Website</div></div>
+        {sample.map(([city,sub,web,w],i)=>(
+          <div className="agd-row" key={i}>
+            <div className="agd-cell" data-l="Casting office"><span className="agd-redact" style={{width:w}}/></div>
+            <div className="agd-cell" data-l="City">{city}</div>
+            <div className="agd-cell" data-l="Submissions"><span className="agd-pill ok">{sub}</span></div>
+            <div className="agd-cell" data-l="Website"><span className="agd-pill">{web}</span></div>
+          </div>
+        ))}
+        <div className="agd-lock">
+          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>
+          <h4>{n} active casting offices unlock with Premium</h4>
+          <p>Names, submission policies, websites and addresses.</p>
+          <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
+        </div>
+      </div>
+    </section></div>
+
+    <div style={{background:"var(--s2)",borderTop:"1px solid var(--bdr)",borderBottom:"1px solid var(--bdr)"}}>
+      <div className="agd-wrap"><section className="agd-blk">
+        <div className="section-label">Directory + Actor Business Card</div>
+        <h2 className="agd-h2">Put your face on a casting director's desk.</h2>
+        <div className="agd-steps">
+          <div className="agd-step"><div className="n">1</div><div><h5>Pick your offices</h5><p>Start with the ones that accept headshots and cast the kind of work you fit.</p></div></div>
+          <div className="agd-step"><div className="n">2</div><div><h5>Send the card</h5><p>Print it from your dashboard in any of three sizes, write two lines on the back, and post it, from wherever you are in the world.</p></div></div>
+          <div className="agd-step"><div className="n">3</div><div><h5>They scan — you're live</h5><p>Headshots, self-tapes, credits, contact. Update it tomorrow; the same card shows the new version.</p></div></div>
+        </div>
+        <div className="agd-trust" style={{marginTop:22}}>
+          <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[0]}/><div className="ic"><Ico n="id" s={18}/></div><h5>Business Card · <span style={{whiteSpace:"nowrap"}}>3.5 × 2 in</span></h5><p>Ten to a sheet. For auditions, workshops and handing over in person.</p></div>
+          <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[1]}/><div className="ic"><Ico n="mail" s={18}/></div><h5>Mailing Postcard · <span style={{whiteSpace:"nowrap"}}>6 × 4 in</span></h5><p>Made for the post. Big enough to pin on a casting board, with nothing to open.</p></div>
+          <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[2]}/><div className="ic"><Ico n="star" s={18}/></div><h5>Agent Promo Card · <span style={{whiteSpace:"nowrap"}}>7 × 5 in</span></h5><p>The largest. For the offices you most want to be seen by: it's hard to overlook on a desk.</p></div>
+        </div>
+        <p className="agd-sub" style={{marginTop:14}}>Mailing a casting office? Send the <b>Mailing Postcard</b> or the <b>Agent Promo Card</b>. The bigger sizes land on the desk face-up and stay there.</p>
+        <p className="agd-sub" style={{marginTop:18,marginBottom:0}}>Looking for representation instead? <a href="/agency-directory" onClick={e=>{e.preventDefault();onNavigate("agency-directory");}} style={{color:"var(--amber-dk)",fontWeight:700}}>See the Talent Agency &amp; Management Directory →</a></p>
+      </section></div>
+    </div>
+
+    <div className="agd-wrap">
+      <section className="agd-blk">
+        <div className="section-label">Getting seen by casting</div>
+        <h2 className="agd-h2">Questions actors ask about casting directors.</h2>
+        <div className="agd-faq">
+          {CDX_FAQ.map(([q,a],i)=><details key={i} open={i===0}><summary><span>{q}</span><span className="pm"><Ico n="plus" s={14}/></span></summary>
+            <div className="a"><p>{a}</p></div></details>)}
+        </div>
+      </section>
+      <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">
+        <h2 className="agd-h2">The list opens the moment you upgrade.</h2>
+        <p>{n} active casting offices across Los Angeles and New York, plus 650+ talent agencies and management companies, your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
+        <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $17.99/mo"}</button>
+        <div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>
+      </div></section>
+    </div>
+
+    <Footer onNavigate={onNavigate} backToTop/>
+  </div>);
 }
 
 // ═══════════════════════════════════════════
@@ -18011,6 +18650,10 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           {/* Talent Agency Directory — premium-gated; sits next to the business card on purpose
               (the card is what they print, the directory is where they mail it) */}
           <TalentAgencyDirectoryCard isPremium={isPremium} onNavigate={onNavigate}/>
+
+          {/* Casting Companies Directory — the sister card: agencies represent you,
+              casting offices cast you. One shared mailing list across both. */}
+          <CastingDirectoryCard isPremium={isPremium} onNavigate={onNavigate}/>
 
           {/* Profile Improvement Suggestions (Premium feature) */}
           <ProfileImprovementCard
@@ -49252,6 +49895,7 @@ const PAGE_PATH={
   "manager-mode":"/manager-mode",
   "tapelink":"/tapelink",
   "agency-directory":"/agency-directory",
+  "casting-directory":"/casting-directory",
   "actor-business-card":"/actor-business-card",
   "success":"/success",
   "unsubscribed":"/unsubscribed",
@@ -49280,6 +49924,7 @@ const PAGE_SEO={
   "manager-mode":{title:"Manager Mode — Career Check-ins for Actors | CastSlate",desc:"CastSlate Manager Mode is a premium monthly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each month to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
   "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
+  "casting-directory":{title:"Casting Companies Directory — Active Casting Offices in LA & NYC",desc:"CastSlate's Premium, hand-checked directory of active casting offices in Los Angeles and New York: each office's own submission policy, website and mailing address, with the offices that accept headshots listed first."},
   "actor-business-card":{title:"Actor Business Card | CastSlate",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Your Free Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
@@ -50550,6 +51195,21 @@ function App(){
   },[authReady,isLoggedIn,page,viewingCasting]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [menuOpen,setMenuOpen]=useState(false);
+  // "Directories" nav dropdown. Open state lives in React, not CSS :hover/:focus-within:
+  // on iPad (no hover) and in Safari (buttons don't take focus on click) a focus-driven
+  // menu closes on pointerdown, before the click lands, so the item tap would do nothing.
+  const [dirOpen,setDirOpen]=useState(false);
+  const dirRef=useRef(null);
+  const dirTimer=useRef(0);
+  useEffect(()=>{
+    if(!dirOpen)return;
+    const away=(e)=>{if(dirRef.current&&!dirRef.current.contains(e.target))setDirOpen(false);};
+    const esc=(e)=>{if(e.key==="Escape")setDirOpen(false);};
+    document.addEventListener("pointerdown",away);
+    document.addEventListener("keydown",esc);
+    return()=>{document.removeEventListener("pointerdown",away);document.removeEventListener("keydown",esc);};
+  },[dirOpen]);
+  useEffect(()=>{setDirOpen(false);},[page]);
   const [menuClosing,setMenuClosing]=useState(false);
   // 400ms must stay in step with the .4s mmDropUp exit on .mobile-menu-inner —
   // if this is longer the drawer sits finished-but-mounted before it disappears.
@@ -50806,7 +51466,23 @@ function App(){
           <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           {classesOn&&<span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>}
-          <span className={"nav-attn"+(page==="agency-directory"?" act":"")} onClick={()=>navigate("agency-directory")}>{navT('nav.agencyDirectory')}</span>
+          {/* One "Directories" item instead of two gold links side by side. Opens on hover,
+              and on focus for touch/keyboard (a tap focuses the item). Items are buttons,
+              not spans — .nav-links span styles would otherwise reach inside the menu. */}
+          <span ref={dirRef} className={"nav-attn nav-dd"+(page==="agency-directory"||page==="casting-directory"?" act":"")+(dirOpen?" open":"")}
+            role="button" tabIndex={0} aria-haspopup="true" aria-expanded={dirOpen}
+            onClick={()=>setDirOpen(o=>!o)}
+            onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setDirOpen(o=>!o);}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);setDirOpen(true);}}}
+            onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);dirTimer.current=setTimeout(()=>setDirOpen(false),180);}}}>
+            {navT('nav.directories')}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft:5,verticalAlign:"middle"}}><path d="M6 9l6 6 6-6"/></svg>
+            {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
+              <button role="menuitem" className={page==="agency-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("agency-directory");}}>
+                <i className="ic"><Ico n="building-bank" s={17}/></i><b>{navT('nav.agencyDirectory')}</b><small>650+ talent agencies &amp; managers · LA + NY</small></button>
+              <button role="menuitem" className={page==="casting-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
+                <i className="ic"><Ico n="movie" s={17}/></i><b>{navT('nav.castingDirectory')}<em className="nav-new">New</em></b><small>{CASTING_OFFICES.length} active casting offices · who accepts headshots</small></button>
+            </div>}
+          </span>
           <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
           <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
@@ -50873,6 +51549,7 @@ function App(){
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
+            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("casting-directory")}>{navT('nav.castingDirectory')}<em className="nav-new">New</em></button>
             <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
@@ -51009,6 +51686,7 @@ function App(){
         {page==="manager-mode"&&<ManagerModePage onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}
         {page==="agency-directory"&&<AgencyDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
+        {page==="casting-directory"&&<CastingDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
