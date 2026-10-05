@@ -29193,7 +29193,7 @@ const ACG = (()=>{
       h2:"the layoff list changes on Wednesday, and now it is a different person in the car",
       w:["a sedan on a highway commute between a suburb and a plant","a company van running a shift route","a car pool crossing a bridge at the same hour every day"],
       c:[
-        {s:"the one who knows",r:"Lead",a:"midCareer",x:"Middle management, decent, and made to carry a secret that is not theirs. Everything happens on their face."},
+        {s:"the manager with the secret",r:"Lead",a:"midCareer",x:"Middle management, decent, and made to carry a secret that is not theirs. Everything happens on their face."},
         {s:"the one being let go",r:"Lead",a:"mature",g:"F",x:"Twenty-two years in and talking about a kitchen renovation. Devastating precisely because she is cheerful."},
         {s:"the young one",r:"Supporting",a:"youngAdult",x:"Says the wrong thing constantly and is the only one being honest."},
         {s:"the driver",r:"Supporting",a:"mature",x:"Owns the car, sets the rules, controls the radio and the mood."},
@@ -29349,8 +29349,8 @@ const ACG = (()=>{
       h2:"the meeting was set up by a third person who is waiting downstairs",
       w:["an airport hotel room with a view of a parking structure","a downtown business hotel on a Sunday","an extended-stay suite with a kitchenette nobody uses"],
       c:[
-        {s:"the one who asked",r:"Lead",a:"mature",g:"F",x:"Arrived early, rehearsed everything, and abandons the script in minute six."},
-        {s:"the one who came",r:"Lead",a:"mature",x:"Came for reasons they cannot state out loud. Holds back, is funny, and then says one thing that lands hard."},
+        {s:"the one who asked to meet",r:"Lead",a:"mature",g:"F",x:"Arrived early, rehearsed everything, and abandons the script in minute six."},
+        {s:"the one who showed up",r:"Lead",a:"mature",x:"Came for reasons they cannot state out loud. Holds back, is funny, and then says one thing that lands hard."},
         {s:"the voice on the phone",r:"Supporting",a:"midCareer",x:"Heard twice; changes the temperature of the room both times."},
         {s:"the front desk clerk",r:"Day Player",a:"youngAdult",x:"Two short interruptions, played completely straight."},
         {s:"the friend in the lobby",r:"Day Player",a:"mature",g:"F",x:"Waits downstairs and gets the last scene."}
@@ -29389,7 +29389,7 @@ const ACG = (()=>{
       w:["a union hall meeting room with bad coffee","a hospital conference room after visiting hours","a school library used for a late-night negotiation"],
       c:[
         {s:"the negotiator",r:"Lead",a:"mature",g:"F",x:"Patient, exact, and playing a longer game than the room. Enormous stillness."},
-        {s:"the other side",r:"Lead",a:"midCareer",x:"Reasonable, prepared, and cornered by something personal in hour two."},
+        {s:"the opposing negotiator",r:"Lead",a:"midCareer",x:"Reasonable, prepared, and cornered by something personal in hour two."},
         {s:"the observer",r:"Supporting",a:"senior",x:"Speaks four times and each one moves the table."},
         {s:"the junior on the team",r:"Supporting",a:"youngAdult",x:"Takes notes, says the wrong thing, is accidentally right."},
         {s:"the person who brings the coffee",r:"Day Player",a:"midCareer",x:"Two entrances, both of which reset the temperature."}
@@ -29721,7 +29721,7 @@ const ACG = (()=>{
         {s:"the skeptic",r:"Lead",a:"midCareer",g:"F",x:"Came because her sister paid. Funny, armored, and the first to count the beds. Carries the audience's suspicion for them."},
         {s:"the facilitator",r:"Lead",a:"mature",x:"Warm, unhurried, entirely reasonable — which is exactly what makes the part terrifying. Never raises the volume, not once."},
         {s:"the true believer",r:"Supporting",a:"youngAdult",x:"Third retreat this year and desperate for it to work. Kind, not stupid; the saddest person in the film."},
-        {s:"the one who vanishes",r:"Supporting",a:"adult",x:"On screen for eleven minutes and has to be memorable enough that the audience notices the absence before the cast does."},
+        {s:"the guest who vanishes",r:"Supporting",a:"adult",x:"On screen for eleven minutes and has to be memorable enough that the audience notices the absence before the cast does."},
         {s:"the cook",r:"Day Player",a:"senior",g:"F",x:"Says nothing for the whole film and one sentence at the end. Enormous presence, no lines to hide behind."}
       ]},
     {k:"dashcam-blackmail",era:"2010s",genre:"thriller",tracks:["film","tv"],
@@ -34887,7 +34887,7 @@ const ACG = (()=>{
      turns:[(P,J,A)=>`the person they came to see will not discuss the one thing that brought them back`,(P,J,A)=>`they are offered the life they left, and ${P} is better than they remembered`,(P,J,A)=>`someone else has kept ${P} going and expects to be thanked for it`,(P,J,A)=>`the family has been telling a different story about why they left`],
      cast:(w,pl)=>[
        {s:w.s,r:"Lead",a:w.a,xs:[`Rehearsed this visit for years and gets none of the conversations they planned. Everything lands on the face before it reaches the mouth.`,`Came back for two days with a return trip booked and keeps checking it. Polite to people who hurt them, which reads as strength until it does not.`]},
-       {s:"the one who stayed",r:"Lead",a:"midCareer",xs:[`Never left and is not bitter about it, which is harder to play than bitter. Runs ${pl.short} without appearing to.`,`Has kept ${pl.short} going alone. Welcomes the lead home and keeps a tally at the same time.`]},
+       {s:"the local who stayed",r:"Lead",a:"midCareer",xs:[`Never left and is not bitter about it, which is harder to play than bitter. Runs ${pl.short} without appearing to.`,`Has kept ${pl.short} going alone. Welcomes the lead home and keeps a tally at the same time.`]},
        {s:"the parent",r:"Supporting",a:"senior",xs:[`Remembers a version of ${pl.short} nobody else recognizes. Warm, stubborn, and more tired than they admit.`,`Talks about everything except the reason their child left. One scene at the kitchen table carries the story.`]},
        {s:"the neighbor",r:"Day Player",a:"mature",xs:[`Knows everything that happened ${pl.at} and says it kindly, which is worse. One scene, no malice.`,`Catches the lead outside ${pl.short} and asks the question everyone else avoided.`]}]},
 
@@ -34900,7 +34900,7 @@ const ACG = (()=>{
      cast:(w,pl)=>[
        {s:w.s,r:"Lead",a:w.a,xs:[`Funny under pressure and terrible at accepting help. The panic underneath has to be real or the comedy does not work.`,`Has run ${pl.short} on no sleep for a week and is still the most capable person in it. Turns down help four times and means it less each time.`]},
        {s:"the assistant",r:"Supporting",a:"youngAdult",xs:[`Faster than anyone ${pl.at} and treated like furniture. The audience should be waiting for this one to speak up.`,`Does half the work ${pl.at} and gets none of the credit. Keeps a list of everything that needs fixing.`]},
-       {s:"the one who comes back",r:"Supporting",a:"midCareer",xs:[`Left ${pl.short} on bad terms and is better at the work than the lead. Careful never to say so out loud.`,`Walks back into ${pl.short} like no time has passed. Knows which machine is broken before anyone says a word.`]},
+       {s:"the coworker who comes back",r:"Supporting",a:"midCareer",xs:[`Left ${pl.short} on bad terms and is better at the work than the lead. Careful never to say so out loud.`,`Walks back into ${pl.short} like no time has passed. Knows which machine is broken before anyone says a word.`]},
        {s:"the inspector",r:"Day Player",a:"mature",xs:[`Dry, exact, and not interested in anyone's excuses. Doing a job, not making a point.`,`Arrives with a clipboard and a checklist. Gives one piece of advice nobody asked for.`]}]},
 
     {k:"lostfound",genre:"drama",tracks:["film","tv","stage"],
@@ -34911,7 +34911,7 @@ const ACG = (()=>{
      turns:[(P,J,A)=>`the owner shows up ${A} and is nobody anyone expected`,(P,J,A)=>`what is inside the bag answers a question about someone the ${J} loves`,(P,J,A)=>`turning it in would cost the ${J} the one thing they have been saving for`,(P,J,A)=>`somebody else ${A} already knows, and wants a share`],
      cast:(w,pl)=>[
        {s:w.s,r:"Lead",a:w.a,xs:[`Alone for most of it, moving through ${pl.short} at night. The decision has to show in the hands before it reaches the dialogue.`,`Works ${pl.short} on their own and talks to almost nobody. Every choice in the story happens in silence and has to be clear anyway.`]},
-       {s:"the one who saw",r:"Supporting",a:"adult",xs:[`Was ${pl.at} that night and is very friendly about it. The friendliness is the pressure.`,`Works the other half of the night ${pl.at}. Mentions what they saw once, lightly, and never lets it go.`]},
+       {s:"the night-shift witness",r:"Supporting",a:"adult",xs:[`Was ${pl.at} that night and is very friendly about it. The friendliness is the pressure.`,`Works the other half of the night ${pl.at}. Mentions what they saw once, lightly, and never lets it go.`]},
        {s:"the person who lost it",r:"Supporting",a:"midCareer",xs:[`Comes looking late in the story, grateful and slightly wrong about what happened.`,`Turns up with a description that does not quite match. Neither cruel nor honest.`]},
        {s:"the relative",r:"Day Player",a:"senior",xs:[`Needs the money more than the lead does and has never once asked. Two scenes, both quiet.`,`Visits ${pl.short} once to talk about an unpaid bill. Never guesses what the lead is hiding.`]}]},
 
@@ -34923,7 +34923,7 @@ const ACG = (()=>{
      turns:[(P,J,A)=>`the judge knows more about the ${J} than they let on`,(P,J,A)=>`an injury halfway through has to be hidden until it is over`,(P,J,A)=>`the place is offered on a condition the ${J} cannot accept`,(P,J,A)=>`the one person they came to impress misses the part they were best at`],
      cast:(w,pl)=>[
        {s:w.s,r:"Lead",a:w.a,xs:[`Physical part: the skill has to be real, on camera, take after take. Most of the performance happens while out of breath.`,`Trains alone before anyone else arrives. Says almost nothing and wants this more than anyone ${pl.at}.`]},
-       {s:"the one who decides",r:"Supporting",a:"mature",xs:[`Watches from the side and says very little. Every look has to land as a verdict without being one.`,`Has seen a thousand of these tryouts. Kind in a way that gives nothing away.`]},
+       {s:"the head judge",r:"Supporting",a:"mature",xs:[`Watches from the side and says very little. Every look has to land as a verdict without being one.`,`Has seen a thousand of these tryouts. Kind in a way that gives nothing away.`]},
        {s:"the rival",r:"Supporting",a:"youngAdult",xs:[`Better on paper and generous in person, which the lead cannot stand.`,`Arrives relaxed, warms up properly, and is impossible to dislike.`]},
        {s:"the coach",r:"Day Player",a:"senior",xs:[`Hard on the lead because nobody else will be. Thirty years of this and no sentiment left on the surface.`,`Tapes the lead's hands, says one thing, and leaves before the result.`]}]},
 
@@ -34949,7 +34949,7 @@ const ACG = (()=>{
        {s:w.s,r:"Lead",a:w.a,xs:[`Calm on the surface and losing ground in every scene. Talks their way through until it stops working.`,`Shows up ${pl.at} with a plan each time and leaves with a worse one. Never raises their voice.`]},
        {s:"the lender",r:"Supporting",a:"mature",xs:[`Patient, reasonable, never threatening. The menace is entirely in how ordinary they are.`,`Runs ${pl.short} and does not enjoy this part of it. Offers coffee first, every time.`]},
        {s:"the go-between",r:"Supporting",a:"adult",xs:[`Related to both sides. Tries to broker a deal and makes it worse twice.`,`Carries messages back and forth and shades each one slightly in their own favor.`]},
-       {s:"the one who pays",r:"Day Player",a:"senior",xs:[`Puts up the money without being asked and never mentions it again. One scene.`,`Arrives ${pl.at} with an envelope and an opinion nobody wants.`]}]},
+       {s:"the backer",r:"Day Player",a:"senior",xs:[`Puts up the money without being asked and never mentions it again. One scene.`,`Arrives ${pl.at} with an envelope and an opinion nobody wants.`]}]},
 
     {k:"nightdrive",genre:"drama",tracks:["film","tv"],
      who:[{k:"driverN",s:"the driver",a:"midCareer",p:"a driver taking an elderly passenger four hundred miles overnight",mate:"the passenger",mateAge:"senior"},{k:"sisterN",s:"the sister",a:"adult",p:"a woman driving her sister somewhere she does not want to go",mate:"the other sister",mateAge:"midCareer"},{k:"kidN",s:"the teenager",a:"teen",p:"a seventeen-year-old driving his grandfather across the state",mate:"the grandfather",mateAge:"senior"},{k:"exwife",s:"the ex-wife",a:"midCareer",p:"a woman driving her ex-husband to a funeral",mate:"the ex-husband",mateAge:"mature"}],
@@ -34972,7 +34972,7 @@ const ACG = (()=>{
      cast:(w,pl)=>[
        {s:w.s,r:"Lead",a:w.a,xs:[`Runs the afternoon and is the one thing in it that could break. An ensemble piece: the lead is the quietest person at the table.`,`Seats everyone, refills glasses, and watches the door. Says the least and carries the story.`]},
        {s:w.mate||"the daughter",r:"Lead",a:w.mateAge||"youngAdult",xs:[`Finds out on screen. Everything after that is reaction, most of it under the table.`,`Arrives late and happy. The whole part turns on one sentence they overhear.`]},
-       {s:"the one who tells",r:"Supporting",a:"midCareer",xs:[`Certain they are doing the right thing. Must never read as cruel.`,`Waits until the plates are cleared. Believes the truth is a kindness.`]},
+       {s:"the friend who breaks the news",r:"Supporting",a:"midCareer",xs:[`Certain they are doing the right thing. Must never read as cruel.`,`Waits until the plates are cleared. Believes the truth is a kindness.`]},
        {s:"the peacemaker",r:"Supporting",a:"senior",xs:[`Has held this family together with small talk for decades and runs out of it ${pl.at}.`,`Changes the subject four times and cannot manage a fifth.`]}]},
 
     {k:"newhire",genre:"comedy drama",tracks:["film","tv","stage"],
@@ -35044,7 +35044,7 @@ const ACG = (()=>{
      cast:(w,pl)=>[
        {s:w.s,r:"Lead",a:w.a,xs:[`The whole part is a person deciding whether to speak. The silences carry more than the lines.`,`Ordinary, careful, and lying by omission from the first scene. The audience must stay on their side.`]},
        {s:"the investigator",r:"Supporting",a:"mature",xs:[`Patient and never raises their voice. Knows more than they ask.`,`Comes back three times with the same question asked a different way.`]},
-       {s:"the other one who knows",r:"Supporting",a:"adult",xs:[`Was also there that night. Wants the lead to stay quiet and never says so plainly.`,`Shows up ${pl.at} to be friendly. It is not friendliness.`]},
+       {s:"the second witness",r:"Supporting",a:"adult",xs:[`Was also there that night. Wants the lead to stay quiet and never says so plainly.`,`Shows up ${pl.at} to be friendly. It is not friendliness.`]},
        {s:"the family member",r:"Day Player",a:"senior",xs:[`Asks the lead one direct question and accepts the answer. One scene, and it hurts.`,`Knows something changed that week and waits to be told.`]}]},
 
     {k:"blackmail",genre:"thriller",tracks:["film","tv","stage"],
@@ -35264,14 +35264,14 @@ const ACG = (()=>{
        {s:"the transit officer",r:"Day Player",a:"adult",xs:[`Enforces the permit rules without enjoying it.`,`Shows up with a clipboard and a list of permits.`]}]},
 
     {k:"plantvote",genre:"period drama",tracks:["film","tv","stage"],era:"1970s",
-     who:[{k:"steward",s:"the union steward",a:"mature",p:"a union steward counting votes he is not sure of"},{k:"youngworker",s:"the young worker",a:"youngAdult",p:"a worker three months on the line with an opinion"},{k:"foremanP",s:"the foreman",a:"mature",p:"a foreman caught between the floor and the front office"},{k:"clerkP",s:"the payroll clerk",a:"adult",p:"a payroll clerk who knows what everyone is paid"}],
+     who:[{k:"steward",s:"the union steward",a:"mature",p:"a union steward who is not sure he has the votes"},{k:"youngworker",s:"the young worker",a:"youngAdult",p:"a worker three months on the line with an opinion"},{k:"foremanP",s:"the foreman",a:"mature",p:"a foreman caught between the floor and the front office"},{k:"clerkP",s:"the payroll clerk",a:"adult",p:"a payroll clerk who knows what everyone is paid"}],
      place:[{k:"plant",short:"the plant",at:"at the plant",w:["a parts plant on the edge of town","a plant running two shifts","a plant with a cafeteria the size of a church"]},{k:"canteenP",short:"the cafeteria",at:"in the plant cafeteria",w:["a plant cafeteria with long tables","a cafeteria open from six","a cafeteria where every real meeting happens"]},{k:"gateP",short:"the gate",at:"at the plant gate",w:["a plant gate with a burn barrel","a gate where the buses stop","a gate with a guard booth and a barrier"]}],
      ttl:(T,TA)=>[`The Vote`,`Three Days`,`Show of Hands`],
      p:(w,pl)=>`${w.p} has three days before the workers ${pl.at} vote on whether to strike`,
      turns:[(P,J,A)=>`the vote is closer than anyone admits`,(P,J,A)=>`one family on the line is split down the middle`,(P,J,A)=>`the offer improves the night before the meeting`,(P,J,A)=>`the ${J} votes against their own side and explains it to nobody`],
      cast:(w,pl)=>[
-       {s:w.s,r:"Lead",a:w.a,xs:[`Speaks for four hundred people and is not sure anymore. A period piece: the argument is the action.`,`Has worked the line since high school and knows what a strike costs a neighborhood. Never grandstands.`]},
-       {s:"the one on the other side",r:"Lead",a:"midCareer",xs:[`Argues the opposite and is not wrong. Must be as sympathetic as the lead.`,`Has three kids and a mortgage and says so without self-pity.`]},
+       {s:w.s,r:"Lead",a:w.a,xs:[`Speaks for four hundred people and is not sure anymore. The argument is the action.`,`Has worked the line since high school and knows what a strike costs a neighborhood. Never grandstands.`]},
+       {s:"the management negotiator",r:"Lead",a:"midCareer",xs:[`Argues the opposite and is not wrong. Must be as sympathetic as the lead.`,`Has three kids and a mortgage and says so without self-pity.`]},
        {s:"the plant manager",r:"Supporting",a:"mature",xs:[`Speaks for the front office and believes he is being reasonable.`,`Came up off the floor and has not forgotten it, which makes it worse.`]},
        {s:"the wife",r:"Supporting",a:"midCareer",xs:[`Does the math at the kitchen table that nobody at the union hall does.`,`Supports her husband completely and tells him the truth in the last scene.`]}]},
 
@@ -35324,7 +35324,7 @@ const ACG = (()=>{
        {s:"the city inspector",r:"Day Player",a:"midCareer",xs:[`Measures the fence and finds both of them tiresome.`,`Arrives with a tape measure and no interest in history.`]}]},
 
     {k:"lastsummer",genre:"coming-of-age",tracks:["film","tv"],
-     who:[{k:"leaver",s:"the one leaving",a:"teen",p:"a high school senior headed to a college three hundred miles away"},{k:"stayer",s:"the one staying",a:"teen",p:"a high school senior who did not apply anywhere"},{k:"workerY",s:"the summer worker",a:"teen",p:"a seventeen-year-old with a first real paycheck"},{k:"carerY",s:"the one who cannot go",a:"teen",p:"a teenager whose mother is sick"}],
+     who:[{k:"leaver",s:"the senior who is leaving",a:"teen",p:"a high school senior headed to a college three hundred miles away"},{k:"stayer",s:"the senior who is staying",a:"teen",p:"a high school senior who did not apply anywhere"},{k:"workerY",s:"the summer worker",a:"teen",p:"a seventeen-year-old with a first real paycheck"},{k:"carerY",s:"the one who cannot go",a:"teen",p:"a teenager whose mother is sick"}],
      place:[{k:"lido",short:"the town pool",at:"at the town pool",w:["an outdoor pool open from June","a town pool with a snack bar and a lifeguard chair","a pool that closes the week after Labor Day"]},{k:"cornershop",short:"the corner store",at:"at the corner store",w:["a corner store with a weekend schedule","a store where every kid in town works one summer","a store with a stockroom nobody supervises"]},{k:"estateY",short:"the neighborhood",at:"around the neighborhood",w:["a housing complex with a courtyard and a shuttered bar","a housing complex where every family knows every other family","a neighborhood ten minutes from the beach"]}],
      ttl:(T,TA)=>[`The Last Summer`,`Before September`,`Nothing Much Happens`],
      p:(w,pl)=>`${w.p} spends one last summer ${pl.at} with friends they may not see again`,
@@ -35355,7 +35355,7 @@ const ACG = (()=>{
      turns:[(P,J,A)=>`somebody lied at the time and still does`,(P,J,A)=>`a second person left town the same week and nobody connected them`,(P,J,A)=>`the ${J} is warned off by somebody who means well`,(P,J,A)=>`the answer is smaller and sadder than the rumor`],
      cast:(w,pl)=>[
        {s:w.s,r:"Lead",a:w.a,xs:[`Knows everyone in town, which helps for an hour and becomes a problem after that.`,`Patient and orderly. Asks the same question of eleven people and hears eleven versions.`]},
-       {s:"the one who knows",r:"Supporting",a:"senior",xs:[`Has carried it ever since and will only talk somewhere private.`,`Answers every question except the one that matters, twice.`]},
+       {s:"the old witness",r:"Supporting",a:"senior",xs:[`Has carried it ever since and will only talk somewhere private.`,`Answers every question except the one that matters, twice.`]},
        {s:"the family member",r:"Supporting",a:"midCareer",xs:[`Wants it left alone and cannot say why.`,`Has built a life since then, and the questions threaten it.`]},
        {s:"the county official",r:"Day Player",a:"mature",xs:[`Explains the file, is entirely correct, and is no help.`,`Meets the lead once and is careful with every word.`]}]},
 
@@ -37429,6 +37429,7 @@ const ACG = (()=>{
         // Round 8 mixes, read back from the saved listing.
         t("r8pay",r8BandOf(c));
         {const w=(String(c.synopsis||"").match(/^(Casting|Seeking)\b/)||[])[1];if(w)t("r8open",w);}
+        if(i<R11_OPEN_WINDOW)(h.r11Open=h.r11Open||[]).push(r11OpenShape(c.synopsis));
         {const n=v3Sentences(String(c.synopsis||"").replace(/\w+ states: "[^"]*"/g,"")).length;t("r8len",n<=1?"one":n<=3?"mid":"long");}
         {const nt=String(c.schedule_note||"");t("r8date",c.shoot_start?"dated":/remotely|Self-shot/.test(nt)?"remote":/\b(TBD|TBC)\b/.test(nt)?"tbd":"vague");}
       }
@@ -37779,6 +37780,7 @@ const ACG = (()=>{
     v8Problems(item,c).forEach(x=>out.push(x));
     if(R8_ON)r8Problems(item).forEach(x=>out.push("r8: "+x));
     r10Problems(item,c).forEach(x=>out.push("r10: "+x));
+    r11Problems(item).forEach(x=>out.push("r11: "+x));
     if(c.h&&c.res&&v3TooClose(v3StoryWords(syn),(c.h.storyWords||[]).concat(c.res.storyWords||[])))out.push("story too close to a saved listing");
     if(c.h&&c.res){const seenHere=new Set();v3ListingSentences(item,roles).forEach(x=>{const k=v3SentKey(x);if((seenHere.has(k)&&x!==item.tagline)||v3SentUsed(k,c.h,c.res))out.push("reused sentence: "+x.slice(0,60));if(x!==item.tagline)seenHere.add(k);});}
     return out;
@@ -38004,10 +38006,14 @@ const ACG = (()=>{
   // Student work is unpaid or a small stipend; micro-budget non-union pays a
   // lead a few hundred a day at most and a supporting part rather less.
   const R9_STUDENT=/^(Student Film)$/;
+  const R11_OOB=/^Off-Off-Broadway Theater$/;
   const R9_MICRO=/^(Experimental Film|Performance Art|Dance Project|Proof of Concept|Pitch Trailer|Table Read|Workshop \/ Staged Reading|Short Film|Sizzle Reel)$/;
   function R9_BUDGET_CAP(type,fam){
     if(R9_STUDENT.test(type))return {day:{lead:100,support:75,small:50},flat:{lead:300,support:200,small:150}};
     if(R9_MICRO.test(type))return {day:{lead:300,support:150,small:125},flat:{lead:1000,support:600,small:400}};
+    // Round 11: non-union Off-Off-Broadway is unpaid, a stipend or a small
+    // flat fee for the whole run - $0 to $500 in total, never a weekly rate.
+    if(R11_OOB.test(type))return {day:{lead:100,support:75,small:50},flat:{lead:500,support:400,small:300}};
     // Round 10: non-union features and series (union work never reaches here).
     {const cp=r10NonUnionCap(type);if(cp)return {day:cp,flat:null};}
     return null;
@@ -38036,6 +38042,7 @@ const ACG = (()=>{
     if(tier==="unpaid")return "unpaid";
     // A read or a workshop pays by the job, never by the week.
     if(type==="Table Read"||type==="Workshop / Staged Reading")return tier==="deferred"?"stipendFlat":"flat";
+    if(R11_OOB.test(type))return tier==="deferred"?pick(["stipendFlat","deferred"]):pick(["flat","stipendFlat"]);
     if(fam==="stage")return tier==="deferred"?pick(["stipendFlat","deferred"]):"week";
     if(fam==="audio"||fam==="anim")return tier==="deferred"?pick(["stipendFlat","deferred"]):/^(Podcast \/ Audio Drama)$/.test(type)&&Math.random()<0.5?"ep":"session";
     if(tier==="deferred")return pick(["stipendDay","stipendDay","stipendFlat","deferred","gas"]);
@@ -38048,7 +38055,8 @@ const ACG = (()=>{
   // Sets r.pay on every role and returns the facts the pay box is written from.
   function v5SetPay(roles,type,fam,tier,union,plan){
     const ranks=new Set(roles.map(v3RankOf));
-    const st=(plan._r10Pay&&r10Structure(plan._r10Pay,tier,fam,type))||v5Structure(type,fam,tier,plan.days);
+    let st=(plan._r10Pay&&r10Structure(plan._r10Pay,tier,fam,type))||v5Structure(type,fam,tier,plan.days);
+    if(R11_OOB.test(type)&&!/^(unpaid|deferred|union|flat|stipendFlat)$/.test(st))st=pick(["flat","stipendFlat"]);
     const P={tier,structure:st,union,flatAll:false,usage:null,buyout:0,perks:[]};
     const setAll=(fn)=>roles.forEach(r=>{r.pay=fn(r,v3RankOf(r));});
     if(st==="unpaid"){setAll(()=>"Unpaid");return P;}
@@ -39647,7 +39655,9 @@ const ACG = (()=>{
     const sk=c.sk||[];const all=`${r._slot||""} ${sk.join(" ")}`;
     const days=+r.est_days||1,total=c.days||days;
     const unit=c.stage?"performance":c.sessions?"session":"day";
-    const units=n=>`${v3Words(n)} ${unit}${n===1?"":"s"}`;
+    // Round 11: on stage c.days is rehearsals plus performances, never the
+    // run's performance count, so a stage part never quotes a number.
+    const units=n=>c.stage?(n>=total?"the whole run":"part of the run"):`${v3Words(n)} ${unit}${n===1?"":"s"}`;
     const low=V8_LOW_DIALOGUE.test(all),talk=V8_TALKER.test(all);
     const lead=/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||"");
     const skill=c.skill&&c.skill.re.test(all)?c.skill.label:"";
@@ -39657,13 +39667,18 @@ const ACG = (()=>{
     const G=c.genre||"";
     const opts=({
       demand:()=>{const x=low?"a lot of listening and very few words":lead&&days>=5?`energy that lasts ${units(days)}`:/comedy/.test(G)?"a light touch with jokes":/thriller|crime|horror/.test(G)?"real tension in small moments":"a clear, natural read";
-        return [`Playing the ${lab} asks for ${x}.`,`What the ${lab} needs most is ${x}.`,`As the ${lab}, ${F} needs ${x}.`,`The ${lab} part asks for ${x}.`,`Bring ${x}.`,`${F} lives or dies on ${x}.`,`We're after ${x} here.`,`Above all: ${x}.`];},
+        // Round 11: the label is never pasted back in as a noun once the name
+        // has been given ("The plow driver is needed all three days").
+        return [`What ${F} needs most is ${x}.`,`${F} needs ${x}.`,`The part asks for ${x}.`,`Bring ${x}.`,`${F} lives or dies on ${x}.`,`We're after ${x} here.`,`Above all: ${x}.`];},
       dialogue:()=>low?[`${F} is nearly wordless; the part is all in the looks.`,`Very little dialogue for ${F}.`,`${F} has almost no lines.`,`Few lines: ${F} is mostly seen, not heard.`]:talk?[`A lot of the dialogue belongs to ${F}.`,`${F} talks more than anyone else in the ${c.noun}.`,`Expect long speeches for ${F}.`,`${F} does most of the talking.`]:null,
       onday:()=>{const t=c.stage?(lead?"every rehearsal and every performance":"the scenes you're in, plus notes sessions"):c.sessions?(lead?"most of the recording time":"a short session with the director"):days===1?"one day, a handful of setups":lead?"most setups on most days":`${units(days)}, a few scenes each`;
-        return [`For the ${lab}, expect ${t}.`,`${capFirst(c.stage?"in the room":c.sessions?"in the booth":"on set")} as the ${lab}: ${t}.`,`Plan on ${t} as the ${lab}.`,`The ${lab}'s schedule: ${t}.`];},
+        return [`For ${F}, expect ${t}.`,`${capFirst(c.stage?"in the room":c.sessions?"in the booth":"on set")}: ${t}.`,`Plan on ${t}.`,`${F}'s schedule: ${t}.`];},
       notline:()=>V8_HARD_TRAITS.test(all)?[`Not a villain: ${F} has reasons.`,`${F} isn't the bad guy, just hard to be around.`,`Not a villain, even when ${F} is at their worst.`.replace(" at their worst"," difficult"),`Hard, but never a cartoon.`]:V8_FUNNY.test(all)?[`${F} is funny, but not only comic relief.`,`Not just the joke in the room.`,`Funny, but ${F} is not the clown.`]:null,
       skill:()=>skill?[`${F} needs real ${skill}.`,`Real ${skill} is required for ${F}.`,`Must have real ${skill} experience.`,`The ${skill} has to be real, not faked.`]:null,
-      days:()=>total>1&&days>=total?[`The ${lab} is needed all ${units(total)}.`,`Every one of the ${units(total)} includes the ${lab}.`,`Block out all ${units(total)} for the ${lab}.`]:total>1?[`The ${lab} works ${v3Words(days)} of the ${units(total)}.`,`${capFirst(c.stage?"called":c.sessions?"booked":"on set")} for ${v3Words(days)} of the ${units(total)} as the ${lab}.`,`For the ${lab}, that's ${units(days)} out of ${units(total)}.`,`${capFirst(v3Words(days))} of the ${v3Words(total)} ${unit}s belong to the ${lab}.`]:null,
+      // Round 11: on stage plan.days counts rehearsals AND performances, so a
+      // number here contradicted the listing ("all 23 performances" on a run
+      // of nine). Stage parts say "every performance" and quote no count.
+      days:()=>c.stage?(lead||days>=total?[`${F} is in every performance.`,`Block out every rehearsal and every performance.`,`${F} is called for every performance of the run.`]:null):total>1&&days>=total?(total===2?[`${F} is needed both ${unit}s.`,`Block out both ${unit}s.`]:[`${F} is needed all ${units(total)}.`,`Block out all ${units(total)}.`,`${F} works every one of the ${units(total)}.`]):total>1?[`${F} works ${v3Words(days)} of the ${units(total)}.`,`${capFirst(c.sessions?"booked":"on set")} for ${v3Words(days)} of the ${units(total)}.`,`For ${F}, that's ${units(days)} out of ${units(total)}.`]:null,
       contrast:()=>{if(!P)return null;const a=v8Adjs(sk.join(" "))[0],b=v8Adjs((c.partnerSk||[]).join(" "))[0];if(!a||!b||a===b)return null;
         return [`Where ${PF} is ${b}, ${F} is ${a}.`,`${PF} is ${b}; ${F} is ${a}.`,`Next to ${PF}, who is ${b}, ${F} reads as ${a}.`];},
       camera:()=>screen&&lead?[`The camera spends a lot of time on ${F}'s face.`,`Expect close-ups on ${F} in the quiet scenes.`,`The camera often stays on ${F} while others talk.`,`${F}'s reactions carry many of the shots.`]:null,
@@ -39676,12 +39691,16 @@ const ACG = (()=>{
       hard:()=>{const x=low?"saying very little and still holding the scene":lead&&days>=5?`staying fresh across ${units(days)}`:skill?`doing real ${skill}`:/comedy/.test(G)?"being funny while taking it seriously":null;
         return x?[`The hard part is ${x}.`,`What's tricky: ${x}.`,`The challenge for ${F} is ${x}.`]:null;},
       physical:()=>skill&&/boxing|swimming|dance|climbing|skating|horse riding|stunt|driving/.test(skill)?[`Physically demanding: real ${skill}.`,`${F} needs to be fit enough for real ${skill}.`,`There's real ${skill} in this part.`]:null,
-      appears:()=>total>1?(days>=total?[`The ${lab} is in nearly every ${unit}.`,`As the ${lab}, ${F} appears across the whole ${c.noun}.`,`There's no ${unit} without the ${lab}.`]:days===1?[`The ${lab} is in one ${unit} only.`,`A one-${unit} part: the ${lab}.`,`Just one ${unit} for the ${lab}.`]:[`The ${lab} turns up across the ${c.noun}, not in every scene.`,`${F} comes and goes through the ${c.noun} as the ${lab}.`]):null,
+      appears:()=>c.stage?null:total>1?(days>=total?[`${F} appears across the whole ${c.noun}.`,`${F} is in nearly every scene.`]:days===1?[`${F} is in one ${unit} only.`,`A one-${unit} part.`,`Just one ${unit} for ${F}.`]:[`${F} turns up across the ${c.noun}, not in every scene.`,`${F} comes and goes through the ${c.noun}.`]):null,
       merge:()=>{const s1=sk[0]||"";const w=s1.split(/\s+/)[0]||"";return s1&&(V5_ADJ.test(w.replace(/,$/,""))||/ly$/.test(w))&&!V5_PRONOUN.test(s1)?[`__MERGE__`]:null;},
       flip:()=>sk.length>=2?[`__FLIP__`]:null,
       sketchlead:()=>{const s1=sk[0]||"";const w=s1.split(/\s+/)[0]||"";return s1&&V5_VERB3.test(w)&&!V5_PRONOUN.test(s1)&&s1.split(/\s+/).length<=12?[`__SKLEAD__`]:null;},
-      size:()=>{const sz=lead?pick(["A big part","A lead part","A large part"]):days<=1?pick(["A small part","A short part"]):pick(["A mid-sized part","A solid supporting part"]);const dl=low?"almost no dialogue":talk?"plenty of dialogue":"some dialogue";return [`${sz} for the ${lab}: ${units(days)}, ${dl}.`,`${sz}: ${units(days)} as the ${lab}, with ${dl}.`,`It's ${sz[0].toLowerCase()+sz.slice(1)} with ${dl}, over ${units(days)}.`];},
-      prep:()=>[`Come in knowing how a ${lab} ${pick(["talks","moves","works"])}.`,`It helps to know what a ${lab}'s day looks like.`,`Before the read, think about what a ${lab} notices first.`,`Know the ${lab}'s world before you walk in.`],
+      size:()=>{const sz=lead?pick(["A big part","A lead part","A large part"]):days<=1?pick(["A small part","A short part"]):pick(["A mid-sized part","A solid supporting part"]);const dl=low?"almost no dialogue":talk?"plenty of dialogue":"some dialogue";
+        if(c.stage)return [`${sz}, with ${dl}.`,`It's ${sz[0].toLowerCase()+sz.slice(1)} with ${dl}.`];
+        return [`${sz}: ${units(days)}, ${dl}.`,`${sz}: ${units(days)}, with ${dl}.`,`It's ${sz[0].toLowerCase()+sz.slice(1)} with ${dl}, over ${units(days)}.`];},
+      // Round 11: only a plain job noun reads well here ("a plow driver"); the
+      // "know the X's world / what a X's day looks like" lines are retired.
+      prep:()=>/^[a-z-]+( [a-z-]+)?$/.test(lab)&&!/\b(one|who|that|other|new|old|young|older|younger|first|second)\b/.test(lab)?[`Come in knowing how ${v3Aa(lab)} ${pick(["talks","moves","works"])}.`,`Before the read, think about what ${v3Aa(lab)} notices first.`]:null,
       sharewith:()=>P&&!lead?[`Most of ${F}'s scenes are with ${PF}, the ${PL}.`,`${F} mostly plays against ${PF} (the ${PL}).`,`You'll be working opposite ${PF}, the ${PL}, most of the time.`,`Chemistry with whoever plays ${PF} matters.`,`Every scene ${F} has, ${PF} is in it too.`,`Wherever ${F} goes, ${PF} is never far away.`]:null,
       partner:()=>P&&lead?[`${F}'s scenes are almost all with ${PF}, the ${PL}.`,`${PF}, the ${PL}, is the person ${F} deals with most.`,`The story keeps putting ${F} and ${PF} together.`,`${F} and ${PF} (the ${PL}) share most of the story.`,`Callbacks will pair ${F} with ${PF}.`,`Nearly every scene has ${PF} as the other half.`]:null
     })[move];
@@ -40208,6 +40227,7 @@ const ACG = (()=>{
     const low=R8_LOW_TYPES.test(type),high=R8_HIGH_TYPES.test(type)||(type==="Commercial");
     if(tiers.some(t=>/unpaid|deferred|low/.test(t))&&!V6_BRAND_WORK.test(type)&&(!R8_BRAND.test(type)||/^(Photo Shoot|Spec Commercial)$/.test(type)))out.push("u200");
     if(R9_STUDENT.test(type)){if(out.indexOf("u200")<0)out.push("u200");return out;}
+    if(R11_OOB.test(type)){if(out.indexOf("u200")<0)out.push("u200");out.push("b200");return out;}
     out.push("b200");
     // Round 9 step 7: a student short cannot pay $500 a day and an art short
     // cannot pay $300, so those bands are not offered at all. Capping them
@@ -40513,62 +40533,148 @@ const ACG = (()=>{
     for(const f of bank){const line=`${who} states: "${f(c)}"`;if(!v3SentUsed(v3SentKey(line),h,res))return line;}
     return "";
   }
+  // ── Round 11 (2026-10-04): summary openings ─────────────────────────────
+  // Every summary had read "Casting/Seeking X for 'Title,' a format. Logline:
+  // …". There are now thirteen opening shapes; a shape never repeats inside a
+  // batch or within the last ten listings, which also holds Casting/Seeking
+  // to two in ten and the Logline/Synopsis label to one in ten. Whatever the
+  // shape, the first two sentences say what the project is and what it's about.
+  const R11_OPEN_KEYS=["casting","seeking","label","story","formatplace","production","question","people","role","inthis","titlefirst","coming","wanted"];
+  const R11_OPEN_WINDOW=10;
+  function r11OpenShape(syn){
+    const t=String(syn||"").trim(),s1=(v3Sentences(t)[0]||t);
+    if(/^Casting\b/.test(t))return "casting";
+    if(/^Seeking\b/.test(t))return "seeking";
+    if(/\b(Logline|Synopsis):/.test(t))return "label";
+    if(/^Our [a-z -]+ is\b/.test(t))return "production";
+    if(/^[^.!]{3,90}\?/.test(t))return "question";
+    if(/^(At the center of|The \w+ centers on)\b/.test(t))return "people";
+    if(/^(The lead role (in|is)|We're looking for)\b/.test(t))return "role";
+    if(/^In '/.test(t))return "inthis";
+    if(/^'[^']+' is\b/.test(t))return "titlefirst";
+    if(/^(Production|Rehearsals|Recording) starts? soon\b/.test(t))return "coming";
+    if(/\bwanted for\b/.test(s1))return "wanted";
+    if(/^(A|An) [^.]*\b(tells how|is about|shooting in|shot remotely)\b/.test(s1))return "formatplace";
+    return "story";
+  }
+  function r11RecentOpen(h,res){return (res._r11Open||[]).slice().reverse().concat(h.r11Open||[]);}
+  function r11Question(kind,G,stage,fam){
+    if(kind==="brand")return ["Natural on camera without a script?","Free for a quick, well-run shoot?","Comfortable on camera with real people around?","Good at reacting for real?"];
+    if(kind==="job")return ["Free for a long set day?","Comfortable on set from first call to wrap?","Good at hitting the same mark take after take?"];
+    if(kind==="docu")return ["Can you play a real person without impersonating them?","Comfortable being natural on camera?","Good at being yourself in front of a lens?"];
+    if(fam==="audio"||fam==="anim")return ["Can your voice carry a whole scene?","Good at playing it all with your voice?"];
+    if(stage)return ["Looking for your next stage role?","Free for a short run?","Want to be in a room with a new play?"];
+    if(/comedy/.test(G))return ["Can you play it completely straight?","Good at deadpan?","Funny without trying to be?"];
+    if(/thriller|crime|horror|mystery/.test(G))return ["Can you hold tension without raising your voice?","Comfortable playing scared?","Good at quiet menace?"];
+    if(/romanc|romantic/.test(G))return ["Can you play warmth without sugar?","Good at chemistry that feels real?"];
+    if(/drama|family|period/.test(G))return ["Comfortable letting a silence do the work?","Can you play small and honest?","Good at holding a feeling under the surface?"];
+    return ["Looking for a part with real weight?","Want a role with something to play?","Ready for a part you can build from the ground up?"];
+  }
   function r8Summary(c,h,res){
     const {kind,type,fam,roles,seed,persona,title}=c;
-    const verb=v5Pick(R8_OPEN_MIX,v5Counts(h,res,"r8open",R8_OPEN_MIX),["Casting","Seeking"]);
     let len=v5Pick(R8_LEN_MIX,v5Counts(h,res,"r8len",R8_LEN_MIX),["one","mid","long"]);
     const noun=v5Noun(type);
-    const T=title.bare?`'${title.bare},'`:"";
+    const bare=title.bare||"";
+    const T=bare?`'${bare},'`:"";
     const who=r8WhoPhrase(roles,type,fam,kind);
+    const stage=fam==="stage",audio=fam==="audio"||fam==="anim";
+    const town=String(c.place||"").split(",")[0].trim().replace(/^Bronx$/,"the Bronx");
+    const placeIn=c.remote||!town?"":` in ${town}`;
     const states=Math.random()<0.13||len==="long"&&Math.random()<0.3?r8States({place:c.place,noun,fmt:c.fmtLow||noun,unit:c.unit,remote:c.remote},persona,h,res):"";
-    const S=[];
+    const G=v3Genre(seed)||"";
+    const recent=r11RecentOpen(h,res);
+    const banned=new Set(recent.slice(0,R11_OPEN_WINDOW));
+    const lastAt=k=>{const i=recent.indexOf(k);return i<0?1e9:i;};
+    const people=roles.filter(r=>!r._group&&!r._job&&!/background/i.test(r.role_type||"")).map(r=>stripArticle(String(r._slot||"")).toLowerCase()).filter(x=>x&&x.split(/\s+/).length<=3&&!/['’]|\b(one|who|that|other)\b/.test(x));
+    const leadR=roles.find(r=>!r._group&&!r._job&&/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||""));
+    const leadSlot=leadR?stripArticle(String(leadR._slot||"")).toLowerCase():"";
+    const leadOk=leadSlot&&leadSlot.split(/\s+/).length<=3&&!/['’]|\b(one|who|that|other)\b/.test(leadSlot);
+    const list=xs=>xs.length===1?v3Aa(xs[0]):xs.slice(0,-1).map(v3Aa).join(", ")+" and "+v3Aa(xs[xs.length-1]);
+    const group=stage?pick(["theater company","company"]):audio?pick(["studio","production team"]):kind==="brand"?pick(["team","production team"]):pick(["production team","small crew","team"]);
+    const making=stage?"staging":audio?"recording":pick(["shooting","making"]);
+    const S=[];let shape="";
     if(kind==="brand"){
       const dc=c.descCat?`${c.descCat} `:"";
       const fmt=c.fmtLow;
       const art=/^UGC/.test(`${dc}${fmt}`)?`a ${dc}${fmt}`:v7Art(`a ${dc}${fmt}`);
-      S.push(verb==="Casting"?pick([`Casting ${who} for ${art}.`,`Casting ${art}.`]):`Seeking ${who} for ${art}.`);
-      const facts=[];
       const ab=String(seed.about||"").replace(/[.]+$/,"");
-      if(ab&&ab.split(/\s+/).length<=18)facts.push(`The ${noun} ${pick(["is about","centers on","shows"])} ${ab}.`);
+      const abOk=ab&&ab.split(/\s+/).length<=18;
+      const where=c.remote?" shot remotely":placeIn?(/\b(shoot|session)$/.test(fmt)?placeIn:` shooting${placeIn}`):"";
+      const B={
+        casting:()=>[pick([`Casting ${who} for ${art}.`,`Casting ${art}.`])],
+        seeking:()=>[`Seeking ${who} for ${art}.`],
+        label:()=>abOk?[`${capFirst(art)}${where}.`,`Synopsis: ${capFirst(ab)}.`]:null,
+        story:()=>abOk&&!/\b(campaign|shoot|promo|video|ad|commercial|spot|content)\b/i.test(ab.split(/\s+/).slice(0,6).join(" "))?[`The ${noun} is built around ${ab}.`,`It's ${art}${where}.`]:null,
+        formatplace:()=>where?[`${capFirst(art)}${where}.`,`Open roles: ${who}.`]:null,
+        production:()=>[`Our ${group} is ${making} ${art} and needs ${who}.`],
+        question:()=>[pick(r11Question("brand")),`We're casting ${who} for ${art}${placeIn}.`],
+        people:()=>[`The ${noun} centers on ${who}.`,`It's ${art}${where}.`],
+        role:()=>[`We're looking for ${who} for ${art}.`],
+        titlefirst:null,inthis:null,
+        coming:()=>[`Production starts soon on ${art}${where}.`,`Open roles: ${who}.`],
+        wanted:()=>[`${capFirst(who)} wanted for ${art}.`]
+      };
+      const order=cgShuffle(R11_OPEN_KEYS.filter(k=>B[k]&&B[k]()));
+      shape=order.find(k=>!banned.has(k))||order.sort((a,b)=>lastAt(b)-lastAt(a))[0];
+      B[shape]().forEach(x=>S.push(x));
+      const facts=[];
+      if(abOk&&!/^(label|story)$/.test(shape))facts.push(`The ${noun} ${pick(["is about","centers on","shows"])} ${ab}.`.replace(`The ${noun} centers on`,shape==="people"?`It follows`:`The ${noun} centers on`));
       const dl=r8DialogueFact(roles,fam);if(dl)facts.push(dl);
       const us=r8UsageFact(c.usage,c.medium,type);if(us)facts.push(us);
       const want=len==="one"?0:len==="mid"?rand(1,2,1):3;
-      // The concept line, when used, comes first; then dialogue and usage.
       const chosen=cgShuffle(facts.slice()).slice(0,want).sort((a,b)=>facts.indexOf(a)-facts.indexOf(b));
       if(len==="long"&&chosen.length<2)len="mid";
       chosen.forEach(x=>S.push(x));
     }else{
-      const lenPh=kind==="job"?String(c.jobBase||"feature film"):c.untitled?String(title.t).replace(/\s*\([^)]*\)$/,"").toLowerCase().replace(/^untitled /,"untitled ").replace(/\brom-com\b/,"rom-com").replace(/\btv\b/g,"TV"):r8Length(type,seed);
+      const lenPh=kind==="job"?String(c.jobBase||"feature film"):c.untitled?String(title.t).replace(/\s*\([^)]*\)$/,"").toLowerCase().replace(/^untitled /,"untitled ").replace(/\brom-com\b/,"rom-com").replace(/\btv\b/g,"TV").replace(/\boff-off-broadway\b/g,"Off-Off-Broadway").replace(/\boff-broadway\b/g,"Off-Broadway"):r8Length(type,seed);
       const art=v7Art(`a ${lenPh}`);
       const premise=String(kind==="docu"?(seed.about||seed.p):seed.p||seed.about||"").replace(/[.]+$/,"");
       const turn=String(c.turn||"").replace(/[.]+$/,"");
       const lead=kind==="docu"?(type==="Documentary"?"reenactment roles":who):kind==="job"?String(c.jobWho||who):who;
-      const head=T?(verb==="Casting"&&kind!=="docu"&&kind!=="job"?`Casting ${T} ${art}`:`${verb} ${lead} for ${T} ${art}`):(verb==="Casting"&&kind!=="docu"&&kind!=="job"?`Casting ${art}`:`${verb} ${lead} for ${art}`);
-      const conn=kind==="docu"||c.brief||!seed.p?"about":"in which";
-      const one=`${head} ${conn} ${premise}.`;
-      if(len==="one"&&one.split(/\s+/).length<=32&&!(type==="Documentary"&&!/reenact/i.test(one)))S.push(one);
-      else{
-        if(len==="one")len="mid";
-        S.push(`${head}.`);
-        const lab=kind==="docu"||Math.random()<0.7?"Logline":"Synopsis";
-        const withTurn=(len==="long"||Math.random()<0.5)&&turn&&kind!=="docu";
-        // A premise the board has told before comes back joined to its new
-        // twist, so no logline sentence is ever printed twice.
-        // Round 10 item 4f: a documentary's subject is a noun phrase ("a small
-        // ferry captain in her final season"), which is not a sentence on its
-        // own - it gets a verb.
-        const docLead=kind==="docu"?(type==="Hosting / Presenter"?"The series centers on":type==="Documentary"?"The documentary follows":"The series follows"):"";
-        const alone=docLead?`${lab}: ${docLead} ${v5LowerFirst(premise)}.`:`${lab}: ${capFirst(premise)}.`;
-        const joined=docLead?`${lab}: ${docLead} ${v5LowerFirst(premise)}, and ${turn}.`:`${lab}: ${capFirst(premise)}, and ${turn}.`;
-        if(c.revived||v3SentUsed(v3SentKey(alone),h,res)){if(!turn||joined.split(/\s+/).length>30)return null;S.push(joined);}
-        else{S.push(alone);if(withTurn)S.push(`${capFirst(turn)}.`);}
+      // A clause ("six teachers get snowed in") can stand as a sentence; a
+      // noun phrase ("a ferry captain in her final season") cannot.
+      const clause=!(kind==="docu"||c.brief||!seed.p);
+      const P=capFirst(premise),p=clause?premise:v5LowerFirst(premise);
+      const ab=clause?`in which ${p}`:`about ${p}`;
+      const TA=T?`${T} ${art}`:art;
+      const nm=bare?`'${bare}'`:`this ${lenPh}`;
+      const where=c.remote?"":placeIn?(stage?` opening${placeIn}`:audio?` recorded${placeIn}`:` shooting${placeIn}`):"";
+      const docLead=kind==="docu"?(type==="Hosting / Presenter"?"The series centers on":type==="Documentary"?"The documentary follows":"The series follows"):"The story follows";
+      const lab=Math.random()<0.6?"Logline":"Synopsis";
+      // A premise the board has told before comes back joined to its new twist.
+      const storyS=clause?(c.revived&&turn?`${P}, and ${turn}.`:`${P}.`):`${docLead} ${p}.`;
+      const N={
+        casting:()=>kind==="docu"||kind==="job"?[`Casting ${lead} for ${TA} ${ab}.`]:[`Casting ${TA} ${ab}.`],
+        seeking:()=>[`Seeking ${lead} for ${TA} ${ab}.`],
+        label:()=>[bare?`'${bare}' (${lenPh}${where}).`:`${capFirst(art)}${where}.`,clause?`${lab}: ${P}.`:`${lab}: ${capFirst(docLead.replace(/^The /,"the "))} ${p}.`],
+        story:()=>[storyS,bare?`'${bare}' is ${art}${where}.`:`It's ${art}${where}.`],
+        formatplace:()=>[clause?`${capFirst(art)}${placeIn}${T?`, ${T}`:""} tells how ${p}.`:`${capFirst(art)}${placeIn}${T?`, ${T}`:""} is about ${p}.`],
+        production:()=>[`Our ${group} is ${making} ${TA} ${ab}.`],
+        question:()=>[pick(r11Question(kind,G,stage,fam)),bare?`'${bare}' is ${art} ${ab}.`:`This ${lenPh} is a story ${ab}.`.replace("a story about","about")],
+        people:()=>people.length>=2&&clause?[`At the center of ${bare?nm:art}: ${list(people.slice(0,3))}.`,`In this ${noun}, ${p}.`]:null,
+        role:()=>leadOk&&kind==="narr"?[bare?`The lead role in ${nm} is ${v3Aa(leadSlot)}.`:`The lead role is ${v3Aa(leadSlot)}.`,`It's ${art} ${ab}.`]:null,
+        inthis:()=>clause&&bare?[`In ${T} ${art}${where}, ${p}.`]:null,
+        titlefirst:()=>bare?[`'${bare}' is ${art} ${ab}.`]:null,
+        coming:()=>[`${stage?"Rehearsals start":audio?"Recording starts":"Production starts"} soon on ${TA} ${ab}.`],
+        wanted:()=>[`${capFirst(lead)} wanted for ${TA} ${ab}.`]
+      };
+      const order=cgShuffle(R11_OPEN_KEYS.filter(k=>N[k]&&N[k]()));
+      shape=order.find(k=>!banned.has(k))||order.sort((a,b)=>lastAt(b)-lastAt(a))[0];
+      const first=N[shape]();
+      if(c.revived&&!turn&&shape!=="story")return null;
+      first.forEach(x=>S.push(x));
+      const one=first.length===1&&first[0].split(/\s+/).length<=34;
+      if(len==="one"&&!one)len="mid";
+      if(len!=="one"||c.revived){
+        const withTurn=(len==="long"||c.revived||Math.random()<0.5)&&turn&&kind!=="docu"&&!(shape==="story"&&c.revived);
+        if(withTurn)S.push(`${capFirst(turn)}.`);
         if(len==="long"&&c.world&&c.world.length)S.push(c.world[0]);
       }
     }
     if(states)S.push(states);
-    const text=S.map(x=>String(x).replace(/\s{2,}/g," ").trim()).join(" ");
+    const text=S.map(x=>String(x).replace(/\s{2,}/g," ").replace(/,'(\s*[.?])/g,"'$1").trim()).join(" ");
     const n=v3Sentences(text).filter(x=>!/^\w+ states:/.test(x)).length;
-    return {text,verb,len:n<=1?"one":n<=3?"mid":"long",states:!!states};
+    return {text,verb:shape,len:n<=1?"one":n<=3?"mid":"long",states:!!states};
   }
 
   // ── 3. Role names and role types ─────────────────────────────────────────
@@ -40779,9 +40885,11 @@ const ACG = (()=>{
     }
     // 2. Summary.
     const syn=String(item.synopsis||"");
-    if(!/^(Casting|Seeking)\b/.test(syn))out.push("summary doesn't open with Casting/Seeking");
-    if(kind==="narr"&&!item._r8Untitled&&item._r8Bare&&syn.indexOf(`'${item._r8Bare},'`)<0)out.push("narrative summary doesn't name the quoted title");
-    if(/^\s*(I|We)\b|\b(I'm|we're|our (film|show|shoot))\b/i.test(syn.replace(/\w+ states: "[^"]*"/g,"")))out.push("summary is not in production voice");
+    // Round 11: thirteen opening shapes; the old Casting/Seeking-only rule is gone.
+    if(kind==="narr"&&!item._r8Untitled&&item._r8Bare&&syn.indexOf(`'${item._r8Bare}`)<0)out.push("narrative summary doesn't name the quoted title");
+    // The production-voice shapes ("Our theater company is staging…", "We're
+    // casting…") are the only first-person lines allowed.
+    if(/^\s*I\b|\b(I'm|our (film|show|shoot))\b/i.test(syn.replace(/\w+ states: "[^"]*"/g,"").replace(/^Our [a-z -]+ is\b/,"").replace(/\bWe're (casting|looking for)\b/g,"")))out.push("summary is not in production voice");
     // 7. Bans.
     const all=[item.title,item.tagline,syn,item.pay,item.schedule_note,item.submission_requirements,item.prod,item.crew_credits,...roles.map(r=>`${r.name} ${r.description}`)].join("\n");
     const hits=r8BrandHits(all);if(hits.length)out.push("real brand or famous name: "+hits[0]);
@@ -41087,7 +41195,9 @@ const ACG = (()=>{
     // range" rule); otherwise the top figure stands alone.
     const wide=lowest>0&&top/lowest>=1.2;
     const dw=v3Words(days);
-    const span=days===1?pick(["the day","the one day","a single day"]):pick([`all ${dw} days`,`the ${dw}-day ${c.unit==="session"?"booking":"shoot"}`,`the full ${dw} days`]);
+    // Round 11: a play is paid for the run; its day count (rehearsals plus
+    // performances) is not a number the listing states anywhere else.
+    const span=/^(Theater|Off-Broadway Theater|Off-Off-Broadway Theater|Musical Theater)$/.test(item.type||"")?pick(["the whole run","rehearsals and the run","the full run"]):days===1?pick(["the day","the one day","a single day"]):pick([`all ${dw} days`,`the ${dw}-day ${c.unit==="session"?"booking":"shoot"}`,`the full ${dw} days`]);
     const perks=pick([[`meals`,`credit`],[`lunch on set`,`a copy for your reel`],[`hot meals`,`screen credit`],[`credit`,`footage for your reel`],[`meals`,`travel within the city`],[`snacks and lunch`,`a credit`]]);
     const perkTxt=`${capFirst(perks[0])} and ${perks[1]} ${pick(["included","provided","on top"])}.`;
     const L=[];
@@ -41198,6 +41308,55 @@ const ACG = (()=>{
   const R10_AT_ODD=/\b(at|from) the (Street|Road|Route|Car|Roadside|Shoulder|Yard|Town|Water|Lake|Sky|Night|City|Highway|Lane|Interstate)\b/;
   const R10_PUBLIC_VENUE=/\b(library|school|hospital|museum|post office|police station|courthouse|city hall|public pool|clinic|fire station|church|precinct|dmv|county office|community center|rec center|ward|care home)\b/i;
   const R10_PLACE_NOUN=/\b(?:at home(?! (?:on|in|with|around|behind|among|in front)\b)|(?:in|at|outside) (?:the|a|his|her|their|the lead's|the family's) (kitchen|house|apartment|car|bar|park|street|garage|church|school|hospital|office|restaurant|diner|hotel|motel|yard|station|gym|beach|cemetery|courthouse|bedroom|living room|hallway|basement|attic|backyard))\b/gi;
+  // ── Round 11 validators ──────────────────────────────────────────────────
+  const R11_NUMW={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40};
+  const R11_PAST=/\b(1[6-9]\d0s|1[6-9]\d\d|the (twenties|thirties|forties|fifties|sixties|seventies|eighties|nineties)|(19th|18th|17th)[- ]century|during the (war|depression|blackout)|Civil War|World War|Prohibition|Victorian|colonial|medieval|in the old days)\b/i;
+  function r11Problems(item){
+    const out=[];
+    const roles=item._roles||[];
+    const type=String(item.type||"");
+    const fn=V7_FN.test(type);
+    const listing=[item.title,item.tagline,item.synopsis,item.pay,item.schedule_note,item.submission_requirements].join(" ");
+    const num=w=>{const x=String(w).toLowerCase();return /^\d+$/.test(x)?+x:R11_NUMW[x]||null;};
+    // Counts the listing itself states ("40-episode", "nine performances").
+    const stated=new Set();
+    (listing.match(/\b(\w+)[- ](episodes?|performances?|shows)\b/gi)||[]).forEach(m=>{const n=num(m.split(/[- ]/)[0]);if(n)stated.add(n);});
+    let oneLabels=0;
+    roles.forEach(r=>{
+      const d=String(r.description||"");
+      const slot=stripArticle(String(r._slot||"")).toLowerCase();
+      // 1. The label pasted back in as a noun.
+      if(/\b(There's|There is) no (performance|show|day|session|scene) without the\b/i.test(d))out.push("label-as-noun line: "+d.slice(0,60));
+      if(/\bKnow the [^.]*['’]s world\b|\bwhat an? [^.]*['’]s day looks like\b/i.test(d))out.push("retired prep line: "+d.slice(0,60));
+      if(!fn&&slot&&slot.length>2){
+        const esc=slot.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+        const later=v3Sentences(d).slice(1);
+        if(later.some(x=>new RegExp("^(The|Our) "+esc+"(['’]s)?\\b","i").test(x)))out.push("role label repeated as the subject: "+slot);
+        if(later.some(x=>new RegExp("\\b(is needed all|is in (nearly )?every|works \\w+ of the) .*|^Every one of the .* includes the "+esc,"i").test(x)&&new RegExp("\\bthe "+esc+"\\b","i").test(x)))out.push("label-as-noun schedule line: "+slot);
+      }
+      if(/\bthe (her|his|their|my|our) \w/i.test(d))out.push("doubled determiner: "+(d.match(/\bthe (her|his|their|my|our) \w+/i)||[""])[0]);
+      // 2. Vague "the one who…" labels: one per listing, and never empty ones.
+      if(/^(the )?(other )?one\b/.test(slot)){oneLabels++;if(/^(the )?(other )?one( who \w+| on the other side| staying| leaving)?$/.test(slot))out.push("vague role label: "+slot);}
+      // 3. A count in a role that the listing doesn't state.
+      (d.match(/\b(\w+)[- ](episodes?|performances?|shows)\b/gi)||[]).forEach(m=>{const n=num(m.split(/[- ]/)[0]);if(n&&n>1&&!stated.has(n))out.push("role states a count the listing doesn't: "+m);});
+      // 4. Life details against age.
+      const hi=parseInt(String(r.age_range||"").split("-").pop(),10);
+      if(isFinite(hi)&&hi<=26&&/\b(two|three|four|five|\d) (kids|children)\b|\bmortgage\b|\bgrand(kids|children)\b|\bretire(d|ment)\b|\bdivorced\b|\bex-(wife|husband)\b|\bdecades\b|\b(twenty|thirty|forty) years\b|\bsince the (seventies|eighties|nineties)\b/i.test(d))out.push(`a ${r.age_range} role has a life detail that doesn't fit the age`);
+    });
+    if(oneLabels>1)out.push("more than one 'the one…' label");
+    // 5. "Period piece" only when the listing is set in the past.
+    if(/\bperiod (piece|drama|film|feature|play|series)\b/i.test(listing+" "+roles.map(r=>r.description).join(" "))&&!R11_PAST.test(listing))out.push("period piece with no past setting in the summary");
+    // 6. Off-Off-Broadway non-union: $0-$500 for the run, never weekly.
+    if(type==="Off-Off-Broadway Theater"&&!/^AEA$/.test(String(item.union_status||""))){
+      const payTxt=[item.pay,...roles.map(r=>r.pay)].join(" ");
+      if(/\/week|per week|a week\b|weekly/i.test(payTxt))out.push("weekly pay on non-union Off-Off-Broadway");
+      const top=Math.max(0,...(payTxt.match(/\$[\d,]+/g)||[]).map(x=>+x.replace(/[$,]/g,"")));
+      if(top>500)out.push("Off-Off-Broadway non-union pay above $500: $"+top);
+    }
+    // 7. Summary grammar: a participle phrase used as a subject.
+    {const s1=v3Sentences(String(item.synopsis||""))[0]||"";if(/\b\w+ing [a-z ]{3,40}\b(he|she|they) (is|are) not sure of has\b|\bnot sure of has\b/.test(s1))out.push("summary sentence is ungrammatical");}
+    return out;
+  }
   function r10Problems(item,c){
     const out=[];
     const roles=item._roles||[];
@@ -43428,7 +43587,7 @@ const ACG = (()=>{
       res.titles.add(clean(item.title));
       (res._v7Seq=res._v7Seq||[]).unshift(item.type);
       (res._r8Seq=res._r8Seq||[]).unshift(item._r8Key||item.type);
-      if(R8_ON){v5Tally(res,"r8pay",item._r8Band);v5Tally(res,"r8open",item._r8Verb);v5Tally(res,"r8len",item._r8Len);v5Tally(res,"r8date",item._r8DateKind);res._r8Tries={};}
+      if(R8_ON){(res._r11Open=res._r11Open||[]).push(item._r8Verb);v5Tally(res,"r8pay",item._r8Band);v5Tally(res,"r8open",item._r8Verb);v5Tally(res,"r8len",item._r8Len);v5Tally(res,"r8date",item._r8DateKind);res._r8Tries={};}
       if(item._v8){
         (res._v8Recent=res._v8Recent||[]).unshift(item._v8);
         res._v8LastPersona=item._v8.persona;
