@@ -5182,6 +5182,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-steps{display:flex;flex-direction:column;gap:18px;margin-top:24px;}
 .agd-step{display:flex;gap:14px;align-items:flex-start;}
 .agd-step .n{flex:none;width:29px;height:29px;border-radius:50%;background:var(--amber-dk);color:#fff;display:grid;place-items:center;font-size:12.5px;font-weight:800;}
+.cdx-prem-pill{display:inline-block;background:#1A1A2E;color:#EAC080;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:1px;}
 .agd-step h5{margin:0 0 3px;font-size:14.5px;font-weight:800;}
 .agd-step p{margin:0;font-size:13.5px;line-height:1.62;color:var(--t2);}
 .agd-phone{margin:0 auto;width:280px;max-width:100%;border:10px solid #16171F;border-radius:40px;background:#16171F;overflow:hidden;box-shadow:0 28px 58px -30px rgba(26,26,46,.65);position:relative;}
@@ -17290,7 +17291,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
         <h2 className="agd-h2">Put your face on a casting director's desk.</h2>
         <div className="agd-steps">
           <div className="agd-step"><div className="n">1</div><div><h5>Pick your offices</h5><p>Start with the ones that accept headshots and cast the kind of work you fit.</p></div></div>
-          <div className="agd-step"><div className="n">2</div><div><h5>Send the card</h5><p>Print it from your dashboard in any of three sizes, write two lines on the back, and post it, from wherever you are in the world.</p></div></div>
+          <div className="agd-step"><div className="n">2</div><div><h5>Design your card in the Actor Card Studio <span className="cdx-prem-pill">Premium</span></h5><p>Choose your photo, layout, colors and details so it looks exactly the way you want, then print it in any of three sizes, write two lines on the back, and post it, from wherever you are in the world.</p></div></div>
           <div className="agd-step"><div className="n">3</div><div><h5>They scan — you're live</h5><p>Headshots, self-tapes, credits, contact. Update it tomorrow; the same card shows the new version.</p></div></div>
         </div>
         <div className="agd-trust" style={{marginTop:22}}>
@@ -17298,7 +17299,11 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
           <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[1]}/><div className="ic"><Ico n="mail" s={18}/></div><h5>Mailing Postcard · <span style={{whiteSpace:"nowrap"}}>6 × 4 in</span></h5><p>Made for the post. Big enough to pin on a casting board, with nothing to open.</p></div>
           <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[2]}/><div className="ic"><Ico n="star" s={18}/></div><h5>Agent Promo Card · <span style={{whiteSpace:"nowrap"}}>7 × 5 in</span></h5><p>The largest. For the offices you most want to be seen by: it's hard to overlook on a desk.</p></div>
         </div>
-        <p className="agd-sub" style={{marginTop:14}}>Mailing a casting office? Send the <b>Mailing Postcard</b> or the <b>Agent Promo Card</b>. The bigger sizes land on the desk face-up and stay there.</p>
+        <div style={{marginTop:18}}>
+          <button className="agd-btn gold" onClick={()=>onNavigate("actor-business-card")}>Design your card in the Actor Card Studio <Tri/></button>
+          <p className="agd-sub" style={{marginTop:10,marginBottom:0,fontSize:13}}>These are examples. In the studio, every card is yours to style. Preview free, print with Premium.</p>
+        </div>
+        <p className="agd-sub" style={{marginTop:22}}>Mailing a casting office? Send the <b>Mailing Postcard</b> or the <b>Agent Promo Card</b>. The bigger sizes land on the desk face-up and stay there.</p>
         <p className="agd-sub" style={{marginTop:18,marginBottom:0}}>Looking for representation instead? <a href="/agency-directory" onClick={e=>{e.preventDefault();onNavigate("agency-directory");}} style={{color:"var(--amber-dk)",fontWeight:700}}>See the Talent Agency &amp; Management Directory →</a></p>
       </section></div>
     </div>
