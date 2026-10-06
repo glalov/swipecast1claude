@@ -50949,7 +50949,7 @@ const ABC_CARD_COLORS=[
   {key:'blush',name:'Blush',hex:'#F8EAE6'},
   {key:'stone',name:'Stone',hex:'#EEEBE5'},
 ];
-function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen}){
+function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoOffX=0,photoOffY=0,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen}){
   const format=ABC_CARD_FORMATS[formatKey]||ABC_CARD_FORMATS.business;
   const large=formatKey!=='business';
   const logo=(<div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:large?22:19,height:large?22:19,background:'#1A1A2E',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><LogoMark/></div><span style={{fontSize:large?9.5:9,fontWeight:800,color:'#1A1A2E',letterSpacing:1.5}}>CASTSLATE</span></div>);
@@ -50982,7 +50982,7 @@ function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',ma
       ):(
         <>
           <div ref={photoRef} style={{width:`${format.photoPct*100}%`,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl&&onPhotoMouseDown?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}} onMouseDown={onPhotoMouseDown} onTouchStart={onPhotoTouchStart}>
-            {headshotUrl?<><div style={{position:'absolute',inset:0,backgroundImage:`url(${headshotUrl})`,backgroundSize:'contain',backgroundRepeat:'no-repeat',backgroundPosition:`${photoPosX}% ${photoPosY}%`,transform:`scale(${photoZoom})`,transformOrigin:`${photoPosX}% ${photoPosY}%`,pointerEvents:'none',userSelect:'none'}}/>{!large&&<div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',pointerEvents:'none',zIndex:1,color:'#fff'}}><div style={{fontSize:7,textAlign:'center',color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div></div>}</>:<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>}
+            {headshotUrl?<><div style={{position:'absolute',inset:0,backgroundImage:`url(${headshotUrl})`,backgroundSize:'contain',backgroundRepeat:'no-repeat',backgroundPosition:`${photoPosX}% ${photoPosY}%`,transform:`translate(${photoOffX}%,${photoOffY}%) scale(${photoZoom})`,transformOrigin:`${photoPosX}% ${photoPosY}%`,pointerEvents:'none',userSelect:'none'}}/>{!large&&<div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',pointerEvents:'none',zIndex:1,color:'#fff'}}><div style={{fontSize:7,textAlign:'center',color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div></div>}</>:<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>}
           </div>
           <div style={{flex:1,padding:large?'22px 22px 15px':'16px 14px 12px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5,overflow:'hidden'}}>
             <div style={{marginBottom:large?13:7,flexShrink:0}}>{logo}</div>
@@ -51018,12 +51018,17 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [photoZoom,setPhotoZoom]=useState(1.0);
   const [photoPosX,setPhotoPosX]=useState(50);
   const [photoPosY,setPhotoPosY]=useState(50);
+  // Free move: the photo can be shifted in any direction (offset in % of the photo box),
+  // independent of zoom, so up/down and left/right always work.
+  const [photoOffX,setPhotoOffX]=useState(0);
+  const [photoOffY,setPhotoOffY]=useState(0);
+  const clampOff=v=>Math.max(-75,Math.min(75,v));
   // Arrow nudges for the headshot. Same direction as dragging: "right" moves the photo
   // right on the card (position % goes down). Click = one step; hold = keeps moving.
   const nudgeTimer=useRef(null);
   const nudgePhoto=(dx,dy)=>{
-    if(dx)setPhotoPosX(v=>Math.max(0,Math.min(100,v-dx*3)));
-    if(dy)setPhotoPosY(v=>Math.max(0,Math.min(100,v-dy*3)));
+    if(dx)setPhotoOffX(v=>clampOff(v+dx*2));
+    if(dy)setPhotoOffY(v=>clampOff(v+dy*2));
   };
   const stopNudge=()=>{if(nudgeTimer.current){clearTimeout(nudgeTimer.current);clearInterval(nudgeTimer.current);nudgeTimer.current=null;}};
   const startNudge=(dx,dy)=>{stopNudge();nudgePhoto(dx,dy);nudgeTimer.current=setTimeout(()=>{nudgeTimer.current=setInterval(()=>nudgePhoto(dx,dy),70);},350);};
@@ -51067,7 +51072,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const largePreviewHeight=Math.round((largePreviewBaseWidth*selectedFormat.height/selectedFormat.width)*largePreviewScale);
 
   // Reset crop when photo changes
-  useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);},[selectedPhoto]);
+  useEffect(()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);setPhotoOffX(0);setPhotoOffY(0);},[selectedPhoto]);
   useEffect(()=>{if(cardFormat==='business'){if(cardSide==='back')setCardSide('front');if(printPreviewSide==='back')setPrintPreviewSide('front');}},[cardFormat,cardSide,printPreviewSide]);
   useEffect(()=>()=>{if(preparedDownload?.url)URL.revokeObjectURL(preparedDownload.url);},[preparedDownload?.url]);
   useEffect(()=>{setPreparedDownload(null);},[cardFormat]);
@@ -51096,9 +51101,9 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     e.preventDefault();
     const cli=e.touches?e.touches[0]:e;
     suppressPreviewClickRef.current=false;
-    dragDataRef.current={sx:cli.clientX,sy:cli.clientY,px:photoPosX,py:photoPosY};
+    dragDataRef.current={sx:cli.clientX,sy:cli.clientY,ox:photoOffX,oy:photoOffY};
     setIsDragging(true);
-  },[selectedPhoto,photoPosX,photoPosY]);
+  },[selectedPhoto,photoOffX,photoOffY]);
 
   useEffect(()=>{
     if(!isDragging)return;
@@ -51107,10 +51112,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       const cli=e.touches?e.touches[0]:e;
       if(Math.abs(cli.clientX-d.sx)>4||Math.abs(cli.clientY-d.sy)>4)suppressPreviewClickRef.current=true;
       const rect=photoRef.current.getBoundingClientRect();
-      const dx=((cli.clientX-d.sx)/rect.width)*(100/photoZoom);
-      const dy=((cli.clientY-d.sy)/rect.height)*(100/photoZoom);
-      setPhotoPosX(Math.max(0,Math.min(100,d.px-dx)));
-      setPhotoPosY(Math.max(0,Math.min(100,d.py-dy)));
+      if(e.cancelable&&e.touches)e.preventDefault();
+      const dx=((cli.clientX-d.sx)/rect.width)*100;
+      const dy=((cli.clientY-d.sy)/rect.height)*100;
+      setPhotoOffX(clampOff(d.ox+dx));
+      setPhotoOffY(clampOff(d.oy+dy));
     };
     const onUp=()=>{setIsDragging(false);dragDataRef.current=null;setTimeout(()=>{suppressPreviewClickRef.current=false;},0);};
     window.addEventListener('mousemove',onMove);window.addEventListener('mouseup',onUp);
@@ -51153,8 +51159,8 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
         const dw=sw*finalScale,dh=sh*finalScale;
         // Anchor-point formula matching CSS transformOrigin + backgroundPosition
         const ax=(photoPosX/100)*PW, ay=(photoPosY/100)*(CH-TB);
-        const imgX=ax-(photoPosX/100)*dw;
-        const imgY=ay-(photoPosY/100)*dh;
+        const imgX=ax-(photoPosX/100)*dw+(photoOffX/100)*PW;
+        const imgY=ay-(photoPosY/100)*dh+(photoOffY/100)*(CH-TB);
         ctx.save();ctx.beginPath();ctx.rect(0,TB,PW,CH-TB);ctx.clip();
         ctx.fillStyle='#E8E8F2';ctx.fillRect(0,TB,PW,CH-TB); // letterbox bg
         ctx.drawImage(img,imgX,TB+imgY,dw,dh);
@@ -51260,7 +51266,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       }catch(e){}
     }
     return canvas;
-  },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY,selectedFormat,cardBg]);
+  },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY,photoOffX,photoOffY,selectedFormat,cardBg]);
 
   const drawBackCard=useCallback(async()=>{
     const format=selectedFormat,CW=format.width,CH=format.height;
@@ -51438,6 +51444,8 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                   photoZoom={photoZoom}
                   photoPosX={photoPosX}
                   photoPosY={photoPosY}
+                  photoOffX={photoOffX}
+                  photoOffY={photoOffY}
                   photoRef={photoRef}
                   onPhotoMouseDown={handlePhotoMouseDown}
                   onPhotoTouchStart={handlePhotoMouseDown}
@@ -51496,7 +51504,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:8,minWidth:0}}>
                     <span style={{fontSize:12,color:'var(--t2)',lineHeight:1.5}}>Use the arrows to move your photo. Hold an arrow to keep it moving.</span>
-                    <button className="btn-s btn-sm" style={{fontSize:11,alignSelf:'flex-start'}} onClick={()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);}}>Reset position</button>
+                    <button className="btn-s btn-sm" style={{fontSize:11,alignSelf:'flex-start'}} onClick={()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);setPhotoOffX(0);setPhotoOffY(0);}}>Reset position</button>
                   </div>
                 </div>
               </div>
@@ -51655,6 +51663,8 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                   photoZoom={photoZoom}
                   photoPosX={photoPosX}
                   photoPosY={photoPosY}
+                  photoOffX={photoOffX}
+                  photoOffY={photoOffY}
                   photoRef={photoRef}
                   onPhotoMouseDown={handlePhotoMouseDown}
                   onPhotoTouchStart={handlePhotoMouseDown}
@@ -51726,6 +51736,8 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                     photoZoom={photoZoom}
                     photoPosX={photoPosX}
                     photoPosY={photoPosY}
+                    photoOffX={photoOffX}
+                    photoOffY={photoOffY}
                     isDragging={false}
                     watermark={!isPremium}
                   />
