@@ -5182,6 +5182,16 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-steps{display:flex;flex-direction:column;gap:18px;margin-top:24px;}
 .agd-step{display:flex;gap:14px;align-items:flex-start;}
 .agd-step .n{flex:none;width:29px;height:29px;border-radius:50%;background:var(--amber-dk);color:#fff;display:grid;place-items:center;font-size:12.5px;font-weight:800;}
+.cdx-colors{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;margin-top:24px;}
+.cdx-colors-l{font-size:13.5px;font-weight:800;color:var(--t1);}
+.cdx-colors-row{display:flex;gap:12px;flex-wrap:wrap;min-width:0;}
+.cdx-sw{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;}
+.cdx-sw .dot{width:38px;height:38px;border-radius:50%;border:1.5px solid #D6D3CC;display:grid;place-items:center;color:#1A1A2E;transition:transform .15s;}
+.cdx-sw:hover .dot{transform:scale(1.06);}
+.cdx-sw.on .dot{border:2px solid #1A1A2E;box-shadow:0 0 0 3px rgba(26,26,46,.14);}
+.cdx-sw .nm{font-size:11.5px;font-weight:600;color:var(--t2);}
+.cdx-sw.on .nm{font-weight:800;color:var(--t1);}
+@media (max-width:900px){.cdx-colors-row{gap:10px;}.cdx-sw .dot{width:34px;height:34px;}}
 .cdx-prem-pill{display:inline-block;background:#1A1A2E;color:#EAC080;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:1px;}
 .agd-step h5{margin:0 0 3px;font-size:14.5px;font-weight:800;}
 .agd-step p{margin:0;font-size:13.5px;line-height:1.62;color:var(--t2);}
@@ -17175,7 +17185,7 @@ const CDX_SAMPLES=[
   {formatKey:"postcard",displayName:"Elena Marsh",headline:"Actor · Theatrical",location:"New York, NY",tags:["Meisner","Period Drama"],unionStatus:"SAG-AFTRA",img:"/assets/cdx-cards/cdx-postcard-elena.jpg",slug:"elena-marsh",posY:40},
   {formatKey:"agent",displayName:"Luca Varga",headline:"Actor · Film & TV",location:"Los Angeles, CA",tags:["Fluent Italian","Dance"],unionStatus:"Non-Union",img:"/assets/cdx-cards/cdx-card-3.jpg",slug:"luca-varga",posY:40}
 ];
-function CdxCardSample({s}){
+function CdxCardSample({s,bg='#ffffff'}){
   const base=s.formatKey==="business"?390:520;
   const f=ABC_CARD_FORMATS[s.formatKey];
   const ref=useRef(null);
@@ -17192,13 +17202,17 @@ function CdxCardSample({s}){
   return(
     <div ref={ref} className="cdx-sample" style={{height:k?Math.round(base*f.height/f.width*k)+2:undefined,aspectRatio:k?undefined:f.width+"/"+f.height}} aria-hidden="true">
       {k?<div style={{position:"absolute",top:0,left:0,width:base,transform:"scale("+k+")",transformOrigin:"top left",pointerEvents:"none"}}>
-        <ActorCardPreview formatKey={s.formatKey} side="front" displayName={s.displayName} headline={s.headline}
+        <ActorCardPreview cardBg={bg} formatKey={s.formatKey} side="front" displayName={s.displayName} headline={s.headline}
           showLocation={true} location={s.location} tags={s.tags} showUnion={true} unionStatus={s.unionStatus}
           headshotUrl={s.img} publicSlug={s.slug} qrDataUrl={qr} photoZoom={1} photoPosX={50} photoPosY={s.posY}/>
       </div>:null}
     </div>);
 }
 function CastingDirectoryPage({onNavigate,isPremium=false}){
+  // Card color swatches above the sample cards: anyone (signed in or out, free or
+  // premium) can flip the three samples through the same tints the studio offers.
+  const [sampleColor,setSampleColor]=useState('white');
+  const sampleBg=(ABC_CARD_COLORS.find(c=>c.key===sampleColor)||ABC_CARD_COLORS[0]).hex;
   const fanRef=useAgdDeal();
   const isNarrow=useViewportWidth()<560;
   const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
@@ -17294,10 +17308,20 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
           <div className="agd-step"><div className="n">2</div><div><h5>Design your card in the Actor Card Studio <span className="cdx-prem-pill">Premium</span></h5><p>Choose your photo, layout, colors and details so it looks exactly the way you want, then print it in any of three sizes, write two lines on the back, and post it, from wherever you are in the world.</p></div></div>
           <div className="agd-step"><div className="n">3</div><div><h5>They scan — you're live</h5><p>Headshots, self-tapes, credits, contact. Update it tomorrow; the same card shows the new version.</p></div></div>
         </div>
-        <div className="agd-trust" style={{marginTop:22}}>
-          <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[0]}/><div className="ic"><Ico n="id" s={18}/></div><h5>Business Card · <span style={{whiteSpace:"nowrap"}}>3.5 × 2 in</span></h5><p>Ten to a sheet. For auditions, workshops and handing over in person.</p></div>
-          <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[1]}/><div className="ic"><Ico n="mail" s={18}/></div><h5>Mailing Postcard · <span style={{whiteSpace:"nowrap"}}>6 × 4 in</span></h5><p>Made for the post. Big enough to pin on a casting board, with nothing to open.</p></div>
-          <div className="agd-card cdx-sizecard"><CdxCardSample s={CDX_SAMPLES[2]}/><div className="ic"><Ico n="star" s={18}/></div><h5>Agent Promo Card · <span style={{whiteSpace:"nowrap"}}>7 × 5 in</span></h5><p>The largest. For the offices you most want to be seen by: it's hard to overlook on a desk.</p></div>
+        <div className="cdx-colors" role="radiogroup" aria-label="Card color">
+          <span className="cdx-colors-l">Try a card color</span>
+          <div className="cdx-colors-row">
+            {ABC_CARD_COLORS.map(c=>{const on=sampleColor===c.key;return(
+              <button key={c.key} type="button" role="radio" aria-checked={on} aria-label={c.name} onClick={()=>setSampleColor(c.key)} className={"cdx-sw"+(on?" on":"")}>
+                <span className="dot" style={{background:c.hex}}>{on&&<Ico n="check" s={15}/>}</span>
+                <span className="nm">{c.name}</span>
+              </button>);})}
+          </div>
+        </div>
+        <div className="agd-trust" style={{marginTop:16}}>
+          <div className="agd-card cdx-sizecard"><CdxCardSample bg={sampleBg} s={CDX_SAMPLES[0]}/><div className="ic"><Ico n="id" s={18}/></div><h5>Business Card · <span style={{whiteSpace:"nowrap"}}>3.5 × 2 in</span></h5><p>Ten to a sheet. For auditions, workshops and handing over in person.</p></div>
+          <div className="agd-card cdx-sizecard"><CdxCardSample bg={sampleBg} s={CDX_SAMPLES[1]}/><div className="ic"><Ico n="mail" s={18}/></div><h5>Mailing Postcard · <span style={{whiteSpace:"nowrap"}}>6 × 4 in</span></h5><p>Made for the post. Big enough to pin on a casting board, with nothing to open.</p></div>
+          <div className="agd-card cdx-sizecard"><CdxCardSample bg={sampleBg} s={CDX_SAMPLES[2]}/><div className="ic"><Ico n="star" s={18}/></div><h5>Agent Promo Card · <span style={{whiteSpace:"nowrap"}}>7 × 5 in</span></h5><p>The largest. For the offices you most want to be seen by: it's hard to overlook on a desk.</p></div>
         </div>
         <div style={{marginTop:18}}>
           <button className="agd-btn gold" onClick={()=>onNavigate("actor-business-card")}>Design your card in the Actor Card Studio <Tri/></button>
