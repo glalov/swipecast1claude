@@ -51018,6 +51018,16 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [photoZoom,setPhotoZoom]=useState(1.0);
   const [photoPosX,setPhotoPosX]=useState(50);
   const [photoPosY,setPhotoPosY]=useState(50);
+  // Arrow nudges for the headshot. Same direction as dragging: "right" moves the photo
+  // right on the card (position % goes down). Click = one step; hold = keeps moving.
+  const nudgeTimer=useRef(null);
+  const nudgePhoto=(dx,dy)=>{
+    if(dx)setPhotoPosX(v=>Math.max(0,Math.min(100,v-dx*3)));
+    if(dy)setPhotoPosY(v=>Math.max(0,Math.min(100,v-dy*3)));
+  };
+  const stopNudge=()=>{if(nudgeTimer.current){clearTimeout(nudgeTimer.current);clearInterval(nudgeTimer.current);nudgeTimer.current=null;}};
+  const startNudge=(dx,dy)=>{stopNudge();nudgePhoto(dx,dy);nudgeTimer.current=setTimeout(()=>{nudgeTimer.current=setInterval(()=>nudgePhoto(dx,dy),70);},350);};
+  useEffect(()=>stopNudge,[]);
   const [isDragging,setIsDragging]=useState(false);
   const dragDataRef=useRef(null);
   const photoRef=useRef(null);
@@ -51467,14 +51477,28 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
             {selectedPhoto&&(
               <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
                 <h3 style={{fontWeight:700,fontSize:14,margin:'0 0 14px',color:'var(--t1)'}}>Headshot Crop & Position</h3>
-                <div style={{fontSize:12,color:'var(--t2)',marginBottom:10}}>Drag the headshot in the card preview to reposition. Use the slider below to zoom in.</div>
+                <div style={{fontSize:12,color:'var(--t2)',marginBottom:10}}>Drag the headshot in the card preview, or use the arrows below, to reposition. Use the slider to zoom in.</div>
                 <div style={{display:'flex',alignItems:'center',gap:10}}>
                   <span style={{fontSize:11,color:'var(--t3)',flexShrink:0,width:16,textAlign:'center'}}>1×</span>
                   <input type="range" min={100} max={300} value={Math.round(photoZoom*100)} onChange={e=>setPhotoZoom(parseFloat(e.target.value)/100)} style={{flex:1,accentColor:'var(--acc)',cursor:'pointer'}}/>
                   <span style={{fontSize:11,color:'var(--t3)',flexShrink:0,width:22,textAlign:'center'}}>3×</span>
                   <span style={{fontSize:11,fontWeight:700,color:'var(--acc)',width:32,textAlign:'right',flexShrink:0}}>{photoZoom.toFixed(1)}×</span>
                 </div>
-                <button className="btn-s btn-sm" style={{marginTop:10,fontSize:11}} onClick={()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);}}>Reset position</button>
+                <div style={{display:'flex',alignItems:'center',gap:16,marginTop:14,flexWrap:'wrap'}}>
+                  <div role="group" aria-label="Move photo" style={{display:'grid',gridTemplateColumns:'repeat(3,34px)',gridTemplateRows:'repeat(3,34px)',gap:4}}>
+                    {[[0,-1,'up','arrow-up',2,1],[-1,0,'left','arrow-left',1,2],[1,0,'right','arrow-right',3,2],[0,1,'down','arrow-down',2,3]].map(([dx,dy,lbl,ic,col,row])=>(
+                      <button key={lbl} type="button" aria-label={'Move photo '+lbl} title={'Move photo '+lbl}
+                        onPointerDown={e=>{e.preventDefault();startNudge(dx,dy);}} onPointerUp={stopNudge} onPointerLeave={stopNudge} onPointerCancel={stopNudge}
+                        onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();nudgePhoto(dx,dy);}}}
+                        style={{gridColumn:col,gridRow:row,width:34,height:34,borderRadius:9,border:'1px solid var(--bdr)',background:'var(--s2)',color:'var(--t1)',display:'grid',placeItems:'center',cursor:'pointer',padding:0,touchAction:'none',userSelect:'none'}}><Ico n={ic} s={16}/></button>
+                    ))}
+                    <span aria-hidden="true" style={{gridColumn:2,gridRow:2,display:'grid',placeItems:'center',color:'var(--t3)'}}><Ico n="photo" s={14}/></span>
+                  </div>
+                  <div style={{display:'flex',flexDirection:'column',gap:8,minWidth:0}}>
+                    <span style={{fontSize:12,color:'var(--t2)',lineHeight:1.5}}>Use the arrows to move your photo. Hold an arrow to keep it moving.</span>
+                    <button className="btn-s btn-sm" style={{fontSize:11,alignSelf:'flex-start'}} onClick={()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);}}>Reset position</button>
+                  </div>
+                </div>
               </div>
             )}
 
