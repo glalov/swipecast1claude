@@ -2794,12 +2794,14 @@ body.sheet-push main{transform:translate3d(-50vw,0,0);}
    is wrong anyway. */
 body.sheet-push .b2t-cube{display:none;}
 @media(prefers-reduced-motion:reduce){.tad-sheet,.tad-sheet.closing{animation:none;}body.sheet-push main{transform:none;}main{transition:none;}}
-.tad-head{background:linear-gradient(140deg,#232342 0%,#1A1A2E 60%,#111124 100%);color:#fff;padding:24px 28px 22px;position:relative;}
-.tad-head h2{margin:8px 0 8px;font-size:24px;font-weight:800;letter-spacing:-.02em;color:#fff;padding-right:96px;}
-.tad-head p{margin:0;font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.55;max-width:660px;}
-.tad-x{position:absolute;top:16px;right:18px;height:32px;border-radius:20px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:0 14px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;}
+.tad-head{background:#1A1A2E;color:#fff;padding:24px 28px 22px;position:relative;}
+.tad-eyebrow{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#EAC080;}
+.tad-head h2{margin:8px 0 0;font-size:32px;line-height:1.12;font-weight:800;letter-spacing:-.02em;color:#fff;padding-right:96px;}
+.tad-intro{background:var(--s1);border-bottom:1px solid var(--bdr);padding:20px 28px 22px;}
+.tad-intro p{margin:0;font-size:19px;line-height:1.7;color:var(--t1);max-width:820px;}
+.tad-x{position:absolute;top:18px;right:18px;height:38px;border-radius:20px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:0 16px;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;}
 .tad-x:hover{background:rgba(255,255,255,.18);}
-.tad-curated{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:11.5px;font-weight:700;background:rgba(240,184,96,.14);border:1px solid rgba(240,184,96,.34);color:#F0B860;padding:6px 12px;border-radius:20px;}
+.tad-curated{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:15.5px;line-height:1.45;font-weight:700;background:#E6F2EF;color:#206557;padding:9px 16px;border-radius:20px;}
 .tad-body{padding:18px 26px 34px;}
 .tad-tier{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:5px;}
 .tad-cityb{font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);border:1px solid var(--bdr);padding:3px 7px;border-radius:5px;}
@@ -2809,12 +2811,12 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-t-mgmt{background:rgba(107,62,203,.13);color:#5B32AE;}
 /* One sticky toolbar instead of nine loose pills: search + two segmented controls. */
 .tad-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:10px 12px;margin:14px 0 10px;position:sticky;top:0;z-index:6;box-shadow:0 6px 18px -16px rgba(26,26,46,.7);}
-.tad-srch{flex:1 1 210px;min-width:160px;border:1px solid var(--bdr);background:var(--bg);border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;color:var(--t1);}
+.tad-srch{flex:1 1 210px;min-width:160px;border:1px solid var(--bdr);background:var(--bg);border-radius:10px;padding:12px 15px;font-family:inherit;font-size:16.5px;color:var(--t1);}
 .tad-srch:focus{outline:none;border-color:var(--t1);}
 .tad-seg{display:inline-flex;flex-wrap:wrap;max-width:100%;background:var(--s2);border-radius:9px;padding:3px;gap:2px;}
-.tad-seg button{border:0;background:none;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--t2);padding:6px 11px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.tad-seg button{border:0;background:none;font-family:inherit;font-size:15px;font-weight:700;color:var(--t2);padding:9px 13px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
 .tad-seg button.on{background:var(--t1);color:#fff;box-shadow:0 2px 6px -2px rgba(26,26,46,.5);}
-.tad-seg button .n{font-size:10.5px;font-weight:800;opacity:.6;}
+.tad-seg button .n{font-size:12.5px;font-weight:800;opacity:.6;}
 .tad-seg button.on .n{opacity:.75;}
 .tad-res{font-size:12px;color:var(--t3);margin:2px 0 6px;font-weight:600;}
 .tad-green{background:rgba(27,135,62,.08);border:1px solid rgba(27,135,62,.28);border-radius:11px;padding:13px 16px;font-size:13px;color:#146B31;font-weight:700;line-height:1.55;margin:12px 0 2px;}
@@ -2858,17 +2860,20 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-rm ul{margin:0;padding-left:18px;font-size:12.3px;color:var(--t2);line-height:1.75;}
 .tad-rm b{color:var(--t1);}
 /* gatekeeper intro */
-.tad-gate{margin:20px 0 6px;background:linear-gradient(135deg,#1A1A2E,#2D2D44);color:#fff;border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;}
-.tad-gate:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(240,184,96,.2),transparent 70%);top:-90px;right:-60px;}
-.tad-gate h3{margin:0 0 8px;font-size:16.5px;font-weight:800;letter-spacing:-.01em;position:relative;color:#fff;}
-.tad-gate p{margin:0 0 9px;font-size:13.4px;line-height:1.65;color:rgba(255,255,255,.82);position:relative;}
-.tad-gate p:last-child{margin-bottom:0;}
-.tad-gate b{color:#F0B860;}
-/* tabs */
+.tad-why{margin:22px 0 6px;}
+.tad-why h3{margin:0 0 16px;font-size:26px;font-weight:800;letter-spacing:-.01em;color:#1A1A2E;}
+.tad-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.tad-step{background:#fff;border:1px solid var(--bdr);border-radius:16px;padding:22px;min-width:0;}
+.tad-step .num{width:46px;height:46px;border-radius:12px;background:#1A1A2E;color:#EAC080;display:grid;place-items:center;font-size:22px;font-weight:800;}
+.tad-step h4{margin:14px 0 8px;font-size:21px;line-height:1.3;font-weight:800;color:#1A1A2E;}
+.tad-step p{margin:0;font-size:19px;line-height:1.7;color:var(--t1);}
+.tad-why-more{margin:18px 0 0;font-size:18px;line-height:1.7;color:var(--t1);}
+.tad-why-more b{color:#206557;}
+
 .tad-tabs{display:flex;gap:6px;margin:18px 0 4px;border-bottom:1px solid var(--bdr);flex-wrap:wrap;}
-.tad-tabs button{background:none;border:0;border-bottom:2.5px solid transparent;font-family:inherit;font-size:13.5px;font-weight:800;color:var(--t3);padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+.tad-tabs button{background:none;border:0;border-bottom:3px solid transparent;font-family:inherit;font-size:16.5px;font-weight:800;color:var(--t3);padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
 .tad-tabs button.on{color:var(--t1);border-bottom-color:var(--t1);}
-.tad-tabs .pill{background:var(--s2);color:var(--t2);font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px;}
+.tad-tabs .pill{background:var(--s2);color:var(--t2);font-size:13px;font-weight:800;padding:2px 8px;border-radius:20px;}
 .tad-tabs button.on .pill{background:var(--t1);color:#fff;}
 /* tips */
 .tad-tipsintro{background:var(--s1);border:1px solid var(--bdr);border-left:3px solid #F0B860;border-radius:12px;padding:16px 18px;margin:18px 0 16px;}
@@ -2937,7 +2942,11 @@ body.sheet-push .b2t-cube{display:none;}
 }
 @media(max-width:760px){
   .tad-head{padding:20px 16px;}
-  .tad-head h2{font-size:21px;padding-right:0;margin-top:12px;}
+  .tad-head h2{font-size:26px;padding-right:0;margin-top:10px;}
+  .tad-intro{padding:18px 16px 20px;}
+  .tad-intro p{font-size:18px;}
+  .tad-steps{grid-template-columns:1fr;}
+  .tad-why h3{font-size:23px;}
   .tad-x{position:static;margin-bottom:10px;}
   .tad-body{padding:14px 14px 26px;}
   /* The wrapped toolbar is ~250px tall on a phone — sticking it to the top would
@@ -16499,18 +16508,22 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
       <div className={"tad-sheet"+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Talent Agency and Management Directory">
           <div className="tad-head">
             <button className="tad-x" onClick={closeSheet}><Ico n="arrow-left" s={15}/>Back</button>
-            <div style={{fontSize:11,fontWeight:800,letterSpacing:"0.14em",textTransform:"uppercase",color:"#F0B860"}}>CastSlate Premium</div>
+            <div className="tad-eyebrow">CastSlate Premium</div>
             <h2>Talent Agency &amp; Management Directory</h2>
-            <p>Talent agencies and management companies across Los Angeles and New York, sorted by size so you know where a beginner actually stands a chance — with the mailing address, the website, and exactly how each one wants to be approached.</p>
-            <div className="tad-curated"><Ico n="star" s={13}/>Curated by the CastSlate team every few months — we only list agencies actively looking for talent in the current period</div>
+          </div>
+          <div className="tad-intro">
+            <p>Talent agencies and management companies in Los Angeles and New York, sorted by size so you know where a beginner stands a chance. Each one shows its address, website and how it wants to be approached.</p>
+            <div className="tad-curated"><Ico n="check" s={15}/>Curated by our team every few months: only agencies looking for talent now</div>
           </div>
 
           <div className="tad-body">
-            <div className="tad-gate">
+            <div className="tad-why">
               <h3>Why this list exists</h3>
-              <p>Here is something nobody tells you at the start. The Marvel films. The DC films. The hundred-million-dollar features with a release date already locked in. <b>Those roles are never posted publicly. Anywhere.</b></p>
-              <p>You will not find the lead in the next Spider-Man on a casting website. That talent is submitted by <b>agents and managers only</b> — the studio sends a breakdown to a closed list of represented artists, and that is the entire audition pool.</p>
-              <p>Which makes the people on this list exactly what they sound like: <b>the gatekeepers</b>. Getting one of them to open a door is not a step in your career. For that tier of work, it <em>is</em> the career.</p>
+              <div className="tad-steps">
+                <div className="tad-step"><span className="num">1</span><h4>The biggest roles are never posted</h4><p>Marvel, DC and big studio films never post their roles publicly. Anywhere.</p></div>
+                <div className="tad-step"><span className="num">2</span><h4>Only agents and managers submit</h4><p>Studios send those roles to a closed list of represented actors. That is the whole audition pool.</p></div>
+                <div className="tad-step"><span className="num">3</span><h4>These are the gatekeepers</h4><p>Get one of them to open the door, and that tier of work opens up for you.</p></div>
+              </div>
             </div>
 
             <div className="tad-tabs">
@@ -17030,19 +17043,23 @@ function CastingDirectoryCard({isPremium,onNavigate}){
       <div className={"tad-sheet"+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Casting Companies Directory">
           <div className="tad-head">
             <button className="tad-x" onClick={closeSheet}><Ico n="arrow-left" s={15}/>Back</button>
-            <div style={{fontSize:11,fontWeight:800,letterSpacing:"0.14em",textTransform:"uppercase",color:"#F0B860"}}>CastSlate Premium</div>
+            <div className="tad-eyebrow">CastSlate Premium</div>
             <h2>Casting Companies Directory</h2>
-            <p>Casting offices across Los Angeles and New York — the people who decide who gets seen for film, television, commercials and theatre. Sorted so the offices that accept headshots come first, with the website, the address and each office's own submission policy.</p>
-            <div className="tad-curated"><Ico n="star" s={13}/>Hand-checked by the CastSlate team — active offices with projects happening now</div>
+          </div>
+          <div className="tad-intro">
+            <p>Casting offices in Los Angeles and New York. The ones that accept headshots come first, each with its website, address and submission policy.</p>
+            <div className="tad-curated"><Ico n="check" s={15}/>Hand-checked by our team: active offices only</div>
           </div>
 
           <div className="tad-body">
-            <div className="tad-gate">
+            <div className="tad-why">
               <h3>Why send your card to casting</h3>
-              <p>Casting directors watch thousands of self-tapes a month, almost all from actors they have never heard of. <b>The actors they call in first are the ones they already recognise.</b></p>
-              <p>A printed CastSlate card on their desk is how you become one of those faces. It costs a stamp, it carries your QR code straight to your reel and profile, and unlike an email it does not disappear under the next hundred.</p>
-              <p><b>It doesn't matter where you're mailing from.</b> New York, Los Angeles, another state or the other side of the world: if you're the right face for a role, they'll set up a video meeting, or arrange the flight and hotel to meet you in their office.</p>
-              <p>Not looking for roles yet, but for representation? That's the <b>Talent Agency &amp; Management Directory</b>, the card just above this one.</p>
+              <div className="tad-steps">
+                <div className="tad-step"><span className="num">1</span><h4>They call faces they know</h4><p>Casting watches thousands of self-tapes. Familiar faces get called first.</p></div>
+                <div className="tad-step"><span className="num">2</span><h4>Your card sits on their desk</h4><p>It costs a stamp. The QR code opens your reel and profile.</p></div>
+                <div className="tad-step"><span className="num">3</span><h4>Mail it from anywhere</h4><p>If you're right for a role, they'll video call or fly you in.</p></div>
+              </div>
+              <p className="tad-why-more">Looking for an agent instead? Use the <b>Talent Agency &amp; Management Directory</b>, the card just above this one.</p>
             </div>
 
             <div className="tad-tabs">
