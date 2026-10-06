@@ -5201,6 +5201,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .cdx-sw .nm{font-size:11.5px;font-weight:600;color:var(--t2);}
 .cdx-sw.on .nm{font-weight:800;color:var(--t1);}
 @media (max-width:900px){.cdx-colors-row{gap:10px;}.cdx-sw .dot{width:34px;height:34px;}}
+/* Phones: the Premium pill sits above the step title like a tag, so it never wraps alone under it. */
+@media (max-width:900px){.cdx-prem-h{display:flex;flex-direction:column;align-items:flex-start;}.cdx-prem-h .cdx-prem-pill{order:-1;margin:2px 0 6px;}}
 .cdx-prem-pill{display:inline-block;background:#1A1A2E;color:#EAC080;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:1px;}
 .agd-step h5{margin:0 0 3px;font-size:14.5px;font-weight:800;}
 .agd-step p{margin:0;font-size:13.5px;line-height:1.62;color:var(--t2);}
@@ -17322,7 +17324,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
         <h2 className="agd-h2">Put your face on a casting director's desk.</h2>
         <div className="agd-steps">
           <div className="agd-step"><div className="n">1</div><div><h5>Pick your offices</h5><p>Start with the ones that accept headshots and cast the kind of work you fit.</p></div></div>
-          <div className="agd-step"><div className="n">2</div><div><h5>Design your card in the Actor Card Studio <span className="cdx-prem-pill">Premium</span></h5><p>Choose your photo, layout, colors and details so it looks exactly the way you want, then print it in any of three sizes, write two lines on the back, and post it, from wherever you are in the world.</p></div></div>
+          <div className="agd-step"><div className="n">2</div><div><h5 className="cdx-prem-h">Design your card in the Actor Card Studio <span className="cdx-prem-pill">Premium</span></h5><p>Choose your photo, layout, colors and details so it looks exactly the way you want, then print it in any of three sizes, write two lines on the back, and post it, from wherever you are in the world.</p></div></div>
           <div className="agd-step"><div className="n">3</div><div><h5>They scan — you're live</h5><p>Headshots, self-tapes, credits, contact. Update it tomorrow; the same card shows the new version.</p></div></div>
         </div>
         <div className="cdx-colors" role="radiogroup" aria-label="Card color">
