@@ -50915,12 +50915,22 @@ function _abcDrawCanvasLogo(ctx,x,y,size){
   ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);ctx.closePath();ctx.fill();ctx.restore();
 }
 
-function ActorCardPreview({formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen}){
+// Card color: only the white panel of the card. Every tint is pale (print-safe on any
+// office printer, no heavy ink, no bleed risk) and keeps the navy text above 12:1 contrast.
+const ABC_CARD_COLORS=[
+  {key:'white',name:'White',hex:'#FFFFFF'},
+  {key:'ivory',name:'Ivory',hex:'#FAF4E6'},
+  {key:'sage',name:'Sage',hex:'#E9F1EA'},
+  {key:'sky',name:'Sky',hex:'#E8F0F8'},
+  {key:'blush',name:'Blush',hex:'#F8EAE6'},
+  {key:'stone',name:'Stone',hex:'#EEEBE5'},
+];
+function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen}){
   const format=ABC_CARD_FORMATS[formatKey]||ABC_CARD_FORMATS.business;
   const large=formatKey!=='business';
   const logo=(<div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:large?22:19,height:large?22:19,background:'#1A1A2E',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><LogoMark/></div><span style={{fontSize:large?9.5:9,fontWeight:800,color:'#1A1A2E',letterSpacing:1.5}}>CASTSLATE</span></div>);
   return(
-    <div role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:'#ffffff',border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
+    <div role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:cardBg,border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
       {watermark&&<div style={{position:'absolute',inset:'-40%',zIndex:5,pointerEvents:'none',transform:'rotate(-25deg)',display:'grid',gridTemplateColumns:'repeat(6,1fr)',gridTemplateRows:'repeat(7,1fr)',alignItems:'center',justifyItems:'center'}}>
         {Array.from({length:42}).map((_,i)=>(
@@ -51000,6 +51010,8 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [mailingMessage,setMailingMessage]=useState("I'm seeking representation and would love to connect. Scan the QR code to view my headshots, reel, credits, and current availability.");
   const [showLocation,setShowLocation]=useState(true);
   const [showUnion,setShowUnion]=useState(true);
+  const [cardColor,setCardColor]=useState(()=>{try{const v=localStorage.getItem('cs_card_color');return ABC_CARD_COLORS.some(c=>c.key===v)?v:'white';}catch(_){return 'white';}});
+  const cardBg=(ABC_CARD_COLORS.find(c=>c.key===cardColor)||ABC_CARD_COLORS[0]).hex;
   const [qrDataUrl,setQrDataUrl]=useState(null);
   const [qrLoading,setQrLoading]=useState(false);
   const [qrErr,setQrErr]=useState(false);
@@ -51093,7 +51105,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     const ctx=canvas.getContext('2d');
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
     ctx.scale(pixelScale,pixelScale);
-    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);
+    ctx.fillStyle=cardBg;ctx.fillRect(0,0,CW,CH);
     ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,TB);
 
     const PW=Math.round(CW*selectedFormat.photoPct);
@@ -51214,12 +51226,12 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       }catch(e){}
     }
     return canvas;
-  },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY,selectedFormat]);
+  },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY,selectedFormat,cardBg]);
 
   const drawBackCard=useCallback(async()=>{
     const format=selectedFormat,CW=format.width,CH=format.height;
     const canvas=document.createElement('canvas');canvas.width=CW;canvas.height=CH;
-    const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,CW,CH);
+    const ctx=canvas.getContext('2d');ctx.fillStyle=cardBg;ctx.fillRect(0,0,CW,CH);
     ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,Math.max(12,Math.round(CH*.012)));
     const leftW=Math.round(CW*.57),pad=Math.round(CH*.055),logoSize=Math.round(CH*.052);
     _abcDrawCanvasLogo(ctx,pad,pad,logoSize);
@@ -51241,7 +51253,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(lineLeft,lineStart+i*lineGap);ctx.lineTo(lineRight,lineStart+i*lineGap);ctx.stroke();}
     ctx.strokeStyle='#DDD7CD';ctx.beginPath();ctx.moveTo(leftW+pad*.65,CH-pad);ctx.lineTo(CW-pad*.65,CH-pad);ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#8E8EA0';ctx.font=`${Math.round(CH*.014)}px Arial,sans-serif`;ctx.fillText(cardFormat==='postcard'?'USPS POSTCARD-FRIENDLY FORMAT':'VISIBLE FLAT-CARD MAILING · CONFIRM CURRENT POSTAGE',leftW+(CW-leftW)/2,CH-pad*.55);ctx.textAlign='left';
     return canvas;
-  },[selectedFormat,displayName,location,mailingMessage,qrDataUrl,cardFormat]);
+  },[selectedFormat,displayName,location,mailingMessage,qrDataUrl,cardFormat,cardBg]);
 
   // The on-page sheet preview is produced by the exact same card and sheet
   // canvases as the downloaded print document, so no fields or crop changes
@@ -51374,6 +51386,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <div style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live {selectedFormat.name} Preview · {cardSide}</div>
               <div style={{width:'100%',maxWidth:cardFormat==='business'?390:520}}>
                 <ActorCardPreview
+                  cardBg={cardBg}
                   formatKey={cardFormat}
                   side={cardSide}
                   mailingMessage={mailingMessage}
@@ -51440,6 +51453,19 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
                 <button className="btn-s btn-sm" style={{marginTop:10,fontSize:11}} onClick={()=>{setPhotoZoom(1);setPhotoPosX(50);setPhotoPosY(50);}}>Reset position</button>
               </div>
             )}
+
+            {/* Card color — pale, print-safe tints for the white panel only */}
+            <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
+              <h3 style={{fontWeight:700,fontSize:14,margin:'0 0 4px',color:'var(--t1)'}}>Card Color</h3>
+              <p style={{fontSize:12.5,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.55}}>Pick the color of the card's light panel. Every option is a soft tint that stays sharp and prints cleanly on any printer.</p>
+              <div role="radiogroup" aria-label="Card color" style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+                {ABC_CARD_COLORS.map(c=>{const on=cardColor===c.key;return(
+                  <button key={c.key} type="button" role="radio" aria-checked={on} aria-label={c.name} onClick={()=>{setCardColor(c.key);try{localStorage.setItem('cs_card_color',c.key);}catch(_){}}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit'}}>
+                    <span style={{width:42,height:42,borderRadius:'50%',background:c.hex,border:on?'2px solid #1A1A2E':'1.5px solid #D6D3CC',boxShadow:on?'0 0 0 3px rgba(26,26,46,.14)':'none',display:'grid',placeItems:'center',color:'#1A1A2E'}}>{on&&<Ico n="check" s={16}/>}</span>
+                    <span style={{fontSize:11.5,fontWeight:on?800:600,color:on?'var(--t1)':'var(--t2)'}}>{c.name}</span>
+                  </button>);})}
+              </div>
+            </div>
 
             {/* Card details */}
             <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
@@ -51563,6 +51589,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <div style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,flexWrap:'wrap'}}><span style={{fontWeight:700,fontSize:11,color:'var(--t3)',textTransform:'uppercase',letterSpacing:1}}>Live {selectedFormat.name} Preview</span>{cardFormat!=='business'&&<div style={{display:'flex',padding:3,border:'1px solid var(--bdr)',borderRadius:8}}><button type="button" onClick={()=>setCardSide('front')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='front'?'var(--t1)':'transparent',color:cardSide==='front'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Front</button><button type="button" onClick={()=>setCardSide('back')} style={{border:0,borderRadius:5,padding:'6px 12px',background:cardSide==='back'?'var(--t1)':'transparent',color:cardSide==='back'?'var(--bg)':'var(--t2)',fontSize:10,fontWeight:700,cursor:'pointer'}}>Back</button></div>}</div>
               <div style={{width:'100%',maxWidth:cardFormat==='business'?390:520}}>
                 <ActorCardPreview
+                  cardBg={cardBg}
                   formatKey={cardFormat}
                   side={cardSide}
                   mailingMessage={mailingMessage}
@@ -51633,6 +51660,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <div style={{width:largePreviewWidth,height:largePreviewHeight,flex:'0 0 auto'}}>
                 <div style={{width:largePreviewBaseWidth,transform:`scale(${largePreviewScale})`,transformOrigin:'top left'}}>
                   <ActorCardPreview
+                  cardBg={cardBg}
                     formatKey={cardFormat}
                     side={cardSide}
                     mailingMessage={mailingMessage}
