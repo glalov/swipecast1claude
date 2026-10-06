@@ -560,7 +560,7 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-t-mgmt{background:rgba(107,62,203,.13);color:#5B32AE;}
 /* One sticky toolbar instead of nine loose pills: search + two segmented controls. */
 .tad-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--s1);border:1px solid var(--bdr);border-radius:13px;padding:10px 12px;margin:14px 0 10px;position:sticky;top:0;z-index:6;box-shadow:0 6px 18px -16px rgba(26,26,46,.7);}
-.tad-srch{flex:1 1 210px;min-width:160px;border:1px solid var(--bdr);background:var(--bg);border-radius:10px;padding:12px 15px;font-family:inherit;font-size:16.5px;color:var(--t1);}
+.tad-srch{flex:1 1 100%;min-width:0;border:1px solid var(--bdr);background:var(--bg);border-radius:10px;padding:12px 15px;font-family:inherit;font-size:16.5px;color:var(--t1);}
 .tad-srch:focus{outline:none;border-color:var(--t1);}
 .tad-seg{display:inline-flex;flex-wrap:wrap;max-width:100%;background:var(--s2);border-radius:9px;padding:3px;gap:2px;}
 .tad-seg button{border:0;background:none;font-family:inherit;font-size:15px;font-weight:700;color:var(--t2);padding:9px 13px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
