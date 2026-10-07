@@ -995,9 +995,38 @@ def _agd_seo():
     return more, head
 _AGD_MORE, _AGD_LD = _agd_seo()
 
+# /faq crawler copy (2026-10-06): every FAQ_CATEGORIES question + answer as plain
+# HTML in #cs-seo, plus FAQPage JSON-LD, so Google (and its AI answers) can read
+# "Is CastSlate legit?" etc. without running the app. Read straight from the JSX
+# so the copy can never drift from what visitors see.
+def _faq_seo():
+    import re as _re, json as _j, html as _h
+    src = open("swipecast-full.jsx", encoding="utf-8").read()
+    a, b = src.find("const FAQ_CATEGORIES=["), src.find("function FaqPage(")
+    if a < 0 or b < a:
+        print("  ! FAQ_CATEGORIES not found in the JSX — /faq built without FAQ text")
+        return "", ""
+    block = src[a:b]
+    e = lambda t: _h.escape(t, quote=False)
+    body, qa = [], []
+    for cat in _re.finditer(r'\{id:"[^"]+",label:"([^"]+)".*?items:\[(.*?)\n  \]\}', block, _re.S):
+        body.append(f"<h2>{e(cat.group(1))}</h2>")
+        for it in _re.finditer(r'\{q:"((?:[^"\\]|\\.)*)",a:"((?:[^"\\]|\\.)*)"\}', cat.group(2)):
+            q, ans = _j.loads('"' + it.group(1) + '"'), _j.loads('"' + it.group(2) + '"')
+            qa.append((q, ans))
+            body.append(f"<h3>{e(q)}</h3>" + "".join(f"<p>{e(x)}</p>" for x in ans.split("\n\n")))
+    if not qa:
+        print("  ! no FAQ items parsed — /faq built without FAQ text")
+        return "", ""
+    ld = {"@context": "https://schema.org", "@type": "FAQPage",
+          "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": ans.replace("\n\n", " ")}} for q, ans in qa]}
+    head = '  <script type="application/ld+json">' + _j.dumps(ld, ensure_ascii=False).replace("</", "<\\/") + "</script>\n"
+    return "".join(body), head
+_FAQ_MORE, _FAQ_LD = _faq_seo()
+
 for filename, path, title, desc in ROUTES:
     canonical = SITE + ("/" if path == "/" else path)
-    extra = (_AGD_MORE, _AGD_LD) if path == "/agency-directory" else ("", "")
+    extra = (_AGD_MORE, _AGD_LD) if path == "/agency-directory" else (_FAQ_MORE, _FAQ_LD) if path == "/faq" else ("", "")
     open(filename, "w", encoding="utf-8").write(
         render_page(title, desc, canonical, route_preload_tags(path), *extra))
 
