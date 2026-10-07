@@ -647,7 +647,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->
-  <div id="cs-loading">
+  <div id="cs-loading" data-nosnippet>
     <div class="logo">
       <div class="logo-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#1B1C20"/></svg></div>
       CastSlate
@@ -656,7 +656,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
     <div class="label">Loading…</div>
   </div>
   <!-- Error screen — shown if something goes wrong before React mounts -->
-  <div id="cs-error">
+  <div id="cs-error" data-nosnippet>
     <div class="logo" style="color:#fff;font-size:20px;font-weight:800;font-family:-apple-system,sans-serif;display:-webkit-flex;display:flex;align-items:center;gap:10px;margin-bottom:4px;">
       <div style="width:32px;height:32px;background:#fff;border-radius:7px;display:-webkit-flex;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#1B1C20"/></svg></div>
       CastSlate
