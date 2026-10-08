@@ -1,24 +1,26 @@
-// Casting Directory monthly re-check (2026-10-07).
+// Directory monthly re-check (2026-10-07): the Casting Companies Directory
+// (CASTING_OFFICES, "cdx") and the Talent Agency & Management Directory
+// (TALENT_AGENCIES, "agd"), both in swipecast-full.jsx.
 //
-// The Casting Companies Directory (CASTING_OFFICES in swipecast-full.jsx) promises
-// "active offices only". This keeps that true and reports to the owner once a month.
-// It NEVER edits the directory: it only reports. Changes go live after the owner
-// approves them and the list in the jsx is edited and deployed.
+// What changes on the site BY ITSELF (owner's call, 2026-10-07):
+//   • a website link that is hijacked (slot/casino spam) or parked/for sale is hidden
+//     (public.directory_link_blocks, auto=true) — the office/agency itself stays listed,
+//     the row falls back to "search for them";
+//   • the "Last checked" date (public.directory_last_checked) moves when the full monthly
+//     check (website + the owner's-Mac activity step) completes.
+// Everything else — removing an office, a new address, a new policy, additions — is only
+// REPORTED. It goes live after the owner approves and the jsx list is edited.
 //
-// One run per month, keyed "YYYY-MM" in public.cdx_recheck_runs:
-//   1. action "web"      (cron, 1st of the month): reads the CURRENT office list from
-//      the public repo, then checks every office website — down, moved to another
-//      domain, parked/for sale, hijacked (casino/slots spam), no longer about casting.
-//   2. action "activity" (the owner's Mac, same day): a Claude task checks each office's
-//      recent credits and published submission policy in the owner's logged-in Chrome
-//      and posts its findings here. That merges into the run and sends the report.
-//   3. action "report"   (cron, 3rd of the month): if the Mac step never arrived (Mac
-//      off), sends the website-only report and says the activity check is missing.
-//   "dry" = run the website check and return the report HTML; saves and sends nothing.
-//   "status" = latest runs.
-//
-// POST {secret, action, month?, findings?}; secret = app_secrets.cdx_recheck_secret.
-// Report email → the owner only, claimed through email_send_ledger (one per month).
+// One row per month in public.cdx_recheck_runs ("YYYY-MM"):
+//   "web"      cron 1st: dir "cdx" (54 sites) in one go; dir "agd" in AGD_PARTS slices
+//              (~470 sites) so each call stays well inside the edge time limit.
+//   "activity" the owner's Mac (Claude task, logged-in Chrome) posts findings for both
+//              directories → merged, date moved, report emailed.
+//   "report"   cron 3rd: fallback website-only report if the Mac step never arrived.
+//   "dry"      check one dir/part and return the report; saves and sends nothing.
+//   "status"   latest runs.
+// POST {secret, action, dir?, part?, month?, findings?, additions?, agd_findings?}
+// secret = app_secrets.cdx_recheck_secret. Report → owner only, via email_send_ledger.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { claimSends, releaseSends } from "../_shared/send-guard.ts";
@@ -29,81 +31,131 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const REPORT_TO = "officecasting01@gmail.com";
 const JSX_URL = "https://raw.githubusercontent.com/glalov/swipecast1claude/main/swipecast-full.jsx";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36";
+const AGD_PARTS = 6;
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json" } });
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 
-type Office = { n: string; c: string[]; w: string; a: [string, string][]; av: string; p: string; st: string };
-type Web = { n: string; w: string; status: "ok" | "down" | "moved" | "parked" | "hijacked" | "not_casting"; detail: string };
-// What the Mac step posts, one per office it has something to say about.
+type Dir = "cdx" | "agd";
+type Entry = { n: string; w: string };
+type Web = { n: string; w: string; status: "ok" | "down" | "moved" | "parked" | "hijacked" | "off_topic"; detail: string };
 type Finding = {
   n: string;
   verdict: "active" | "quiet" | "closed" | "moved" | "policy_changed" | "unsure";
-  detail?: string;
-  last_credit?: string;
-  new_address?: string;
-  new_policy?: string;
+  detail?: string; last_credit?: string; new_address?: string; new_policy?: string;
 };
 type Addition = { n: string; city?: string; why?: string; website?: string };
+type Row = { n: string; why: string };
 
-// ── the office list, straight from the live source ────────────────────────────
-async function loadOffices(): Promise<Office[]> {
+// ── the lists, straight from the live source ──────────────────────────────────
+let srcCache: string | null = null;
+async function source(): Promise<string> {
+  if (srcCache) return srcCache;
   const r = await fetch(JSX_URL, { headers: { "Cache-Control": "no-cache" } });
   if (!r.ok) throw new Error(`repo fetch ${r.status}`);
-  const src = await r.text();
-  const start = src.indexOf("const CASTING_OFFICES=[");
-  if (start < 0) throw new Error("CASTING_OFFICES not found");
-  const i = start + "const CASTING_OFFICES=".length;
-  const j = src.indexOf("\n];", i);
-  return JSON.parse(src.slice(i, j + 2)) as Office[];
+  return (srcCache = await r.text());
+}
+async function loadList(dir: Dir): Promise<Entry[]> {
+  const src = await source();
+  if (dir === "cdx") {
+    const start = src.indexOf("const CASTING_OFFICES=[");
+    if (start < 0) throw new Error("CASTING_OFFICES not found");
+    const i = start + "const CASTING_OFFICES=".length;
+    return (JSON.parse(src.slice(i, src.indexOf("\n];", i) + 2)) as Entry[]).map((o) => ({ n: o.n, w: o.w || "" }));
+  }
+  // TALENT_AGENCIES is a JS literal (unquoted keys, comments), one entry per line.
+  const start = src.indexOf("const TALENT_AGENCIES=[");
+  if (start < 0) throw new Error("TALENT_AGENCIES not found");
+  const body = src.slice(start, src.indexOf("\n];", start));
+  const out: Entry[] = [];
+  for (const line of body.split("\n")) {
+    const n = line.match(/^\s*\{n:"((?:[^"\\]|\\.)*)"/);
+    if (!n) continue;
+    const w = line.match(/\bw:"([^"]*)"/);
+    out.push({ n: n[1].replace(/\\"/g, '"'), w: w ? w[1] : "" });
+  }
+  return out;
 }
 
 // ── website check ─────────────────────────────────────────────────────────────
-// Hijacked domains (2026-10 check found three) carry slot-spam vocabulary. A single
-// "casino" is NOT enough: casting offices list credits like "Wind Creek Casino TVC".
+// Hijacked domains carry slot-spam vocabulary. A single "casino" is NOT enough:
+// casting offices list credits like "Wind Creek Casino TVC" (2026-10-07 false positive).
 const HIJACK_STRONG = /\b(judi|togel|gacor|maxwin|situs|slot online|slot gacor|bandar|pragmatic play|link alternatif|daftar)\b/i;
 const HIJACK_WEAK = /\b(slots?|casino|poker|betting|sportsbook|jackpot|bonus)\b/gi;
 const isHijacked = (t: string) => HIJACK_STRONG.test(t) || (t.match(HIJACK_WEAK) || []).length >= 6;
-const PARKED = /(domain (is )?for sale|buy this domain|this domain (may be|is) for sale|hugedomains|sedo\.com|dan\.com|afternic|parkingcrew|domain parking|godaddy\.com\/domainsearch|is available for purchase)/i;
+const PARKED = /(domain (is )?for sale|buy this domain|this domain (may be|is) for sale|hugedomains|sedo\.com|dan\.com|afternic|parkingcrew|domain parking|godaddy\.com\/domainsearch|is available for purchase|account (has been )?suspended)/i;
+const STUB = /<title>[^<]*(coming soon|under construction|wordpress\s*›\s*error|account suspended)[^<]*<\/title>/i;
+const TOPIC: Record<Dir, RegExp> = {
+  cdx: /casting|cast\b|audition|actor/i,
+  agd: /talent|agency|agent|management|manager|represent|client|actor|artist|model/i,
+};
 const bare = (h: string) => h.replace(/^www\./, "").toLowerCase();
 
 async function get(url: string): Promise<{ status: number; host: string; body: string } | null> {
   try {
-    const r = await fetch(url, { redirect: "follow", headers: { "User-Agent": UA, Accept: "text/html,*/*" }, signal: AbortSignal.timeout(15000) });
+    const r = await fetch(url, { redirect: "follow", headers: { "User-Agent": UA, Accept: "text/html,*/*" }, signal: AbortSignal.timeout(12000) });
     const body = (await r.text()).slice(0, 400000);
     return { status: r.status, host: new URL(r.url).hostname, body };
   } catch { return null; }
 }
 
-async function checkSite(o: Office): Promise<Web> {
-  const want = bare(o.w.replace(/^https?:\/\//, "").split("/")[0]);
-  let res = await get(`https://${o.w.replace(/^https?:\/\//, "")}`);
-  if (!res || res.status >= 500) res = (await get(`http://${o.w.replace(/^https?:\/\//, "")}`)) ?? res;
+async function checkSite(dir: Dir, o: Entry): Promise<Web> {
+  const dom = o.w.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  const want = bare(dom);
   const base = { n: o.n, w: o.w };
-  if (!res) return { ...base, status: "down", detail: "Site does not answer (no connection)" };
-  const text = res.body.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ");
-  const plain = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-  // Cloudflare / bot walls answer 403/503 with a challenge: the site is alive.
-  const challenge = /just a moment|cf-chl|attention required|captcha/i.test(res.body);
+  // Small old sites are often http-only or www-only: try all four before calling it down.
+  let res: Awaited<ReturnType<typeof get>> = null;
+  let last: Awaited<ReturnType<typeof get>> = null;
+  for (const u of [`https://${want}`, `http://${want}`, `https://www.${want}`, `http://www.${want}`]) {
+    const r = await get(u);
+    if (r) last = r;
+    if (r && (r.status < 400 || r.status === 401 || r.status === 403)) { res = r; break; }
+  }
+  if (!res) {
+    return { ...base, status: "down", detail: last ? (last.status === 410 ? "Site was taken down (410 Gone)" : `Site answers with error ${last.status}`) : "Site does not answer (no connection)" };
+  }
+  const plain = res.body.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  const challenge = res.status === 401 || res.status === 403 || /just a moment|cf-chl|attention required|captcha/i.test(res.body);
   if (isHijacked(plain)) return { ...base, status: "hijacked", detail: `Shows gambling/spam content${bare(res.host) !== want ? ` (now ${res.host})` : ""}` };
-  if (PARKED.test(res.body)) return { ...base, status: "parked", detail: "Domain is parked or for sale" };
-  if (res.status >= 400 && !challenge) return { ...base, status: "down", detail: `Site answers with error ${res.status}` };
+  if (PARKED.test(res.body) || STUB.test(res.body) || (!challenge && res.body.length < 700)) return { ...base, status: "parked", detail: "Domain is parked, for sale or an empty placeholder" };
   const host = bare(res.host);
   if (host !== want && !host.endsWith("." + want) && !want.endsWith("." + host)) {
     return { ...base, status: "moved", detail: `Now redirects to ${res.host} (update the link)` };
   }
-  if (!challenge && plain.length > 200 && !/casting|cast\b|audition|actor/i.test(plain)) {
-    return { ...base, status: "not_casting", detail: "Site no longer mentions casting" };
+  if (!challenge && plain.length > 200 && !TOPIC[dir].test(plain)) {
+    return { ...base, status: "off_topic", detail: dir === "cdx" ? "Site no longer mentions casting" : "Site no longer looks like a talent agency or management company" };
   }
   return { ...base, status: "ok", detail: "" };
 }
 
-async function webCheck(offices: Office[]): Promise<Web[]> {
-  const sites = offices.filter((o) => o.w);
+async function webCheck(dir: Dir, list: Entry[]): Promise<Web[]> {
+  const sites = list.filter((o) => o.w);
   const out: Web[] = [];
   let k = 0;
-  const worker = async () => { while (k < sites.length) { const o = sites[k++]; out.push(await checkSite(o)); } };
-  await Promise.all(Array.from({ length: 8 }, worker));
+  const worker = async () => { while (k < sites.length) { const o = sites[k++]; out.push(await checkSite(dir, o)); } };
+  await Promise.all(Array.from({ length: 10 }, worker));
   return out.sort((a, b) => a.n.localeCompare(b.n));
+}
+function slice<T>(arr: T[], part: number): T[] {
+  const size = Math.ceil(arr.length / AGD_PARTS);
+  return arr.slice(part * size, (part + 1) * size);
+}
+
+// ── the automatic part: hide hijacked/parked links, un-hide them once clean ────
+// deno-lint-ignore no-explicit-any
+async function syncLinkBlocks(sb: any, dir: Dir, web: Web[]) {
+  const bad = web.filter((s) => s.status === "hijacked" || s.status === "parked");
+  const clean = web.filter((s) => s.status !== "hijacked" && s.status !== "parked").map((s) => s.n);
+  if (clean.length) {
+    const { error } = await sb.from("directory_link_blocks").delete().eq("dir", dir).eq("auto", true).in("name", clean);
+    if (error) console.error("[cdx-recheck] unblock", error.message);
+  }
+  if (bad.length) {
+    const { error } = await sb.from("directory_link_blocks").upsert(
+      bad.map((s) => ({ dir, name: s.n, website: s.w, reason: s.detail, auto: true })),
+      { onConflict: "dir,name", ignoreDuplicates: true },
+    );
+    if (error) console.error("[cdx-recheck] block", error.message);
+  }
 }
 
 // ── report ────────────────────────────────────────────────────────────────────
@@ -112,73 +164,80 @@ function monthName(key: string) {
   return new Date(Date.UTC(y, m - 1, 15)).toLocaleString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
-function buildReport(key: string, total: number, web: Web[], findings: Finding[] | null, additions: Addition[]) {
-  const remove: { n: string; why: string }[] = [];
-  const look: { n: string; why: string }[] = [];
-  const f = new Map((findings ?? []).map((x) => [x.n, x]));
+function sortOut(web: Web[], findings: Finding[] | null) {
+  const remove: Row[] = [], look: Row[] = [], auto: Row[] = [];
   for (const x of findings ?? []) {
-    if (x.verdict === "closed") remove.push({ n: x.n, why: x.detail || "Closed / no longer casting" });
-    else if (x.verdict === "quiet") remove.push({ n: x.n, why: `${x.detail || "No recent projects"}${x.last_credit ? ` · last credit ${x.last_credit}` : ""}` });
+    if (x.verdict === "closed") remove.push({ n: x.n, why: x.detail || "Closed / no longer active" });
+    else if (x.verdict === "quiet") remove.push({ n: x.n, why: `${x.detail || "No recent activity"}${x.last_credit ? ` · last credit ${x.last_credit}` : ""}` });
     else if (x.verdict === "moved") look.push({ n: x.n, why: `Address changed${x.new_address ? ` → ${x.new_address}` : ""}${x.detail ? ` · ${x.detail}` : ""}` });
     else if (x.verdict === "policy_changed") look.push({ n: x.n, why: `Submission policy now: ${x.new_policy || x.detail || "changed"}` });
     else if (x.verdict === "unsure") look.push({ n: x.n, why: x.detail || "Could not confirm activity" });
   }
   for (const s of web) {
     if (s.status === "ok") continue;
+    if (s.status === "hijacked" || s.status === "parked") { auto.push({ n: s.n, why: `${s.w}: ${s.detail} → link hidden on the site` }); continue; }
     const why = `Website ${s.w}: ${s.detail}`;
-    // A dead/hijacked site alone is NOT a reason to remove an office that is still casting:
-    // the fix is to hide the link. Only pair it with a removal when activity also says so.
-    const r = remove.find((x) => x.n === s.n);
-    if (r) r.why += ` · ${why}`;
-    else look.push({ n: s.n, why: s.status === "hijacked" || s.status === "parked" ? `${why} → hide the link` : why });
+    // A dead site alone is not a reason to remove a listing that is still working.
+    const r = remove.find((x) => x.n === s.n) || look.find((x) => x.n === s.n);
+    if (r) r.why += ` · ${why}`; else look.push({ n: s.n, why });
   }
-  const flagged = new Set([...remove, ...look].map((x) => x.n));
-  const fine = total - flagged.size;
-  const title = `Casting Directory check · ${monthName(key)}`;
-  const sec = (color: string, label: string, rows: { n: string; why: string }[]) => !rows.length ? "" : `
-    <tr><td style="padding:22px 0 8px;font:700 12px/1.4 Helvetica,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:${color}">${label} (${rows.length})</td></tr>
-    ${rows.map((r) => `<tr><td style="padding:10px 14px;border-left:3px solid ${color};background:#fff;border-radius:6px;font:15px/1.5 Helvetica,Arial,sans-serif;color:#1A1A1F"><b>${esc(r.n)}</b><br><span style="color:#433B32;font-size:14px">${esc(r.why)}</span></td></tr><tr><td style="height:8px"></td></tr>`).join("")}`;
-  const adds = !additions.length ? "" : `
-    <tr><td style="padding:22px 0 8px;font:700 12px/1.4 Helvetica,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#206557">Suggest adding (${additions.length})</td></tr>
-    ${additions.map((a) => `<tr><td style="padding:10px 14px;border-left:3px solid #2A8472;background:#fff;border-radius:6px;font:15px/1.5 Helvetica,Arial,sans-serif;color:#1A1A1F"><b>${esc(a.n)}</b>${a.city ? ` · ${esc(a.city)}` : ""}<br><span style="color:#433B32;font-size:14px">${esc(a.why || "")}${a.website ? ` · ${esc(a.website)}` : ""}</span></td></tr><tr><td style="height:8px"></td></tr>`).join("")}`;
-  const missing = findings ? "" : `<tr><td style="padding:14px 16px;margin-top:10px;background:#FFF4E0;border-radius:8px;font:14px/1.5 Helvetica,Arial,sans-serif;color:#7A4A00"><b>The activity check didn't run this month.</b> It runs from your Mac (Chrome, logged into IMDbPro), and the Mac was off or the Claude app was closed. This report covers websites only. Open the Claude app and run the task "Casting Directory monthly check" to finish it.</td></tr>`;
-  const counts = findings
-    ? `${total} offices checked · ${fine} still active${remove.length ? ` · ${remove.length} to remove` : ""}${look.length ? ` · ${look.length} need a look` : ""}`
-    : `${web.length} websites checked · ${web.filter((s) => s.status === "ok").length} fine${look.length ? ` · ${look.length} need a look` : ""}`;
-  const nothing = !remove.length && !look.length && !additions.length
-    ? `<tr><td style="padding:18px 0;font:15px/1.5 Helvetica,Arial,sans-serif;color:#206557"><b>All clear.</b> Nothing to change this month.</td></tr>` : "";
-  const html = `<!doctype html><html><body style="margin:0;background:#F4EFE6">
+  return { remove, look, auto };
+}
+
+const H = (color: string, label: string) => `<tr><td style="padding:22px 0 8px;font:700 12px/1.4 Helvetica,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:${color}">${label}</td></tr>`;
+const R = (color: string, r: Row) => `<tr><td style="padding:10px 14px;border-left:3px solid ${color};background:#fff;border-radius:6px;font:15px/1.5 Helvetica,Arial,sans-serif;color:#1A1A1F"><b>${esc(r.n)}</b><br><span style="color:#433B32;font-size:14px">${esc(r.why)}</span></td></tr><tr><td style="height:8px"></td></tr>`;
+const sec = (color: string, label: string, rows: Row[]) => !rows.length ? "" : H(color, `${label} (${rows.length})`) + rows.map((r) => R(color, r)).join("");
+
+type Part = { label: string; total: number; web: Web[]; findings: Finding[] | null; additions: Addition[] };
+function buildReport(key: string, parts: Part[], activityDone: boolean) {
+  let html = "", removeAll = 0, lookAll = 0;
+  const summary: Record<string, unknown> = {};
+  for (const p of parts) {
+    const { remove, look, auto } = sortOut(p.web, p.findings);
+    const flagged = new Set([...remove, ...look].map((x) => x.n));
+    const fine = p.total - flagged.size;
+    removeAll += remove.length; lookAll += look.length;
+    summary[p.label] = { total: p.total, sites: p.web.length, fine, remove: remove.length, look: look.length, auto: auto.length, add: p.additions.length };
+    const line = activityDone
+      ? `${p.total} checked · ${fine} still active${remove.length ? ` · ${remove.length} to remove` : ""}${look.length ? ` · ${look.length} need a look` : ""}`
+      : `${p.web.length} websites checked · ${p.web.filter((s) => s.status === "ok").length} fine${look.length ? ` · ${look.length} need a look` : ""}`;
+    html += `<tr><td style="padding:26px 0 2px;font:700 20px/1.3 Georgia,serif;color:#1A1A1F;border-top:1px solid #E2D9C8">${esc(p.label)}</td></tr>
+<tr><td style="padding:0 0 4px;font:15px/1.5 Helvetica,Arial,sans-serif;color:#3A322A">${esc(line)}</td></tr>`;
+    if (!remove.length && !look.length && !auto.length && !p.additions.length) html += `<tr><td style="padding:10px 0;font:15px/1.5 Helvetica,Arial,sans-serif;color:#206557"><b>All clear.</b> Nothing to change.</td></tr>`;
+    html += sec("#B3261E", "Suggest removing", remove) + sec("#B7791F", "Needs a look", look)
+      + sec("#206557", "Suggest adding", p.additions.map((a) => ({ n: `${a.n}${a.city ? ` · ${a.city}` : ""}`, why: `${a.why || ""}${a.website ? ` · ${a.website}` : ""}` })))
+      + sec("#5B6475", "Done automatically", auto);
+  }
+  const title = `Directory check · ${monthName(key)}`;
+  const missing = activityDone ? "" : `<tr><td style="padding:14px 16px;background:#FFF4E0;border-radius:8px;font:14px/1.5 Helvetica,Arial,sans-serif;color:#7A4A00"><b>The activity check didn't run this month.</b> It runs from your Mac (Chrome, logged into IMDbPro), and the Mac was off or the Claude app was closed. This report covers websites only, and the "Last checked" date on the site was not moved. Open the Claude app and run the task "Casting Directory monthly check" to finish it.</td></tr>`;
+  const full = `<!doctype html><html><body style="margin:0;background:#F4EFE6">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4EFE6"><tr><td align="center" style="padding:28px 14px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
 <tr><td style="font:700 12px/1.4 Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#8A6A2F">CastSlate · monthly re-check</td></tr>
-<tr><td style="padding:6px 0 4px;font:700 26px/1.25 Georgia,serif;color:#1A1A1F">${esc(title)}</td></tr>
-<tr><td style="padding:0 0 10px;font:15px/1.5 Helvetica,Arial,sans-serif;color:#3A322A">${esc(counts)}</td></tr>
-${missing}${nothing}
-${sec("#B3261E", "Suggest removing", remove)}
-${sec("#B7791F", "Needs a look", look)}
-${adds}
+<tr><td style="padding:6px 0 12px;font:700 26px/1.25 Georgia,serif;color:#1A1A1F">${esc(title)}</td></tr>
+${missing}${html}
 <tr><td style="padding:24px 0 0;font:14px/1.6 Helvetica,Arial,sans-serif;color:#433B32;border-top:1px solid #E2D9C8">
-<b>Nothing on the site changes until you approve.</b> To apply, open Claude and say:<br>
-<span style="display:inline-block;margin-top:6px;padding:6px 10px;background:#fff;border-radius:6px;font-family:Menlo,monospace;font-size:13px;color:#1A1A1F">apply the ${esc(monthName(key))} casting directory check</span><br>
+<b>Only the "Done automatically" items are already on the site.</b> Removals, new addresses, policies and additions wait for you. To apply, open Claude and say:<br>
+<span style="display:inline-block;margin-top:6px;padding:6px 10px;background:#fff;border-radius:6px;font-family:Menlo,monospace;font-size:13px;color:#1A1A1F">apply the ${esc(monthName(key))} directory check</span><br>
 and say which suggestions to skip, if any.</td></tr>
 </table></td></tr></table></body></html>`;
-  const subject = findings
-    ? `Casting Directory · ${monthName(key)}: ${fine} active${remove.length ? `, ${remove.length} to remove` : ""}${look.length ? `, ${look.length} to check` : ""}`
-    : `Casting Directory · ${monthName(key)}: websites checked (activity check missing)`;
-  return { html, subject, summary: { total, fine, remove: remove.length, look: look.length, add: additions.length } };
+  const subject = activityDone
+    ? `Directory check · ${monthName(key)}: ${removeAll ? `${removeAll} to remove` : "nothing to remove"}${lookAll ? `, ${lookAll} to check` : ""}`
+    : `Directory check · ${monthName(key)}: websites only (activity check missing)`;
+  return { html: full, subject, summary };
 }
 
-// ref = month + kind, so a full report can still follow a website-only fallback one.
-async function sendReport(sb: ReturnType<typeof createClient>, ref: string, subject: string, html: string) {
+// deno-lint-ignore no-explicit-any
+async function sendReport(sb: any, ref: string, subject: string, html: string) {
   if (!RESEND_API_KEY) return "no_resend_key";
-  const key = ref;
-  const ok = await claimSends(sb, "cdx_recheck_report", [REPORT_TO], "20 days", key);
+  // ref = month + kind, so a full report can still follow a website-only fallback one.
+  const ok = await claimSends(sb, "cdx_recheck_report", [REPORT_TO], "20 days", ref);
   if (!ok || !ok.has(REPORT_TO)) return "send_guard_repeat";
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST", headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({ from: "CastSlate Directory Check <notifications@castslate.com>", to: [REPORT_TO], subject, html }),
   }).catch(() => null);
-  if (!r || !r.ok) { await releaseSends(sb, "cdx_recheck_report", [REPORT_TO], key); return `send_failed_${r?.status ?? "net"}`; }
+  if (!r || !r.ok) { await releaseSends(sb, "cdx_recheck_report", [REPORT_TO], ref); return `send_failed_${r?.status ?? "net"}`; }
   return "sent";
 }
 
@@ -192,48 +251,77 @@ Deno.serve(async (req) => {
     const { data: sec } = await sb.from("app_secrets").select("value").eq("key", "cdx_recheck_secret").maybeSingle();
     if (!sec?.value || body.secret !== sec.value) return json({ error: "Unauthorized" }, 401);
     const key: string = /^\d{4}-\d{2}$/.test(body.month || "") ? body.month : monthKey();
+    const dir: Dir = body.dir === "agd" ? "agd" : "cdx";
+    const part = Math.max(0, Math.min(AGD_PARTS - 1, Number(body.part) || 0));
 
     if (body.action === "status") {
-      const { data } = await sb.from("cdx_recheck_runs").select("month,web_checked_at,activity_checked_at,emailed_at,summary").order("month", { ascending: false }).limit(6);
+      const { data } = await sb.from("cdx_recheck_runs").select("month,web_checked_at,agd_parts,activity_checked_at,emailed_at,summary").order("month", { ascending: false }).limit(6);
       return json({ runs: data });
     }
 
     if (body.action === "dry") {
-      const offices = await loadOffices();
-      const web = await webCheck(offices);
-      const rep = buildReport(key, offices.length, web, Array.isArray(body.findings) ? body.findings : null, body.additions || []);
-      return json({ offices: offices.length, sites: web.length, problems: web.filter((s) => s.status !== "ok"), subject: rep.subject, summary: rep.summary, html: rep.html });
+      const list = await loadList(dir);
+      const web = await webCheck(dir, dir === "agd" ? slice(list, part) : list);
+      const label = dir === "cdx" ? "Casting offices" : `Agencies & managers (part ${part + 1}/${AGD_PARTS})`;
+      const rep = buildReport(key, [{ label, total: list.length, web, findings: Array.isArray(body.findings) ? body.findings : null, additions: body.additions || [] }], Array.isArray(body.findings));
+      return json({ entries: list.length, sites: web.length, problems: web.filter((s) => s.status !== "ok"), subject: rep.subject, summary: rep.summary, html: rep.html });
     }
 
     if (body.action === "web") {
-      const offices = await loadOffices();
-      const web = await webCheck(offices);
-      const { error } = await sb.from("cdx_recheck_runs").upsert({ month: key, office_count: offices.length, web_results: web, web_checked_at: new Date().toISOString() }, { onConflict: "month" });
+      const list = await loadList(dir);
+      const web = await webCheck(dir, dir === "agd" ? slice(list, part) : list);
+      await syncLinkBlocks(sb, dir, web);
+      const { data: cur } = await sb.from("cdx_recheck_runs").select("*").eq("month", key).maybeSingle();
+      const row: Record<string, unknown> = { month: key };
+      if (dir === "cdx") Object.assign(row, { office_count: list.length, web_results: web, web_checked_at: new Date().toISOString() });
+      else {
+        const names = new Set(web.map((s) => s.n));
+        const listed = new Set(list.map((e) => e.n));
+        const kept = ((cur?.agd_web_results || []) as Web[]).filter((s) => !names.has(s.n) && listed.has(s.n));
+        const parts = Array.from(new Set([...(cur?.agd_parts || []), part])).sort();
+        Object.assign(row, { agd_count: list.length, agd_web_results: [...kept, ...web].sort((a, b) => a.n.localeCompare(b.n)), agd_parts: parts });
+      }
+      const { error } = await sb.from("cdx_recheck_runs").upsert(row, { onConflict: "month" });
       if (error) return json({ error: error.message }, 500);
-      return json({ ok: true, month: key, sites: web.length, problems: web.filter((s) => s.status !== "ok").length });
+      return json({ ok: true, month: key, dir, part, sites: web.length, problems: web.filter((s) => s.status !== "ok").length });
     }
 
     if (body.action === "activity" || body.action === "report") {
       let { data: run } = await sb.from("cdx_recheck_runs").select("*").eq("month", key).maybeSingle();
       if (!run) {
-        // Web step never ran (or failed): do it now so the report is complete.
-        const offices = await loadOffices();
-        const web = await webCheck(offices);
-        const ins = await sb.from("cdx_recheck_runs").upsert({ month: key, office_count: offices.length, web_results: web, web_checked_at: new Date().toISOString() }, { onConflict: "month" }).select("*").single();
+        // The casting web step never ran: do it now (agencies are too many for one call).
+        const list = await loadList("cdx");
+        const web = await webCheck("cdx", list);
+        await syncLinkBlocks(sb, "cdx", web);
+        const ins = await sb.from("cdx_recheck_runs").upsert({ month: key, office_count: list.length, web_results: web, web_checked_at: new Date().toISOString() }, { onConflict: "month" }).select("*").single();
         if (ins.error) return json({ error: ins.error.message }, 500);
         run = ins.data;
       }
       if (body.action === "activity") {
         if (!Array.isArray(body.findings)) return json({ error: "findings[] required" }, 400);
-        const up = await sb.from("cdx_recheck_runs").update({ findings: body.findings, additions: Array.isArray(body.additions) ? body.additions : [], activity_checked_at: new Date().toISOString() }).eq("month", key).select("*").single();
+        const now = new Date().toISOString();
+        const up = await sb.from("cdx_recheck_runs").update({
+          findings: body.findings, additions: Array.isArray(body.additions) ? body.additions : [],
+          agd_findings: Array.isArray(body.agd_findings) ? body.agd_findings : [], activity_checked_at: now,
+        }).eq("month", key).select("*").single();
         if (up.error) return json({ error: up.error.message }, 500);
         run = up.data;
+        // The full check is done: move the public "Last checked" date (automatic by design).
+        const today = now.slice(0, 10);
+        const dirs = ["cdx", ...(Array.isArray(body.agd_findings) ? ["agd"] : [])];
+        const { error } = await sb.from("directory_last_checked").upsert(dirs.map((d) => ({ dir: d, checked_on: today, updated_at: now })), { onConflict: "dir" });
+        if (error) console.error("[cdx-recheck] last_checked", error.message);
       } else if (run.emailed_at || run.activity_checked_at) {
-        // "report" is only the Mac-was-off fallback; the activity step sends its own.
         return json({ ok: true, skipped: "already_reported" });
       }
-      const rep = buildReport(key, run.office_count, run.web_results || [], run.activity_checked_at ? run.findings || [] : null, run.additions || []);
-      const sent = await sendReport(sb, `${key}:${run.activity_checked_at ? "full" : "web"}`, rep.subject, rep.html);
+      const done = !!run.activity_checked_at;
+      const agdMissing = AGD_PARTS - (run.agd_parts || []).length;
+      const parts: Part[] = [
+        { label: "Casting offices", total: run.office_count, web: run.web_results || [], findings: done ? run.findings || [] : null, additions: run.additions || [] },
+      ];
+      if (run.agd_count) parts.push({ label: `Agencies & managers${agdMissing > 0 ? ` (${agdMissing} of ${AGD_PARTS} website batches missing)` : ""}`, total: run.agd_count, web: run.agd_web_results || [], findings: done ? run.agd_findings || [] : null, additions: [] });
+      const rep = buildReport(key, parts, done);
+      const sent = await sendReport(sb, `${key}:${done ? "full" : "web"}`, rep.subject, rep.html);
       await sb.from("cdx_recheck_runs").update({ summary: rep.summary, report_html: rep.html, ...(sent === "sent" ? { emailed_at: new Date().toISOString() } : {}) }).eq("month", key);
       return json({ ok: true, month: key, email: sent, summary: rep.summary });
     }
