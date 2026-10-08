@@ -58,7 +58,11 @@ async function loadOffices(): Promise<Office[]> {
 }
 
 // ── website check ─────────────────────────────────────────────────────────────
-const HIJACK = /\b(slot|slots|casino|judi|togel|gacor|poker|betting|sportsbook|bandar|maxwin|pragmatic play|situs)\b/i;
+// Hijacked domains (2026-10 check found three) carry slot-spam vocabulary. A single
+// "casino" is NOT enough: casting offices list credits like "Wind Creek Casino TVC".
+const HIJACK_STRONG = /\b(judi|togel|gacor|maxwin|situs|slot online|slot gacor|bandar|pragmatic play|link alternatif|daftar)\b/i;
+const HIJACK_WEAK = /\b(slots?|casino|poker|betting|sportsbook|jackpot|bonus)\b/gi;
+const isHijacked = (t: string) => HIJACK_STRONG.test(t) || (t.match(HIJACK_WEAK) || []).length >= 6;
 const PARKED = /(domain (is )?for sale|buy this domain|this domain (may be|is) for sale|hugedomains|sedo\.com|dan\.com|afternic|parkingcrew|domain parking|godaddy\.com\/domainsearch|is available for purchase)/i;
 const bare = (h: string) => h.replace(/^www\./, "").toLowerCase();
 
@@ -80,12 +84,12 @@ async function checkSite(o: Office): Promise<Web> {
   const plain = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
   // Cloudflare / bot walls answer 403/503 with a challenge: the site is alive.
   const challenge = /just a moment|cf-chl|attention required|captcha/i.test(res.body);
-  if (HIJACK.test(plain)) return { ...base, status: "hijacked", detail: `Shows gambling/spam content${bare(res.host) !== want ? ` (now ${res.host})` : ""}` };
+  if (isHijacked(plain)) return { ...base, status: "hijacked", detail: `Shows gambling/spam content${bare(res.host) !== want ? ` (now ${res.host})` : ""}` };
   if (PARKED.test(res.body)) return { ...base, status: "parked", detail: "Domain is parked or for sale" };
   if (res.status >= 400 && !challenge) return { ...base, status: "down", detail: `Site answers with error ${res.status}` };
   const host = bare(res.host);
   if (host !== want && !host.endsWith("." + want) && !want.endsWith("." + host)) {
-    return { ...base, status: "moved", detail: `Now redirects to ${res.host}` };
+    return { ...base, status: "moved", detail: `Now redirects to ${res.host} (update the link)` };
   }
   if (!challenge && plain.length > 200 && !/casting|cast\b|audition|actor/i.test(plain)) {
     return { ...base, status: "not_casting", detail: "Site no longer mentions casting" };
