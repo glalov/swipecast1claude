@@ -2801,6 +2801,8 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-intro p{margin:0;font-size:19px;line-height:1.7;color:var(--t1);max-width:820px;}
 .tad-x{position:absolute;top:18px;right:18px;height:38px;border-radius:20px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:0 16px;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;}
 .tad-x:hover{background:rgba(255,255,255,.18);}
+.cdx-checked{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;font-size:14px;line-height:1.45;font-weight:700;background:#E6F2EF;color:#206557;padding:8px 15px;border-radius:20px;}
+.cdx-checked span{font-weight:500;color:#2A6B5E;}
 .tad-curated{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:15.5px;line-height:1.45;font-weight:700;background:#E6F2EF;color:#206557;padding:9px 16px;border-radius:20px;}
 .tad-body{padding:18px 26px 34px;}
 .tad-tier{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:5px;}
@@ -16399,6 +16401,8 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     return()=>b.classList.remove("sheet-push");
   },[open,closing]);
 
+  const dirSt=useDirStatus();
+  const linkOff=useMemo(()=>dirBlocked(dirSt,"agd"),[dirSt]);
   const counts=useMemo(()=>({
     all:TALENT_AGENCIES.length,
     // "curated" is the hand-verified-address count — it used to mean "not in the roster
@@ -16448,7 +16452,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
             {a.s!=="lock"&&a.c.map(x=><span key={x} className="tad-cityb">{x==="LA"?"Los Angeles":"New York"}</span>)}
           </div>
           <p className="tad-note">{a.note}</p>
-          {a.w
+          {a.w&&!linkOff.has(a.n)
             ? <a className="tad-web" href={"https://"+a.w} target="_blank" rel="noopener noreferrer">{a.w} ↗</a>
             : <a className="tad-web tad-find" href={findUrl} target="_blank" rel="noopener noreferrer">No website on file — search for them ↗</a>}
         </div>
@@ -16820,6 +16824,32 @@ function writeNameSet(k,s){
   try{localStorage.setItem(k,JSON.stringify([...s]));}catch(_){}
   try{window.dispatchEvent(new Event(MAILLIST_EVT));}catch(_){}
 }
+// Monthly re-check status (cdx-recheck edge fn, public.get_directory_status): names whose
+// website link was hidden automatically because the domain was hijacked or parked (the
+// listing stays, the row falls back to a search link), and the public "Last checked" date,
+// which moves by itself when the full monthly check completes. One fetch per page load.
+const DIR_CHECKED_FALLBACK={cdx:"2026-10-03"};
+let dirStatusP=null;
+function useDirStatus(){
+  const [st,setSt]=useState(()=>window.__csDirStatus||null);
+  useEffect(()=>{
+    if(st||!window.sb)return;
+    if(!dirStatusP)dirStatusP=window.sb.rpc("get_directory_status").then(({data,error})=>{
+      if(error||!data){dirStatusP=null;return null;}
+      window.__csDirStatus=data;return data;
+    },()=>{dirStatusP=null;return null;});
+    let live=true;
+    dirStatusP.then(d=>{if(live&&d)setSt(d);});
+    return()=>{live=false;};
+  },[st]);
+  return st;
+}
+const dirBlocked=(st,dir)=>new Set((st&&st.blocked&&st.blocked[dir])||[]);
+const dirCheckedLabel=(st,dir)=>{
+  const iso=(st&&st.checked&&st.checked[dir])||DIR_CHECKED_FALLBACK[dir];
+  return iso?new Date(iso+"T12:00:00Z").toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric",timeZone:"UTC"}):"";
+};
+const dirNextCheckLabel=()=>{const n=new Date();return new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth()+1,1,12)).toLocaleDateString("en-US",{month:"long",day:"numeric",timeZone:"UTC"});};
 function useNameSet(k){
   const [s,setS]=useState(()=>readNameSet(k));
   useEffect(()=>{
@@ -16950,6 +16980,8 @@ function CastingDirectoryCard({isPremium,onNavigate}){
     return()=>b.classList.remove("sheet-push");
   },[open,closing]);
 
+  const dirSt=useDirStatus();
+  const linkOff=useMemo(()=>dirBlocked(dirSt,"cdx"),[dirSt]);
   const counts=useMemo(()=>{
     const c={all:CASTING_OFFICES.length,acc:0,agents:0,no:0,unk:0,conf:0,tips:CDX_TIPS.length};
     CASTING_OFFICES.forEach(a=>{const g=cdxGroup(a);if(g==="accw"||g==="acc")c.acc++;else c[g]++;if(a.av==="v")c.conf++;});
@@ -16985,7 +17017,7 @@ function CastingDirectoryCard({isPremium,onNavigate}){
             {a.c.map(x=><span key={x} className="tad-cityb">{x==="LA"?"Los Angeles":"New York"}</span>)}
           </div>
           <p className="tad-note">{a.pt?"“"+a.pt+"”":"No submission policy published."}</p>
-          {a.w
+          {a.w&&!linkOff.has(a.n)
             ? <a className="tad-web" href={"https://"+a.w} target="_blank" rel="noopener noreferrer">{a.w} ↗</a>
             : <a className="tad-web tad-find" href={gUrl(a)} target="_blank" rel="noopener noreferrer">No website on file — search for them on Google ↗</a>}
         </div>
@@ -17052,7 +17084,7 @@ function CastingDirectoryCard({isPremium,onNavigate}){
           </div>
           <div className="tad-intro">
             <p>Casting offices in Los Angeles and New York. The ones that accept headshots come first, each with its website, address and submission policy.</p>
-            <div className="tad-curated"><Ico n="check" s={15}/>Hand-checked by our team: active offices only</div>
+            <div className="tad-curated"><Ico n="check" s={15}/>Re-checked by hand every month: active offices only</div>
           </div>
 
           <div className="tad-body">
@@ -17117,7 +17149,7 @@ function CastingDirectoryCard({isPremium,onNavigate}){
                   </div>);
                 })}
                 {!shown.length&&<div style={{padding:"40px 0",textAlign:"center",color:"var(--t3)",fontSize:14}}>No casting offices match those filters.</div>}
-                <div className="tad-fn"><b>Curated by hand, not scraped.</b> Every office here was checked one by one by the CastSlate team to make sure it is an active casting office with projects happening now, not a closed office padding the number. Policies are quoted as each office publishes them. Offices move: if an address says “Not yet confirmed”, check their site before you post anything.</div>
+                <div className="tad-fn"><b>Curated by hand, not scraped, and re-checked every month</b> (last check: {dirCheckedLabel(dirSt,"cdx")}). Every office here was checked one by one by the CastSlate team to make sure it is an active casting office with projects happening now, not a closed office padding the number. Policies are quoted as each office publishes them. Offices move: if an address says “Not yet confirmed”, check their site before you post anything.</div>
               </>)}
             </>}
 
@@ -17152,12 +17184,13 @@ function CastingDirectoryCard({isPremium,onNavigate}){
 // Premium (the sample table is redacted, like /agency-directory's).
 // ═══════════════════════════════════════════
 const CDX_FIELDS=[
+  ["Re-checked every month","All "+CASTING_OFFICES.length+" offices"],
+  ["Closed or quiet offices","Taken off"],
+  ["Moved offices","Flagged and updated"],
   ["Submission policy","Quoted from each office"],
   ["Accepts headshots?","Mail · Email · Website"],
-  ["Website","Checked it loads"],
+  ["Website","Tested every month"],
   ["Mailing address","Confirmed where possible"],
-  ["Active offices only","Checked one by one"],
-  ["Moved offices","Flagged"],
   ["Coast","Los Angeles · New York"],
   ["Agents-only offices","Marked — don't mail"],
   ["One mailing list","With your agencies"]
@@ -17167,7 +17200,7 @@ const CDX_FAQ=[
   ["I don't live in Los Angeles or New York. Can I still mail them?","Yes, and you should. Where you live doesn't decide who you can approach. Actors post cards to LA and New York offices from all over the US and from around the world. If you're the right face and the right energy for a role, distance won't stop a casting office: the first step is usually a self-tape or a video call, and when a production wants you in the room, it can arrange the trip to its office, flight and hotel included."],
   ["Can I send my headshot straight to a casting office?","Some offices welcome it, many don't. That's why every office in the directory shows its own submission policy: by mail, by email, through its website, agents and managers only, or no unsolicited submissions at all. The ones that accept headshots are listed first."],
   ["Why send a card instead of an email?","An email lands in an inbox with a few hundred others. A CastSlate card lands on a desk: your headshot, your details and a QR code that opens your live profile with your reel. Where an office asks for email only, follow that instead."],
-  ["How do you know these offices are still active?","Every office on this list was checked one by one by the CastSlate team, by hand. We only keep offices that are active right now, with projects recently cast or in the works. Offices that have closed, gone quiet or stopped casting are taken off rather than left in to pad the number. Addresses are marked confirmed only once we have matched them against a current source, and each office's submission policy is shown as the office itself publishes it."]
+  ["How do you know these offices are still active?","Because we check again every month. Every office on this list is checked one by one by the CastSlate team, by hand, and the whole list is re-checked on the first of each month: current and upcoming projects, whether the website still works, the address, and the submission policy. We only keep offices that are active right now, with projects recently cast or in the works. Offices that have closed, gone quiet or stopped casting are taken off rather than left in to pad the number. Addresses are marked confirmed only once we have matched them against a current source, and each office's submission policy is shown as the office itself publishes it."]
 ];
 // Hero fan for /casting-directory — its own three actors, so the two directory pages
 // don't show the same faces. Fictional names; photos pre-cropped to the card's
@@ -17239,6 +17272,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
   const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
   const cta=isPremium?"Open the directory":"Unlock the directory — $17.99/mo";
   const n=CASTING_OFFICES.length;
+  const dirSt=useDirStatus();
   const acc=CASTING_OFFICES.filter(a=>CDX_ACC.has(a.p)).length;
   const la=CASTING_OFFICES.filter(a=>a.c.includes("LA")).length;
   const ny=CASTING_OFFICES.filter(a=>a.c.includes("NY")).length;
@@ -17255,7 +17289,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
             <span className="agd-city">Worldwide</span>
           </div>
           <p className="agd-coasts">Mail from anywhere in the world. Where you live doesn't decide who you can approach: an actor in London, Toronto or Lagos can post a card to a Los Angeles or New York casting office just like someone down the street. If you're the right face and the right energy for a role, distance won't stop them. The first meeting is usually a self-tape or a video call, and when a production wants you in the room, it can arrange the trip to its office in LA or New York, flight and hotel included.</p>
-          <p className="agd-lede">Casting directors decide who gets seen for film, television, commercials and theatre. For every active office: its own submission policy, its website and its mailing address, sorted so the {acc} offices that accept headshots directly come first. Every office is checked by hand by our team: only active offices with projects happening now make the list. Send them your CastSlate card, and the next time a role fits, they already know your face.</p>
+          <p className="agd-lede">Casting directors decide who gets seen for film, television, commercials and theatre. For every active office: its own submission policy, its website and its mailing address, sorted so the {acc} offices that accept headshots directly come first. Every office is re-checked by hand every month: only active offices with projects happening now stay on the list. Send them your CastSlate card, and the next time a role fits, they already know your face.</p>
           <div className="agd-ctas">
             <button className="agd-btn gold" onClick={go}>{cta}</button>
             <button className="agd-btn line" onClick={()=>{const el=document.getElementById("cdx-inside");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}}>See what's inside ↓</button>
@@ -17289,9 +17323,10 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
     <div className="agd-wrap"><section className="agd-blk" id="cdx-inside"><div className="agd-flow">
       <div>
         <div className="section-label">What's behind the lock</div>
-        <h2 className="agd-h2">Every office, and whether it wants to hear from you.</h2>
-        <p className="agd-sub">A list of casting directors is easy to find. What isn't is which of them will actually open a headshot from an actor they've never met — and which ones will remember you for the wrong reason if you send one. These are the fields held on all {n}.</p>
-        <button className="agd-btn gold" onClick={go}>{cta}</button>
+        <h2 className="agd-h2">Every office still casting. Checked again every month.</h2>
+        <p className="agd-sub">A list of casting directors is easy to find. The catch is that most of them are out of date: offices that closed, moved or stopped casting years ago are still on them. Ours is re-checked by hand every month — current projects, website, address and submission policy — and offices that have gone quiet come off. What's left is {n} offices casting right now, and for each one, whether it will actually open a headshot from an actor it's never met.</p>
+        <div className="cdx-checked"><Ico n="check" s={15}/>Last checked {dirCheckedLabel(dirSt,"cdx")} <span>· next check {dirNextCheckLabel()}</span></div>
+        <div><button className="agd-btn gold" onClick={go}>{cta}</button></div>
       </div>
       <div className="agd-marq"><div className="agd-marq-in">
         {CDX_FIELDS.concat(CDX_FIELDS).map(([m,s],i)=>(
@@ -51817,7 +51852,7 @@ const PAGE_SEO={
   "manager-mode":{title:"Manager Mode — Career Check-ins for Actors | CastSlate",desc:"CastSlate Manager Mode is a premium monthly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each month to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
   "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
-  "casting-directory":{title:"Casting Companies Directory — Active Casting Offices in LA & NYC",desc:"CastSlate's Premium, hand-checked directory of active casting offices in Los Angeles and New York: each office's own submission policy, website and mailing address, with the offices that accept headshots listed first."},
+  "casting-directory":{title:"Casting Companies Directory — Active Casting Offices in LA & NYC",desc:"CastSlate's Premium directory of active casting offices, re-checked by hand every month, in Los Angeles and New York: each office's own submission policy, website and mailing address, with the offices that accept headshots listed first."},
   "actor-business-card":{title:"Actor Business Card | CastSlate",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Your Free Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
