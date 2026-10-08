@@ -3869,7 +3869,16 @@ body.fbsp-open #castoria-root{display:none!important;}
      edge; on dark ones it closes the gap the cream was blinking through. */
   box-shadow:0 1px 0 0 #1B1C20, 0 -1px 0 0 #1B1C20;
   flex-shrink:0;
+  /* Slow-wifi / Windows pass (2026-10-08): the light top hairline read as a
+     pale line on bright laptop screens (it is lighter than both the Manager
+     Mode navy above and the footer below). Kept as a transparent border so
+     the footer's height does not move by a pixel. */
+  border-top-color:transparent;
 }
+/* 3px dark apron above the footer. Windows laptops run at 125%/150% scaling,
+   where the 1px shadow above becomes 1.25-1.5 device px and a cream row could
+   still round through mid-scroll. No rounding at any scale reaches 3px. */
+.site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#1B1C20;pointer-events:none;}
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
@@ -10393,11 +10402,29 @@ const AGD_CARDS=[
   {name:"Clara Moss",head:"Actor · Commercial",loc:"Beverly Hills, CA",slug:"clara-moss",
    tags:["On-camera","Dance"],img:"/assets/agd-cards/agd-card-3.jpg",pos:"center 50%"}
 ];
+// Slow wifi (2026-10-08): each hero-card photo carries a 16px blurred copy of
+// itself, inlined, so the photo slot is never an empty box while the real file
+// is in flight. The six sample QR codes are served from /assets/qr/ (the same
+// images api.qrserver.com drew) instead of a third-party request per card.
+const AGD_LQIP={
+  "/assets/agd-cards/agd-card-1.jpg":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAaABADASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAwQF/8QAJRAAAQQCAQQBBQAAAAAAAAAAAQIDBBEABRITITFBgQYUYZGh/8QAFgEBAQEAAAAAAAAAAAAAAAAABAID/8QAGhEAAwEAAwAAAAAAAAAAAAAAAAESEQIDIf/aAAwDAQACEQMRAD8AXdTdy/P+21LgaaR3KhVq+cX6a28uXIchbBQW4lPJCwKuvIOJDDLsmcXE3IHMMpBI5N8a8e+9/vJICEp38dbCA2EIIWm/Zw9CI802JUdCZ3VU2nk0Txo0TY8/3DgsqGyPRDfAAlVi+I9fOWbbs+wR2JJB/ONHAEewACSbI95outXhD5uNP//Z",
+  "/assets/agd-cards/agd-card-2.jpg":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAaABADASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAwQFAv/EACcQAAIBBAECBQUAAAAAAAAAAAECAwAEBREhEjEGE0GBkRRCUXGx/8QAFwEAAwEAAAAAAAAAAAAAAAAAAQMEBf/EABoRAAICAwAAAAAAAAAAAAAAAAABAhEhMkH/2gAMAwEAAhEDEQA/AKGbvHGRhsTcG3hZA7Mr9JYkkAb9q3ibrWQazjuGuIfLLAs/WVIIHf3pXxSPKureaNULFD17AJUKQQdfjk0Xw6GmuZrhkjCBFEbKAC3Vzvj9VPmzR6GycyR5WIPoqVIA181Sw8USWbGMJp29B21wB8VGz/cn1APNP4Un6CXn7j/KC2Et3A//2Q==",
+  "/assets/agd-cards/agd-card-3.jpg":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAaABADASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAwQFBv/EACcQAAIBAwMBCQEAAAAAAAAAAAECAwAEEQUSMSEGFSIyUXGRodGx/8QAFQEBAQAAAAAAAAAAAAAAAAAAAwT/xAAYEQADAQEAAAAAAAAAAAAAAAAAARESAv/aAAwDAQACEQMRAD8AYk7PJqN5f3F1IwxMQuOTwfyldO0nu3XrN4JWIaQowPptP5WquYI3AkkUkRuH8Oc/XNTtFiiW4kldsSP1UNnJ+amzOirbfFLtwhK4R9pxjr1FJCzjR93J/lVrjyP7UNwNnA4pcqgach//2Q==",
+  "/assets/cdx-cards/cdx-card-1.jpg":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAaABADASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAABAUGA//EACcQAAIBAwIFBAMAAAAAAAAAAAECAwQFEQATBhIhMVEzQmGBQ6Gx/8QAFQEBAQAAAAAAAAAAAAAAAAAABAP/xAAZEQADAQEBAAAAAAAAAAAAAAAAAQIREgP/2gAMAwEAAhEDEQA/AJCGiesnnqqlmK8+Odz7j5+tE3Lh80xM1MS0O2HDZyD1wRn96pqyG3UiRxnZkRZGLMvVSxORjH19a0ttJR3NKeIxsNrPMmcAKT16ePnUW30IlTxonuVqlp5GqKBxsZHPCx9Pxj4/miLNxVT2uMpUUZm3mPNMjYYKpwAAe46E99N7oo25TgekdSXEiqkVtCKFGw3YY/IdKrzSrQytuMZ//9k=",
+  "/assets/cdx-cards/cdx-card-2.jpg":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAaABADASIAAhEBAxEB/8QAGAAAAgMAAAAAAAAAAAAAAAAAAwUBAgT/xAAnEAABAwMCBgIDAAAAAAAAAAABAgMEABEhBRIGEyIxQVEUQnGBwf/EABUBAQEAAAAAAAAAAAAAAAAAAAME/8QAGxEAAgIDAQAAAAAAAAAAAAAAAAIBERIhIkH/2gAMAwEAAhEDEQA/ADc2Tq8uRHZk/FbZc2JsbFw+iaHC1WVH1BuLNSraVFKiu+PFwfOanhnatiUHmUiY3KOVdNr2ta+OwrVxS2whentsNNiUtxTitir4xck+j/KniNFFeF3YkZue5EABPStG8ZUdpGT+6YtwouopJdQttTbdkqTiwJpTr5I1qKQbHZ3H5p9BJ5MjP2pFWMqDZuD/2Q==",
+  "/assets/cdx-cards/cdx-card-3.jpg":"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCAAaABADASIAAhEBAxEB/8QAGAAAAgMAAAAAAAAAAAAAAAAABQYBAwT/xAAjEAABAwQBBAMAAAAAAAAAAAABAgMEAAURIRIGFDFBE3Gh/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AEO229+aSI8Yu4OD6xVlzs8iAk9yy40oeOQBB+iPNE+n3PjiPux3y260C4EhPLnj1ujHW5AtCHJMpTpeWDHQEgcNb2BvVAl2+X2zgJAUM5IKiP0Vu6iujVxdZSwFBplONkkFR8ndBRU+qD//2Q=="
+};
+const AGD_LOCAL_QR=new Set(["naya-bellamy","malcolm-vey","clara-moss","darius-cole","elena-marsh","luca-varga"]);
+function agdQr(slug){
+  return AGD_LOCAL_QR.has(slug)?"/assets/qr/"+slug+".png"
+    :"https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data="+encodeURIComponent("https://www.castslate.com/talent/"+slug);
+}
 function AgdCard({c,k}){
-  const qr="https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data="+encodeURIComponent("https://www.castslate.com/talent/"+c.slug);
+  const qr=agdQr(c.slug);
+  const lq=AGD_LQIP[c.img];
   return(<div className={"agdc "+k} aria-hidden="true">
     <div className="bar"/>
-    <div className="ph"><img alt="" src={c.img} style={{objectPosition:c.pos}}/></div>
+    <div className="ph" style={lq?{backgroundImage:'url("'+lq+'")',backgroundSize:"cover",backgroundPosition:c.pos}:undefined}><img alt="" src={c.img} style={{objectPosition:c.pos,color:"transparent"}}/></div>
     <div className="bd">
       <div className="lg"><span className="m"><LogoMark/></span><span>CASTSLATE</span></div>
       <div className="nm">{c.name}</div>
@@ -10430,8 +10457,14 @@ function useAgdDeal(){
     // whole page for ~2s. Dealing the cards underneath it means nobody ever
     // sees the deal, so we wait for #cs-intro to be torn down first. Arriving
     // by in-app nav there is no curtain and this starts on the next tick.
+    // Slow wifi (2026-10-08): the deal also waits for the three headshots, so
+    // the cards never fly in with empty photo slots. Capped at 3s after the
+    // curtain; past that they deal anyway over their blurred placeholders.
+    const photosIn=()=>[...fan.querySelectorAll(".ph img")].every(i=>i.complete&&i.naturalWidth>0);
+    let tc=0;
     const waitForCurtain=(t0=>function w(){
-      if(!document.getElementById("cs-intro")||Date.now()-t0>6000){ start(); return; }
+      const curtain=!!document.getElementById("cs-intro")&&Date.now()-t0<=6000;
+      if(!curtain){ if(!tc) tc=Date.now(); if(photosIn()||Date.now()-tc>3000){ start(); return; } }
       poll=setTimeout(w,80);
     })(Date.now());
     poll=setTimeout(waitForCurtain,60);
@@ -17252,7 +17285,7 @@ function CdxCardSample({s,bg='#ffffff'}){
     const ro=new ResizeObserver(set);ro.observe(el);return()=>ro.disconnect();
   },[]);
   const k=w?Math.min(1,w/base):0;
-  const qr="https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data="+encodeURIComponent("https://www.castslate.com/talent/"+s.slug);
+  const qr=agdQr(s.slug);
   return(
     <div ref={ref} className="cdx-sample" style={{height:k?Math.round(base*f.height/f.width*k)+2:undefined,aspectRatio:k?undefined:f.width+"/"+f.height}} aria-hidden="true">
       {k?<div style={{position:"absolute",top:0,left:0,width:base,transform:"scale("+k+")",transformOrigin:"top left",pointerEvents:"none"}}>
@@ -24557,6 +24590,80 @@ const FORMAT_ICONS={
 // the video in over its poster once a real frame is moving. Each poster is the
 // clip's own first frame, so the fade and every loop seam are invisible — no
 // grey box, no jump to a different shot, no "light up".
+// ── Slow wifi plan for the landing videos (2026-10-08) ──
+// Today every landing clip (7 reel cards + 2 big clips, ~18MB, ~7.7Mbps to play
+// all at once) starts downloading together. On weak wifi each one gets a ninth
+// of the connection, plays slower than real time and freezes mid-motion.
+// Fast connections keep exactly that behaviour and the full-quality files.
+// Slow ones switch to "lite" copies (reel 360x480, big clips 854x480, same
+// seamless loops and frame-0 posters), fetched WHOLE, two at a time, in the
+// order the visitor sees them. A clip only appears once its entire file is in,
+// so it can never stall; until then its own first-frame still is on screen.
+const CS_VID_LITE_KBPS=5000;
+let csVidMode=null;
+function csMeasureKbps(){
+  // Body download speed of the biggest uncached transfers so far (the page
+  // itself, app.js). bytes*8/ms = kbit/s. Cached files report transferSize 0.
+  let best=0;
+  try{
+    performance.getEntriesByType('navigation').concat(performance.getEntriesByType('resource')).forEach(function(e){
+      const ms=e.responseEnd-e.responseStart;
+      if(e.transferSize>60000&&ms>20){ const k=e.transferSize*8/ms; if(k>best) best=k; }
+    });
+  }catch(_){}
+  return best;
+}
+function csVideoMode(){
+  if(csVidMode) return csVidMode;
+  let m=null;
+  try{ const q=new URLSearchParams(location.search).get('vid'); if(q==='lite'||q==='hd') m=q; }catch(_){}
+  try{ if(!m){ const st=sessionStorage.getItem('cs_vid_mode'); if(st==='lite') m='lite'; } }catch(_){}
+  const c=navigator.connection;
+  if(!m&&c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) m='lite';
+  if(!m){ const k=csMeasureKbps(); if(k>0) m=k<CS_VID_LITE_KBPS?'lite':'hd'; }
+  if(!m&&c&&typeof c.downlink==='number'&&c.downlink>0) m=c.downlink*1000<CS_VID_LITE_KBPS?'lite':'hd';
+  csVidMode=m||'hd';
+  return csVidMode;
+}
+// Full-quality clip stalled anyway (wifi got worse, or we guessed wrong):
+// switch the whole page to lite for the rest of the visit.
+function csVideoGoLite(){
+  if(csVidMode==='lite') return;
+  csVidMode='lite';
+  try{ sessionStorage.setItem('cs_vid_mode','lite'); }catch(_){}
+  try{ window.dispatchEvent(new Event('cs:vid-lite')); }catch(_){}
+}
+function csLiteUrl(src){
+  return src.replace('/video-formats/reel3/','/video-formats/reel3-lite/').replace('/assets/video/','/assets/video/lite/');
+}
+// Whole-file fetch queue: at most 2 downloads at once, lowest prio first.
+const csVidQ={active:0,max:2,wait:[],jobs:{}};
+function csVidPump(){
+  while(csVidQ.active<csVidQ.max&&csVidQ.wait.length){
+    csVidQ.wait.sort(function(a,b){ return a.prio-b.prio; });
+    const j=csVidQ.wait.shift(); csVidQ.active++;
+    j.ctl=typeof AbortController!=='undefined'?new AbortController():null;
+    fetch(j.url,j.ctl?{signal:j.ctl.signal}:undefined).then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+      .then(function(b){ j.finished=true; j.done(URL.createObjectURL(b)); }, function(e){ if(!(e&&e.name==='AbortError')){ j.finished=true; j.done(j.url); } })
+      .then(function(){ csVidQ.active--; csVidPump(); });
+  }
+}
+// Leaving the landing page: drop every lite download that hasn't finished, so
+// the next page (e.g. the directories) gets the whole connection. Finished
+// files stay cached for the way back.
+function csVidQueueStop(){
+  csVidQ.wait=[];
+  Object.keys(csVidQ.jobs).forEach(function(u){ const j=csVidQ.jobs[u]; if(!j.finished){ if(j.ctl) try{ j.ctl.abort(); }catch(_){} delete csVidQ.jobs[u]; } });
+}
+function csFetchClip(url,prio){
+  let j=csVidQ.jobs[url];
+  if(!j){
+    let res; const p=new Promise(function(r){ res=r; });
+    j=csVidQ.jobs[url]={url:url,prio:prio,promise:p,done:res};
+    csVidQ.wait.push(j); csVidPump();
+  } else if(prio<j.prio){ j.prio=prio; }
+  return j.promise;
+}
 function csArmLoopVideo(v){
   let visible=true, gone=false;
   try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); }catch(_){}
@@ -24570,6 +24677,14 @@ function csArmLoopVideo(v){
   const onTime=function(){ if(v.currentTime>0.04&&!v.paused) reveal(); };
   const onReady=function(){ kick(false); };
   const onPause=function(){ if(visible) setTimeout(function(){ kick(false); },200); };
+  // HD clip ran dry (readyState < 3 for 2.5s while it should be playing, or
+  // nothing on screen 8s after it got its src) -> the connection is too slow
+  // for full quality; csVideoGoLite swaps every unfinished clip to lite.
+  let stallT=0, armedAt=0;
+  const onWaiting=function(){
+    if(csVidMode==='lite'||stallT) return;
+    stallT=setTimeout(function(){ stallT=0; if(!gone&&!v.paused&&v.readyState<3&&String(v.src).indexOf('blob:')!==0) csVideoGoLite(); },2500);
+  };
   const onVis=function(){ if(!document.hidden) kick(false); };
   const onIdle=function(){ if(visible) kick(false); };
   const unlock=function(){ kick(true); };
@@ -24578,6 +24693,7 @@ function csArmLoopVideo(v){
   v.addEventListener('loadeddata',onReady);
   v.addEventListener('canplay',onReady);
   v.addEventListener('pause',onPause);
+  v.addEventListener('waiting',onWaiting);
   document.addEventListener('visibilitychange',onVis);
   window.addEventListener('cs:scroll-idle',onIdle);
   window.addEventListener('sc:glide-end',onIdle);
@@ -24591,13 +24707,19 @@ function csArmLoopVideo(v){
     io=new IntersectionObserver(function(es){ es.forEach(function(e){ visible=e.isIntersecting; if(visible) kick(false); }); },{threshold:0});
     io.observe(v);
   }
-  const guard=setInterval(function(){ if(visible) kick(false); },2500);
+  const guard=setInterval(function(){
+    if(visible) kick(false);
+    if(csVidMode!=='lite'&&visible&&!document.hidden&&v.getAttribute('src')&&String(v.src).indexOf('blob:')!==0){
+      if(!armedAt) armedAt=Date.now();
+      else if(!v.classList.contains('is-on')&&Date.now()-armedAt>8000) csVideoGoLite();
+    }
+  },2500);
   kick(false);
   return function(){
     gone=true; clearInterval(guard); if(io) io.disconnect();
     v.removeEventListener('playing',onPlaying); v.removeEventListener('timeupdate',onTime);
     v.removeEventListener('loadeddata',onReady); v.removeEventListener('canplay',onReady);
-    v.removeEventListener('pause',onPause);
+    v.removeEventListener('pause',onPause); v.removeEventListener('waiting',onWaiting); clearTimeout(stallT);
     document.removeEventListener('visibilitychange',onVis);
     window.removeEventListener('cs:scroll-idle',onIdle); window.removeEventListener('sc:glide-end',onIdle);
     GESTURES.forEach(function(t){ document.removeEventListener(t,unlock); });
@@ -24615,18 +24737,33 @@ function BufferedLoopVideo(props){
   React.useEffect(function(){
     const v=ref.current; if(!v) return;
     const off=csArmLoopVideo(v);
-    let started=false, io=null;
+    let started=false, io=null, near=null, gone=false;
+    // Lite: queue the whole lite file behind the reel (prio 20); jump the
+    // queue once the clip is within ~1.5 screens (prio -1).
+    const goLite=function(prio){
+      csFetchClip(csLiteUrl(src),prio).then(function(u){ if(!gone){ v.setAttribute('src',u); try{ v.load(); }catch(_){} } });
+    };
     const start=function(){
       if(started)return; started=true;
       if(io){ io.disconnect(); io=null; }
+      if(csVideoMode()==='lite'){ goLite(20); return; }
       v.preload='auto'; v.setAttribute('src',src); try{ v.load(); }catch(_){}
     };
+    const toLite=function(){
+      // switched mid-visit: drop an unfinished HD download, take the lite file
+      if(v.readyState>=4&&!v.paused) return;
+      v.removeAttribute('src'); try{ v.load(); }catch(_){}
+      started=true; goLite(20);
+    };
+    window.addEventListener('cs:vid-lite',toLite);
     const t=setTimeout(start,1000);
     if(typeof IntersectionObserver!=='undefined'){
       io=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) start(); },{rootMargin:'3000px 0px',threshold:0});
       io.observe(v);
+      near=new IntersectionObserver(function(es){ if(csVidMode==='lite'&&es.some(function(e){ return e.isIntersecting; })) csFetchClip(csLiteUrl(src),-1); },{rootMargin:'1200px 0px',threshold:0});
+      near.observe(v);
     } else start();
-    return function(){ off(); clearTimeout(t); if(io) io.disconnect(); };
+    return function(){ gone=true; off(); clearTimeout(t); if(io) io.disconnect(); if(near) near.disconnect(); window.removeEventListener('cs:vid-lite',toLite); };
   },[src]);
   return (
     <span className="slv-wrap" style={poster?{backgroundImage:'url("'+poster+'")'}:undefined}>
@@ -24637,18 +24774,38 @@ function BufferedLoopVideo(props){
 
 function FormatReel(){
   const reelRef=React.useRef(null);
+  // Decided once, at first render (app.js has finished downloading by then, so
+  // its transfer speed is known). Lite cards render with no src at all, so no
+  // full-quality download ever starts on a slow connection.
+  const[lite]=React.useState(function(){ return csVideoMode()==='lite'; });
   React.useEffect(function(){
     const reel=reelRef.current; if(!reel) return;
     // Motion is pure CSS (GPU compositor) and never pauses. Every clip is a
     // 3:4 loop (0.3-2.7MB, 9.8MB for all seven) that starts at page load.
     const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
     const offs=vids.map(csArmLoopVideo);
+    const n0=FORMAT_CARDS.length;
+    let gone=false;
+    // Lite: whole lite files, in card order (the leftmost cards are the ones
+    // on screen first), shared by both copies of the row. Each card keeps its
+    // own first-frame still until its whole file is in, then plays.
+    const liteAll=function(){
+      vids.forEach(function(v,i){
+        if(v.readyState>=4&&!v.paused&&String(v.src).indexOf('blob:')!==0&&v.classList.contains('is-on')) return; // HD already fully playing
+        if(v.getAttribute('src')&&String(v.src).indexOf('blob:')!==0){ v.removeAttribute('src'); try{ v.load(); }catch(_){} }
+        const url=csLiteUrl(v.dataset.src);
+        csFetchClip(url,i%n0).then(function(u){ if(!gone){ v.setAttribute('src',u); try{ v.load(); }catch(_){} } });
+      });
+    };
+    if(lite){ liteAll(); }
+    window.addEventListener('cs:vid-lite',liteAll);
     // The second copy of the row (needed for the seamless wrap) reuses the same
     // files. Give each copy its src once the first copy has buffered, so both
     // don't split the bandwidth at load — unless that copy is already on screen
     // (very wide monitors), in which case it starts right away.
     const n=FORMAT_CARDS.length, timers=[], unhooks=[];
     vids.slice(n).forEach(function(dup,i){
+      if(lite) return;
       const orig=vids[i];
       const go=function(){ if(!dup.getAttribute('src')){ dup.setAttribute('src',dup.dataset.src); try{ dup.load(); }catch(_){} } };
       if(orig.readyState>=4||dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
@@ -24656,7 +24813,7 @@ function FormatReel(){
       unhooks.push(function(){ orig.removeEventListener('canplaythrough',go); });
       timers.push(setTimeout(go,2500));
     });
-    return function(){ offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
+    return function(){ gone=true; csVidQueueStop(); window.removeEventListener('cs:vid-lite',liteAll); offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   // Clips live in /video-formats/reel3/ (was reel2/, loop/): pre-cropped to
@@ -24670,7 +24827,7 @@ function FormatReel(){
           {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel3/'+c.file+'.mp4'; return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
               <img className="fmt-poster" src={'/video-formats/reel3/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
-              <video className="fmt-video" src={first?url:undefined} data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
+              <video className="fmt-video" src={first&&!lite?url:undefined} data-src={url} muted loop playsInline autoPlay preload={lite?"none":"auto"} aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
                 <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
