@@ -3010,7 +3010,25 @@ body.sheet-push .b2t-cube{display:none;}
 .nav-ddm .ic{grid-row:span 2;width:34px;height:34px;border-radius:9px;background:#1A1A2E;color:#F0B860;display:flex;align-items:center;justify-content:center;font-style:normal;}
 .nav-ddm b{font-size:13.5px;font-weight:800;color:#111114;}
 /* "New" tag on the Casting Directory (launch weeks only, remove the two <em className="nav-new">). */
-.nav-new{display:inline-block;vertical-align:2px;margin-left:7px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1;padding:3px 6px;border-radius:5px;background:#F0B860;color:#1A1A2E;}
+.nav-new{position:relative;display:inline-block;vertical-align:2px;margin-left:7px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1;padding:3px 6px;border-radius:5px;background:#F0B860;color:#1A1A2E;}
+/* Desktop dropdown only: pill pops in, a shine sweeps across twice, three gold stars twinkle,
+   and the Casting Directory row warms once. Plays on every open (.nav-ddm mounts on open). */
+.nav-ddm .nav-new{animation:navNewIn .4s cubic-bezier(.3,1.4,.5,1) .1s both;}
+.nav-new .gl{position:absolute;inset:0;border-radius:5px;overflow:hidden;pointer-events:none;}
+.nav-new .gl::after{content:"";position:absolute;top:-2px;bottom:-2px;left:0;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.95),transparent);transform:translateX(-160%) skewX(-18deg);}
+.nav-ddm .nav-new .gl::after{animation:navNewShine .7s ease-out .45s 2 both;}
+.nav-new .sp{position:absolute;width:9px;height:9px;opacity:0;pointer-events:none;}
+.nav-new .sp svg{display:block;width:100%;height:100%;fill:#E8902A;}
+.nav-new .sp.s1{top:-8px;right:-7px;}.nav-new .sp.s2{bottom:-7px;left:-6px;width:7px;height:7px;}.nav-new .sp.s3{top:-6px;left:40%;width:6px;height:6px;}
+.nav-ddm .nav-new .sp.s1{animation:navNewTw .8s ease-out .55s both;}
+.nav-ddm .nav-new .sp.s2{animation:navNewTw .8s ease-out .75s both;}
+.nav-ddm .nav-new .sp.s3{animation:navNewTw .7s ease-out .95s both;}
+.nav-ddm button.nav-dd-new:not(.on){animation:navNewRow 1.4s ease-in-out .5s 1;}
+@keyframes navNewIn{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@keyframes navNewShine{to{transform:translateX(320%) skewX(-18deg)}}
+@keyframes navNewTw{0%{opacity:0;transform:scale(0) rotate(0)}40%{opacity:1;transform:scale(1.15) rotate(45deg)}100%{opacity:0;transform:scale(.2) rotate(110deg)}}
+@keyframes navNewRow{0%,100%{background:transparent}35%{background:rgba(240,184,96,.18)}}
+@media (prefers-reduced-motion:reduce){.nav-ddm .nav-new,.nav-ddm .nav-new .gl::after,.nav-ddm .nav-new .sp,.nav-ddm button.nav-dd-new{animation:none!important;}}
 .nav-ddm small{font-size:11.5px;font-weight:500;color:var(--t3);margin-top:1px;}
 .success-msg .check{width:64px;height:64px;border-radius:50%;background:rgba(27,135,62,0.08);color:var(--grn);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
 .success-msg h3{font-size:22px;font-weight:800;margin-bottom:8px;}
@@ -53564,8 +53582,8 @@ function App(){
             {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
               <button role="menuitem" className={page==="agency-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("agency-directory");}}>
                 <i className="ic"><Ico n="building-bank" s={17}/></i><b>{navT('nav.agencyDirectory')}</b><small>650+ talent agencies &amp; managers · LA + NY</small></button>
-              <button role="menuitem" className={page==="casting-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
-                <i className="ic"><Ico n="movie" s={17}/></i><b>{navT('nav.castingDirectory')}<em className="nav-new">New</em></b><small>{CASTING_OFFICES.length} active casting offices · who accepts headshots</small></button>
+              <button role="menuitem" className={"nav-dd-new"+(page==="casting-directory"?" on":"")} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
+                <i className="ic"><Ico n="movie" s={17}/></i><b>{navT('nav.castingDirectory')}<em className="nav-new"><span className="gl" aria-hidden="true"/>New<i className="sp s1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s2" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s3" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i></em></b><small>{CASTING_OFFICES.length} active casting offices · who accepts headshots</small></button>
             </div>}
           </span>
           <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
