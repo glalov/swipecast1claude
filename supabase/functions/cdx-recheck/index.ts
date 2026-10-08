@@ -42,6 +42,7 @@ type Finding = {
   n: string;
   verdict: "active" | "quiet" | "closed" | "moved" | "policy_changed" | "unsure";
   detail?: string; last_credit?: string; new_address?: string; new_policy?: string;
+  site_ok?: boolean;   // the Mac re-opened a website the server called down/off-topic and it works
 };
 type Addition = { n: string; city?: string; why?: string; website?: string };
 type Row = { n: string; why: string };
@@ -79,7 +80,8 @@ async function loadList(dir: Dir): Promise<Entry[]> {
 // ── website check ─────────────────────────────────────────────────────────────
 // Hijacked domains carry slot-spam vocabulary. A single "casino" is NOT enough:
 // casting offices list credits like "Wind Creek Casino TVC" (2026-10-07 false positive).
-const HIJACK_STRONG = /\b(judi|togel|gacor|maxwin|situs|slot online|slot gacor|bandar|pragmatic play|link alternatif|daftar)\b/i;
+// Phrases, not single words: "Judi" is also a first name (Hayes Talent client Judi Schindler).
+const HIJACK_STRONG = /\b(judi (online|bola|slot)|togel|gacor|maxwin|situs (slot|judi|togel)|slot online|bandar (togel|judi|bola)|pragmatic play|link alternatif|daftar (slot|sekarang))\b/i;
 // Weak words must stand alone (not "b-toaster-slot" in Next Management's CSS, 2026-10-07),
 // and need two DIFFERENT gambling words plus volume. "slot" alone never counts.
 const HIJACK_WEAK = /(?<![-_.\w])(casino|poker|pokies|betting|sportsbook|jackpot|bonus|deposit)(?![-_\w])/gi;
@@ -183,8 +185,10 @@ function sortOut(web: Web[], findings: Finding[] | null) {
     else if (x.verdict === "policy_changed") look.push({ n: x.n, why: `Submission policy now: ${x.new_policy || x.detail || "changed"}` });
     else if (x.verdict === "unsure") look.push({ n: x.n, why: x.detail || "Could not confirm activity" });
   }
+  // Some sites block server requests (Verve did); the Mac step re-tests those in a real browser.
+  const siteOk = new Set((findings ?? []).filter((x) => x.site_ok).map((x) => x.n));
   for (const s of web) {
-    if (s.status === "ok") continue;
+    if (s.status === "ok" || (siteOk.has(s.n) && s.status !== "hijacked" && s.status !== "parked")) continue;
     if (s.status === "hijacked" || s.status === "parked") { auto.push({ n: s.n, why: `${s.w}: ${s.detail} → link hidden on the site` }); continue; }
     const why = `Website ${s.w}: ${s.detail}`;
     // A dead site alone is not a reason to remove a listing that is still working.
