@@ -53,6 +53,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { genderFit, castingFitsGender, withLeadRole } from "../_shared/role-gender.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -458,7 +459,8 @@ serve(async (req) => {
     // Build one user's personalized email inputs. Returns null when there is nothing
     // TRUE to show — we never pad the count to keep a user in the send.
     function decide(p:any, pf:any, appliedCasting:any|null, appliedThisWeek:number, appliedIds:Set<string>, cwr:any[], siteFresh:number): BuildInput|null {
-      const matched     = cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
+      const fit         = genderFit(p);   // only roles this actor can play (2026-10-08)
+      const matched     = cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age) && castingFitsGender(c,fit)).map((c:any)=>withLeadRole(c,fit));
       const unseen      = matched.filter((c:any)=>!appliedIds.has(c.id));
       const freshUnseen = unseen.filter(isFresh);
       // siteFresh is the real number of castings that went live in the last 7 days —
@@ -483,7 +485,7 @@ serve(async (req) => {
       const cwr=await loadActiveCastings();
       const asId=body.as_talent_id as string|undefined;
       if(asId){
-        const{data:p}=await sb.from("profiles").select("id,display_name,age,membership_status").eq("id",asId).maybeSingle();
+        const{data:p}=await sb.from("profiles").select("id,display_name,age,membership_status,gender,open_to_role_genders").eq("id",asId).maybeSingle();
         const{data:pf}=await sb.from("email_preferences").select("*").eq("user_id",asId).maybeSingle();
         const{data:apps}=await sb.from("applications").select("casting_id,created_at").eq("talent_id",asId).order("created_at",{ascending:false});
         const appsThisWeek=(apps||[]).filter((a:any)=>a.created_at>=weekAgoIso);
@@ -525,7 +527,7 @@ serve(async (req) => {
     {
       const PAGE=1000; let from=0;
       while(true){
-        let q=sb.from("profiles").select("id,display_name,notification_email,membership_status,age").in("user_type",["talent","actor"]).eq("account_status","active").eq("visible",true).or("membership_status.is.null,membership_status.neq.active").order("created_at",{ascending:true});
+        let q=sb.from("profiles").select("id,display_name,notification_email,membership_status,age,gender,open_to_role_genders").in("user_type",["talent","actor"]).eq("account_status","active").eq("visible",true).or("membership_status.is.null,membership_status.neq.active").order("created_at",{ascending:true});
         if(onlyTalentId) q=q.eq("id",onlyTalentId);
         const{data,error}=await q.range(from,from+PAGE-1);
         if(error){ console.error("[weekly-upsell] profiles page error",error); break; }

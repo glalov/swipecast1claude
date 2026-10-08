@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="referrer" content="no-referrer"/>
+<title>Which roles should we show you? | CastSlate</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+<!--
+  /set-roles — the one-question page linked from the premium-upsell email for
+  actors with no gender on file (2026-10-08). No login: ?u=<user id>&t=<signed
+  code> is checked by the set-roles edge function, which can change only
+  profiles.authentic_genders. Options mirror AUTHENTIC_OPTS in swipecast-full.jsx.
+  Standalone on purpose: build-html.py does not touch this file.
+-->
+<style>
+:root{--teal:#2A8472;--teal-dk:#206557;--navy:#464A73;--ink:#1F1A15;--t2:#3A322A;--t3:#433B32;--paper:#F7F3EC;--card:#fff;--bdr:#E4DDD1;--s2:#F2EDE4;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:var(--ink);-webkit-text-size-adjust:100%}
+header{background:#1F3B36;padding:22px 16px;text-align:center}
+header a{text-decoration:none;display:inline-flex;align-items:center;gap:12px}
+header img{width:38px;height:38px;border-radius:9px}
+header span{font-size:24px;font-weight:800;letter-spacing:4px;color:#fff}
+main{max-width:520px;margin:0 auto;padding:36px 16px 60px}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:30px 26px;box-shadow:0 10px 30px rgba(31,26,21,.06)}
+.kicker{font-size:11px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal-dk);margin-bottom:10px}
+h1{font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.2;margin:0 0 10px;letter-spacing:-.3px}
+.lead{font-size:15.5px;line-height:1.6;color:var(--t2);margin:0 0 22px}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.chip{font-family:inherit;font-size:15px;font-weight:700;padding:11px 18px;border-radius:100px;cursor:pointer;background:var(--s2);color:var(--t2);border:1.5px solid var(--bdr);transition:background .16s,border-color .16s,color .16s}
+.chip:hover{border-color:var(--navy);color:var(--navy)}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip.on::before{content:"✓";margin-right:6px}
+.note{font-size:13px;line-height:1.55;color:var(--t3);margin:6px 0 24px}
+.save{display:block;width:100%;font-family:inherit;font-size:16px;font-weight:800;padding:15px;border:0;border-radius:10px;background:var(--teal);color:#fff;cursor:pointer;transition:opacity .2s,background .2s}
+.save:hover:not(:disabled){background:var(--teal-dk)}
+.save:disabled{opacity:.4;cursor:not-allowed}
+.err{color:#B45032;font-size:13.5px;text-align:center;margin-top:12px;min-height:1px}
+.fine{text-align:center;font-size:12.5px;color:var(--t3);margin-top:16px;line-height:1.5}
+.done{text-align:center}
+.tick{width:58px;height:58px;border-radius:50%;background:rgba(42,132,114,.12);color:var(--teal);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;font-weight:800}
+.tick.bad{background:rgba(180,80,50,.1);color:#B45032}
+.picked{display:inline-flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 22px}
+.picked b{background:var(--navy);color:#fff;border-radius:100px;padding:7px 14px;font-size:14px}
+.cta{display:inline-block;background:var(--teal);color:#fff;text-decoration:none;font-weight:800;padding:14px 30px;border-radius:10px;font-size:15px}
+.link{display:block;margin-top:14px;font-size:13.5px;color:var(--t3);background:none;border:0;cursor:pointer;text-decoration:underline;font-family:inherit;width:100%}
+.loading{text-align:center;color:var(--t3);font-size:14px;padding:40px 0}
+.hide{display:none}
+@media (max-width:480px){.card{padding:24px 18px}h1{font-size:24px}.chip{font-size:14.5px;padding:10px 15px}}
+</style></head>
+<body>
+<header><a href="/"><img src="/email/castslate-logo.png" alt=""/><span>CASTSLATE</span></a></header>
+<main>
+  <div class="loading" id="wait">Loading…</div>
+
+  <div class="card hide" id="ask">
+    <div class="kicker">5-second setup</div>
+    <h1 id="hi">Which roles should we show you?</h1>
+    <p class="lead">Pick every type of role you can play. We'll only send you castings that fit, starting with your next email.</p>
+    <div class="row" id="chips"></div>
+    <div class="note">Pick as many as apply. Roles open to all genders are always included.</div>
+    <button class="save" id="save" disabled>Save</button>
+    <div class="err" id="err"></div>
+    <div class="fine">No login needed. This link only changes this one setting.<br/>You can change it any time on your profile.</div>
+  </div>
+
+  <div class="card done hide" id="ok">
+    <div class="tick">✓</div>
+    <h1>You're all set<span id="okName"></span>.</h1>
+    <p class="lead" style="margin-bottom:12px">From your next email on, we'll show you roles for:</p>
+    <div class="picked" id="picked"></div>
+    <div><a class="cta" href="/browse-castings">See castings that fit you ▸</a></div>
+    <button class="link" id="change">Change my answer</button>
+  </div>
+
+  <div class="card done hide" id="bad">
+    <div class="tick bad">!</div>
+    <h1>This link doesn't work anymore.</h1>
+    <p class="lead">No problem. Log in and set which roles you want to see on your profile.</p>
+    <a class="cta" href="/login">Log in to CastSlate ▸</a>
+  </div>
+</main>
+<script>
+(function(){
+  var FN="https://mvqhqbjjvgkftninjcby.supabase.co/functions/v1/set-roles";
+  var OPTS=[{v:"Woman",l:"Woman / Girl"},{v:"Transgender Woman",l:"Transgender Woman / Girl"},{v:"Man",l:"Man / Boy"},{v:"Transgender Man",l:"Transgender Man / Boy"},{v:"Nonbinary",l:"Nonbinary"}];
+  var q=new URLSearchParams(location.search), u=q.get("u")||"", t=q.get("t")||"";
+  var $=function(id){return document.getElementById(id)}, sel=[], name="";
+  function show(id){["wait","ask","ok","bad"].forEach(function(x){$(x).classList.toggle("hide",x!==id)})}
+  function call(body){
+    body.u=u;body.t=t;
+    return fetch(FN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+      .then(function(r){return r.json().then(function(d){return {status:r.status,d:d}},function(){return {status:r.status,d:{}}})});
+  }
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+  function drawChips(){
+    $("chips").innerHTML="";
+    OPTS.forEach(function(o){
+      var b=document.createElement("button"),on=sel.indexOf(o.v)>=0;
+      b.type="button";b.className="chip"+(on?" on":"");b.textContent=o.l;b.setAttribute("aria-pressed",String(on));
+      b.onclick=function(){var i=sel.indexOf(o.v);if(i<0)sel.push(o.v);else sel.splice(i,1);drawChips();$("err").textContent=""};
+      $("chips").appendChild(b)});
+    $("save").disabled=!sel.length;
+  }
+  if(!u||!t){show("bad");return}
+  call({action:"get"}).then(function(r){
+    if(r.status!==200||!r.d.ok){show("bad");return}
+    name=r.d.first_name||"";
+    sel=(r.d.roles||[]).filter(function(v){return OPTS.some(function(o){return o.v===v})});
+    if(name)$("hi").textContent="Hi "+name+", which roles should we show you?";
+    drawChips();show("ask");
+  },function(){show("bad")});
+  $("save").onclick=function(){
+    var s=$("save");s.disabled=true;s.textContent="Saving…";$("err").textContent="";
+    call({action:"save",roles:sel}).then(function(r){
+      s.textContent="Save";
+      if(r.status===403){show("bad");return}
+      if(r.status!==200||!r.d.ok){s.disabled=false;$("err").textContent="That didn't save. Please try again.";return}
+      $("okName").textContent=name?", "+name:"";
+      $("picked").innerHTML=OPTS.filter(function(o){return sel.indexOf(o.v)>=0}).map(function(o){return "<b>"+esc(o.l)+"</b>"}).join("");
+      show("ok");
+    },function(){s.textContent="Save";s.disabled=false;$("err").textContent="That didn't save. Please check your connection and try again."});
+  };
+  $("change").onclick=function(){drawChips();show("ask")};
+})();
+</script>
+</body></html>

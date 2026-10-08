@@ -35,6 +35,7 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { claimSends, releaseSends } from "../_shared/send-guard.ts";
+import { genderFit, castingFitsGender, withLeadRole, roleSummary, rolesLinkToken, loadRolesLinkSecret } from "../_shared/role-gender.ts";
 
 const SUPABASE_URL         = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -384,7 +385,9 @@ function castingRow(c: any, p: Palette): string {
   const roles = c.roles || [];
   const r = roles[0];
   const extra = roles.length - 1;
-  const roleLine = r
+  const roleLine = c._neutralLead
+    ? esc(roleSummary(c))
+    : r
     ? [r.name || "Role", r.age_range, (r.gender && String(r.gender).toLowerCase() !== "any") ? r.gender : null]
         .filter(Boolean).map((x) => esc(x)).join(" &middot; ")
       + (extra > 0 ? ` &middot; <span style="color:${p.body}">+${extra} more role${extra === 1 ? "" : "s"}</span>` : "")
@@ -489,7 +492,7 @@ function addUtm(html: string, slot: string): string {
   });
 }
 
-function buildEmail(firstName: string, castings: any[], userId: string, slot: string, hero: Hero | null = null): string {
+function buildEmail(firstName: string, castings: any[], userId: string, slot: string, hero: Hero | null = null, askUrl: string | null = null): string {
   const p     = PALETTES[slot === "evening" ? "evening" : "noon"];
   const count = castings.length;
   const unsub = `${UNSUB_BASE}?action=unsubscribe&uid=${userId}&slot=${slot}`;
@@ -574,8 +577,14 @@ function buildEmail(firstName: string, castings: any[], userId: string, slot: st
     <tr><td style="height:22px;line-height:22px;font-size:0;">&nbsp;</td></tr>
     <tr><td style="height:2px;line-height:2px;font-size:0;background:${p.rule};">&nbsp;</td></tr>
     ${rows}
+${askUrl ? `
+    <tr><td class="row-pad" style="padding:28px 40px 0;text-align:center;border-top:1px solid ${p.line};">
+      <div style="display:inline-block;max-width:480px;background:#f6f2ea;border-radius:10px;padding:14px 22px;font-size:14.5px;line-height:1.6;color:#3A322A;">
+        Not seeing the right roles?&nbsp;
+        <a href="${askUrl}" style="color:#2A8472;font-weight:800;text-decoration:underline;text-underline-offset:3px;">Tell us which roles to show you &rarr;</a>
+      </div></td></tr>` : ""}
 
-    <tr><td class="row-pad" style="padding:30px 40px 46px;text-align:center;${count ? `border-top:1px solid ${p.line};` : ""}">
+    <tr><td class="row-pad" style="padding:30px 40px 46px;text-align:center;${count && !askUrl ? `border-top:1px solid ${p.line};` : ""}">
       <a href="${APP_URL}/browse-castings" style="display:inline-block;background:transparent;border:2px solid ${p.cta};color:${p.cta};text-decoration:none;padding:13px 36px;border-radius:${p.radius};font-size:14px;font-weight:800;">Browse all open castings</a>
     </td></tr>
 
@@ -697,7 +706,9 @@ serve(async (req) => {
       }
       const preview=(cs||[]).map((c:any)=>({...c,posted_at:c.created_at,roles:trb[c.id]||[]}));
       if(!preview.length) preview.push({id:"preview",title:'Indie Feature — "The Long Winter"',type:"Film",location:"New York, NY",union_status:"SAG-AFTRA",pay:"$2,500/week",synopsis:"A character-driven drama about a Brooklyn ceramicist navigating her first gallery show.",slug:"sample",posted_at:new Date().toISOString(),roles:[{name:"NADIA",age_range:"28–38",gender:"Female",pay:"$2,500/week"}]});
-      const html=addUtm(buildEmail("",preview,"test",slot,thero),slot);
+      let taskUrl:string|null=null;
+      if(body.ask_uid){ const ts=await loadRolesLinkSecret(sb); if(ts) taskUrl=`${APP_URL}/set-roles?u=${body.ask_uid}&t=${await rolesLinkToken(ts,String(body.ask_uid))}`; }
+      const html=addUtm(buildEmail("",preview,"test",slot,thero,taskUrl),slot);
       const r=await sendEmail({from:FROM_EMAIL,to:[to_email],replyTo:CONTACT_EMAIL,subject:subjectFor(slot,preview.length,thero),html});
       if(!r.ok) return res({error:r.err},500);
       return res({ok:true,test:true,slot,to:to_email,provider_id:r.id});
@@ -717,7 +728,7 @@ serve(async (req) => {
       const PAGE=1000; let from=0;
       while(true){
         const{data,error}=await sb.from("profiles")
-          .select("id,display_name,notification_email,membership_status,age")
+          .select("id,display_name,notification_email,membership_status,age,gender,open_to_role_genders")
           .in("user_type",["talent","actor"])
           .eq("account_status","active")
           .eq("visible",true)
@@ -830,6 +841,7 @@ serve(async (req) => {
     }
     const shuffle=(arr:any[])=>{ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
     const JOB_CAP=3;
+    const rolesSecret=await loadRolesLinkSecret(sb);
 
     // ── Phase 1: decide each user's email (in-memory). ──
     interface Out{ userId:string; email:string; subject:string; html:string; }
@@ -861,7 +873,10 @@ serve(async (req) => {
       }
 
       // Personalized job cards (best-effort; email still sends with 0 matches).
-      const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age));
+      // Gender: only castings with a role this actor can play, and each card
+      // leads with that role (see _shared/role-gender.ts).
+      const fit=genderFit(p);
+      const pool=cwr.filter((c:any)=>matches(pf,c) && castingAgeOk(c,p.age) && castingFitsGender(c,fit));
       // NEWEST-FIRST GUARANTEE. A pure shuffle means a casting posted an hour ago
       // can lose the coin toss and never appear. Hoist the newest matching casting
       // to the front so anything just posted is ALWAYS included; the remaining
@@ -872,7 +887,9 @@ serve(async (req) => {
       const batch=(newest?[newest,...rest]:rest).slice(0,JOB_CAP)
         .sort((a:any,b:any)=>String(b.created_at||b.posted_at||"").localeCompare(String(a.created_at||a.posted_at||"")));
       const first=greetName(p.display_name);
-      outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:addUtm(buildEmail(first,batch,p.id,slot,runHero),slot) });
+      // No gender on file → personal no-login link to the one-question page.
+      const askUrl=(!fit.known && rolesSecret) ? `${APP_URL}/set-roles?u=${p.id}&t=${await rolesLinkToken(rolesSecret,p.id)}` : null;
+      outbox.push({ userId:p.id, email, subject:subjectFor(slot,batch.length,runHero), html:addUtm(buildEmail(first,batch.map((c:any)=>withLeadRole(c,fit)),p.id,slot,runHero,askUrl),slot) });
     }
 
     // ── Universal repeat-send guard: one copy per slot per address per ~day,
