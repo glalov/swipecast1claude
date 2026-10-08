@@ -80,8 +80,14 @@ async function loadList(dir: Dir): Promise<Entry[]> {
 // Hijacked domains carry slot-spam vocabulary. A single "casino" is NOT enough:
 // casting offices list credits like "Wind Creek Casino TVC" (2026-10-07 false positive).
 const HIJACK_STRONG = /\b(judi|togel|gacor|maxwin|situs|slot online|slot gacor|bandar|pragmatic play|link alternatif|daftar)\b/i;
-const HIJACK_WEAK = /\b(slots?|casino|poker|betting|sportsbook|jackpot|bonus)\b/gi;
-const isHijacked = (t: string) => HIJACK_STRONG.test(t) || (t.match(HIJACK_WEAK) || []).length >= 6;
+// Weak words must stand alone (not "b-toaster-slot" in Next Management's CSS, 2026-10-07),
+// and need two DIFFERENT gambling words plus volume. "slot" alone never counts.
+const HIJACK_WEAK = /(?<![-_.\w])(casino|poker|pokies|betting|sportsbook|jackpot|bonus|deposit)(?![-_\w])/gi;
+const isHijacked = (t: string) => {
+  if (HIJACK_STRONG.test(t)) return true;
+  const hits = (t.match(HIJACK_WEAK) || []).map((w) => w.toLowerCase());
+  return hits.length >= 6 && new Set(hits).size >= 2;
+};
 const PARKED = /(domain (is )?for sale|buy this domain|this domain (may be|is) for sale|hugedomains|sedo\.com|dan\.com|afternic|parkingcrew|domain parking|godaddy\.com\/domainsearch|is available for purchase|account (has been )?suspended)/i;
 const STUB = /<title>[^<]*(coming soon|under construction|wordpress\s*›\s*error|account suspended)[^<]*<\/title>/i;
 const TOPIC: Record<Dir, RegExp> = {
@@ -99,22 +105,26 @@ async function get(url: string): Promise<{ status: number; host: string; body: s
 }
 
 async function checkSite(dir: Dir, o: Entry): Promise<Web> {
-  const dom = o.w.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  const full = o.w.replace(/^https?:\/\//, "");          // may carry a path (wixsite.com/bsta)
+  const dom = full.replace(/\/.*$/, "");
   const want = bare(dom);
+  const path = full.slice(dom.length);
   const base = { n: o.n, w: o.w };
   // Small old sites are often http-only or www-only: try all four before calling it down.
   let res: Awaited<ReturnType<typeof get>> = null;
   let last: Awaited<ReturnType<typeof get>> = null;
-  for (const u of [`https://${want}`, `http://${want}`, `https://www.${want}`, `http://www.${want}`]) {
+  const hosts = want.split(".").length === 2 ? [want, `www.${want}`] : [dom];
+  for (const u of hosts.flatMap((h) => [`https://${h}${path}`, `http://${h}${path}`])) {
     const r = await get(u);
     if (r) last = r;
-    if (r && (r.status < 400 || r.status === 401 || r.status === 403)) { res = r; break; }
+    // 401/403 = bot wall, 429 = rate limit: the site is there.
+    if (r && (r.status < 400 || r.status === 401 || r.status === 403 || r.status === 429)) { res = r; break; }
   }
   if (!res) {
     return { ...base, status: "down", detail: last ? (last.status === 410 ? "Site was taken down (410 Gone)" : `Site answers with error ${last.status}`) : "Site does not answer (no connection)" };
   }
   const plain = res.body.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-  const challenge = res.status === 401 || res.status === 403 || /just a moment|cf-chl|attention required|captcha/i.test(res.body);
+  const challenge = res.status === 401 || res.status === 403 || res.status === 429 || /just a moment|cf-chl|attention required|captcha/i.test(res.body);
   if (isHijacked(plain)) return { ...base, status: "hijacked", detail: `Shows gambling/spam content${bare(res.host) !== want ? ` (now ${res.host})` : ""}` };
   if (PARKED.test(res.body) || STUB.test(res.body) || (!challenge && res.body.length < 700)) return { ...base, status: "parked", detail: "Domain is parked, for sale or an empty placeholder" };
   const host = bare(res.host);
