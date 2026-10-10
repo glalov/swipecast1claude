@@ -16423,24 +16423,28 @@ function TadNetwork(){
 // Premium "Open the directory" on /agency-directory and /casting-directory lands on the
 // dashboard with that directory's sheet already open (no hunting for the card). The
 // directory page leaves a one-shot sessionStorage note; the matching card picks it up
-// on mount and opens the sheet in the same frame, so the dashboard sections that are
-// still loading pop in behind the sheet instead of in front of the member. The card
-// is re-centred while the sheet is still covering it (sections above it may have
-// grown) and pulses gold once when the sheet is gone.
+// on mount. The jump to the card happens in a layout effect, before the dashboard's
+// first paint, so the top of the dashboard never flashes. The sheet then opens two
+// frames later: the dashboard has painted once and the slide starts on an idle frame
+// instead of sharing one long task with the whole dashboard mount (that shared frame
+// was the stutter). Sections still loading pop in behind the sheet. The card is
+// re-centred while the sheet is still covering it and pulses gold once it is gone.
 const DIR_OPEN_KEY="cs_open_dir";
 function requestDirOpen(which){try{sessionStorage.setItem(DIR_OPEN_KEY,which);}catch(_){}}
 function useDirDeepLink(which,open,closing,openSheet,cardRef){
   const fromLink=useRef(false);
   const wasOpen=useRef(false);
-  useEffect(()=>{
+  useLayoutEffect(()=>{
     let want=null;
     try{want=sessionStorage.getItem(DIR_OPEN_KEY);}catch(_){}
     if(want!==which)return;
     try{sessionStorage.removeItem(DIR_OPEN_KEY);}catch(_){}
     fromLink.current=true;
-    openSheet();
     const el=cardRef.current;
     if(el){try{el.scrollIntoView({block:"center"});}catch(_){}}
+    let r2=0;
+    const r1=requestAnimationFrame(()=>{r2=requestAnimationFrame(openSheet);});
+    return()=>{cancelAnimationFrame(r1);cancelAnimationFrame(r2);};
   },[]);
   useEffect(()=>{
     if(!closing||!fromLink.current)return;
@@ -16460,6 +16464,19 @@ function useDirDeepLink(which,open,closing,openSheet,cardRef){
     return()=>clearTimeout(t);
   },[open]);
 }
+// A directory sheet draws only its first rows while it slides in, and the rest the
+// moment the slide ends. Drawing all 663 agency rows (or 131 offices) in the opening
+// frame was a long main-thread task that dropped the first frames of the slide.
+const SHEET_FIRST_ROWS=14;
+function useSheetSettled(open){
+  const [settled,setSettled]=useState(false);
+  useEffect(()=>{
+    if(!open){setSettled(false);return;}
+    const t=setTimeout(()=>setSettled(true),560);
+    return()=>clearTimeout(t);
+  },[open]);
+  return settled;
+}
 function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const [open,setOpen]=useState(false);
   // The directory opens as a left-to-right slide-in sheet, the same model Browse
@@ -16473,6 +16490,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
   const cardRef=useRef(null);
   useDirDeepLink("agd",open,closing,openSheet,cardRef);
+  const settled=useSheetSettled(open);
   const [tab,setTab]=useState("agencies");
   const [q,setQ]=useState("");
   const [tier,setTier]=useState("all");
@@ -16683,9 +16701,10 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                 <div className="tad-green">
                   Send your CastSlate card — no envelope, nothing to fold, nothing to open. Print a stack, write two lines on the back by hand, and post them. Your headshot <em>is</em> the card, and one scan of the QR code puts your reels, photos, credits and links in their hand in seconds. Pick any office on this list, tick them off as you go, and we'll build your mailing list.
                 </div>
-                {TAD_GROUPS.map(([t,title,ct,blurb])=>{
-                  const list=shown.filter(a=>a.t===t);
-                  if(!list.length)return null;
+                {(()=>{let budget=settled?Infinity:SHEET_FIRST_ROWS;return TAD_GROUPS.map(([t,title,ct,blurb])=>{
+                  const all=shown.filter(a=>a.t===t);
+                  if(!all.length||budget<=0)return null;
+                  const list=all.slice(0,budget);budget-=list.length;
                   return(<div key={t}>
                     <div className="tad-gh"><h3>{title}</h3><span className="ln"/><span className="ct">{ct}</span></div>
                     <p className="tad-gsub">{blurb}</p>
@@ -16693,7 +16712,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
                     <div className="tad-rows">{list.map(row)}</div>
                     {t==="large"&&<div className="tad-fn"><b>Why ICM isn't on this list.</b> You'll find ICM Partners on most agency lists online — it hasn't existed as a separate company since CAA absorbed it in 2022. If a service is still selling you an ICM address, that list hasn't been checked in years.</div>}
                   </div>);
-                })}
+                });})()}
                 {!shown.length&&<div style={{padding:"40px 0",textAlign:"center",color:"var(--t3)",fontSize:14}}>No agencies match those filters.</div>}
               </>)}
             </>}
@@ -17060,6 +17079,7 @@ function CastingDirectoryCard({isPremium,onNavigate}){
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
   const cardRef=useRef(null);
   useDirDeepLink("cdx",open,closing,openSheet,cardRef);
+  const settled=useSheetSettled(open);
   const [tab,setTab]=useState("offices");
   const [q,setQ]=useState("");
   const [pol,setPol]=useState("all");
@@ -17242,15 +17262,16 @@ function CastingDirectoryCard({isPremium,onNavigate}){
                 <div className="tad-green">
                   Read the policy on each row before you send anything. Where an office takes mail, send your CastSlate card. The Mailing Postcard (6 × 4 in) or the Agent Promo Card (7 × 5 in) land best, with two lines on the back by hand and no envelope. Where it says email only, don't post.
                 </div>
-                {CDX_GROUPS.map(([g,title,blurb])=>{
-                  const list=shown.filter(a=>cdxGroup(a)===g);
-                  if(!list.length)return null;
+                {(()=>{let budget=settled?Infinity:SHEET_FIRST_ROWS;return CDX_GROUPS.map(([g,title,blurb])=>{
+                  const all=shown.filter(a=>cdxGroup(a)===g);
+                  if(!all.length||budget<=0)return null;
+                  const list=all.slice(0,budget);budget-=list.length;
                   return(<div key={g}>
-                    <div className="tad-gh"><h3>{title}</h3><span className="ln"/><span className="ct">{list.length}</span></div>
+                    <div className="tad-gh"><h3>{title}</h3><span className="ln"/><span className="ct">{all.length}</span></div>
                     <p className="tad-gsub">{blurb}</p>
                     <div className="tad-rows">{list.map(row)}</div>
                   </div>);
-                })}
+                });})()}
                 {!shown.length&&<div style={{padding:"40px 0",textAlign:"center",color:"var(--t3)",fontSize:14}}>No casting offices match those filters.</div>}
                 <div className="tad-fn"><b>Curated by hand, not scraped, and re-checked every month</b> (last check: {dirCheckedLabel(dirSt,"cdx")}). Every office here was checked one by one by the CastSlate team to make sure it is an active casting office with projects happening now, not a closed office padding the number. Policies are quoted as each office publishes them. Offices move: if an address says “Not yet confirmed”, check their site before you post anything.</div>
               </>)}
