@@ -3213,6 +3213,18 @@ body.sheet-push .b2t-cube{display:none;}
   .cs-sheet-dim{animation:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
 }
 .cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}
+/* Directory sheets (agency + casting): the blur waits until the 500ms slide has landed.
+   At 200ms it re-blurred the page every frame while the page was still moving under it,
+   which showed as a hitch halfway through the slide. .instant is the dashboard copy of a
+   sheet that was already slid in on the directory page: it appears already in place. */
+.cs-sheet-dim.tad-dim:not(.closing){animation:csDimIn .45s ease,csBlurIn .3s ease .5s both;}
+.cs-sheet-dim.tad-dim.instant:not(.closing){animation:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
+.tad-sheet.instant:not(.closing){animation:none;}
+@media(max-width:768px){
+  .cs-sheet-dim.tad-dim:not(.closing){animation:csDimIn .45s ease;}
+  .cs-sheet-dim.tad-dim.instant:not(.closing){animation:none;-webkit-backdrop-filter:none;backdrop-filter:none;}
+}
+@media(prefers-reduced-motion:reduce){.cs-sheet-dim.tad-dim:not(.closing){animation:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}}
 /* Enters from the RIGHT and pushes the page left, same gesture as the agency directory
    sheet — see the body.sheet-push block and the caa.com note above .tad-sheet. */
 .cs-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:-18px 0 48px rgba(26,26,46,.34);will-change:transform;animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
@@ -10504,9 +10516,10 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
   // Phone heights are a separate set, not a CSS scale: shrinking all six by the
   // same factor puts Disney's script under 20px, where it stops reading.
   const isNarrow=useViewportWidth()<560;
-  const go=()=>{if(isPremium){requestDirOpen("agd");onNavigate("talent-dashboard");}else onNavigate("membership");};
+  const go=()=>{if(isPremium)window.dispatchEvent(new CustomEvent(DIR_OPEN_EVENT,{detail:"agd"}));else onNavigate("membership");};
   const cta=isPremium?"Open the directory":"Unlock the directory — $17.99/mo";
   return(<div className="page">
+    {isPremium&&<TalentAgencyDirectoryCard isPremium onNavigate={onNavigate} sheetOnly/>}
     <div className="agd-herobg"><div className="agd-wrap">
       <section className="agd-hero"><div className="agd-hero-grid">
         <div>
@@ -16420,35 +16433,53 @@ function TadNetwork(){
   );
 }
 
-// Premium "Open the directory" on /agency-directory and /casting-directory lands on the
-// dashboard with that directory's sheet already open (no hunting for the card). The
-// directory page leaves a one-shot sessionStorage note; the matching card picks it up
-// on mount. The jump to the card happens in a layout effect, before the dashboard's
-// first paint, so the top of the dashboard never flashes. The sheet then opens two
-// frames later: the dashboard has painted once and the slide starts on an idle frame
-// instead of sharing one long task with the whole dashboard mount (that shared frame
-// was the stutter). Sections still loading pop in behind the sheet. The card is
-// re-centred while the sheet is still covering it and pulses gold once it is gone.
+// Premium "Open the directory" on /agency-directory and /casting-directory.
+// Building the dashboard is a ~0.5s main-thread task and its sections keep loading for
+// another half second, so any slide that overlaps it stutters. So the slide happens on
+// the directory page, which is idle: the page renders a sheet-only copy of the card
+// (sheetOnly) and opens it there. Once it has landed, it leaves a one-shot
+// sessionStorage note and navigates. The dashboard's real card reads the note in a
+// layout effect and opens its own sheet "instant" (no slide, blur already on) in the
+// same commit that removes the first one, so nothing visibly changes. The dashboard
+// builds underneath while nothing is moving, scrolled to the card. On close the card
+// is re-centred while still covered, then pulses gold once.
 const DIR_OPEN_KEY="cs_open_dir";
+const DIR_OPEN_EVENT="cs:dir-open";
 function requestDirOpen(which){try{sessionStorage.setItem(DIR_OPEN_KEY,which);}catch(_){}}
-function useDirDeepLink(which,open,closing,openSheet,cardRef){
+function useDirDeepLink(which,{open,closing,openSheet,cardRef,setInstant,sheetOnly,onNavigate}){
   const fromLink=useRef(false);
   const wasOpen=useRef(false);
+  const closingRef=useRef(false);
+  closingRef.current=closing;
+  // Directory-page copy: open on request, hand over to the dashboard once landed.
+  useEffect(()=>{
+    if(!sheetOnly)return;
+    let t=0;
+    const onReq=(e)=>{
+      if(e.detail!==which)return;
+      openSheet();
+      clearTimeout(t);
+      t=setTimeout(()=>{
+        if(closingRef.current)return;
+        requestDirOpen(which);
+        onNavigate("talent-dashboard");
+      },520);
+    };
+    window.addEventListener(DIR_OPEN_EVENT,onReq);
+    return()=>{window.removeEventListener(DIR_OPEN_EVENT,onReq);clearTimeout(t);};
+  },[sheetOnly]);
+  // Dashboard copy: pick up the hand-over before the first paint.
   useLayoutEffect(()=>{
+    if(sheetOnly)return;
     let want=null;
     try{want=sessionStorage.getItem(DIR_OPEN_KEY);}catch(_){}
     if(want!==which)return;
     try{sessionStorage.removeItem(DIR_OPEN_KEY);}catch(_){}
     fromLink.current=true;
+    setInstant(true);
+    openSheet();
     const el=cardRef.current;
     if(el){try{el.scrollIntoView({block:"center"});}catch(_){}}
-    // Frames are paused in a hidden tab, so a timer backs the double rAF up;
-    // whichever comes first opens the sheet, once.
-    let done=false,r2=0;
-    const go=()=>{if(done)return;done=true;openSheet();};
-    const r1=requestAnimationFrame(()=>{r2=requestAnimationFrame(go);});
-    const t=setTimeout(go,150);
-    return()=>{done=true;cancelAnimationFrame(r1);cancelAnimationFrame(r2);clearTimeout(t);};
   },[]);
   useEffect(()=>{
     if(!closing||!fromLink.current)return;
@@ -16459,6 +16490,7 @@ function useDirDeepLink(which,open,closing,openSheet,cardRef){
     if(open){wasOpen.current=true;return;}
     if(!wasOpen.current)return;
     wasOpen.current=false;
+    setInstant(false);
     if(!fromLink.current)return;
     fromLink.current=false;
     const el=cardRef.current;
@@ -16481,7 +16513,7 @@ function useSheetSettled(open){
   },[open]);
   return settled;
 }
-function TalentAgencyDirectoryCard({isPremium,onNavigate}){
+function TalentAgencyDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
   const [open,setOpen]=useState(false);
   // The directory opens as a left-to-right slide-in sheet, the same model Browse
   // Castings uses for a casting — so "opening a thing from a card" animates the
@@ -16493,7 +16525,8 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   },[]);
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
   const cardRef=useRef(null);
-  useDirDeepLink("agd",open,closing,openSheet,cardRef);
+  const [instant,setInstant]=useState(false);
+  useDirDeepLink("agd",{open,closing,openSheet,cardRef,setInstant,sheetOnly,onNavigate});
   const settled=useSheetSettled(open);
   const [tab,setTab]=useState("agencies");
   const [q,setQ]=useState("");
@@ -16607,7 +16640,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   );
 
   return(<>
-    <div className="tad-seal" ref={cardRef}>
+    <div className="tad-seal" ref={cardRef} style={sheetOnly?{display:"none"}:undefined}>
     <div className="tad-card" onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
       <TadNetwork/>
@@ -16635,8 +16668,8 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
         the push transforms <main>, so inside <main> it would be dragged along by the
         very transform it is supposed to sit still against. */}
     {open&&ReactDOM.createPortal(<>
-      <div className={"cs-sheet-dim"+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
-      <div className={"tad-sheet"+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Talent Agency and Management Directory">
+      <div className={"cs-sheet-dim tad-dim"+(instant?" instant":"")+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
+      <div className={"tad-sheet"+(instant?" instant":"")+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Talent Agency and Management Directory">
           <div className="tad-head">
             <button className="tad-x" onClick={closeSheet}><Ico n="arrow-left" s={15}/>Back</button>
             <div className="tad-eyebrow">CastSlate Premium</div>
@@ -17073,7 +17106,7 @@ function SharedMailList({emptyHint}){
   </>);
 }
 
-function CastingDirectoryCard({isPremium,onNavigate}){
+function CastingDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
   const [open,setOpen]=useState(false);
   const [closing,setClosing]=useState(false);
   const closeSheet=useCallback(()=>{
@@ -17082,7 +17115,8 @@ function CastingDirectoryCard({isPremium,onNavigate}){
   },[]);
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
   const cardRef=useRef(null);
-  useDirDeepLink("cdx",open,closing,openSheet,cardRef);
+  const [instant,setInstant]=useState(false);
+  useDirDeepLink("cdx",{open,closing,openSheet,cardRef,setInstant,sheetOnly,onNavigate});
   const settled=useSheetSettled(open);
   const [tab,setTab]=useState("offices");
   const [q,setQ]=useState("");
@@ -17179,7 +17213,7 @@ function CastingDirectoryCard({isPremium,onNavigate}){
     {/* "The Slate", Chalk White (owner's pick, 2026-10-04, replacing Clapper Red).
         Cream board, black clapper stripes, deliberately unlike the navy agency card
         above it. The clapper is still, not animated (owner's call). */}
-    <div className="cdxs" ref={cardRef} onClick={openSheet} role="button" tabIndex={0}
+    <div className="cdxs" ref={cardRef} style={sheetOnly?{display:"none"}:undefined} onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
       <div className="cdxs-clap" aria-hidden="true"/>
       <span className="cdxs-hinge" aria-hidden="true"/>
@@ -17202,8 +17236,8 @@ function CastingDirectoryCard({isPremium,onNavigate}){
     </div>
 
     {open&&ReactDOM.createPortal(<>
-      <div className={"cs-sheet-dim"+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
-      <div className={"tad-sheet"+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Casting Companies Directory">
+      <div className={"cs-sheet-dim tad-dim"+(instant?" instant":"")+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
+      <div className={"tad-sheet"+(instant?" instant":"")+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Casting Companies Directory">
           <div className="tad-head">
             <button className="tad-x" onClick={closeSheet}><Ico n="arrow-left" s={15}/>Back</button>
             <div className="tad-eyebrow">CastSlate Premium</div>
@@ -17397,7 +17431,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
   const sampleBg=(ABC_CARD_COLORS.find(c=>c.key===sampleColor)||ABC_CARD_COLORS[0]).hex;
   const fanRef=useAgdDeal();
   const isNarrow=useViewportWidth()<560;
-  const go=()=>{if(isPremium){requestDirOpen("cdx");onNavigate("talent-dashboard");}else onNavigate("membership");};
+  const go=()=>{if(isPremium)window.dispatchEvent(new CustomEvent(DIR_OPEN_EVENT,{detail:"cdx"}));else onNavigate("membership");};
   const cta=isPremium?"Open the directory":"Unlock the directory — $17.99/mo";
   const n=CASTING_OFFICES.length;
   const dirSt=useDirStatus();
@@ -17406,6 +17440,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
   const ny=CASTING_OFFICES.filter(a=>a.c.includes("NY")).length;
   const sample=CASTING_OFFICES.filter(a=>CDX_ACC.has(a.p)).slice(0,5).map((a,i)=>[a.c.length>1?"LA + New York":a.c[0]==="LA"?"Los Angeles":"New York",(CDX_POL[a.p]||CDX_POL[""])[2].replace(" — don't post",""),a.w?"On file":"—",[134,152,120,146,128][i]]);
   return(<div className="page">
+    {isPremium&&<CastingDirectoryCard isPremium onNavigate={onNavigate} sheetOnly/>}
     <div className="agd-herobg"><div className="agd-wrap">
       <section className="agd-hero"><div className="agd-hero-grid">
         <div>
