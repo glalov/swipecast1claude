@@ -16442,9 +16442,13 @@ function useDirDeepLink(which,open,closing,openSheet,cardRef){
     fromLink.current=true;
     const el=cardRef.current;
     if(el){try{el.scrollIntoView({block:"center"});}catch(_){}}
-    let r2=0;
-    const r1=requestAnimationFrame(()=>{r2=requestAnimationFrame(openSheet);});
-    return()=>{cancelAnimationFrame(r1);cancelAnimationFrame(r2);};
+    // Frames are paused in a hidden tab, so a timer backs the double rAF up;
+    // whichever comes first opens the sheet, once.
+    let done=false,r2=0;
+    const go=()=>{if(done)return;done=true;openSheet();};
+    const r1=requestAnimationFrame(()=>{r2=requestAnimationFrame(go);});
+    const t=setTimeout(go,150);
+    return()=>{done=true;cancelAnimationFrame(r1);cancelAnimationFrame(r2);clearTimeout(t);};
   },[]);
   useEffect(()=>{
     if(!closing||!fromLink.current)return;
