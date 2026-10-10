@@ -9809,7 +9809,9 @@ const InboxMockup=({mobile,mmPreview,mmLines,mmCards,mmTask,mmCycle})=>{
 function ManagerModePage({onNavigate,session,myProfile}){
   const isPremium=myProfile?.membership_status==="active";
   const isLoggedIn=!!session;
-  const cardCTA=()=>{if(isPremium)onNavigate("my-profile");else if(isLoggedIn)onNavigate("membership");else onNavigate("pricing");};
+  // Premium actors go straight to the Actor Card Studio (it only renders for talent,
+  // so any other premium account keeps the old My Profile landing).
+  const cardCTA=()=>{if(isPremium)onNavigate(myProfile?.user_type==="talent"?"actor-business-card":"my-profile");else if(isLoggedIn)onNavigate("membership");else onNavigate("pricing");};
   const cardCTALabel=isPremium?"Create My Actor Card":isLoggedIn?"Upgrade to Create Your Card":"Create My Actor Card";
   const MM_PREVIEW_TEXT="Riley, your profile is moving in the right direction...";
   // "Snap Stack" — the body arrives as three line wipes rather than typed
