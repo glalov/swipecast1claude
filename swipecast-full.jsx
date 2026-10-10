@@ -5242,6 +5242,43 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 @keyframes agdring{0%{opacity:.9;transform:scale(.62)}100%{opacity:0;transform:scale(1.65)}}
 .agd-key{font-size:60px;line-height:1;position:relative;z-index:1;animation:agdswing 3.2s ease-in-out infinite;transform-origin:50% 8%;filter:drop-shadow(0 7px 12px rgba(26,26,46,.26));}
 @keyframes agdswing{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}}
+/* Premium "unlocked" padlock (owner picked demo D, 2026-10-10) on both directory pages.
+   Plays once when it scrolls into view: a key slides in and turns, the shackle springs
+   open with a small bounce, a gold glow with slowly turning rays comes up behind it, and
+   a "Unlocked" tag appears above the heading. Free members keep the closed swinging
+   lock (.agd-key). Transform and opacity only. */
+.agd-ul{position:relative;width:110px;height:104px;display:grid;place-items:center;margin-bottom:8px;}
+.agd-ul svg{width:64px;height:76px;overflow:visible;position:relative;z-index:2;filter:drop-shadow(0 7px 12px rgba(26,26,46,.22));}
+.agd-ul .ul-sh,.agd-ul .ul-key{transform-box:fill-box;}
+.agd-ul .ul-pw{display:block;}
+.agd-ul .ul-key{opacity:0;transform-origin:50% 50%;}
+.agd-ul .ul-sh{transform-origin:100% 100%;}
+.agd-ul .ul-rays{position:absolute;width:120px;height:120px;left:50%;top:50%;margin:-60px 0 0 -60px;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,rgba(240,184,96,.38) 0 7deg,rgba(240,184,96,0) 7deg 22deg);
+  -webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%);opacity:0;transform:scale(.5);}
+.agd-ul .ul-halo{position:absolute;width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,rgba(240,184,96,.55),rgba(240,184,96,0) 70%);opacity:0;transform:scale(.6);}
+.agd-ul.play .ul-key{animation:ulKey 1.3s cubic-bezier(.3,.7,.25,1) .2s both;}
+.agd-ul.play .ul-sh{animation:ulOpen .6s cubic-bezier(.2,1.5,.4,1) 1s both;}
+.agd-ul.play .ul-pw{animation:ulBounce .6s cubic-bezier(.3,.7,.25,1) 1s both;}
+.agd-ul.play .ul-rays{animation:ulRaysIn .9s cubic-bezier(.3,.7,.25,1) 1.05s both,ulRaysSpin 14s linear 1.95s infinite;}
+.agd-ul.play .ul-halo{animation:ulHaloIn .8s ease-out 1s both,ulHaloPulse 2.6s ease-in-out 1.85s infinite;}
+@keyframes ulKey{0%{opacity:0;transform:translateX(-26px)}30%{opacity:1;transform:translateX(0) rotate(0)}55%{opacity:1;transform:translateX(0) rotate(90deg)}75%{opacity:1;transform:translateX(0) rotate(90deg)}100%{opacity:0;transform:translateX(0) rotate(90deg) scale(.6)}}
+@keyframes ulOpen{from{transform:translateY(0) rotate(0)}to{transform:translateY(-11px) rotate(-30deg)}}
+@keyframes ulBounce{0%{transform:translateY(0)}18%{transform:translateY(3px) scale(1.04,.96)}40%{transform:translateY(-4px)}60%,100%{transform:translateY(0)}}
+@keyframes ulRaysIn{to{opacity:1;transform:scale(1)}}
+@keyframes ulRaysSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes ulHaloIn{to{opacity:1;transform:scale(1)}}
+@keyframes ulHaloPulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+.agd-ul-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#1F6E5E;background:#E2F2EE;border:1px solid #BFE0D8;border-radius:999px;padding:4px 10px;margin-bottom:8px;opacity:0;transform:translateY(6px);}
+.agd-ul-tag.play{animation:ulTagIn .45s ease-out 1.4s both;}
+@keyframes ulTagIn{to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+  .agd-ul .ul-key{display:none;}
+  .agd-ul .ul-sh,.agd-ul.play .ul-sh{animation:none;transform:translateY(-11px) rotate(-30deg);}
+  .agd-ul .ul-rays,.agd-ul .ul-halo,.agd-ul.play .ul-rays,.agd-ul.play .ul-halo{animation:none;opacity:1;transform:none;}
+  .agd-ul.play .ul-pw{animation:none;}
+  .agd-ul-tag,.agd-ul-tag.play{animation:none;opacity:1;transform:none;}
+}
 .agd-lock h4{margin:0 0 6px;font-size:19px;letter-spacing:-.6px;font-weight:800;}
 .agd-lock p{margin:0 0 15px;font-size:13.5px;color:var(--t2);max-width:420px;}
 .agd-steps{display:flex;flex-direction:column;gap:18px;margin-top:24px;}
@@ -10530,6 +10567,42 @@ function useAgdDeal(){
   },[]);
   return ref;
 }
+// Premium "unlocked" padlock + tag for the directory pages' locked preview (demo D).
+// Plays once when half of it is on screen.
+function UnlockedPad(){
+  const ref=useRef(null);
+  const [play,setPlay]=useState(false);
+  useEffect(()=>{
+    const el=ref.current;if(!el)return;
+    if(typeof IntersectionObserver==="undefined"){setPlay(true);return;}
+    const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){setPlay(true);io.disconnect();}},{threshold:.5});
+    io.observe(el);
+    return()=>io.disconnect();
+  },[]);
+  return(<>
+    <div ref={ref} className={"agd-ul"+(play?" play":"")} aria-hidden="true">
+      <span className="ul-rays"/><span className="ul-halo"/>
+      <span className="ul-pw">
+        <svg viewBox="0 0 64 76">
+          <defs>
+            <linearGradient id="agdUlBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#F6D592"/><stop offset=".55" stopColor="#E2AE55"/><stop offset="1" stopColor="#C98F35"/></linearGradient>
+            <linearGradient id="agdUlSh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#9AA0A8"/><stop offset=".5" stopColor="#E4E7EB"/><stop offset="1" stopColor="#8D939B"/></linearGradient>
+          </defs>
+          <path className="ul-sh" d="M17 36 V22 a15 15 0 0 1 30 0 V36" fill="none" stroke="url(#agdUlSh)" strokeWidth="7" strokeLinecap="round"/>
+          <rect x="6" y="32" width="52" height="40" rx="9" fill="url(#agdUlBody)"/>
+          <rect x="6" y="32" width="52" height="40" rx="9" fill="none" stroke="#B9832E" strokeOpacity=".5"/>
+          <rect x="10" y="35" width="44" height="5" rx="2.5" fill="#fff" opacity=".28"/>
+          <path d="M32 46 a5 5 0 0 1 3 9 l1.6 7 h-9.2 l1.6 -7 a5 5 0 0 1 3 -9z" fill="#6E4A16" opacity=".75"/>
+          <g className="ul-key">
+            <circle cx="18" cy="52" r="6" fill="none" stroke="#5A6068" strokeWidth="3"/>
+            <rect x="23" y="50.5" width="12" height="3" rx="1.5" fill="#5A6068"/>
+          </g>
+        </svg>
+      </span>
+    </div>
+    <span className={"agd-ul-tag"+(play?" play":"")}>✓ Unlocked</span>
+  </>);
+}
 function AgencyDirectoryPage({onNavigate,isPremium=false}){
   const fanRef=useAgdDeal();
   // Phone heights are a separate set, not a CSS scale: shrinking all six by the
@@ -10621,7 +10694,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           </div>
         ))}
         <div className="agd-lock">
-          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">{isPremium?"🔓":"🔒"}</span></div>
+          {isPremium?<UnlockedPad/>:<div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>}
           <h4>{isPremium?"All 650+ companies are unlocked for you":"650+ companies unlock with Premium"}</h4>
           <p>Names, office addresses, websites and submission routes.</p>
           <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
@@ -17531,7 +17604,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
           </div>
         ))}
         <div className="agd-lock">
-          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">{isPremium?"🔓":"🔒"}</span></div>
+          {isPremium?<UnlockedPad/>:<div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>}
           <h4>{isPremium?`All ${n} active casting offices are unlocked for you`:`${n} active casting offices unlock with Premium`}</h4>
           <p>Names, submission policies, websites and addresses.</p>
           <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
