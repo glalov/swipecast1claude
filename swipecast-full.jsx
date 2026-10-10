@@ -5244,9 +5244,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 @keyframes agdswing{0%,100%{transform:rotate(-15deg)}50%{transform:rotate(15deg)}}
 /* Premium "unlocked" padlock (owner picked demo D, 2026-10-10) on both directory pages.
    Plays once when it scrolls into view: a key slides in and turns, the shackle springs
-   open with a small bounce, a gold glow with slowly turning rays comes up behind it, and
-   a "Unlocked" tag appears above the heading. Free members keep the closed swinging
-   lock (.agd-key). Transform and opacity only. */
+   open with a small bounce, and a gold glow with slowly turning rays comes up behind it.
+   (An "Unlocked" tag under it was dropped: the heading already says it, and the tag
+   pushed the lock up into the table rows.) Free members keep the closed swinging lock
+   (.agd-key). Transform and opacity only. */
 .agd-ul{position:relative;width:110px;height:96px;flex-shrink:0;display:grid;place-items:center;margin-bottom:6px;}
 .agd-ul svg{width:64px;height:76px;overflow:visible;position:relative;z-index:2;filter:drop-shadow(0 7px 12px rgba(26,26,46,.22));}
 .agd-ul .ul-sh,.agd-ul .ul-key{transform-box:fill-box;}
@@ -5269,15 +5270,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 @keyframes ulRaysSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @keyframes ulHaloIn{to{opacity:1;transform:scale(1)}}
 @keyframes ulHaloPulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
-.agd-ul-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#1F6E5E;background:#E2F2EE;border:1px solid #BFE0D8;border-radius:999px;padding:4px 10px;margin-bottom:8px;opacity:0;transform:translateY(6px);}
-.agd-ul-tag.play{animation:ulTagIn .45s ease-out 1.4s both;}
-@keyframes ulTagIn{to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){
   .agd-ul .ul-key{display:none;}
   .agd-ul .ul-sh,.agd-ul.play .ul-sh{animation:none;transform:translateY(-11px) rotate(-30deg);}
   .agd-ul .ul-rays,.agd-ul .ul-halo,.agd-ul.play .ul-rays,.agd-ul.play .ul-halo{animation:none;opacity:1;transform:none;}
   .agd-ul.play .ul-pw{animation:none;}
-  .agd-ul-tag,.agd-ul-tag.play{animation:none;opacity:1;transform:none;}
 }
 .agd-lock h4{margin:0 0 6px;font-size:19px;letter-spacing:-.6px;font-weight:800;}
 .agd-lock p{margin:0 0 15px;font-size:13.5px;color:var(--t2);max-width:420px;}
@@ -10600,7 +10597,6 @@ function UnlockedPad(){
         </svg>
       </span>
     </div>
-    <span className={"agd-ul-tag"+(play?" play":"")}>✓ Unlocked</span>
   </>);
 }
 function AgencyDirectoryPage({onNavigate,isPremium=false}){
