@@ -2675,6 +2675,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   background-size:100% 260%;animation:tad-edgeflow 7s ease-in-out infinite;}
 @keyframes tad-edgeflow{0%,100%{background-position:50% 0%;}50%{background-position:50% 100%;}}
 .tad-seal:hover{transform:translateY(-3px);box-shadow:0 24px 48px -18px rgba(26,26,46,.72);}
+/* One gold pulse on a directory card when its sheet was opened from the directory
+   page's Open the directory button and then closed: shows where the directory lives. */
+@keyframes dir-glow{0%{box-shadow:0 0 0 0 rgba(234,192,128,0);}20%{box-shadow:0 0 0 5px rgba(234,192,128,.95),0 0 36px 8px rgba(200,153,46,.5);}100%{box-shadow:0 0 0 0 rgba(234,192,128,0);}}
+.tad-seal.dir-glow{animation:tad-edgeflow 7s ease-in-out infinite,dir-glow 1.6s ease-out;}
+.cdxs.dir-glow{animation:dir-glow 1.6s ease-out;}
+@media(prefers-reduced-motion:reduce){.tad-seal.dir-glow,.cdxs.dir-glow{animation:none;}}
 /* the network itself.
    The card's content is position:relative with z-index AUTO, which loses to any
    positive z-index — so the network and its scrim have to sit at 0 and the content
@@ -10496,7 +10502,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
   // Phone heights are a separate set, not a CSS scale: shrinking all six by the
   // same factor puts Disney's script under 20px, where it stops reading.
   const isNarrow=useViewportWidth()<560;
-  const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
+  const go=()=>{if(isPremium){requestDirOpen("agd");onNavigate("talent-dashboard");}else onNavigate("membership");};
   const cta=isPremium?"Open the directory":"Unlock the directory — $17.99/mo";
   return(<div className="page">
     <div className="agd-herobg"><div className="agd-wrap">
@@ -16412,6 +16418,46 @@ function TadNetwork(){
   );
 }
 
+// Premium "Open the directory" on /agency-directory and /casting-directory lands on the
+// dashboard with that directory's sheet already open (no hunting for the card). The
+// directory page leaves a one-shot sessionStorage note; the matching card picks it up
+// on mount, scrolls itself to the middle of the screen behind the sheet, opens the
+// sheet, and pulses gold once when it is closed.
+const DIR_OPEN_KEY="cs_open_dir";
+function requestDirOpen(which){try{sessionStorage.setItem(DIR_OPEN_KEY,which);}catch(_){}}
+function useDirDeepLink(which,open,openSheet,cardRef){
+  const fromLink=useRef(false);
+  const wasOpen=useRef(false);
+  useEffect(()=>{
+    let want=null;
+    try{want=sessionStorage.getItem(DIR_OPEN_KEY);}catch(_){}
+    if(want!==which)return;
+    try{sessionStorage.removeItem(DIR_OPEN_KEY);}catch(_){}
+    fromLink.current=true;
+    const t=setTimeout(()=>{
+      const el=cardRef.current;
+      if(el){try{el.scrollIntoView({block:"center"});}catch(_){}}
+      openSheet();
+    },250);
+    return()=>clearTimeout(t);
+  },[]);
+  useEffect(()=>{
+    if(open){wasOpen.current=true;return;}
+    if(!wasOpen.current)return;
+    wasOpen.current=false;
+    if(!fromLink.current)return;
+    fromLink.current=false;
+    const el=cardRef.current;
+    if(!el)return;
+    // Dashboard sections can finish loading while the sheet is up and move the card,
+    // so re-centre it only if it ended up off screen.
+    const r=el.getBoundingClientRect();
+    if(r.top<0||r.bottom>window.innerHeight){try{el.scrollIntoView({block:"center"});}catch(_){}}
+    el.classList.remove("dir-glow");void el.offsetWidth;el.classList.add("dir-glow");
+    const t=setTimeout(()=>el.classList.remove("dir-glow"),1700);
+    return()=>clearTimeout(t);
+  },[open]);
+}
 function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   const [open,setOpen]=useState(false);
   // The directory opens as a left-to-right slide-in sheet, the same model Browse
@@ -16423,6 +16469,8 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
     setTimeout(()=>{setOpen(false);setClosing(false);},460);
   },[]);
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
+  const cardRef=useRef(null);
+  useDirDeepLink("agd",open,openSheet,cardRef);
   const [tab,setTab]=useState("agencies");
   const [q,setQ]=useState("");
   const [tier,setTier]=useState("all");
@@ -16535,7 +16583,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   );
 
   return(<>
-    <div className="tad-seal">
+    <div className="tad-seal" ref={cardRef}>
     <div className="tad-card" onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
       <TadNetwork/>
@@ -17008,6 +17056,8 @@ function CastingDirectoryCard({isPremium,onNavigate}){
     setTimeout(()=>{setOpen(false);setClosing(false);},460);
   },[]);
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
+  const cardRef=useRef(null);
+  useDirDeepLink("cdx",open,openSheet,cardRef);
   const [tab,setTab]=useState("offices");
   const [q,setQ]=useState("");
   const [pol,setPol]=useState("all");
@@ -17103,7 +17153,7 @@ function CastingDirectoryCard({isPremium,onNavigate}){
     {/* "The Slate", Chalk White (owner's pick, 2026-10-04, replacing Clapper Red).
         Cream board, black clapper stripes, deliberately unlike the navy agency card
         above it. The clapper is still, not animated (owner's call). */}
-    <div className="cdxs" onClick={openSheet} role="button" tabIndex={0}
+    <div className="cdxs" ref={cardRef} onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
       <div className="cdxs-clap" aria-hidden="true"/>
       <span className="cdxs-hinge" aria-hidden="true"/>
@@ -17320,7 +17370,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
   const sampleBg=(ABC_CARD_COLORS.find(c=>c.key===sampleColor)||ABC_CARD_COLORS[0]).hex;
   const fanRef=useAgdDeal();
   const isNarrow=useViewportWidth()<560;
-  const go=()=>onNavigate(isPremium?"talent-dashboard":"membership");
+  const go=()=>{if(isPremium){requestDirOpen("cdx");onNavigate("talent-dashboard");}else onNavigate("membership");};
   const cta=isPremium?"Open the directory":"Unlock the directory — $17.99/mo";
   const n=CASTING_OFFICES.length;
   const dirSt=useDirStatus();
