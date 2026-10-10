@@ -16423,11 +16423,13 @@ function TadNetwork(){
 // Premium "Open the directory" on /agency-directory and /casting-directory lands on the
 // dashboard with that directory's sheet already open (no hunting for the card). The
 // directory page leaves a one-shot sessionStorage note; the matching card picks it up
-// on mount, scrolls itself to the middle of the screen behind the sheet, opens the
-// sheet, and pulses gold once when it is closed.
+// on mount and opens the sheet in the same frame, so the dashboard sections that are
+// still loading pop in behind the sheet instead of in front of the member. The card
+// is re-centred while the sheet is still covering it (sections above it may have
+// grown) and pulses gold once when the sheet is gone.
 const DIR_OPEN_KEY="cs_open_dir";
 function requestDirOpen(which){try{sessionStorage.setItem(DIR_OPEN_KEY,which);}catch(_){}}
-function useDirDeepLink(which,open,openSheet,cardRef){
+function useDirDeepLink(which,open,closing,openSheet,cardRef){
   const fromLink=useRef(false);
   const wasOpen=useRef(false);
   useEffect(()=>{
@@ -16436,13 +16438,15 @@ function useDirDeepLink(which,open,openSheet,cardRef){
     if(want!==which)return;
     try{sessionStorage.removeItem(DIR_OPEN_KEY);}catch(_){}
     fromLink.current=true;
-    const t=setTimeout(()=>{
-      const el=cardRef.current;
-      if(el){try{el.scrollIntoView({block:"center"});}catch(_){}}
-      openSheet();
-    },250);
-    return()=>clearTimeout(t);
+    openSheet();
+    const el=cardRef.current;
+    if(el){try{el.scrollIntoView({block:"center"});}catch(_){}}
   },[]);
+  useEffect(()=>{
+    if(!closing||!fromLink.current)return;
+    const el=cardRef.current;
+    if(el){try{el.scrollIntoView({block:"center"});}catch(_){}}
+  },[closing]);
   useEffect(()=>{
     if(open){wasOpen.current=true;return;}
     if(!wasOpen.current)return;
@@ -16451,10 +16455,6 @@ function useDirDeepLink(which,open,openSheet,cardRef){
     fromLink.current=false;
     const el=cardRef.current;
     if(!el)return;
-    // Dashboard sections can finish loading while the sheet is up and move the card,
-    // so re-centre it only if it ended up off screen.
-    const r=el.getBoundingClientRect();
-    if(r.top<0||r.bottom>window.innerHeight){try{el.scrollIntoView({block:"center"});}catch(_){}}
     el.classList.remove("dir-glow");void el.offsetWidth;el.classList.add("dir-glow");
     const t=setTimeout(()=>el.classList.remove("dir-glow"),1700);
     return()=>clearTimeout(t);
@@ -16472,7 +16472,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate}){
   },[]);
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
   const cardRef=useRef(null);
-  useDirDeepLink("agd",open,openSheet,cardRef);
+  useDirDeepLink("agd",open,closing,openSheet,cardRef);
   const [tab,setTab]=useState("agencies");
   const [q,setQ]=useState("");
   const [tier,setTier]=useState("all");
@@ -17059,7 +17059,7 @@ function CastingDirectoryCard({isPremium,onNavigate}){
   },[]);
   const openSheet=useCallback(()=>{setClosing(false);setOpen(true);},[]);
   const cardRef=useRef(null);
-  useDirDeepLink("cdx",open,openSheet,cardRef);
+  useDirDeepLink("cdx",open,closing,openSheet,cardRef);
   const [tab,setTab]=useState("offices");
   const [q,setQ]=useState("");
   const [pol,setPol]=useState("all");
