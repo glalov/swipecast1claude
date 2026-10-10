@@ -3213,18 +3213,27 @@ body.sheet-push .b2t-cube{display:none;}
   .cs-sheet-dim{animation:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
 }
 .cs-sheet-dim.closing{animation:csDimOut .45s ease forwards;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}
-/* Directory sheets (agency + casting): the blur waits until the 500ms slide has landed.
-   At 200ms it re-blurred the page every frame while the page was still moving under it,
-   which showed as a hitch halfway through the slide. .instant is the dashboard copy of a
-   sheet that was already slid in on the directory page: it appears already in place. */
-.cs-sheet-dim.tad-dim:not(.closing){animation:csDimIn .45s ease,csBlurIn .3s ease .5s both;}
-.cs-sheet-dim.tad-dim.instant:not(.closing){animation:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
+/* Directory sheets (agency + casting). The blur fades in WITH the slide, same 500ms and
+   easing, so the slide, dim and blur read as one motion. It only covers .tad-blur, the
+   strip left of where the sheet lands (right: the sheet width), not the whole screen:
+   the rest ends up under the sheet, and blurring the full viewport every frame while
+   the page moves under it is what made the slide stutter. Fading opacity on a fixed
+   radius, not animating the radius. The tint (.tad-dim) carries no blur of its own.
+   .instant is the dashboard copy of a sheet that already slid in on the directory page:
+   it appears in place, fully blurred. At 1024px and below the sheet is full width, so
+   there is nothing to blur and the strip is not drawn. */
+@keyframes tadFadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes tadFadeOut{from{opacity:1;}to{opacity:0;}}
+.tad-blur{position:fixed;left:0;top:var(--site-top-h,56px);bottom:0;right:min(1500px,80%);z-index:114;pointer-events:none;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:tadFadeIn .5s cubic-bezier(.3,.7,.25,1) both;}
+.tad-blur.closing{animation:tadFadeOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
+.cs-sheet-dim.tad-dim:not(.closing){animation:tadFadeIn .5s cubic-bezier(.3,.7,.25,1) both;-webkit-backdrop-filter:none;backdrop-filter:none;}
+.cs-sheet-dim.tad-dim.closing{animation:tadFadeOut .46s cubic-bezier(.3,.7,.25,1) forwards;}
+.tad-blur.instant:not(.closing),.cs-sheet-dim.tad-dim.instant:not(.closing){animation:none;}
 .tad-sheet.instant:not(.closing){animation:none;}
-@media(max-width:768px){
-  .cs-sheet-dim.tad-dim:not(.closing){animation:csDimIn .45s ease;}
-  .cs-sheet-dim.tad-dim.instant:not(.closing){animation:none;-webkit-backdrop-filter:none;backdrop-filter:none;}
-}
-@media(prefers-reduced-motion:reduce){.cs-sheet-dim.tad-dim:not(.closing){animation:none;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}}
+@media(max-width:1024px){.tad-blur{display:none;}}
+@media(max-width:768px){.cs-sheet-dim.tad-dim:not(.closing){background:rgba(18,18,28,.42);}}
+@media(prefers-reduced-motion:reduce){.tad-blur,.tad-blur.closing,.cs-sheet-dim.tad-dim:not(.closing),.cs-sheet-dim.tad-dim.closing{animation:none;}}
 /* Enters from the RIGHT and pushes the page left, same gesture as the agency directory
    sheet — see the body.sheet-push block and the caa.com note above .tad-sheet. */
 .cs-sheet{position:fixed;right:0;left:auto;bottom:0;top:var(--site-top-h,56px);width:min(1500px,75%);background:var(--bg);z-index:115;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:-18px 0 48px rgba(26,26,46,.34);will-change:transform;animation:csSheetIn .5s cubic-bezier(.3,.7,.25,1);}
@@ -16678,6 +16687,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
         the push transforms <main>, so inside <main> it would be dragged along by the
         very transform it is supposed to sit still against. */}
     {open&&ReactDOM.createPortal(<>
+      <div className={"tad-blur"+(instant?" instant":"")+(closing?" closing":"")} aria-hidden="true"/>
       <div className={"cs-sheet-dim tad-dim"+(instant?" instant":"")+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
       <div className={"tad-sheet"+(instant?" instant":"")+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Talent Agency and Management Directory">
           <div className="tad-head">
@@ -17246,6 +17256,7 @@ function CastingDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
     </div>
 
     {open&&ReactDOM.createPortal(<>
+      <div className={"tad-blur"+(instant?" instant":"")+(closing?" closing":"")} aria-hidden="true"/>
       <div className={"cs-sheet-dim tad-dim"+(instant?" instant":"")+(closing?" closing":"")} onClick={closeSheet} aria-hidden="true"/>
       <div className={"tad-sheet"+(instant?" instant":"")+(closing?" closing":"")} role="dialog" aria-modal="true" aria-label="Casting Companies Directory">
           <div className="tad-head">
