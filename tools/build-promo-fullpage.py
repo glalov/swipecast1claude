@@ -48,7 +48,7 @@ PALETTES = {
 
 COPY = {
     "obsession": dict(
-        title="The slow-burn is having a year. Three roles are open.",
+        title="Can you do quiet dread? These paid roles need it.",
         preheader="Paid work, real casting directors, and nothing behind a paywall.",
         slot="Now casting",
         # Owner's pick 2026-09-25: the bed shot, both faces visible.

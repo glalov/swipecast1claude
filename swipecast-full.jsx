@@ -46012,7 +46012,7 @@ function AdminMemberAnnounce({session,SUPA}){
 const PROMO_TEMPLATES=[
   {id:"fullpage-obsession",file:"/email/promo-fullpage-obsession.html",name:"Full Page · Obsession",
    blurb:"Upsell-style full width, Navy Dawn. Obsession bed still, wide casting rows, dark guarantee band.",
-   subject:"The slow-burn is having a year. Three roles are open.",
+   subject:"Can you do quiet dread? These paid roles need it.",
    bg:"#33355A",fg:"#EAC080",mark:"CASTSLATE"},
   {id:"fullpage-backrooms",file:"/email/promo-fullpage-backrooms.html",name:"Full Page · Backrooms",
    blurb:"Upsell-style full width, Sage & Clay. Backrooms still, wide casting rows, dark guarantee band.",
