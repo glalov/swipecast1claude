@@ -2996,7 +2996,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    open with a small bounce, a gold glow with slowly turning rays comes up behind it, and
    a "Unlocked" tag appears above the heading. Free members keep the closed swinging
    lock (.agd-key). Transform and opacity only. */
-.agd-ul{position:relative;width:110px;height:104px;display:grid;place-items:center;margin-bottom:8px;}
+.agd-ul{position:relative;width:110px;height:96px;flex-shrink:0;display:grid;place-items:center;margin-bottom:6px;}
 .agd-ul svg{width:64px;height:76px;overflow:visible;position:relative;z-index:2;filter:drop-shadow(0 7px 12px rgba(26,26,46,.22));}
 .agd-ul .ul-sh,.agd-ul .ul-key{transform-box:fill-box;}
 .agd-ul .ul-pw{display:block;}
