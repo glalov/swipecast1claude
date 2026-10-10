@@ -9913,13 +9913,19 @@ function ManagerModePage({onNavigate,session,myProfile}){
             </div>
           </div>
           <div className="mm-premium-pill" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(240,184,96,0.1)",border:"1px solid rgba(240,184,96,0.3)",padding:"6px 16px",borderRadius:100,fontSize:11,color:"#FFE6C2",fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginBottom:24}}>
-            <span className="mm-premium-pill-dot" style={{width:6,height:6,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 10px #F0B860"}}/>Premium Feature
+            <span className="mm-premium-pill-dot" style={{width:6,height:6,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 10px #F0B860"}}/>{isPremium?"Active on your Premium":"Premium Feature"}
           </div>
           <h1 style={{fontWeight:800,fontSize:"clamp(30px,4.5vw,54px)",lineHeight:1.07,letterSpacing:-1.8,marginBottom:18,color:"#fff"}}>CastSlate becomes your talent manager before you have a talent manager.</h1>
           <p style={{fontSize:"clamp(15px,2vw,19px)",lineHeight:1.65,color:"rgba(255,255,255,0.72)",marginBottom:32,maxWidth:520}}>CastSlate doesn't just help actors find auditions. It helps actors become more castable.</p>
           <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-            <button className="mm-glass-btn" onClick={()=>onNavigate("membership")}>Unlock Manager Mode<Tri/></button>
-            <button className="mm-outline-btn" onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
+            {/* Premium members already have it: their check-ins arrive in the Inbox. */}
+            {isPremium?<>
+              <button className="mm-glass-btn" onClick={()=>onNavigate("inbox")}>Open my Inbox<Tri/></button>
+              <button className="mm-outline-btn" onClick={()=>onNavigate("talent-dashboard")}>Go to my Dashboard</button>
+            </>:<>
+              <button className="mm-glass-btn" onClick={()=>onNavigate("membership")}>Unlock Manager Mode<Tri/></button>
+              <button className="mm-outline-btn" onClick={()=>onNavigate("pricing")}>See Premium Plans</button>
+            </>}
           </div>
           <div style={{display:"flex",gap:20,marginTop:24,flexWrap:"wrap"}}>
             {["Monthly career check-ins","Profile guidance","One task per month"].map(f=>(
@@ -10068,14 +10074,18 @@ function ManagerModePage({onNavigate,session,myProfile}){
         the six checks was dropped. Styles: .mm-end* next to .mm-bc in the global CSS. */}
     <section className="mm-end">
       <div className="mm-end-logo"><LogoMark/></div>
-      <span className="mm-end-tag"><i/>Included With Premium</span>
-      <h2>Manager Mode is included with<br className="mm-end-br"/> CastSlate Premium.</h2>
+      <span className="mm-end-tag"><i/>{isPremium?"Active on your account":"Included With Premium"}</span>
+      {isPremium
+        ?<h2>Manager Mode is on<br className="mm-end-br"/> for your account.</h2>
+        :<h2>Manager Mode is included with<br className="mm-end-br"/> CastSlate Premium.</h2>}
       <div className="mm-end-checks">
         {["Monthly career check-ins","Profile improvement notes","One focused task a month","Industry event suggestions","Actor Business Card + QR code"].map(f=>(
           <div key={f}><Ico n="check" s={20}/>{f}</div>
         ))}
       </div>
-      <button className="mm-end-btn" onClick={()=>onNavigate("membership")}>Upgrade to Premium<Tri/></button>
+      {isPremium
+        ?<button className="mm-end-btn" onClick={()=>onNavigate("inbox")}>Open my Inbox<Tri/></button>
+        :<button className="mm-end-btn" onClick={()=>onNavigate("membership")}>Upgrade to Premium<Tri/></button>}
     </section>
 
     {/* The Manager Mode / Business Card / event-suggestion disclaimer that used
@@ -10602,8 +10612,8 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           </div>
         ))}
         <div className="agd-lock">
-          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>
-          <h4>650+ companies unlock with Premium</h4>
+          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">{isPremium?"🔓":"🔒"}</span></div>
+          <h4>{isPremium?"All 650+ companies are unlocked for you":"650+ companies unlock with Premium"}</h4>
           <p>Names, office addresses, websites and submission routes.</p>
           <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
         </div>
@@ -10659,10 +10669,10 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         </div>
       </section>
       <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">
-        <h2 className="agd-h2">The list opens the moment you upgrade.</h2>
+        <h2 className="agd-h2">{isPremium?"It's all included in your Premium.":"The list opens the moment you upgrade."}</h2>
         <p>650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York, plus {CASTING_OFFICES.length} active casting offices, your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $17.99/mo"}</button>
-        <div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>
+        {!isPremium&&<div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>}
       </div></section>
     </div>
 
@@ -17510,8 +17520,8 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
           </div>
         ))}
         <div className="agd-lock">
-          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>
-          <h4>{n} active casting offices unlock with Premium</h4>
+          <div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">{isPremium?"🔓":"🔒"}</span></div>
+          <h4>{isPremium?`All ${n} active casting offices are unlocked for you`:`${n} active casting offices unlock with Premium`}</h4>
           <p>Names, submission policies, websites and addresses.</p>
           <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
         </div>
@@ -17561,10 +17571,10 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
         </div>
       </section>
       <section className="agd-blk" style={{paddingTop:0}}><div className="agd-final">
-        <h2 className="agd-h2">The list opens the moment you upgrade.</h2>
+        <h2 className="agd-h2">{isPremium?"It's all included in your Premium.":"The list opens the moment you upgrade."}</h2>
         <p>{n} active casting offices across Los Angeles and New York, plus 650+ talent agencies and management companies, your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $17.99/mo"}</button>
-        <div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>
+        {!isPremium&&<div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>}
       </div></section>
     </div>
 
@@ -18404,9 +18414,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             {nextStep?(
               <div onClick={slideToEditor} style={box({bd:"#CFE3DF",click:true})}>
                 {lab("Your next step","var(--teal)")}
-                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{nextStep.label}{nextStep.premium?" (Premium)":""}</div>
+                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{nextStep.label}{nextStep.premium&&!isPremium?" (Premium)":""}</div>
                 <div style={{fontSize:11.5,color:"var(--t3)"}}>a quick win for your profile</div>
-                {cta(nextStep.premium?"Upgrade →":"Add now →")}
+                {cta(nextStep.premium&&!isPremium?"Upgrade →":"Add now →")}
               </div>
             ):(
               <div style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)"})}>
