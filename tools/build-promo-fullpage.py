@@ -56,7 +56,7 @@ COPY = {
         alt="Two people sitting up in bed, she rests her head on his shoulder",
         film="Obsession", year="2026",
         kicker="This week&rsquo;s call sheet",
-        headline="The slow-burn is having a year. <br/>So audition like it.",
+        headline="The quietest actor in the room <br/>gets the part.",
         lede="Quiet dread, long takes, one unbearable close-up &mdash; it&rsquo;s the mode everything is shot in right now. These paid projects opened on CastSlate this week. All of them are free to submit to, and a real person reads every profile that comes in.",
     ),
     "backrooms": dict(
