@@ -2297,8 +2297,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .bjs-go{order:-1;flex:none;font:800 13.5px 'DM Sans',sans-serif;background:#1A1A2E;color:#fff;border:0;border-radius:9px;padding:7px 16px;cursor:pointer;white-space:nowrap;}
 .bjs-go:hover{background:#2D2D44;}
 .bjs-ph{margin-left:36px;flex:none;align-self:stretch;width:168px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
-.bjs-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(20,20,34,.6);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;opacity:.85;}
-.bjs-x:hover{opacity:1;}
+.bjs-x{position:absolute;top:5px;right:5px;width:26px;height:26px;border:0;border-radius:50%;background:#fff;color:#1A1A2E;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.35);}
+.bjs-x:hover{background:#F2ECE0;}
 @media(max-width:900px){
   .bjs{padding:0;gap:0;justify-content:flex-start;}
   .bjs-l{flex:1 1 auto;gap:0;justify-content:space-evenly;}
@@ -2307,7 +2307,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .bjs-txt{font-size:13px;white-space:nowrap;line-height:1.15;flex:none;}
   .bjs-go{order:0;font-size:12.5px;padding:6px 10px;}
   .bjs-ph{margin-left:0;width:132px;background-image:url(/assets/banner/casting-team-stripe-m.jpg);}
-  .bjs-x{top:3px;right:3px;width:20px;height:20px;}
+  .bjs-x{top:4px;right:4px;width:24px;height:24px;}
 }
 .logo{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--t1);}
 /* Fonts: loaded once by the head link in build-html.py (the duplicate CSS imports here re-fetched them mid-animation on slow wifi). */
@@ -6587,11 +6587,13 @@ function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
   const close=()=>{try{sessionStorage.setItem("cs_bjs_off","1");}catch(_){}setOff(true);};
   return(<div className="bjs">
     <div className="bjs-l">
-      <div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams<br/>are looking.</span></div>
+      {mode==="join"
+        ?<div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams<br/>are looking.</span></div>
+        :<div className="bjs-txt"><span className="bjs-full">Free accounts get one submission. <em>Premium members apply to every role.</em></span><span className="bjs-short">Apply to every<br/>role you fit.</span></div>}
       <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Get Found":"Go Premium"}</button>
     </div>
     <div className="bjs-ph" role="img" aria-label="A casting team watching an actor through a camera"></div>
-    <button className="bjs-x" aria-label="Close" onClick={close}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <button className="bjs-x" aria-label="Close" onClick={close}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>);
 }
 
