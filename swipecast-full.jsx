@@ -2374,6 +2374,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    where a hug-width primary sits stranded in an empty row. */
 .apply-cta{width:100%;max-width:190px;display:inline-flex;align-items:center;justify-content:center;padding:13px 24px;font-size:16px;font-weight:700;letter-spacing:-.2px;line-height:1.2;border-radius:9px;}
 .btn-amber-hover{transition:background .2s,color .2s,border-color .2s;}
+.upl-dots i{font-style:normal;display:inline-block;margin-left:3px;opacity:0;}
+.upl-dots i:nth-child(1){animation:uplD1 1.8s infinite;}.upl-dots i:nth-child(2){animation:uplD2 1.8s infinite;}.upl-dots i:nth-child(3){animation:uplD3 1.8s infinite;}
+@keyframes uplD1{0%,14%{opacity:0}15%,84%{opacity:1}85%,100%{opacity:0}}
+@keyframes uplD2{0%,34%{opacity:0}35%,84%{opacity:1}85%,100%{opacity:0}}
+@keyframes uplD3{0%,54%{opacity:0}55%,84%{opacity:1}85%,100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.upl-dots i{animation:none!important;opacity:1;}}
 .btn-amber-hover:hover{background:var(--amber)!important;color:#fff!important;border-color:var(--amber)!important;}
 .btn-sm{padding:8px 16px;font-size:12px;border-radius:6px;}
 .social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:0.1px;}
@@ -27625,9 +27631,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               <label className="label">Video Title (optional)</label>
               <input id="video-title-input" className="input" placeholder="e.g. Drama Reel 2025" style={{marginBottom:8}}/>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-            <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-block"}}>
-              {videoUploading?"Uploading…":"+ Upload Video"}
+            <div style={{display:"flex",alignItems:"stretch",gap:12,flexWrap:"wrap"}}>
+            <label className="btn-p" style={{cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",minHeight:44,padding:"0 22px",fontSize:14.5,minWidth:150}}>
+              {videoUploading?<span>Uploading<span className="upl-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></span>:"+ Upload Video"}
               <input type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" style={{display:"none"}} disabled={videoUploading} onChange={async e=>{
                 const file=e.target.files?.[0];if(!file)return;
                 if(file.size>100*1024*1024){showErr("Video must be under 100 MB.");return;}
