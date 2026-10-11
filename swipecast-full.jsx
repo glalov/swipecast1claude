@@ -27625,6 +27625,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               <label className="label">Video Title (optional)</label>
               <input id="video-title-input" className="input" placeholder="e.g. Drama Reel 2025" style={{marginBottom:8}}/>
             </div>
+            <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
             <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-block"}}>
               {videoUploading?"Uploading…":"+ Upload Video"}
               <input type="file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm" style={{display:"none"}} disabled={videoUploading} onChange={async e=>{
@@ -27648,6 +27649,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                 finally{setVideoUploading(false);e.target.value="";}
               }}/>
             </label>
+            {videoUploading&&<div role="status" style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:"var(--s2)",border:"1px solid var(--bdr)",borderLeft:"3px solid var(--amber)",borderRadius:8,fontSize:12.5,lineHeight:1.4,color:"var(--t2)",maxWidth:420}}>
+              <Ico n="clock" s={15}/><span>Uploads can take up to 2 minutes, depending on your wifi. Please keep this page open.</span>
+            </div>}
+            </div>
         </>
       )}
     </div>}
