@@ -33,6 +33,7 @@
     { "source": "/tapelink", "destination": "/tapelink.html" },
     { "source": "/agency-directory", "destination": "/agency-directory.html" },
     { "source": "/casting-directory", "destination": "/casting-directory.html" },
+    { "source": "/school-directory", "destination": "/school-directory.html" },
     { "source": "/login", "destination": "/login.html" },
     { "source": "/register-talent", "destination": "/register-talent.html" },
     { "source": "/register-cd", "destination": "/register-cd.html" },

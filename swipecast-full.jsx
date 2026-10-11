@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.directories':'Directories',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $10.75/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), and more.',
@@ -335,7 +335,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.directories':'Directorios',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium (desde $10.75/mes) para postulaciones ilimitadas y más.',
@@ -5691,6 +5691,215 @@ button:disabled:hover .cs-tri{transform:none;}
 @media(max-width:560px){
   .mm-card-outer{border-radius:14px !important;}
 }
+.fsd-band{position:relative;width:100vw;left:50%;margin-left:-50vw;}
+
+.fsd-inside{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:12px 30px;max-width:1080px;margin:0 auto;}
+.fsd-in{display:inline-flex;align-items:baseline;gap:8px;background:none;border:0;padding:4px 2px;cursor:pointer;color:var(--t1);border-bottom:1.5px solid transparent;transition:border-color .2s,color .2s;}
+.fsd-in b{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:clamp(24px,2.6vw,34px);line-height:1;color:#C8761B;font-variant-numeric:tabular-nums;display:inline-block;text-align:right;}
+.fsd-in span{font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:clamp(16px,1.7vw,21px);color:var(--t1);opacity:.85;}
+.fsd-in:hover{border-bottom-color:#EAC080;}.fsd-in:hover span{opacity:1;}
+.fsd-in:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
+.fsd-in-foot{text-align:center;margin:18px auto 0;font:600 13px 'DM Sans',sans-serif;color:var(--t3);}
+.fsd-in-foot b{color:var(--t1);font-variant-numeric:tabular-nums;}
+@media(max-width:560px){.fsd-inside{gap:8px 18px;}}
+.fsd-names{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:14px 34px;max-width:1040px;margin:0 auto;}
+.fsd-names span{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:clamp(19px,2.3vw,27px);letter-spacing:-.01em;color:var(--t1);opacity:.82;white-space:nowrap;}
+.fsd-more{display:flex;justify-content:center;margin:22px 0 0;}
+.fsd-ben{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px;}
+@media(max-width:900px){.fsd-ben{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:560px){.fsd-ben{grid-template-columns:minmax(0,1fr);}}
+.fsd-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 4px;}
+.fsd-tabs button{display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--bdr);background:var(--s1);color:var(--t1);font:800 15px 'DM Sans',sans-serif;padding:12px 18px;border-radius:12px;cursor:pointer;transition:border-color .15s,background .15s;}
+.fsd-tabs button .n{font-size:12px;font-weight:800;background:var(--s2);border-radius:99px;padding:2px 8px;color:var(--t2);}
+.fsd-tabs button.on{background:#1A1A2E;border-color:#1A1A2E;color:#fff;}
+.fsd-tabs button.on .n{background:rgba(255,255,255,.16);color:#F0B860;}
+.fsd-tabs i{font-size:18px;}
+.fsd-techs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%;}
+.fsd-techs span{font-size:12.5px;font-weight:800;color:var(--t2);margin-right:2px;}
+.fsd-techs button{border:1px solid var(--bdr);background:var(--bg);font:700 13px 'DM Sans',sans-serif;color:var(--t2);padding:6px 11px;border-radius:99px;cursor:pointer;}
+.fsd-techs button.on{background:#2A8472;border-color:#2A8472;color:#fff;}
+.fsd-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.fsd-techs button b{font-weight:800;opacity:.55;margin-left:3px;}
+.fsd-techs button.on b{opacity:.85;}
+.fsd-techs button:disabled{opacity:.35;cursor:default;}
+.fsd-moretopics{border:0;background:none;color:#206557;font:800 13px 'DM Sans',sans-serif;cursor:pointer;padding:2px 0;}
+.fsd-lockl{display:inline-flex;align-items:center;gap:6px;border:1px dashed rgba(200,118,27,.55);background:rgba(232,144,42,.08);color:#A55F0F;font:800 12.5px 'DM Sans',sans-serif;padding:6px 10px;border-radius:8px;cursor:pointer;}
+.fsd-locked{position:relative;border:1px solid var(--bdr);border-radius:11px;padding:10px 11px;background:var(--bg);cursor:pointer;overflow:hidden;}
+.fsd-lk-in{filter:blur(3.5px);opacity:.7;pointer-events:none;display:flex;flex-direction:column;gap:6px;}
+.fsd-lk-in .lb2{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
+.fsd-lk-in .bar{display:block;height:11px;border-radius:4px;background:var(--t3);opacity:.35;}
+.fsd-chips span.ghost{height:20px;background:var(--s3);}
+.fsd-lk-cta{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(180deg,rgba(250,246,238,.35),rgba(250,246,238,.85));font-size:12px;font-weight:700;color:var(--t2);text-align:center;}
+.fsd-lk-cta i{font-size:17px;color:#C8761B;}
+.fsd-lk-cta b{font-size:12.5px;font-weight:800;color:#A55F0F;}
+.fsd-locked:hover .fsd-lk-cta b{text-decoration:underline;}
+.fsd-band2{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:22px 0 4px;padding:22px 24px;border-radius:16px;background:radial-gradient(600px 220px at 85% 0,rgba(240,184,96,.18),transparent),#1A1A2E;color:#fff;}
+.fsd-b2-l{flex:1 1 380px;min-width:0;}
+.fsd-b2-k{display:inline-flex;align-items:center;gap:6px;color:#F0B860;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.fsd-band2 h4{margin:0 0 6px;font-size:21px;font-weight:800;letter-spacing:-.4px;color:#fff;}
+.fsd-band2 p{margin:0;font-size:14px;line-height:1.6;color:#d6d6e2;max-width:620px;}
+.fsd-b2-r{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.fsd-b2-r span{font-size:12px;color:#b9b9c9;}
+.fsd-modal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:16px;}
+.fsd-modal.on{display:flex;}
+.fsd-mdim{position:absolute;inset:0;background:rgba(17,17,36,.55);}
+.fsd-mbox{position:relative;width:min(460px,100%);background:var(--s1);border-radius:18px;padding:26px 24px 20px;box-shadow:0 30px 80px -20px rgba(0,0,0,.5);text-align:center;animation:fsdPop .28s cubic-bezier(.3,.7,.25,1);}
+@keyframes fsdPop{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.fsd-mbox h3{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.5px;}
+.fsd-mbox p{margin:0 0 12px;color:var(--t2);font-size:14px;}
+.fsd-mlist{list-style:none;padding:0;margin:0 0 16px;text-align:left;display:grid;gap:8px;}
+.fsd-mlist li{display:flex;gap:8px;font-size:13.5px;line-height:1.45;color:var(--t1);}
+.fsd-mlist i{color:#2A8472;font-size:16px;margin-top:1px;}
+.fsd-mx{position:absolute;top:10px;right:10px;border:0;background:var(--s2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;}
+.fsd-msub{font-size:12px;color:var(--t3);margin-top:8px;}
+.fsd-rname{height:17px;vertical-align:middle;}
+.fsd-unl{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#206557;background:#E6F2EF;border-radius:6px;padding:3px 7px;}
+.tad-row.fsd-justopen{border-color:#2A8472;box-shadow:0 0 0 3px rgba(42,132,114,.12);}
+.fsd-unlockbtn{display:flex;align-items:center;gap:10px;width:100%;border:1.5px dashed rgba(200,118,27,.6);background:rgba(232,144,42,.07);border-radius:11px;padding:10px 12px;cursor:pointer;text-align:left;font-family:inherit;transition:background .15s;}
+.fsd-unlockbtn:hover{background:rgba(232,144,42,.14);}
+.fsd-unlockbtn>i{font-size:20px;color:#C8761B;flex:0 0 auto;}
+.fsd-unlockbtn .t{display:flex;flex-direction:column;gap:1px;}
+.fsd-unlockbtn b{font-size:13px;font-weight:800;color:#8a4f0e;}
+.fsd-unlockbtn span span,.fsd-unlockbtn .t span{font-size:11.5px;color:var(--t2);font-weight:600;}
+.fsd-match{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#1A1A2E;color:#fff;border-radius:13px;padding:13px 16px;margin:8px 0 6px;}
+.fsd-match b{font-size:17px;font-weight:800;margin-right:6px;}
+.fsd-match>div{font-size:14px;color:#dcdcea;}
+.fsd-match>div span{display:block;font-size:12px;color:#F0B860;font-weight:700;margin-top:2px;}
+.fsd-match .agd-btn{padding:10px 16px;font-size:13.5px;}
+.fsd-left{font-size:13px;font-weight:800;color:#EAC080;}
+.fsd-toast{position:fixed;left:50%;bottom:74px;transform:translate(-50%,20px);opacity:0;z-index:320;background:#1A1A2E;color:#fff;font:700 14px 'DM Sans',sans-serif;padding:11px 18px;border-radius:11px;box-shadow:0 14px 34px -12px rgba(0,0,0,.5);transition:all .25s;pointer-events:none;}
+.fsd-toast.on{opacity:1;transform:translate(-50%,0);}
+.fsd-gift{width:64px;height:64px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:rgba(234,192,128,.25);color:#C8761B;font-size:32px;animation:fsdGift 2.4s ease-in-out infinite;}
+@keyframes fsdGift{0%,100%{transform:rotate(0)}10%{transform:rotate(-10deg)}20%{transform:rotate(8deg)}30%{transform:rotate(0)}}
+.fsd-chips span.lk{display:inline-flex;align-items:center;gap:3px;background:rgba(232,144,42,.12);color:#A55F0F;}
+.agdc.fsdc .bd{padding:14px 14px 12px;display:flex;flex-direction:column;gap:7px;min-width:0;}
+.agdc.fsdc .kc{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#C8761B;}
+.agdc.fsdc .nmr{display:flex;align-items:center;gap:7px;}
+.agdc.fsdc .nmr i{font-size:15px;color:#C8761B;}
+.agdc.fsdc .chips{display:flex;flex-wrap:wrap;gap:4px;}
+.agdc.fsdc .chips span{font-size:10px;font-weight:700;color:#3A322A;background:#F2ECE0;border-radius:5px;padding:2px 6px;white-space:nowrap;}
+.agdc.fsdc .chips span.lk{background:rgba(232,144,42,.14);color:#A55F0F;display:inline-flex;align-items:center;gap:2px;}
+.agdc.fsdc .row{display:flex;align-items:center;gap:8px;}
+.agdc.fsdc .lab{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6b6258;}
+.agdc.fsdc .fill{flex:1;}
+.agdc.fsdc .ftr{display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid #EEE7DA;padding-top:7px;}
+.agdc.fsdc .ftr span{font-size:9.5px;font-weight:700;color:#146B31;display:inline-flex;align-items:center;gap:3px;}
+.agdc.fsdc .ftr b{font-size:10.5px;font-weight:800;color:#1A1A2E;background:#EAC080;border-radius:6px;padding:3px 9px;}
+.fsd-chips span.hit{background:#2A8472;color:#fff;}
+.fsd-chips span{font-size:11.5px;font-weight:700;color:var(--t2);background:var(--s2);border-radius:6px;padding:3px 8px;}
+
+.srp-wrap{position:relative;max-width:520px;width:100%;justify-self:end;align-self:start;margin-top:30px;padding:0 0 28px;}
+.srp{position:relative;z-index:2;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);box-shadow:0 30px 70px -30px rgba(36,31,25,.35),0 2px 6px rgba(36,31,25,.06);opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease;}
+.srp-wrap.show .srp{opacity:1;transform:none;}
+.srp-top{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--bdr);background:var(--s2);}
+.srp-dots{display:flex;gap:5px;}.srp-dots i{width:8px;height:8px;border-radius:50%;background:#D9CFBD;}
+.srp-url{font:600 11.5px 'DM Sans',sans-serif;color:var(--t3);display:inline-flex;align-items:center;gap:5px;}.srp-url i{font-size:11px;}
+.srp-bd{padding:16px 16px 14px;}
+.srp-q{display:flex;align-items:center;gap:9px;height:44px;padding:0 14px;border:1.5px solid var(--bdr);border-radius:11px;background:#fff;font:600 15px 'DM Sans',sans-serif;color:var(--t1);}
+.srp-q>i{font-size:17px;color:var(--t3);}
+.srp-caret{width:2px;height:18px;background:var(--teal);margin-left:-6px;animation:srpBlink 1s steps(1) infinite;}
+@keyframes srpBlink{50%{opacity:0;}}
+.srp-chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0;}
+.srp-chips span{font:700 11.5px 'DM Sans',sans-serif;color:var(--t2);background:var(--s2);border:1px solid var(--bdr);border-radius:999px;padding:5px 10px;transition:background .25s,color .25s,border-color .25s;}
+.srp-chips span.on{background:#EAC080;border-color:#D9A858;color:#1A1A2E;}
+.srp-count{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;margin:14px 0 10px;padding-top:12px;border-top:1px solid var(--bdr);font:600 13px 'DM Sans',sans-serif;color:var(--t2);}
+.srp-count b{font:800 24px/1 'DM Sans',sans-serif;color:var(--t1);font-variant-numeric:tabular-nums;min-width:2ch;}
+.srp-count em{font-style:normal;font-size:12px;color:#A55F0F;}
+.srp-count em:not(:empty)::before{content:"· ";color:var(--t3);}
+.srp-rows{display:flex;flex-direction:column;gap:8px;min-height:288px;}
+.srp-row{padding:11px 13px;border:1px solid var(--bdr);border-radius:12px;background:#fff;opacity:0;transform:translateY(12px);transition:opacity .4s ease,transform .4s ease;}
+.srp-rows.in .srp-row{opacity:1;transform:none;}
+.srp-rows.in .srp-row:nth-child(2){transition-delay:.12s;}.srp-rows.in .srp-row:nth-child(3){transition-delay:.24s;}
+.srp-k{display:flex;justify-content:space-between;gap:10px;font:800 9.5px 'DM Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#C8761B;min-width:0;}
+.srp-k em{font-style:normal;letter-spacing:0;text-transform:none;font-weight:600;font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;gap:3px;}
+.srp-nm{display:flex;align-items:center;gap:7px;margin:6px 0 7px;min-height:20px;min-width:0;}
+.srp-nm b{font:800 14.5px/1.25 'DM Sans',sans-serif;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.srp-nm .agd-redact{height:14px;max-width:70%;}.srp-nm i{font-size:14px;color:#C8761B;}
+.srp-ch{display:flex;flex-wrap:wrap;gap:4px;}
+.srp-ch span{font:700 10.5px 'DM Sans',sans-serif;color:var(--t2);background:var(--s2);border-radius:5px;padding:2px 7px;}
+.srp-ch span.hit{background:rgba(234,192,128,.45);color:#1A1A2E;}
+.srp-ph{display:none;}
+
+.srp-wrap[data-skin="b"] .srp{background:#1A1A2E;border-color:#2D2D44;box-shadow:0 30px 70px -28px rgba(26,26,46,.6);}
+.srp-wrap[data-skin="b"] .srp-top{background:#232338;border-color:#2D2D44;}
+.srp-wrap[data-skin="b"] .srp-dots i{background:#3A3A55;}
+.srp-wrap[data-skin="b"] .srp-url{color:#A9A6B8;}
+.srp-wrap[data-skin="b"] .srp-q{background:#232338;border-color:#3A3A55;color:#F4EEE3;}
+.srp-wrap[data-skin="b"] .srp-q>i{color:#A9A6B8;}
+.srp-wrap[data-skin="b"] .srp-caret{background:#EAC080;}
+.srp-wrap[data-skin="b"] .srp-chips span{background:transparent;border-color:#3A3A55;color:#CFCBDA;}
+.srp-wrap[data-skin="b"] .srp-chips span.on{background:#EAC080;border-color:#EAC080;color:#1A1A2E;}
+.srp-wrap[data-skin="b"] .srp-count{border-color:#2D2D44;color:#CFCBDA;}
+.srp-wrap[data-skin="b"] .srp-count b{color:#fff;}
+.srp-wrap[data-skin="b"] .srp-count em{color:#EAC080;}
+.srp-wrap[data-skin="b"] .srp-row{background:rgba(255,255,255,.04);border-color:#2D2D44;}
+.srp-wrap[data-skin="b"] .srp-k{color:#EAC080;}
+.srp-wrap[data-skin="b"] .srp-k em{color:#A9A6B8;}
+.srp-wrap[data-skin="b"] .srp-nm b{color:#fff;}
+.srp-wrap[data-skin="b"] .srp-nm .agd-redact{background:linear-gradient(90deg,#3A3A55,#4A4A66);filter:none;}
+.srp-wrap[data-skin="b"] .srp-nm i{color:#EAC080;}
+.srp-wrap[data-skin="b"] .srp-ch span{background:#2D2D44;color:#CFCBDA;}
+.srp-wrap[data-skin="b"] .srp-ch span.hit{background:rgba(234,192,128,.22);color:#F3D9A8;}
+
+.srp-wrap[data-skin="c"]{margin-top:0;padding:0 0 20px 0;}
+.srp-wrap[data-skin="c"] .srp-ph{display:block;position:absolute;z-index:1;top:0;right:-18px;width:78%;height:300px;object-fit:cover;object-position:58% 45%;border-radius:18px;transform:rotate(2.5deg);box-shadow:0 24px 50px -24px rgba(36,31,25,.45);}
+.srp-wrap[data-skin="c"] .srp{margin-right:8%;margin-left:-6%;margin-top:150px;}
+@media(max-width:1100px){.srp-wrap[data-skin="c"] .srp{margin-right:4%;margin-left:0;}}
+@media(max-width:900px){.srp-wrap{justify-self:center;max-width:560px;margin-top:0;padding:8px 0 0;}.srp-wrap[data-skin="c"]{padding-top:0;}.srp-wrap[data-skin="c"] .srp-ph{right:0;width:86%;height:220px;}.srp-wrap[data-skin="c"] .srp{margin:110px 8% 0 0;}}
+@media(max-width:480px){.srp-bd{padding:13px 12px 12px;}.srp-q{font-size:14px;height:42px;}.srp-rows{min-height:300px;}.srp-wrap[data-skin="c"] .srp{margin:96px 0 0;}}
+@media(prefers-reduced-motion:reduce){.srp,.srp-row{transition:none;}.srp-caret{animation:none;}}
+@media(max-width:560px){.srp-k{flex-direction:column;gap:4px;}.srp-k em{white-space:normal;}}
+
+.dsw{display:flex;align-items:center;gap:14px;padding:18px 0 0;min-width:0;}
+.dsw-k{font:800 10px/1 'DM Sans',sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);white-space:nowrap;}
+.dsw-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;background:var(--s2);border:1px solid var(--bdr);border-radius:12px;min-width:0;flex:1;max-width:640px;}
+.dsw-t{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 12px;border-radius:9px;text-decoration:none;color:var(--t2);transition:background .18s,color .18s;}
+.dsw-t>i{font-size:18px;flex-shrink:0;color:var(--t3);}
+.dsw-t>span{display:flex;flex-direction:column;min-width:0;}
+.dsw-t b{font:700 13px/1.2 'DM Sans',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dsw-t em{font:600 11px/1.3 'DM Sans',sans-serif;font-style:normal;color:var(--t3);display:inline-flex;align-items:center;gap:3px;}
+.dsw-t em i{font-size:11px;color:var(--amber-dk);}
+.dsw-t em.free{color:var(--teal);}
+a.dsw-t:hover{background:var(--s1);color:var(--t1);}
+.dsw-t.on{background:var(--s1);color:var(--t1);box-shadow:0 1px 3px rgba(36,31,25,.10),0 0 0 1px var(--bdr);}
+.dsw-t.on>i{color:var(--teal);}
+@media(max-width:900px){.dsw{flex-direction:column;align-items:stretch;gap:8px;padding-top:14px;}.dsw-row{max-width:none;}}
+@media(max-width:560px){.dsw-t{flex-direction:column;align-items:flex-start;gap:4px;padding:8px 9px;}.dsw-t b{font-size:12px;white-space:normal;}.dsw-t em{font-size:10.5px;}}
+#fsd-directory{scroll-margin-top:calc(var(--site-top-h,65px) + 10px);}
+#fsd-dir .tad-bar{position:static;}
+#fsd-dir .tad-rows{grid-template-columns:minmax(0,1fr);}
+#fsd-dir .tad-row>*{min-width:0;}
+#fsd-dir .tad-row{content-visibility:visible;}
+.fsd-prog{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--t2);}
+.fsd-page .tad-note,.fsd-page .fsd-prog{overflow-wrap:anywhere;}
+.fsd-links{margin-top:9px;display:flex;flex-wrap:wrap;gap:6px 16px;}
+.fsd-k-uni{background:rgba(26,26,46,.08);color:#2E2E48;}
+.fsd-k-art{background:rgba(107,62,203,.11);color:#5B32AE;}
+.fsd-k-academy{background:rgba(232,144,42,.15);color:#A55F0F;}
+.fsd-k-cc{background:rgba(42,132,114,.13);color:#206557;}
+.fsd-k-ce{background:var(--s2);color:var(--t2);}
+.fsd-casts{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#146B31;}
+.fsd-nocast{font-size:12px;font-weight:600;color:var(--t3);}
+.fsd-set{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 30px 60px -28px rgba(26,26,46,.55);background:#14110E;}
+.fsd-set>img,
+
+.fsd-room{max-width:440px;width:100%;justify-self:end;align-self:center;}
+.fsd-set .tag.tag-class i{background:#EAC080;box-shadow:0 0 8px rgba(234,192,128,.8);animation:none;}
+@media(max-width:900px){.fsd-room{justify-self:center;max-width:560px;}}
+
+.fsd-set .tag{position:absolute;left:14px;top:14px;display:inline-flex;align-items:center;gap:7px;background:rgba(12,10,8,.72);backdrop-filter:blur(6px);color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 11px;border-radius:8px;}
+.fsd-set .tag i{width:7px;height:7px;border-radius:50%;background:#E5484D;box-shadow:0 0 8px rgba(229,72,77,.8);animation:fsdRec 1.6s steps(1) infinite;}
+@keyframes fsdRec{50%{opacity:.15}}
+.fsd-set .cap{position:absolute;left:14px;right:14px;bottom:14px;background:rgba(255,253,248,.95);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;}
+.fsd-set .cap .ic{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:rgba(42,132,114,.12);color:var(--teal);font-size:18px;}
+.fsd-set .cap .ic i{margin-left:2px;}
+.fsd-set .cap b{display:block;font-size:13.5px;color:var(--t1);}
+.fsd-set .cap span{font-size:12px;color:var(--t2);}
+@media (prefers-reduced-motion:reduce){.fsd-set .tag i{animation:none;}}
+
+.fsd-vslot{position:absolute;inset:0;}
+.fsd-vslot .slv-wrap{width:100%;height:100%;border-radius:0;background-color:#5b4a40;}
+.fsd-vslot video.slv{display:block;width:100%;height:100%;object-fit:cover;}
 `;
 
 // ─── Membership plans. Single source of truth — used by MembershipPage,
@@ -7295,6 +7504,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="manager-mode">{t('footer.managerMode')}</L>
             <L to="agency-directory">Agencies Directory</L>
             <L to="casting-directory">Casting Directory</L>
+            <L to="school-directory">School Directory</L>
             {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="resources">{t('footer.resources')}</L>
           </div>
@@ -17666,6 +17876,286 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
 // ═══════════════════════════════════════════
 // PAGE: TALENT DASHBOARD — actor/talent accounts
 // ═══════════════════════════════════════════
+// ─── Acting & Film School Directory: directory logic ───────────────────────────
+// Plain DOM code (ported from the approved demo) mounted into SchoolDirectoryPage.
+// Data comes ONLY from the get_school_directory() RPC: locked rows arrive without
+// name / website / description / teachers / address, so nothing gated is ever in
+// the bundle. ctx = {data, unlock(id)->Promise<data>, go(page)}.
+function fsdMount(root,ctx){
+  const $=sel=>root.querySelector(sel);
+  const esc=v=>String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const host=w=>String(w||"").replace(/^www\./,"").split("/")[0];
+  const KIND={uni:["fsd-k-uni","building-bank","University"],art:["fsd-k-art","palette","Art & design school"],academy:["fsd-k-academy","movie","Film academy"],cc:["fsd-k-cc","school","Community college"],ce:["fsd-k-ce","certificate","Continuing education"]};
+  const KORDER=["uni","art","academy","cc","ce"];
+  const GROUPS={uni:["Universities & colleges","Four-year schools with film departments. Their graduate (MFA) programs make the most ambitious thesis films."],
+    art:["Art & design schools","Studio-based schools where film sits beside fine art, design and animation."],
+    academy:["Film academies & conservatories","Dedicated film schools, from the graduate-only AFI Conservatory to degree and certificate academies."],
+    cc:["Community colleges","Low-cost two-year programs. Students shoot lots of short films, and many transfer to the big programs above."],
+    ce:["Continuing education","Certificate programs for adults, part-time or full-time."]};
+  const AK={cons:["fsd-k-academy","star","Conservatory"],studio:["fsd-k-uni","masks-theater","Acting studio"],improv:["fsd-k-art","mood-happy","Improv & comedy"],college:["fsd-k-cc","school","College program"],youth:["fsd-k-ce","balloon","Kids & teens"],spec:["fsd-k-ce","target","Specialty"]};
+  const AORD=["cons","studio","improv","college","youth","spec"];
+  const AG={cons:["Conservatories","Full-time or intensive programs, usually one to two years, from the oldest names in actor training."],
+    studio:["Acting studios","Ongoing classes that fit around auditions and work: scene study, technique, on-camera and audition rooms."],
+    improv:["Improv & comedy","Improv, sketch and stand-up schools, many with levelled programs and performance teams."],
+    college:["College & university programs","BFA, MFA and community-college theatre training. Showcases and degrees, from Juilliard to low-cost community colleges."],
+    youth:["Kids & teens","Programs built for young actors and their parents."],
+    spec:["Specialty training","Audition and self-tape rooms, casting workshops, voice, movement, stage combat, Shakespeare and voice-over."]};
+  const TGROUPS=[["Technique",["Meisner","Method (Strasberg)","Adler","Chekhov","Hagen","Stanislavski","Practical Aesthetics","Chubbuck"]],
+   ["Classes",["Scene study","On-camera","Audition & self-tape","Improv","Sketch","Stand-up","Sitcom & comedy","Shakespeare & classical","Musical theatre","Voice & speech","Movement","Commercial","Voice-over","Stage combat"]],
+   ["Format",["Full-time program","Degree program","Kids & teens","Online classes","Free audit or trial","Private coaching"]]];
+  const TYPEF={cons:s=>s.k==="cons"||s.tags.includes("Full-time program"),studio:s=>s.k==="studio",improv:s=>s.k==="improv"||["Improv","Sketch","Stand-up"].some(t=>s.tags.includes(t)),college:s=>s.tags.includes("Degree program"),youth:s=>s.k==="youth"||s.tags.includes("Kids & teens"),spec:s=>s.k==="spec"};
+  const FREE_REVEALS=2, LIM=2, CITYN={NY:"New York",LA:"Los Angeles"};
+  const st={tab:"act",q:"",kind:"all",city:"all",lv:"all",tech:"all",castOnly:false,all:false,more:false,role:"visitor",unl:[]};
+  let ACT=[],SCHOOLS=[],ASAMPLE=[],AFEAT=[],FEAT=[],busy=false;
+  function setData(d){
+    const rows=(d&&d.rows)||[];
+    rows.forEach(s=>{s.tags=s.tags||[];s.lv=s.lv||[];});
+    ACT=rows.filter(s=>s.tab==="act"); SCHOOLS=rows.filter(s=>s.tab==="film");
+    st.role=(d&&d.role)||"visitor"; st.unl=(d&&d.unlocks)||[];
+    ASAMPLE=ACT.filter(s=>s.sample).sort((a,b)=>a.c===b.c?0:(a.c==="NY"?-1:1));
+    AFEAT=ACT.filter(s=>s.feat).sort((a,b)=>a.feat-b.feat);
+    FEAT=SCHOOLS.filter(s=>s.feat).sort((a,b)=>a.feat-b.feat);
+  }
+  const isOpen=s=>s.open===true;
+  const isRev=s=>st.unl.some(u=>u.id===s.id);
+  const left=()=>Math.max(0,FREE_REVEALS-st.unl.length);
+  const usedCity=c=>st.unl.some(u=>u.c===c);
+  const canUnlock=s=>st.role==="free"&&!isOpen(s)&&!usedCity(s.c);
+  const otherLeft=c=>{const o=c==="NY"?"LA":"NY";return usedCity(o)?"":` · your ${CITYN[o]} unlock is still free`;};
+  const lockCtaFor=(s,all)=>st.role==="visitor"?`<b>Create a free account to unlock 2 schools</b><span>one in New York, one in Los Angeles</span>`
+    :canUnlock(s)?`<b>Unlock this school</b><span>Uses your free ${CITYN[s.c]} unlock</span>`
+    :`<b>${all}</b><span>You've used your free ${CITYN[s.c]} unlock${otherLeft(s.c)}</span>`;
+  const AKL={cons:"conservatory",studio:"acting studio",improv:"improv & comedy school",college:"college program",youth:"youth program",spec:"specialty program"};
+  const blurb=s=>{const TECH0=TGROUPS[0][1],CLS=TGROUPS[1][1];const top=s.tags.filter(t=>TECH0.includes(t)).concat(s.tags.filter(t=>CLS.includes(t))).slice(0,4).map(t=>TECH0.includes(t)||t.startsWith("Shakespeare")?t.replace(" & classical"," and classical"):t.toLowerCase());
+    const x=[];if(s.tags.includes("Free audit or trial"))x.push("free audit or trial");if(s.tags.includes("Online classes"))x.push("online classes");if(s.tags.includes("Kids & teens"))x.push("kids & teens classes");if(s.tags.includes("Full-time program")&&s.k!=="cons")x.push("a full-time program");
+    return `${AKL[s.k][0].toUpperCase()+AKL[s.k].slice(1)} in ${s.a}${top.length?`, teaching ${top.join(", ")}`:""}.${x.length?` Offers ${x.join(" and ")}.`:""}`;};
+  const NAMEW=s=>120+(((s.nl||20)*37)%110);
+  const sortc=a=>a.slice().sort((x,y)=>x.c===y.c?(x.so-y.so):(x.c==="NY"?-1:1));
+  const top3=(rows)=>{const r=sortc(rows).sort((a,b)=>isOpen(b)-isOpen(a));if(st.city!=="all")return r.slice(0,LIM);
+    const ny=r.find(s=>s.c==="NY"),la=r.find(s=>s.c==="LA");const out=[ny,la].filter(Boolean);for(const s of r){if(out.length>=LIM)break;if(!out.includes(s))out.push(s);}return out;};
+  const moreBtn=(n,what)=>`<div class="fsd-more"><button class="agd-btn line" data-all="1">${st.role==="prem"?`Show all ${n} ${what} ↓`:st.role==="visitor"?`See all ${n} ${what} — create a free account`:`See all ${n} ${what} — Premium`}</button></div>`;
+  const exHead=()=>st.role==="visitor"?["Two example schools","One in New York, one in Los Angeles. Names, teachers and websites are hidden: create a free account to open them, or go Premium for all."]:["Two example schools, fully open",""];
+  const actFor=s=>st.role==="visitor"?'data-signup="1"':canUnlock(s)?`data-reveal="${esc(s.id)}"`:'data-upsell="1"';
+  function frow(s){const K=KIND[s.k]||KIND.uni;const o=isOpen(s);
+    return `<div class="tad-row${o&&isRev(s)?" fsd-justopen":""}"><div>
+        <div class="tad-nm">${o?`<h4>${esc(s.n)}</h4>`:`<span class="agd-redact fsd-rname" style="width:${150+((s.nl||20)*29)%120}px"></span>`}<span class="tad-cityb">${s.c==="LA"?"Los Angeles":"New York"}</span>${o&&isRev(s)?'<span class="fsd-unl"><i class="ti ti-lock-open"></i>Unlocked</span>':""}</div>
+        ${o?`<p class="fsd-prog">${esc(s.p)}</p><p class="tad-note">${esc(s.d)}</p>
+        <div class="fsd-links"><a class="tad-web" href="https://${esc(s.w)}" target="_blank" rel="noopener noreferrer">${esc(host(s.w))} — program page ↗</a></div>`
+        :`<p class="tad-note">${esc(K[2])} in ${esc(s.c==="LA"?"the Los Angeles area":"the New York area")}${s.f?". Its students make fiction films and cast actors.":"."}</p><div class="fsd-links"><span class="fsd-lockl"><i class="ti ti-lock"></i>Name, program &amp; website hidden</span></div>`}</div>
+      <div class="tad-meta">
+        <span class="tad-sc ${K[0]}"><i class="ti ti-${K[1]}" style="font-size:13px"></i>${K[2]}</span>
+        <div class="tad-addr"><span class="lb">Degrees &amp; programs</span>${esc(s.deg)}</div>
+        ${o&&s.a?`<div class="tad-addr"><span class="lb">Campus</span>${esc(s.a)}</div>`:""}
+        ${s.f?`<span class="fsd-casts"><i class="ti ti-movie" style="font-size:13px"></i>Students make fiction films</span>`:`<span class="fsd-nocast">Mostly theory or non-fiction work</span>`}
+        ${o?"":`<button class="fsd-unlockbtn" ${actFor(s)}><i class="ti ti-lock"></i><span class="t">${lockCtaFor(s,"Unlock all with Premium")}</span></button>`}
+      </div></div>`;}
+  function arow(s){const K=AK[s.k]||AK.studio;const o=isOpen(s);
+    return `<div class="tad-row${o&&isRev(s)?" fsd-justopen":""}"><div>
+        <div class="tad-nm">${o?`<h4>${esc(s.n)}</h4>`:`<span class="agd-redact fsd-rname" style="width:${NAMEW(s)}px" aria-label="Hidden school name"></span>`}<span class="tad-cityb">${s.c==="LA"?"Los Angeles":"New York"}</span>${o&&isRev(s)?'<span class="fsd-unl"><i class="ti ti-lock-open"></i>Unlocked</span>':""}</div>
+        <p class="tad-note">${o?esc(s.d):esc(blurb(s))}</p>
+        ${o?`<div class="fsd-links"><a class="tad-web" href="https://${esc(s.w)}" target="_blank" rel="noopener noreferrer">${esc(host(s.w))} ↗</a></div>`:`<div class="fsd-links"><span class="fsd-lockl"><i class="ti ti-lock"></i>Name, teachers &amp; website hidden</span></div>`}</div>
+      <div class="tad-meta">
+        <span class="tad-sc ${K[0]}"><i class="ti ti-${K[1]}" style="font-size:13px"></i>${K[2]}</span>
+        <div class="tad-addr"><span class="lb">Where</span>${esc(s.a)}</div>
+        ${o&&s.addr?`<div class="tad-addr"><span class="lb">Address</span>${esc(s.addr)}</div>`:""}
+        ${o&&s.teach?`<div class="tad-addr"><span class="lb">Teachers</span>${esc(s.teach)}</div>`:""}
+        ${!o&&s.tl>0?`<div class="tad-addr"><span class="lb">Teachers</span><span class="agd-redact" style="width:${90+(s.tl*7)%90}px"></span></div>`:""}
+        ${s.tags.length?`<div class="tad-addr"><span class="lb">Teaches &amp; offers</span></div><div class="fsd-chips">${(o?s.tags:(st.tech!=="all"&&s.tags.includes(st.tech)?[st.tech]:[]).concat(s.tags.filter(x=>x!==st.tech)).slice(0,3)).map(x=>`<span class="${x===st.tech?"hit":""}">${esc(x)}</span>`).join("")}${!o&&s.tags.length>3?`<span class="lk"><i class="ti ti-lock"></i>+${s.tags.length-3} more</span>`:""}</div>`:""}
+        ${o?`<span class="fsd-casts"><i class="ti ti-circle-check" style="font-size:13px"></i>Active · checked Oct 2026</span>`
+          :`<button class="fsd-unlockbtn" ${actFor(s)}><i class="ti ti-lock"></i><span class="t">${lockCtaFor(s,`Unlock all ${ACT.length} with Premium`)}</span></button>`}
+      </div></div>`;}
+  const tabs=()=>`<div class="fsd-tabs" role="tablist">
+    <button role="tab" data-tab="act" class="${st.tab==="act"?"on":""}"><i class="ti ti-masks-theater"></i>Acting schools &amp; studios <span class="n">${ACT.length}</span></button>
+    <button role="tab" data-tab="film" class="${st.tab==="film"?"on":""}"><i class="ti ti-movie"></i>Film schools <span class="n">${SCHOOLS.length}</span></button></div>`;
+  const seg=(attr,cur,opts)=>`<div class="tad-seg">${opts.map(([v,l,c])=>`<button data-${attr}="${v}" class="${cur===v?"on":""}">${l}${c!=null?` <span class="n">${c}</span>`:""}</button>`).join("")}</div>`;
+  const upsellBand=()=>st.role==="visitor"
+    ?`<div class="fsd-band2"><div class="fsd-b2-l"><div class="fsd-b2-k"><i class="ti ti-gift"></i>Free with an account</div><h4>Unlock 2 schools, free: one in New York, one in Los Angeles.</h4><p>Create a free CastSlate account and pick the 2 schools you want to see: name, teachers, website and everything they teach. Premium unlocks every acting and film school.</p></div><div class="fsd-b2-r"><button class="agd-btn gold" data-signup="1">Create a free account</button><span>No credit card · takes 30 seconds</span></div></div>`
+    :`<div class="fsd-band2"><div class="fsd-b2-l"><div class="fsd-b2-k"><i class="ti ti-crown"></i>CastSlate Premium</div><h4>${left()>0?`You have ${left()} free unlock${left()===1?"":"s"} left.`:"You've used your 2 free unlocks."}</h4><p>Premium shows every name, teacher, class and website on all ${ACT.length} schools, plus the Agency and Casting directories.</p></div><div class="fsd-b2-r"><button class="agd-btn gold" data-upsell="1">Unlock all — $17.99/mo</button><span>or $129/year · cancel any time</span></div></div>`;
+  function renderAct(){
+    const n=st.q.trim().toLowerCase();
+    const shown=ACT.filter(s=>(st.kind==="all"||TYPEF[st.kind](s))&&(st.city==="all"||s.c===st.city)&&(st.tech==="all"||s.tags.includes(st.tech))
+      &&(!n||(isOpen(s)?(s.n+" "+s.a+" "+s.d+" "+(s.teach||"")+" "+s.tags.join(" ")):(s.a+" "+AKL[s.k]+" "+s.tags.join(" "))).toLowerCase().includes(n)));
+    const filtered=st.q||st.kind!=="all"||st.city!=="all"||st.tech!=="all";
+    const lockedN=shown.filter(s=>!isOpen(s)).length;
+    const capped=!filtered&&!st.all;
+    const cnt=k=>ACT.filter(s=>TYPEF[k](s)&&(st.city==="all"||s.c===st.city)).length;
+    const tcnt=t=>ACT.filter(s=>s.tags.includes(t)&&(st.kind==="all"||TYPEF[st.kind](s))&&(st.city==="all"||s.c===st.city)).length;
+    const short={cons:"Conservatories",studio:"Studios",improv:"Improv & comedy",college:"Colleges",youth:"Kids & teens",spec:"Specialty"};
+    return `<div class="tad-bar">
+        <input class="tad-srch" id="fsdQ" placeholder="${st.role==="prem"?"Search school, teacher, neighbourhood or class (e.g. Meisner, Uta Hagen, Burbank, self-tape)…":"Search a neighbourhood or class (e.g. Meisner, Burbank, self-tape, kids)…"}" value="${esc(st.q)}" aria-label="Search acting schools">
+        ${seg("kind",st.kind,[["all","All",ACT.length]].concat(AORD.map(k=>[k,short[k],cnt(k)])))}
+        ${seg("city",st.city,[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]])}
+        ${TGROUPS.map(([g,ts],gi)=>gi>0&&!st.more&&!ts.includes(st.tech)?"":`<div class="fsd-techs"><span>${g}:</span>${(gi===0?[["all","Any"]]:[]).concat(ts.map(t=>[t,t])).map(([t,l])=>{const c=t==="all"?null:tcnt(t);return `<button data-tech="${esc(t)}" class="${st.tech===t?"on":""}"${c===0?" disabled":""}>${esc(l)}${c!=null?` <b>${c}</b>`:""}</button>`;}).join("")}</div>`).join("")}
+        <button class="fsd-moretopics" data-more="1">${st.more?"Fewer topics ▴":"More topics: on-camera, audition, improv, kids, online, free audit… ▾"}</button>
+      </div>
+      ${filtered&&shown.length?`<div class="fsd-match"><div><b>${shown.length} ${shown.length===1?"school matches":"schools match"}</b> ${[st.tech!=="all"?esc(st.tech):"",st.kind!=="all"?short[st.kind].toLowerCase():"",st.city!=="all"?(st.city==="LA"?"in Los Angeles":"in New York"):""].filter(Boolean).join(" · ")}${st.role!=="prem"&&shown.length>LIM?`<span>Showing ${LIM} · ${shown.length-LIM} more ${st.role==="visitor"?"with an account":"with Premium"}</span>`:""}</div>${st.role!=="prem"&&shown.length>LIM?`<button class="agd-btn gold" data-all="1">${st.role==="visitor"?"See them — create a free account":`See all ${shown.length} — Premium`}</button>`:st.role==="free"&&lockedN&&left()>0?`<span class="fsd-left">${left()} free unlock${left()===1?"":"s"} left</span>`:""}</div>`:""}
+      <div class="tad-res">Showing ${capped?(st.role==="prem"?AFEAT.length:Math.min(LIM,ASAMPLE.length)):st.role==="prem"?shown.length:Math.min(LIM,shown.length)} of ${ACT.length} acting schools &amp; studios</div>
+      ${shown.length?"":`<div class="tad-mlempty"><h4>Nothing matches</h4><p>Try a different search or clear a filter.</p></div>`}
+      ${capped?`<div class="tad-gh"><h3>${st.role==="prem"?"Start with the famous names":exHead()[0]}</h3><span class="ln"></span><span class="ct">${st.role==="prem"?AFEAT.length:LIM} of ${ACT.length}</span></div>
+        <p class="tad-gsub">${st.role==="prem"?`Then show all ${ACT.length}, or filter by technique, class or neighbourhood.`:st.role==="visitor"?exHead()[1]:`This is everything you get on every school with Premium. Show all to see the other ${ACT.length-LIM}, or filter by technique, class or neighbourhood.`}</p>
+        <div class="tad-rows">${(st.role==="prem"?AFEAT:ASAMPLE).map(arow).join("")}</div>
+        ${moreBtn(ACT.length,"acting schools &amp; studios")}
+        ${st.role!=="prem"?upsellBand():""}`
+      :st.role!=="prem"?(shown.length?`<div class="tad-gh"><h3>Top matches</h3><span class="ln"></span><span class="ct">${Math.min(LIM,shown.length)} of ${shown.length}</span></div><div class="tad-rows">${top3(shown).map(arow).join("")}</div>${shown.length>LIM?moreBtn(shown.length,"matching schools"):""}`:"")+upsellBand()
+      :AORD.map(g=>{const rs=sortc(shown.filter(s=>s.k===g));if(!rs.length)return"";
+        return `<div class="tad-gh"><h3>${AG[g][0]}</h3><span class="ln"></span><span class="ct">${rs.length}</span></div><p class="tad-gsub">${AG[g][1]}</p><div class="tad-rows">${rs.map(arow).join("")}</div>`;}).join("")}`;
+  }
+  function renderFilm(){
+    const n=st.q.trim().toLowerCase();
+    const shown=SCHOOLS.filter(s=>(st.kind==="all"||s.k===st.kind)&&(st.city==="all"||s.c===st.city)&&(st.lv==="all"||s.lv.includes(st.lv))&&(!st.castOnly||s.f)
+      &&(!n||(isOpen(s)?(s.n+" "+s.p+" "+s.a+" "+s.deg+" "+s.d):(s.deg+" "+KIND[s.k][2]+" "+(s.c==="LA"?"los angeles":"new york"))).toLowerCase().includes(n)));
+    const filtered=st.q||st.kind!=="all"||st.city!=="all"||st.lv!=="all"||st.castOnly;
+    const capped=!filtered&&!st.all;
+    const cnt=k=>SCHOOLS.filter(s=>s.k===k).length;
+    const short={uni:"Universities",art:"Art schools",academy:"Academies",cc:"Community colleges",ce:"Continuing ed"};
+    return `<div class="tad-bar">
+        <input class="tad-srch" id="fsdQ" placeholder="Search school, neighbourhood or degree (e.g. MFA, Brooklyn, Burbank)…" value="${esc(st.q)}" aria-label="Search film schools">
+        ${seg("kind",st.kind,[["all","All",SCHOOLS.length]].concat(KORDER.map(k=>[k,short[k],cnt(k)])))}
+        ${seg("city",st.city,[["all","Both coasts"],["LA","Los Angeles"],["NY","New York"]])}
+        ${seg("lv",st.lv,[["all","Any level"],["ug","Undergrad"],["gr","Graduate"],["as","Associate"],["ce","Certificate"]])}
+        <label class="cdx-chk"><input type="checkbox" id="fsdCastOnly" ${st.castOnly?"checked":""}> Makes fiction films only</label>
+      </div>
+      <div class="tad-res">${capped&&st.role!=="prem"?`Two example schools · ${SCHOOLS.length} film programs in the directory`:`Showing ${capped?FEAT.length:st.role==="prem"?shown.length:Math.min(LIM,shown.length)} of ${SCHOOLS.length} film programs`}</div>
+      ${shown.length?"":`<div class="tad-mlempty"><h4>No programs match</h4><p>Try a different search or clear a filter.</p></div>`}
+      ${capped&&st.role!=="prem"?`<div class="tad-gh"><h3>${exHead()[0]}</h3><span class="ln"></span><span class="ct">2 examples</span></div>
+        <p class="tad-gsub">${st.role==="visitor"?exHead()[1]:"Two example schools, one in New York and one in Los Angeles, fully open. Film programs unlock the same way."}</p>
+        <div class="tad-rows">${ASAMPLE.map(arow).join("")}</div>
+        ${moreBtn(SCHOOLS.length,"film programs")}`
+      :capped?`<div class="tad-gh"><h3>Where thesis films get made</h3><span class="ln"></span><span class="ct">${FEAT.length} of ${SCHOOLS.length}</span></div>
+        <p class="tad-gsub">Their students make films, and every film needs actors. Ten of the best-known programs, then show all.</p>
+        <div class="tad-rows">${FEAT.map(frow).join("")}</div>
+        ${moreBtn(SCHOOLS.length,"film programs")}`
+      :st.role!=="prem"?(shown.length?`<div class="tad-gh"><h3>Top matches</h3><span class="ln"></span><span class="ct">${Math.min(LIM,shown.length)} of ${shown.length}</span></div><div class="tad-rows">${top3(shown).map(frow).join("")}</div>${shown.length>LIM?moreBtn(shown.length,"matching programs"):""}`:"")+upsellBand()
+      :KORDER.map(g=>{const rs=sortc(shown.filter(s=>s.k===g));if(!rs.length)return"";
+        return `<div class="tad-gh"><h3>${GROUPS[g][0]}</h3><span class="ln"></span><span class="ct">${rs.length}</span></div><p class="tad-gsub">${GROUPS[g][1]}</p><div class="tad-rows">${rs.map(frow).join("")}</div>`;}).join("")}`;
+  }
+  let toastT=0;
+  function toast(m){const el=$("#fsdToast");if(!el)return;el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2800);}
+  function counts(){
+    const la=ACT.filter(s=>s.c==="LA").length+SCHOOLS.filter(s=>s.c==="LA").length;
+    const V={tot:ACT.length+SCHOOLS.length,na:ACT.length,n:SCHOOLS.length,la:la,ny:ACT.length+SCHOOLS.length-la};
+    root.querySelectorAll("[data-cnt]").forEach(el=>{const v=V[el.getAttribute("data-cnt")];if(v!=null)el.textContent=v;});
+    root.querySelectorAll("[data-jump]").forEach(b=>{const n=ACT.filter(s=>s.tags.includes(b.getAttribute("data-jump"))).length;const nb=b.querySelector("[data-n]");if(nb){nb.setAttribute("data-n",n);if(!countRun)nb.textContent=n;}});
+    const tn=root.querySelector(".fsd-in-foot [data-n]");if(tn){const n=ACT.filter(s=>s.tl>0).length;tn.setAttribute("data-n",n);if(!countRun)tn.textContent=n;}
+  }
+  function render(keep){
+    const dir=$("#fsd-dir");if(!dir)return;
+    dir.innerHTML=tabs()+(st.tab==="act"?renderAct():renderFilm());
+    const eb=$("#heroEyebrow");if(eb)eb.innerHTML=st.role==="prem"?'<span class="d"></span>Unlocked with your Premium':st.role==="free"?`<span class="d"></span>Your free account · ${left()} of ${FREE_REVEALS} unlocks left`:'<span class="d"></span>Free to browse · free account unlocks 2 schools';
+    if(keep){const q=$("#fsdQ");if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}}
+  }
+  const scrollToDir=()=>{const d=$("#fsd-directory");if(d)d.scrollIntoView({behavior:"smooth",block:"start"});};
+  function onClick(e){
+    const nav=e.target.closest("[data-nav]");
+    if(nav){e.preventDefault();ctx.go(nav.getAttribute("data-nav"));return;}
+    if(e.target.closest("#toDir")){scrollToDir();return;}
+    const jb=e.target.closest("[data-jump]");
+    if(jb){st.tab="act";st.kind="all";st.lv="all";st.city="all";st.q="";st.all=false;st.tech=jb.getAttribute("data-jump");if(!TGROUPS[0][1].includes(st.tech))st.more=true;render(false);scrollToDir();return;}
+    const t=e.target.closest("[data-tab],[data-kind],[data-city],[data-lv],[data-tech],[data-all],[data-goto],[data-more],[data-upsell],[data-signup],[data-reveal]");if(!t)return;
+    const D=t.dataset;
+    if(D.more){st.more=!st.more;render(false);return;}
+    if(D.signup){ctx.go("register-talent");return;}
+    if(D.upsell){ctx.go("membership");return;}
+    if(D.reveal){
+      if(busy)return;busy=true;t.disabled=true;
+      ctx.unlock(D.reveal).then(d=>{busy=false;const before=st.unl.length;setData(d);render(false);hero.refresh();
+        const s=ACT.concat(SCHOOLS).find(x=>x.id===D.reveal);const oc=s&&s.c==="NY"?"LA":"NY";
+        if(st.unl.length>before)toast(left()>0?`Unlocked · your free ${CITYN[oc]} unlock is still available`:"Unlocked · you've used both free unlocks");})
+      .catch(err=>{busy=false;t.disabled=false;const m=String((err&&err.message)||err||"");
+        toast(m.indexOf("city_unlock_used")>=0?"You've already used your free unlock for that city":m.indexOf("sign_in")>=0?"Please sign in to unlock schools":"Couldn't unlock right now — please try again");});
+      return;}
+    if(D.goto){st.tab=D.goto;st.kind="all";st.lv="all";st.tech="all";st.all=false;render(false);scrollToDir();return;}
+    if(D.tab){if(st.tab!==D.tab){st.tab=D.tab;st.kind="all";st.lv="all";st.tech="all";st.all=false;st.castOnly=false;}}
+    else if(D.all){if(st.role!=="prem"){ctx.go(st.role==="visitor"?"register-talent":"membership");return;}st.all=true;}
+    else if(D.kind)st.kind=D.kind;else if(D.city)st.city=D.city;else if(D.tech)st.tech=D.tech;else if(D.lv)st.lv=D.lv;
+    render(false);
+  }
+  function onInput(e){if(e.target&&e.target.id==="fsdQ"){st.q=e.target.value;render(true);}}
+  function onChange(e){if(e.target&&e.target.id==="fsdCastOnly"){st.castOnly=e.target.checked;render(false);}}
+  root.addEventListener("click",onClick);root.addEventListener("input",onInput);root.addEventListener("change",onChange);
+  setData(ctx.data);
+  // Hero: live search preview. Real counts; names only for rows this person may see.
+  const hero=(function(){
+    const W=$("#srpWrap");if(!W)return{refresh(){},stop(){}};
+    const Q=$("#srpQ"),CH=$("#srpChips"),N=$("#srpN"),U=$("#srpU"),L=$("#srpLock"),RW=$("#srpRows");
+    const CHIPS=["Meisner","On-camera","Kids & teens","Casts actors"];
+    const SCN=[{q:"Meisner",chip:"Meisner",film:false,test:s=>s.tags.includes("Meisner"),u:"acting schools teach Meisner"},
+      {q:"On-camera classes",chip:"On-camera",film:false,test:s=>s.tags.includes("On-camera"),u:"schools teach on-camera"},
+      {q:"Film schools that cast actors",chip:"Casts actors",film:true,test:s=>s.f,u:"film programs make fiction films"}];
+    const pick=rows=>{const ny=rows.filter(s=>s.c==="NY"),la=rows.filter(s=>s.c==="LA");return [ny[0],la[Math.floor(la.length/3)],ny[Math.floor(ny.length/2)]||la[1]].filter(Boolean).slice(0,3);};
+    let SETS=[];
+    const build=()=>{SETS=SCN.map(sc=>{const all=(sc.film?SCHOOLS:ACT).filter(sc.test);const srt=sortc(all);return{n:all.length,rows:pick(srt.filter(s=>s.feat).concat(srt.filter(s=>!s.feat)))};});};
+    const LVN={gr:"Graduate",ug:"Undergrad",as:"Associate",ce:"Certificate"};
+    const row=(sc,s)=>{const o=isOpen(s);const kind=sc.film?(KIND[s.k]||KIND.uni)[2]:(AK[s.k]||AK.studio)[2],city=s.c==="LA"?"Los Angeles":"New York";
+      const chips=sc.film?["Casts actors"].concat(["gr","ug","as","ce"].filter(l=>(s.lv||[]).includes(l)).map(l=>LVN[l])).slice(0,3):[sc.chip].concat(s.tags.filter(t=>t!==sc.chip&&t!=="Full-time program")).slice(0,3);
+      const nm=o?`<b>${esc(s.n)}</b>`:`<span class="agd-redact" style="width:${NAMEW(s)}px"></span><i class="ti ti-lock"></i>`;
+      return `<div class="srp-row"><div class="srp-k"><span>${esc(kind)} · ${city}</span>${s.a&&s.a!==city?`<em><i class="ti ti-map-pin"></i>${esc(s.a)}</em>`:""}</div><div class="srp-nm">${nm}</div><div class="srp-ch">${chips.map((c,i)=>`<span class="${i===0?"hit":""}">${esc(c)}</span>`).join("")}</div></div>`;};
+    let i=0,timers=[];const T=(f,ms)=>timers.push(setTimeout(f,ms));
+    const still=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const lockNote=()=>{L.textContent=st.role==="prem"?"":st.role==="visitor"?"names unlock with a free account":"names unlock with Premium";};
+    const chipsOn=on=>{CH.innerHTML=CHIPS.map(c=>`<span class="${c===on?"on":""}">${esc(c)}</span>`).join("");};
+    const paint=(k,anim)=>{const sc=SCN[k],set=SETS[k];RW.innerHTML=set.rows.map(r=>row(sc,r)).join("");U.textContent=sc.u;lockNote();
+      if(!anim){Q.textContent=sc.q;chipsOn(sc.chip);N.textContent=set.n;RW.classList.add("in");}};
+    const play=k=>{timers.forEach(clearTimeout);timers=[];const sc=SCN[k],set=SETS[k];
+      W.classList.remove("show");RW.classList.remove("in");Q.textContent="";chipsOn("");N.textContent="0";
+      T(()=>{paint(k,true);RW.classList.remove("in");W.classList.add("show");
+        [...sc.q].forEach((ch,j)=>T(()=>{Q.textContent=sc.q.slice(0,j+1);},70*j));
+        const t1=70*sc.q.length+200;
+        T(()=>chipsOn(sc.chip),t1);
+        T(()=>{RW.classList.add("in");for(let j=1;j<=14;j++)T(()=>{N.textContent=Math.round(set.n*(1-Math.pow(1-j/14,3)));},j*45);},t1+250);
+        T(()=>{RW.classList.remove("in");},t1+250+4200);
+        T(()=>{i=(k+1)%SCN.length;play(i);},t1+250+4200+450);
+      },60);};
+    build();
+    if(still){paint(0,false);W.classList.add("show");}else play(0);
+    return{refresh(){build();RW.innerHTML=SETS[i].rows.map(r=>row(SCN[i],r)).join("");lockNote();},stop(){timers.forEach(clearTimeout);timers=[];}};
+  })();
+  // "What's inside" numbers count up from zero the first time the strip is seen.
+  let countRun=false,countIo=null;const countTimers=[];
+  (function(){const box=root.querySelector(".agd-studios.fsd-inside-box")||root.querySelector(".agd-studios");if(!box)return;
+    if((window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)||!("IntersectionObserver"in window))return;
+    const nums=[...box.querySelectorAll("[data-n]")];nums.forEach(b=>b.textContent="0");countRun=true;
+    countIo=new IntersectionObserver(es=>{if(es[0].isIntersecting){countIo.disconnect();countIo=null;
+      nums.forEach((b,k)=>{const n=+b.getAttribute("data-n"),steps=26;for(let j=1;j<=steps;j++)countTimers.push(setTimeout(()=>{b.textContent=Math.round(n*(1-Math.pow(1-j/steps,3)));},k*60+j*34));});}},{threshold:.35});
+    countIo.observe(box);})();
+  setData(ctx.data);counts();render(false);hero.refresh();
+  return{
+    update(d){setData(d);counts();render(false);hero.refresh();},
+    destroy(){root.removeEventListener("click",onClick);root.removeEventListener("input",onInput);root.removeEventListener("change",onChange);
+      hero.stop();clearTimeout(toastT);countTimers.forEach(clearTimeout);if(countIo)countIo.disconnect();}
+  };
+}
+
+// ─── PAGE: ACTING & FILM SCHOOL DIRECTORY (/school-directory) ───────────────────
+// Free to browse; a free account unlocks ONE New York + ONE Los Angeles school;
+// Premium sees everything. Gating is server-side (get_school_directory / unlock_school).
+// Static copy below is the approved demo's markup; the two videos are React portals
+// (BufferedLoopVideo: poster first, seamless loop files, lite copies on slow wifi).
+const SCHOOL_DIR_HTML="<div class=\"agd-herobg\"><div class=\"agd-wrap\">\n    <nav class=\"dsw\" aria-label=\"CastSlate Directories\"><span class=\"dsw-k\">CastSlate Directories</span><div class=\"dsw-row\">\n      <a class=\"dsw-t\" href=\"/agency-directory\" data-nav=\"agency-directory\"><i class=\"ti ti-building-bank\"></i><span><b>Agencies &amp; Managers</b><em><i class=\"ti ti-crown\"></i>Premium</em></span></a>\n      <a class=\"dsw-t\" href=\"/casting-directory\" data-nav=\"casting-directory\"><i class=\"ti ti-movie\"></i><span><b>Casting Offices</b><em><i class=\"ti ti-crown\"></i>Premium</em></span></a>\n      <span class=\"dsw-t on\" aria-current=\"page\"><i class=\"ti ti-school\"></i><span><b>Schools &amp; Conservatories</b><em class=\"free\">Free to browse</em></span></span>\n    </div></nav>\n    <section class=\"agd-hero\"><div class=\"agd-hero-grid\">\n      <div>\n        <div class=\"agd-eyebrow\" id=\"heroEyebrow\"><span class=\"d\"></span>Free to browse · Premium unlocks the details</div>\n        <h1 class=\"agd-h1\"><span data-cnt=\"tot\">351</span> acting schools, studios and film programs in LA &amp; New York. Most actors know only a handful.</h1>\n        <div class=\"agd-cities\"><span class=\"agd-city\">Los Angeles</span><span class=\"agd-city\">New York</span><span class=\"agd-city\">Nearby campuses</span></div>\n        <p class=\"agd-coasts\">Ask most actors where to train and they'll name the same five schools. Behind those names are hundreds of rooms: Meisner studios run by one master teacher, theatre companies with their own training programs, improv schools, audition and self-tape classes, college conservatories and film programs whose students need actors every semester. CastSlate brings all of them together in one place, so the knowledge that used to take years of asking around is now in your hands.</p>\n        <p class=\"agd-lede\"><span data-cnt=\"na\">273</span> acting schools and studios and <span data-cnt=\"n\">78</span> film programs, every one checked in October 2026 for current classes, with what it teaches, where it is and a link to its own site. Find the right room for your training, and the student films that will give you your first footage.</p>\n        <div class=\"agd-ctas\">\n          <button class=\"agd-btn gold\" id=\"toDir\">Browse all <span data-cnt=\"tot\">351</span> ↓</button>\n          <button class=\"agd-btn line\" data-goto=\"film\">Film schools that cast actors</button>\n        </div>\n      </div>\n      <div class=\"srp-wrap\" id=\"srpWrap\" data-skin=\"a\" aria-hidden=\"true\">\n        <div class=\"srp\">\n          <div class=\"srp-top\"><span class=\"srp-dots\"><i></i><i></i><i></i></span><span class=\"srp-url\"><i class=\"ti ti-lock\"></i>castslate.com/school-directory</span></div>\n          <div class=\"srp-bd\">\n            <div class=\"srp-q\"><i class=\"ti ti-search\"></i><span id=\"srpQ\"></span><span class=\"srp-caret\"></span></div>\n            <div class=\"srp-chips\" id=\"srpChips\"></div>\n            <div class=\"srp-count\"><b id=\"srpN\">0</b><span id=\"srpU\">schools match</span><em id=\"srpLock\"></em></div>\n            <div class=\"srp-rows\" id=\"srpRows\"></div>\n          </div>\n        </div>\n      </div>\n    </div>\n</section>\n  </div></div>\n\n  <div class=\"agd-studios\">\n    <div class=\"k\">What's inside</div>\n    <div class=\"fsd-inside\" id=\"fsdInside\"><button class=\"fsd-in\" data-jump=\"On-camera\"><b data-n=\"131\" style=\"min-width:1.86em\">131</b><span>teach on-camera</span></button><button class=\"fsd-in\" data-jump=\"Audition & self-tape\"><b data-n=\"123\" style=\"min-width:1.86em\">123</b><span>audition & self-tape</span></button><button class=\"fsd-in\" data-jump=\"Kids & teens\"><b data-n=\"120\" style=\"min-width:1.86em\">120</b><span>kids & teens</span></button><button class=\"fsd-in\" data-jump=\"Improv\"><b data-n=\"108\" style=\"min-width:1.86em\">108</b><span>improv</span></button><button class=\"fsd-in\" data-jump=\"Full-time program\"><b data-n=\"69\" style=\"min-width:1.24em\">69</b><span>full-time programs</span></button><button class=\"fsd-in\" data-jump=\"Free audit or trial\"><b data-n=\"65\" style=\"min-width:1.24em\">65</b><span>free audit or trial</span></button><button class=\"fsd-in\" data-jump=\"Shakespeare & classical\"><b data-n=\"54\" style=\"min-width:1.24em\">54</b><span>Shakespeare</span></button><button class=\"fsd-in\" data-jump=\"Meisner\"><b data-n=\"35\" style=\"min-width:1.24em\">35</b><span>Meisner</span></button><button class=\"fsd-in\" data-jump=\"Voice-over\"><b data-n=\"30\" style=\"min-width:1.24em\">30</b><span>voice-over</span></button></div>\n    <div class=\"fsd-in-foot\"><b data-n=\"141\">141</b> schools with their teachers named, checked by hand</div>\n  </div>\n\n  <div class=\"agd-wrap\"><div class=\"agd-stats\">\n    <div class=\"agd-stat\"><div class=\"v\"><span data-cnt=\"na\">273</span></div><div class=\"l\">Acting schools &amp; studios</div></div>\n    <div class=\"agd-stat\"><div class=\"v\"><span data-cnt=\"n\">78</span></div><div class=\"l\">Film programs</div></div>\n    <div class=\"agd-stat\"><div class=\"v\"><span data-cnt=\"la\">215</span></div><div class=\"l\">Los Angeles area</div></div>\n    <div class=\"agd-stat\"><div class=\"v\"><span data-cnt=\"ny\">136</span></div><div class=\"l\">New York area</div></div>\n  </div></div>\n\n  <div class=\"agd-wrap\"><section class=\"agd-blk\"><div class=\"agd-flow\">\n    <div>\n      <div class=\"section-label\">Knowledge most actors never get</div>\n      <h2 class=\"agd-h2\">The rooms working actors trained in, in one place.</h2>\n      <p class=\"agd-sub\">Most actors only hear about the schools with the biggest ads. The studio three blocks away that's taught Meisner for 30 years, the theatre company's weekend Shakespeare class, the audition room run by a casting director, the college conservatory with a showcase for agents: you usually find these by word of mouth, years into a career. <b>CastSlate gathers them here so you can find them on day one.</b></p>\n      <p class=\"agd-sub\">No paid placements and no star ratings. Every school was checked one by one: current 2026 class dates, a website that's still kept up, or the school's own catalog. Schools that have closed, like AADA's Los Angeles campus, Second City Hollywood and Digital Film Academy, were taken off.</p>\n      <div class=\"cdx-checked\"><i class=\"ti ti-check\" style=\"font-size:15px\"></i>Last checked October 9, 2026 <span>· <span data-cnt=\"tot\">351</span> schools on both coasts</span></div>\n    </div>\n    <div class=\"fsd-set fsd-room\"><div class=\"fsd-vslot\" data-vslot=\"class\"></div><div class=\"tag tag-class\"><i></i>In class · Scene work</div></div>\n  </div></section></div>\n\n  <div class=\"agd-wrap\"><section class=\"agd-blk\" style=\"padding-top:0\">\n    <div class=\"section-label\">What it does for you</div>\n    <h2 class=\"agd-h2\">Why actors use this directory.</h2>\n    <div class=\"fsd-ben\">\n      <div class=\"agd-card\"><div class=\"ic\"><i class=\"ti ti-compass\" style=\"font-size:18px\"></i></div><h5>Find the right technique</h5><p>Meisner, Method, Adler, Chekhov, on-camera, improv: filter by what you want to learn, not by who advertises most.</p></div>\n      <div class=\"agd-card\"><div class=\"ic\"><i class=\"ti ti-map-pin\" style=\"font-size:18px\"></i></div><h5>Train near you, or online</h5><p>Every school shows its neighbourhood or town, from Brooklyn to Burbank, plus the ones teaching online.</p></div>\n      <div class=\"agd-card\"><div class=\"ic\"><i class=\"ti ti-shield-check\" style=\"font-size:18px\"></i></div><h5>Know it's still open</h5><p>Every school was checked for current classes in 2026. No more paying a deposit to a studio whose website hasn't changed since 2019.</p></div>\n      <div class=\"agd-card\"><div class=\"ic\"><i class=\"ti ti-movie\" style=\"font-size:18px\"></i></div><h5>Get your first footage</h5><p><span data-cnt=\"n\">78</span> film programs whose students cast actors every semester, for the reel that gets casting directors to call you in.</p></div>\n      <div class=\"agd-card\"><div class=\"ic\"><i class=\"ti ti-users\" style=\"font-size:18px\"></i></div><h5>Build your network</h5><p>Classmates become scene partners, teachers become references, and today's film students become directors. Training is where careers connect.</p></div>\n      <div class=\"agd-card\"><div class=\"ic\"><i class=\"ti ti-coin\" style=\"font-size:18px\"></i></div><h5>Spend your money wisely</h5><p>Community colleges, free audits and trial classes sit next to full conservatories, so you can choose what fits your budget.</p></div>\n    </div>\n  </section></div>\n\n  <div class=\"agd-wrap\"><section class=\"agd-blk\" id=\"fsd-directory\" style=\"padding-top:0\">\n    <div class=\"section-label\">The directory</div>\n    <h2 class=\"agd-h2\">Find where to train, and where to get cast.</h2>\n    <p class=\"agd-sub\" style=\"margin-bottom:6px\">Two lists: acting schools and studios to train in, and film schools whose students cast actors. Search by name, neighbourhood or technique, and filter by coast.</p>\n    <div id=\"fsd-dir\"></div>\n  </section></div>\n\n  <div class=\"fsd-band\" style=\"background:var(--s2);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)\">\n    <div class=\"agd-wrap\"><section class=\"agd-blk\"><div class=\"agd-flow\">\n      <div>\n        <div class=\"section-label\">From film school to your reel</div>\n        <h2 class=\"agd-h2\">Today's film students are tomorrow's directors.</h2>\n        <p class=\"agd-sub\" style=\"margin-bottom:0\">Casting directors want to see you on screen before they bring you in. A well-shot student film is how most actors get their first real footage, and the people you work with on set are the ones casting their first features a few years later.</p>\n        <div class=\"agd-steps\">\n          <div class=\"agd-step\"><div class=\"n\">1</div><div><h5>Pick your schools</h5><p>Start with the programs near you that make fiction films. Graduate thesis films are the strongest.</p></div></div>\n          <div class=\"agd-step\"><div class=\"n\">2</div><div><h5>Watch their casting calls</h5><p>Student films cast on CastSlate, and many programs also post on their own school boards. Check in spring and summer, when thesis films cast.</p></div></div>\n          <div class=\"agd-step\"><div class=\"n\">3</div><div><h5>Apply with your profile</h5><p>Send your CastSlate link. Headshots, reel and credits in one place, and the new footage goes straight onto it.</p></div></div>\n        </div>\n      </div>\n      <div><div class=\"fsd-set\"><div class=\"fsd-vslot\" data-vslot=\"film\"></div><div class=\"tag\"><i></i>Rolling · Scene 2, Take 2</div>\n        <div class=\"cap\"><span class=\"ic\" aria-hidden=\"true\"><i class=\"ti ti-player-play-filled\"></i></span><div><b>Your scenes, on your profile</b><span>Get the footage, add it to your reel.</span></div></div></div></div>\n    </div></section></div>\n  </div>\n\n  <div class=\"agd-wrap\">\n    <section class=\"agd-blk\">\n      <div class=\"section-label\">Training and student films</div>\n      <h2 class=\"agd-h2\">Questions actors ask.</h2>\n      <div class=\"agd-faq\"><details open><summary><span>Which acting technique should I study?<span class=agd-faq-badge>Best answer</span></span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>There's no single right answer. <b>Meisner</b> trains truthful listening and reacting. <b>The Method</b> works from sense memory and personal experience. <b>Adler</b> builds characters from imagination and the given circumstances. <b>Chekhov</b> uses the body and the imagination. Most studios mix techniques, and many teach on-camera and audition skills separately. Use the <b>Technique</b> filter in the directory to see every school that teaches each one.</p><p>The best way to choose is to <b>audit</b>: many schools on this list let you sit in on a class for free before you enroll.</p></div></details><details><summary><span>Conservatory, ongoing class or college degree?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>A <b>conservatory</b> is full-time training, usually one to two years. An <b>ongoing class</b> meets once or twice a week and fits around work and auditions, and most LA studios work this way. A <b>college degree</b> (BFA or MFA) adds a diploma and is often where industry showcases happen. Community colleges are the lowest-cost way to train seriously.</p></div></details><details><summary><span>Why haven't I heard of most of these schools?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Because most lists only repeat the same famous names. Many of the best rooms are small studios run by one master teacher, a theatre company's training program, or a college theatre department in your own neighbourhood. CastSlate gathers all of them in one place, checks that each one is still teaching, and marks what it teaches, so you can find the right room instead of the best-advertised one.</p></div></details><details><summary><span>How do I get cast in student films?<span class=agd-faq-badge>Best answer</span></span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Student productions post their roles on <b>CastSlate</b>, and many film programs also run their own casting boards. Pick the programs near you from this list, check their program pages, and look for their productions by school name, especially in spring and summer, when thesis films cast.</p><p>When you apply, send a link to your CastSlate profile so the director sees your headshots and any footage straight away.</p></div></details><details><summary><span>Do student films pay?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Usually very little or nothing. Most pay in footage, credit and experience, and many cover meals on set. Before you agree, ask what's covered and get it in writing.</p></div></details><details><summary><span>Which programs make the strongest footage?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Graduate thesis films are usually the most polished: MFA programs have bigger crews, bigger budgets and better equipment. Filter the film schools by <b>Graduate</b> to see them. Undergraduate and community college films are smaller, but they shoot more often and are easier to get into.</p></div></details><details><summary><span>I'm in SAG-AFTRA. Can I still do student films?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Yes. SAG-AFTRA has a Student Film Agreement for qualifying student productions. Ask the production whether it has signed the agreement before you accept the role.</p></div></details><details><summary><span>Will I get a copy of the film?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Only if you ask. Students graduate and move on, so agree in writing before the shoot that you'll receive the finished film or your scenes, and roughly when. A short email that the director confirms is enough.</p></div></details><details><summary><span>Do I need to live in Los Angeles or New York?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Most student films shoot near their school and rarely pay for travel, so the schools close to you are the best place to start. Auditions are often a self-tape, though, so you can still be seen by programs further away.</p></div></details><details><summary><span>How do I know a student production is real?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>A real student production can tell you its school, its class and its faculty advisor. Auditions should be in school or public spaces, or by self-tape. Never pay to audition or to be cast.</p></div></details><details><summary><span>Is this directory free?</span><span class=\"pm\"><i class=\"ti ti-plus\" style=\"font-size:14px\"></i></span></summary><div class=\"a\"><p>Yes. It's free for every actor. All <span data-cnt=\"tot\">351</span> schools and programs were checked in October 2026 against each school's own website (current class dates, recent updates or the school's own catalog), and schools that have closed were removed.</p></div></details></div>\n    </section>\n    <section class=\"agd-blk\" style=\"padding-top:0\"><div class=\"agd-final\">\n      <h2 class=\"agd-h2\">Train, get footage, get seen.</h2>\n      <p>Make your free CastSlate profile so teachers, directors and casting can see your headshots, reel and credits, then apply to castings in New York and Los Angeles.</p>\n      <a class=\"agd-btn gold\" href=\"/register-talent\" data-nav=\"register-talent\" style=\"text-decoration:none\">Create your free profile</a>\n      <div class=\"agd-guarantee\">Free to join · No credit card needed</div>\n    </div></section>\n  </div>\n<div class=\"fsd-toast\" id=\"fsdToast\" role=\"status\" aria-live=\"polite\"></div>";
+function SchoolDirectoryPage({onNavigate,session}){
+  const rootRef=React.useRef(null);
+  const apiRef=React.useRef(null);
+  const[slots,setSlots]=useState({});
+  const[data,setData]=useState(null);
+  const uid=session&&session.user?session.user.id:null;
+  useEffect(()=>{let alive=true;
+    try{window.sb.rpc("get_school_directory").then(({data,error})=>{if(alive&&!error&&data)setData(data);});}catch(_){}
+    return()=>{alive=false;};},[uid]);
+  useEffect(()=>{const r=rootRef.current;if(!r)return;
+    setSlots({cls:r.querySelector('[data-vslot="class"]'),film:r.querySelector('[data-vslot="film"]')});},[]);
+  useEffect(()=>{if(!data||!rootRef.current)return;
+    if(apiRef.current){apiRef.current.update(data);return;}
+    apiRef.current=fsdMount(rootRef.current,{data,
+      unlock:id=>window.sb.rpc("unlock_school",{p_id:id}).then(({data,error})=>{if(error)throw error;setData(data);return data;}),
+      go:pg=>onNavigate(pg)});},[data]);
+  useEffect(()=>()=>{if(apiRef.current){apiRef.current.destroy();apiRef.current=null;}},[]);
+  return(<div className="page fsd-page">
+    <div ref={rootRef} dangerouslySetInnerHTML={{__html:SCHOOL_DIR_HTML}}/>
+    {slots.cls&&ReactDOM.createPortal(<BufferedLoopVideo src="/assets/video/schools-class-v1.mp4" poster="/assets/video/schools-class-v1-poster.jpg" aria-label="A director going over the script with two actors in class"/>,slots.cls)}
+    {slots.film&&ReactDOM.createPortal(<BufferedLoopVideo src="/assets/video/schools-studentfilm-v1.mp4" poster="/assets/video/schools-studentfilm-v1-poster.jpg" aria-label="A student film shoot: clapperboard, boom mic and an actor on camera"/>,slots.film)}
+  </div>);
+}
+
 function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,castingsVersion=0}){
   const t=useT();
   const {lang}=useLanguage();
@@ -52201,6 +52691,7 @@ const PAGE_PATH={
   "tapelink":"/tapelink",
   "agency-directory":"/agency-directory",
   "casting-directory":"/casting-directory",
+  "school-directory":"/school-directory",
   "actor-business-card":"/actor-business-card",
   "success":"/success",
   "unsubscribed":"/unsubscribed",
@@ -52230,6 +52721,7 @@ const PAGE_SEO={
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
   "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
   "casting-directory":{title:"Casting Companies Directory — Active Casting Offices in LA & NYC",desc:"CastSlate's Premium directory of active casting offices, re-checked by hand every month, in Los Angeles and New York: each office's own submission policy, website and mailing address, with the offices that accept headshots listed first."},
+  "school-directory":{title:"Acting & Film School Directory — Acting Schools, Studios & Film Programs in LA & NYC",desc:"Free to browse: every active acting school, studio, conservatory and film program in Los Angeles and New York, checked by hand, with the techniques and classes each one teaches. A free account unlocks one school in each city; Premium unlocks them all."},
   "actor-business-card":{title:"Actor Business Card | CastSlate",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
   "register-talent":{title:"Create Your Free Actor Profile | CastSlate",desc:"Create your free CastSlate actor profile. Get seen by casting directors for film, TV, theater, and commercial roles."},
@@ -53774,7 +54266,7 @@ function App(){
           {/* One "Directories" item instead of two gold links side by side. Opens on hover,
               and on focus for touch/keyboard (a tap focuses the item). Items are buttons,
               not spans — .nav-links span styles would otherwise reach inside the menu. */}
-          <span ref={dirRef} className={"nav-attn nav-dd"+(page==="agency-directory"||page==="casting-directory"?" act":"")+(dirOpen?" open":"")}
+          <span ref={dirRef} className={"nav-attn nav-dd"+(page==="agency-directory"||page==="casting-directory"||page==="school-directory"?" act":"")+(dirOpen?" open":"")}
             role="button" tabIndex={0} aria-haspopup="true" aria-expanded={dirOpen}
             onClick={()=>setDirOpen(o=>!o)}
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setDirOpen(o=>!o);}}}
@@ -53786,6 +54278,8 @@ function App(){
                 <i className="ic"><Ico n="building-bank" s={17}/></i><b>{navT('nav.agencyDirectory')}</b><small>650+ talent agencies &amp; managers · LA + NY</small></button>
               <button role="menuitem" className={"nav-dd-new"+(page==="casting-directory"?" on":"")} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
                 <i className="ic"><Ico n="movie" s={17}/></i><b>{navT('nav.castingDirectory')}<em className="nav-new"><span className="gl" aria-hidden="true"/>New<i className="sp s1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s2" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s3" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i></em></b><small>{CASTING_OFFICES.length} active casting offices · who accepts headshots</small></button>
+              <button role="menuitem" className={page==="school-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("school-directory");}}>
+                <i className="ic"><Ico n="school" s={17}/></i><b>{navT('nav.schoolDirectory')}</b><small>Acting schools &amp; film programs · free to browse</small></button>
             </div>}
           </span>
           <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
@@ -53855,6 +54349,7 @@ function App(){
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("casting-directory")}>{navT('nav.castingDirectory')}<em className="nav-new">New</em></button>
+            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("school-directory")}>{navT('nav.schoolDirectory')}</button>
             <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
@@ -53992,6 +54487,7 @@ function App(){
         {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}
         {page==="agency-directory"&&<AgencyDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
         {page==="casting-directory"&&<CastingDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
+        {page==="school-directory"&&<SchoolDirectoryPage onNavigate={navigate} session={session}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
