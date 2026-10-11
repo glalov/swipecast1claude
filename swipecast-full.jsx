@@ -27636,7 +27636,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                 try{
                   const ext=(file.name.split(".").pop()||"mp4").toLowerCase();
                   const path=`${session.user.id}/video_${Date.now()}.${ext}`;
-                  const {error:upErr}=await withTimeout(window.sb.storage.from("talent-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"video/mp4"}),120000,"Video upload");
+                  const {error:upErr}=await withTimeout(window.sb.storage.from("talent-media").upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||"video/mp4"}),600000,"Video upload");
                   if(upErr)throw upErr;
                   const {data:pub}=window.sb.storage.from("talent-media").getPublicUrl(path);
                   const {error:dbErr}=await window.sb.from("profile_media").insert({user_id:session.user.id,media_type:"video",url:pub.publicUrl,path,title,display_order:mediaItems.length});
