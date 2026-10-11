@@ -5806,7 +5806,7 @@ button:disabled:hover .cs-tri{transform:none;}
 @media (prefers-reduced-motion:reduce){.nav-ddm .nav-added,.nav-ddm .nav-added::after{animation:none!important;}}
 
 .srp-wrap{position:relative;max-width:520px;width:100%;justify-self:end;align-self:start;margin-top:30px;padding:0 0 28px;}
-.srp{position:relative;z-index:2;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);box-shadow:0 12px 26px -14px rgba(36,31,25,.3),0 1px 3px rgba(36,31,25,.07);}
+.srp{position:relative;z-index:2;border-radius:18px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);box-shadow:0 6px 14px -8px rgba(36,31,25,.28),0 1px 2px rgba(36,31,25,.07);}
 /* Entrance: the card drops in solid from under the fixed nav (z 120) the moment the
    page mounts, once. No opacity, no re-entry on later search cycles. Desktop only:
    on phones the card sits below the hero text, so a drop would cross the copy. */
@@ -5902,7 +5902,7 @@ a.dsw-t:hover{background:var(--s1);color:var(--t1);}
 .fsd-k-ce{background:var(--s2);color:var(--t2);}
 .fsd-casts{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#146B31;}
 .fsd-nocast{font-size:12px;font-weight:600;color:var(--t3);}
-.fsd-set{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 14px 28px -14px rgba(26,26,46,.45);background:#14110E;}
+.fsd-set{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 6px 14px -8px rgba(26,26,46,.4);background:#14110E;}
 .fsd-set>img,
 
 .fsd-room{max-width:440px;width:100%;justify-self:end;align-self:center;}
