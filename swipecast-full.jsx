@@ -25438,7 +25438,38 @@ function csArmLoopVideo(v){
     if(csVidMode==='lite'||stallT) return;
     stallT=setTimeout(function(){ stallT=0; if(!gone&&!v.paused&&v.readyState<3&&String(v.src).indexOf('blob:')!==0) csVideoGoLite(); },2500);
   };
-  const onVis=function(){ if(!document.hidden) kick(false); };
+  // Coming back to the tab/app (mobile especially): iOS and Android can leave a
+  // clip frozen on its last frame while it still reports !paused, or with its
+  // decoder torn down (v.error / readyState 0, worst with blob: srcs). So on
+  // every resume, check the clip is really advancing: first a pause/seek/play
+  // nudge, then a full reload of the same src from the same spot.
+  let resumeT=0;
+  const unfreeze=function(step){
+    if(gone||document.hidden||!v.getAttribute('src')) return;
+    if(step>=2||v.error||v.readyState===0){
+      const at=v.currentTime||0; const u=v.getAttribute('src');
+      const seek=function(){ v.removeEventListener('loadedmetadata',seek); try{ v.currentTime=at; }catch(_){} kick(true); };
+      v.addEventListener('loadedmetadata',seek);
+      try{ v.removeAttribute('src'); v.load(); v.setAttribute('src',u); v.load(); }catch(_){}
+      return;
+    }
+    try{ v.pause(); v.currentTime=Math.max(0,(v.currentTime||0)+0.04); }catch(_){}
+    kick(true);
+  };
+  const checkResume=function(step){
+    clearTimeout(resumeT);
+    if(gone||document.hidden||!v.getAttribute('src')) return;
+    if(!visible){ kick(true); return; }
+    const t0=v.currentTime; kick(true);
+    resumeT=setTimeout(function(){
+      if(gone||document.hidden) return;
+      if(!v.paused&&v.currentTime!==t0&&!v.error) return; // rolling again
+      if(step>2) return;
+      unfreeze(step); checkResume(step+1);
+    },step?1500:900);
+  };
+  const onResume=function(){ if(!document.hidden) checkResume(0); };
+  const onVis=onResume;
   const onIdle=function(){ if(visible) kick(false); };
   const unlock=function(){ kick(true); };
   v.addEventListener('playing',onPlaying);
@@ -25448,6 +25479,8 @@ function csArmLoopVideo(v){
   v.addEventListener('pause',onPause);
   v.addEventListener('waiting',onWaiting);
   document.addEventListener('visibilitychange',onVis);
+  window.addEventListener('pageshow',onResume);
+  window.addEventListener('focus',onResume);
   window.addEventListener('cs:scroll-idle',onIdle);
   window.addEventListener('sc:glide-end',onIdle);
   const GESTURES=['pointerdown','touchstart','keydown'];
@@ -25460,8 +25493,14 @@ function csArmLoopVideo(v){
     io=new IntersectionObserver(function(es){ es.forEach(function(e){ visible=e.isIntersecting; if(visible) kick(false); }); },{threshold:0});
     io.observe(v);
   }
+  let lastT=-1, stuck=0;
   const guard=setInterval(function(){
     if(visible) kick(false);
+    // Silent freeze while on screen (playing, data buffered, clock not moving).
+    if(visible&&!document.hidden&&!v.paused&&v.readyState>=3&&v.classList.contains('is-on')){
+      if(v.currentTime===lastT){ if(++stuck>=2){ stuck=0; checkResume(1); } } else stuck=0;
+    } else stuck=0;
+    lastT=v.currentTime;
     if(csVidMode!=='lite'&&visible&&!document.hidden&&v.getAttribute('src')&&String(v.src).indexOf('blob:')!==0){
       if(!armedAt) armedAt=Date.now();
       else if(!v.classList.contains('is-on')&&Date.now()-armedAt>8000) csVideoGoLite();
@@ -25469,7 +25508,8 @@ function csArmLoopVideo(v){
   },2500);
   kick(false);
   return function(){
-    gone=true; clearInterval(guard); if(io) io.disconnect();
+    gone=true; clearInterval(guard); clearTimeout(resumeT); if(io) io.disconnect();
+    window.removeEventListener('pageshow',onResume); window.removeEventListener('focus',onResume);
     v.removeEventListener('playing',onPlaying); v.removeEventListener('timeupdate',onTime);
     v.removeEventListener('loadeddata',onReady); v.removeEventListener('canplay',onReady);
     v.removeEventListener('pause',onPause); v.removeEventListener('waiting',onWaiting); clearTimeout(stallT);
@@ -54322,7 +54362,7 @@ function App(){
               <button role="menuitem" className={"nav-dd-new"+(page==="casting-directory"?" on":"")} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
                 <i className="ic"><Ico n="movie" s={17}/></i><b>{navT('nav.castingDirectory')}<em className="nav-new"><span className="gl" aria-hidden="true"/>New<i className="sp s1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s2" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s3" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i></em></b><small>{CASTING_OFFICES.length} active casting offices · who accepts headshots</small></button>
               <button role="menuitem" className={page==="school-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("school-directory");}}>
-                <i className="ic"><Ico n="school" s={17}/></i><b>{navT('nav.schoolDirectory')}<em className="nav-added">Just added</em></b><small>Acting schools &amp; film programs · free to browse</small></button>
+                <i className="ic"><Ico n="school" s={17}/></i><b>{navT('nav.schoolDirectory')}<em className="nav-added">Just added</em></b><small>351 schools &amp; film programs · LA + NY</small></button>
             </div>}
           </span>
           <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
