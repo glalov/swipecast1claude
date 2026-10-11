@@ -38,13 +38,13 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    Photo width = height x its real shape (3.0 desktop, 2.35 phone) so it is never
    squashed. On phones the words box is exactly as wide as the words, and the
    free space is split evenly: edge to words, words to button, button to photo. */
-.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#fff;font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse 40% 90% at 12% 0%,rgba(240,184,96,.12),transparent 70%),linear-gradient(160deg,#3A3C62 0%,#2E3050 55%,#2A2B47 100%);}
+.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#1A1A2E;font-family:'DM Sans',sans-serif;background:#EBC282;}
 .bjs-l{display:flex;align-items:center;gap:20px;min-width:0;}
 .bjs-txt{font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
-.bjs-txt em{font-style:normal;color:#EAC080;}
+.bjs-txt em{font-style:normal;color:#7A3F06;}
 .bjs-short{display:none;}
-.bjs-go{order:-1;flex:none;font:800 13.5px 'DM Sans',sans-serif;background:#EAC080;color:#1A1A2E;border:0;border-radius:9px;padding:7px 16px;cursor:pointer;white-space:nowrap;}
-.bjs-go:hover{background:#E3B46C;}
+.bjs-go{order:-1;flex:none;font:800 13.5px 'DM Sans',sans-serif;background:#1A1A2E;color:#fff;border:0;border-radius:9px;padding:7px 16px;cursor:pointer;white-space:nowrap;}
+.bjs-go:hover{background:#2D2D44;}
 .bjs-ph{margin-left:36px;flex:none;align-self:stretch;width:168px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
 .bjs-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(20,20,34,.6);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0;opacity:.85;}
 .bjs-x:hover{opacity:1;}
