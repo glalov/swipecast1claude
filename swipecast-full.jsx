@@ -5413,6 +5413,25 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .adx-section,.adx-cta,.adx-chip,.adx-chip .m,.adx-chip .s{transition:none !important;}
   .adx-col.a,.adx-col.b,.adx-eyebrow .dot{animation:none !important;}
 }
+/* Directories carousel (3 slides in this one section). All slides share one grid
+   cell, so the section is always as tall as the tallest slide and the page never
+   jumps. Waiting slides sit off to the right, hidden; the outgoing one slides
+   off to the left. Transform only — no layout work per frame. */
+.adx-stack{display:grid;max-width:1100px;margin:0 auto;}
+.adx-slide{grid-area:1/1;min-width:0;transition:transform .65s cubic-bezier(.45,.05,.3,1);}
+.adx-slide.is-cur{transform:translateX(0);}
+.adx-slide.is-prev{transform:translateX(-100%);}
+.adx-slide.is-wait{transform:translateX(100%);visibility:hidden;transition:none;}
+.adx-tabs{max-width:1100px;margin:34px auto 0;display:flex;gap:10px;position:relative;z-index:2;}
+.adx-tab{flex:0 0 auto;width:150px;background:none;border:0;color:inherit;cursor:pointer;text-align:left;padding:0;font:800 11px 'DM Sans',sans-serif;letter-spacing:1.4px;text-transform:uppercase;opacity:.45;transition:opacity .3s;}
+.adx-tab.on,.adx-tab:hover{opacity:1;}
+.adx-tab .bar{display:block;height:3px;border-radius:3px;margin-bottom:9px;background:color-mix(in srgb,currentColor 22%,transparent);overflow:hidden;}
+.adx-tab .bar i{display:block;height:100%;width:0;background:currentColor;}
+.adx-tab.on .bar i{animation:adxfill 13s linear forwards;}
+.adx-section.adx-hold .adx-tab.on .bar i{animation-play-state:paused;}
+@keyframes adxfill{from{width:0}to{width:100%}}
+@media(max-width:900px){.adx-tabs{justify-content:center;}.adx-tab{width:auto;flex:1 1 0;max-width:140px;text-align:center;font-size:10px;letter-spacing:1px;}}
+@media(prefers-reduced-motion:reduce){.adx-slide{transition:none !important;}.adx-tab.on .bar i{animation:none;width:100%;}}
 
 /* ── Landing: Single cinematic feature image section ── */
 .landing-stats-live{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:clamp(18px,5vw,62px);max-width:900px;margin:0 auto;padding:56px 40px;text-align:center;align-items:start;perspective:1200px;}
@@ -25786,10 +25805,45 @@ const ADX_SCHEMES=[
 // never crosses the threshold where the eye treats it as a flash to react to.
 // If this is ever retuned, move both numbers together — a short fade at a long
 // hold brings the blink straight back.
-const ADX_HOLD_MS=2600;
+// 6.1s per colour (owner, 2026-10-12: "slower", from 2.6s via the carousel demo).
+// The fade stays 1.2s; a longer hold only lengthens the calm between fades.
+const ADX_HOLD_MS=6100;
+// Three directories share this one section as slides (owner-approved demo
+// landing-directories-carousel-demo.html, 2026-10-12): each holds 13s, the next
+// enters from the right, tabs + a fill bar show what's next, hover pauses,
+// swipe on phones. The colour flip above runs underneath, untouched.
+// Every wall chip is a FIELD a listing holds, never a name (see ADX_FIELDS).
+const ADX_SLIDE_MS=13000;
+const ADX_SLIDES=[
+  {tab:"Agencies",eyebrow:"Premium — Agency & Management Directory",num:ADX_TOTAL,plus:true,
+   cap:"Agencies & managers · Los Angeles + New York",
+   h:["Learn in an afternoon","what took everyone else","a decade."],
+   lede:"For every company: the mailing address, the website, the division to write to, how big they are, and whether they take unsolicited mail at all — plus the ones charging a fee, flagged so you walk away.",
+   meta:["354 agencies","309 management companies","Re-checked every few months"],fields:ADX_FIELDS,to:null},
+  {tab:"Casting",eyebrow:"Premium — Casting Companies Directory",num:131,plus:false,
+   cap:"Active casting offices · Los Angeles + New York",
+   h:["Know which casting offices","want your headshot,","and which don't."],
+   lede:"For every office: whether it accepts headshots, its stated submission policy, the website and a mailing address — and the ones that only take submissions through agents, flagged so you don't waste a stamp.",
+   cta:"See the Casting Directory",meta:["131 active offices","Los Angeles + New York","Re-checked every month"],to:"casting-directory",
+   fields:[["Accepts headshots","Yes"],["Submission policy","On file"],["Mailing address","Confirmed"],["Website","On file"],["Agents only","Flagged"],["No unsolicited mail","Flagged"],["Los Angeles office","On file"],["New York office","On file"],["Recent projects","Confirmed"],["Last re-checked","This month"],["Closed since last check","Removed"],["Address not yet confirmed","Marked"],["Still casting","Confirmed"],["Where to mail your card","On file"],["Mailing postcard","Best fit"],["Agent promo card","Best fit"],["Mailing list","One click"],["Already sent","Tracked"],["Policy not published","Noted"],["Shared list with agencies","Yes"],["Hand-checked","One by one"],["Mail from anywhere","Yes"]]},
+  {tab:"Schools",eyebrow:"New — Acting & Film School Directory",num:351,plus:false,
+   cap:"Acting schools & film programs · LA + New York",
+   h:["Find where to train,","and the film schools","that cast actors."],
+   lede:"Every school is hand-picked and checked one by one, so you only see the ones teaching right now — no closed studios or dead websites to waste your time on. Meisner studios, improv schools, audition rooms, conservatories, and film programs whose students need actors every semester.",
+   cta:"See the School Directory",meta:["273 acting schools","78 film programs","Hand-checked · active in 2026"],to:"school-directory",
+   fields:[["Teaches Meisner","Tagged"],["Method (Strasberg)","Tagged"],["On-camera classes","Tagged"],["Audition & self-tape","Tagged"],["Free audit or trial","Yes"],["Teachers","Named"],["Kids & teens","Yes"],["Online classes","Yes"],["Full-time program","Yes"],["Degree program","BFA / MFA"],["Improv & sketch","Tagged"],["Shakespeare & classical","Tagged"],["Voice-over","Tagged"],["Neighbourhood","On file"],["Website","On file"],["2026 classes","Confirmed"],["Closed schools","Removed"],["Film school casts actors","Yes"],["Graduate thesis films","Flagged"],["Community college","Low cost"],["Los Angeles area","215"],["New York area","136"]]}
+];
 function AgencyDirectoryStripe({onNavigate,isPremium=false}){
   const secRef=React.useRef(null);
-  const numRef=React.useRef(null);
+  const numRefs=React.useRef([]);
+  const still=React.useMemo(()=>!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches),[]);
+  const[cur,setCur]=React.useState(0);
+  const[prev,setPrev]=React.useState(null);
+  const[live,setLive]=React.useState(false);
+  const[paused,setPaused]=React.useState(false);
+  const leftRef=React.useRef(ADX_SLIDE_MS);
+  const wentRef=React.useRef(false);
+  const counted=React.useRef(false);
   // Colour cycle. Writes straight to the node instead of through state — this
   // ticks every ADX_HOLD_MS forever and has no business re-rendering the subtree.
   React.useEffect(()=>{
@@ -25803,16 +25857,12 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
       el.style.setProperty("--adx-fg",fg);
     };
     paint(0);
-    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
     let i=0,t=0;
-    // Only cycle while the stripe is near the viewport, and only run the wall's
-    // marquee then too (.is-live). A landing page is long; this section used to
-    // repaint a full-bleed background on a timer and scroll two tall columns
-    // forever, several screens away from anything the visitor was looking at.
-    // That work is invisible by definition and competes with the video decoders
-    // further up the page on phones.
-    const start=()=>{if(!t){t=setInterval(()=>{i=(i+1)%ADX_SCHEMES.length;paint(i);},ADX_HOLD_MS);}el.classList.add("is-live");};
-    const stop=()=>{if(t){clearInterval(t);t=0;}el.classList.remove("is-live");};
+    // Only cycle (and run the walls' marquee, .is-live, and the slide timer)
+    // while the stripe is near the viewport — a long landing page, and this work
+    // competes with the video decoders further up the page on phones.
+    const start=()=>{if(!t&&!still){t=setInterval(()=>{i=(i+1)%ADX_SCHEMES.length;paint(i);},ADX_HOLD_MS);}setLive(true);};
+    const stop=()=>{if(t){clearInterval(t);t=0;}setLive(false);};
     if(!("IntersectionObserver" in window)){start();return()=>stop();}
     const io=new IntersectionObserver((entries)=>{
       entries.forEach(e=>{if(e.isIntersecting)start();else stop();});
@@ -25820,38 +25870,45 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
     io.observe(el);
     return()=>{io.disconnect();stop();};
   },[]);
-  // Count up to ADX_TOTAL once, when the number scrolls into view.
-  React.useEffect(()=>{
-    const el=numRef.current;
+  const count=(k)=>{
+    const el=numRefs.current[k],s=ADX_SLIDES[k];
     if(!el)return;
-    const settle=()=>{el.innerHTML=ADX_TOTAL+"<sup>+</sup>";};
-    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){settle();return;}
-    let raf=0;
-    const run=()=>{
-      const start=performance.now(),duration=1500;
-      const tick=(now)=>{
-        const raw=Math.min((now-start)/duration,1);
-        const eased=1-Math.pow(1-raw,3);
-        el.innerHTML=Math.round(ADX_TOTAL*eased)+"<sup>+</sup>";
-        if(raw<1)raf=requestAnimationFrame(tick);
-        else settle();
-      };
-      raf=requestAnimationFrame(tick);
-    };
-    if(!("IntersectionObserver" in window)){run();return()=>cancelAnimationFrame(raf);}
-    const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting){run();io.disconnect();}});
-    },{threshold:.3});
-    io.observe(el);
-    return()=>{io.disconnect();cancelAnimationFrame(raf);};
+    const fmt=v=>v+(s.plus?"<sup>+</sup>":"");
+    if(still){el.innerHTML=fmt(s.num);return;}
+    // setTimeout, not rAF: rAF stalls in background tabs and the number would freeze mid-count.
+    const t0=Date.now(),d=1300;
+    const step=()=>{const r=Math.min((Date.now()-t0)/d,1);el.innerHTML=fmt(Math.round(s.num*(1-Math.pow(1-r,3))));if(r<1)setTimeout(step,16);};
+    step();
+  };
+  // First count when the section first comes into view, then on every arrival.
+  React.useEffect(()=>{if(live&&!counted.current){counted.current=true;count(cur);}},[live]);
+  const curRef=React.useRef(0);
+  const go=React.useCallback((n)=>{
+    const c=curRef.current;
+    if(n===c)return;
+    curRef.current=n;wentRef.current=true;leftRef.current=ADX_SLIDE_MS;
+    setPrev(c);setCur(n);count(n);
   },[]);
+  // The outgoing slide stays visible (sliding off left) for the transition only.
+  React.useEffect(()=>{if(prev===null)return;const t=setTimeout(()=>setPrev(null),700);return()=>clearTimeout(t);},[prev]);
+  // Slide timer, with pause/resume keeping the remaining time (hover, off-screen).
+  const hold=paused||!live||still;
+  React.useEffect(()=>{
+    if(hold)return;
+    wentRef.current=false;
+    const startedAt=Date.now();
+    const t=setTimeout(()=>go((cur+1)%ADX_SLIDES.length),Math.max(0,leftRef.current));
+    return()=>{clearTimeout(t);if(!wentRef.current)leftRef.current-=Date.now()-startedAt;};
+  },[cur,hold,go]);
+  const hoverable=()=>!!(window.matchMedia&&window.matchMedia("(hover:hover)").matches);
+  const x0=React.useRef(null);
   // Each column renders the list twice so translateY(-50%) lands exactly on the
   // seam — one pass and the loop visibly jumps.
-  const column=(offset,hotEvery)=>{
+  const column=(fields,offset,hotEvery)=>{
     const out=[];
     for(let pass=0;pass<2;pass++){
-      for(let i=0;i<ADX_FIELDS.length;i++){
-        const[m,s]=ADX_FIELDS[(i+offset)%ADX_FIELDS.length];
+      for(let i=0;i<fields.length;i++){
+        const[m,s]=fields[(i+offset)%fields.length];
         out.push(
           <div key={pass+"-"+i} className={"adx-chip"+(i%hotEvery===2?" hot":"")} aria-hidden={pass===1}>
             <div className="m">{m}</div><div className="s">{s}</div>
@@ -25862,25 +25919,43 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
     return out;
   };
   return(
-    <section className="adx-section" ref={secRef}>
-      <div className="adx-grid">
-        <div>
-          <div className="adx-eyebrow"><span className="dot"/>Premium — Agency &amp; Management Directory</div>
-          <div className="adx-num" ref={numRef}>0<sup>+</sup></div>
-          <div className="adx-numcap">Agencies &amp; managers · Los Angeles + New York</div>
-          <h3 className="adx-h">Learn in an afternoon<br/>what took everyone else<br/>a decade.</h3>
-          <p className="adx-lede">For every company: the mailing address, the website, the division to write to, how big they are, and whether they take unsolicited mail at all — plus the ones charging a fee, flagged so you walk away.</p>
-          <button className="adx-cta" onClick={()=>onNavigate(isPremium?"dashboard":"membership")}>
-            <span>{isPremium?<>Open the Directory <Tri/></>:<>See What's Inside <Tri/></>}</span>
+    <section className={"adx-section"+(live?" is-live":"")+(hold?" adx-hold":"")} ref={secRef}
+      onMouseEnter={()=>{if(hoverable())setPaused(true);}} onMouseLeave={()=>{if(hoverable())setPaused(false);}}
+      onTouchStart={e=>{x0.current=e.touches[0].clientX;}}
+      onTouchEnd={e=>{if(x0.current==null)return;const dx=e.changedTouches[0].clientX-x0.current;x0.current=null;if(Math.abs(dx)>45)go((cur+(dx<0?1:ADX_SLIDES.length-1))%ADX_SLIDES.length);}}>
+      <div className="adx-stack">
+        {ADX_SLIDES.map((s,k)=>{
+          const st=k===cur?" is-cur":k===prev?" is-prev":" is-wait";
+          return(
+          <div key={s.tab} className={"adx-slide"+st} role="tabpanel" aria-label={s.tab} aria-hidden={k!==cur}>
+            <div className="adx-grid">
+              <div>
+                <div className="adx-eyebrow"><span className="dot"/>{s.eyebrow}</div>
+                <div className="adx-num" ref={el=>{numRefs.current[k]=el;}}>{k===0?0:s.num}{s.plus&&<sup>+</sup>}</div>
+                <div className="adx-numcap">{s.cap}</div>
+                <h3 className="adx-h">{s.h[0]}<br/>{s.h[1]}<br/>{s.h[2]}</h3>
+                <p className="adx-lede">{s.lede}</p>
+                <button className="adx-cta" tabIndex={k===cur?0:-1} onClick={()=>onNavigate(s.to||(isPremium?"dashboard":"membership"))}>
+                  <span>{s.to?<>{s.cta} <Tri/></>:(isPremium?<>Open the Directory <Tri/></>:<>See What's Inside <Tri/></>)}</span>
+                </button>
+                <div className="adx-meta">{s.meta.map(m=><div key={m}>{m}</div>)}</div>
+              </div>
+              <div>
+                <div className="adx-wall" aria-hidden="true">
+                  <div className="adx-col a">{column(s.fields,0,7)}</div>
+                  <div className="adx-col b">{column(s.fields,k===0?13:11,9)}</div>
+                </div>
+              </div>
+            </div>
+          </div>);
+        })}
+      </div>
+      <div className="adx-tabs" role="tablist" aria-label="Directories">
+        {ADX_SLIDES.map((s,k)=>(
+          <button key={s.tab} role="tab" aria-selected={k===cur} className={"adx-tab"+(k===cur?" on":"")} onClick={()=>go(k)}>
+            <span className="bar"><i key={k===cur?"run-"+cur:"idle"}/></span>{s.tab}
           </button>
-          <div className="adx-meta"><div>354 agencies</div><div>309 management companies</div><div>Re-checked every few months</div></div>
-        </div>
-        <div>
-          <div className="adx-wall" aria-hidden="true">
-            <div className="adx-col a">{column(0,7)}</div>
-            <div className="adx-col b">{column(13,9)}</div>
-          </div>
-        </div>
+        ))}
       </div>
     </section>
   );
