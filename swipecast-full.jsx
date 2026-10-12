@@ -3569,6 +3569,16 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-bm svg{width:17px;height:17px;}
 .b5-apply{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:12.5px;color:#fff;background:var(--teal);border:0;border-radius:7px;padding:5px 12px;cursor:pointer;white-space:nowrap;}
 .b5-apply:hover{background:#206557;}
+/* Roles column: only the role name and the buttons act (owner, 2026-10-12). The card's
+   own click would otherwise open the casting from anywhere in the column. */
+.b5-side,.b5-side .b5-role{cursor:default;}
+.b5-side button{cursor:pointer;}
+.b5-rname-link{display:block;width:fit-content;max-width:100%;cursor:pointer;}
+.b5-rname-link:hover{color:var(--teal-dk);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px;}
+.b5-rname-link:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px;}
+/* "Applied" = ink outline + check, on Browse cards and in the casting's role list. */
+.role-applied{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px;line-height:1;border-radius:8px;padding:7px 12px;white-space:nowrap;cursor:default;background:transparent;color:#1A1A2E;border:1.5px solid #1A1A2E;}
+.role-applied.big{font-size:15px;padding:11px 20px;border-radius:10px;}
 .b5-more{font-size:13.5px;color:var(--t2);font-weight:600;padding:4px 0 2px 16px;}
 .b5-bm:focus-visible,.b5-apply:focus-visible,.b5-ghost:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 @media (max-width:900px){
@@ -12756,7 +12766,7 @@ function niceRoleName(name){
   if(nm===nm.toUpperCase()&&/[A-Z]/.test(nm))return nm.toLowerCase().replace(/(^|[\s(\-–])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
   return nm;
 }
-function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting,backKey}){
+function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting,backKey,focusRole=null}){
   const t=useT();
   const {lang}=useLanguage();
   // onBack pops history, so it lands wherever the reader came from — the plan
@@ -12946,6 +12956,23 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(i<0||!sorted[i])return;
     handleApply(sorted[i],i);
   },[autoApplyRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
+  // The role clicked on a Browse card (its name or Apply) opens unfolded and is
+  // scrolled to the middle of the sheet, instead of every role arriving closed.
+  const focusedRef=useRef(null);
+  useEffect(()=>{
+    if(!focusRole||focusedRef.current===focusRole)return;
+    // realRoleIds only loads for signed-in users; visitors match on the role itself.
+    if(isDbCasting&&isLoggedIn&&!rolesReady)return;
+    focusedRef.current=focusRole;
+    const sorted=(casting?.roles||[]).slice().sort(compareRoles);
+    let i=-1;
+    if(focusRole.id){const hit=Object.entries(realRoleIds).find(([,rid])=>rid===focusRole.id);if(hit)i=parseInt(hit[0],10);}
+    if(i<0&&focusRole.id)i=sorted.findIndex(x=>x&&x.id===focusRole.id);
+    if(i<0)i=sorted.findIndex(x=>x&&x.name===focusRole.name);
+    if(i<0)return;
+    setDescOpen(p=>({...p,[i]:true}));
+    setTimeout(()=>{try{const el=document.querySelector('.rl-row[data-ri="'+i+'"]');if(el)el.scrollIntoView({behavior:"smooth",block:"center"});}catch(_){}},380);
+  },[focusRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!casting)return;
     const {data:{session:s}}=await window.sb.auth.getSession();
@@ -13488,7 +13515,7 @@ Free submission used
         const applyCtl=(r,i,hasInstructions,big)=>applicationsClosed
           ? <span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>
           : applied.has(i)
-            ? <span className="tag tag-grn" style={{fontSize:12,fontWeight:700,padding:"8px 14px"}}>{hasInstructions?"Audition Submitted":"Applied"}</span>
+            ? <span className={"role-applied"+(big?" big":"")}>{hasInstructions?"Audition Submitted":"Applied"}<Ico n="check" s={big?16:14}/></span>
             : big
               ? <button className="btn-teal apply-cta" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition now":"Apply now"}</button>
               : <button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition":"Apply"}</button>;
@@ -13633,7 +13660,7 @@ Free submission used
           // !undefined would have made the first click a no-op.
           const toggle=()=>{if(foldable)setDescOpen(p=>({...p,[i]:!open}));};
           return(
-          <div key={i} className={"rl-row"+(open&&foldable?" rl-open":"")}>
+          <div key={i} data-ri={i} className={"rl-row"+(open&&foldable?" rl-open":"")}>
             <div className={"rl-top"+(foldable?" rl-clickable":"")}
               {...(foldable?{role:"button",tabIndex:0,"aria-expanded":open,
                 "aria-label":(open?"Collapse ":"Expand ")+(r.name||"role")+" details",
@@ -15493,6 +15520,13 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // CastingDetailPage already owns this via autoApplyRole (login + expiry gated),
   // so nothing about the apply rules or the submission cap changes here.
   const [sheetRole,setSheetRole]=useState(null);
+  // Role to unfold + scroll to inside the sheet (the role clicked on the card).
+  const [sheetFocus,setSheetFocus]=useState(null);
+  // Roles this actor has already submitted to, by role id — drives "Applied" on
+  // the cards. Read from applications (own rows only: admins can read everyone's,
+  // so talent_id is filtered explicitly), and re-read whenever the sheet closes,
+  // since a submission may have just happened inside it.
+  const [appliedRoleIds,setAppliedRoleIds]=useState(()=>new Set());
   // `replace` is set when one casting is opened from INSIDE another (the "More
   // roles" strip under the roles). Pushing there would stack /casting/A,
   // /casting/B… and the X — which pops exactly one entry — would land the reader
@@ -15507,6 +15541,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     const restore=!!(opts&&opts.restore);
     if(!replace&&!restore)sheetScrollY.current=window.scrollY;
     setSheetRole(role||null);
+    setSheetFocus((opts&&opts.focus)||role||null);
     setSheetClosing(false);
     // Give the slide-in sheet its own shareable URL (/casting/<slug-or-id>) so a
     // link posted to Facebook etc. opens this specific casting. Without this the
@@ -15540,6 +15575,16 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     openSheet(restoreCasting,null,{restore:true});
     if(onRestoreConsumed)onRestoreConsumed();
   },[restoreCasting]); // eslint-disable-line react-hooks/exhaustive-deps
+  const sessionUid=session?.user?.id||null;
+  useEffect(()=>{
+    if(!sessionUid||!active||sheetCasting){if(!sessionUid)setAppliedRoleIds(new Set());return;}
+    let alive=true;
+    (async()=>{try{
+      const{data}=await window.sb.from("applications").select("role_id").eq("talent_id",sessionUid);
+      if(alive&&data)setAppliedRoleIds(new Set(data.map(a=>a.role_id).filter(Boolean)));
+    }catch(_){}})();
+    return()=>{alive=false;};
+  },[sessionUid,active,sheetCasting,refreshTick]);
   const closeSheet=useCallback(()=>{
     // If we pushed a /casting/<slug> entry on open, step back so the URL returns
     // to /browse-castings; the popstate listener below runs the close animation.
@@ -15879,7 +15924,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                   </div>
                 </div>
-                {pick.shown.length>0&&<div className="b5-side">
+                {pick.shown.length>0&&<div className="b5-side" onClick={e=>e.stopPropagation()}>
                   {pick.shown.map((r,i)=>{
                     const label=r.type||r.role_type||"Role";
                     const lead=/^(lead|principal|series regular|host)$/i.test(label),sup=/^(supporting|co-star|recurring|guest star|featured)$/i.test(label);
@@ -15887,14 +15932,20 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     return(<div key={r.id||i} className={"b5-role"+(lead?" lead":sup?" sup":"")}>
                       <span className="b5-bar" aria-hidden="true"/>
                       <div style={{minWidth:0}}>
-                        <div className="b5-rname">{r.name||label}</div>
+                        {isClosedCard
+                          ?<div className="b5-rname">{r.name||label}</div>
+                          :<div className="b5-rname b5-rname-link" role="link" tabIndex={0}
+                            onClick={e=>{e.stopPropagation();openSheet(rawC,null,{focus:r});}}
+                            onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();openSheet(rawC,null,{focus:r});}}}>{r.name||label}</div>}
                         <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><React.Fragment key={k}>{k?" · ":""}<span className="b5-pay">{x}</span></React.Fragment>)}</div>
                       </div>
                       {!isClosedCard&&<div className="b5-racts">
                         <button type="button" className={"b5-bm"+(isSaved?" on":"")} aria-label={isSaved?"Saved":"Save casting"} aria-pressed={isSaved} onClick={e=>{e.stopPropagation();toggleSaveCasting(rawC);}}>
                           <svg viewBox="0 0 24 24" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
                         </button>
-                        <button type="button" className="b5-apply" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{withTri("Apply")}</button>
+                        {r.id&&appliedRoleIds.has(r.id)
+                          ?<span className="role-applied">Applied<Ico n="check" s={14}/></span>
+                          :<button type="button" className="b5-apply" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{withTri("Apply")}</button>}
                       </div>}
                     </div>);
                   })}
@@ -15924,7 +15975,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <button className="cs-sheet-x" onClick={closeSheet} aria-label="Close"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>Close</button>
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
-          ? <CastingDetailPage key={sheetCasting.id} casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full,null,{replace:true});}else{setSheetCasting(null);onNavigate("search");}}}/>
+          ? <CastingDetailPage key={sheetCasting.id} casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} focusRole={sheetFocus} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full,null,{replace:true});}else{setSheetCasting(null);onNavigate("search");}}}/>
           : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>,document.body)}
