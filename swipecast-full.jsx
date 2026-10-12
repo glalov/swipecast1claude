@@ -2291,6 +2291,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    free space is split evenly: edge to words, words to button, button to photo. */
 .bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#1A1A2E;font-family:'DM Sans',sans-serif;background:#EBC282;}
 .bjs-l{display:flex;align-items:center;gap:20px;min-width:0;}
+/* Arrives 7s after Browse Castings opens: parked above the top edge (the nav sits where it
+   would without it), then slides down. BJS_DELAY_MS / BJS_SLIDE_MS in BrowseJoinStripe. */
+.bjs.bjs-wait{margin-top:-56px;}
+.bjs.bjs-anim{transition:margin-top .9s cubic-bezier(.25,.8,.3,1);}
+.bjs-glide .app{transition:padding-top .9s cubic-bezier(.25,.8,.3,1);}
+@media(prefers-reduced-motion:reduce){.bjs.bjs-anim{transition:none;}.bjs-glide .app{transition:none;}}
 .bjs-txt{font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
 .bjs-txt em{font-style:normal;color:#7A3F06;}
 .bjs-short{display:none;}
@@ -6615,7 +6621,7 @@ function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
     mode="premium";
   }
   const close=()=>{try{sessionStorage.setItem("cs_bjs_off","1");}catch(_){}setOff(true);};
-  return(<div className="bjs">
+  return <BjsReveal>{(cls,hide)=>(<div className={"bjs"+cls}>
     <div className="bjs-l">
       {mode==="join"
         ?<div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams<br/>are looking.</span></div>
@@ -6623,8 +6629,45 @@ function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
       <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Get Found":"Go Premium"}</button>
     </div>
     <div className="bjs-ph" role="img" aria-label="A casting team watching an actor through a camera"></div>
-    <button className="bjs-x" aria-label="Close" onClick={close}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-  </div>);
+    <button className="bjs-x" aria-label="Close" onClick={()=>hide(close)}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>)}</BjsReveal>;
+}
+// The stripe arrives BJS_DELAY_MS after Browse Castings opens (owner, 2026-10-12):
+// parked above the top edge, then slides down. The page offset (--site-top-pad)
+// grows by the stripe's 56px in the SAME moment, so the content glides down with it
+// instead of jumping once the App's ResizeObserver settles ~460ms later. If the
+// visitor has already scrolled, the content must not move under them: the offset
+// and the scroll position change together, instantly, and only the stripe slides.
+const BJS_DELAY_MS=7000,BJS_H=56;
+function BjsReveal({children}){
+  const[shown,setShown]=useState(false);
+  useEffect(()=>{
+    const t=setTimeout(()=>{
+      const root=document.documentElement;
+      const pad=parseFloat(getComputedStyle(root).getPropertyValue("--site-top-pad"))||0;
+      const atTop=window.scrollY<8;
+      if(atTop)root.classList.add("bjs-glide");
+      root.style.setProperty("--site-top-pad",(pad+BJS_H)+"px");
+      if(!atTop)window.scrollBy({top:BJS_H,left:0,behavior:"instant"});
+      setShown(true);
+      setTimeout(()=>root.classList.remove("bjs-glide"),1100);
+    },BJS_DELAY_MS);
+    return()=>clearTimeout(t);
+  },[]);
+  // × slides it back up the same way (owner, 2026-10-12), mirroring the arrival:
+  // at the top the content glides up with it; scrolled down, the content stays put.
+  const hide=(done)=>{
+    if(!shown){done();return;}
+    const root=document.documentElement;
+    const pad=parseFloat(getComputedStyle(root).getPropertyValue("--site-top-pad"))||0;
+    const atTop=window.scrollY<8;
+    if(atTop)root.classList.add("bjs-glide");
+    root.style.setProperty("--site-top-pad",Math.max(0,pad-BJS_H)+"px");
+    if(!atTop)window.scrollBy({top:-BJS_H,left:0,behavior:"instant"});
+    setShown(false);
+    setTimeout(()=>{root.classList.remove("bjs-glide");done();},950);
+  };
+  return children(shown?" bjs-anim":" bjs-wait bjs-anim",hide);
 }
 
 function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
