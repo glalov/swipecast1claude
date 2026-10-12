@@ -5420,8 +5420,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .adx-stack{display:grid;max-width:1100px;margin:0 auto;}
 .adx-slide{grid-area:1/1;min-width:0;transition:transform .65s cubic-bezier(.45,.05,.3,1);}
 .adx-slide.is-cur{transform:translateX(0);}
-.adx-slide.is-prev{transform:translateX(-100%);}
-.adx-slide.is-wait{transform:translateX(100%);visibility:hidden;transition:none;}
+/* 100vw, not 100%: a slide is only ~1100px wide, so -100% left a strip of the old slide
+   on screen on wide monitors until it was hidden (owner saw a 'trace'). A full viewport
+   width always clears the screen edge in both directions. */
+.adx-slide.is-prev{transform:translateX(-100vw);}
+.adx-slide.is-wait{transform:translateX(100vw);visibility:hidden;transition:none;}
 .adx-tabs{max-width:1100px;margin:34px auto 0;display:flex;gap:10px;position:relative;z-index:2;}
 .adx-tab{flex:0 0 auto;width:150px;background:none;border:0;color:inherit;cursor:pointer;text-align:left;padding:0;font:800 11px 'DM Sans',sans-serif;letter-spacing:1.4px;text-transform:uppercase;opacity:.45;transition:opacity .3s;}
 .adx-tab.on,.adx-tab:hover{opacity:1;}
