@@ -25810,7 +25810,7 @@ const ADX_SCHEMES=[
 const ADX_HOLD_MS=6100;
 // Three directories share this one section as slides (owner-approved demo
 // landing-directories-carousel-demo.html, 2026-10-12): each holds 13s, the next
-// enters from the right, tabs + a fill bar show what's next, hover pauses,
+// enters from the right, tabs + a fill bar show what is next (no hover pause),
 // swipe on phones. The colour flip above runs underneath, untouched.
 // Every wall chip is a FIELD a listing holds, never a name (see ADX_FIELDS).
 const ADX_SLIDE_MS=13000;
@@ -25840,7 +25840,7 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
   const[cur,setCur]=React.useState(0);
   const[prev,setPrev]=React.useState(null);
   const[live,setLive]=React.useState(false);
-  const[paused,setPaused]=React.useState(false);
+  const[inView,setInView]=React.useState(false);
   const leftRef=React.useRef(ADX_SLIDE_MS);
   const wentRef=React.useRef(false);
   const counted=React.useRef(false);
@@ -25892,7 +25892,16 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
   // The outgoing slide stays visible (sliding off left) for the transition only.
   React.useEffect(()=>{if(prev===null)return;const t=setTimeout(()=>setPrev(null),700);return()=>clearTimeout(t);},[prev]);
   // Slide timer, with pause/resume keeping the remaining time (hover, off-screen).
-  const hold=paused||!live||still;
+  // The 13s clock runs only while the section is really on screen (30%+), not
+  // from the 200px pre-roll the colour flip uses, and there is NO hover pause:
+  // a resting desktop mouse sat over the section and froze slide 1 (owner, 2026-10-12).
+  React.useEffect(()=>{
+    const el=secRef.current;if(!el)return;
+    if(!("IntersectionObserver" in window)){setInView(true);return;}
+    const io=new IntersectionObserver(es=>es.forEach(e=>setInView(e.isIntersecting)),{threshold:.3});
+    io.observe(el);return()=>io.disconnect();
+  },[]);
+  const hold=!inView||still;
   React.useEffect(()=>{
     if(hold)return;
     wentRef.current=false;
@@ -25900,7 +25909,6 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
     const t=setTimeout(()=>go((cur+1)%ADX_SLIDES.length),Math.max(0,leftRef.current));
     return()=>{clearTimeout(t);if(!wentRef.current)leftRef.current-=Date.now()-startedAt;};
   },[cur,hold,go]);
-  const hoverable=()=>!!(window.matchMedia&&window.matchMedia("(hover:hover)").matches);
   const x0=React.useRef(null);
   // Each column renders the list twice so translateY(-50%) lands exactly on the
   // seam — one pass and the loop visibly jumps.
@@ -25920,7 +25928,6 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
   };
   return(
     <section className={"adx-section"+(live?" is-live":"")+(hold?" adx-hold":"")} ref={secRef}
-      onMouseEnter={()=>{if(hoverable())setPaused(true);}} onMouseLeave={()=>{if(hoverable())setPaused(false);}}
       onTouchStart={e=>{x0.current=e.touches[0].clientX;}}
       onTouchEnd={e=>{if(x0.current==null)return;const dx=e.changedTouches[0].clientX-x0.current;x0.current=null;if(Math.abs(dx)>45)go((cur+(dx<0?1:ADX_SLIDES.length-1))%ADX_SLIDES.length);}}>
       <div className="adx-stack">
