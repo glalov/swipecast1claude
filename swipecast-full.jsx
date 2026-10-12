@@ -3576,8 +3576,10 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-rname-link{display:block;width:fit-content;max-width:100%;cursor:pointer;}
 .b5-rname-link:hover{color:var(--teal-dk);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px;}
 .b5-rname-link:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px;}
-/* "Applied" = ink outline + check, on Browse cards and in the casting's role list. */
-.role-applied{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px;line-height:1;border-radius:8px;padding:7px 12px;white-space:nowrap;cursor:default;background:transparent;color:#1A1A2E;border:1.5px solid #1A1A2E;}
+/* "Applied" = faded sand chip + green check (owner's pick #3, 2026-10-12): reads as a
+   status, not a button, so the teal Apply buttons stand out. Browse cards + casting roles. */
+.role-applied{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13.5px;line-height:1;border-radius:8px;padding:7px 12px;white-space:nowrap;cursor:default;background:#F2ECE0;color:#7A6F63;border:1px solid #E4DCCB;}
+.role-applied svg{color:#1B6E45;}
 .role-applied.big{font-size:15px;padding:11px 20px;border-radius:10px;}
 .b5-more{font-size:13.5px;color:var(--t2);font-weight:600;padding:4px 0 2px 16px;}
 .b5-bm:focus-visible,.b5-apply:focus-visible,.b5-ghost:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
