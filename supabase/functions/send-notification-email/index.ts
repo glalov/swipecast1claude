@@ -462,7 +462,7 @@ function premiumWelcomeHtml(firstName: string): string {
           ${row("pw-upload", 2, "Upload everything you can", "Photos, all your stats, <strong>'Cast Me As'</strong> videos and your <strong>7-second Actor's Slate</strong>.")}
           ${row("pw-reel", 3, "Unlimited storage", "Demo reels, video clips and photos with no limits. Show your full range.")}
           ${row("pw-message", 4, "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
-          ${row("pw-directory", 5, "Agency &amp; Casting Directories", "<strong>650+</strong> agencies and managers, plus <strong>131</strong> active casting offices, in LA &amp; NY, with how each one takes submissions.")}
+          ${row("pw-directory", 5, "Agency, Casting &amp; School Directories", "<strong>650+</strong> agencies and managers and <strong>131</strong> active casting offices, with how each one takes submissions, plus all <strong>351</strong> acting schools &amp; film programs, in LA &amp; NY.")}
           ${row("pw-bizcard", 6, "Actor Business Card + QR code", "One scan opens your full profile, reels, slate and stats for any industry pro.")}
         </table>
       </td></tr>
@@ -617,7 +617,7 @@ function newActorWelcomeHtml(firstName: string): string {
       <tr><td class="row-pad" style="padding:0 36px 30px">
         <div style="background:#FBEEE7;border:1px dashed #F1D6C8;border-radius:12px;padding:16px 18px">
           <div style="font-size:13px;font-weight:800;color:#1A1A2E;margin:0 0 4px">Want to move faster?</div>
-          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium is <strong>$129 a year ($10.75/month)</strong>, or $17.99/month — it unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor&rsquo;s Slate, an Actor Business Card with a QR code, the <strong>Talent Agency &amp; Manager Directory</strong> — 650+ agencies and management companies across LA and New York — and the <strong>Casting Companies Directory</strong> — 131 active casting offices. Start free — upgrade whenever you&rsquo;re ready.</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#555">Premium is <strong>$129 a year ($10.75/month)</strong>, or $17.99/month — it unlocks <strong>unlimited submissions</strong>, unlimited photos &amp; videos, your Actor&rsquo;s Slate, an Actor Business Card with a QR code, the <strong>Talent Agency &amp; Manager Directory</strong> — 650+ agencies and management companies across LA and New York — the <strong>Casting Companies Directory</strong> — 131 active casting offices — and the full <strong>Acting &amp; Film School Directory</strong> — 351 schools and film programs. Start free — upgrade whenever you&rsquo;re ready.</div>
         </div>
       </td></tr>
 

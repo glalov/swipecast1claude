@@ -363,6 +363,7 @@ function buildEmail(b: BuildInput): string {
               ${numRow("03","Sorted by size","who&rsquo;s a boutique, who&rsquo;s the room everyone wants")}
               ${numRow("04","7 submission tips","from people who read these envelopes for a living")}
               ${numRow("05","Plus 131 active casting offices","the Casting Companies Directory &mdash; and which ones accept headshots")}
+              ${numRow("06","Plus 351 acting schools &amp; film programs","the full Acting &amp; Film School Directory &mdash; where to train and get cast")}
             </table>
           </td></tr>
           <tr><td style="padding:10px 22px 20px"><p style="margin:0;font-size:13.5px;line-height:1.6;color:${T.onCream};font-weight:700;text-align:center">It&rsquo;s the kind of knowledge the industry keeps to itself. Premium hands you all of it on day one.</p></td></tr>
@@ -377,7 +378,7 @@ function buildEmail(b: BuildInput): string {
 
       <tr><td class="cs-pad" style="background:${T.band};padding:32px 30px 34px;text-align:center">
         <h2 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:23px;font-weight:700;color:#FFFFFF;letter-spacing:-0.3px">One a week is the cap.<br/>Premium doesn&rsquo;t have one.</h2>
-        <p style="margin:0 auto 20px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.72);max-width:400px">Submit to every role you&rsquo;re right for, the moment it drops &mdash; plus your digital card, all 663 agencies and 131 casting offices.</p>
+        <p style="margin:0 auto 20px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.72);max-width:400px">Submit to every role you&rsquo;re right for, the moment it drops &mdash; plus your digital card, all 663 agencies, 131 casting offices and 351 acting schools.</p>
         <table cellpadding="0" cellspacing="0" role="presentation" align="center"><tr><td style="background:${T.onDark};border-radius:11px">
           <a href="${APP_URL}/membership" style="display:inline-block;padding:15px 40px;font-size:15px;font-weight:800;letter-spacing:0.2px;color:${T.band};text-decoration:none">Go Premium &nbsp;&rarr;</a>
         </td></tr></table>

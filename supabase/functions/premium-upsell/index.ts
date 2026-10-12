@@ -300,6 +300,7 @@ const PERKS = [
   "Manager Mode monthly check-ins",
   "Agency &amp; Manager Directory — 650+ in LA &amp; NY",
   "Casting Companies Directory — 131 active offices in LA &amp; NY",
+  "Acting &amp; Film School Directory — 351 schools &amp; film programs",
 ];
 
 // ── Project-type icon tiles (approved 2026-09-12, demo "A") ─────────────────

@@ -283,6 +283,7 @@ function cardStrip(k: Skin, locked: boolean): string {
 const PERKS = [
   `The Talent Agency &amp; Manager Directory &mdash; all ${DIR.total} across Los Angeles and New York`,
   "The Casting Companies Directory &mdash; 131 active casting offices in Los Angeles and New York, and which ones accept headshots",
+  "The full Acting &amp; Film School Directory &mdash; 351 acting schools and film programs in Los Angeles and New York",
   "Unlimited submissions (free accounts get one submission, total)",
   "Actor Business Card with QR code",
   "Mailing postcard &amp; agent promo card",
@@ -299,7 +300,7 @@ function perksBlock(k: Skin, locked: boolean): string {
   return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>
     <td style="${k.panel};padding:18px 20px">
       <div style="font-size:10.5px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:${T.solid};margin:0 0 8px">${locked ? "What Premium adds" : "Already yours"}</div>
-      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25;margin:0 0 12px">${locked ? "The directory is one of eight things that unlock." : "Everything your membership includes, in one place."}</div>
+      <div style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:${T.ink};line-height:1.25;margin:0 0 12px">${locked ? "The directory is one of nine things that unlock." : "Everything your membership includes, in one place."}</div>
       ${perkList()}
       <div style="font-size:12px;color:#8a8271;margin-top:12px;line-height:1.6">${locked ? "Cancel any time. Your free account stays free either way &mdash; no card needed to keep it." : "Cancel any time, from Account Settings."}</div>
     </td></tr></table>`;
