@@ -5449,7 +5449,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .adx-tab.on,.adx-tab:hover{opacity:1;}
 .adx-tab .bar{display:block;height:3px;border-radius:3px;margin-bottom:9px;background:color-mix(in srgb,currentColor 22%,transparent);overflow:hidden;}
 .adx-tab .bar i{display:block;height:100%;width:0;background:currentColor;}
-.adx-tab.on .bar i{animation:adxfill 13s linear forwards;}
+.adx-tab.on .bar i{animation:adxfill 9s linear forwards;}
 .adx-section.adx-hold .adx-tab.on .bar i{animation-play-state:paused;}
 @keyframes adxfill{from{width:0}to{width:100%}}
 @media(max-width:900px){.adx-tabs{justify-content:center;}.adx-tab{width:auto;flex:1 1 0;max-width:140px;text-align:center;font-size:10px;letter-spacing:1px;}}
@@ -25908,11 +25908,11 @@ const ADX_SCHEMES=[
 // The fade stays 1.2s; a longer hold only lengthens the calm between fades.
 const ADX_HOLD_MS=6100;
 // Three directories share this one section as slides (owner-approved demo
-// landing-directories-carousel-demo.html, 2026-10-12): each holds 13s, the next
+// landing-directories-carousel-demo.html, 2026-10-12): each holds ADX_SLIDE_MS (9s), the next
 // enters from the right, tabs + a fill bar show what is next (no hover pause),
 // swipe on phones. The colour flip above runs underneath, untouched.
 // Every wall chip is a FIELD a listing holds, never a name (see ADX_FIELDS).
-const ADX_SLIDE_MS=13000;
+const ADX_SLIDE_MS=9000; // 13s felt slow (owner, 2026-10-13)
 const ADX_SLIDES=[
   {tab:"Agencies",eyebrow:"Premium — Agency & Management Directory",num:ADX_TOTAL,plus:true,
    cap:"Agencies & managers · Los Angeles + New York",
