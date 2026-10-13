@@ -3569,6 +3569,14 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-bm svg{width:17px;height:17px;}
 .b5-apply{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:12.5px;color:#fff;background:var(--teal);border:0;border-radius:7px;padding:5px 12px;cursor:pointer;white-space:nowrap;}
 .b5-apply:hover{background:#206557;}
+/* My Profile → Résumé */
+.rsm-grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start;}
+.rsm-grid>*{min-width:0;}
+.rsm-panel{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px;}
+.rsm-stage{min-width:0;}
+.rsm-frame{display:block;width:100%;max-width:820px;aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 12px 30px -16px rgba(36,31,25,.35),0 0 0 1px #e8e2d6;}
+.rsm-frame.letter{aspect-ratio:8.5/11;}
+@media(max-width:900px){.rsm-grid{grid-template-columns:minmax(0,1fr);}.rsm-stage{order:-1;}}
 /* Roles column: only the role name and the buttons act (owner, 2026-10-12). The card's
    own click would otherwise open the casting from anywhere in the column. */
 .b5-side,.b5-side .b5-role{cursor:default;}
@@ -26846,6 +26854,210 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
   </div>);
 }
 
+// ═══════════════════════════════════════════
+// ACTOR RÉSUMÉ (My Profile → Résumé) — Premium download, free preview
+// Built from the profile: stats, credits (talent_credits, in the actor's order),
+// training, skills/accents/languages, agent. Always one page: the text is sized
+// as a share of page WIDTH (cqw) to the largest size that fits, never below
+// RESUME_FLOOR (~9pt printed). With many credits it keeps the first
+// RESUME_PER_SECTION per section, then trims the LONGEST section from its end
+// (min 3 each), then skills (min 8). Anything left off is on the public profile,
+// and the page says so. Rendered in an iframe so the site CSS can't leak into it
+// and print() prints only the résumé. Approved via resume-generator-demo.html.
+// ═══════════════════════════════════════════
+const RESUME_PER_SECTION=8,RESUME_FLOOR=1.56,RESUME_CEIL=2.15;
+const RESUME_SECTIONS=[["Film & TV","Film & Television"],["Theatre","Theatre"],["Commercials","Commercials"],["Other","Other"]];
+const resumeEsc=v=>String(v==null?"":v).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const resumeHasAgent=a=>{const s=String(a||"").trim();return !!s&&!/^(no(ne)?|n\/a|-+|no agen(t|cy)|not represented|unrepresented|seeking( representation| an? agent)?|looking for (an )?agent|self[- ]?represented)\.?$/i.test(s);};
+function resumeDoc(d,o){
+  // d: {name,unions,stats[],agent,url,urlText,headshot,sections:[{key,label,rows:[{id,t,r,c}]}],training,skills[],premium}
+  // o: {size,corner,brand,auto}
+  const J=JSON.stringify({d,o}).replace(/</g,"\\u003c");
+  return `<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700;800&family=Libre+Caslon+Text:wght@400;700&display=swap" rel="stylesheet">
+<style id="pg">@page{size:${o.size==="letter"?"8.5in 11in":"8in 10in"};margin:0}</style>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#fff}
+.wrap{container-type:inline-size;width:100vw}
+.cv{position:relative;background:#fff;color:#0d0d0d;width:100%;aspect-ratio:${o.size==="letter"?"8.5/11":"8/10"};padding:6% 6.6%;font-family:'Libre Caslon Text',Georgia,serif;font-size:var(--fs,1.8cqw);line-height:1.45;display:flex;flex-direction:column;overflow:hidden}
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4%;align-items:start;border-bottom:1.5px solid #111;padding-bottom:2.2%;margin-bottom:.4em}
+.nm{font-size:2.5em;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.02;margin:0;overflow-wrap:anywhere}
+.un{font-family:'DM Sans',sans-serif;font-size:.92em;font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-top:.6em}
+.st{font-family:'DM Sans',sans-serif;font-size:.95em;font-weight:600;margin-top:.6em;color:#111}
+.st span+span::before{content:"·";margin:0 .55em;color:#555}
+.ct{text-align:right;font-family:'DM Sans',sans-serif;font-size:.9em;font-weight:500;color:#111;line-height:1.45;display:flex;gap:.9em;align-items:center;max-width:22em}
+.ct b{display:block;font-size:1.05em;font-weight:800}
+.ct .k{font-size:.82em;letter-spacing:.08em;text-transform:uppercase;color:#333;font-weight:700}
+.qr{width:5.4em;height:5.4em;display:block}
+.hs{width:6.2em;height:7.8em;object-fit:cover;object-position:50% 25%;display:block;border-radius:2px;background:#ddd}
+h3{font-family:'DM Sans',sans-serif;font-size:.9em;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#000;margin:1.35em 0 .45em;padding-bottom:.22em;border-bottom:1px solid #cfcfcf}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+td{padding:.18em .9em .18em 0;vertical-align:top;color:#111;overflow-wrap:anywhere}
+td:nth-child(1){width:38%;font-weight:700}td:nth-child(2){width:24%}td:nth-child(3){width:38%;padding-right:0;color:#1a1a1a}
+p.x{margin:0;overflow-wrap:anywhere}
+.ft{margin-top:auto;padding-top:1.2em;font-family:'DM Sans',sans-serif;font-size:.8em;font-weight:600;color:#444;display:flex;justify-content:space-between;gap:1em}
+.more{font-family:'DM Sans',sans-serif;font-size:.85em;font-weight:700;color:#111;margin-top:1em}
+.wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.wm span{font-family:'DM Sans',sans-serif;font-weight:800;font-size:7em;letter-spacing:.12em;color:rgba(26,26,46,.07);transform:rotate(-28deg);white-space:nowrap}
+@media print{.wrap{width:${o.size==="letter"?"8.5in":"8in"}}.cv{width:${o.size==="letter"?"8.5in":"8in"};height:${o.size==="letter"?"11in":"10in"};aspect-ratio:auto}}
+</style></head><body><div class="wrap"><div class="cv" id="cv"></div></div>
+<script>
+const {d,o}=${J};
+const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cv=document.getElementById("cv");
+// Working copy the trimmer can shorten.
+let secs=d.sections.map(s=>({...s,rows:s.rows.slice()})),skills=d.skills.slice(),omitted=[],train=d.training||"";
+function render(){
+  const corner=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data='+encodeURIComponent(d.url)+'">':(d.headshot?'<img class="hs" alt="" src="'+E(d.headshot)+'">':"");
+  const who=d.agent?'<div><span class="k">Represented by</span><b>'+E(d.agent)+'</b>'+E(d.urlText)+'</div>':'<div><b>'+E(d.name)+'</b>'+E(d.urlText)+'</div>';
+  let h='<div class="top"><div><h1 class="nm">'+E(d.name)+'</h1>'+(d.unions?'<div class="un">'+E(d.unions)+'</div>':"")+(d.stats.length?'<div class="st">'+d.stats.map(x=>'<span>'+E(x)+'</span>').join("")+'</div>':"")+'</div><div class="ct">'+who+corner+'</div></div>';
+  secs.forEach(s=>{if(!s.rows.length)return;h+='<h3>'+E(s.label)+'</h3><table>'+s.rows.map(r=>'<tr><td>'+E(r.t)+'</td><td>'+E(r.r)+'</td><td>'+E(r.c)+'</td></tr>').join("")+'</table>';});
+  if(train)h+='<h3>Training</h3><p class="x">'+E(train)+'</p>';
+  if(skills.length)h+='<h3>Special Skills</h3><p class="x">'+skills.map(E).join(" · ")+'</p>';
+  if(omitted.length||d.leftOut)h+='<div class="more">Full credits: '+E(d.urlText)+'</div>';
+  h+='<div class="ft"><span>'+E(d.urlText)+'</span><span>'+(o.brand==="off"&&d.premium?"":"Made with CastSlate")+'</span></div>';
+  if(!d.premium)h+='<div class="wm"><span>PREVIEW</span></div>';
+  cv.innerHTML=h;
+}
+const fits=()=>cv.scrollHeight<=cv.clientHeight+1;
+function fitSize(){
+  cv.style.setProperty("--fs",${RESUME_CEIL}+"cqw");if(fits())return true;
+  let lo=${RESUME_FLOOR},hi=${RESUME_CEIL};cv.style.setProperty("--fs",lo+"cqw");if(!fits())return false;
+  for(let k=0;k<14;k++){const m=(lo+hi)/2;cv.style.setProperty("--fs",m+"cqw");if(fits())lo=m;else hi=m;}
+  cv.style.setProperty("--fs",lo+"cqw");return true;
+}
+function run(){
+  secs=d.sections.map(s=>({...s,rows:s.rows.slice()}));skills=d.skills.slice();omitted=[];train=d.training||"";
+  render();let ok=fitSize();
+  // Auto mode only. Gives things up in order of least harm until it fits:
+  // longest section down to 3 credits → skills to 8 → training shortened →
+  // sections down to 1 credit → skills to 0 → whole sections, "Other" first.
+  const cut=t=>t.slice(0,t.lastIndexOf(" ",t.length)>0?t.lastIndexOf(" ",Math.floor(t.length*.6)):Math.floor(t.length*.6)).replace(/[\s,;|•·-]+$/,"")+"…";
+  const step=()=>{
+    const big=min=>secs.filter(s=>s.rows.length>min).sort((a,b)=>b.rows.length-a.rows.length)[0];
+    let b=big(3);if(b){omitted.push(b.rows.pop().id);return true;}
+    if(skills.length>8){skills.pop();return true;}
+    if(train.length>140){train=cut(train);return true;}
+    b=big(1);if(b){omitted.push(b.rows.pop().id);return true;}
+    if(skills.length){skills.pop();return true;}
+    if(train){train="";return true;}
+    for(let i=secs.length-1;i>=0;i--){if(secs[i].rows.length&&secs.filter(s=>s.rows.length).length>1){secs[i].rows.forEach(r=>omitted.push(r.id));secs[i].rows=[];return true;}}
+    return false;
+  };
+  let guard=0;
+  while(!ok&&o.auto&&guard++<400){if(!step())break;render();ok=fitSize();}
+  parent.postMessage({csResume:1,fits:ok,omitted},"*");
+}
+window.addEventListener("message",e=>{if(e.data&&e.data.csResumePrint){(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>setTimeout(()=>window.print(),150));}});
+window.addEventListener("resize",()=>{render();fitSize();});
+(document.fonts?document.fonts.ready:Promise.resolve()).then(run);run();
+</script></body></html>`;
+}
+
+function ResumeBuilder({profile,f,skills,credits,isPremium,onNavigate,setTab}){
+  const uid=profile?.id||"";
+  const LS="cs_resume_"+uid;
+  const saved=React.useMemo(()=>{try{return JSON.parse(localStorage.getItem(LS)||"null")||{};}catch(_){return{};}},[LS]);
+  const[size,setSize]=useState(saved.size||"8x10");
+  const[corner,setCorner]=useState(saved.corner||(profile?.headshot_url?"hs":"qr"));
+  const[brand,setBrand]=useState(saved.brand||"on");
+  // null = automatic selection; otherwise the actor's own picks (ids).
+  const[picked,setPicked]=useState(Array.isArray(saved.picked)?saved.picked:null);
+  const[skillOff,setSkillOff]=useState(Array.isArray(saved.skillOff)?saved.skillOff:[]);
+  const[trainOn,setTrainOn]=useState(saved.trainOn!==false);
+  const[status,setStatus]=useState(null);
+  const frameRef=useRef(null);
+  useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,brand,picked,skillOff,trainOn}));}catch(_){}},[LS,size,corner,brand,picked,skillOff,trainOn]);
+
+  const g=(k)=>(f&&f[k]!=null&&f[k]!=="")?f[k]:profile?.[k];
+  const name=String(g("display_name")||"").trim()||"Your Name";
+  const slug=profile?.public_slug||"";
+  const url=slug?"https://www.castslate.com/talent/"+slug:"https://www.castslate.com";
+  const urlText=slug?"castslate.com/talent/"+slug:"castslate.com";
+  const unionsArr=(Array.isArray(g("unions"))?g("unions"):[]).filter(u=>u&&!/non[- ]?union/i.test(u));
+  const unions=unionsArr.length?unionsArr.join(" · "):(g("union_status")&&!/non[- ]?union/i.test(g("union_status"))?g("union_status"):"");
+  const ageMode=(f&&f.age_display)||(profile?ageDisplayMode(profile):"hide");
+  const amin=g("age_play_min"),amax=g("age_play_max");
+  const stats=[g("height")&&("Height "+g("height")),g("hair")&&("Hair "+g("hair")),g("eyes")&&("Eyes "+g("eyes")),(ageMode!=="hide"&&amin&&amax)?("Plays "+amin+"–"+amax):""].filter(Boolean);
+  const agent=resumeHasAgent(g("agent"))?String(g("agent")).trim():"";
+  const training=String(g("training")||"").trim().slice(0,600);
+  const allSkills=(skills||[]).map(s=>String(s||"").trim()).filter(Boolean);
+  const skillList=allSkills.filter(s=>!skillOff.includes(s)).slice(0,24);
+
+  // Credits grouped by category, in the order the profile lists them.
+  const groups=React.useMemo(()=>{
+    const known=RESUME_SECTIONS.map(x=>x[0]);
+    const out=RESUME_SECTIONS.map(([key,label])=>({key,label,rows:[]}));
+    (credits||[]).forEach(c=>{
+      const k=known.includes(c.category)?c.category:"Other";
+      out.find(x=>x.key===k).rows.push({id:String(c.id),t:c.production_title||"",r:c.role||"",c:c.director_or_company||""});
+    });
+    return out;
+  },[credits]);
+  const autoIds=React.useMemo(()=>{const s=new Set();groups.forEach(gp=>gp.rows.slice(0,RESUME_PER_SECTION).forEach(r=>s.add(r.id)));return s;},[groups]);
+  const isOn=id=>picked?picked.includes(id):autoIds.has(id);
+  const toggle=id=>{const base=picked||[...autoIds];setPicked(base.includes(id)?base.filter(x=>x!==id):[...base,id]);};
+  const sections=groups.map(gp=>({key:gp.key,label:gp.label,rows:gp.rows.filter(r=>isOn(r.id))}));
+  const totalCredits=groups.reduce((n,gp)=>n+gp.rows.length,0);
+  const leftOut=totalCredits>sections.reduce((n,s)=>n+s.rows.length,0);
+
+  const data={name,unions,stats,agent,url,urlText,headshot:profile?.headshot_url||"",sections,training:trainOn?training:"",skills:skillList,premium:isPremium,leftOut};
+  const opts={size,corner,brand,auto:!picked};
+  const doc=React.useMemo(()=>resumeDoc(data,opts),[JSON.stringify(data),JSON.stringify(opts)]);// eslint-disable-line
+  useEffect(()=>{
+    const on=e=>{if(frameRef.current&&e.source===frameRef.current.contentWindow&&e.data&&e.data.csResume)setStatus({fits:e.data.fits,omitted:e.data.omitted||[]});};
+    window.addEventListener("message",on);return()=>window.removeEventListener("message",on);
+  },[]);
+  const empty=!totalCredits&&!training&&!allSkills.length;
+  const autoOmitted=status&&status.omitted?status.omitted.length:0;
+
+  const seg=(val,set,items)=>(<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{items.map(([v,l,lock])=>(
+    <button key={v} type="button" disabled={lock} onClick={()=>set(v)} title={lock?"Premium":undefined}
+      style={{border:"1px solid "+(val===v?"#1A1A2E":"var(--bdr)"),background:val===v?"#1A1A2E":"#fff",color:val===v?"#fff":"var(--t1)",borderRadius:8,padding:"7px 11px",fontSize:13,fontWeight:600,cursor:lock?"not-allowed":"pointer",opacity:lock?.55:1}}>{l}</button>))}</div>);
+  const lab=t=><div style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",color:"var(--t3)",margin:"16px 0 7px"}}>{t}</div>;
+
+  return(<div className="rsm-grid">
+    <div className="rsm-panel">
+      <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"#8A5A12",background:"#FBF0DA",border:"1px solid #EBCF97",borderRadius:999,padding:"4px 10px"}}><Ico n="star" s={12}/>Premium</span>
+      <h3 style={{fontSize:19,fontWeight:800,margin:"10px 0 4px"}}>Your actor résumé</h3>
+      <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:0}}>Built automatically from your profile, always up to date. One page, ready to staple to your headshot.</p>
+      {lab("Size")}{seg(size,setSize,[["8x10","8 × 10 (headshot)"],["letter","US Letter"]])}
+      {lab("Top right")}{seg(corner,setCorner,[["hs","Headshot",!profile?.headshot_url],["qr","QR to my profile"]])}
+      {lab("CastSlate footer")}{seg(brand,setBrand,[["on","Show"],["off","Hide",!isPremium]])}
+
+      {totalCredits>0&&<>{lab("Credits on the résumé")}
+        {groups.filter(gp=>gp.rows.length).map(gp=>(<div key={gp.key} style={{marginBottom:8}}>
+          <div style={{fontSize:12.5,fontWeight:700,color:"var(--t1)",marginBottom:3}}>{gp.label} <span style={{color:"var(--t3)",fontWeight:600}}>({gp.rows.length})</span></div>
+          {gp.rows.map(r=>{const on=isOn(r.id)&&!(status&&status.omitted.includes(r.id));return(
+            <label key={r.id} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:13,color:"var(--t2)",padding:"3px 0",cursor:"pointer"}}>
+              <input type="checkbox" checked={on} onChange={()=>toggle(r.id)} style={{marginTop:3}}/>
+              <span style={{minWidth:0,overflowWrap:"anywhere"}}><b style={{color:"var(--t1)"}}>{r.t||"Untitled"}</b>{r.r?" — "+r.r:""}</span>
+            </label>);})}
+        </div>))}
+        {picked&&<button type="button" onClick={()=>setPicked(null)} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,fontSize:12.5,cursor:"pointer",padding:0}}>Reset to automatic</button>}
+      </>}
+      {training&&<>{lab("Training")}<label style={{display:"flex",gap:8,fontSize:13,color:"var(--t2)",cursor:"pointer"}}><input type="checkbox" checked={trainOn} onChange={()=>setTrainOn(v=>!v)}/>Include training</label></>}
+      {allSkills.length>0&&<>{lab("Special skills")}<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{allSkills.map(s=>{const on=!skillOff.includes(s);return(
+        <button key={s} type="button" onClick={()=>setSkillOff(o=>on?[...o,s]:o.filter(x=>x!==s))} style={{border:"1px solid "+(on?"#2A8472":"var(--bdr)"),background:on?"rgba(42,132,114,.08)":"#fff",color:on?"#206557":"var(--t3)",borderRadius:999,padding:"4px 10px",fontSize:12.5,fontWeight:600,cursor:"pointer",textDecoration:on?"none":"line-through"}}>{s}</button>);})}</div></>}
+
+      <div style={{marginTop:16,fontSize:13,fontWeight:600,color:status&&!status.fits?"#B3261E":"#1B6E45",lineHeight:1.5}}>
+        {!status?"…":!status.fits?"Too long for one page — untick a few credits or skills.":(autoOmitted||leftOut)?(n=>`✓ Fits on one page · ${n} credit${n===1?"":"s"} left off (all on your profile)`)(autoOmitted+(leftOut?totalCredits-sections.reduce((n,s)=>n+s.rows.length,0):0)):"✓ Fits on one page"}
+      </div>
+      {isPremium
+        ?<button type="button" className="btn-teal" disabled={!status||!status.fits} onClick={()=>{try{frameRef.current.contentWindow.postMessage({csResumePrint:1},"*");}catch(_){}}} style={{width:"100%",marginTop:12,padding:13,fontSize:15}}>Download PDF</button>
+        :<button type="button" className="btn-teal" onClick={()=>onNavigate&&onNavigate("membership")} style={{width:"100%",marginTop:12,padding:13,fontSize:15}}>Go Premium to download</button>}
+      <p style={{fontSize:12,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>{isPremium?<>Opens the print window — choose <b>Save as PDF</b>.</>:"This is a preview of your real résumé. Premium members can download and print it."}</p>
+    </div>
+    <div className="rsm-stage">
+      {empty
+        ?<div style={{padding:"40px 24px",textAlign:"center",color:"var(--t2)",fontSize:14,lineHeight:1.6,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14}}>
+          Your résumé fills itself from your profile. Add <button type="button" onClick={()=>setTab("credits")} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,cursor:"pointer",padding:0,fontSize:14}}>credits</button>, training or <button type="button" onClick={()=>setTab("skills")} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,cursor:"pointer",padding:0,fontSize:14}}>skills</button> and they'll appear here.
+        </div>
+        :<iframe ref={frameRef} title="Résumé preview" srcDoc={doc} className={"rsm-frame"+(size==="letter"?" letter":"")}/>}
+    </div>
+  </div>);
+}
+
 function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onViewCastingById}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
@@ -27421,6 +27633,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<button className={`tab ${tab==="credits"?"active":""}`} onClick={()=>setTab("credits")}>Credits ({dbCredits.length})</button>}
       {!isCD&&<button className={`tab ${tab==="social"?"active":""}`} onClick={()=>setTab("social")}>Social Links{!isPremium?" · Premium":""}</button>}
       {!isCD&&<button className={`tab ${tab==="cast-me-as"?"active":""}`} onClick={()=>setTab("cast-me-as")}>Cast Me As</button>}
+      {!isCD&&<button className={`tab ${tab==="resume"?"active":""}`} onClick={()=>setTab("resume")}>Résumé{!isPremium?" · Premium":""}</button>}
       {!isCD&&<button className={`tab ${tab==="improve"?"active":""}`} onClick={()=>setTab("improve")}>Improve Profile</button>}
       {isCD&&<button className={`tab ${tab==="messages"?"active":""}`} onClick={()=>setTab("messages")}>Inbox{(inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length)>0?<span className="tag tag-acc" style={{marginLeft:6,fontSize:10}}>{inbox.filter(m=>!m.read_at).length+invites.filter(i=>i.status==="pending").length}</span>:null}</button>}
     </div>
@@ -28192,6 +28405,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       </div>
       <CastingFitDNAEditor session={session} isPremium={isPremium} onNavigate={onNavigate}/>
     </div>}
+
+    {/* ── RÉSUMÉ TAB (Premium download, free preview) ── */}
+    {tab==="resume"&&!isCD&&<ResumeBuilder profile={profile} f={f} credits={dbCredits} isPremium={isPremium} onNavigate={onNavigate} setTab={setTab}
+      skills={[...selectedSkills,...extraSkills,...((Array.isArray(f.accents)&&f.accents.length)?["Accents: "+f.accents.join(", ")]:[]),...((Array.isArray(f.languages)&&f.languages.length)?["Languages: "+f.languages.join(", ")]:[])]}/>}
 
     {/* ── IMPROVE PROFILE TAB ── */}
     {tab==="improve"&&!isCD&&<div style={{maxWidth:680}}>
