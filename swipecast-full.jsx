@@ -27097,7 +27097,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn]);
   useEffect(()=>{const t=setTimeout(()=>setEmailLive(email),350);return()=>clearTimeout(t);},[email]);
   const showNote=(text,kind)=>{clearTimeout(noteT.current);setNote(text?{text,kind}:null);if(text)noteT.current=setTimeout(()=>setNote(null),5000);};
-  const [exCorner,setExCorner]=useState("hs"),[exRep,setExRep]=useState("self");
+  const [exCorner,setExCorner]=useState("both"),[exRep,setExRep]=useState("self");
   const effContact=(contact==="agent"&&!agentOk)?"link":contact;
   const effCorner=((corner==="hs"||corner==="both")&&!hasHeadshot)?"qr":corner;
 
