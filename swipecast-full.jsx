@@ -28266,6 +28266,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer"}} onClick={savePhotoOrder}>Save Order</button>
           </div>
         )}
+        {/* Soft tip inside the card, same spot as on Videos (owner, 2026-10-14, demo showcase-tip-restyle-demo.html). */}
+        {isPremium&&<div style={{display:"flex",alignItems:"center",gap:9,background:"#F4ECDC",borderRadius:10,padding:"10px 14px",fontSize:13,color:"var(--t2)",marginTop:18,lineHeight:1.45}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#C9A24A" stroke="#C9A24A" strokeWidth="1.5" strokeLinejoin="round" style={{flex:"none"}} aria-hidden="true"><path d="M12 17.75l-6.17 3.24 1.18-6.88-5-4.87 6.9-1 3.09-6.26 3.09 6.26 6.9 1-5 4.87 1.18 6.88z"/></svg>
+          <span><strong style={{color:"var(--t1)"}}>Showcase tip:</strong> Go to <button type="button" onClick={()=>{setTab("showcase");}} style={{background:"none",border:0,padding:0,color:"var(--teal)",fontWeight:700,fontSize:13,cursor:"pointer"}}>Showcase Order</button> to arrange which photos and videos appear first on your public profile.</span>
+        </div>}
       </div>
 
       {/* Free plan info + upgrade CTA */}
@@ -28276,11 +28281,6 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <span style={{fontSize:13,color:"var(--t1)",fontWeight:600}}>1 headshot on the free plan. Premium gives you unlimited gallery photos and videos.</span>
           </span>
           <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade — {PREMIUM_PRICE}</button>
-        </div>
-      )}
-      {isPremium&&(
-        <div style={{padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff",marginTop:8}}>
-          <Ico n="star" s={24}/> <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which photos and videos appear first on your public profile.
         </div>
       )}
     </>}
@@ -28298,9 +28298,6 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       ):(
         <>
           <p style={{fontSize:12,color:"var(--t3)",marginBottom:8}}>Upload videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
-          <div style={{marginBottom:16,padding:"10px 14px",background:"#111",border:"1px solid #333",borderRadius:8,fontSize:12,color:"#fff"}}>
-            <Ico n="star" s={24}/> <strong>Showcase tip:</strong> Go to the <strong>Showcase Order</strong> tab to arrange which videos and photos appear first on your public profile.
-          </div>
           {/* Existing uploaded videos */}
           {mediaItems.length>0&&<div style={{marginBottom:16,display:"grid",gap:10}}>
             {mediaItems.map((item,i)=>(
@@ -28352,6 +28349,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               <Ico n="clock" s={15}/><span>Uploads can take up to 2 minutes, depending on your wifi. Please keep this page open.</span>
             </div>}
             </div>
+        <div style={{display:"flex",alignItems:"center",gap:9,background:"#F4ECDC",borderRadius:10,padding:"10px 14px",fontSize:13,color:"var(--t2)",marginTop:18,lineHeight:1.45}}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#C9A24A" stroke="#C9A24A" strokeWidth="1.5" strokeLinejoin="round" style={{flex:"none"}} aria-hidden="true"><path d="M12 17.75l-6.17 3.24 1.18-6.88-5-4.87 6.9-1 3.09-6.26 3.09 6.26 6.9 1-5 4.87 1.18 6.88z"/></svg>
+          <span><strong style={{color:"var(--t1)"}}>Showcase tip:</strong> Go to <button type="button" onClick={()=>{setTab("showcase");}} style={{background:"none",border:0,padding:0,color:"var(--teal)",fontWeight:700,fontSize:13,cursor:"pointer"}}>Showcase Order</button> to arrange which videos and photos appear first on your public profile.</span>
+        </div>
         </>
       )}
     </div>}
