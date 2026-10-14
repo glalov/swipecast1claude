@@ -16023,7 +16023,7 @@ function computeProfileSuggestions(profile, dbCredits, mediaItems){
     hasStats,
     hasSkills,
     !!(profile?.training?.trim()),
-    hasResume,
+    !!(profile?.agent?.trim()), // representation answered (agent, self-represented or seeking)
   ].filter(Boolean).length;
   const pct=Math.round((done/totalChecks)*100);
 
@@ -16038,8 +16038,7 @@ function computeProfileSuggestions(profile, dbCredits, mediaItems){
   if(!hasStats){const m=[!profile?.height&&"height",!profile?.hair&&"hair color",!profile?.eyes&&"eye color",!hasTypeRange&&"type range"].filter(Boolean);suggestions.push({p:"Medium",text:`Complete casting details: ${m.join(", ")}`,tab:"profile",btn:"Add Details"});}
   if(!hasSkills)suggestions.push({p:"Low",text:"Add special skills — accents, instruments, sports, and more",tab:"skills",btn:"Add Skills"});
   if(!profile?.training?.trim())suggestions.push({p:"Low",text:"Add your training — acting schools, coaches, and techniques",tab:"profile",btn:"Add Training"});
-  if(!profile?.agent?.trim())suggestions.push({p:"Low",text:"Add representation info if you have an agent or manager",tab:"profile",btn:"Add Representation"});
-  if(!hasResume)suggestions.push({p:"Low",text:"Upload your resume for casting directors to download",tab:"profile",btn:"Upload Resume"});
+  if(!profile?.agent?.trim())suggestions.push({p:"Low",text:"Add your representation — your agent or manager, or that you're self-represented",tab:"profile",btn:"Add Representation"});
   if(photoCount>=3&&profile?.headshot_url&&ap.length>=2)suggestions.push({p:"Low",text:"Reorder your Showcase so your strongest material appears first",tab:"showcase",btn:"Arrange Showcase"});
   return{pct,suggestions};
 }
@@ -26869,6 +26868,24 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
 // whenever its size changes (a 0-width first layout once made everything "fit").
 // ═══════════════════════════════════════════
 const RESUME_MAX_PER=8;
+// Representation (profile_private.representation, owner-only). profiles.agent keeps a
+// public one-line summary so older screens and CD views still read it.
+const REP_TYPES=["Agent","Manager","Agent & Manager"];
+const repBlank=()=>({type:"Agent",company:"",contact:"",email:"",phone:""});
+function repFromAgentText(t){
+  const s=String(t||"").trim();
+  if(!s)return{status:"",reps:[]};
+  if(/^(self|self[- ]?represented|no(ne)?|n\/a|no agen(t|cy)|not represented|unrepresented)\.?$/i.test(s))return{status:"self",reps:[]};
+  if(/^(seeking|looking for)/i.test(s))return{status:"seeking",reps:[]};
+  return{status:"represented",reps:[{...repBlank(),company:s}]};
+}
+function repSummary(r){
+  if(!r||!r.status)return"";
+  if(r.status==="self")return"Self-represented";
+  if(r.status==="seeking")return"Seeking Representation";
+  const names=(r.reps||[]).map(x=>String(x.company||"").trim()).filter(Boolean);
+  return names.join(" / ");
+}
 const RESUME_SECTIONS=[["Film & TV","Film / Television"],["Theatre","Theatre"],["Other","Other"]];
 const resumeHasAgent=a=>{const s=String(a||"").trim();return !!s&&!/^(self|self[- ]?represented|no(ne)?|n\/a|-+|no agen(t|cy)|not represented|unrepresented|seeking( representation| an? agent)?|looking for (an )?agent)\.?$/i.test(s);};
 const resumeEmailOk=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(e||"").trim());
@@ -26913,11 +26930,15 @@ let secs,skills,acc,lang,train,omitted;
 function render(){
   const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':(o.corner==="hs"&&d.headshot?'<img class="ph" alt="" src="'+E(d.headshot)+'">':"");
   const mail=d.email?'<br>'+E(d.email):'';
-  const contact=(o.contact==="agent"&&d.agent)?'<div class="c"><b>Representation</b><br>'+E(d.agent)+mail+'<br>'+E(d.urlText)+'</div>':'<div class="c"><b>Contact</b><br>'+E(d.urlText)+(d.email?mail:'<br>Message via CastSlate')+'</div>';
+  const ag=Array.isArray(d.agent)?d.agent:(d.agent?[d.agent]:[]);
+  const contact=(o.contact==="agent"&&ag.length)?'<div class="c"><b>Representation</b><br>'+ag.map(E).join('<br>')+mail+'</div>':'<div class="c"><b>Contact</b><br>'+E(d.urlText)+(d.email?mail:'<br>Message via CastSlate')+'</div>';
   const st=Object.entries(d.stats).filter(([,v])=>v).map(([k,v])=>E(k)+': '+E(v)).join('<br>');
   let h='<div class="hd">'+pic+'<div class="hi"><h1 class="nm">'+E(d.name)+'</h1>'+(d.unions?'<div class="un">('+E(d.unions)+')</div>':'')+'<div class="cols">'+contact+(st?'<div class="c">'+st+'</div>':'')+'</div></div></div>';
-  secs.forEach(s=>{if(!s.rows.length)return;h+='<hr><h2>'+E(s.label)+'</h2><table>'+s.rows.map(r=>'<tr><td>'+E(r.t)+'</td><td>'+E(r.r)+'</td><td>'+E(r.c)+E(yy(r.y))+'</td></tr>').join("")+'</table>';});
-  if(train.length)h+='<hr><h2>Education &amp; Training</h2><ul class="tl">'+train.map(t=>'<li>'+E(t)+'</li>').join("")+'</ul>';
+  // Few credits (3 or fewer): training is the stronger selling point, so it leads.
+  const trainH=train.length?'<hr><h2>Education &amp; Training</h2><ul class="tl">'+train.map(t=>'<li>'+E(t)+'</li>').join("")+'</ul>':'';
+  const credH=secs.map(s=>s.rows.length?'<hr><h2>'+E(s.label)+'</h2><table>'+s.rows.map(r=>'<tr><td>'+E(r.t)+'</td><td>'+E(r.r)+'</td><td>'+E(r.c)+E(yy(r.y))+'</td></tr>').join("")+'</table>':'').join("");
+  const nCred=secs.reduce((n,s)=>n+s.rows.length,0);
+  h+=nCred<=3?trainH+credH:credH+trainH;
   if(skills.length||acc.length||lang.length){h+='<hr><h2>Special Skills</h2>';
     if(skills.length)h+='<p class="x">'+skills.map(E).join(", ")+'</p>';
     if(acc.length)h+='<p class="x"><i>Accents:</i> '+acc.map(E).join(", ")+'</p>';
@@ -26968,13 +26989,16 @@ run();
 <\/script></body></html>`;
 }
 
-function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onNavigate,setTab,accountEmail}){
+function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onNavigate,setTab,accountEmail,representation}){
   const uid=profile?.id||"";
   const LS="cs_resume2_"+uid;
   const saved=React.useMemo(()=>{try{return JSON.parse(localStorage.getItem(LS)||"null")||{};}catch(_){return{};}},[LS]);
   const g=(k)=>(f&&f[k]!=null&&f[k]!=="")?f[k]:profile?.[k];
-  const agentRaw=String(g("agent")||"").trim();
-  const agentOk=resumeHasAgent(agentRaw);
+  const repV=representation&&representation.status?representation:repFromAgentText(g("agent"));
+  const repList=repV.status==="represented"?(repV.reps||[]).filter(r=>String(r.company||r.contact||"").trim()):[];
+  const agentOk=repList.length>0;
+  // Lines for the résumé's Representation block: "Company (Agent)", contact, email, phone.
+  const repLines=repList.flatMap(r=>[[String(r.company||"").trim(),r.type?"("+r.type+")":""].filter(Boolean).join(" "),r.contact,r.email,r.phone].map(x=>String(x||"").trim()).filter(Boolean));
   const hasHeadshot=!!profile?.headshot_url;
   const[size,setSize]=useState(saved.size||"8x10");
   const[corner,setCorner]=useState(saved.corner||(hasHeadshot?"hs":"qr"));
@@ -27029,7 +27053,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const pickedCount=sections.reduce((n,s)=>n+s.rows.length,0);
   const skillList=allSkills.filter(s=>!skillOff.includes(s));
 
-  const d={name,unions,stats,agent:agentOk?agentRaw:"",url,urlText,headshot:profile?.headshot_url||"",
+  const d={name,unions,stats,agent:agentOk?repLines:[],url,urlText,headshot:profile?.headshot_url||"",
     email:(emailOn&&resumeEmailOk(emailLive))?String(emailLive).trim():"",
     sections,training:trainOn?trainingLines:[],skills:skillList,accents:accOn?accList:[],languages:langOn?langList:[],
     hasCommercials,leftOut:totalCredits>pickedCount,premium:isPremium,brand:!(isPremium&&brand==="off")};
@@ -27086,7 +27110,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:0}}>Built from your profile in the industry-standard format. One page, ready to staple to your headshot.</p>
       {lab("Size")}{seg(size,setSize,[["8x10","8 × 10 (headshot)"],["letter","US Letter"]])}
       {lab("Photo")}{seg(effCorner,setCorner,[["hs","Headshot",!hasHeadshot,"Add a headshot to your profile first"],["qr","QR to my profile"],["none","None"]])}
-      {lab("Contact shown")}{seg(effContact,setContact,[["agent","My agent",!agentOk,"Add your agent on Edit Profile"],["link","My profile link"]])}
+      {lab("Contact shown")}{seg(effContact,setContact,[["agent","My representation",!agentOk,"Add your agent or manager under Representation on Edit Profile"],["link","My profile link"]])}
       {ck(emailOn,()=>toggleFlag(emailOn,setEmailOn,"email","your email"),"Also show my email")}
       <input type="email" value={email} disabled={!emailOn} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"
         style={{width:"100%",marginTop:6,border:"1px solid var(--bdr)",borderRadius:8,padding:"9px 11px",fontSize:13.5,background:emailOn?"#fff":"var(--s2)",color:"var(--t1)"}}/>
@@ -27128,6 +27152,40 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   </div>);
 }
 
+// ─── Edit Profile → Representation ─────────────────────────────────────────────
+// Status + up to two reps (agent and/or manager). Company names also go to the public
+// profiles.agent line; contact person / email / phone stay owner-only (profile_private)
+// and are used on the actor's own downloaded résumé.
+function RepresentationCard({value,onChange}){
+  const v=value&&typeof value==="object"?value:{status:"",reps:[]};
+  const reps=v.status==="represented"?(v.reps&&v.reps.length?v.reps:[repBlank()]):[];
+  const set=(patch)=>onChange({...v,...patch});
+  const setRep=(i,k,val)=>{const next=reps.map((r,j)=>j===i?{...r,[k]:val}:r);set({reps:next});};
+  const statuses=[["represented","I'm represented"],["self","Self-represented"],["seeking","Seeking representation"]];
+  return(<div className="card" style={{padding:24,marginBottom:16}}>
+    <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Representation</h3>
+    <p style={{fontSize:12.5,color:"var(--t3)",margin:"0 0 14px",lineHeight:1.5}}>Your agent or manager. The company name shows on your profile; contact details only appear on the résumé you download.</p>
+    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:reps.length?16:0}}>
+      {statuses.map(([k,l])=>(<button key={k} type="button" onClick={()=>set({status:k,reps:k==="represented"?(v.reps&&v.reps.length?v.reps:[repBlank()]):v.reps||[]})}
+        style={{border:"1.5px solid "+(v.status===k?"#1A1A2E":"var(--bdr)"),background:v.status===k?"#1A1A2E":"#fff",color:v.status===k?"#fff":"var(--t1)",borderRadius:9,padding:"8px 14px",fontSize:13,fontWeight:700,cursor:"pointer"}}>{l}</button>))}
+    </div>
+    {reps.map((r,i)=>(<div key={i} style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 14px 4px",marginBottom:10,background:"var(--s1)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:10,flexWrap:"wrap"}}>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{REP_TYPES.map(t=>(<button key={t} type="button" onClick={()=>setRep(i,"type",t)}
+          style={{border:"1px solid "+(r.type===t?"#2A8472":"var(--bdr)"),background:r.type===t?"rgba(42,132,114,.1)":"#fff",color:r.type===t?"#206557":"var(--t2)",borderRadius:999,padding:"4px 11px",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{t}</button>))}</div>
+        {reps.length>1&&<button type="button" onClick={()=>set({reps:reps.filter((_,j)=>j!==i)})} style={{background:"none",border:0,color:"#B3261E",fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Remove</button>}
+      </div>
+      <div className="form-row" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"0 12px"}}>
+        <div className="form-group"><label className="label">Company</label><input className="input" placeholder="e.g. Brightline Talent" value={r.company} onChange={e=>setRep(i,"company",e.target.value)}/></div>
+        <div className="form-group"><label className="label">Contact person</label><input className="input" placeholder="e.g. Sarah Cole" value={r.contact} onChange={e=>setRep(i,"contact",e.target.value)}/></div>
+        <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="agent@company.com" value={r.email} onChange={e=>setRep(i,"email",e.target.value)}/></div>
+        <div className="form-group"><label className="label">Phone</label><input className="input" type="tel" placeholder="(323) 555-0148" value={r.phone} onChange={e=>setRep(i,"phone",e.target.value)}/></div>
+      </div>
+    </div>))}
+    {v.status==="represented"&&reps.length<2&&<button type="button" className="btn-s btn-sm" onClick={()=>set({reps:[...reps,{...repBlank(),type:reps[0]&&reps[0].type==="Manager"?"Agent":"Manager"}]})}>+ Add {reps[0]&&reps[0].type==="Manager"?"an agent":"a manager"}</button>}
+  </div>);
+}
+
 function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onViewCastingById}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
@@ -27152,7 +27210,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const [selectedSkills,setSelectedSkills]=useState([]); // canonical picks from SKILL_GROUPS
   const [extraSkills,setExtraSkills]=useState([]); // additional free-text skills
   // Size-card private answers live in profile_private (owner-only RLS).
-  const [priv,setPriv]=useState({has_tattoos:null,has_piercings:null,nudity_partial:null,nudity_full:null,disabilities:null,assistive_devices:null,disability_other:null});
+  const [priv,setPriv]=useState({has_tattoos:null,has_piercings:null,nudity_partial:null,nudity_full:null,disabilities:null,assistive_devices:null,disability_other:null,representation:null});
   const [privLoaded,setPrivLoaded]=useState(false);
   const [skillQ,setSkillQ]=useState("");
   const [customSkill,setCustomSkill]=useState("");
@@ -27229,8 +27287,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
        setSelectedSkills(c.picked);setExtraSkills(c.extra);
        setF(x=>({...x,accents:c.accents,languages:c.languages}));}
       if(profile.user_type!=="cd"&&profile.id)(async()=>{try{
-        const {data}=await window.sb.from("profile_private").select("has_tattoos,has_piercings,nudity_partial,nudity_full,disabilities,assistive_devices,disability_other").eq("user_id",profile.id).maybeSingle();
-        if(data)setPriv({has_tattoos:data.has_tattoos,has_piercings:data.has_piercings,nudity_partial:data.nudity_partial,nudity_full:data.nudity_full,disabilities:data.disabilities||null,assistive_devices:data.assistive_devices||null,disability_other:data.disability_other||null});
+        const {data}=await window.sb.from("profile_private").select("has_tattoos,has_piercings,nudity_partial,nudity_full,disabilities,assistive_devices,disability_other,representation").eq("user_id",profile.id).maybeSingle();
+        if(data)setPriv({has_tattoos:data.has_tattoos,has_piercings:data.has_piercings,nudity_partial:data.nudity_partial,nudity_full:data.nudity_full,disabilities:data.disabilities||null,assistive_devices:data.assistive_devices||null,disability_other:data.disability_other||null,representation:data.representation||null});
       }catch(_){}finally{setPrivLoaded(true);}})();else setPrivLoaded(true);
       setSlateVideoUrl(profile.slate_video_url||"");
     }
@@ -27441,7 +27499,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       if(!isCD&&Object.values(priv).some(v=>v!==null)){
         const dOther=(priv.disability_other||"").trim().slice(0,200)||null;
         if(dOther&&containsContactInfo(dOther)){showErr(CONTACT_INFO_MSG);return false;}
-        const privRow={...priv,disability_other:dOther};
+        const rp=priv.representation;
+        const repClean=rp&&rp.status?{status:rp.status,reps:rp.status==="represented"?(rp.reps||[]).map(x=>({type:REP_TYPES.includes(x.type)?x.type:"Agent",company:String(x.company||"").trim().slice(0,120),contact:String(x.contact||"").trim().slice(0,120),email:String(x.email||"").trim().slice(0,160),phone:String(x.phone||"").trim().slice(0,40)})).filter(x=>x.company||x.contact||x.email||x.phone).slice(0,2):[]}:null;
+        const privRow={...priv,disability_other:dOther,representation:repClean};
         const {error:pe}=await withTimeout(window.sb.from("profile_private").upsert({user_id:session.user.id,...privRow,updated_at:new Date().toISOString()},{onConflict:"user_id"}),30000,"Save");
         if(pe)throw pe;
       }
@@ -27798,29 +27858,6 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               </div>
             ))}</div>
           }
-          <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
-            <label className="label">Resume / CV (PDF, DOC, or DOCX — max 10 MB) {!isPremium&&<span style={{color:"var(--t3)",fontWeight:400}}>· Premium</span>}</label>
-            <p style={{fontSize:12,color:"var(--t3)",marginTop:-4,marginBottom:10}}>Casting directors can download this directly from your profile and from every submission you send.</p>
-            {!isPremium?(
-              <div style={{border:"1.5px solid #2A8472",borderRadius:10,padding:"14px 16px",background:"var(--s1)"}}>
-                {profile.resume_url&&<div style={{marginBottom:10}}><a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={22}/> View current resume</a></div>}
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                  <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#206557",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
-                  <span style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#fff",background:"#206557",padding:"3px 9px",borderRadius:999}}>Premium</span>
-                </div>
-                <p style={{fontSize:12.5,color:"var(--t1)",fontWeight:500,lineHeight:1.6,margin:"0 0 12px"}}>A real, downloadable resume next to your profile — Casting Directors &amp; Agents pull it during casting, not just from your submission.</p>
-                <button type="button" onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
-              </div>
-            ):profile.resume_url?(
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-                <a href={profile.resume_url} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none"}}><Ico n="file-text" s={22}/> View current resume</a>
-                <label className="btn-s btn-sm" style={{cursor:"pointer"}}>{uploading?"Uploading…":"Replace"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{display:"none"}} onChange={e=>uploadResume(e.target.files?.[0])}/></label>
-                <button className="btn-s btn-sm" onClick={removeResume}>Remove</button>
-              </div>
-            ):(
-              <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-block"}}>{uploading?"Uploading…":"Upload Resume"}<input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style={{display:"none"}} onChange={e=>uploadResume(e.target.files?.[0])}/></label>
-            )}
-          </div>
         </div>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Training & Skills</h3>
@@ -27830,8 +27867,9 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               <span style={{fontSize:13,color:"var(--t2)"}}>{selectedSkills.length+extraSkills.filter(x=>String(x||"").trim()).length?`${selectedSkills.length+extraSkills.filter(x=>String(x||"").trim()).length} skills selected`:"Skills, accents and languages now have their own tab."}</span>
               <button type="button" className="btn-s btn-sm" onClick={()=>{setTab("skills");window.scrollTo({top:0,behavior:"smooth"});}}>Edit skills &amp; languages <Tri/></button>
             </div></div>
-          <div className="form-group"><label className="label">Representation</label><input className="input" placeholder="Agency, manager, or 'Seeking Representation'" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         </div>
+        <RepresentationCard value={priv.representation||repFromAgentText(f.agent)}
+          onChange={r=>{setPriv(p=>({...p,representation:r}));up("agent",repSummary(r));}}/>
 
         {/* ── LICENSE & PASSPORT ── */}
         <div className="card" style={{padding:24,marginBottom:16}}>
@@ -28479,6 +28517,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     {/* ── RÉSUMÉ TAB (Premium download, free preview) ── */}
     {tab==="resume"&&!isCD&&<ResumeBuilder profile={profile} f={f} credits={dbCredits} isPremium={isPremium} onNavigate={onNavigate} setTab={setTab}
       accountEmail={profile?.email||session?.user?.email||""} skills={[...selectedSkills,...extraSkills]}
+      representation={priv.representation||repFromAgentText(f.agent)}
       accents={Array.isArray(f.accents)?f.accents:[]} languages={Array.isArray(f.languages)?f.languages:[]}/>}
 
     {/* ── IMPROVE PROFILE TAB ── */}
