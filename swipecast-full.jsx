@@ -28355,14 +28355,13 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── SHOWCASE ORDER TAB ── */}
     {tab==="showcase"&&!isCD&&<>
-      <div style={{marginBottom:14,padding:"14px 18px",background:"#111",border:"1px solid #333",borderRadius:10,color:"#fff"}}>
-        <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>Arrange how casting directors see your media.</div>
-        <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.6}}>Drag tiles into the order you want. The first 4 appear in the main showcase grid on your public profile. Everything else appears under "View More Media." Your main headshot is always shown first and is set separately via "Change Headshot."</div>
-      </div>
+      {/* One quiet line instead of the old dark card (owner, 2026-10-14, demo showcase-order-hint-demo.html). */}
+      <p style={{fontSize:13.5,color:"var(--t2)",margin:"0 0 16px",lineHeight:1.5}}>Drag photos to reorder. The first 4 show on your public profile; the rest go under “View More Media.”</p>
       {/* Locked headshot */}
       {profile.headshot_url&&(
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)",marginBottom:8}}>Main Headshot — Always shown first (not draggable)</div>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)",marginBottom:8,display:"flex",alignItems:"center",gap:10}}>Main headshot — always first
+            <button type="button" onClick={()=>{const el=[...document.querySelectorAll("input[data-hs-upload]")].find(x=>x.closest("label")&&x.closest("label").offsetParent);if(!el)return;el.closest("label").scrollIntoView({behavior:"smooth",block:"center"});try{el.click();}catch(_){}}} style={{background:"none",border:0,padding:0,color:"var(--teal)",fontSize:12.5,fontWeight:700,letterSpacing:0,textTransform:"none",cursor:"pointer"}}>Change</button></div>
           <div style={{display:"inline-block",position:"relative",width:100}}>
             <img src={profile.headshot_url} alt="Main headshot" style={{width:100,aspectRatio:"3/4",objectFit:"cover",borderRadius:8,display:"block",border:"2px solid var(--acc)"}}/>
             <div style={{position:"absolute",top:4,left:4,background:"var(--acc)",color:"#fff",fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4,letterSpacing:"0.05em"}}>MAIN</div>
@@ -28380,7 +28379,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <>
           {/* Top Showcase section */}
           <div style={{marginBottom:8}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:10}}>Top Showcase — First 4 appear in the public profile grid</div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--acc)",marginBottom:10}}>Top showcase — first 4 on your public profile</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:10}}>
               {showcaseCombined.slice(0,4).map((item,i)=>(
                 <div key={item.id||i}
