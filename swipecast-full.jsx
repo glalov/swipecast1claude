@@ -26969,6 +26969,8 @@ p.x{margin:0;overflow-wrap:anywhere}p.x+p.x{margin-top:.2em}
 /* Compact layout + medium letter weight matched to the City Headshots reference (owner, 2026-10-14,
    demo resume-compact-typography-demo.html). Stroke is screen-only; print stays plain black. */
 @media screen{.cv{-webkit-text-stroke:calc(var(--pt)*.5) #000}}
+.ft .br{display:inline-flex;align-items:center;gap:.45em;letter-spacing:.14em;text-transform:uppercase;font-size:.92em;color:#555}
+.ft .mk{width:1.35em;height:1.35em;display:block}
 @media print{.wrap{width:${W}in}.cv{width:${W}in;height:${H}in;aspect-ratio:auto}}
 </style></head><body><div class="wrap"><div class="cv" id="cv"></div></div>
 <script>
@@ -26980,6 +26982,8 @@ let secs,skills,acc,lang,train,omitted;
 function render(){
   // "both": headshot left, QR right at the same height — a symmetrical frame around the
   // name (owner picked layout A, 2026-10-14, demo resume-headshot-plus-qr-demo.html).
+  // Tiny CastSlate mark bottom-right — the only brand touch the owner kept (2026-10-14).
+  const CS_MARK='<svg class="mk" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1A1A2E"/><path transform="translate(5.6 5.6) scale(.65)" d="M0.7,16 L12.1,4.8 L12.1,10.1 L19.9,10.1 L19.9,4.8 L31.3,16 L19.9,27.2 L19.9,21.9 L12.1,21.9 L12.1,27.2 Z" fill="#fff"/></svg>';
   const both=o.corner==="both";
   // Premium: the small headshot is a button — opens the photo picker / position editor
   // in the parent page (owner, 2026-10-14). x/y/z = object-position % and zoom.
@@ -27006,7 +27010,7 @@ function render(){
     if(lang.length)h+='<p class="x"><i>Languages:</i> '+lang.map(E).join(", ")+'</p>';}
   const notes=[];if(d.hasCommercials)notes.push("Commercial list available upon request.");if(omitted.length||d.leftOut)notes.push("Full credits at "+E(d.urlText));
   if(notes.length)h+='<div class="note">'+notes.join(" &nbsp;·&nbsp; ")+'</div>';
-  h+='<div class="ft"><span>'+E(d.urlText)+'</span><span>'+(d.brand?"Made with CastSlate":"")+'</span></div>';
+  h+='<div class="ft"><span>'+E(d.urlText)+'</span><span>'+(d.brand?'<span class="br">'+CS_MARK+'CastSlate</span>':"")+'</span></div>';
   if(!d.premium)h+='<div class="wm"><span>'+E(d.wmText||"PREVIEW")+'</span></div>';
   cv.innerHTML=h;
   // Long names shrink (down to 1.7em) to stay on one line instead of wrapping.
@@ -27074,6 +27078,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const[accOn,setAccOn]=useState(saved.accOn!==false);
   const[langOn,setLangOn]=useState(saved.langOn!==false);
   const[emailOn,setEmailOn]=useState(!!saved.emailOn);
+  const[commOn,setCommOn]=useState(saved.commOn!==false);
   const[email,setEmail]=useState(saved.email||accountEmail||"");
   // Résumé photo (premium): which of their photos + how it's framed. Falls back to the
   // profile headshot if the saved photo was deleted.
@@ -27086,7 +27091,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const[status,setStatus]=useState(null);
   const[note,setNote]=useState(null);
   const frameRef=useRef(null),pendingRef=useRef(null),prevLostRef=useRef(0),noteT=useRef(0);
-  useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel]);
+  useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn]);
   useEffect(()=>{const t=setTimeout(()=>setEmailLive(email),350);return()=>clearTimeout(t);},[email]);
   const showNote=(text,kind)=>{clearTimeout(noteT.current);setNote(text?{text,kind}:null);if(text)noteT.current=setTimeout(()=>setNote(null),5000);};
   const [exCorner,setExCorner]=useState("hs"),[exRep,setExRep]=useState("self");
@@ -27127,7 +27132,8 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const d={name,unions,stats,agent:agentOk?repLines:[],url,urlText,headshot:hsUrl,hsPos,canPickHs:isPremium&&!!hsUrl,
     email:(emailOn&&resumeEmailOk(emailLive))?String(emailLive).trim():"",
     sections,training:trainOn?trainingLines:[],skills:skillList,accents:accOn?accList:[],languages:langOn?langList:[],
-    hasCommercials,leftOut:totalCredits>pickedCount,premium:isPremium,brand:!(isPremium&&brand==="off")};
+    // Industry-standard line, shown on every résumé (owner, 2026-10-14); premium can untick it.
+    hasCommercials:isPremium?commOn:true,leftOut:totalCredits>pickedCount,premium:isPremium,brand:!(isPremium&&brand==="off")};
   const o={size,corner:effCorner,contact:effContact,auto:true,keep};
   // Free + nothing filled in yet: show a complete EXAMPLE résumé with their name on it,
   // never an empty box (owner, 2026-10-14 — demo free-resume-tab-demo.html).
@@ -27140,7 +27146,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       headshot:profile?.headshot_url||"",slot:!profile?.headshot_url,
       sections:RESUME_EXAMPLE.sections.map(sc=>sc.key==="Theatre"?{...sc,rows:exG.theatre}:sc),training:RESUME_EXAMPLE.training,
       skills:RESUME_EXAMPLE.skills.map(k=>/^Singing/.test(k)?exG.sing:k),
-      accents:RESUME_EXAMPLE.accents,languages:RESUME_EXAMPLE.languages,hasCommercials:false,leftOut:false,email:"",
+      accents:RESUME_EXAMPLE.accents,languages:RESUME_EXAMPLE.languages,hasCommercials:true,leftOut:false,email:"",
       agent:exRep==="agent"?RESUME_SAMPLE_AGENT:[]});
     o.corner=exCorner;o.contact=exRep==="agent"?"agent":"link";o.keep=[];
   }
@@ -27241,9 +27247,10 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
           {gp.rows.map(r=>{const on=shownOn(r.id),dis=!on&&full;return(<React.Fragment key={r.id}>
             {ck(on,()=>toggleCredit(r.id),<><b style={{color:"var(--t1)"}}>{r.t||"Untitled"}</b>{r.r?" — "+r.r:""}</>,dis,"Max "+RESUME_MAX_PER+" per section — untick one to swap")}</React.Fragment>);})}
         </div>);})}
-        {hasCommercials&&<div style={{fontSize:12,color:"var(--t3)",marginTop:4,lineHeight:1.45}}>Commercials appear as "Commercial list available upon request" — the industry standard.</div>}
         {(picked||keep.length>0)&&<button type="button" onClick={()=>{setPicked(null);setKeep([]);pendingRef.current=null;showNote(null);}} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,fontSize:12.5,cursor:"pointer",padding:0,marginTop:4}}>Reset to automatic</button>}
       </>}
+      {lab("Commercials")}{ck(commOn,()=>setCommOn(v=>!v),<>Show “Commercial list available upon request”</>)}
+      {hasCommercials&&<div style={{fontSize:12,color:"var(--t3)",marginTop:2,lineHeight:1.45}}>Your commercial credits aren’t listed one by one — this line is the industry standard.</div>}
       {trainingLines.length>0&&<>{lab("Education & training")}{ck(trainOn,()=>toggleFlag(trainOn,setTrainOn,"train","training"),"Include training")}</>}
       {allSkills.length>0&&<>{lab("Special skills ("+skillList.length+" on)")}<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{allSkills.map(s=>{const on=!skillOff.includes(s);return(
         <button key={s} type="button" onClick={()=>toggleSkill(s)} style={{border:"1px solid "+(on?"#2A8472":"var(--bdr)"),background:on?"rgba(42,132,114,.08)":"#fff",color:on?"#206557":"var(--t3)",borderRadius:999,padding:"4px 10px",fontSize:12.5,fontWeight:600,cursor:"pointer",textDecoration:on?"none":"line-through"}}>{s}</button>);})}</div></>}
