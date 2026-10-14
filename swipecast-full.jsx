@@ -26923,13 +26923,16 @@ function resumeDoc(d,o){
 .hd{display:flex;gap:calc(var(--pt)*18);align-items:flex-start}
 .ph{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);object-fit:cover;object-position:50% 22%;display:block;border:1px solid #000}
 .qr{flex:none;width:calc(var(--pt)*78);height:calc(var(--pt)*78);display:block}
+.qrr{flex:none;width:calc(var(--pt)*86);display:flex;flex-direction:column;align-items:center;font-family:Arial,Helvetica,sans-serif;color:#333}
+.qrr .qr{width:calc(var(--pt)*82);height:calc(var(--pt)*82)}
+.qrr .cap{font-size:.62em;line-height:1.25;margin-top:.45em;text-align:center;-webkit-text-stroke:0}
 .slot{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);border:1.5px dashed #B9A887;background:#F8F2E7;border-radius:calc(var(--pt)*3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--pt)*4);color:#7A6A50;font-family:Arial,Helvetica,sans-serif;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;padding:0;font-size:inherit;line-height:1.2}
 .slot:hover{background:#F1E8D6;border-color:#2A8472}
 .slot svg{width:calc(var(--pt)*26);height:calc(var(--pt)*26)}
 .slot .s1{font-size:.8em;font-weight:700;line-height:1.2;padding:0 .4em}
 .slot .s2{font-size:.76em;font-weight:700;color:#2A8472}
 .hi{flex:1;min-width:0;text-align:center}
-.nm{font-size:2.6em;font-weight:400;letter-spacing:0;margin:0;line-height:1.1;overflow-wrap:anywhere}
+.nm{white-space:nowrap;font-size:2.6em;font-weight:400;letter-spacing:0;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .un{font-size:.95em;margin-top:.15em}
 .cols{display:flex;justify-content:center;gap:4.5em;margin-top:.8em;font-size:.95em;line-height:1.2;text-align:left}
 .cols .c{min-width:0;overflow-wrap:anywhere}
@@ -26957,14 +26960,18 @@ const cv=document.getElementById("cv");
 const yy=y=>{const m=String(y||"").match(/(\\d{4})/);return m?" \\u2019"+m[1].slice(2):"";};
 let secs,skills,acc,lang,train,omitted;
 function render(){
-  const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':(o.corner==="hs"&&d.headshot?'<img class="ph" alt="" src="'+E(d.headshot)+'">':(o.corner==="hs"&&d.slot?'<button type="button" class="slot" onclick="parent.postMessage({csResumeAddHeadshot:1},&quot;*&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/></svg><span class="s1">Your headshot here</span><span class="s2">+ Add headshot</span></button>':""));
+  // "both": headshot left, QR right at the same height — a symmetrical frame around the
+  // name (owner picked layout A, 2026-10-14, demo resume-headshot-plus-qr-demo.html).
+  const both=o.corner==="both";
+  const right=both?'<div class="qrr"><img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data='+encodeURIComponent(d.url)+'"><div class="cap">Scan for reel<br>&amp; full profile</div></div>':'';
+  const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':((o.corner==="hs"||both)&&d.headshot?'<img class="ph" alt="" src="'+E(d.headshot)+'">':((o.corner==="hs"||both)&&d.slot?'<button type="button" class="slot" onclick="parent.postMessage({csResumeAddHeadshot:1},&quot;*&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/></svg><span class="s1">Your headshot here</span><span class="s2">+ Add headshot</span></button>':""));
   const mail=d.email?'<br>'+E(d.email):'';
   const ag=Array.isArray(d.agent)?d.agent:(d.agent?[d.agent]:[]);
   // The actor's own email gets its own labelled block under the reps, so casting
   // never mistakes it for the agency's address (owner, 2026-10-14).
   const contact=(o.contact==="agent"&&ag.length)?'<div class="c"><b>Representation</b><br>'+ag.map(E).join('<br>')+(d.email?'<div style="margin-top:.55em"><b>Personal</b><br>'+E(d.email)+'</div>':'')+'</div>':'<div class="c"><b>Contact</b><br>'+E(d.urlText)+(d.email?mail:'<br>Message via CastSlate')+'</div>';
   const st=Object.entries(d.stats).filter(([,v])=>v).map(([k,v])=>E(k)+': '+E(v)).join('<br>');
-  let h='<div class="hd">'+pic+'<div class="hi"><h1 class="nm">'+E(d.name)+'</h1>'+(d.unions?'<div class="un">('+E(d.unions)+')</div>':'')+'<div class="cols">'+contact+(st?'<div class="c">'+st+'</div>':'')+'</div></div></div>';
+  let h='<div class="hd">'+pic+'<div class="hi"><h1 class="nm">'+E(d.name)+'</h1>'+(d.unions?'<div class="un">('+E(d.unions)+')</div>':'')+'<div class="cols">'+contact+(st?'<div class="c">'+st+'</div>':'')+'</div></div>'+right+'</div>';
   // Few credits (3 or fewer): training is the stronger selling point, so it leads.
   const trainH=train.length?'<hr><h2>Education &amp; Training</h2><ul class="tl">'+train.map(t=>'<li>'+E(t)+'</li>').join("")+'</ul>':'';
   const credH=secs.map(s=>s.rows.length?'<hr><h2>'+E(s.label)+'</h2><table>'+s.rows.map(r=>'<tr><td>'+E(r.t)+'</td><td>'+E(r.r)+'</td><td>'+E(r.c)+E(yy(r.y))+'</td></tr>').join("")+'</table>':'').join("");
@@ -26979,6 +26986,8 @@ function render(){
   h+='<div class="ft"><span>'+E(d.urlText)+'</span><span>'+(d.brand?"Made with CastSlate":"")+'</span></div>';
   if(!d.premium)h+='<div class="wm"><span>'+E(d.wmText||"PREVIEW")+'</span></div>';
   cv.innerHTML=h;
+  // Long names shrink (down to 1.7em) to stay on one line instead of wrapping.
+  const nm=cv.querySelector('.nm');if(nm){let fs=2.6;while(nm.scrollWidth>nm.clientWidth+1&&fs>1.7){fs-=.1;nm.style.fontSize=fs.toFixed(1)+'em';}}
 }
 const fits=()=>cv.scrollHeight<=cv.clientHeight+1;
 const setB=v=>cv.style.setProperty("--b",v),setG=v=>cv.style.setProperty("--gap",v);
@@ -27052,7 +27061,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const showNote=(text,kind)=>{clearTimeout(noteT.current);setNote(text?{text,kind}:null);if(text)noteT.current=setTimeout(()=>setNote(null),5000);};
   const [exCorner,setExCorner]=useState("hs"),[exRep,setExRep]=useState("self");
   const effContact=(contact==="agent"&&!agentOk)?"link":contact;
-  const effCorner=(corner==="hs"&&!hasHeadshot)?"qr":corner;
+  const effCorner=((corner==="hs"||corner==="both")&&!hasHeadshot)?"qr":corner;
 
   const name=String(g("display_name")||"").trim()||"Your Name";
   const slug=profile?.public_slug||"";
@@ -27185,7 +27194,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       <h3 style={{fontSize:19,fontWeight:800,margin:"10px 0 4px"}}>Your actor résumé</h3>
       <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:0}}>Built from your profile in the industry-standard format. One page, ready to staple to your headshot.</p>
       {lab("Size")}{seg(size,setSize,[["8x10","8 × 10 (headshot)"],["letter","US Letter"]])}
-      {lab("Photo")}{seg(effCorner,setCorner,[["hs","Headshot",!hasHeadshot,"Add a headshot to your profile first"],["qr","QR to my profile"],["none","None"]])}
+      {lab("Photo")}{seg(effCorner,setCorner,[["hs","Headshot",!hasHeadshot,"Add a headshot to your profile first"],["qr","QR to my profile"],["both","Headshot + QR",!hasHeadshot,"Add a headshot to your profile first"],["none","None"]])}
       {lab("Contact shown")}{seg(effContact,setContact,[["agent","My representation",!agentOk,"Add your agent or manager under Representation on Edit Profile"],["link","My profile link"]])}
       {ck(emailOn,()=>toggleFlag(emailOn,setEmailOn,"email","your email"),"Also show my email")}
       <input type="email" value={email} disabled={!emailOn} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"
@@ -27223,7 +27232,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
         <span style={{background:"#FBF0DA",border:"1px solid #EBCF97",color:"#8A5A12",borderRadius:999,padding:"3px 9px",fontSize:11,letterSpacing:".06em",textTransform:"uppercase"}}>{showExample?"Example":"Preview"}</span>
         {showExample?"What your résumé will look like — with your name on it":"Your résumé, built from your profile"}</div>}
       {showExample&&<div className="rsm-exsw">
-        {[[[["hs","Headshot"],["qr","QR code"]],exCorner,setExCorner],[[["self","Self-represented"],["agent","Agent info"]],exRep,setExRep]].map(([opts,val,set],k)=>
+        {[[[["hs","Headshot"],["qr","QR code"],["both","Both"]],exCorner,setExCorner],[[["self","Self-represented"],["agent","Agent info"]],exRep,setExRep]].map(([opts,val,set],k)=>
           <div key={k} className="rsm-seg" role="group">{opts.map(([v,l])=><button key={v} type="button" aria-pressed={val===v} className={val===v?"on":""} onClick={()=>set(v)}>{l}</button>)}</div>)}
       </div>}
       {empty&&isPremium
