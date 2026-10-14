@@ -26872,9 +26872,15 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
 // whenever its size changes (a 0-width first layout once made everything "fit").
 // ═══════════════════════════════════════════
 const RESUME_MAX_PER=8;
-// Example résumé sample headshot — a real photo reads as a finished résumé (owner, 2026-10-14,
-// demo resume-example-toggles-demo.html). Absolute URL so it loads inside the srcdoc iframe.
-const RESUME_SAMPLE_HS=(typeof location!=="undefined"?location.origin:"https://www.castslate.com")+"/assets/agd-cards/agd-phone-headshot.jpg";
+// Example résumé (free, empty profile): never a stranger's face next to the actor's name —
+// their own headshot, else a "Your headshot here" slot. Theatre roles + voice type follow the
+// profile's gender; anything else gets roles any gender can play (owner, 2026-10-14,
+// demo resume-example-toggles-demo.html).
+const resumeExGender=g=>{const v=String(g||"").trim().toLowerCase();return v==="male"||v==="trans man"?"m":v==="female"||v==="trans woman"?"f":"n";};
+const RESUME_EX_BY_GENDER={
+  f:{theatre:[{id:"x5",t:"A Doll's House",r:"Nora",c:"Riverside Rep",y:"2025"},{id:"x6",t:"Twelfth Night",r:"Viola",c:"Shakespeare in the Square",y:"2023"}],sing:"Singing (mezzo-soprano)"},
+  m:{theatre:[{id:"x5",t:"A Doll's House",r:"Torvald",c:"Riverside Rep",y:"2025"},{id:"x6",t:"Twelfth Night",r:"Orsino",c:"Shakespeare in the Square",y:"2023"}],sing:"Singing (baritone)"},
+  n:{theatre:[{id:"x5",t:"Our Town",r:"Stage Manager",c:"Riverside Rep",y:"2025"},{id:"x6",t:"The Tempest",r:"Ariel",c:"Shakespeare in the Square",y:"2023"}],sing:"Singing"}};
 const RESUME_SAMPLE_AGENT=["Harbor Lane Talent (Agent)","Jordan Reyes","jordan@harborlanetalent.com","(212) 555-0147"];
 // Shown to FREE actors whose profile is still empty, with their own name on top.
 const RESUME_EXAMPLE={sections:[
@@ -26917,6 +26923,11 @@ function resumeDoc(d,o){
 .hd{display:flex;gap:calc(var(--pt)*18);align-items:flex-start}
 .ph{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);object-fit:cover;object-position:50% 22%;display:block;border:1px solid #000}
 .qr{flex:none;width:calc(var(--pt)*78);height:calc(var(--pt)*78);display:block}
+.slot{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);border:1.5px dashed #B9A887;background:#F8F2E7;border-radius:calc(var(--pt)*3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--pt)*4);color:#7A6A50;font-family:Arial,Helvetica,sans-serif;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;padding:0;font-size:inherit;line-height:1.2}
+.slot:hover{background:#F1E8D6;border-color:#2A8472}
+.slot svg{width:calc(var(--pt)*26);height:calc(var(--pt)*26)}
+.slot .s1{font-size:.8em;font-weight:700;line-height:1.2;padding:0 .4em}
+.slot .s2{font-size:.76em;font-weight:700;color:#2A8472}
 .hi{flex:1;min-width:0;text-align:center}
 .nm{font-size:2.05em;font-weight:700;letter-spacing:.02em;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .un{font-size:.95em;margin-top:.15em}
@@ -26943,7 +26954,7 @@ const cv=document.getElementById("cv");
 const yy=y=>{const m=String(y||"").match(/(\\d{4})/);return m?" \\u2019"+m[1].slice(2):"";};
 let secs,skills,acc,lang,train,omitted;
 function render(){
-  const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':(o.corner==="hs"&&d.headshot?'<img class="ph" alt="" src="'+E(d.headshot)+'">':"");
+  const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':(o.corner==="hs"&&d.headshot?'<img class="ph" alt="" src="'+E(d.headshot)+'">':(o.corner==="hs"&&d.slot?'<button type="button" class="slot" onclick="parent.postMessage({csResumeAddHeadshot:1},&quot;*&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/></svg><span class="s1">Your headshot here</span><span class="s2">+ Add headshot</span></button>':""));
   const mail=d.email?'<br>'+E(d.email):'';
   const ag=Array.isArray(d.agent)?d.agent:(d.agent?[d.agent]:[]);
   // The actor's own email gets its own labelled block under the reps, so casting
@@ -27006,7 +27017,7 @@ run();
 <\/script></body></html>`;
 }
 
-function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onNavigate,setTab,accountEmail,representation}){
+function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onNavigate,setTab,accountEmail,representation,onAddHeadshot}){
   const uid=profile?.id||"";
   const LS="cs_resume2_"+uid;
   const saved=React.useMemo(()=>{try{return JSON.parse(localStorage.getItem(LS)||"null")||{};}catch(_){return{};}},[LS]);
@@ -27081,10 +27092,12 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const emptyProfile=!totalCredits&&!trainingLines.length&&!allSkills.length&&!accList.length&&!langList.length;
   const showExample=!isPremium&&emptyProfile;
   if(showExample){
+    const exG=RESUME_EX_BY_GENDER[resumeExGender(g("gender"))];
     Object.assign(d,{wmText:"EXAMPLE",unions:unions||"Non-Union",
       stats:{Height:stats.Height||"5′7″",Hair:stats.Hair||"Brown",Eyes:stats.Eyes||"Hazel"},
-      headshot:profile?.headshot_url||RESUME_SAMPLE_HS,
-      sections:RESUME_EXAMPLE.sections,training:RESUME_EXAMPLE.training,skills:RESUME_EXAMPLE.skills,
+      headshot:profile?.headshot_url||"",slot:!profile?.headshot_url,
+      sections:RESUME_EXAMPLE.sections.map(sc=>sc.key==="Theatre"?{...sc,rows:exG.theatre}:sc),training:RESUME_EXAMPLE.training,
+      skills:RESUME_EXAMPLE.skills.map(k=>/^Singing/.test(k)?exG.sing:k),
       accents:RESUME_EXAMPLE.accents,languages:RESUME_EXAMPLE.languages,hasCommercials:false,leftOut:false,email:"",
       agent:exRep==="agent"?RESUME_SAMPLE_AGENT:[]});
     o.corner=exCorner;o.contact=exRep==="agent"?"agent":"link";o.keep=[];
@@ -27109,6 +27122,11 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       prevLostRef.current=lost;
       setStatus({fits:m.fits,omitted:m.omitted||[],shownSkills:m.shownSkills,shownAcc:m.shownAcc,shownLang:m.shownLang});
     };
+    window.addEventListener("message",on);return()=>window.removeEventListener("message",on);
+  },[]);
+  const addHsRef=useRef(onAddHeadshot);addHsRef.current=onAddHeadshot;
+  useEffect(()=>{
+    const on=e=>{if(e.data&&e.data.csResumeAddHeadshot&&frameRef.current&&e.source===frameRef.current.contentWindow&&addHsRef.current)addHsRef.current();};
     window.addEventListener("message",on);return()=>window.removeEventListener("message",on);
   },[]);
   const addPending=label=>{pendingRef.current={snap:snapshot(),label};};
@@ -27752,7 +27770,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         {profile.headshot_url
           ?<img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:10}}/>
           :<div style={{width:"100%",aspectRatio:"3/4",background:"var(--s2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:12,textAlign:"center",padding:12}}>No headshot yet</div>}
-        <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/></label>
+        <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/></label>
         {profile.headshot_url&&<button type="button" onClick={removeHeadshot} disabled={uploading}
           style={{width:"100%",marginTop:6,background:"none",border:"none",color:"var(--t3)",fontSize:11,fontWeight:600,cursor:uploading?"default":"pointer",textDecoration:"underline",padding:4,fontFamily:"inherit"}}>Remove headshot</button>}
       </div>
@@ -28075,13 +28093,13 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           {!isPremium&&!profile.headshot_url&&(
             <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
               {uploading?"Uploading…":"Upload Headshot"}
-              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
+              <input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
             </label>
           )}
           {!isPremium&&profile.headshot_url&&(
             <label className="btn-s btn-sm" style={{cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
               {uploading?"Uploading…":"Change Headshot"}
-              <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
+              <input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
             </label>
           )}
           {/* Premium user: add gallery photo button */}
@@ -28100,7 +28118,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <div style={{fontWeight:700,fontSize:15,color:"var(--t1)"}}>Upload Your Headshot</div>
             <div style={{fontSize:13}}>Your headshot is the first thing casting directors see. Click to upload.</div>
             <span className="btn-p btn-sm" style={{pointerEvents:"none",marginTop:4}}>{uploading?"Uploading…":"Choose Photo"}</span>
-            <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
+            <input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
           </label>
         )}
 
@@ -28578,6 +28596,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── RÉSUMÉ TAB (Premium download, free preview) ── */}
     {tab==="resume"&&!isCD&&<ResumeBuilder profile={profile} f={f} credits={dbCredits} isPremium={isPremium} onNavigate={onNavigate} setTab={setTab}
+      onAddHeadshot={()=>{const el=[...document.querySelectorAll("input[data-hs-upload]")].find(x=>x.closest("label")&&x.closest("label").offsetParent);if(!el)return;el.closest("label").scrollIntoView({behavior:"smooth",block:"center"});try{el.click();}catch(_){}}}
       accountEmail={profile?.email||session?.user?.email||""} skills={[...selectedSkills,...extraSkills]}
       representation={priv.representation||repFromAgentText(f.agent)}
       accents={Array.isArray(f.accents)?f.accents:[]} languages={Array.isArray(f.languages)?f.languages:[]}/>}
