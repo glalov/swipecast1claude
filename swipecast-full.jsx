@@ -3575,6 +3575,9 @@ body.sheet-push .b2t-cube{display:none;}
 .rsm-panel{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px;}
 .rsm-stage{min-width:0;position:sticky;top:calc(var(--site-top-h,65px) + 16px);align-self:start;}
 .rsm-exsw{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;}
+.sz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;}
+.sz-grid>div{min-width:0;}
+@media(min-width:1200px){.sz-grid{grid-template-columns:repeat(var(--cols),minmax(0,1fr));}}
 .rsm-pick{max-width:620px;width:calc(100vw - 32px);max-height:calc(100vh - 32px);overflow:auto;padding:22px;}
 .rsm-pick-body{display:flex;gap:22px;margin-top:16px;align-items:flex-start;}
 .rsm-pick-ed{flex:none;display:flex;flex-direction:column;align-items:flex-start;}
@@ -28491,7 +28494,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <div className="otrg-row" style={{marginBottom:16}}>
           {[["men","Men's sizes"],["women","Women's sizes"]].map(([v,l])=><button key={v} type="button" className={"otrg-chip"+(f.size_set===v?" on":"")} onClick={()=>up("size_set",v)}>{l}</button>)}
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))",gap:14}}>
+        {/* Even rows on desktop (owner, 2026-10-14): men 14 boxes = 7+7, women 15 = 5+5+5. */}
+        <div className="sz-grid" style={{"--cols":(()=>{const n=3+(SIZE_FIELDS[f.size_set]||[]).length;return n%7===0?7:n%5===0?5:n%6===0?6:7;})()}}>
           <div><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height||""} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h}>{h}</option>)}</select></div>
           <div><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight||""} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w}>{w}</option>)}</select></div>
           <div><label className="label">Body type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option>{BODY_TYPES.map(b=><option key={b}>{b}</option>)}</select></div>
