@@ -28297,7 +28297,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         </div>
       ):(
         <>
-          <p style={{fontSize:12,color:"var(--t3)",marginBottom:8}}>Upload videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
+          <p style={{fontSize:12,color:"var(--t3)",marginBottom:16}}>Upload videos (MP4, MOV, WebM · max 100 MB each). They appear on your public profile.</p>
           {/* Existing uploaded videos */}
           {mediaItems.length>0&&<div style={{marginBottom:16,display:"grid",gap:10}}>
             {mediaItems.map((item,i)=>(
