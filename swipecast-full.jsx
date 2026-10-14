@@ -3574,6 +3574,10 @@ body.sheet-push .b2t-cube{display:none;}
 .rsm-grid>*{min-width:0;}
 .rsm-panel{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px;}
 .rsm-stage{min-width:0;position:sticky;top:calc(var(--site-top-h,65px) + 16px);align-self:start;}
+.rsm-exsw{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;}
+.rsm-seg{display:inline-flex;background:#F3EDE2;border:1px solid var(--bdr);border-radius:10px;padding:3px;gap:3px;}
+.rsm-seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:600;color:var(--t2);padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:background .15s,box-shadow .15s;}
+.rsm-seg button.on{background:#fff;color:var(--t1,#1A1A2E);box-shadow:0 1px 3px rgba(0,0,0,.12);}
 /* The preview stays on screen while the options are scrolled, sized so the whole page
    is visible under the fixed site header. */
 .rsm-frame{display:block;width:min(100%,820px,calc((100vh - var(--site-top-h,65px) - 110px) * .8));aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 12px 30px -16px rgba(36,31,25,.35),0 0 0 1px #e8e2d6;}
@@ -26868,7 +26872,10 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
 // whenever its size changes (a 0-width first layout once made everything "fit").
 // ═══════════════════════════════════════════
 const RESUME_MAX_PER=8;
-const RESUME_SAMPLE_HS="data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100"><rect width="80" height="100" fill="#b9ab94"/><circle cx="40" cy="38" r="17" fill="#8a7a62"/><rect x="16" y="60" width="48" height="40" rx="20" fill="#8a7a62"/></svg>');
+// Example résumé sample headshot — a real photo reads as a finished résumé (owner, 2026-10-14,
+// demo resume-example-toggles-demo.html). Absolute URL so it loads inside the srcdoc iframe.
+const RESUME_SAMPLE_HS=(typeof location!=="undefined"?location.origin:"https://www.castslate.com")+"/assets/agd-cards/agd-phone-headshot.jpg";
+const RESUME_SAMPLE_AGENT=["Harbor Lane Talent (Agent)","Jordan Reyes","jordan@harborlanetalent.com","(212) 555-0147"];
 // Shown to FREE actors whose profile is still empty, with their own name on top.
 const RESUME_EXAMPLE={sections:[
   {key:"Film & TV",label:"Film / Television",rows:[{id:"x1",t:"Night Shift",r:"Lead",c:"Indie feature / Dir. M. Ellison",y:"2025"},{id:"x2",t:"Precinct 9",r:"Co-Star",c:"Network drama",y:"2025"},{id:"x3",t:"Paper Lanterns",r:"Lead",c:"NYU Tisch thesis film",y:"2024"},{id:"x4",t:"Last Call",r:"Supporting",c:"Short film / Dir. A. Ruiz",y:"2024"}]},
@@ -26926,7 +26933,7 @@ p.x{margin:0;overflow-wrap:anywhere}p.x+p.x{margin-top:.2em}
 .note{margin-top:calc(var(--gap)*.6em);font-size:.92em;font-style:italic;text-align:center}
 .ft{margin-top:auto;padding-top:.8em;font-family:Arial,Helvetica,sans-serif;font-size:.72em;color:#444;display:flex;justify-content:space-between}
 .wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.wm span{font-family:Arial,sans-serif;font-weight:800;font-size:7em;letter-spacing:.12em;color:rgba(26,26,46,.07);transform:rotate(-28deg)}
+.wm span{font-family:Arial,sans-serif;font-weight:900;font-size:8.2em;letter-spacing:.14em;color:rgba(201,162,74,.20);-webkit-text-stroke:calc(var(--pt)*1.4) rgba(160,120,40,.45);transform:rotate(-28deg);white-space:nowrap}
 @media print{.wrap{width:${W}in}.cv{width:${W}in;height:${H}in;aspect-ratio:auto}}
 </style></head><body><div class="wrap"><div class="cv" id="cv"></div></div>
 <script>
@@ -27029,6 +27036,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email]);
   useEffect(()=>{const t=setTimeout(()=>setEmailLive(email),350);return()=>clearTimeout(t);},[email]);
   const showNote=(text,kind)=>{clearTimeout(noteT.current);setNote(text?{text,kind}:null);if(text)noteT.current=setTimeout(()=>setNote(null),5000);};
+  const [exCorner,setExCorner]=useState("hs"),[exRep,setExRep]=useState("self");
   const effContact=(contact==="agent"&&!agentOk)?"link":contact;
   const effCorner=(corner==="hs"&&!hasHeadshot)?"qr":corner;
 
@@ -27077,8 +27085,9 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       stats:{Height:stats.Height||"5′7″",Hair:stats.Hair||"Brown",Eyes:stats.Eyes||"Hazel"},
       headshot:profile?.headshot_url||RESUME_SAMPLE_HS,
       sections:RESUME_EXAMPLE.sections,training:RESUME_EXAMPLE.training,skills:RESUME_EXAMPLE.skills,
-      accents:RESUME_EXAMPLE.accents,languages:RESUME_EXAMPLE.languages,hasCommercials:false,leftOut:false,email:""});
-    o.corner="hs";o.contact="link";o.keep=[];
+      accents:RESUME_EXAMPLE.accents,languages:RESUME_EXAMPLE.languages,hasCommercials:false,leftOut:false,email:"",
+      agent:exRep==="agent"?RESUME_SAMPLE_AGENT:[]});
+    o.corner=exCorner;o.contact=exRep==="agent"?"agent":"link";o.keep=[];
   }
   const dRef=useRef(d);dRef.current=d;
   const doc=React.useMemo(()=>resumeDoc(d,o),[JSON.stringify(d),JSON.stringify(o)]);// eslint-disable-line
@@ -27192,6 +27201,10 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,fontWeight:700,color:"var(--t2)",margin:"0 0 8px"}}>
         <span style={{background:"#FBF0DA",border:"1px solid #EBCF97",color:"#8A5A12",borderRadius:999,padding:"3px 9px",fontSize:11,letterSpacing:".06em",textTransform:"uppercase"}}>{showExample?"Example":"Preview"}</span>
         {showExample?"What your résumé will look like — with your name on it":"Your résumé, built from your profile"}</div>}
+      {showExample&&<div className="rsm-exsw">
+        {[[[["hs","Headshot"],["qr","QR code"]],exCorner,setExCorner],[[["self","Self-represented"],["agent","Agent info"]],exRep,setExRep]].map(([opts,val,set],k)=>
+          <div key={k} className="rsm-seg" role="group">{opts.map(([v,l])=><button key={v} type="button" aria-pressed={val===v} className={val===v?"on":""} onClick={()=>set(v)}>{l}</button>)}</div>)}
+      </div>}
       {empty&&isPremium
         ?<div style={{padding:"40px 24px",textAlign:"center",color:"var(--t2)",fontSize:14,lineHeight:1.6,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14}}>
           Your résumé fills itself from your profile. Add <button type="button" onClick={()=>setTab("credits")} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,cursor:"pointer",padding:0,fontSize:14}}>credits</button>, training or <button type="button" onClick={()=>setTab("skills")} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,cursor:"pointer",padding:0,fontSize:14}}>skills</button> and they'll appear here.
