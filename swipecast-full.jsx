@@ -3575,6 +3575,19 @@ body.sheet-push .b2t-cube{display:none;}
 .rsm-panel{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px;}
 .rsm-stage{min-width:0;position:sticky;top:calc(var(--site-top-h,65px) + 16px);align-self:start;}
 .rsm-exsw{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;}
+.rsm-pick{max-width:620px;width:calc(100vw - 32px);max-height:calc(100vh - 32px);overflow:auto;padding:22px;}
+.rsm-pick-body{display:flex;gap:22px;margin-top:16px;align-items:flex-start;}
+.rsm-pick-ed{flex:none;display:flex;flex-direction:column;align-items:flex-start;}
+.rsm-pick-frame{position:relative;overflow:hidden;border:1px solid #1A1A2E;background:#eee;cursor:grab;touch-action:none;}
+.rsm-pick-frame:active{cursor:grabbing;}
+.rsm-pick-hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:rgba(26,26,46,.72);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;pointer-events:none;white-space:nowrap;}
+.rsm-pick-list{flex:1;min-width:0;}
+.rsm-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;max-height:300px;overflow:auto;padding:2px;}
+.rsm-pick-th{position:relative;aspect-ratio:4/5;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#eee;}
+.rsm-pick-th img{width:100%;height:100%;object-fit:cover;display:block;}
+.rsm-pick-th.on{border-color:var(--teal);box-shadow:0 0 0 2px rgba(42,132,114,.25);}
+.rsm-pick-tag{position:absolute;left:4px;top:4px;background:#fff;color:#1A1A2E;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:999px;letter-spacing:.04em;}
+@media(max-width:560px){.rsm-pick-body{flex-direction:column;align-items:stretch;}.rsm-pick-ed{align-items:center;}}
 .rsm-seg{display:inline-flex;background:#F3EDE2;border:1px solid var(--bdr);border-radius:10px;padding:3px;gap:3px;}
 .rsm-seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:600;color:var(--t2);padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:background .15s,box-shadow .15s;}
 .rsm-seg button.on{background:#fff;color:var(--t1,#1A1A2E);box-shadow:0 1px 3px rgba(0,0,0,.12);}
@@ -26921,7 +26934,12 @@ function resumeDoc(d,o){
 .cv{--pt:calc(100cqw / ${W*72});--b:10;--gap:1;position:relative;width:100%;aspect-ratio:${W}/${H};padding:calc(var(--pt)*36) calc(var(--pt)*36);background:#fff;color:#000;
   font-family:"Times New Roman",Times,"Liberation Serif",serif;font-size:calc(var(--pt)*var(--b));line-height:1.2;display:flex;flex-direction:column;overflow:hidden}
 .hd{display:flex;gap:calc(var(--pt)*18);align-items:flex-start}
-.ph{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);object-fit:cover;object-position:50% 22%;display:block;border:1px solid #000}
+.ph{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);display:block;border:1px solid #000;overflow:hidden;position:relative;padding:0;background:#eee}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+button.ph{cursor:pointer;font:inherit}
+button.ph .chg{position:absolute;left:0;right:0;bottom:0;background:rgba(26,26,46,.78);color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:.7em;font-weight:700;padding:.45em 0;opacity:0;transition:opacity .15s;-webkit-text-stroke:0}
+button.ph:hover .chg,button.ph:focus-visible .chg{opacity:1}
+@media print{button.ph .chg{display:none}}
 .qr{flex:none;width:calc(var(--pt)*78);height:calc(var(--pt)*78);display:block}
 .qrr{flex:none;width:calc(var(--pt)*86);display:flex;flex-direction:column;align-items:center;font-family:Arial,Helvetica,sans-serif;color:#333}
 .qrr .qr{width:calc(var(--pt)*82);height:calc(var(--pt)*82)}
@@ -26963,8 +26981,13 @@ function render(){
   // "both": headshot left, QR right at the same height — a symmetrical frame around the
   // name (owner picked layout A, 2026-10-14, demo resume-headshot-plus-qr-demo.html).
   const both=o.corner==="both";
+  // Premium: the small headshot is a button — opens the photo picker / position editor
+  // in the parent page (owner, 2026-10-14). x/y/z = object-position % and zoom.
+  const hp=d.hsPos||{x:50,y:22,z:1};
+  const phImg='<img alt="" src="'+E(d.headshot)+'" style="object-position:'+hp.x+'% '+hp.y+'%;transform:scale('+hp.z+');transform-origin:'+hp.x+'% '+hp.y+'%">';
+  const phHtml=()=>d.canPickHs?'<button type="button" class="ph" title="Change photo" onclick="parent.postMessage({csResumePickHeadshot:1},&quot;*&quot;)">'+phImg+'<span class="chg">Change photo</span></button>':'<div class="ph">'+phImg+'</div>';
   const right=both?'<div class="qrr"><img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=0&data='+encodeURIComponent(d.url)+'"><div class="cap">Scan for reel<br>&amp; full profile</div></div>':'';
-  const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':((o.corner==="hs"||both)&&d.headshot?'<img class="ph" alt="" src="'+E(d.headshot)+'">':((o.corner==="hs"||both)&&d.slot?'<button type="button" class="slot" onclick="parent.postMessage({csResumeAddHeadshot:1},&quot;*&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/></svg><span class="s1">Your headshot here</span><span class="s2">+ Add headshot</span></button>':""));
+  const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':((o.corner==="hs"||both)&&d.headshot?phHtml():((o.corner==="hs"||both)&&d.slot?'<button type="button" class="slot" onclick="parent.postMessage({csResumeAddHeadshot:1},&quot;*&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/></svg><span class="s1">Your headshot here</span><span class="s2">+ Add headshot</span></button>':""));
   const mail=d.email?'<br>'+E(d.email):'';
   const ag=Array.isArray(d.agent)?d.agent:(d.agent?[d.agent]:[]);
   // The actor's own email gets its own labelled block under the reps, so casting
@@ -27029,7 +27052,7 @@ run();
 <\/script></body></html>`;
 }
 
-function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onNavigate,setTab,accountEmail,representation,onAddHeadshot}){
+function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onNavigate,setTab,accountEmail,representation,onAddHeadshot,galleryPhotos}){
   const uid=profile?.id||"";
   const LS="cs_resume2_"+uid;
   const saved=React.useMemo(()=>{try{return JSON.parse(localStorage.getItem(LS)||"null")||{};}catch(_){return{};}},[LS]);
@@ -27052,11 +27075,18 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const[langOn,setLangOn]=useState(saved.langOn!==false);
   const[emailOn,setEmailOn]=useState(!!saved.emailOn);
   const[email,setEmail]=useState(saved.email||accountEmail||"");
+  // Résumé photo (premium): which of their photos + how it's framed. Falls back to the
+  // profile headshot if the saved photo was deleted.
+  const hsChoices=React.useMemo(()=>[profile?.headshot_url,...(galleryPhotos||profile?.additional_photos||[])].filter(Boolean).filter((u,i,a)=>a.indexOf(u)===i),[profile?.headshot_url,galleryPhotos,profile?.additional_photos]);
+  const[hsSel,setHsSel]=useState(saved.hsSel&&saved.hsSel.url?saved.hsSel:null);
+  const[pickOpen,setPickOpen]=useState(false);
+  const hsUrl=isPremium&&hsSel&&hsChoices.includes(hsSel.url)?hsSel.url:(profile?.headshot_url||"");
+  const hsPos=isPremium&&hsSel&&hsSel.url===hsUrl?{x:hsSel.x,y:hsSel.y,z:hsSel.z}:{x:50,y:22,z:1};
   const[emailLive,setEmailLive]=useState(saved.email||accountEmail||"");
   const[status,setStatus]=useState(null);
   const[note,setNote]=useState(null);
   const frameRef=useRef(null),pendingRef=useRef(null),prevLostRef=useRef(0),noteT=useRef(0);
-  useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email]);
+  useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel]);
   useEffect(()=>{const t=setTimeout(()=>setEmailLive(email),350);return()=>clearTimeout(t);},[email]);
   const showNote=(text,kind)=>{clearTimeout(noteT.current);setNote(text?{text,kind}:null);if(text)noteT.current=setTimeout(()=>setNote(null),5000);};
   const [exCorner,setExCorner]=useState("hs"),[exRep,setExRep]=useState("self");
@@ -27094,7 +27124,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const pickedCount=sections.reduce((n,s)=>n+s.rows.length,0);
   const skillList=allSkills.filter(s=>!skillOff.includes(s));
 
-  const d={name,unions,stats,agent:agentOk?repLines:[],url,urlText,headshot:profile?.headshot_url||"",
+  const d={name,unions,stats,agent:agentOk?repLines:[],url,urlText,headshot:hsUrl,hsPos,canPickHs:isPremium&&!!hsUrl,
     email:(emailOn&&resumeEmailOk(emailLive))?String(emailLive).trim():"",
     sections,training:trainOn?trainingLines:[],skills:skillList,accents:accOn?accList:[],languages:langOn?langList:[],
     hasCommercials,leftOut:totalCredits>pickedCount,premium:isPremium,brand:!(isPremium&&brand==="off")};
@@ -27138,7 +27168,9 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   },[]);
   const addHsRef=useRef(onAddHeadshot);addHsRef.current=onAddHeadshot;
   useEffect(()=>{
-    const on=e=>{if(e.data&&e.data.csResumeAddHeadshot&&frameRef.current&&e.source===frameRef.current.contentWindow&&addHsRef.current)addHsRef.current();};
+    const on=e=>{if(!e.data||!frameRef.current||e.source!==frameRef.current.contentWindow)return;
+      if(e.data.csResumeAddHeadshot&&addHsRef.current)addHsRef.current();
+      if(e.data.csResumePickHeadshot)setPickOpen(true);};
     window.addEventListener("message",on);return()=>window.removeEventListener("message",on);
   },[]);
   const addPending=label=>{pendingRef.current={snap:snapshot(),label};};
@@ -27195,6 +27227,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:0}}>Built from your profile in the industry-standard format. One page, ready to staple to your headshot.</p>
       {lab("Size")}{seg(size,setSize,[["8x10","8 × 10 (headshot)"],["letter","US Letter"]])}
       {lab("Photo")}{seg(effCorner,setCorner,[["hs","Headshot",!hasHeadshot,"Add a headshot to your profile first"],["qr","QR to my profile"],["both","Headshot + QR",!hasHeadshot,"Add a headshot to your profile first"],["none","None"]])}
+      {(effCorner==="hs"||effCorner==="both")&&hsUrl&&<button type="button" onClick={()=>setPickOpen(true)} style={{background:"none",border:0,padding:0,marginTop:8,color:"var(--teal)",fontWeight:700,fontSize:13,cursor:"pointer"}}>Change or reposition photo{hsChoices.length>1?" ("+hsChoices.length+" photos)":""}</button>}
       {lab("Contact shown")}{seg(effContact,setContact,[["agent","My representation",!agentOk,"Add your agent or manager under Representation on Edit Profile"],["link","My profile link"]])}
       {ck(emailOn,()=>toggleFlag(emailOn,setEmailOn,"email","your email"),"Also show my email")}
       <input type="email" value={email} disabled={!emailOn} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"
@@ -27241,7 +27274,58 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
         </div>
         :<iframe ref={frameRef} title="Résumé preview" srcDoc={doc} className={"rsm-frame"+(size==="letter"?" letter":"")}/>}
     </div>
+    {pickOpen&&isPremium&&<ResumePhotoPicker photos={hsChoices} value={{url:hsUrl,...hsPos}} onClose={()=>setPickOpen(false)} onSave={v=>{setHsSel(v);setPickOpen(false);}}/>}
   </div>);
+}
+
+// Premium: pick which photo sits on the résumé and frame it (drag to move, slider to zoom).
+// Same maths as resumeDoc's .ph: object-fit cover + object-position x% y% + scale(z) around
+// that point, so what you frame here is exactly what prints.
+function ResumePhotoPicker({photos,value,onClose,onSave}){
+  const[sel,setSel]=useState(value);
+  const[nat,setNat]=useState(null);
+  const boxRef=useRef(null),drag=useRef(null);
+  const W=176,H=221;
+  useEffect(()=>{const k=e=>{if(e.key==="Escape")onClose();};window.addEventListener("keydown",k);return()=>window.removeEventListener("keydown",k);},[onClose]);
+  const pick=u=>{if(u===sel.url)return;setNat(null);setSel({url:u,x:50,y:22,z:1});};
+  const clamp=v=>Math.max(0,Math.min(100,v));
+  const onDown=e=>{if(!nat)return;e.preventDefault();try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){}drag.current={px:e.clientX,py:e.clientY,x:sel.x,y:sel.y};};
+  const onMove=e=>{const g=drag.current;if(!g||!nat)return;
+    const s=Math.max(W/nat.w,H/nat.h)*sel.z,iw=nat.w*s,ih=nat.h*s;
+    const nx=iw-W>0.5?clamp(g.x-(e.clientX-g.px)/(iw-W)*100):sel.x,ny=ih-H>0.5?clamp(g.y-(e.clientY-g.py)/(ih-H)*100):sel.y;
+    setSel(v=>({...v,x:Math.round(nx*10)/10,y:Math.round(ny*10)/10}));};
+  const onUp=()=>{drag.current=null;};
+  return ReactDOM.createPortal(<div className="modal-overlay" onClick={onClose}>
+    <div className="modal rsm-pick" onClick={e=>e.stopPropagation()} role="dialog" aria-label="Résumé photo">
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12}}>
+        <div><h3 style={{fontSize:18,fontWeight:800,margin:0}}>Résumé photo</h3>
+          <p style={{fontSize:13.5,color:"var(--t2)",margin:"4px 0 0",lineHeight:1.5}}>Pick a photo, then drag it to frame your face.</p></div>
+        <button type="button" onClick={onClose} aria-label="Close" style={{background:"none",border:0,fontSize:22,lineHeight:1,cursor:"pointer",color:"var(--t2)",padding:4}}>×</button>
+      </div>
+      <div className="rsm-pick-body">
+        <div className="rsm-pick-ed">
+          <div ref={boxRef} className="rsm-pick-frame" style={{width:W,height:H}} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+            <img src={sel.url} alt="" draggable={false} onLoad={e=>setNat({w:e.currentTarget.naturalWidth,h:e.currentTarget.naturalHeight})}
+              style={{width:"100%",height:"100%",objectFit:"cover",display:"block",objectPosition:sel.x+"% "+sel.y+"%",transform:"scale("+sel.z+")",transformOrigin:sel.x+"% "+sel.y+"%",pointerEvents:"none",userSelect:"none"}}/>
+            <span className="rsm-pick-hint">Drag to move</span>
+          </div>
+          <label style={{display:"flex",alignItems:"center",gap:10,marginTop:12,fontSize:12.5,fontWeight:700,color:"var(--t2)",width:W}}>
+            Zoom<input type="range" min="1" max="2.5" step="0.01" value={sel.z} onChange={e=>setSel(v=>({...v,z:parseFloat(e.target.value)}))} style={{flex:1,accentColor:"var(--teal)"}}/>
+          </label>
+          <button type="button" onClick={()=>setSel(v=>({...v,x:50,y:22,z:1}))} style={{background:"none",border:0,padding:0,marginTop:6,color:"var(--teal)",fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Reset position</button>
+        </div>
+        <div className="rsm-pick-list">
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:8}}>Your photos ({photos.length})</div>
+          <div className="rsm-pick-grid">{photos.map((u,i)=><button type="button" key={u} onClick={()=>pick(u)} className={"rsm-pick-th"+(u===sel.url?" on":"")} aria-pressed={u===sel.url} aria-label={i===0?"Main headshot":"Photo "+(i+1)}>
+            <img src={u} alt="" loading="lazy" draggable={false}/>{i===0&&<span className="rsm-pick-tag">Main</span>}</button>)}</div>
+          {photos.length<2&&<p style={{fontSize:12.5,color:"var(--t2)",margin:"10px 0 0",lineHeight:1.5}}>Add more photos in your Gallery to choose a different one.</p>}
+        </div>
+      </div>
+      <div style={{display:"flex",justifyContent:"flex-end",gap:10,marginTop:18}}>
+        <button type="button" className="btn-s" onClick={onClose}>Cancel</button>
+        <button type="button" className="btn-teal" onClick={()=>onSave(sel)} style={{padding:"10px 22px"}}>Use this photo</button>
+      </div>
+    </div></div>,document.body);
 }
 
 // ─── Edit Profile → Representation ─────────────────────────────────────────────
@@ -28608,7 +28692,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── RÉSUMÉ TAB (Premium download, free preview) ── */}
     {tab==="resume"&&!isCD&&<ResumeBuilder profile={profile} f={f} credits={dbCredits} isPremium={isPremium} onNavigate={onNavigate} setTab={setTab}
-      onAddHeadshot={()=>{const el=[...document.querySelectorAll("input[data-hs-upload]")].find(x=>x.closest("label")&&x.closest("label").offsetParent);if(!el)return;el.closest("label").scrollIntoView({behavior:"smooth",block:"center"});try{el.click();}catch(_){}}}
+      galleryPhotos={photos} onAddHeadshot={()=>{const el=[...document.querySelectorAll("input[data-hs-upload]")].find(x=>x.closest("label")&&x.closest("label").offsetParent);if(!el)return;el.closest("label").scrollIntoView({behavior:"smooth",block:"center"});try{el.click();}catch(_){}}}
       accountEmail={profile?.email||session?.user?.email||""} skills={[...selectedSkills,...extraSkills]}
       representation={priv.representation||repFromAgentText(f.agent)}
       accents={Array.isArray(f.accents)?f.accents:[]} languages={Array.isArray(f.languages)?f.languages:[]}/>}
