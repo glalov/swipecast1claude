@@ -3927,8 +3927,8 @@ POST   /api/v1/callbacks         # Add talent to callbacks`)),React.createElemen
 *{box-sizing:border-box}html,body{margin:0;background:#fff}
 /* 1pt = 100/(${W}*72) cqw, so print and screen match exactly. */
 .wrap{container-type:inline-size;width:100vw}
-.cv{--pt:calc(100cqw / ${W*72});--b:10;--gap:1;position:relative;width:100%;aspect-ratio:${W}/${H};padding:calc(var(--pt)*40) calc(var(--pt)*46);background:#fff;color:#000;
-  font-family:"Times New Roman",Times,"Liberation Serif",serif;font-size:calc(var(--pt)*var(--b));line-height:1.28;display:flex;flex-direction:column;overflow:hidden}
+.cv{--pt:calc(100cqw / ${W*72});--b:10;--gap:1;position:relative;width:100%;aspect-ratio:${W}/${H};padding:calc(var(--pt)*36) calc(var(--pt)*36);background:#fff;color:#000;
+  font-family:"Times New Roman",Times,"Liberation Serif",serif;font-size:calc(var(--pt)*var(--b));line-height:1.2;display:flex;flex-direction:column;overflow:hidden}
 .hd{display:flex;gap:calc(var(--pt)*18);align-items:flex-start}
 .ph{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);object-fit:cover;object-position:50% 22%;display:block;border:1px solid #000}
 .qr{flex:none;width:calc(var(--pt)*78);height:calc(var(--pt)*78);display:block}
@@ -3938,22 +3938,25 @@ POST   /api/v1/callbacks         # Add talent to callbacks`)),React.createElemen
 .slot .s1{font-size:.8em;font-weight:700;line-height:1.2;padding:0 .4em}
 .slot .s2{font-size:.76em;font-weight:700;color:#2A8472}
 .hi{flex:1;min-width:0;text-align:center}
-.nm{font-size:2.05em;font-weight:700;letter-spacing:.02em;margin:0;line-height:1.1;overflow-wrap:anywhere}
+.nm{font-size:2.6em;font-weight:400;letter-spacing:0;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .un{font-size:.95em;margin-top:.15em}
-.cols{display:flex;justify-content:center;gap:2.6em;margin-top:.7em;font-size:.95em;line-height:1.35;text-align:left}
+.cols{display:flex;justify-content:center;gap:4.5em;margin-top:.8em;font-size:.95em;line-height:1.2;text-align:left}
 .cols .c{min-width:0;overflow-wrap:anywhere}
 .cols b{font-weight:700}
-hr{border:0;border-top:1px solid #000;margin:calc(var(--gap)*.75em) 0 calc(var(--gap)*.45em)}
-h2{font-size:1em;font-weight:700;text-transform:uppercase;text-decoration:underline;text-underline-offset:.18em;text-align:center;margin:0 0 .35em;letter-spacing:.02em}
+hr{border:0;border-top:calc(var(--pt)*.75) solid #777;margin:calc(var(--gap)*1.4em) 0 calc(var(--gap)*1.2em)}
+h2{font-size:1.15em;font-weight:700;text-transform:uppercase;text-decoration:underline;text-underline-offset:.18em;text-align:center;margin:0 0 1.1em;letter-spacing:.02em}
 table{width:100%;border-collapse:collapse;table-layout:fixed}
-td{padding:.06em .8em .06em 0;vertical-align:top;overflow-wrap:anywhere}
+td{padding:0 .8em 0 0;vertical-align:top;overflow-wrap:anywhere}
 td:nth-child(1){width:36%;font-style:italic}td:nth-child(2){width:26%}td:nth-child(3){width:38%;padding-right:0}
-.tl{margin:0;padding:0;list-style:none}.tl li{margin:.05em 0;overflow-wrap:anywhere}
+.tl{margin:0;padding:0;list-style:none}.tl li{margin:0;overflow-wrap:anywhere}
 p.x{margin:0;overflow-wrap:anywhere}p.x+p.x{margin-top:.2em}
 .note{margin-top:calc(var(--gap)*.6em);font-size:.92em;font-style:italic;text-align:center}
 .ft{margin-top:auto;padding-top:.8em;font-family:Arial,Helvetica,sans-serif;font-size:.72em;color:#444;display:flex;justify-content:space-between}
 .wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .wm span{font-family:Arial,sans-serif;font-weight:900;font-size:8.2em;letter-spacing:.14em;color:rgba(201,162,74,.20);-webkit-text-stroke:calc(var(--pt)*1.4) rgba(160,120,40,.45);transform:rotate(-28deg);white-space:nowrap}
+/* Compact layout + medium letter weight matched to the City Headshots reference (owner, 2026-10-14,
+   demo resume-compact-typography-demo.html). Stroke is screen-only; print stays plain black. */
+@media screen{.cv{-webkit-text-stroke:calc(var(--pt)*.5) #000}}
 @media print{.wrap{width:${W}in}.cv{width:${W}in;height:${H}in;aspect-ratio:auto}}
 </style></head><body><div class="wrap"><div class="cv" id="cv"></div></div>
 <script>
@@ -3988,11 +3991,11 @@ function render(){
 }
 const fits=()=>cv.scrollHeight<=cv.clientHeight+1;
 const setB=v=>cv.style.setProperty("--b",v),setG=v=>cv.style.setProperty("--gap",v);
-// Body text is 10.5pt at most and 8.5pt at least. Sparse pages get more space BETWEEN
-// sections (up to 2.2x), never bigger letters.
+// Body text is 10.5pt at most and 8.5pt at least. Sparse pages get only a little more space
+// between sections (up to 1.25x) — leftover space stays at the bottom, like a real résumé.
 function size(){
   setG(1);setB(10.5);if(!fits()){let lo=8.5,hi=10.5;setB(lo);if(!fits())return false;for(let k=0;k<10;k++){const m=(lo+hi)/2;setB(m);if(fits())lo=m;else hi=m;}setB(lo);return true;}
-  let lo=1,hi=2.2;setG(hi);if(fits())return true;for(let k=0;k<10;k++){const m=(lo+hi)/2;setG(m);if(fits())lo=m;else hi=m;}setG(lo);return true;
+  let lo=1,hi=1.25;setG(hi);if(fits())return true;for(let k=0;k<10;k++){const m=(lo+hi)/2;setG(m);if(fits())lo=m;else hi=m;}setG(lo);return true;
 }
 function run(){
   // Not laid out yet (0-width frame): sizes are meaningless, everything would "fit".
