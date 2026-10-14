@@ -26868,6 +26868,14 @@ function TypeRangeSelect({value,other,onChange,onOtherChange}){
 // whenever its size changes (a 0-width first layout once made everything "fit").
 // ═══════════════════════════════════════════
 const RESUME_MAX_PER=8;
+const RESUME_SAMPLE_HS="data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100"><rect width="80" height="100" fill="#b9ab94"/><circle cx="40" cy="38" r="17" fill="#8a7a62"/><rect x="16" y="60" width="48" height="40" rx="20" fill="#8a7a62"/></svg>');
+// Shown to FREE actors whose profile is still empty, with their own name on top.
+const RESUME_EXAMPLE={sections:[
+  {key:"Film & TV",label:"Film / Television",rows:[{id:"x1",t:"Night Shift",r:"Lead",c:"Indie feature / Dir. M. Ellison",y:"2025"},{id:"x2",t:"Precinct 9",r:"Co-Star",c:"Network drama",y:"2025"},{id:"x3",t:"Paper Lanterns",r:"Lead",c:"NYU Tisch thesis film",y:"2024"},{id:"x4",t:"Last Call",r:"Supporting",c:"Short film / Dir. A. Ruiz",y:"2024"}]},
+  {key:"Theatre",label:"Theatre",rows:[{id:"x5",t:"A Doll's House",r:"Nora",c:"Riverside Rep",y:"2025"},{id:"x6",t:"Twelfth Night",r:"Viola",c:"Shakespeare in the Square",y:"2023"}]},
+  {key:"Other",label:"Other",rows:[]}],
+  training:["Stella Adler Studio — Two-Year Conservatory","Upright Citizens Brigade — Improv 101–401","Private coaching — On-Camera Audition Technique"],
+  skills:["Stage combat","Horseback riding","Yoga","Piano","Singing (mezzo-soprano)","Valid driver's license","Passport"],accents:["British RP","Southern US"],languages:["Spanish (conversational)"]};
 // Representation (profile_private.representation, owner-only). profiles.agent keeps a
 // public one-line summary so older screens and CD views still read it.
 const REP_TYPES=["Agent","Manager","Agent & Manager"];
@@ -26948,7 +26956,7 @@ function render(){
   const notes=[];if(d.hasCommercials)notes.push("Commercial list available upon request.");if(omitted.length||d.leftOut)notes.push("Full credits at "+E(d.urlText));
   if(notes.length)h+='<div class="note">'+notes.join(" &nbsp;·&nbsp; ")+'</div>';
   h+='<div class="ft"><span>'+E(d.urlText)+'</span><span>'+(d.brand?"Made with CastSlate":"")+'</span></div>';
-  if(!d.premium)h+='<div class="wm"><span>PREVIEW</span></div>';
+  if(!d.premium)h+='<div class="wm"><span>'+E(d.wmText||"PREVIEW")+'</span></div>';
   cv.innerHTML=h;
 }
 const fits=()=>cv.scrollHeight<=cv.clientHeight+1;
@@ -27060,6 +27068,18 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
     sections,training:trainOn?trainingLines:[],skills:skillList,accents:accOn?accList:[],languages:langOn?langList:[],
     hasCommercials,leftOut:totalCredits>pickedCount,premium:isPremium,brand:!(isPremium&&brand==="off")};
   const o={size,corner:effCorner,contact:effContact,auto:true,keep};
+  // Free + nothing filled in yet: show a complete EXAMPLE résumé with their name on it,
+  // never an empty box (owner, 2026-10-14 — demo free-resume-tab-demo.html).
+  const emptyProfile=!totalCredits&&!trainingLines.length&&!allSkills.length&&!accList.length&&!langList.length;
+  const showExample=!isPremium&&emptyProfile;
+  if(showExample){
+    Object.assign(d,{wmText:"EXAMPLE",unions:unions||"Non-Union",
+      stats:{Height:stats.Height||"5′7″",Hair:stats.Hair||"Brown",Eyes:stats.Eyes||"Hazel"},
+      headshot:profile?.headshot_url||RESUME_SAMPLE_HS,
+      sections:RESUME_EXAMPLE.sections,training:RESUME_EXAMPLE.training,skills:RESUME_EXAMPLE.skills,
+      accents:RESUME_EXAMPLE.accents,languages:RESUME_EXAMPLE.languages,hasCommercials:false,leftOut:false,email:""});
+    o.corner="hs";o.contact="link";o.keep=[];
+  }
   const dRef=useRef(d);dRef.current=d;
   const doc=React.useMemo(()=>resumeDoc(d,o),[JSON.stringify(d),JSON.stringify(o)]);// eslint-disable-line
 
@@ -27105,8 +27125,32 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const ck=(checked,onChange,content,dis,tip)=>(<label title={dis?tip:undefined} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:13,color:"var(--t2)",padding:"3px 0",cursor:dis?"not-allowed":"pointer",opacity:dis?.5:1}}>
     <input type="checkbox" checked={checked} disabled={dis} onChange={onChange} style={{marginTop:3}}/><span style={{minWidth:0,overflowWrap:"anywhere"}}>{content}</span></label>);
 
+  const freePanel=(<div className="rsm-panel">
+    <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"#8A5A12",background:"#FBF0DA",border:"1px solid #EBCF97",borderRadius:999,padding:"4px 10px"}}><Ico n="star" s={12}/>Premium</span>
+    <h3 style={{fontSize:23,fontWeight:800,lineHeight:1.2,letterSpacing:"-.3px",margin:"12px 0 8px"}}>Your professional actor résumé — ready in one click.</h3>
+    <p style={{fontSize:14,color:"var(--t2)",lineHeight:1.6,margin:"0 0 16px"}}>{showExample?"This is what yours will look like. Fill in your profile and CastSlate turns it into a casting-ready résumé automatically.":"This is your real résumé, built from your profile. Unlock it to download, print and staple it to your headshot."}</p>
+    <div style={{display:"grid",gap:11,marginBottom:18}}>
+      {[["The format casting directors expect","Industry-standard layout, one clean page, no design guesswork."],["Builds itself, stays up to date","Add a credit to your profile and it's on your résumé."],["Always fits one page","Your strongest credits first, the rest linked to your profile."],["Agent, QR code & contact done right","Your representation and your profile QR, laid out properly."]].map(([t,sub])=>(
+        <div key={t} style={{display:"grid",gridTemplateColumns:"24px 1fr",gap:10,fontSize:14,lineHeight:1.45}}>
+          <span style={{width:24,height:24,borderRadius:7,background:"rgba(42,132,114,.12)",color:"#206557",display:"grid",placeItems:"center"}}><Ico n="check" s={14}/></span>
+          <span><b style={{display:"block",color:"var(--t1)"}}>{t}</b><span style={{color:"var(--t3)",fontSize:12.5}}>{sub}</span></span>
+        </div>))}
+    </div>
+    <button type="button" className="btn-teal" onClick={()=>onNavigate&&onNavigate("membership")} style={{width:"100%",padding:14,fontSize:15.5,fontWeight:800}}>Unlock my résumé — {PREMIUM_PRICE.replace("month","mo")}</button>
+    <div style={{fontSize:12,color:"var(--t3)",textAlign:"center",marginTop:8}}>Cancel anytime · Includes everything in Premium</div>
+    {(()=>{const todo=[["Credits","Add your film, TV and theatre work",totalCredits>0,"credits"],["Training","Schools, studios and coaches",trainingLines.length>0,"profile"],["Skills","Accents, languages, sports, music…",allSkills.length+accList.length+langList.length>0,"skills"]];
+      if(!todo.some(x=>!x[2]))return null;
+      return(<div style={{marginTop:18,borderTop:"1px solid var(--bdr)",paddingTop:16}}>
+        <div style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:9}}>{showExample?"Fill your résumé":"Make it stronger"}</div>
+        {todo.map(([t,sub,done,tab])=>(<button key={t} type="button" onClick={()=>{setTab(tab);window.scrollTo({top:0,behavior:"smooth"});}}
+          style={{display:"flex",width:"100%",alignItems:"center",justifyContent:"space-between",gap:10,border:"1px solid var(--bdr)",background:"#fff",borderRadius:10,padding:"10px 12px",marginBottom:7,textAlign:"left",cursor:"pointer",opacity:done?.6:1}}>
+          <span style={{fontSize:13.5,fontWeight:700,color:"var(--t1)"}}>{t}<br/><span style={{fontWeight:500,fontSize:12,color:"var(--t3)"}}>{sub}</span></span>
+          <span style={{fontSize:13,fontWeight:800,color:done?"#1B6E45":"var(--teal)",whiteSpace:"nowrap"}}>{done?"✓ Added":"Add →"}</span>
+        </button>))}
+      </div>);})()}
+  </div>);
   return(<div className="rsm-grid">
-    <div className="rsm-panel">
+    {!isPremium?freePanel:<div className="rsm-panel">
       <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"#8A5A12",background:"#FBF0DA",border:"1px solid #EBCF97",borderRadius:999,padding:"4px 10px"}}><Ico n="star" s={12}/>Premium</span>
       <h3 style={{fontSize:19,fontWeight:800,margin:"10px 0 4px"}}>Your actor résumé</h3>
       <p style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:0}}>Built from your profile in the industry-standard format. One page, ready to staple to your headshot.</p>
@@ -27143,9 +27187,12 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
         ?<button type="button" className="btn-teal" disabled={!status||!status.fits} onClick={()=>{try{frameRef.current.contentWindow.postMessage({csResumePrint:1},"*");}catch(_){}}} style={{width:"100%",marginTop:10,padding:13,fontSize:15}}>Download PDF</button>
         :<button type="button" className="btn-teal" onClick={()=>onNavigate&&onNavigate("membership")} style={{width:"100%",marginTop:10,padding:13,fontSize:15}}>Go Premium to download</button>}
       <p style={{fontSize:12,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>{isPremium?<>Opens the print window — choose <b>Save as PDF</b>.</>:"This is a preview of your real résumé. Premium members can download and print it."}</p>
-    </div>
+    </div>}
     <div className="rsm-stage">
-      {empty
+      {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,fontWeight:700,color:"var(--t2)",margin:"0 0 8px"}}>
+        <span style={{background:"#FBF0DA",border:"1px solid #EBCF97",color:"#8A5A12",borderRadius:999,padding:"3px 9px",fontSize:11,letterSpacing:".06em",textTransform:"uppercase"}}>{showExample?"Example":"Preview"}</span>
+        {showExample?"What your résumé will look like — with your name on it":"Your résumé, built from your profile"}</div>}
+      {empty&&isPremium
         ?<div style={{padding:"40px 24px",textAlign:"center",color:"var(--t2)",fontSize:14,lineHeight:1.6,background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14}}>
           Your résumé fills itself from your profile. Add <button type="button" onClick={()=>setTab("credits")} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,cursor:"pointer",padding:0,fontSize:14}}>credits</button>, training or <button type="button" onClick={()=>setTab("skills")} style={{background:"none",border:0,color:"var(--teal)",fontWeight:700,cursor:"pointer",padding:0,fontSize:14}}>skills</button> and they'll appear here.
         </div>
