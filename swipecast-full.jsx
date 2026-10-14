@@ -5583,15 +5583,16 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 
 /* ── Landing: home CTA card (warm teal block, promise-first; plans live on /pricing) ── */
 .home-cta{max-width:1900px;margin:0 auto;padding:clamp(40px,6vw,56px) clamp(16px,4vw,40px);}
-.lh-site{max-width:1200px;margin:0 auto;padding:clamp(32px,5vw,56px) clamp(16px,4vw,40px) 0;}
-.lh-site-inner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,48px);align-items:center;background:var(--s1);border:1px solid var(--bdr);border-radius:24px;padding:clamp(24px,4vw,44px);}
+.lh-site{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
+.lh-site-inner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,48px);align-items:center;}
 .lh-site-eyebrow{font-weight:800;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--teal);margin:0 0 10px;}
 .lh-site h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(30px,4vw,44px);letter-spacing:-0.5px;line-height:1.08;margin:0 0 14px;color:var(--t1);}
 .lh-site-lede{font-size:16px;line-height:1.65;color:var(--t2);margin:0 0 22px;}
 .lh-site-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-.lh-site-btn{padding:14px 26px;font-size:15px;}
+.lh-site-link{background:none;border:0;padding:0;font:inherit;font-size:16px;font-weight:800;color:var(--teal);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.lh-site-link:hover{text-decoration:underline;text-underline-offset:3px;}
 .lh-site-note{font-size:13px;color:var(--t3);}
-.lh-site-browser{background:#fff;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;box-shadow:0 22px 48px -24px rgba(26,26,46,.35);min-width:0;}
+.lh-site-browser{background:#fff;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;box-shadow:0 30px 60px -28px rgba(26,26,46,.45);min-width:0;}
 .lh-site-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;background:#F1ECE2;}
 .lh-site-bar i{width:9px;height:9px;border-radius:99px;background:#D9CFBD;flex:none;}
 .lh-site-bar span{margin-left:8px;flex:1;min-width:0;background:#fff;border-radius:7px;padding:4px 12px;font-size:12px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -26291,6 +26292,31 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </div>
 
+    {/* ───────── "Skip the website builder" (owner, 2026-10-14, demo website-comparison-demo.html).
+         Sample actor Marissa Kent is the owner's photo set. Builder prices = cheapest ad-free
+         Squarespace/Wix plans (Oct 2026) — recheck every few months. Stacks at 900px (landing contract).
+         2026-10-14 later: no outer card, same width as the 1100px landing cards, sits in the actor
+         part (after the guarantee), quiet teal link so the teal CTA card keeps the one amber button. ───────── */}
+    <section className="lh-site">
+      <div className="lh-site-inner">
+        <div className="lh-site-copy">
+          <p className="lh-site-eyebrow">Your profile, your website</p>
+          <h2>Skip the website builder.</h2>
+          <p className="lh-site-lede">Your CastSlate profile is your acting website — headshots, reel, résumé and credits on one link you can put anywhere. A site on Squarespace or Wix runs $16–25 a month, and you'd still have to build it.</p>
+          <div className="lh-site-row">
+            <button type="button" className="lh-site-link" onClick={()=>onNavigate("register-talent")}>Create my free profile <Tri/></button>
+            <span className="lh-site-note">Premium from $10.75/mo · cancel anytime</span>
+          </div>
+        </div>
+        <div className="lh-site-browser" aria-hidden="true">
+          <div className="lh-site-bar"><i/><i/><i/><span>castslate.com/talent/marissa-kent</span></div>
+          <div className="lh-site-pf"><img src="/assets/landing/marissa-kent-1.jpg" alt="" width="64" height="80" loading="lazy"/>
+            <div><b>Marissa Kent</b><small>Los Angeles · SAG-AFTRA Eligible</small><div className="lh-site-chips"><span>Reel</span><span>Résumé</span><span>Credits</span></div></div></div>
+          <div className="lh-site-grid"><img src="/assets/landing/marissa-kent-2.jpg" alt="" loading="lazy"/><img src="/assets/landing/marissa-kent-3.jpg" alt="" loading="lazy"/><div className="lh-site-reel">▶ Reel</div></div>
+        </div>
+      </div>
+    </section>
+
     {/* ───────── TESTIMONIALS ───────── */}
     <section style={{padding:"60px 40px 40px",maxWidth:1200,margin:"0 auto"}}>
       <div className="section-label">What people are saying</div>
@@ -26353,29 +26379,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </div>
       </div>
     </div>
-
-    {/* ───────── "Skip the website builder" (owner, 2026-10-14, demo website-comparison-demo.html).
-         Sample actor Marissa Kent is the owner's photo set. Builder prices = cheapest ad-free
-         Squarespace/Wix plans (Oct 2026) — recheck every few months. Stacks at 900px (landing contract). ───────── */}
-    <section className="lh-site">
-      <div className="lh-site-inner">
-        <div className="lh-site-copy">
-          <p className="lh-site-eyebrow">Your profile, your website</p>
-          <h2>Skip the website builder.</h2>
-          <p className="lh-site-lede">Your CastSlate profile is your acting website — headshots, reel, résumé and credits on one link you can put anywhere. A site on Squarespace or Wix runs $16–25 a month, and you'd still have to build it.</p>
-          <div className="lh-site-row">
-            <button className="home-cta-primary lh-site-btn" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
-            <span className="lh-site-note">Premium from $10.75/mo · cancel anytime</span>
-          </div>
-        </div>
-        <div className="lh-site-browser" aria-hidden="true">
-          <div className="lh-site-bar"><i/><i/><i/><span>castslate.com/talent/marissa-kent</span></div>
-          <div className="lh-site-pf"><img src="/assets/landing/marissa-kent-1.jpg" alt="" width="64" height="80" loading="lazy"/>
-            <div><b>Marissa Kent</b><small>Los Angeles · SAG-AFTRA Eligible</small><div className="lh-site-chips"><span>Reel</span><span>Résumé</span><span>Credits</span></div></div></div>
-          <div className="lh-site-grid"><img src="/assets/landing/marissa-kent-2.jpg" alt="" loading="lazy"/><img src="/assets/landing/marissa-kent-3.jpg" alt="" loading="lazy"/><div className="lh-site-reel">▶ Reel</div></div>
-        </div>
-      </div>
-    </section>
 
     {/* ───────── Home CTA card (warm teal block; full plans live on /pricing) ───────── */}
     <section ref={homeCtaRef} className="home-cta home-cta-construct">
