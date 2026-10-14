@@ -26931,7 +26931,9 @@ function render(){
   const pic=o.corner==="qr"?'<img class="qr" alt="" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=0&data='+encodeURIComponent(d.url)+'">':(o.corner==="hs"&&d.headshot?'<img class="ph" alt="" src="'+E(d.headshot)+'">':"");
   const mail=d.email?'<br>'+E(d.email):'';
   const ag=Array.isArray(d.agent)?d.agent:(d.agent?[d.agent]:[]);
-  const contact=(o.contact==="agent"&&ag.length)?'<div class="c"><b>Representation</b><br>'+ag.map(E).join('<br>')+mail+'</div>':'<div class="c"><b>Contact</b><br>'+E(d.urlText)+(d.email?mail:'<br>Message via CastSlate')+'</div>';
+  // The actor's own email gets its own labelled block under the reps, so casting
+  // never mistakes it for the agency's address (owner, 2026-10-14).
+  const contact=(o.contact==="agent"&&ag.length)?'<div class="c"><b>Representation</b><br>'+ag.map(E).join('<br>')+(d.email?'<div style="margin-top:.55em"><b>Personal</b><br>'+E(d.email)+'</div>':'')+'</div>':'<div class="c"><b>Contact</b><br>'+E(d.urlText)+(d.email?mail:'<br>Message via CastSlate')+'</div>';
   const st=Object.entries(d.stats).filter(([,v])=>v).map(([k,v])=>E(k)+': '+E(v)).join('<br>');
   let h='<div class="hd">'+pic+'<div class="hi"><h1 class="nm">'+E(d.name)+'</h1>'+(d.unions?'<div class="un">('+E(d.unions)+')</div>':'')+'<div class="cols">'+contact+(st?'<div class="c">'+st+'</div>':'')+'</div></div></div>';
   // Few credits (3 or fewer): training is the stronger selling point, so it leads.
