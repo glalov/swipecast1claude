@@ -5689,15 +5689,22 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-site-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;background:#F1ECE2;}
 .lh-site-bar i{width:9px;height:9px;border-radius:99px;background:#D9CFBD;flex:none;}
 .lh-site-bar span{margin-left:8px;flex:1;min-width:0;background:#fff;border-radius:7px;padding:4px 12px;font-size:12px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.lh-site-pf{display:flex;gap:14px;align-items:center;padding:16px;}
-.lh-site-pf img{width:64px;height:80px;object-fit:cover;object-position:50% 30%;border-radius:7px;flex:none;background:#EFE8DA;}
-.lh-site-pf b{display:block;font-size:17px;color:var(--t1);}
-.lh-site-pf small{font-size:12px;color:var(--t3);}
-.lh-site-chips{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;}
-.lh-site-chips span{font-size:11px;font-weight:700;background:#F3EEE4;color:var(--t1);border-radius:99px;padding:2px 9px;}
-.lh-site-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 16px 16px;}
-.lh-site-grid img,.lh-site-reel{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 25%;border-radius:7px;display:block;background:#EFE8DA;}
-.lh-site-reel{background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.lh-gk{padding:12px;background:#FAF6EE;}
+.lh-gk-hero{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1fr);background:#FFFDF8;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;}
+.lh-gk-hero>img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:50% 30%;display:block;background:#EFE8DA;}
+.lh-gk-txt{padding:12px;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.lh-gk-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.lh-gk-tags span{font-size:8.5px;font-weight:600;background:#EFE8DA;color:var(--t2);border-radius:4px;padding:2px 5px;}
+.lh-gk-nm{display:block;font-size:clamp(20px,2.3vw,26px);font-weight:800;letter-spacing:-.6px;line-height:1.02;margin:8px 0 5px;color:var(--t1);}
+.lh-gk-meta{font-size:9.5px;color:var(--t3);margin-bottom:10px;line-height:1.35;}
+.lh-gk-btns{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;}
+.lh-gk-btn{font-size:9.5px;font-weight:800;padding:6px 9px;border-radius:6px;background:#2A8472;color:#fff;white-space:nowrap;}
+.lh-gk-btn.ghost{background:transparent;color:var(--t1);border:1px solid var(--bdr);}
+.lh-gk-soc{display:flex;gap:9px;}
+.lh-gk-soc span{font-size:10px;font-weight:700;color:#2A8472;}
+.lh-gk-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:6px;}
+.lh-gk-strip img,.lh-gk-reel{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 25%;border-radius:5px;display:block;background:#EFE8DA;}
+.lh-gk-reel{background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
 @media(max-width:900px){.lh-site-inner{grid-template-columns:minmax(0,1fr);}.lh-site-bens{grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:20px;}}
 .home-cta-inner{position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);text-align:center;background:linear-gradient(135deg,#5CA092 0%,#4F8B7F 45%,#3B6F65 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
 .home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
@@ -26518,7 +26525,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── "Skip the website builder" (owner, 2026-10-14, demo website-comparison-demo.html).
-         Sample actor Marissa Kent is the owner's photo set. Builder prices = cheapest ad-free
+         Sample actor "Grace Kent" uses the owner's photo set (marissa-kent-*, grace-kent-hero). Builder prices = cheapest ad-free
          Squarespace/Wix plans (Oct 2026) — recheck every few months. Stacks at 900px (landing contract).
          2026-10-14 later: no outer card, same width as the 1100px landing cards, sits in the actor
          part (after the guarantee), quiet teal link so the teal CTA card keeps the one amber button. ───────── */}
@@ -26535,10 +26542,15 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           </div>
         </div>
         <div className="lh-site-browser" aria-hidden="true">
-          <div className="lh-site-bar"><i/><i/><i/><span>castslate.com/talent/marissa-kent</span></div>
-          <div className="lh-site-pf"><img src="/assets/landing/marissa-kent-1.jpg" alt="" width="64" height="80" loading="lazy"/>
-            <div><b>Marissa Kent</b><small>Los Angeles · SAG-AFTRA Eligible</small><div className="lh-site-chips"><span>About</span><span>Reel</span><span>Résumé</span><span>Credits</span><span>Contact</span></div></div></div>
-          <div className="lh-site-grid"><img src="/assets/landing/marissa-kent-2.jpg" alt="" loading="lazy"/><img src="/assets/landing/marissa-kent-3.jpg" alt="" loading="lazy"/><div className="lh-site-reel">▶ Reel</div></div>
+          <div className="lh-site-bar"><i/><i/><i/><span>castslate.com/talent/grace-kent</span></div>
+          <div className="lh-gk">
+            <div className="lh-gk-hero"><img src="/assets/landing/grace-kent-hero.jpg" alt="" width="480" height="600" loading="lazy"/>
+              <div className="lh-gk-txt"><div className="lh-gk-tags"><span>SAG-AFTRA Eligible</span><span>Talent</span></div>
+                <b className="lh-gk-nm">Grace Kent</b><span className="lh-gk-meta">Los Angeles, CA · Rep: Harbor Lane Talent</span>
+                <div className="lh-gk-btns"><span className="lh-gk-btn">▶ Watch reel</span><span className="lh-gk-btn ghost">Message</span></div>
+                <div className="lh-gk-soc"><span>Instagram</span><span>IMDb</span></div></div></div>
+            <div className="lh-gk-strip"><img src="/assets/landing/marissa-kent-2.jpg" alt="" loading="lazy"/><img src="/assets/landing/marissa-kent-3.jpg" alt="" loading="lazy"/><img src="/assets/landing/grace-kent-hero.jpg" alt="" loading="lazy" style={{objectPosition:"50% 20%"}}/><div className="lh-gk-reel">▶ Reel</div></div>
+          </div>
         </div>
       </div>
       <div className="lh-site-bens">
