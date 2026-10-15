@@ -5587,7 +5587,15 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-site-inner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,48px);align-items:center;}
 .lh-site-eyebrow{font-weight:800;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--teal);margin:0 0 10px;}
 .lh-site h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(30px,4vw,44px);letter-spacing:-0.5px;line-height:1.08;margin:0 0 14px;color:var(--t1);}
-.lh-site-lede{font-size:16px;line-height:1.65;color:var(--t2);margin:0 0 22px;}
+.lh-site-lede{font-size:16px;line-height:1.65;color:var(--t2);margin:0 0 18px;}
+.lh-site-ck{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 20px;font-size:15px;font-weight:600;color:var(--t1);}
+.lh-site-ck li{display:flex;align-items:center;gap:9px;}
+.lh-site-ck .ti{color:var(--teal);}
+.lh-site-bens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:clamp(28px,4vw,40px);padding-top:24px;border-top:1px solid var(--bdr);}
+.lh-site-ben{display:flex;gap:12px;align-items:flex-start;min-width:0;}
+.lh-site-bi{flex:none;width:38px;height:38px;border-radius:11px;background:#464A73;color:#fff;display:flex;align-items:center;justify-content:center;}
+.lh-site-ben b{display:block;font-size:15px;color:var(--t1);margin:2px 0 4px;}
+.lh-site-ben p{margin:0;font-size:13.5px;line-height:1.55;color:var(--t2);}
 .lh-site-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
 .lh-site-link{background:none;border:0;padding:0;font:inherit;font-size:16px;font-weight:800;color:var(--teal);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
 .lh-site-link:hover{text-decoration:underline;text-underline-offset:3px;}
@@ -5605,7 +5613,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-site-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 16px 16px;}
 .lh-site-grid img,.lh-site-reel{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 25%;border-radius:7px;display:block;background:#EFE8DA;}
 .lh-site-reel{background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
-@media(max-width:900px){.lh-site-inner{grid-template-columns:minmax(0,1fr);}}
+@media(max-width:900px){.lh-site-inner{grid-template-columns:minmax(0,1fr);}.lh-site-bens{grid-template-columns:minmax(0,1fr);gap:20px;}}
 .home-cta-inner{position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);text-align:center;background:linear-gradient(135deg,#5CA092 0%,#4F8B7F 45%,#3B6F65 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
 .home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
@@ -26302,7 +26310,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <div className="lh-site-copy">
           <p className="lh-site-eyebrow">Your profile, your website</p>
           <h2>Skip the website builder.</h2>
-          <p className="lh-site-lede">Your CastSlate profile is your acting website — headshots, reel, résumé and credits on one link you can put anywhere. A site on Squarespace or Wix runs $16–25 a month, and you'd still have to build it.</p>
+          <p className="lh-site-lede">Your CastSlate profile is your acting website — one link with everything casting needs. A site on Squarespace or Wix runs $16–25 a month, and you'd still have to build it.</p>
+          <ul className="lh-site-ck">{["About & bio","Reel & videos","Photo gallery","Résumé (PDF)","Credits & skills","Socials & contact"].map(t=><li key={t}><Ico n="check" s={17}/>{t}</li>)}</ul>
           <div className="lh-site-row">
             <button type="button" className="lh-site-link" onClick={()=>onNavigate("register-talent")}>Create my free profile <Tri/></button>
             <span className="lh-site-note">Premium from $10.75/mo · cancel anytime</span>
@@ -26311,9 +26320,15 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <div className="lh-site-browser" aria-hidden="true">
           <div className="lh-site-bar"><i/><i/><i/><span>castslate.com/talent/marissa-kent</span></div>
           <div className="lh-site-pf"><img src="/assets/landing/marissa-kent-1.jpg" alt="" width="64" height="80" loading="lazy"/>
-            <div><b>Marissa Kent</b><small>Los Angeles · SAG-AFTRA Eligible</small><div className="lh-site-chips"><span>Reel</span><span>Résumé</span><span>Credits</span></div></div></div>
+            <div><b>Marissa Kent</b><small>Los Angeles · SAG-AFTRA Eligible</small><div className="lh-site-chips"><span>About</span><span>Reel</span><span>Résumé</span><span>Credits</span><span>Contact</span></div></div></div>
           <div className="lh-site-grid"><img src="/assets/landing/marissa-kent-2.jpg" alt="" loading="lazy"/><img src="/assets/landing/marissa-kent-3.jpg" alt="" loading="lazy"/><div className="lh-site-reel">▶ Reel</div></div>
         </div>
+      </div>
+      <div className="lh-site-bens">
+        {[["tools-off","Nothing to build or maintain","No templates, no hosting, no domain renewals, no broken pages."],
+          ["refresh","Edit once, updated everywhere","A new credit shows on your page and résumé at once — and your QR card always opens the latest version."],
+          ["eye","Already in front of casting","When you submit, this is the page casting directors see. A personal website just sits there until someone finds it."]].map(([ic,t,d])=>(
+          <div key={t} className="lh-site-ben"><span className="lh-site-bi"><Ico n={ic} s={20}/></span><div><b>{t}</b><p>{d}</p></div></div>))}
       </div>
     </section>
 
