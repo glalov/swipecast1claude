@@ -3362,7 +3362,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-site-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:0 16px 16px;}
 .lh-site-grid img,.lh-site-reel{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 25%;border-radius:7px;display:block;background:#EFE8DA;}
 .lh-site-reel{background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
-@media(max-width:900px){.lh-site-inner{grid-template-columns:minmax(0,1fr);}.lh-site-bens{grid-template-columns:minmax(0,1fr);gap:20px;}}
+@media(max-width:900px){.lh-site-inner{grid-template-columns:minmax(0,1fr);}.lh-site-bens{grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:20px;}}
 .home-cta-inner{position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);text-align:center;background:linear-gradient(135deg,#5CA092 0%,#4F8B7F 45%,#3B6F65 100%);color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
 .home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
