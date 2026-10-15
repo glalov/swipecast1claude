@@ -3349,7 +3349,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-site-link{background:none;border:0;padding:0;font:inherit;font-size:16px;font-weight:800;color:var(--teal);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
 .lh-site-link:hover{text-decoration:underline;text-underline-offset:3px;}
 .lh-site-note{font-size:13px;color:var(--t3);}
-.lh-site-browser{background:#fff;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;box-shadow:0 30px 60px -28px rgba(26,26,46,.45);min-width:0;}
+.lh-site-browser{background:#fff;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(26,26,46,.06),0 8px 20px -10px rgba(26,26,46,.22);min-width:0;}
 .lh-site-bar{display:flex;align-items:center;gap:6px;padding:9px 12px;background:#F1ECE2;}
 .lh-site-bar i{width:9px;height:9px;border-radius:99px;background:#D9CFBD;flex:none;}
 .lh-site-bar span{margin-left:8px;flex:1;min-width:0;background:#fff;border-radius:7px;padding:4px 12px;font-size:12px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
