@@ -26525,7 +26525,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── "Skip the website builder" (owner, 2026-10-14, demo website-comparison-demo.html).
-         Sample actor "Simone Ellis" uses the owner's photo set (marissa-kent-*, grace-kent-hero). Builder prices = cheapest ad-free
+         Sample actor "Nina" uses the owner's photo set (marissa-kent-*, grace-kent-hero). Builder prices = cheapest ad-free
          Squarespace/Wix plans (Oct 2026) — recheck every few months. Stacks at 900px (landing contract).
          2026-10-14 later: no outer card, same width as the 1100px landing cards, sits in the actor
          part (after the guarantee), quiet teal link so the teal CTA card keeps the one amber button. ───────── */}
@@ -26542,11 +26542,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           </div>
         </div>
         <div className="lh-site-browser" aria-hidden="true">
-          <div className="lh-site-bar"><i/><i/><i/><span>castslate.com/talent/simone-ellis</span></div>
+          <div className="lh-site-bar"><i/><i/><i/><span>castslate.com/talent/nina</span></div>
           <div className="lh-gk">
             <div className="lh-gk-hero"><img src="/assets/landing/grace-kent-hero.jpg" alt="" width="480" height="600" loading="lazy"/>
               <div className="lh-gk-txt"><div className="lh-gk-tags"><span>SAG-AFTRA Eligible</span><span>Talent</span></div>
-                <b className="lh-gk-nm">Simone Ellis</b><span className="lh-gk-meta">Los Angeles, CA · Rep: Harbor Lane Talent</span>
+                <b className="lh-gk-nm">Nina</b><span className="lh-gk-meta">Los Angeles, CA · Rep: Harbor Lane Talent</span>
                 <div className="lh-gk-btns"><span className="lh-gk-btn">▶ Watch reel</span><span className="lh-gk-btn ghost">Message</span></div>
                 <div className="lh-gk-soc"><span>Instagram</span><span>IMDb</span></div></div></div>
             <div className="lh-gk-strip"><img src="/assets/landing/marissa-kent-2.jpg" alt="" loading="lazy"/><img src="/assets/landing/marissa-kent-3.jpg" alt="" loading="lazy"/><img src="/assets/landing/grace-kent-hero.jpg" alt="" loading="lazy" style={{objectPosition:"50% 20%"}}/><div className="lh-gk-reel">▶ Reel</div></div>
