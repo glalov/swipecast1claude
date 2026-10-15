@@ -2478,6 +2478,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tr-chip.is-primary button:hover{color:#fff;}
 .tr-star:hover{color:var(--acc)!important;}
 .pp-plays{margin-bottom:14px;}
+.pp-bio{font-family:Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:24px;letter-spacing:.5px;color:#000;white-space:pre-line;margin:0 0 16px;overflow-wrap:anywhere;}
+.pl-cinematic .pp-bio{color:var(--t1);}
 .pr-modal{background:var(--s1);border-radius:14px;padding:12px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);}
 .pr-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 10px;font-size:14px;flex-wrap:wrap;color:var(--t1);}
 .pr-frame{display:block;width:min(800px,calc(100vw - 48px),calc((100vh - 110px) * .8));aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 0 0 1px #e8e2d6;}
@@ -14758,7 +14760,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         </>}
         {useHero&&bioText&&sectionHead("About")}
         {/* Bio */}
-        {bioText&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:14}}>{bioText}</p>}
+        {/* Bio set like an IMDb biography (owner, 2026-10-15): Roboto 16/24, .5px tracking,
+            black; paragraph breaks the actor typed are kept. */}
+        {bioText&&<p className="pp-bio">{bioText}</p>}
 
         {/* Appearance stats */}
         {statsData.length>0&&(
