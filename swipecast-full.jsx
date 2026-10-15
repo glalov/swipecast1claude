@@ -14353,7 +14353,7 @@ const PL_ACCENTS={teal:"#2A8472",navy:"#464A73",gold:"#C9A24A",terracotta:"#B457
 const PL_TAGLINE_MAX=90;
 function profileLook(p){
   const l=p&&p.profile_look&&typeof p.profile_look==="object"?p.profile_look:{};
-  return{hero:!!l.hero,theme:PL_THEMES.some(t=>t[0]===l.theme)?l.theme:"classic",accent:PL_ACCENTS[l.accent]?l.accent:"teal",tagline:String(l.tagline||"").slice(0,PL_TAGLINE_MAX)};
+  return{hero:l.hero!==false,theme:PL_THEMES.some(t=>t[0]===l.theme)?l.theme:"classic",accent:PL_ACCENTS[l.accent]?l.accent:"teal",tagline:String(l.tagline||"").slice(0,PL_TAGLINE_MAX)};
 }
 function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const vpw=useViewportWidth();
@@ -14450,7 +14450,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   // Page look: owner's Premium choice; never on a submission view (that shows the chosen photo).
   // Only when they have actually saved a look — untouched Premium pages stay exactly as before.
   const look=(ownerIsPremium&&!talent._selectedPhoto&&freshProfile?.profile_look)?profileLook(freshProfile):null;
-  const useHero=!!(look&&look.hero);
+  // Hero is the default page for EVERY actor (owner, 2026-10-15). Premium can switch back to
+  // the photo grid; pages with no headshot and casting-director submission views keep the grid.
+  const useHero=!talent._selectedPhoto&&!!freshHeadshot&&(look?look.hero:true);
   const plTheme=look?look.theme:"classic";
   useEffect(()=>{
     const cls=["pl-body-cinematic","pl-body-editorial"],el=document.documentElement;
@@ -14621,7 +14623,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
               {talent.type&&<span className="tag" style={{fontSize:11}}>{talent.type}</span>}
             </div>
             <h1 className="pl-hero-nm">{heroName}</h1>
-            {look.tagline&&<p className="pl-hero-line">{look.tagline}</p>}
+            {look&&look.tagline&&<p className="pl-hero-line">{look.tagline}</p>}
             {(locationText||agentOrRep)&&<p className="pl-hero-meta">{[locationText,agentOrRep?"Rep: "+agentOrRep:""].filter(Boolean).join(" · ")}</p>}
             <div className="pl-hero-btns">
               {firstVideoIdx>=0&&<button type="button" className="pl-btn" onClick={()=>openMedia(firstVideoIdx)}><Ico n="player-play" s={16}/> Watch reel</button>}
@@ -15024,7 +15026,7 @@ function ProfileLookCard({profile,isPremium,onNavigate}){
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
       <div style={{minWidth:0}}>
         <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Your page look <span className="badge" style={{background:"#FBF0DA",color:"#8A5A12",marginLeft:6,fontSize:10}}>Premium</span></h3>
-        <p style={{fontSize:13,color:"var(--t2)",margin:"6px 0 0",lineHeight:1.5}}>Give your profile a big headshot header, a one-line description and your own theme — Classic, Cinematic dark or Editorial.</p>
+        <p style={{fontSize:13,color:"var(--t2)",margin:"6px 0 0",lineHeight:1.5}}>Your page opens with a big headshot header. Premium lets you add a one-line description, show your social links, and pick a theme — Classic, Cinematic dark or Editorial — and an accent color.</p>
       </div>
       <button type="button" className="btn-teal" onClick={()=>onNavigate&&onNavigate("membership")} style={{padding:"10px 18px",fontSize:13}}>Unlock with Premium</button>
     </div>
@@ -15054,7 +15056,7 @@ function ProfileLookCard({profile,isPremium,onNavigate}){
       <button type="button" className="btn-teal" disabled={!dirty||busy} onClick={save} style={{padding:"10px 22px",fontSize:13.5,opacity:(!dirty||busy)?.55:1}}>{busy?"Saving…":"Save look"}</button>
       {note&&<span style={{fontSize:13,fontWeight:600,color:note.err?"#B4574B":"var(--teal)"}}>{note.t}</span>}
     </div>
-    <p style={{fontSize:12,color:"var(--t3)",margin:"14px 0 0",lineHeight:1.5}}>Part of Premium. If your membership ends, your page goes back to the standard layout — nothing is deleted, and your look comes back when you return.</p>
+    <p style={{fontSize:12,color:"var(--t3)",margin:"14px 0 0",lineHeight:1.5}}>Part of Premium. If your membership ends, your page keeps the headshot header in the Classic look — nothing is deleted, and your theme, colors and one-liner come back when you return.</p>
   </div>);
 }
 
