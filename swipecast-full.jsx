@@ -14635,8 +14635,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
             {(locationText||agentOrRep)&&<p className="pl-hero-meta">{[locationText,agentOrRep?"Rep: "+agentOrRep:""].filter(Boolean).join(" · ")}</p>}
             <div className="pl-hero-btns">
               {firstVideoIdx>=0&&<button type="button" className="pl-btn" onClick={()=>openMedia(firstVideoIdx)}><Ico n="player-play" s={16}/> Watch reel</button>}
-              {resumeUrl&&<a className="pl-btn ghost" href={resumeUrl} target="_blank" rel="noreferrer">Download résumé</a>}
-              {canViewBuiltResume&&<button type="button" className="pl-btn ghost" onClick={()=>setShowResume(true)}>View résumé</button>}
               {canMessage&&<button type="button" className="pl-btn ghost" onClick={heroMessage}>Message</button>}
             </div>
             {allSocialLinks.length>0&&<div className="pl-soc">{allSocialLinks.map(({label,url},i)=><a key={i} href={url.startsWith("http")?url:`https://${url}`} target="_blank" rel="noopener noreferrer">{label}</a>)}</div>}
@@ -14877,8 +14875,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {hasStructuredCredits&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
-        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Résumé</button>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</a>}
+        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</button>}
       </div>
       <div className="credits-list pp-cred">{CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
         <div key={cat} className="pp-cred-cat">
@@ -14903,8 +14901,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {!hasStructuredCredits&&(legacyCredits.length>0||resumeUrl)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
-        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Résumé</button>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</a>}
+        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</button>}
       </div>
       {legacyCredits.length>0
         ?<div className="credits-list pp-cred">
@@ -27299,7 +27297,7 @@ run();
 }
 
 // Settings saved to profiles.resume_settings (never the actor's email — that stays local).
-const RESUME_DB_KEYS=["size","corner","contact","brand","picked","keep","skillOff","trainOn","accOn","langOn","hsSel","commOn"];
+const RESUME_DB_KEYS=["size","corner","cornerV","contact","brand","picked","keep","skillOff","trainOn","accOn","langOn","hsSel","commOn"];
 const resumeSettingsForDb=o=>Object.fromEntries(RESUME_DB_KEYS.filter(k=>o[k]!==undefined).map(k=>[k,o[k]]));
 // PUBLIC résumé (profile page "View résumé", Premium, 2026-10-15): same layout as the
 // actor's Résumé tab, built from the profile row + their saved resume_settings, but
@@ -27334,7 +27332,7 @@ function publicResumeParts(p,credits){
   const headshot=hs?hs.url:(p.headshot_url||"");
   const agentPublic=resumeHasAgent(p.agent)?String(p.agent).split(/\s*\/\s*/).map(x=>x.trim()).filter(Boolean):[];
   const contact=(rs.contact==="agent"&&agentPublic.length)?"agent":"link";
-  let corner=["hs","qr","both","none"].includes(rs.corner)?rs.corner:(headshot?"hs":"qr");
+  let corner=(rs.cornerV===2&&["hs","qr","both","none"].includes(rs.corner))?rs.corner:(headshot?"both":"qr");
   if((corner==="hs"||corner==="both")&&!headshot)corner="qr";
   const d={name,unions,stats,agent:agentPublic,url,urlText,headshot,hsPos:hs?{x:hs.x,y:hs.y,z:hs.z}:{x:50,y:22,z:1},canPickHs:false,email:"",
     sections,training:rs.trainOn===false?[]:trainingLines,skills:skillList,accents:rs.accOn===false?[]:accList,languages:rs.langOn===false?[]:langList,
@@ -27373,7 +27371,9 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const repLines=repList.flatMap(r=>[[String(r.company||"").trim(),r.type?"("+r.type+")":""].filter(Boolean).join(" "),r.contact,r.email,r.phone].map(x=>String(x||"").trim()).filter(Boolean));
   const hasHeadshot=!!profile?.headshot_url;
   const[size,setSize]=useState(saved.size||"8x10");
-  const[corner,setCorner]=useState(saved.corner||(hasHeadshot?"hs":"qr"));
+  // Default photo corner is Headshot + QR (owner, 2026-10-15). Corners saved before cornerV:2
+  // were just the old default, so they move to "both" too; later picks are respected.
+  const[corner,setCorner]=useState(saved.cornerV===2&&saved.corner?saved.corner:(hasHeadshot?"both":"qr"));
   const[contact,setContact]=useState(saved.contact||(agentOk?"agent":"link"));
   const[brand,setBrand]=useState(saved.brand||"on");
   const[picked,setPicked]=useState(Array.isArray(saved.picked)?saved.picked:null);
@@ -27396,13 +27396,13 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const[status,setStatus]=useState(null);
   const[note,setNote]=useState(null);
   const frameRef=useRef(null),pendingRef=useRef(null),prevLostRef=useRef(0),noteT=useRef(0);
-  useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn]);
+  useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,cornerV:2,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn]);
   // Premium: keep profiles.resume_settings in step (debounced) so the public "View résumé"
   // matches what they built. Email is deliberately left out.
   const dbSnapRef=useRef(JSON.stringify(profile?.resume_settings||null));
   useEffect(()=>{
     if(!isPremium||!uid)return;
-    const next=resumeSettingsForDb({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,hsSel,commOn});
+    const next=resumeSettingsForDb({size,corner,cornerV:2,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,hsSel,commOn});
     const js=JSON.stringify(next);if(js===dbSnapRef.current)return;
     const t=setTimeout(async()=>{try{const {error}=await window.sb.from("profiles").update({resume_settings:next}).eq("id",uid);if(!error)dbSnapRef.current=js;}catch(_){}},1200);
     return()=>clearTimeout(t);
