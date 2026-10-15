@@ -2512,6 +2512,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .cma-t{font-family:Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:500;letter-spacing:.15px;}
 .pp-uni .cma-meta{font-family:Roboto,Helvetica,Arial,sans-serif;}
 .pp-uni.pl-cinematic .pp-bio{color:var(--t1);}
+/* Stats row — equal gaps (owner, 2026-10-15, demo profile-stats-spacing-demo.html): each stat
+   only as wide as its text, leftover space shared evenly; 3 or fewer stay left with a fixed gap;
+   phones use 3 equal columns. */
+.pp-uni .pp-stats{display:flex!important;flex-wrap:wrap;justify-content:space-between;column-gap:20px!important;row-gap:12px!important;}
+.pp-uni .pp-stats:not(:has(>:nth-child(4))){justify-content:flex-start;column-gap:48px!important;}
+.pp-uni .pp-stats .pp-val{white-space:nowrap;}
+@media(max-width:600px){.pp-uni .pp-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:16px!important;}.pp-uni .pp-stats .pp-val{white-space:normal;}}
 .pr-modal{background:var(--s1);border-radius:14px;padding:12px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);}
 .pr-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 10px;font-size:14px;flex-wrap:wrap;color:var(--t1);}
 .pr-frame{display:block;width:min(800px,calc(100vw - 48px),calc((100vh - 110px) * .8));aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 0 0 1px #e8e2d6;}
@@ -14798,7 +14805,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
         {/* Appearance stats */}
         {statsData.length>0&&(
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(96px,1fr))",gap:"10px 16px",marginBottom:ethnicityText?0:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
+          <div className="pp-stats" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(96px,1fr))",gap:"10px 16px",marginBottom:ethnicityText?0:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
             {statsData.map(([l,v])=>(
               <div key={l}>
                 <div className="pp-lbl" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:1}}>{l}</div>
