@@ -25627,24 +25627,31 @@ function NewsSection({onNavigate}){
           .order("written_at",{ascending:false}).limit(20);
         // Safety net: never render the same story twice (dedupe by source/slug).
         const seen=new Set();
-        const deduped=(data||[]).filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,12);
+        const deduped=(data||[]).filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;});
         if(alive)setItems(deduped);
       }catch(_){ if(alive)setItems([]); }
     })();
     return()=>{alive=false;};
   },[]);
-  if(!enabled||items===null||items.length===0)return null;
+  // Thumbnails are hotlinked from the publisher, who can delete or rename them
+  // at any time (Playbill's "The-Heart-Press-Day-1.jpg" started returning 403
+  // a day after we picked it up). A card whose image fails to load is dropped
+  // and the next story slides in, so a broken picture never shows.
+  const[badImg,setBadImg]=React.useState(()=>new Set());
+  const dropBroken=(slug)=>setBadImg(prev=>{if(prev.has(slug))return prev;const n=new Set(prev);n.add(slug);return n;});
+  const shown=(items||[]).filter(a=>!badImg.has(a.slug)).slice(0,12);
+  if(!enabled||items===null||shown.length===0)return null;
   // Three labeled blocks of up to 4 cards each (Backstage-style sections).
   const SECTIONS=[
     {label:"Latest Industry News & Casting Updates",desc:"Fresh casting, film, television, and theater headlines — curated by CastSlate Staff.",lead:true},
     {label:"More From the Industry",desc:"Continuing coverage across film, TV, stage, and the business of casting."},
   ];
-  const blocks=SECTIONS.map((s,i)=>({...s,cards:items.slice(i*4,i*4+4)})).filter(b=>b.cards.length>0);
+  const blocks=SECTIONS.map((s,i)=>({...s,cards:shown.slice(i*4,i*4+4)})).filter(b=>b.cards.length>0);
   // Lead section = CastSlate's own articles (open the internal /news/<slug> page).
   const InternalCard=(a)=>(
     <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
       <div className="news-thumb">
-        {a.image_url&&<img src={a.image_url} alt="" loading="lazy"/>}
+        {a.image_url&&<img src={a.image_url} alt="" loading="lazy" onError={()=>dropBroken(a.slug)}/>}
         <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
       </div>
       <div className="news-body">
@@ -25661,7 +25668,7 @@ function NewsSection({onNavigate}){
     return (
       <a key={a.slug} className="news-card" href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">
         <div className="news-thumb">
-          {img&&<img src={img} alt="" loading="lazy" referrerPolicy="no-referrer"/>}
+          {img&&<img src={img} alt="" loading="lazy" referrerPolicy="no-referrer" onError={()=>dropBroken(a.slug)}/>}
           <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
         </div>
         <div className="news-body">
@@ -25726,7 +25733,7 @@ function NewsArticlePage({slug,onNavigate}){
         <span className="news-bystaff">Written by {a.author||"CastSlate Staff"}</span><span className="news-dot"/>
         <span>{newsDate(a.written_at)}</span>
       </div>
-      {a.image_url&&<div className="news-article-hero"><img src={a.image_url} alt=""/></div>}
+      {a.image_url&&<div className="news-article-hero"><img src={a.image_url} alt="" onError={e=>{const d=e.currentTarget.parentNode;if(d)d.style.display="none";}}/></div>}
       <div className="news-article-body" style={{marginTop:a.image_url?22:0}}>{paras.map((p,i)=><p key={i}>{p}</p>)}</div>
     </article>
   );
@@ -25903,7 +25910,14 @@ function csArmLoopVideo(v){
   const onResume=function(){ if(!document.hidden) checkResume(0); };
   const onVis=onResume;
   const onIdle=function(){ if(visible) kick(false); };
-  const unlock=function(){ kick(true); };
+  // Low Power Mode (iPhone/iPad/Mac) blocks every autoplay until a real tap,
+  // and WebKit only counts touchend/pointerup/click/mousedown/keydown as one
+  // (touchstart/pointerdown on a touch screen do NOT unlock media). The clip
+  // may read !paused while frozen, so call play() directly, not via kick().
+  const unlock=function(){
+    if(gone||!v.getAttribute('src')) return;
+    const p=v.play(); if(p&&p.catch)p.catch(function(){});
+  };
   v.addEventListener('playing',onPlaying);
   v.addEventListener('timeupdate',onTime);
   v.addEventListener('loadeddata',onReady);
@@ -25915,8 +25929,8 @@ function csArmLoopVideo(v){
   window.addEventListener('focus',onResume);
   window.addEventListener('cs:scroll-idle',onIdle);
   window.addEventListener('sc:glide-end',onIdle);
-  const GESTURES=['pointerdown','touchstart','keydown'];
-  GESTURES.forEach(function(t){ document.addEventListener(t,unlock,{passive:true}); });
+  const GESTURES=['pointerdown','touchstart','touchend','pointerup','mousedown','click','keydown'];
+  GESTURES.forEach(function(t){ document.addEventListener(t,unlock,{passive:true,capture:true}); });
   // Visibility only decides whether WE nudge a paused clip. We never pause
   // anything ourselves; the browser's own off-screen pausing of autoplay video
   // resumes instantly from buffer when the card comes back.
@@ -25947,7 +25961,7 @@ function csArmLoopVideo(v){
     v.removeEventListener('pause',onPause); v.removeEventListener('waiting',onWaiting); clearTimeout(stallT);
     document.removeEventListener('visibilitychange',onVis);
     window.removeEventListener('cs:scroll-idle',onIdle); window.removeEventListener('sc:glide-end',onIdle);
-    GESTURES.forEach(function(t){ document.removeEventListener(t,unlock); });
+    GESTURES.forEach(function(t){ document.removeEventListener(t,unlock,{capture:true}); });
   };
 }
 
@@ -25963,32 +25977,41 @@ function BufferedLoopVideo(props){
     const v=ref.current; if(!v) return;
     const off=csArmLoopVideo(v);
     let started=false, io=null, near=null, gone=false;
-    // Lite: queue the whole lite file behind the reel (prio 20); jump the
-    // queue once the clip is within ~1.5 screens (prio -1).
+    // Lite: queue the whole lite file (prio 20), but only once the format reel
+    // above is rolling ("cs:reel-ready"), so the two never fight over a weak
+    // connection at load. Jump the queue (prio -1) within ~1.5 screens.
+    let hooked=false, waitReel=false;
     const goLite=function(prio){
-      csFetchClip(csLiteUrl(src),prio).then(function(u){ if(!gone){ v.setAttribute('src',u); try{ v.load(); }catch(_){} } });
+      const p=csFetchClip(csLiteUrl(src),prio);
+      if(hooked) return; hooked=true;
+      p.then(function(u){ if(!gone){ v.setAttribute('src',u); try{ v.load(); }catch(_){} } });
+    };
+    const onReel=function(){ window.removeEventListener('cs:reel-ready',onReel); if(!gone) goLite(20); };
+    const liteWhenReel=function(){
+      if(window.__csReelReady||!document.querySelector('.fmt-reel')){ goLite(20); return; }
+      if(!waitReel){ waitReel=true; window.addEventListener('cs:reel-ready',onReel); }
     };
     const start=function(){
       if(started)return; started=true;
       if(io){ io.disconnect(); io=null; }
-      if(csVideoMode()==='lite'){ goLite(20); return; }
+      if(csVideoMode()==='lite'){ liteWhenReel(); return; }
       v.preload='auto'; v.setAttribute('src',src); try{ v.load(); }catch(_){}
     };
     const toLite=function(){
       // switched mid-visit: drop an unfinished HD download, take the lite file
       if(v.readyState>=4&&!v.paused) return;
       v.removeAttribute('src'); try{ v.load(); }catch(_){}
-      started=true; goLite(20);
+      started=true; liteWhenReel();
     };
     window.addEventListener('cs:vid-lite',toLite);
     const t=setTimeout(start,1000);
     if(typeof IntersectionObserver!=='undefined'){
       io=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) start(); },{rootMargin:'3000px 0px',threshold:0});
       io.observe(v);
-      near=new IntersectionObserver(function(es){ if(csVidMode==='lite'&&es.some(function(e){ return e.isIntersecting; })) csFetchClip(csLiteUrl(src),-1); },{rootMargin:'1200px 0px',threshold:0});
+      near=new IntersectionObserver(function(es){ if(csVidMode==='lite'&&started&&es.some(function(e){ return e.isIntersecting; })) goLite(-1); },{rootMargin:'1200px 0px',threshold:0});
       near.observe(v);
     } else start();
-    return function(){ gone=true; off(); clearTimeout(t); if(io) io.disconnect(); if(near) near.disconnect(); window.removeEventListener('cs:vid-lite',toLite); };
+    return function(){ gone=true; off(); clearTimeout(t); if(io) io.disconnect(); if(near) near.disconnect(); window.removeEventListener('cs:vid-lite',toLite); window.removeEventListener('cs:reel-ready',onReel); };
   },[src]);
   return (
     <span className="slv-wrap" style={poster?{backgroundImage:'url("'+poster+'")'}:undefined}>
@@ -26000,8 +26023,8 @@ function BufferedLoopVideo(props){
 function FormatReel(){
   const reelRef=React.useRef(null);
   // Decided once, at first render (app.js has finished downloading by then, so
-  // its transfer speed is known). Lite cards render with no src at all, so no
-  // full-quality download ever starts on a slow connection.
+  // its transfer speed is known). Lite cards render with the lite file as src,
+  // so no full-quality download ever starts on a slow connection.
   const[lite]=React.useState(function(){ return csVideoMode()==='lite'; });
   React.useEffect(function(){
     const reel=reelRef.current; if(!reel) return;
@@ -26009,35 +26032,48 @@ function FormatReel(){
     // 3:4 loop (0.3-2.7MB, 9.8MB for all seven) that starts at page load.
     const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
     const offs=vids.map(csArmLoopVideo);
-    const n0=FORMAT_CARDS.length;
+    const n=FORMAT_CARDS.length, timers=[], unhooks=[];
     let gone=false;
-    // Lite: whole lite files, in card order (the leftmost cards are the ones
-    // on screen first), shared by both copies of the row. Each card keeps its
-    // own first-frame still until its whole file is in, then plays.
+    const urlOf=function(v){ return csVidMode==='lite'?csLiteUrl(v.dataset.src):v.dataset.src; };
+    const setSrc=function(v){ const u=urlOf(v); if(v.getAttribute('src')===u) return; v.preload='auto'; v.setAttribute('src',u); try{ v.load(); }catch(_){} };
+    // Lite clips play PROGRESSIVELY, straight from the network. They are tiny
+    // (66-210 kbit/s each, ~1 Mbit/s for all seven), so each starts moving
+    // after a fraction of a second of data. They used to be fetched WHOLE, two
+    // at a time, and stay a still until 100% downloaded: on busy store wifi,
+    // with the hero photos loading at the same moment, cards sat frozen for
+    // 10-30 seconds while the reel kept sliding (measured 2026-10-15).
+    // Mid-visit switch (an HD clip stalled): swap every card that is not
+    // already rolling smoothly in HD to its lite file.
     const liteAll=function(){
       vids.forEach(function(v,i){
-        if(v.readyState>=4&&!v.paused&&String(v.src).indexOf('blob:')!==0&&v.classList.contains('is-on')) return; // HD already fully playing
-        if(v.getAttribute('src')&&String(v.src).indexOf('blob:')!==0){ v.removeAttribute('src'); try{ v.load(); }catch(_){} }
-        const url=csLiteUrl(v.dataset.src);
-        csFetchClip(url,i%n0).then(function(u){ if(!gone){ v.setAttribute('src',u); try{ v.load(); }catch(_){} } });
+        if(v.readyState>=4&&!v.paused&&v.classList.contains('is-on')) return; // HD already fully playing
+        if(i<n||vids[i-n].readyState>=3) setSrc(v);
       });
     };
-    if(lite){ liteAll(); }
     window.addEventListener('cs:vid-lite',liteAll);
     // The second copy of the row (needed for the seamless wrap) reuses the same
     // files. Give each copy its src once the first copy has buffered, so both
     // don't split the bandwidth at load — unless that copy is already on screen
     // (very wide monitors), in which case it starts right away.
-    const n=FORMAT_CARDS.length, timers=[], unhooks=[];
     vids.slice(n).forEach(function(dup,i){
-      if(lite) return;
       const orig=vids[i];
-      const go=function(){ if(!dup.getAttribute('src')){ dup.setAttribute('src',dup.dataset.src); try{ dup.load(); }catch(_){} } };
+      const go=function(){ if(!gone&&!dup.getAttribute('src')) setSrc(dup); };
       if(orig.readyState>=4||dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
       orig.addEventListener('canplaythrough',go);
       unhooks.push(function(){ orig.removeEventListener('canplaythrough',go); });
       timers.push(setTimeout(go,2500));
     });
+    // "Reel is rolling": every original card can play through (or 8s passed).
+    // The two big landing clips wait for this on slow connections so they
+    // don't steal the reel's bandwidth at load.
+    const firsts=vids.slice(0,n);
+    const checkReady=function(){
+      if(window.__csReelReady||gone) return;
+      if(firsts.every(function(v){ return v.readyState>=4; })){ window.__csReelReady=true; try{ window.dispatchEvent(new Event('cs:reel-ready')); }catch(_){} }
+    };
+    firsts.forEach(function(v){ v.addEventListener('canplaythrough',checkReady); unhooks.push(function(){ v.removeEventListener('canplaythrough',checkReady); }); });
+    timers.push(setTimeout(function(){ if(!window.__csReelReady){ window.__csReelReady=true; try{ window.dispatchEvent(new Event('cs:reel-ready')); }catch(_){} } },8000));
+    checkReady();
     return function(){ gone=true; csVidQueueStop(); window.removeEventListener('cs:vid-lite',liteAll); offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
@@ -26052,7 +26088,7 @@ function FormatReel(){
           {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel3/'+c.file+'.mp4'; return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
               <img className="fmt-poster" src={'/video-formats/reel3/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
-              <video className="fmt-video" src={first&&!lite?url:undefined} data-src={url} muted loop playsInline autoPlay preload={lite?"none":"auto"} aria-hidden="true"/>
+              <video className="fmt-video" src={first?(lite?csLiteUrl(url):url):undefined} data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
                 <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>

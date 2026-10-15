@@ -196,6 +196,34 @@ async function isLandscapeImage(url: string): Promise<boolean> {
 
 // ─── Article writers ─────────────────────────────────────────────────────────
 // Claude fallback writer (used only if Gemini is unavailable).
+// Image health: publishers delete or rename thumbnails after we pick them up
+// (Playbill's The-Heart-Press-Day-1.jpg went 403 a day later, 2026-10-15), and
+// a hotlinked card then shows a broken picture. Conservative: only a definite
+// "gone" (403/404/410, or a 2xx that isn't an image) counts, checked twice;
+// timeouts and network errors never retire a story.
+async function imageStatus(url: string): Promise<"ok" | "gone" | "unknown"> {
+  if (!url || !/^https?:\/\//i.test(url)) return "gone";
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
+    const r = await fetch(url, {
+      headers: {
+        "Range": "bytes=0-2047",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15",
+        "Accept": "image/avif,image/webp,image/*,*/*;q=0.8",
+      },
+      signal: ctrl.signal,
+    });
+    clearTimeout(t);
+    try { await r.body?.cancel(); } catch (_) { /* ignore */ }
+    if (r.status === 403 || r.status === 404 || r.status === 410) return "gone";
+    if (r.ok) return /^image\//i.test(r.headers.get("content-type") || "") ? "ok" : "gone";
+    return "unknown";
+  } catch (_) {
+    return "unknown";
+  }
+}
+
 async function aiRewrite(title: string, desc: string, source: string, category: Category) {
   if (!ANTHROPIC_API_KEY) return null;
   try {
@@ -399,10 +427,34 @@ serve(async (req) => {
       if (geminiKey && added < MAX_NEW) await sleep(3000);
     }
 
+    // Retire published stories whose source image has disappeared (reversible:
+    // published=false, status='archived'; same as the 2026-06-23 cleanup). The
+    // site's NewsSection also drops a card whose image fails, as a backstop.
+    const retired: string[] = [];
+    {
+      const { data: live } = await sb.from("news_articles")
+        .select("slug,image_url,original_image_url")
+        .eq("published", true).eq("status", "published")
+        .order("written_at", { ascending: false }).limit(24);
+      const rows = (live || []) as Array<{ slug: string; image_url: string; original_image_url: string }>;
+      const checks = await Promise.all(rows.map(async (r) => {
+        const u = r.original_image_url || r.image_url;
+        if (!u) return null;
+        if ((await imageStatus(u)) !== "gone") return null;
+        await sleep(1500);
+        return (await imageStatus(u)) === "gone" ? r.slug : null;
+      }));
+      for (const slug of checks) {
+        if (!slug) continue;
+        const { error } = await sb.from("news_articles").update({ published: false, status: "archived" }).eq("slug", slug);
+        if (!error) retired.push(slug);
+      }
+    }
+
     // Stamp the run.
     await sb.from("site_settings").update({ news_last_run: new Date().toISOString() }).eq("id", 1);
 
-    return json({ ok: true, added, scanned: candidates.length, skippedNonLandscape: skippedNoImg, model: geminiKey ? "gemini" : (ANTHROPIC_API_KEY ? "claude" : "fallback") });
+    return json({ ok: true, added, retiredBrokenImage: retired, scanned: candidates.length, skippedNonLandscape: skippedNoImg, model: geminiKey ? "gemini" : (ANTHROPIC_API_KEY ? "claude" : "fallback") });
   } catch (e) {
     return json({ ok: false, error: String((e as Error)?.message || e) }, 500);
   }
