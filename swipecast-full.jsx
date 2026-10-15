@@ -2478,6 +2478,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tr-chip.is-primary button:hover{color:#fff;}
 .tr-star:hover{color:var(--acc)!important;}
 .pp-plays{margin-bottom:14px;}
+.pr-modal{background:var(--s1);border-radius:14px;padding:12px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);}
+.pr-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 10px;font-size:14px;flex-wrap:wrap;color:var(--t1);}
+.pr-frame{display:block;width:min(800px,calc(100vw - 48px),calc((100vh - 110px) * .8));aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 0 0 1px #e8e2d6;}
+.pr-frame.letter{width:min(800px,calc(100vw - 48px),calc((100vh - 110px) * .7727));aspect-ratio:8.5/11;}
 .pl-pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
 .pl-pick-th{display:flex;flex-direction:column;gap:8px;align-items:flex-start;font-family:inherit;font-size:13px;font-weight:700;color:var(--t1);background:var(--s1);border:1.5px solid var(--bdr);border-radius:12px;padding:10px;cursor:pointer;text-align:left;}
 .pl-pick-th.on{border-color:#464A73;box-shadow:0 0 0 1px #464A73;}
@@ -14370,6 +14374,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const [disab,setDisab]=useState(null); // get_disabilities — actor, admins, signed-in CDs only
   const [showAllMedia,setShowAllMedia]=useState(false);
   const [mediaViewer,setMediaViewer]=useState(null); // {items:[{type,url,title?}], idx}
+  const [showResume,setShowResume]=useState(false);
 
   useEffect(()=>{
     if(!talentDbId){setDbCredits([]);return;}
@@ -14587,6 +14592,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
 
   const firstVideoIdx=_allViewerItems.findIndex(m=>m.type==="video");
+  // Uploaded PDF (older accounts) wins; otherwise Premium actors get their built résumé.
+  const canViewBuiltResume=!resumeUrl&&ownerIsPremium&&!!freshProfile&&dbCredits!==null;
   const heroName=freshProfile?.display_name||talent.name||talent.display_name||"—";
   const canMessage=!isOwnProfile&&!!talentDbId&&talentDbId!==session?.user?.id;
   const heroMessage=()=>{if(viewerIsCd||session){setCdAction("dm");return;}try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");};
@@ -14611,6 +14618,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
     {/* ── MEDIA SHOWCASE: Backstage-style 1 large headshot + 2×2 tile grid ── */}
     {mediaViewer&&<MediaViewer items={mediaViewer.items} startIdx={mediaViewer.idx} onClose={()=>setMediaViewer(null)}/>}
+    {showResume&&freshProfile&&<PublicResumeModal profile={freshProfile} credits={dbCredits} onClose={()=>setShowResume(false)}/>}
     <div style={{marginBottom:16}}>
       {/* Backstage-style showcase: equal 1fr/1fr columns so tiles are consistent portrait
           cards (3:4) that drive container height — headshot fills that same height. */}
@@ -14628,6 +14636,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
             <div className="pl-hero-btns">
               {firstVideoIdx>=0&&<button type="button" className="pl-btn" onClick={()=>openMedia(firstVideoIdx)}><Ico n="player-play" s={16}/> Watch reel</button>}
               {resumeUrl&&<a className="pl-btn ghost" href={resumeUrl} target="_blank" rel="noreferrer">Download résumé</a>}
+              {canViewBuiltResume&&<button type="button" className="pl-btn ghost" onClick={()=>setShowResume(true)}>View résumé</button>}
               {canMessage&&<button type="button" className="pl-btn ghost" onClick={heroMessage}>Message</button>}
             </div>
             {allSocialLinks.length>0&&<div className="pl-soc">{allSocialLinks.map(({label,url},i)=><a key={i} href={url.startsWith("http")?url:`https://${url}`} target="_blank" rel="noopener noreferrer">{label}</a>)}</div>}
@@ -14869,6 +14878,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
         {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
+        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Résumé</button>}
       </div>
       <div className="credits-list pp-cred">{CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
         <div key={cat} className="pp-cred-cat">
@@ -14894,6 +14904,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
         {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Resume</a>}
+        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Résumé</button>}
       </div>
       {legacyCredits.length>0
         ?<div className="credits-list pp-cred">
@@ -27287,10 +27298,73 @@ run();
 <\/script></body></html>`;
 }
 
+// Settings saved to profiles.resume_settings (never the actor's email — that stays local).
+const RESUME_DB_KEYS=["size","corner","contact","brand","picked","keep","skillOff","trainOn","accOn","langOn","hsSel","commOn"];
+const resumeSettingsForDb=o=>Object.fromEntries(RESUME_DB_KEYS.filter(k=>o[k]!==undefined).map(k=>[k,o[k]]));
+// PUBLIC résumé (profile page "View résumé", Premium, 2026-10-15): same layout as the
+// actor's Résumé tab, built from the profile row + their saved resume_settings, but
+// public-safe — no personal email, agents shown by company name only (profiles.agent).
+function publicResumeParts(p,credits){
+  const rs=p&&p.resume_settings&&typeof p.resume_settings==="object"?p.resume_settings:{};
+  const name=String(p.display_name||"").trim()||"—";
+  const slug=p.public_slug||"";
+  const url=slug?"https://www.castslate.com/talent/"+slug:"https://www.castslate.com";
+  const urlText=slug?"castslate.com/talent/"+slug:"castslate.com";
+  const unionsArr=(Array.isArray(p.unions)?p.unions:[]).filter(Boolean);
+  const unionReal=unionsArr.filter(u=>!/non[- ]?union/i.test(u));
+  const unions=unionReal.length?unionReal.join(" · "):(unionsArr.length||p.union_status?"Non-Union":"");
+  const stats={Height:p.height||"",Hair:p.hair||"",Eyes:p.eyes||""};
+  const trainingLines=String(p.training||"").split(/\s*(?:\||•|\n|;)\s*/).map(x=>x.trim()).filter(Boolean).slice(0,10);
+  const rawSkills=Array.isArray(p.skills)?p.skills:(p.skills?String(p.skills).split(","):[]);
+  const skillOff=Array.isArray(rs.skillOff)?rs.skillOff:[];
+  const skillList=rawSkills.map(x=>String(x||"").trim()).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).filter(x=>!skillOff.includes(x));
+  const accList=(p.accents||[]).filter(Boolean),langList=(p.languages||[]).filter(Boolean);
+  const groups=RESUME_SECTIONS.map(([key,label])=>({key,label,rows:[]}));
+  (credits||[]).forEach(c=>{
+    if(c.category==="Commercials")return;
+    const k=c.category==="Film & TV"||c.category==="Theatre"?c.category:"Other";
+    groups.find(x=>x.key===k).rows.push({id:String(c.id),t:c.production_title||"",r:c.role||"",c:c.director_or_company||"",y:c.credit_year||""});
+  });
+  const auto=new Set();groups.forEach(gp=>gp.rows.slice(0,RESUME_MAX_PER).forEach(r=>auto.add(r.id)));
+  const isOn=id=>Array.isArray(rs.picked)?rs.picked.includes(id):auto.has(id);
+  const sections=groups.map(gp=>({key:gp.key,label:gp.label,rows:gp.rows.filter(r=>isOn(r.id))}));
+  const total=groups.reduce((n,gp)=>n+gp.rows.length,0),shown=sections.reduce((n,x)=>n+x.rows.length,0);
+  const choices=[p.headshot_url,...(p.premium_locked_at?[]:(p.additional_photos||[]))].filter(Boolean);
+  const hs=rs.hsSel&&choices.includes(rs.hsSel.url)?rs.hsSel:null;
+  const headshot=hs?hs.url:(p.headshot_url||"");
+  const agentPublic=resumeHasAgent(p.agent)?String(p.agent).split(/\s*\/\s*/).map(x=>x.trim()).filter(Boolean):[];
+  const contact=(rs.contact==="agent"&&agentPublic.length)?"agent":"link";
+  let corner=["hs","qr","both","none"].includes(rs.corner)?rs.corner:(headshot?"hs":"qr");
+  if((corner==="hs"||corner==="both")&&!headshot)corner="qr";
+  const d={name,unions,stats,agent:agentPublic,url,urlText,headshot,hsPos:hs?{x:hs.x,y:hs.y,z:hs.z}:{x:50,y:22,z:1},canPickHs:false,email:"",
+    sections,training:rs.trainOn===false?[]:trainingLines,skills:skillList,accents:rs.accOn===false?[]:accList,languages:rs.langOn===false?[]:langList,
+    hasCommercials:rs.commOn!==false,leftOut:total>shown,premium:true,brand:rs.brand!=="off"};
+  const o={size:rs.size==="letter"?"letter":"8x10",corner,contact,auto:true,keep:Array.isArray(rs.keep)?rs.keep:[]};
+  return{d,o};
+}
+function PublicResumeModal({profile,credits,onClose}){
+  const frameRef=useRef(null);
+  const {d,o}=publicResumeParts(profile,credits);
+  const doc=React.useMemo(()=>resumeDoc(d,o),[JSON.stringify(d),JSON.stringify(o)]);// eslint-disable-line
+  useEffect(()=>{const k=e=>{if(e.key==="Escape")onClose();};window.addEventListener("keydown",k);return()=>window.removeEventListener("keydown",k);},[onClose]);
+  return ReactDOM.createPortal(<div className="modal-overlay" onClick={onClose}>
+    <div className="pr-modal" onClick={e=>e.stopPropagation()} role="dialog" aria-label={"Résumé — "+d.name}>
+      <div className="pr-bar">
+        <b>{d.name} — Résumé</b>
+        <div style={{display:"flex",gap:8}}>
+          <button type="button" className="btn-teal" style={{padding:"8px 16px",fontSize:13}} onClick={()=>{try{frameRef.current.contentWindow.postMessage({csResumePrint:1},"*");}catch(_){}}}>Print / Save PDF</button>
+          <button type="button" className="btn-s btn-sm" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+      </div>
+      <iframe ref={frameRef} title={"Résumé — "+d.name} srcDoc={doc} className={"pr-frame"+(o.size==="letter"?" letter":"")}/>
+    </div>
+  </div>,document.body);
+}
 function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onNavigate,setTab,accountEmail,representation,onAddHeadshot,galleryPhotos}){
   const uid=profile?.id||"";
   const LS="cs_resume2_"+uid;
-  const saved=React.useMemo(()=>{try{return JSON.parse(localStorage.getItem(LS)||"null")||{};}catch(_){return{};}},[LS]);
+  // This browser's copy first; otherwise what they saved on another device (profiles.resume_settings).
+  const saved=React.useMemo(()=>{let l=null;try{l=JSON.parse(localStorage.getItem(LS)||"null");}catch(_){}return l||(profile?.resume_settings&&typeof profile.resume_settings==="object"?profile.resume_settings:{});},[LS]);// eslint-disable-line
   const g=(k)=>(f&&f[k]!=null&&f[k]!=="")?f[k]:profile?.[k];
   const repV=representation&&representation.status?representation:repFromAgentText(g("agent"));
   const repList=repV.status==="represented"?(repV.reps||[]).filter(r=>String(r.company||r.contact||"").trim()):[];
@@ -27323,6 +27397,16 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
   const[note,setNote]=useState(null);
   const frameRef=useRef(null),pendingRef=useRef(null),prevLostRef=useRef(0),noteT=useRef(0);
   useEffect(()=>{try{localStorage.setItem(LS,JSON.stringify({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn}));}catch(_){}},[LS,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,emailOn,email,hsSel,commOn]);
+  // Premium: keep profiles.resume_settings in step (debounced) so the public "View résumé"
+  // matches what they built. Email is deliberately left out.
+  const dbSnapRef=useRef(JSON.stringify(profile?.resume_settings||null));
+  useEffect(()=>{
+    if(!isPremium||!uid)return;
+    const next=resumeSettingsForDb({size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,hsSel,commOn});
+    const js=JSON.stringify(next);if(js===dbSnapRef.current)return;
+    const t=setTimeout(async()=>{try{const {error}=await window.sb.from("profiles").update({resume_settings:next}).eq("id",uid);if(!error)dbSnapRef.current=js;}catch(_){}},1200);
+    return()=>clearTimeout(t);
+  },[isPremium,uid,size,corner,contact,brand,picked,keep,skillOff,trainOn,accOn,langOn,hsSel,commOn]);
   useEffect(()=>{const t=setTimeout(()=>setEmailLive(email),350);return()=>clearTimeout(t);},[email]);
   const showNote=(text,kind)=>{clearTimeout(noteT.current);setNote(text?{text,kind}:null);if(text)noteT.current=setTimeout(()=>setNote(null),5000);};
   const [exCorner,setExCorner]=useState("both"),[exRep,setExRep]=useState("self");
