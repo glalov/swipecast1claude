@@ -15002,20 +15002,25 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {/* ── SELF-TAPE & LOGISTICS ── */}
     {showLogistics&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Self-Tape & Logistics")}
-      {(licenseText||passportText)&&(
-        <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:selfRecText?14:0}}>
-          {[["Driver's License",licenseText],["Passport",passportText]].filter(([,v])=>v).map(([l,v])=>{
-            const yes=v==="Yes";
-            return(<span key={l} className="badge pp-badge" style={{gap:6,background:yes?"rgba(79,139,127,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
-              <Ico n={yes?"check":"x"} s={13}/> {l}
-            </span>);
-          })}
-        </div>
-      )}
+      {/* Self-tape first so the box reads in the same order as its title; the documents
+          follow under their own group label (owner, 2026-10-15). */}
       {selfRecText&&(
-        <div>
+        <div style={{marginBottom:(licenseText||passportText)?14:0}}>
           <div className="pp-lbl pp-grp" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>Self-recording setup</div>
           <p className="pp-txt" style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{selfRecText}</p>
+        </div>
+      )}
+      {(licenseText||passportText)&&(
+        <div>
+          <div className="pp-lbl pp-grp" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>Travel &amp; driving</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {[["Driver's License",licenseText],["Passport",passportText]].filter(([,v])=>v).map(([l,v])=>{
+              const yes=v==="Yes";
+              return(<span key={l} className="badge pp-badge" style={{gap:6,background:yes?"rgba(79,139,127,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
+                <Ico n={yes?"check":"x"} s={13}/> {l}
+              </span>);
+            })}
+          </div>
         </div>
       )}
     </div>}
