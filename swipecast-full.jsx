@@ -2478,6 +2478,46 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tr-chip.is-primary button:hover{color:#fff;}
 .tr-star:hover{color:var(--acc)!important;}
 .pp-plays{margin-bottom:14px;}
+.pl-pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.pl-pick-th{display:flex;flex-direction:column;gap:8px;align-items:flex-start;font-family:inherit;font-size:13px;font-weight:700;color:var(--t1);background:var(--s1);border:1.5px solid var(--bdr);border-radius:12px;padding:10px;cursor:pointer;text-align:left;}
+.pl-pick-th.on{border-color:#464A73;box-shadow:0 0 0 1px #464A73;}
+.pl-pick-sw{display:flex;width:100%;height:44px;border-radius:8px;overflow:hidden;border:1px solid var(--bdr);}
+.pl-pick-sw i{flex:1;}
+.pl-sw-classic i:first-child{background:#FAF6EE;}.pl-sw-classic i:last-child{background:#FFFDF8;}
+.pl-sw-cinematic i:first-child{background:#121216;}.pl-sw-cinematic i:last-child{background:#1B1B22;}
+.pl-sw-editorial i:first-child{background:#FFFFFF;}.pl-sw-editorial i:last-child{background:#F4F1EB;}
+@media(max-width:560px){.pl-pick{grid-template-columns:minmax(0,1fr);}.pl-pick-th{flex-direction:row;align-items:center;}.pl-pick-sw{width:64px;height:32px;flex:none;}}
+.pl-hero{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1fr);background:var(--s1);border:1px solid var(--bdr);border-radius:18px;overflow:hidden;margin-bottom:10px;}
+.pl-hero-img{cursor:zoom-in;background:#111;}
+.pl-hero-img img{width:100%;height:auto;display:block;}
+.pl-hero-txt{padding:clamp(20px,4vw,46px);display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.pl-hero-nm{font-size:clamp(34px,5vw,56px);font-weight:800;letter-spacing:-1px;line-height:1.02;margin:12px 0 10px;overflow-wrap:anywhere;color:var(--t1);}
+.pl-hero-line{font-size:17px;color:var(--t2);margin:0 0 6px;line-height:1.45;}
+.pl-hero-meta{font-size:14px;color:var(--t3);margin:0 0 22px;line-height:1.45;}
+.pl-hero-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.pl-btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:10px;background:var(--pl-acc,#2A8472);color:#fff;border:0;cursor:pointer;text-decoration:none;white-space:nowrap;}
+.pl-btn.ghost{background:transparent;color:var(--t1);border:1px solid var(--bdr);}
+.pl-acc-gold .pl-btn:not(.ghost){color:#1A1A2E;}
+.pl-soc{display:flex;flex-wrap:wrap;gap:16px;}
+.pl-soc a{color:var(--pl-acc,#2A8472);font-weight:700;font-size:14.5px;text-decoration:none;}
+.pl-soc a:hover{text-decoration:underline;text-underline-offset:3px;}
+.pl-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+.pl-strip-ph{position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:8px;background:#111;cursor:zoom-in;}
+.pl-strip-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.pl-look .pp-play.is-primary{background:var(--pl-acc);border-color:var(--pl-acc);}
+.pl-acc-gold .pp-play.is-primary{color:#1A1A2E;}
+.pl-cinematic{--bg:#121216;--s1:#1B1B22;--s2:#26262F;--bdr:#2E2E38;--t1:#F1ECE3;--t2:#CFC8BC;--t3:#A39C90;color:var(--t1);}
+.pl-cinematic .tag-acc{color:var(--t1);background:var(--s2);}
+.pl-cinematic .btn-p{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
+.pl-cinematic.pl-acc-gold .btn-p{color:#1A1A2E;}
+.pl-cinematic .pl-hero-nm,.pl-editorial .pl-hero-nm{font-family:'Source Serif 4',serif;font-weight:700;letter-spacing:-.5px;}
+.pl-editorial{--bg:#FFFFFF;--s1:#FFFFFF;--s2:#F4F1EB;--bdr:#E8E3DA;}
+.pl-editorial .card{border-width:0 0 1px;border-radius:0;box-shadow:none;background:transparent;padding-left:0!important;padding-right:0!important;}
+.pl-editorial .pl-hero{border:0;border-radius:0;}
+.pl-editorial .pl-sh{font-family:'Source Serif 4',serif!important;text-transform:none!important;letter-spacing:0!important;font-size:22px!important;font-weight:700!important;color:var(--t1)!important;}
+html.pl-body-cinematic .app>main{background:#121216;}
+html.pl-body-editorial .app>main{background:#FFFFFF;}
+@media(max-width:767px){.pl-hero{grid-template-columns:minmax(0,1fr);}.pl-hero-txt{padding:20px;}.pl-hero-nm{font-size:clamp(32px,9vw,44px);}.pl-strip{grid-template-columns:repeat(2,minmax(0,1fr));}.pl-hero-btns .pl-btn{flex:1 1 auto;justify-content:center;}}
 .pp-plays-label{margin-bottom:6px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
 .pp-plays-list{display:flex;flex-wrap:wrap;gap:6px;}
 .pp-play{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:4px 11px;border:1px solid var(--bdr);border-radius:999px;background:var(--s2);font-size:12px;font-weight:600;line-height:1.35;color:var(--t2);}
@@ -14304,6 +14344,17 @@ function PlaysChips({types}){
   </div>);
 }
 
+// ─── Premium "page look" (2026-10-15, demo lindsey-profile-themes-preview.html) ───
+// profiles.profile_look = {hero, theme, accent, tagline}. Only applied while the
+// OWNER is Premium; if they cancel, the page falls back to Classic + photo grid and
+// the saved choice is kept for when they come back.
+const PL_THEMES=[["classic","Classic"],["cinematic","Cinematic dark"],["editorial","Editorial"]];
+const PL_ACCENTS={teal:"#2A8472",navy:"#464A73",gold:"#C9A24A",terracotta:"#B4574B"};
+const PL_TAGLINE_MAX=90;
+function profileLook(p){
+  const l=p&&p.profile_look&&typeof p.profile_look==="object"?p.profile_look:{};
+  return{hero:!!l.hero,theme:PL_THEMES.some(t=>t[0]===l.theme)?l.theme:"classic",accent:PL_ACCENTS[l.accent]?l.accent:"teal",tagline:String(l.tagline||"").slice(0,PL_TAGLINE_MAX)};
+}
 function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
@@ -14392,8 +14443,20 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       const v=socialLinks[key];
       if(v&&v.trim())allSocialLinks.push({key,label,url:v.trim()});
     });
-    if(!socialLinks.instagram_url&&talent.instagram)allSocialLinks.unshift({key:"instagram",label:"Instagram",url:talent.instagram.startsWith("http")?talent.instagram:`https://instagram.com/${talent.instagram.replace(/^@/,"")}`});
+    const igRaw=String(freshProfile?.instagram||talent.instagram||"").trim();
+    if(!socialLinks.instagram_url&&igRaw)allSocialLinks.unshift({key:"instagram",label:"Instagram",url:igRaw.startsWith("http")?igRaw:`https://instagram.com/${igRaw.replace(/^@/,"")}`});
   }
+
+  // Page look: owner's Premium choice; never on a submission view (that shows the chosen photo).
+  const look=(ownerIsPremium&&!talent._selectedPhoto)?profileLook(freshProfile):null;
+  const useHero=!!(look&&look.hero);
+  const plTheme=look?look.theme:"classic";
+  useEffect(()=>{
+    const cls=["pl-body-cinematic","pl-body-editorial"],el=document.documentElement;
+    cls.forEach(c=>el.classList.remove(c));
+    if(plTheme!=="classic")el.classList.add("pl-body-"+plTheme);
+    return()=>cls.forEach(c=>el.classList.remove(c));
+  },[plTheme]);
 
   const creditsByCategory={};
   if(dbCredits&&dbCredits.length){
@@ -14467,7 +14530,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
   const sectionHead=(title,extra)=>(
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-      <div style={{fontSize:13,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)"}}>{title}</div>
+      <div className="pl-sh" style={{fontSize:13,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)"}}>{title}</div>
       {extra}
     </div>
   );
@@ -14520,7 +14583,11 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
   const isOwnProfile=talent?.id&&talent.id===session?.user?.id;
 
-  return(<div className={"page"+(slidingBack?" cs-slide-out":"")}>
+  const firstVideoIdx=_allViewerItems.findIndex(m=>m.type==="video");
+  const heroName=freshProfile?.display_name||talent.name||talent.display_name||"—";
+  const canMessage=!isOwnProfile&&!!talentDbId&&talentDbId!==session?.user?.id;
+  const heroMessage=()=>{if(viewerIsCd||session){setCdAction("dm");return;}try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");};
+  return(<div className={"page"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":PL_ACCENTS[look.accent]}:undefined}>
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
@@ -14544,6 +14611,33 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     <div style={{marginBottom:16}}>
       {/* Backstage-style showcase: equal 1fr/1fr columns so tiles are consistent portrait
           cards (3:4) that drive container height — headshot fills that same height. */}
+      {useHero?<>
+        <div className="pl-hero">
+          <div className="pl-hero-img" onClick={()=>openMedia(0)}><img src={freshHeadshot||talent.img} alt={heroName}/></div>
+          <div className="pl-hero-txt">
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+              <span className="tag tag-acc" style={{fontSize:11}}>{unionText||"Non-Union"}</span>
+              {talent.type&&<span className="tag" style={{fontSize:11}}>{talent.type}</span>}
+            </div>
+            <h1 className="pl-hero-nm">{heroName}</h1>
+            {look.tagline&&<p className="pl-hero-line">{look.tagline}</p>}
+            {(locationText||agentOrRep)&&<p className="pl-hero-meta">{[locationText,agentOrRep?"Rep: "+agentOrRep:""].filter(Boolean).join(" · ")}</p>}
+            <div className="pl-hero-btns">
+              {firstVideoIdx>=0&&<button type="button" className="pl-btn" onClick={()=>openMedia(firstVideoIdx)}><Ico n="player-play" s={16}/> Watch reel</button>}
+              {resumeUrl&&<a className="pl-btn ghost" href={resumeUrl} target="_blank" rel="noreferrer">Download résumé</a>}
+              {canMessage&&<button type="button" className="pl-btn ghost" onClick={heroMessage}>Message</button>}
+            </div>
+            {allSocialLinks.length>0&&<div className="pl-soc">{allSocialLinks.map(({label,url},i)=><a key={i} href={url.startsWith("http")?url:`https://${url}`} target="_blank" rel="noopener noreferrer">{label}</a>)}</div>}
+          </div>
+        </div>
+        {hasShowcase&&<div className="pl-strip">
+          {showcaseTiles.map((tile,i)=>(
+            tile._tile==="video"
+            ?<ShowcaseVideoTile key={tile.id||i} v={tile} onOpen={()=>openMedia(1+i)}/>
+            :<div key={i} className="pl-strip-ph" onClick={()=>openMedia(1+i)}><img src={tile.url} alt={`Photo ${i+1}`}/></div>
+          ))}
+        </div>}
+      </>:<>
       <div className="talent-profile-media-grid" style={{
         display:"grid",
         gridTemplateColumns:(!isMobile&&hasShowcase)?"1fr 1fr":"1fr",
@@ -14583,6 +14677,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         )}
       </div>
 
+      </>}
       {/* View More Media / View Less — extra tiles at idx 1+showcaseTiles.length… */}
       {hasExtraMedia&&(
         <div style={{marginTop:8}}>
@@ -14621,6 +14716,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
       {/* Profile info card */}
       <div className="card" style={{padding:"20px 22px",marginTop:10}}>
+        {!useHero&&<>
         {/* Tags row */}
         <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
           <span className="tag tag-acc" style={{fontSize:11}}>{unionText||"Non-Union"}</span>
@@ -14649,6 +14745,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           </div>
         )}
 
+        </>}
+        {useHero&&bioText&&sectionHead("About")}
         {/* Bio */}
         {bioText&&<p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6,marginBottom:14}}>{bioText}</p>}
 
@@ -14893,6 +14991,70 @@ function PublicTalentProfilePage({slug,onNavigate,session,myProfile}){
     </div>
   );
   return <TalentProfile talent={talent} onBack={()=>window.history.back()} onNavigate={onNavigate} session={session} myProfile={myProfile}/>;
+}
+
+
+// ─── My Profile → "Your page look" (Premium). Saves profiles.profile_look on its own,
+// separate from the main profile form, so it can't disturb unsaved profile edits.
+function ProfileLookCard({profile,isPremium,onNavigate}){
+  const init=profileLook(profile);
+  const [look,setLook]=useState(init);
+  const [saved,setSaved]=useState(JSON.stringify(init));
+  const [busy,setBusy]=useState(false);
+  const [note,setNote]=useState(null);
+  const dirty=JSON.stringify(look)!==saved;
+  const set=(k,v)=>{setLook(x=>({...x,[k]:v}));setNote(null);};
+  const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
+  const save=async()=>{
+    const tagline=look.tagline.trim().slice(0,PL_TAGLINE_MAX);
+    if(containsContactInfo(tagline)){setNote({err:true,t:CONTACT_INFO_MSG});return;}
+    setBusy(true);setNote(null);
+    try{
+      const next={...look,tagline};
+      const {error}=await withTimeout(window.sb.from("profiles").update({profile_look:next}).eq("id",profile.id),30000,"Save");
+      if(error)throw error;
+      setLook(next);setSaved(JSON.stringify(next));setNote({t:"Saved — your public page is updated."});
+    }catch(e){setNote({err:true,t:e.message||"Couldn't save. Please try again."});}
+    finally{setBusy(false);}
+  };
+  const slug=profile.public_slug;
+  const lab=t=><div style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",color:"var(--t3)",margin:"16px 0 8px"}}>{t}</div>;
+  if(!isPremium)return(<div className="card" style={{padding:24,marginBottom:16}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+      <div style={{minWidth:0}}>
+        <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Your page look <span className="badge" style={{background:"#FBF0DA",color:"#8A5A12",marginLeft:6,fontSize:10}}>Premium</span></h3>
+        <p style={{fontSize:13,color:"var(--t2)",margin:"6px 0 0",lineHeight:1.5}}>Give your profile a big headshot header, a one-line description and your own theme — Classic, Cinematic dark or Editorial.</p>
+      </div>
+      <button type="button" className="btn-teal" onClick={()=>onNavigate&&onNavigate("membership")} style={{padding:"10px 18px",fontSize:13}}>Unlock with Premium</button>
+    </div>
+  </div>);
+  return(<div className="card" style={{padding:24,marginBottom:16}}>
+    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+      <div style={{minWidth:0}}>
+        <h3 style={{fontSize:15,fontWeight:700,margin:0}}>Your page look <span className="badge" style={{background:"#FBF0DA",color:"#8A5A12",marginLeft:6,fontSize:10}}>Premium</span></h3>
+        <p style={{fontSize:13,color:"var(--t2)",margin:"6px 0 0",lineHeight:1.5}}>How your public profile looks to casting and anyone you share it with.</p>
+      </div>
+      {slug&&<a className="btn-s btn-sm" href={"/talent/"+encodeURIComponent(slug)} target="_blank" rel="noreferrer" style={{textDecoration:"none"}}>View my page <Tri/></a>}
+    </div>
+    {lab("Top of page")}
+    <div className="otrg-row">{[[false,"Photo grid"],[true,"Hero header"]].map(([v,l])=><button key={l} type="button" className={"otrg-chip"+(look.hero===v?" on":"")} onClick={()=>set("hero",v)}>{l}</button>)}</div>
+    <p style={{fontSize:12.5,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>{look.hero?"A large headshot at the top with your name, one-liner, Watch reel / Message buttons and your social links.":"Your headshot and photos in a grid, then your details — the standard layout."}</p>
+    {lab("One-line description")}
+    <input className="input" value={look.tagline} maxLength={PL_TAGLINE_MAX} placeholder="e.g. Grounded dramatic lead · Los Angeles & New York" onChange={e=>set("tagline",e.target.value)}/>
+    <div style={{display:"flex",justifyContent:"space-between",gap:10,fontSize:12,color:"var(--t3)",marginTop:6}}><span>Shown under your name in the hero header. No links, emails or phone numbers.</span><span>{look.tagline.length}/{PL_TAGLINE_MAX}</span></div>
+    {lab("Theme")}
+    <div className="pl-pick">{PL_THEMES.map(([k,l])=><button key={k} type="button" className={"pl-pick-th"+(look.theme===k?" on":"")} onClick={()=>set("theme",k)} aria-pressed={look.theme===k}>
+      <span className={"pl-pick-sw pl-sw-"+k}><i/><i/></span>{l}</button>)}</div>
+    {lab("Accent color")}
+    <div style={{display:"flex",gap:10,alignItems:"center"}}>{Object.entries(PL_ACCENTS).map(([k,c])=><button key={k} type="button" title={k} aria-label={k} aria-pressed={look.accent===k} onClick={()=>set("accent",k)}
+      style={{width:30,height:30,borderRadius:99,background:c,border:"none",cursor:"pointer",boxShadow:look.accent===k?"0 0 0 2px var(--s1), 0 0 0 4px "+c:"none"}}/>)}
+      <span style={{fontSize:12.5,color:"var(--t3)"}}>Buttons and links in your header.</span></div>
+    <div style={{display:"flex",alignItems:"center",gap:12,marginTop:20,flexWrap:"wrap"}}>
+      <button type="button" className="btn-teal" disabled={!dirty||busy} onClick={save} style={{padding:"10px 22px",fontSize:13.5,opacity:(!dirty||busy)?.55:1}}>{busy?"Saving…":"Save look"}</button>
+      {note&&<span style={{fontSize:13,fontWeight:600,color:note.err?"#B4574B":"var(--teal)"}}>{note.t}</span>}
+    </div>
+    <p style={{fontSize:12,color:"var(--t3)",margin:"14px 0 0",lineHeight:1.5}}>Part of Premium. If your membership ends, your page goes back to the standard layout — nothing is deleted, and your look comes back when you return.</p>
+  </div>);
 }
 
 // ─── Copy-link + view buttons shown on MyProfilePage ─────────────────────────
@@ -28026,6 +28188,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── PROFILE TAB ── */}
     {tab==="profile"&&<>
+      {!isCD&&<ProfileLookCard profile={profile} isPremium={isPremium} onNavigate={onNavigate}/>}
       <div className="card" style={{padding:24,marginBottom:16}}>
         <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Basic Info</h3>
         <div className="form-group"><label className="label">Display Name</label><input className="input" value={f.display_name} onChange={e=>up("display_name",e.target.value)}/></div>
