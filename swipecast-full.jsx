@@ -2480,6 +2480,38 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-plays{margin-bottom:14px;}
 .pp-bio{font-family:Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:24px;letter-spacing:.5px;color:#000;white-space:pre-line;margin:0 0 16px;overflow-wrap:anywhere;}
 .pl-cinematic .pp-bio{color:var(--t1);}
+/* ── Unified profile type (IMDb system, measured on imdb.com 2026-10-15): one font, one size;
+   importance by shade — bio #000 > body .87 > secondary .54; labels 500, section titles 22/600. ── */
+.pp-uni{--pp-ink:rgba(0,0,0,.87);--pp-ink2:rgba(0,0,0,.54);}
+.pp-uni.pl-cinematic{--pp-ink:rgba(241,236,227,.92);--pp-ink2:rgba(241,236,227,.6);}
+.pp-uni .card{font-family:Roboto,Helvetica,Arial,sans-serif;}
+.pp-uni .card :is(button,.btn-s,.btn-p,.btn-teal,.tag){font-family:'DM Sans',sans-serif;}
+.pp-uni .pl-sh{font-family:Roboto,Helvetica,Arial,sans-serif!important;font-size:22px!important;line-height:26.4px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important;color:var(--pp-ink)!important;}
+.pp-uni .pp-h3{margin-bottom:8px!important;}
+.pp-uni .pp-lbl,.pp-uni .pp-plays-label,.pp-uni .pp-cred-catlbl,.pp-uni .cma-lbl{font-size:16px!important;line-height:24px!important;font-weight:500!important;letter-spacing:.15px!important;text-transform:none!important;color:var(--pp-ink)!important;}
+.pp-uni .pp-val,.pp-uni .pp-txt{font-size:16px!important;line-height:24px!important;font-weight:400!important;letter-spacing:.5px!important;color:var(--pp-ink)!important;}
+.pp-uni .pp-txt strong{font-weight:500;color:var(--pp-ink)!important;}
+.pp-uni .pp-sec{font-size:16px!important;line-height:24px!important;font-weight:400!important;letter-spacing:.5px!important;color:var(--pp-ink2)!important;}
+/* chips → running text separated by middots */
+.pp-uni .pp-chip,.pp-uni .pp-play,.pp-uni .cma-chip{display:inline!important;background:none!important;border:0!important;padding:0!important;border-radius:0!important;font-size:16px!important;line-height:24px!important;font-weight:400!important;letter-spacing:.5px!important;color:var(--pp-ink)!important;}
+.pp-uni .pp-chip+.pp-chip::before,.pp-uni .pp-play+.pp-play::before,.pp-uni .cma-chip+.cma-chip::before{content:"  ·  ";white-space:pre;color:var(--pp-ink2);}
+.pp-uni .pp-play.is-primary{font-weight:500!important;}
+.pp-uni .pp-play .ti{display:none!important;}
+.pp-uni .pp-plays-list,.pp-uni .cma-chips{display:block!important;}
+.pp-uni .pp-more{font-family:Roboto,Helvetica,Arial,sans-serif;font-size:16px;margin-left:10px;}
+.pp-uni .card div:has(>.pp-chip){display:block!important;}
+.pp-uni .pp-badge{background:none!important;padding:0!important;font-size:16px!important;line-height:24px!important;font-weight:400!important;letter-spacing:.5px!important;color:var(--pp-ink)!important;margin-right:14px;}
+.pp-uni .pp-badge .ti{color:var(--pp-ink2);}
+/* credits table */
+.pp-uni .pp-cred-head{font-size:16px!important;line-height:24px!important;font-weight:500!important;letter-spacing:.15px!important;text-transform:none!important;color:var(--pp-ink)!important;}
+.pp-uni .credit-year{font-size:16px!important;font-weight:400!important;line-height:24px!important;letter-spacing:.5px;color:var(--pp-ink2)!important;padding-top:0!important;}
+.pp-uni .credit-title{font-size:16px!important;font-weight:500!important;line-height:24px!important;letter-spacing:.15px;color:var(--pp-ink)!important;}
+.pp-uni .credit-role{font-size:16px!important;font-weight:400!important;line-height:24px!important;letter-spacing:.5px;color:var(--pp-ink)!important;padding-top:0!important;}
+.pp-uni .credit-meta{font-size:16px!important;line-height:24px!important;letter-spacing:.5px;color:var(--pp-ink2)!important;}
+/* Cast Me As card captions */
+.pp-uni .cma-t{font-family:Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:500;letter-spacing:.15px;}
+.pp-uni .cma-meta{font-family:Roboto,Helvetica,Arial,sans-serif;}
+.pp-uni.pl-cinematic .pp-bio{color:var(--t1);}
 .pr-modal{background:var(--s1);border-radius:14px;padding:12px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);}
 .pr-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 10px;font-size:14px;flex-wrap:wrap;color:var(--t1);}
 .pr-frame{display:block;width:min(800px,calc(100vw - 48px),calc((100vh - 110px) * .8));aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 0 0 1px #e8e2d6;}
@@ -14599,7 +14631,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const heroName=freshProfile?.display_name||talent.name||talent.display_name||"—";
   const canMessage=!isOwnProfile&&!!talentDbId&&talentDbId!==session?.user?.id;
   const heroMessage=()=>{if(viewerIsCd||session){setCdAction("dm");return;}try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");};
-  return(<div className={"page"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":PL_ACCENTS[look.accent]}:undefined}>
+  return(<div className={"page pp-uni"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":PL_ACCENTS[look.accent]}:undefined}>
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
@@ -14769,16 +14801,16 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(96px,1fr))",gap:"10px 16px",marginBottom:ethnicityText?0:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
             {statsData.map(([l,v])=>(
               <div key={l}>
-                <div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:1}}>{l}</div>
-                <div style={{fontSize:14,fontWeight:600,color:"var(--t1)"}}>{v}</div>
+                <div className="pp-lbl" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:1}}>{l}</div>
+                <div className="pp-val" style={{fontSize:14,fontWeight:600,color:"var(--t1)"}}>{v}</div>
               </div>
             ))}
           </div>
         )}
         {ethnicityText&&(
           <div style={{display:"flex",gap:10,alignItems:"baseline",flexWrap:"wrap",margin:"12px 0 14px",paddingTop:10,borderTop:statsData.length?"1px dashed var(--bdr)":"1px solid var(--bdr)"}}>
-            <div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",flexShrink:0}}>Ethnicity</div>
-            <div style={{fontSize:14,fontWeight:600,color:"var(--t1)",lineHeight:1.45,minWidth:0}}>{ethnicityText}</div>
+            <div className="pp-lbl" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",flexShrink:0}}>Ethnicity</div>
+            <div className="pp-val" style={{fontSize:14,fontWeight:600,color:"var(--t1)",lineHeight:1.45,minWidth:0}}>{ethnicityText}</div>
           </div>
         )}
 
@@ -14805,8 +14837,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
             ):(
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
                 <div style={{minWidth:0}}>
-                  <div style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>Want to work with {talentFirst}?</div>
-                  <div style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5,marginTop:2}}>Casting directors &amp; producers can invite {talentFirst} to a project or send a message — free to start.</div>
+                  <div className="pp-lbl" style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>Want to work with {talentFirst}?</div>
+                  <div className="pp-sec" style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5,marginTop:2}}>Casting directors &amp; producers can invite {talentFirst} to a project or send a message — free to start.</div>
                 </div>
                 <button className="btn-p btn-sm" style={{flexShrink:0}} onClick={()=>{try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");}}>Create a free account <Tri/></button>
               </div>
@@ -14829,7 +14861,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         const extra=skills.filter(x=>!ALL_PROFILE_SKILLS.includes(x));
         if(extra.length)groups.push({title:groups.length?"Additional skills":"",items:extra});
         return groups.map((g,gi)=><div key={gi} style={{marginTop:gi?14:0}}>
-          {g.title&&<div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>{g.title}</div>}
+          {g.title&&<div className="pp-lbl" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>{g.title}</div>}
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{g.items.map(pill)}</div></div>);})()}
     </div>}
 
@@ -14854,12 +14886,12 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
         {sectionHead(set==="women"?"Size card · Women's":"Size card · Men's")}
         {rows.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:"10px 14px"}}>
-          {rows.map(([k,v])=><div key={k}><div style={{fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:2}}>{k}</div><div style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{v}</div></div>)}
+          {rows.map(([k,v])=><div key={k}><div className="pp-lbl" style={{fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:2}}>{k}</div><div className="pp-val" style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{v}</div></div>)}
         </div>}
-        {notes&&<div style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><strong style={{color:"var(--t1)"}}>Notes to wardrobe:</strong> {notes}</div>}
-        {mods.length>0&&<div style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
+        {notes&&<div className="pp-txt" style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><strong style={{color:"var(--t1)"}}>Notes to wardrobe:</strong> {notes}</div>}
+        {mods.length>0&&<div className="pp-txt" style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
           {mods.map(([k,v])=><span key={k}>{k}: <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
-          <span style={{fontSize:11,color:"var(--t3)"}}>· visible only to casting directors this actor submitted to</span>
+          <span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>· visible only to casting directors this actor submitted to</span>
         </div>}
       </div>;})()}
 
@@ -14868,11 +14900,11 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {(()=>{const d=disab||{};const dl=Array.isArray(d.disabilities)?d.disabilities:[];const al=Array.isArray(d.assistive_devices)?d.assistive_devices:[];const other=(d.disability_other||"").trim();
       if(!dl.length&&!al.length&&!other)return null;
       return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-        {sectionHead("Disabilities",<span style={{fontSize:11,color:"var(--t3)"}}>Visible only to casting directors</span>)}
+        {sectionHead("Disabilities",<span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>Visible only to casting directors</span>)}
         {dl.length>0&&<div className="chips" style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:al.length||other?14:0}}>{dl.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div>}
-        {al.length>0&&<><div style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
+        {al.length>0&&<><div className="pp-lbl" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:other?14:0}}>{al.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div></>}
-        {other&&<p style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{other}</p>}
+        {other&&<p className="pp-txt" style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{other}</p>}
       </div>;})()}
 
     {/* ── STRUCTURED CREDITS (from DB) ── */}
@@ -14920,13 +14952,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
               </div>
             ))}
           </div>
-        :<p style={{fontSize:13,color:"var(--t3)"}}>Resume attached — credits not added yet.</p>}
+        :<p className="pp-sec" style={{fontSize:13,color:"var(--t3)"}}>Resume attached — credits not added yet.</p>}
     </div>}
 
     {/* ── TRAINING ── */}
     {trainingText&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Training")}
-      <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
+      <p className="pp-txt" style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
     </div>}
 
     {/* ── SELF-TAPE & LOGISTICS ── */}
@@ -14936,7 +14968,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:selfRecText?14:0}}>
           {[["Driver's License",licenseText],["Passport",passportText]].filter(([,v])=>v).map(([l,v])=>{
             const yes=v==="Yes";
-            return(<span key={l} className="badge" style={{gap:6,background:yes?"rgba(79,139,127,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
+            return(<span key={l} className="badge pp-badge" style={{gap:6,background:yes?"rgba(79,139,127,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
               <Ico n={yes?"check":"x"} s={13}/> {l}
             </span>);
           })}
@@ -14944,8 +14976,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       )}
       {selfRecText&&(
         <div>
-          <div style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>Self-recording setup</div>
-          <p style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{selfRecText}</p>
+          <div className="pp-lbl" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>Self-recording setup</div>
+          <p className="pp-txt" style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{selfRecText}</p>
         </div>
       )}
     </div>}
@@ -26965,8 +26997,8 @@ function CastMeAsSection({talentId}){
   const plain=entries.filter(e=>!featured.includes(e));
   return(<div className="card mt-20">
     {mediaViewer&&<MediaViewer items={mediaViewer.items} startIdx={mediaViewer.idx} onClose={()=>setMediaViewer(null)}/>}
-    <h3 style={{fontSize:18,fontWeight:700,marginBottom:4}}>Cast Me As</h3>
-    <p style={{fontSize:13,color:"var(--t3)",marginBottom:20}}>Casting identity — the energies and archetypes this actor plays best.</p>
+    <h3 className="pl-sh pp-h3" style={{fontSize:18,fontWeight:700,marginBottom:4}}>Cast Me As</h3>
+    <p className="pp-sec" style={{fontSize:13,color:"var(--t3)",marginBottom:20}}>Casting identity — the energies and archetypes this actor plays best.</p>
     {featured.length>0&&<div className="cma-hl" style={plain.length?undefined:{marginBottom:0}}>
       {featured.map(entry=>{
         const{photos,clip}=mediaOf(entry);
