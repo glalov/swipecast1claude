@@ -14448,7 +14448,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   }
 
   // Page look: owner's Premium choice; never on a submission view (that shows the chosen photo).
-  const look=(ownerIsPremium&&!talent._selectedPhoto)?profileLook(freshProfile):null;
+  // Only when they have actually saved a look — untouched Premium pages stay exactly as before.
+  const look=(ownerIsPremium&&!talent._selectedPhoto&&freshProfile?.profile_look)?profileLook(freshProfile):null;
   const useHero=!!(look&&look.hero);
   const plTheme=look?look.theme:"classic";
   useEffect(()=>{
