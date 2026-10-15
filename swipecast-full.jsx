@@ -2508,6 +2508,19 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .credit-title{font-size:16px!important;font-weight:500!important;line-height:24px!important;letter-spacing:.15px;color:var(--pp-ink)!important;}
 .pp-uni .credit-role{font-size:16px!important;font-weight:400!important;line-height:24px!important;letter-spacing:.5px;color:var(--pp-ink)!important;padding-top:0!important;}
 .pp-uni .credit-meta{font-size:16px!important;line-height:24px!important;letter-spacing:.5px;color:var(--pp-ink2)!important;}
+/* ── Text hierarchy (owner, 2026-10-15, demo profile-text-hierarchy-demo.html): same sizes,
+   4 levels by weight + tone. Roboto 500/600 are loaded in the head link (before only 400 was,
+   so every 500 label drew at 400 and the page read flat). 1 headings 600 darkest; 2 key facts
+   500 dark; 3 prose + long lists 400; 4 field names 400 muted (t3, never lighter), group titles
+   and table headers 500 muted. Bio keeps its own #000. ── */
+.pp-uni{--pp-h:#16120E;--pp-val:#1C1814;--pp-body:#2A241E;--pp-lbl:#433B32;}
+.pp-uni.pl-cinematic{--pp-h:var(--pp-ink);--pp-val:var(--pp-ink);--pp-body:var(--pp-ink);--pp-lbl:rgba(241,236,227,.72);}
+.pp-uni .pl-sh{color:var(--pp-h)!important;}
+.pp-uni .pp-lbl,.pp-uni .pp-plays-label{font-weight:400!important;color:var(--pp-lbl)!important;}
+.pp-uni .pp-lbl.pp-grp,.pp-uni .pp-cred-catlbl,.pp-uni .pp-cred-head{font-weight:500!important;color:var(--pp-lbl)!important;}
+.pp-uni .pp-txt,.pp-uni .pp-chip,.pp-uni .pp-play,.pp-uni .credit-role{color:var(--pp-body)!important;}
+.pp-uni .pp-val,.pp-uni .pp-key,.pp-uni .pp-txt strong,.pp-uni .pp-badge,.pp-uni .credit-title{font-weight:500!important;color:var(--pp-val)!important;}
+.pp-uni .pp-inl-lbl{font-weight:400!important;color:var(--pp-lbl)!important;}
 /* Cast Me As card captions */
 .pp-uni .cma-t{font-family:Roboto,Helvetica,Arial,sans-serif;font-size:16px;font-weight:500;letter-spacing:.15px;}
 .pp-uni .cma-meta{font-family:Roboto,Helvetica,Arial,sans-serif;}
@@ -14862,7 +14875,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
             ):(
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
                 <div style={{minWidth:0}}>
-                  <div className="pp-lbl" style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>Want to work with {talentFirst}?</div>
+                  <div className="pp-val" style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>Want to work with {talentFirst}?</div>
                   <div className="pp-sec" style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5,marginTop:2}}>Casting directors &amp; producers can invite {talentFirst} to a project or send a message — free to start.</div>
                 </div>
                 <button className="btn-p btn-sm" style={{flexShrink:0}} onClick={()=>{try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");}}>Create a free account <Tri/></button>
@@ -14886,7 +14899,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         const extra=skills.filter(x=>!ALL_PROFILE_SKILLS.includes(x));
         if(extra.length)groups.push({title:groups.length?"Additional skills":"",items:extra});
         return groups.map((g,gi)=><div key={gi} style={{marginTop:gi?14:0}}>
-          {g.title&&<div className="pp-lbl" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>{g.title}</div>}
+          {g.title&&<div className="pp-lbl pp-grp" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>{g.title}</div>}
           <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{g.items.map(pill)}</div></div>);})()}
     </div>}
 
@@ -14913,9 +14926,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         {rows.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:"10px 14px"}}>
           {rows.map(([k,v])=><div key={k}><div className="pp-lbl" style={{fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:2}}>{k}</div><div className="pp-val" style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{v}</div></div>)}
         </div>}
-        {notes&&<div className="pp-txt" style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><strong style={{color:"var(--t1)"}}>Notes to wardrobe:</strong> {notes}</div>}
+        {notes&&<div className="pp-txt" style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><span className="pp-inl-lbl">Notes to wardrobe:</span> {notes}</div>}
         {mods.length>0&&<div className="pp-txt" style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
-          {mods.map(([k,v])=><span key={k}>{k}: <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
+          {mods.map(([k,v])=><span key={k}><span className="pp-inl-lbl">{k}:</span> <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
           <span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>· visible only to casting directors this actor submitted to</span>
         </div>}
       </div>;})()}
@@ -14926,8 +14939,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       if(!dl.length&&!al.length&&!other)return null;
       return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
         {sectionHead("Disabilities",<span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>Visible only to casting directors</span>)}
-        {dl.length>0&&<div className="chips" style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:al.length||other?14:0}}>{dl.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div>}
-        {al.length>0&&<><div className="pp-lbl" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
+        {dl.length>0&&<div className="chips" style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:al.length||other?14:0}}>{dl.map((x,i)=><span key={i} className="pp-chip pp-key">{x}</span>)}</div>}
+        {al.length>0&&<><div className="pp-lbl pp-grp" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:other?14:0}}>{al.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div></>}
         {other&&<p className="pp-txt" style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{other}</p>}
       </div>;})()}
@@ -14983,7 +14996,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {/* ── TRAINING ── */}
     {trainingText&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Training")}
-      <p className="pp-txt" style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
+      <p className="pp-txt pp-key" style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
     </div>}
 
     {/* ── SELF-TAPE & LOGISTICS ── */}
@@ -15001,7 +15014,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       )}
       {selfRecText&&(
         <div>
-          <div className="pp-lbl" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>Self-recording setup</div>
+          <div className="pp-lbl pp-grp" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:3}}>Self-recording setup</div>
           <p className="pp-txt" style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{selfRecText}</p>
         </div>
       )}
