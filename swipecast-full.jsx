@@ -6155,7 +6155,7 @@ const MEMBERSHIP_PLANS={
   six_month:{key:"six_month",label:"6-Month",monthly:13.17,listMonthly:null,months:6,total:79,renewTotal:79,
     save:"Save $28 vs monthly",note:"Billed every six months, at the same price."},
   monthly:{key:"monthly",label:"Monthly",monthly:17.99,listMonthly:null,months:1,total:17.99,renewTotal:17.99,
-    save:"",note:"Billed monthly · cancel anytime."}
+    save:"",note:"Billed monthly."}
 };
 
 // ─── Stated once above the plan cards rather than repeated inside all three.
@@ -6170,8 +6170,7 @@ const PREMIUM_SHARED_FEATURES=[
   ["Manager Mode","monthly check-ins"],
   ["Talent Agency & Manager Directory","650+ in LA, Beverly Hills & NYC"],
   ["Casting Companies Directory","131 active casting offices"],
-  ["Acting & Film School Directory","351 schools & film programs"],
-  ["Cancel anytime","from your account"]
+  ["Acting & Film School Directory","351 schools & film programs"]
 ];
 
 // ─── "Ink & Bone" palette for the plan picker. Flat fills only — no gradients
@@ -6189,7 +6188,7 @@ const BRASS_ON_LIGHT="#7A6134";
 const PLAN_EXCLUSIVES={
   yearly:["Your $10.75/month rate never increases — no first-year discount that jumps later","One payment, then nothing to think about for a year"],
   six_month:["Your $13.17/month rate never increases"],
-  monthly:["Cancel anytime — no commitment"]
+  monthly:["Pay month to month"]
 };
 
 // ─── Actor plan limits — single source of truth used by profile upload, casting
@@ -8615,7 +8614,7 @@ function BlogPage({onNavigate}){
 const FAQ_CATEGORIES=[
   {id:"getting-started",label:"Getting Started",icon:"movie",blurb:"Creating your account, first steps, and how CastSlate works.",items:[
     {q:"What is CastSlate?",a:"CastSlate is a casting platform built for working actors. Free profiles, an active membership only when you're ready to submit, and a swipe-based review system that guarantees every submission gets seen one at a time — not buried in a grid of 200 headshots."},
-    {q:"Is CastSlate legit?",a:"Yes. CastSlate (castslate.com) is a live casting platform where actors submit to roles and casting directors and producers find talent. It was founded by a collective of filmmakers, producers, casting directors, actors and product builders who believe casting should be faster, fairer and more transparent.\n\nWe built it for two reasons. Legacy casting sites can cost actors hundreds of dollars a year. And casting directors get buried in grids of hundreds of headshots and miss great talent. On CastSlate, casting directors review submissions one at a time, so every submission gets a real, human look, and membership costs well below what legacy sites charge.\n\nCreating a profile is free, and your first submission is free. Premium is optional ($129 a year, or $17.99 a month). Payments are processed securely by Stripe, and you can cancel anytime from your account. CastSlate will never ask you to pay to audition or to be cast. Questions? Reach us anytime through the Contact page."},
+    {q:"Is CastSlate legit?",a:"Yes. CastSlate (castslate.com) is a live casting platform where actors submit to roles and casting directors and producers find talent. It was founded by a collective of filmmakers, producers, casting directors, actors and product builders who believe casting should be faster, fairer and more transparent.\n\nWe built it for two reasons. Legacy casting sites can cost actors hundreds of dollars a year. And casting directors get buried in grids of hundreds of headshots and miss great talent. On CastSlate, casting directors review submissions one at a time, so every submission gets a real, human look, and membership costs well below what legacy sites charge.\n\nCreating a profile is free, and your first submission is free. Premium is optional ($129 a year, or $17.99 a month). Payments are processed securely by Stripe. CastSlate will never ask you to pay to audition or to be cast. Questions? Reach us anytime through the Contact page."},
     {q:"Do I need a membership to create a profile?",a:"No. Profiles are free for everyone. Free actors get their first casting submission free. Premium is $129 a year ($10.75/month) and stays $129 every year, or $17.99/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card with QR code, and Manager Mode monthly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York — plus the Casting Companies Directory (131 active casting offices) and the Acting & Film School Directory (351 schools and film programs)."},
     {q:"Where is CastSlate available?",a:"Anywhere with a browser. Castings are organised by city, so you'll see roles in your market — but creating a profile and browsing castings works from anywhere."},
     {q:"How do I get started as an actor?",a:"Create a free account, upload a headshot, fill out your stats, and add a short bio. Then browse Open Castings and apply. Your first submission is free. Premium is $129 a year ($10.75/month) and stays $129 every year, or $17.99/month if you prefer monthly — for unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, and Manager Mode monthly career check-ins, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York — plus the Casting Companies Directory (131 active casting offices) and the Acting & Film School Directory (351 schools and film programs)."},
@@ -10201,7 +10200,7 @@ function PricingPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:40,color:"var(--acc)",letterSpacing:-1.5,lineHeight:1}}>${MEMBERSHIP_PLANS.yearly.monthly.toFixed(2)}</div>
                 <div style={{fontSize:13,color:"var(--t3)"}}>/month</div>
               </div>
-              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>${MEMBERSHIP_PLANS.yearly.total.toFixed(2)} billed once a year — and ${MEMBERSHIP_PLANS.yearly.total.toFixed(2)} every year after · cancel anytime</div>
+              <div style={{fontSize:12,color:"var(--t3)",marginTop:5}}>${MEMBERSHIP_PLANS.yearly.total.toFixed(2)} billed once a year — and ${MEMBERSHIP_PLANS.yearly.total.toFixed(2)} every year after</div>
               {/* Pennies-a-day reframe: trivial-expense reference point. */}
               <div style={{fontSize:12.5,fontWeight:700,color:"var(--grn)",marginTop:8}}>≈ {Math.round(MEMBERSHIP_PLANS.yearly.total/365*100)}¢ a day — less than one subway swipe to your career</div>
               <div style={{fontSize:11.5,color:"var(--t3)",marginTop:7}}>Prefer monthly? ${MEMBERSHIP_PLANS.monthly.monthly.toFixed(2)}/month, flat — no introductory rate that goes up.</div>
@@ -11236,7 +11235,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         <h2 className="agd-h2">{isPremium?"It's all included in your Premium.":"The list opens the moment you upgrade."}</h2>
         <p>650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York, plus {CASTING_OFFICES.length} active casting offices and all 351 acting schools and film programs, your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $17.99/mo"}</button>
-        {!isPremium&&<div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>}
+        {!isPremium&&<div className="agd-guarantee">$129/year if you'd rather pay once</div>}
       </div></section>
     </div>
 
@@ -13365,7 +13364,7 @@ Free submission used
           button names the casting the actor was just blocked from. */}
       <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"#EAC080",padding:"14px 16px",borderRadius:11,marginBottom:9}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return withTri(`Go unlimited — ${PREMIUM_PRICE} →`);const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return withTri(`Unlock & submit to “${short}” →`);})()}</button>
       <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, not right now</button>
-      <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions · cancel anytime</div>
+      <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions</div>
     </div></div></BodyPortal>}
 
     {/* ── Free-actor submissions badge — only AFTER the free one is used. Showing
@@ -17479,7 +17478,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
                       <div><b>{counts.small}</b><span>Take beginners</span></div>
                     </div>
                     <button className="btn-p" onClick={()=>{setOpen(false);setClosing(false);onNavigate("membership");}}>Unlock with Premium <Tri/></button>
-                    <div style={{fontSize:11.5,color:"var(--t3)",marginTop:10}}>Cancel anytime · list re-curated every few months</div>
+                    <div style={{fontSize:11.5,color:"var(--t3)",marginTop:10}}>List re-curated every few months</div>
                   </div>
                 </div>
               ):(<>
@@ -18313,7 +18312,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
         <h2 className="agd-h2">{isPremium?"It's all included in your Premium.":"The list opens the moment you upgrade."}</h2>
         <p>{n} active casting offices across Los Angeles and New York, plus 650+ talent agencies and management companies and all 351 acting schools and film programs, your Actor Business Card, unlimited submissions, Manager Mode and your Slate video.</p>
         <button className="agd-btn gold" onClick={go}>{isPremium?"Open the directory":"Go Premium — $17.99/mo"}</button>
-        {!isPremium&&<div className="agd-guarantee">Cancel any time · $129/year if you'd rather pay once</div>}
+        {!isPremium&&<div className="agd-guarantee">$129/year if you'd rather pay once</div>}
       </div></section>
     </div>
 
@@ -18436,7 +18435,7 @@ function fsdMount(root,ctx){
   const seg=(attr,cur,opts)=>`<div class="tad-seg">${opts.map(([v,l,c])=>`<button data-${attr}="${v}" class="${cur===v?"on":""}">${l}${c!=null?` <span class="n">${c}</span>`:""}</button>`).join("")}</div>`;
   const upsellBand=()=>st.role==="visitor"
     ?`<div class="fsd-band2"><div class="fsd-b2-l"><div class="fsd-b2-k"><i class="ti ti-gift"></i>Free with an account</div><h4>Unlock 2 schools, free: one in New York, one in Los Angeles.</h4><p>Create a free CastSlate account and pick the 2 schools you want to see: name, teachers, website and everything they teach. Premium unlocks every acting and film school.</p></div><div class="fsd-b2-r"><button class="agd-btn gold" data-signup="1">Create a free account</button><span>No credit card · takes 30 seconds</span></div></div>`
-    :`<div class="fsd-band2"><div class="fsd-b2-l"><div class="fsd-b2-k"><i class="ti ti-crown"></i>CastSlate Premium</div><h4>${left()>0?`You have ${left()} free unlock${left()===1?"":"s"} left.`:"You've used your 2 free unlocks."}</h4><p>Premium shows every name, teacher, class and website on all ${ACT.length} schools, plus the Agency and Casting directories.</p></div><div class="fsd-b2-r"><button class="agd-btn gold" data-upsell="1">Unlock all — $17.99/mo</button><span>or $129/year · cancel any time</span></div></div>`;
+    :`<div class="fsd-band2"><div class="fsd-b2-l"><div class="fsd-b2-k"><i class="ti ti-crown"></i>CastSlate Premium</div><h4>${left()>0?`You have ${left()} free unlock${left()===1?"":"s"} left.`:"You've used your 2 free unlocks."}</h4><p>Premium shows every name, teacher, class and website on all ${ACT.length} schools, plus the Agency and Casting directories.</p></div><div class="fsd-b2-r"><button class="agd-btn gold" data-upsell="1">Unlock all — $17.99/mo</button><span>or $129/year</span></div></div>`;
   function renderAct(){
     const n=st.q.trim().toLowerCase();
     const shown=ACT.filter(s=>(st.kind==="all"||TYPEF[st.kind](s))&&(st.city==="all"||s.c===st.city)&&(st.tech==="all"||s.tags.includes(st.tech))
@@ -18509,7 +18508,7 @@ function fsdMount(root,ctx){
     // only. Hidden until the first render so signed-in users never see it flash.
     const fin=$("#fsdFinal");if(fin){const F={
       visitor:null,
-      free:["Open every school on the list.","You have your free profile. Premium opens every school's name, teachers and website on both tabs, plus 650+ talent agencies, the casting offices directory, unlimited submissions and Manager Mode.",'<button class="agd-btn gold" data-upsell="1">Go Premium — $17.99/mo</button>',"Cancel any time · $129/year if you'd rather pay once"],
+      free:["Open every school on the list.","You have your free profile. Premium opens every school's name, teachers and website on both tabs, plus 650+ talent agencies, the casting offices directory, unlimited submissions and Manager Mode.",'<button class="agd-btn gold" data-upsell="1">Go Premium — $17.99/mo</button>',"$129/year if you'd rather pay once"],
       prem:["It's all included in your Premium.","Every school, teacher and website is open to you. When the new footage comes in, add it to your profile so directors and casting see your latest work.",'<button class="agd-btn gold" data-nav="my-profile">Update your profile</button>',""]}[st.role];
       if(F&&fin.getAttribute("data-r")!==st.role){fin.innerHTML=`<h2 class="agd-h2">${F[0]}</h2><p>${F[1]}</p>${F[2]}${F[3]?`<div class="agd-guarantee">${F[3]}</div>`:""}`;}
       fin.setAttribute("data-r",st.role);fin.style.visibility="";}
@@ -26586,7 +26585,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <ul className="lh-site-ck">{["About & bio","Reel & videos","Photo gallery","Résumé (PDF)","Credits & skills","Socials & contact"].map(t=><li key={t}><Ico n="check" s={17}/>{t}</li>)}</ul>
           <div className="lh-site-row">
             <button type="button" className="lh-site-link" onClick={()=>onNavigate("register-talent")}>Create my free profile <Tri/></button>
-            <span className="lh-site-note">Premium from $10.75/mo · cancel anytime</span>
+            <span className="lh-site-note">Premium from $10.75/mo</span>
           </div>
         </div>
         <div className="lh-site-browser" aria-hidden="true">
@@ -27632,7 +27631,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
         </div>))}
     </div>
     <button type="button" className="btn-teal" onClick={()=>onNavigate&&onNavigate("membership")} style={{width:"100%",padding:14,fontSize:15.5,fontWeight:800}}>Unlock my résumé — {PREMIUM_PRICE.replace("month","mo")}</button>
-    <div style={{fontSize:12,color:"var(--t3)",textAlign:"center",marginTop:8}}>Cancel anytime · Includes everything in Premium</div>
+    <div style={{fontSize:12,color:"var(--t3)",textAlign:"center",marginTop:8}}>Includes everything in Premium</div>
     {(()=>{const todo=[["Credits","Add your film, TV and theatre work",totalCredits>0,"credits"],["Training","Schools, studios and coaches",trainingLines.length>0,"profile"],["Skills","Accents, languages, sports, music…",allSkills.length+accList.length+langList.length>0,"skills"]];
       if(!todo.some(x=>!x[2]))return null;
       return(<div style={{marginTop:18,borderTop:"1px solid var(--bdr)",paddingTop:16}}>
