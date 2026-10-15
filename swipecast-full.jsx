@@ -2560,6 +2560,17 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pl-editorial .card{border-width:0 0 1px;border-radius:0;box-shadow:none;background:transparent;padding-left:0!important;padding-right:0!important;}
 .pl-editorial .pl-hero{border:0;border-radius:0;}
 .pl-editorial .pl-sh{font-family:'Source Serif 4',serif!important;text-transform:none!important;letter-spacing:0!important;font-size:22px!important;font-weight:700!important;color:var(--t1)!important;}
+/* Accent everywhere (owner 2026-10-15, demo accent-color-demo.html v3): visible even with no reel/socials. --pl-acc-ink = text-safe shade (gold too pale as text on light pages). */
+.pl-look{--pl-acc-ink:var(--pl-acc);}
+.pl-look.pl-acc-gold{--pl-acc-ink:#94722A;}
+.pl-look.pl-cinematic.pl-acc-gold{--pl-acc-ink:#C9A24A;}
+.pl-look .pl-hero-txt .tag-acc{background:var(--pl-acc)!important;color:#fff!important;}
+.pl-look.pl-acc-gold .pl-hero-txt .tag-acc{color:#1A1A2E!important;}
+.pl-nm-line{width:44px;height:3px;border-radius:3px;background:var(--pl-acc);margin:-2px 0 14px;}
+.pl-look .pl-btn.ghost{border-color:var(--pl-acc);color:var(--pl-acc-ink);}
+.pp-uni.pl-look .pl-sh{border-left:3px solid var(--pl-acc);padding-left:10px;}
+.pp-uni.pl-look .pp-play.is-primary{color:var(--pl-acc-ink)!important;}
+.pl-look .pp-resume{color:var(--pl-acc-ink)!important;}
 html.pl-body-cinematic .app>main{background:#121216;}
 html.pl-body-editorial .app>main{background:#FFFFFF;}
 @media(max-width:767px){.pl-hero{grid-template-columns:minmax(0,1fr);}.pl-hero-txt{padding:20px;}.pl-hero-nm{font-size:clamp(32px,9vw,44px);}.pl-strip{grid-template-columns:repeat(2,minmax(0,1fr));}.pl-hero-btns .pl-btn{flex:1 1 auto;justify-content:center;}}
@@ -14679,6 +14690,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
               {talent.type&&<span className="tag" style={{fontSize:11}}>{talent.type}</span>}
             </div>
             <h1 className="pl-hero-nm">{heroName}</h1>
+            {look&&<div className="pl-nm-line" aria-hidden="true"/>}
             {look&&look.tagline&&<p className="pl-hero-line">{look.tagline}</p>}
             {(locationText||agentOrRep)&&<p className="pl-hero-meta">{[locationText,agentOrRep?"Rep: "+agentOrRep:""].filter(Boolean).join(" · ")}</p>}
             <div className="pl-hero-btns">
@@ -14925,8 +14937,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {hasStructuredCredits&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</a>}
-        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</button>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm pp-resume" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</a>}
+        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm pp-resume" style={{fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</button>}
       </div>
       <div className="credits-list pp-cred">{CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
         <div key={cat} className="pp-cred-cat">
@@ -14951,8 +14963,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {!hasStructuredCredits&&(legacyCredits.length>0||resumeUrl)&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
         {sectionHead("Credits & Experience")}
-        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</a>}
-        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm" style={{fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</button>}
+        {resumeUrl&&<a href={resumeUrl} target="_blank" rel="noreferrer" className="btn-s btn-sm pp-resume" style={{textDecoration:"none",fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</a>}
+        {canViewBuiltResume&&<button type="button" onClick={()=>setShowResume(true)} className="btn-s btn-sm pp-resume" style={{fontSize:12}}><Ico n="file-text" s={22}/> Download résumé (PDF)</button>}
       </div>
       {legacyCredits.length>0
         ?<div className="credits-list pp-cred">
