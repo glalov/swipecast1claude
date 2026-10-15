@@ -195,7 +195,6 @@ async function isLandscapeImage(url: string): Promise<boolean> {
 }
 
 // ─── Article writers ─────────────────────────────────────────────────────────
-// Claude fallback writer (used only if Gemini is unavailable).
 // Image health: publishers delete or rename thumbnails after we pick them up
 // (Playbill's The-Heart-Press-Day-1.jpg went 403 a day later, 2026-10-15), and
 // a hotlinked card then shows a broken picture. Conservative: only a definite
@@ -224,6 +223,7 @@ async function imageStatus(url: string): Promise<"ok" | "gone" | "unknown"> {
   }
 }
 
+// Claude fallback writer (used only if Gemini is unavailable).
 async function aiRewrite(title: string, desc: string, source: string, category: Category) {
   if (!ANTHROPIC_API_KEY) return null;
   try {
