@@ -329,6 +329,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-frame{display:contents;}
 html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{display:block;background:var(--bg);border-radius:18px;padding:28px 28px 32px;margin-bottom:28px;}
 @media(max-width:767px){html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{padding:14px;}}
+html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.site-footer-spacer{background:transparent;}
 .pl-cinematic .tag-acc{color:var(--t1);background:var(--s2);}
 .pl-cinematic .btn-p{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
 .pl-cinematic.pl-acc-gold .btn-p{color:#1A1A2E;}
