@@ -558,6 +558,9 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
       var skip=false;
       try{{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true;}}catch(e){{}}
       if(skip){{if(el.parentNode)el.parentNode.removeChild(el);csIntroDone();return;}}
+      /* Opened by the actor's View Public Profile button: the spotlight reveal (script
+         below) plays instead, and it fires csIntroDone when it ends. */
+      if(/[?&]reveal=[12]/.test(location.search)&&location.pathname.indexOf('/talent/')===0){{if(el.parentNode)el.parentNode.removeChild(el);return;}}
       /* Start the logo animations from the second painted frame so the fade
          is always visible; fallback covers hidden tabs where rAF never fires. */
       var raf=window.requestAnimationFrame||function(f){{setTimeout(f,16);}};
@@ -644,6 +647,97 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
         if((e>=MIN&&appReady())||e>=CAP){{go();return;}}
         setTimeout(poll,120);
       }})();
+    }})();
+  </script>
+  <script>
+    /* "View Public Profile" spotlight reveal (owner, 2026-10-15; demo C+ "Spotlight on you").
+       Runs ONLY when the actor's own View Public Profile button opened this tab:
+       ?reveal=1 = full show (first click this visit), ?reveal=2 = quick .3s fade (repeat).
+       The entry intro is skipped on these loads (see the #cs-intro script above).
+       Skipped for Reduce Motion. Letters slide in, CastSlate wordmark forms, then a
+       spotlight opens on the actor's headshot and spreads; their name rises in last.
+       Teardown is wall-clock capped (never waits on an animation event). */
+    (function(){{
+      var m=/[?&]reveal=([12])/.exec(location.search);
+      if(!m||location.pathname.indexOf('/talent/')!==0)return;
+      try{{var u=new URL(location.href);u.searchParams.delete('reveal');history.replaceState(history.state,'',u.pathname+u.search+u.hash);}}catch(e){{}}
+      var reduce=false;try{{reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;}}catch(e){{}}
+      if(reduce||!document.body||!Element.prototype.animate)return;
+      var full=m[1]==='1',t0=Date.now(),CAP=6500,dead=false,hidName=null;
+      var ease='cubic-bezier(.22,.8,.24,1)';
+      var ov=document.createElement('div');
+      ov.id='cs-reveal';ov.setAttribute('aria-hidden','true');
+      ov.style.cssText='position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483000;pointer-events:none;background:'+(full?'#1A1A2E':'#F8F1E7');
+      document.body.appendChild(ov);
+      function kill(){{
+        if(dead)return;dead=true;
+        if(hidName)hidName.style.opacity='';
+        if(ov.parentNode)ov.parentNode.removeChild(ov);
+        if(typeof csIntroDone==='function')csIntroDone();
+      }}
+      setTimeout(kill,CAP);
+      document.addEventListener('visibilitychange',function(){{ if(document.visibilityState==='visible'&&Date.now()-t0>CAP-500)kill(); }});
+      function appReady(){{ if(window.__CS_REACT_MOUNTED)return true; var r=document.getElementById('root'); return !!(r&&r.childElementCount>0); }}
+      function headshot(){{ return document.querySelector('.pl-hero-img img')||document.querySelector('.talent-profile-media-grid img'); }}
+      function whenReady(minAt,cb){{
+        (function poll(){{
+          if(dead)return;
+          var e=Date.now()-t0,img=headshot();
+          if((e>=minAt&&appReady()&&img&&img.complete)||e>=4200){{cb(img);return;}}
+          setTimeout(poll,60);
+        }})();
+      }}
+      if(!full){{
+        whenReady(0,function(){{ ov.animate([{{opacity:1}},{{opacity:0}}],{{duration:300,fill:'forwards'}}); setTimeout(kill,320); }});
+        return;
+      }}
+      var small=window.innerWidth<600,bs=small?44:60,W=window.innerWidth;
+      var wm=document.createElement('div');
+      wm.style.cssText='position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);display:flex;align-items:center;gap:14px;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+      var box=document.createElement('div');
+      box.style.cssText='width:'+bs+'px;height:'+bs+'px;border-radius:'+(small?11:14)+'px;background:#fff;display:flex;align-items:center;justify-content:center;opacity:0;flex:none';
+      box.innerHTML='<svg viewBox="0 0 32 32" width="'+Math.round(bs*.7)+'" height="'+Math.round(bs*.7)+'"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#1A1A2E"/></svg>';
+      var word=document.createElement('div');
+      word.style.cssText='display:flex;color:#fff;font-weight:800;font-size:'+(small?38:54)+'px;letter-spacing:-1.2px';
+      wm.appendChild(box);wm.appendChild(word);ov.appendChild(wm);
+      'CastSlate'.split('').forEach(function(c,i){{
+        var s=document.createElement('span');s.textContent=c;s.style.cssText='display:inline-block;opacity:0';word.appendChild(s);
+        s.animate([{{transform:'translateX('+((i%2?1:-1)*W*.35)+'px)',opacity:0}},{{transform:'none',opacity:1}}],{{duration:700,delay:i*30,easing:ease,fill:'forwards'}});
+      }});
+      box.animate([{{opacity:0,transform:'scale(.6)'}},{{opacity:1,transform:'none'}}],{{duration:500,easing:ease,fill:'forwards'}});
+      whenReady(1120,function(img){{
+        if(dead)return;
+        wm.animate([{{opacity:1}},{{opacity:0}}],{{duration:260,fill:'forwards'}});
+        var nm=document.querySelector('.pl-hero-nm');
+        if(nm){{nm.style.opacity='0';hidName=nm;}}
+        setTimeout(function(){{ spot(img,nm); }},260);
+      }});
+      var shown=false;
+      function showName(nm){{
+        if(shown||!nm)return;shown=true;
+        nm.style.opacity='';hidName=null;
+        nm.animate([{{opacity:0,transform:'translateY(10px)'}},{{opacity:1,transform:'none'}}],{{duration:520,easing:ease}});
+      }}
+      function spot(img,nm){{
+        if(dead)return;
+        var cx=window.innerWidth/2,cy=window.innerHeight/2;
+        if(img){{var r=img.getBoundingClientRect();cx=r.left+r.width/2;cy=r.top+r.height*.38;}}
+        cx=Math.min(Math.max(cx,0),window.innerWidth);cy=Math.min(Math.max(cy,0),window.innerHeight);
+        var R=Math.sqrt(Math.pow(Math.max(cx,window.innerWidth-cx),2)+Math.pow(Math.max(cy,window.innerHeight-cy),2))+40;
+        var s=Date.now(),D=900,named=false;
+        function hole(k){{return 'radial-gradient(circle at '+cx+'px '+cy+'px, transparent '+k+'px, rgba(26,26,46,.96) '+(k+40)+'px)';}}
+        ov.style.background=hole(0);
+        var raf=window.requestAnimationFrame||function(f){{return setTimeout(f,16);}};
+        (function step(){{
+          if(dead)return;
+          var p=Math.min(1,(Date.now()-s)/D);
+          var e=p<.35?(p/.35)*.18:.18+(1-Math.pow(1-(p-.35)/.65,3))*.82;
+          ov.style.background=hole(e*R);
+          if(!named&&p>.6){{named=true;showName(nm);}}
+          if(p<1)raf(step);else kill();
+        }})();
+        setTimeout(function(){{showName(nm);kill();}},D+400);
+      }}
     }})();
   </script>
   <!-- Loading indicator — shown until React mounts -->

@@ -15171,7 +15171,11 @@ function PublicProfileButtons({slug,beforeOpen}){
     <button style={{background:"var(--s2)",color:"var(--t2)",border:"1px solid var(--bdr)",borderRadius:7,padding:"8px 14px",fontSize:12,fontWeight:600,cursor:"pointer",transition:"color .15s"}} onClick={copy}>
       {copied?"Link copied!":"Copy Profile Link"}
     </button>
-    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={async()=>{const url=`/talent/${encodeURIComponent(slug)}`;
+    <button style={{background:"#111",color:"#fff",border:"1px solid #333",borderRadius:7,padding:"8px 18px",fontSize:13,fontWeight:700,cursor:"pointer",letterSpacing:"0.02em"}} onClick={async()=>{
+      // Spotlight reveal in the new tab: full show on the first click this visit, quick fade after,
+      // none for Reduce Motion (the head script in build-html.py reads ?reveal= and strips it).
+      let rv="";try{if(!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)){rv=sessionStorage.getItem("cs_reveal_seen")?"2":"1";sessionStorage.setItem("cs_reveal_seen","1");}}catch(_){rv="1";}
+      const url=`/talent/${encodeURIComponent(slug)}`+(rv?`?reveal=${rv}`:"");
       // Unsaved edits must be on the page the actor is about to look at. The tab
       // is opened first (synchronously) so the popup blocker allows it.
       if(!beforeOpen){window.open(url,"_blank");return;}
