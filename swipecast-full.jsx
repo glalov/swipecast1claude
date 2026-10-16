@@ -2581,6 +2581,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    the dark stage, so admin sees the profile exactly as the public page shows it, ending before the footer. */
 /* No bio above the stats: the stats divider would sit right under the card edge (a double line). All themes. */
 .pp-uni .pp-stats:first-child{border-top:0!important;padding-top:0!important;}
+.pl-own-note{font-size:12.5px;color:var(--t3);margin:10px 0 0;line-height:1.45;max-width:340px;}
 .pp-frame{display:contents;}
 html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{display:block;background:var(--bg);border-radius:18px;padding:28px 28px 32px;margin-bottom:28px;}
 @media(max-width:767px){html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{padding:14px;}}
@@ -14478,6 +14479,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const [showReport,setShowReport]=useState(false);
   const [dbCredits,setDbCredits]=useState(null);
   const [uploadedVideos,setUploadedVideos]=useState([]);
+  const [ownMsgNote,setOwnMsgNote]=useState(false); // owner previewing: explains the preview-only Message button
   const [freshProfile,setFreshProfile]=useState(null);
   const [bodyMods,setBodyMods]=useState(null);
   const [disab,setDisab]=useState(null); // get_disabilities — actor, admins, signed-in CDs only
@@ -14711,7 +14713,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   return(<div className={"page pp-uni"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":(look.theme==="cinematic"&&look.accent==="gold")?"#D6AE5C":PL_ACCENTS[look.accent]}:undefined}><div className="pp-frame">
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
-        <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
+        <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.{firstVideoIdx<0&&!ownerMediaLocked&&<span style={{display:"block",fontWeight:500,color:"#CFC8BC",marginTop:3,fontSize:12.5}}>Tip: add a video to show a Watch reel button at the top of your page.</span>}</div>
         <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(slidingBack)return;setSlidingBack(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}},250);}}>← Back to Edit Profile</button>
       </div>
     )}
@@ -14743,12 +14745,16 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
             </div>
             <h1 className="pl-hero-nm">{heroName}</h1>
             {look&&<div className="pl-nm-line" aria-hidden="true"/>}
-            {look&&look.tagline&&<p className="pl-hero-line">{look.tagline}</p>}
+            {/* A one-liner that only repeats the location would show the city twice. */}
+            {look&&look.tagline&&look.tagline.trim().toLowerCase()!==String(locationText||"").trim().toLowerCase()&&<p className="pl-hero-line">{look.tagline}</p>}
             {(locationText||agentOrRep)&&<p className="pl-hero-meta">{[locationText,agentOrRep?"Rep: "+agentOrRep:""].filter(Boolean).join(" · ")}</p>}
             <div className="pl-hero-btns">
               {firstVideoIdx>=0&&<button type="button" className="pl-btn" onClick={()=>openMedia(firstVideoIdx)}><Ico n="player-play" s={16}/> Watch reel</button>}
               {canMessage&&<button type="button" className="pl-btn ghost" onClick={heroMessage}>Message</button>}
+              {/* Owner preview: same button casting directors see, so the page matches the public one. Sends nothing. */}
+              {isOwnProfile&&<button type="button" className="pl-btn ghost" onClick={()=>setOwnMsgNote(v=>!v)}>Message</button>}
             </div>
+            {isOwnProfile&&ownMsgNote&&<p className="pl-own-note" role="status">This is the button casting directors use to message you. Nothing is sent from your own preview.</p>}
             {allSocialLinks.length>0&&<div className="pl-soc">{allSocialLinks.map(({label,url},i)=><a key={i} href={url.startsWith("http")?url:`https://${url}`} target="_blank" rel="noopener noreferrer">{label}</a>)}</div>}
           </div>
         </div>
