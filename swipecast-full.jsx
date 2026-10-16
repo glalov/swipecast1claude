@@ -53151,11 +53151,19 @@ const ABC_CARD_COLORS=[
   {key:'sky',name:'Sky',hex:'#E8F0F8'},
   {key:'blush',name:'Blush',hex:'#F8EAE6'},
   {key:'stone',name:'Stone',hex:'#EEEBE5'},
+  // Owner, 2026-10-15 (demo card-colors-7-new-demo.html): three more pale tints. Default navy ink.
+  {key:'lavender',name:'Lavender',hex:'#EFEAF7',ink:{chipbg:'#F7F4FC',chipbd:'#DCD4EC',rule:'#E2DCEE'}},
+  {key:'butter',name:'Butter',hex:'#FBF1CF',ink:{chipbg:'#FDF7E3',chipbd:'#EBDDAE',rule:'#EFE3BC',sub:'#8E8A78',sub2:'#8E8A78'}},
+  {key:'peach',name:'Peach',hex:'#FCE5D6',ink:{chipbg:'#FEF1E8',chipbd:'#F0CDB6',rule:'#F2D5C2',sub:'#8E8A86',sub2:'#8E8A86'}},
   // Dark cards (owner, 2026-10-15; demo black-business-card-demo.html). Text flips light; the QR
   // keeps a white plate so phones scan it; the mailing BACK side stays white (handwriting + postage).
   {key:'black',name:'Black',hex:'#141416',ink:{dark:true,bar:'#2A2A30',lgbg:'#FFFFFF',lgfg:'#141416',lgtx:'#FFFFFF',name:'#FFFFFF',head:'#C9C9D3',sub:'#9A9AA6',sub2:'#9A9AA6',chipbg:'#24242A',chipfg:'#F2F2F5',chipbd:'#34343C',union:'#8FB4FF',rule:'#2A2A30',slug:'#FFFFFF',border:'#2A2A30',divider:'#2A2A30'}},
   {key:'black-gold',name:'Black & Gold',hex:'#121214',dot:'linear-gradient(135deg,#121214 58%,#D6AE5C 58%)',ink:{dark:true,bar:'#D6AE5C',lgbg:'#D6AE5C',lgfg:'#121214',lgtx:'#D6AE5C',name:'#FFFFFF',head:'#D6AE5C',sub:'#A3A0A8',sub2:'#A3A0A8',chipbg:'rgba(0,0,0,0)',chipfg:'#E9D3A2',chipbd:'rgba(214,174,92,.6)',union:'#E9D3A2',rule:'#2E2A22',slug:'#E9D3A2',border:'#2E2A22',divider:'#2E2A22'}},
   {key:'charcoal',name:'Charcoal',hex:'#24211E',ink:{dark:true,bar:'#F3ECE1',lgbg:'#F3ECE1',lgfg:'#24211E',lgtx:'#F3ECE1',name:'#F6EFE4',head:'#D9CFC1',sub:'#A99E90',sub2:'#A99E90',chipbg:'#302C28',chipfg:'#F3ECE1',chipbd:'#3E3833',union:'#A9C4FF',rule:'#3A3530',slug:'#F6EFE4',border:'#3A3530',divider:'#3A3530'}},
+  {key:'navy',name:'Navy',hex:'#1A1A2E',ink:{dark:true,bar:'#F3ECE1',lgbg:'#F3ECE1',lgfg:'#1A1A2E',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#C9CBE0',sub:'#9C9EB8',sub2:'#9C9EB8',chipbg:'#26263F',chipfg:'#EDEDF7',chipbd:'#35355A',union:'#A9C4FF',rule:'#2C2C48',slug:'#FFFFFF',border:'#2C2C48',divider:'#2C2C48'}},
+  {key:'forest',name:'Forest',hex:'#1F3A32',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#1F3A32',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#D6AE5C',sub:'#A9BDB5',sub2:'#A9BDB5',chipbg:'#284A40',chipfg:'#EEF3F0',chipbd:'#36594E',union:'#E9D3A2',rule:'#2E4C43',slug:'#F3ECE1',border:'#2E4C43',divider:'#2E4C43'}},
+  {key:'burgundy',name:'Burgundy',hex:'#4A1C26',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#4A1C26',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#E9C98A',sub:'#C9A7AC',sub2:'#C9A7AC',chipbg:'#5A2631',chipfg:'#F7ECEC',chipbd:'#6E3440',union:'#E9C98A',rule:'#5C2A34',slug:'#F3ECE1',border:'#5C2A34',divider:'#5C2A34'}},
+  {key:'slate-blue',name:'Slate Blue',hex:'#2B3644',ink:{dark:true,bar:'#C9D6E6',lgbg:'#E6EDF5',lgfg:'#2B3644',lgtx:'#E6EDF5',name:'#FFFFFF',head:'#C9D6E6',sub:'#9FADBF',sub2:'#9FADBF',chipbg:'#344253',chipfg:'#EDF2F8',chipbd:'#435367',union:'#A9C4FF',rule:'#3A4756',slug:'#FFFFFF',border:'#3A4756',divider:'#3A4756'}},
 ];
 const ABC_INK_LIGHT={dark:false,bar:'#1A1A2E',lgbg:'#1A1A2E',lgfg:'#fff',lgtx:'#1A1A2E',name:'#1A1A2E',head:'#6B6B80',sub:'#8E8EA0',sub2:'#9090A0',chipbg:'#F0F0F8',chipfg:'#1A1A2E',chipbd:'#E0E0F0',union:'#2563EB',rule:'#EDEDF0',slug:'#1A1A2E',border:'#E0E0E8',divider:'#E8E8F0'};
 function abcInk(hex){const c=ABC_CARD_COLORS.find(x=>x.hex===hex);return c&&c.ink?{...ABC_INK_LIGHT,...c.ink}:ABC_INK_LIGHT;}
