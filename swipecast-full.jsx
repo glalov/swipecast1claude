@@ -14929,7 +14929,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         {notes&&<div className="pp-txt" style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><span className="pp-inl-lbl">Notes to wardrobe:</span> {notes}</div>}
         {mods.length>0&&<div className="pp-txt" style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
           {mods.map(([k,v])=><span key={k}><span className="pp-inl-lbl">{k}:</span> <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
-          <span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>· visible only to casting directors this actor submitted to</span>
+          <span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>{isOwnProfile?"· hidden from the public — only you and casting directors you submit to can see this":"· visible only to casting directors this actor submitted to"}</span>
         </div>}
       </div>;})()}
 
@@ -14938,7 +14938,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {(()=>{const d=disab||{};const dl=Array.isArray(d.disabilities)?d.disabilities:[];const al=Array.isArray(d.assistive_devices)?d.assistive_devices:[];const other=(d.disability_other||"").trim();
       if(!dl.length&&!al.length&&!other)return null;
       return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-        {sectionHead("Disabilities",<span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>Visible only to casting directors</span>)}
+        {sectionHead("Disabilities",<span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>{isOwnProfile?"Hidden from the public — only you and casting directors can see this":"Visible only to casting directors"}</span>)}
         {dl.length>0&&<div className="chips" style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:al.length||other?14:0}}>{dl.map((x,i)=><span key={i} className="pp-chip pp-key">{x}</span>)}</div>}
         {al.length>0&&<><div className="pp-lbl pp-grp" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:other?14:0}}>{al.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div></>}
