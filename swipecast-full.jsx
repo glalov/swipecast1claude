@@ -53279,7 +53279,8 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [mailingMessage,setMailingMessage]=useState("I'm seeking representation and would love to connect. Scan the QR code to view my headshots, reel, credits, and current availability.");
   const [showLocation,setShowLocation]=useState(true);
   const [showUnion,setShowUnion]=useState(true);
-  const [cardColor,setCardColor]=useState(()=>{try{const v=localStorage.getItem('cs_card_color');return ABC_CARD_COLORS.some(c=>c.key===v)?v:'white';}catch(_){return 'white';}});
+  // Default card colour = Terracotta (owner, 2026-10-15). A colour the actor already picked (saved on this device) still wins.
+  const [cardColor,setCardColor]=useState(()=>{try{const v=localStorage.getItem('cs_card_color');return ABC_CARD_COLORS.some(c=>c.key===v)?v:'terracotta';}catch(_){return 'terracotta';}});
   const cardBg=(ABC_CARD_COLORS.find(c=>c.key===cardColor)||ABC_CARD_COLORS[0]).hex;
   const [qrDataUrl,setQrDataUrl]=useState(null);
   const [qrLoading,setQrLoading]=useState(false);
