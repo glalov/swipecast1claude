@@ -53279,8 +53279,21 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const [mailingMessage,setMailingMessage]=useState("I'm seeking representation and would love to connect. Scan the QR code to view my headshots, reel, credits, and current availability.");
   const [showLocation,setShowLocation]=useState(true);
   const [showUnion,setShowUnion]=useState(true);
-  // Default card colour = Terracotta (owner, 2026-10-15). A colour the actor already picked (saved on this device) still wins.
-  const [cardColor,setCardColor]=useState(()=>{try{const v=localStorage.getItem('cs_card_color');return ABC_CARD_COLORS.some(c=>c.key===v)?v:'terracotta';}catch(_){return 'terracotta';}});
+  // Card colour lives on the account (profiles.card_color) so it follows the actor to every device.
+  // Order: account → this browser's older saved pick → Terracotta default (owner, 2026-10-15).
+  const _ccOk=v=>ABC_CARD_COLORS.some(c=>c.key===v);
+  const [cardColor,setCardColor]=useState(()=>{if(_ccOk(myProfile?.card_color))return myProfile.card_color;try{const v=localStorage.getItem('cs_card_color');return _ccOk(v)?v:'terracotta';}catch(_){return 'terracotta';}});
+  const saveCardColor=key=>{
+    try{localStorage.setItem('cs_card_color',key);}catch(_){}
+    const uid=session?.user?.id;
+    if(uid&&window.sb)window.sb.from('profiles').update({card_color:key}).eq('id',uid).then(({error})=>{if(error)console.warn('[card color] save failed:',error.message);});
+  };
+  useEffect(()=>{
+    if(!myProfile)return;
+    if(_ccOk(myProfile.card_color)){setCardColor(myProfile.card_color);return;}
+    // First visit since colours moved to the account: carry over a pick saved in this browser.
+    try{const v=localStorage.getItem('cs_card_color');if(_ccOk(v)){setCardColor(v);saveCardColor(v);}}catch(_){}
+  },[myProfile?.id,myProfile?.card_color]);
   const cardBg=(ABC_CARD_COLORS.find(c=>c.key===cardColor)||ABC_CARD_COLORS[0]).hex;
   const [qrDataUrl,setQrDataUrl]=useState(null);
   const [qrLoading,setQrLoading]=useState(false);
@@ -53750,7 +53763,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <p style={{fontSize:12.5,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.55}}>Pick the color of the card's light panel. Every option is a soft tint that stays sharp and prints cleanly on any printer.</p>
               <div role="radiogroup" aria-label="Card color" style={{display:'grid',gridTemplateColumns:'repeat(6,minmax(0,1fr))',gap:'14px 8px'}}>
                 {ABC_CARD_COLORS.map(c=>{const on=cardColor===c.key;return(
-                  <button key={c.key} type="button" role="radio" aria-checked={on} aria-label={c.name} onClick={()=>{setCardColor(c.key);try{localStorage.setItem('cs_card_color',c.key);}catch(_){}}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit'}}>
+                  <button key={c.key} type="button" role="radio" aria-checked={on} aria-label={c.name} onClick={()=>{setCardColor(c.key);saveCardColor(c.key);}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit'}}>
                     <span style={{width:42,height:42,borderRadius:'50%',background:c.dot||c.hex,border:on?'2px solid #1A1A2E':'1.5px solid #D6D3CC',boxShadow:on?'0 0 0 3px rgba(26,26,46,.14)':'none',display:'grid',placeItems:'center',color:c.ink&&c.ink.dark?'#fff':'#1A1A2E'}}>{on&&<Ico n="check" s={16}/>}</span>
                     <span style={{fontSize:11.5,fontWeight:on?800:600,color:on?'var(--t1)':'var(--t2)',textAlign:'center',lineHeight:1.2}}>{c.name}</span>
                   </button>);})}
