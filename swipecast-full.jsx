@@ -2574,8 +2574,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* The one hero action is filled, not a thin outline that gets lost on dark. */
 .pl-cinematic .pl-hero-btns .pl-btn.ghost:only-child{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
 .pl-cinematic.pl-acc-gold .pl-btn:not(.ghost),.pl-cinematic.pl-acc-gold .pl-hero-btns .pl-btn.ghost:only-child{color:#16120E;}
-/* Outside its own /talent/ page (admin catalog, CD overlay) the page stays cream and the profile sits in its own dark frame. */
-html:not(.pl-body-cinematic) .pp-uni.pl-cinematic{background:var(--bg);border-radius:16px;padding:16px;}
+/* .pp-frame wraps the profile content (not the site footer the page renders inside itself). Normally it has no
+   box at all. Outside its own /talent/ page (admin catalog, CD overlay) the page stays cream and the frame becomes
+   the dark stage, so admin sees the profile exactly as the public page shows it, ending before the footer. */
+.pp-frame{display:contents;}
+html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{display:block;background:var(--bg);border-radius:18px;padding:28px 28px 32px;margin-bottom:28px;}
+@media(max-width:767px){html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{padding:14px;}}
 .pl-cinematic .tag-acc{color:var(--t1);background:var(--s2);}
 .pl-cinematic .btn-p{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
 .pl-cinematic.pl-acc-gold .btn-p{color:#1A1A2E;}
@@ -14699,7 +14703,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const heroName=freshProfile?.display_name||talent.name||talent.display_name||"—";
   const canMessage=!isOwnProfile&&!!talentDbId&&talentDbId!==session?.user?.id;
   const heroMessage=()=>{if(viewerIsCd||session){setCdAction("dm");return;}try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");};
-  return(<div className={"page pp-uni"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":(look.theme==="cinematic"&&look.accent==="gold")?"#D6AE5C":PL_ACCENTS[look.accent]}:undefined}>
+  return(<div className={"page pp-uni"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":(look.theme==="cinematic"&&look.accent==="gold")?"#D6AE5C":PL_ACCENTS[look.accent]}:undefined}><div className="pp-frame">
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
@@ -15068,7 +15072,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {cdAction==="dm"&&talentDbId&&<ComposeDMModal fromId={session?.user?.id} toId={talentDbId} toName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
     {cdAction==="selftape"&&talentDbId&&<ComposeDMModal fromId={session?.user?.id} toId={talentDbId} toName={talent.name||talent.display_name||"Talent"} title={`Request a self-tape from ${(talent.name||talent.display_name||"this actor").split(" ")[0]}`} intro="Send a self-tape request. They'll get it in their inbox and can reply with a tape." initialBody={`Hi ${(talent.name||talent.display_name||"there").split(" ")[0]} — I'd love to see a self-tape from you for a project I'm casting. A short scene or monologue (60–90 seconds) is perfect. Thanks!`} onClose={()=>setCdAction(null)}/>}
 
-    <Footer onNavigate={onNavigate}/></div>);
+    </div><Footer onNavigate={onNavigate}/></div>);
 }
 
 function generatePublicSlug(name){
