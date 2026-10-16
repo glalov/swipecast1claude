@@ -4406,11 +4406,11 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fcs-full{position:relative;height:100%;transition:opacity .22s ease;}
 .featured-class-stripe.is-collapsed .fcs-full{opacity:0;pointer-events:none;}
 .fcs-img{display:block;width:100%;height:auto;filter:brightness(1.32);}
-/* Video band (2026-10-16): 4.8:1 before JS measures; the clip fills the right 70%, starting under the text scrim. */
-.featured-class-stripe{aspect-ratio:4.8/1;}
+/* Video band (2026-10-16): 5.6:1 before JS measures; the clip fills the right 70%, starting under the text scrim. */
+.featured-class-stripe{aspect-ratio:5.6/1;}
 .featured-class-stripe.is-collapsed{aspect-ratio:auto;}
-.fcs-vid{position:absolute;top:0;right:0;bottom:0;width:70%;background:#0c0a08 url(/assets/banner/moon-set.jpg) 50% 62%/cover no-repeat;}
-.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;filter:brightness(1.12) contrast(1.04);}
+.fcs-vid{position:absolute;top:0;right:0;bottom:0;width:70%;background:#0c0a08 url(/assets/banner/moon-set.jpg) 50% 61.5%/cover no-repeat;}
+.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 61.5%;filter:brightness(1.12) contrast(1.04);}
 .fcs-hotspot{display:none;}
 .fcs-mobile{display:none;}
 /* Desktop: sharp HTML overlay (label/title/tagline/button) over the dark left of the artwork; a scrim hides the soft baked-in text underneath. */
@@ -6686,9 +6686,9 @@ function FeaturedClassBanner({onNavigate}){
       if(window.innerWidth<=768){setFullH(null);return;}
       const w=el.clientWidth;
       if(!w)return;
-      // Fixed 4.8:1 band (was the scene-study artwork's 3360:430). Tall enough that the
-      // video's people fit head to toe; no image load to wait for.
-      setFullH(Math.round(w/4.8));
+      // Fixed 5.6:1 band (owner, 2026-10-16: from just above the astronaut's head to just
+      // below the director's feet; was 4.8:1, the scene-study artwork's 3360:430 before that).
+      setFullH(Math.round(w/5.6));
     };
     measure();
     // ResizeObserver, not just window.resize: the banner is full-bleed inside
