@@ -14888,63 +14888,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
     {/* ── SLATE VIDEO — private; shown to casting directors in submission review only, not on public profile ── */}
 
-    {/* ── SKILLS ── */}
-    {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-      {sectionHead("Skills")}
-      {/* Grouped exactly like the editor (SKILL_GROUPS), in the editor's order;
-          anything the actor typed themselves comes last under "Additional". */}
-      {(()=>{const pill=(x,i)=><span key={i} className="pp-chip">{x}</span>;
-        const have=new Set(skills);
-        const groups=SKILL_GROUPS.map(g=>({title:g.title,items:g.items.filter(x=>have.has(x))})).filter(g=>g.items.length);
-        const extra=skills.filter(x=>!ALL_PROFILE_SKILLS.includes(x));
-        if(extra.length)groups.push({title:groups.length?"Additional skills":"",items:extra});
-        return groups.map((g,gi)=><div key={gi} style={{marginTop:gi?14:0}}>
-          {g.title&&<div className="pp-lbl pp-grp" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>{g.title}</div>}
-          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{g.items.map(pill)}</div></div>);})()}
-    </div>}
-
-    {/* ── ACCENTS & LANGUAGES ── */}
-    {(()=>{const acc=Array.isArray(freshProfile?.accents)?freshProfile.accents:[];const lng=Array.isArray(freshProfile?.languages)?freshProfile.languages:[];
-      if(!acc.length&&!lng.length)return null;
-      const pill=(x,i)=><span key={i} className="pp-chip">{x}</span>;
-      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-        {lng.length>0&&<>{sectionHead("Languages")}<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:acc.length?14:0}}>{lng.map(pill)}</div></>}
-        {acc.length>0&&<>{sectionHead("Accents")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{acc.map(pill)}</div></>}
-      </div>;})()}
-
-    {/* ── SIZE CARD ── (sizes + wardrobe notes are public; tattoos/piercings
-        come from get_body_mods, which only answers the actor, admins and CDs
-        the actor submitted to. Nudity is never shown here.) */}
-    {(()=>{const sz=freshProfile?.sizes&&typeof freshProfile.sizes==="object"?freshProfile.sizes:{};
-      const set=freshProfile?.size_set==="women"?"women":"men";
-      const rows=(SIZE_FIELDS[set]||[]).map(([k])=>[k.replace(" (US)",""),sz[k]]).filter(([,v])=>v);
-      const notes=(freshProfile?.wardrobe_notes||"").trim();
-      const mods=bodyMods?[["Visible tattoos",bodyMods.has_tattoos],["Visible piercings",bodyMods.has_piercings]].filter(([,v])=>v===true||v===false):[];
-      if(!rows.length&&!notes&&!mods.length)return null;
-      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-        {sectionHead(set==="women"?"Size card · Women's":"Size card · Men's")}
-        {rows.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:"10px 14px"}}>
-          {rows.map(([k,v])=><div key={k}><div className="pp-lbl" style={{fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:2}}>{k}</div><div className="pp-val" style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{v}</div></div>)}
-        </div>}
-        {notes&&<div className="pp-txt" style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><span className="pp-inl-lbl">Notes to wardrobe:</span> {notes}</div>}
-        {mods.length>0&&<div className="pp-txt" style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
-          {mods.map(([k,v])=><span key={k}><span className="pp-inl-lbl">{k}:</span> <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
-          <span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>{isOwnProfile?"· hidden from the public — only you and casting directors you submit to can see this":"· visible only to casting directors this actor submitted to"}</span>
-        </div>}
-      </div>;})()}
-
-    {/* ── DISABILITIES ── private: only returned by get_disabilities to the
-        actor, admins and signed-in casting directors. Never on the public view. */}
-    {(()=>{const d=disab||{};const dl=Array.isArray(d.disabilities)?d.disabilities:[];const al=Array.isArray(d.assistive_devices)?d.assistive_devices:[];const other=(d.disability_other||"").trim();
-      if(!dl.length&&!al.length&&!other)return null;
-      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-        {sectionHead("Disabilities",<span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>{isOwnProfile?"Hidden from the public — only you and casting directors can see this":"Visible only to casting directors"}</span>)}
-        {dl.length>0&&<div className="chips" style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:al.length||other?14:0}}>{dl.map((x,i)=><span key={i} className="pp-chip pp-key">{x}</span>)}</div>}
-        {al.length>0&&<><div className="pp-lbl pp-grp" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
-          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:other?14:0}}>{al.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div></>}
-        {other&&<p className="pp-txt" style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{other}</p>}
-      </div>;})()}
-
+    {/* Section order (owner, 2026-10-15): read like an actor's résumé — who (About) →
+        can they act (Credits, Training) → what the role needs (Skills, Languages) →
+        can they do the job (Logistics) → after-booking details (Size card, Disabilities). */}
     {/* ── STRUCTURED CREDITS (from DB) ── */}
     {hasStructuredCredits&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:8}}>
@@ -14999,6 +14945,30 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       <p className="pp-txt pp-key" style={{fontSize:14,color:"var(--t1)",lineHeight:1.6}}>{trainingText}</p>
     </div>}
 
+    {/* ── SKILLS ── */}
+    {skills.length>0&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+      {sectionHead("Skills")}
+      {/* Grouped exactly like the editor (SKILL_GROUPS), in the editor's order;
+          anything the actor typed themselves comes last under "Additional". */}
+      {(()=>{const pill=(x,i)=><span key={i} className="pp-chip">{x}</span>;
+        const have=new Set(skills);
+        const groups=SKILL_GROUPS.map(g=>({title:g.title,items:g.items.filter(x=>have.has(x))})).filter(g=>g.items.length);
+        const extra=skills.filter(x=>!ALL_PROFILE_SKILLS.includes(x));
+        if(extra.length)groups.push({title:groups.length?"Additional skills":"",items:extra});
+        return groups.map((g,gi)=><div key={gi} style={{marginTop:gi?14:0}}>
+          {g.title&&<div className="pp-lbl pp-grp" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>{g.title}</div>}
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{g.items.map(pill)}</div></div>);})()}
+    </div>}
+
+    {/* ── ACCENTS & LANGUAGES ── */}
+    {(()=>{const acc=Array.isArray(freshProfile?.accents)?freshProfile.accents:[];const lng=Array.isArray(freshProfile?.languages)?freshProfile.languages:[];
+      if(!acc.length&&!lng.length)return null;
+      const pill=(x,i)=><span key={i} className="pp-chip">{x}</span>;
+      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+        {lng.length>0&&<>{sectionHead("Languages")}<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:acc.length?14:0}}>{lng.map(pill)}</div></>}
+        {acc.length>0&&<>{sectionHead("Accents")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{acc.map(pill)}</div></>}
+      </div>;})()}
+
     {/* ── SELF-TAPE & LOGISTICS ── */}
     {showLogistics&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Self-Tape & Logistics")}
@@ -15027,6 +14997,39 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
     {/* ── CAST ME AS ── */}
     {talentDbId&&<CastMeAsSection talentId={talentDbId}/>}
+
+    {/* ── SIZE CARD ── (sizes + wardrobe notes are public; tattoos/piercings
+        come from get_body_mods, which only answers the actor, admins and CDs
+        the actor submitted to. Nudity is never shown here.) */}
+    {(()=>{const sz=freshProfile?.sizes&&typeof freshProfile.sizes==="object"?freshProfile.sizes:{};
+      const set=freshProfile?.size_set==="women"?"women":"men";
+      const rows=(SIZE_FIELDS[set]||[]).map(([k])=>[k.replace(" (US)",""),sz[k]]).filter(([,v])=>v);
+      const notes=(freshProfile?.wardrobe_notes||"").trim();
+      const mods=bodyMods?[["Visible tattoos",bodyMods.has_tattoos],["Visible piercings",bodyMods.has_piercings]].filter(([,v])=>v===true||v===false):[];
+      if(!rows.length&&!notes&&!mods.length)return null;
+      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+        {sectionHead(set==="women"?"Size card · Women's":"Size card · Men's")}
+        {rows.length>0&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:"10px 14px"}}>
+          {rows.map(([k,v])=><div key={k}><div className="pp-lbl" style={{fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:2}}>{k}</div><div className="pp-val" style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{v}</div></div>)}
+        </div>}
+        {notes&&<div className="pp-txt" style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><span className="pp-inl-lbl">Notes to wardrobe:</span> {notes}</div>}
+        {mods.length>0&&<div className="pp-txt" style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
+          {mods.map(([k,v])=><span key={k}><span className="pp-inl-lbl">{k}:</span> <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
+          <span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>{isOwnProfile?"· hidden from the public — only you and casting directors you submit to can see this":"· visible only to casting directors this actor submitted to"}</span>
+        </div>}
+      </div>;})()}
+
+    {/* ── DISABILITIES ── private: only returned by get_disabilities to the
+        actor, admins and signed-in casting directors. Never on the public view. */}
+    {(()=>{const d=disab||{};const dl=Array.isArray(d.disabilities)?d.disabilities:[];const al=Array.isArray(d.assistive_devices)?d.assistive_devices:[];const other=(d.disability_other||"").trim();
+      if(!dl.length&&!al.length&&!other)return null;
+      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+        {sectionHead("Disabilities",<span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>{isOwnProfile?"Hidden from the public — only you and casting directors can see this":"Visible only to casting directors"}</span>)}
+        {dl.length>0&&<div className="chips" style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:al.length||other?14:0}}>{dl.map((x,i)=><span key={i} className="pp-chip pp-key">{x}</span>)}</div>}
+        {al.length>0&&<><div className="pp-lbl pp-grp" style={{fontSize:10.5,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--t3)",marginBottom:7}}>Assistive devices</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:other?14:0}}>{al.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div></>}
+        {other&&<p className="pp-txt" style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{other}</p>}
+      </div>;})()}
 
     {/* ── CD action modals ── */}
     {cdAction==="save"&&talentDbId&&<SaveToListModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
