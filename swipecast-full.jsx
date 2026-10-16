@@ -4229,7 +4229,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 @keyframes abc-btnshine{0%{transform:translateX(0) skewX(-18deg);}55%,100%{transform:translateX(422%) skewX(-18deg);}}
 @media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot{animation:none!important;}.abc-prem::after{display:none;}}
 /* Premium "Member" status card — dashboard welcome flourish. Rendered only for membership_status='active'.
-   Soft Peach (owner trying it, 2026-10-15; was purple → Peach & Gold → Champagne). Navy text,
+   Soft Peach (owner's final pick, 2026-10-15; was purple → Peach & Gold → Champagne). Navy text,
    plain gold chip kept from Champagne. Not the flat button gold, so it reads as a status, not a CTA. */
 .cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#F9D3B6,#F4C3A0 55%,#ECB38C);}
 /* No drop shadow and no animated edge line (owner, 2026-10-15). Chip = plain gold, as in the Champagne demo. */
