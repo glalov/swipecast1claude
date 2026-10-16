@@ -5481,14 +5481,14 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .agd-step .n{flex:none;width:29px;height:29px;border-radius:50%;background:var(--amber-dk);color:#fff;display:grid;place-items:center;font-size:12.5px;font-weight:800;}
 .cdx-colors{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;margin-top:24px;}
 .cdx-colors-l{font-size:13.5px;font-weight:800;color:var(--t1);}
-.cdx-colors-row{display:flex;gap:12px;flex-wrap:wrap;min-width:0;}
+.cdx-colors-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 8px;min-width:0;width:100%;max-width:520px;}
 .cdx-sw{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;}
 .cdx-sw .dot{width:38px;height:38px;border-radius:50%;border:1.5px solid #D6D3CC;display:grid;place-items:center;color:#1A1A2E;transition:transform .15s;}
 .cdx-sw:hover .dot{transform:scale(1.06);}
 .cdx-sw.on .dot{border:2px solid #1A1A2E;box-shadow:0 0 0 3px rgba(26,26,46,.14);}
-.cdx-sw .nm{font-size:11.5px;font-weight:600;color:var(--t2);}
+.cdx-sw .nm{font-size:11.5px;font-weight:600;color:var(--t2);text-align:center;line-height:1.2;}
 .cdx-sw.on .nm{font-weight:800;color:var(--t1);}
-@media (max-width:900px){.cdx-colors-row{gap:10px;}.cdx-sw .dot{width:34px;height:34px;}}
+@media (max-width:900px){.cdx-colors-row{gap:12px 6px;}.cdx-sw .dot{width:34px;height:34px;}}
 /* Phones: the Premium pill sits above the step title like a tag, so it never wraps alone under it. */
 @media (max-width:900px){.cdx-prem-h{display:flex;flex-direction:column;align-items:flex-start;}.cdx-prem-h .cdx-prem-pill{order:-1;margin:2px 0 6px;}}
 .cdx-prem-pill{display:inline-block;background:#1A1A2E;color:#EAC080;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:1px;}
@@ -53155,6 +53155,10 @@ const ABC_CARD_COLORS=[
   {key:'lavender',name:'Lavender',hex:'#EFEAF7',ink:{chipbg:'#F7F4FC',chipbd:'#DCD4EC',rule:'#E2DCEE'}},
   {key:'butter',name:'Butter',hex:'#FBF1CF',ink:{chipbg:'#FDF7E3',chipbd:'#EBDDAE',rule:'#EFE3BC',sub:'#8E8A78',sub2:'#8E8A78'}},
   {key:'peach',name:'Peach',hex:'#FCE5D6',ink:{chipbg:'#FEF1E8',chipbd:'#F0CDB6',rule:'#F2D5C2',sub:'#8E8A86',sub2:'#8E8A86'}},
+  // Owner, 2026-10-15 (demo card-colors-grid-demo.html): 24 swatches = 12 light + 12 dark, shown 6 per row.
+  {key:'mint',name:'Mint',hex:'#E1F3EC',ink:{chipbg:'#EEF9F5',chipbd:'#C6E5D9',rule:'#CFE8DE'}},
+  {key:'rose',name:'Rose',hex:'#F8DDE5',ink:{chipbg:'#FCEEF2',chipbd:'#EDC3D0',rule:'#F0CDD8'}},
+  {key:'pearl',name:'Pearl',hex:'#ECEEF1',ink:{chipbg:'#F5F6F8',chipbd:'#D6DAE0',rule:'#DDE0E5'}},
   // Dark cards (owner, 2026-10-15; demo black-business-card-demo.html). Text flips light; the QR
   // keeps a white plate so phones scan it; the mailing BACK side stays white (handwriting + postage).
   {key:'black',name:'Black',hex:'#141416',ink:{dark:true,bar:'#2A2A30',lgbg:'#FFFFFF',lgfg:'#141416',lgtx:'#FFFFFF',name:'#FFFFFF',head:'#C9C9D3',sub:'#9A9AA6',sub2:'#9A9AA6',chipbg:'#24242A',chipfg:'#F2F2F5',chipbd:'#34343C',union:'#8FB4FF',rule:'#2A2A30',slug:'#FFFFFF',border:'#2A2A30',divider:'#2A2A30'}},
@@ -53164,6 +53168,11 @@ const ABC_CARD_COLORS=[
   {key:'forest',name:'Forest',hex:'#1F3A32',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#1F3A32',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#D6AE5C',sub:'#A9BDB5',sub2:'#A9BDB5',chipbg:'#284A40',chipfg:'#EEF3F0',chipbd:'#36594E',union:'#E9D3A2',rule:'#2E4C43',slug:'#F3ECE1',border:'#2E4C43',divider:'#2E4C43'}},
   {key:'burgundy',name:'Burgundy',hex:'#4A1C26',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#4A1C26',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#E9C98A',sub:'#C9A7AC',sub2:'#C9A7AC',chipbg:'#5A2631',chipfg:'#F7ECEC',chipbd:'#6E3440',union:'#E9C98A',rule:'#5C2A34',slug:'#F3ECE1',border:'#5C2A34',divider:'#5C2A34'}},
   {key:'slate-blue',name:'Slate Blue',hex:'#2B3644',ink:{dark:true,bar:'#C9D6E6',lgbg:'#E6EDF5',lgfg:'#2B3644',lgtx:'#E6EDF5',name:'#FFFFFF',head:'#C9D6E6',sub:'#9FADBF',sub2:'#9FADBF',chipbg:'#344253',chipfg:'#EDF2F8',chipbd:'#435367',union:'#A9C4FF',rule:'#3A4756',slug:'#FFFFFF',border:'#3A4756',divider:'#3A4756'}},
+  {key:'plum',name:'Plum',hex:'#3A2440',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#3A2440',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#E6CFA0',sub:'#B8A6BD',sub2:'#B8A6BD',chipbg:'#48304F',chipfg:'#F5F1EC',chipbd:'#5A3F62',union:'#E6CFA0',rule:'#4A3150',slug:'#FFFFFF',border:'#4A3150',divider:'#4A3150'}},
+  {key:'deep-teal',name:'Deep Teal',hex:'#134A44',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#134A44',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#E6CFA0',sub:'#9FC2BB',sub2:'#9FC2BB',chipbg:'#1C5A53',chipfg:'#F5F1EC',chipbd:'#2A6C64',union:'#E6CFA0',rule:'#22574F',slug:'#FFFFFF',border:'#22574F',divider:'#22574F'}},
+  {key:'espresso',name:'Espresso',hex:'#3A2A20',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#3A2A20',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#E6CFA0',sub:'#BDA898',sub2:'#BDA898',chipbg:'#47362B',chipfg:'#F5F1EC',chipbd:'#594538',union:'#E6CFA0',rule:'#4A382D',slug:'#FFFFFF',border:'#4A382D',divider:'#4A382D'}},
+  {key:'terracotta',name:'Terracotta',hex:'#7A3B2E',ink:{dark:true,bar:'#F3ECE1',lgbg:'#F3ECE1',lgfg:'#7A3B2E',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#F6D9C9',sub:'#E0B7AA',sub2:'#E0B7AA',chipbg:'#8A4A3C',chipfg:'#F5F1EC',chipbd:'#9C5A4B',union:'#F6D9C9',rule:'#8C4A3D',slug:'#FFFFFF',border:'#8C4A3D',divider:'#8C4A3D'}},
+  {key:'olive',name:'Olive',hex:'#3B3E28',ink:{dark:true,bar:'#D6AE5C',lgbg:'#F3ECE1',lgfg:'#3B3E28',lgtx:'#F3ECE1',name:'#FFFFFF',head:'#E6CFA0',sub:'#B4B79C',sub2:'#B4B79C',chipbg:'#484B33',chipfg:'#F5F1EC',chipbd:'#5A5D42',union:'#E6CFA0',rule:'#4A4D35',slug:'#FFFFFF',border:'#4A4D35',divider:'#4A4D35'}},
 ];
 const ABC_INK_LIGHT={dark:false,bar:'#1A1A2E',lgbg:'#1A1A2E',lgfg:'#fff',lgtx:'#1A1A2E',name:'#1A1A2E',head:'#6B6B80',sub:'#8E8EA0',sub2:'#9090A0',chipbg:'#F0F0F8',chipfg:'#1A1A2E',chipbd:'#E0E0F0',union:'#2563EB',rule:'#EDEDF0',slug:'#1A1A2E',border:'#E0E0E8',divider:'#E8E8F0'};
 function abcInk(hex){const c=ABC_CARD_COLORS.find(x=>x.hex===hex);return c&&c.ink?{...ABC_INK_LIGHT,...c.ink}:ABC_INK_LIGHT;}
@@ -53738,11 +53747,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
             <div style={{background:'var(--s1)',border:'1px solid var(--bdr)',borderRadius:14,padding:20}}>
               <h3 style={{fontWeight:700,fontSize:14,margin:'0 0 4px',color:'var(--t1)'}}>Card Color</h3>
               <p style={{fontSize:12.5,color:'var(--t2)',margin:'0 0 14px',lineHeight:1.55}}>Pick the color of the card's light panel. Every option is a soft tint that stays sharp and prints cleanly on any printer.</p>
-              <div role="radiogroup" aria-label="Card color" style={{display:'flex',gap:12,flexWrap:'wrap'}}>
+              <div role="radiogroup" aria-label="Card color" style={{display:'grid',gridTemplateColumns:'repeat(6,minmax(0,1fr))',gap:'14px 8px'}}>
                 {ABC_CARD_COLORS.map(c=>{const on=cardColor===c.key;return(
                   <button key={c.key} type="button" role="radio" aria-checked={on} aria-label={c.name} onClick={()=>{setCardColor(c.key);try{localStorage.setItem('cs_card_color',c.key);}catch(_){}}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit'}}>
                     <span style={{width:42,height:42,borderRadius:'50%',background:c.dot||c.hex,border:on?'2px solid #1A1A2E':'1.5px solid #D6D3CC',boxShadow:on?'0 0 0 3px rgba(26,26,46,.14)':'none',display:'grid',placeItems:'center',color:c.ink&&c.ink.dark?'#fff':'#1A1A2E'}}>{on&&<Ico n="check" s={16}/>}</span>
-                    <span style={{fontSize:11.5,fontWeight:on?800:600,color:on?'var(--t1)':'var(--t2)'}}>{c.name}</span>
+                    <span style={{fontSize:11.5,fontWeight:on?800:600,color:on?'var(--t1)':'var(--t2)',textAlign:'center',lineHeight:1.2}}>{c.name}</span>
                   </button>);})}
               </div>
             </div>
