@@ -4406,18 +4406,23 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fcs-full{position:relative;height:100%;transition:opacity .22s ease;}
 .featured-class-stripe.is-collapsed .fcs-full{opacity:0;pointer-events:none;}
 .fcs-img{display:block;width:100%;height:auto;filter:brightness(1.32);}
+/* Video band (2026-10-16): 4.8:1 before JS measures; the clip fills the right 70%, starting under the text scrim. */
+.featured-class-stripe{aspect-ratio:4.8/1;}
+.featured-class-stripe.is-collapsed{aspect-ratio:auto;}
+.fcs-vid{position:absolute;top:0;right:0;bottom:0;width:70%;background:#0c0a08 url(/assets/banner/moon-set.jpg) 50% 62%/cover no-repeat;}
+.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;filter:brightness(1.12) contrast(1.04);}
 .fcs-hotspot{display:none;}
 .fcs-mobile{display:none;}
 /* Desktop: sharp HTML overlay (label/title/tagline/button) over the dark left of the artwork; a scrim hides the soft baked-in text underneath. */
 .fcs-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:clamp(3px,0.55vw,8px);padding-left:clamp(28px,4.3vw,86px);padding-right:40px;pointer-events:none;}
 .fcs-overlay::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0c0a08 0%,#0c0a08 19%,rgba(12,10,8,0.92) 28%,rgba(12,10,8,0.55) 38%,rgba(12,10,8,0) 48%);}
 .fcs-ov-label{font-size:clamp(9px,0.66vw,11px);font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#FFD79A;line-height:1;}
-.fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;text-transform:uppercase;font-size:clamp(15px,1.62vw,28px);line-height:1.04;color:#fff;letter-spacing:.5px;}
+.fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;text-transform:uppercase;font-size:clamp(17px,2vw,34px);line-height:1.04;color:#fff;letter-spacing:.5px;}
 .fcs-ov-tag{font-size:clamp(10px,0.85vw,13px);line-height:1.35;color:#ECE8E0;max-width:32ch;}
 .fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(2px,0.45vw,7px);background:#F0B860;color:#231706;border:none;border-radius:8px;padding:clamp(6px,0.6vw,10px) clamp(13px,1.25vw,22px);font-size:clamp(10px,0.78vw,12.5px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* Compact scrolled strip — own layout, not a crop of the full banner. */
 .fcs-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;opacity:0;pointer-events:none;transition:opacity .28s ease;
-  background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/scene-study.jpg) center 78%/cover;}
+  background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/moon-set.jpg) center 60%/cover;}
 .featured-class-stripe.is-collapsed .fcs-compact{opacity:1;pointer-events:auto;}
 .fcs-compact-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
 .fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;line-height:1.2;white-space:nowrap;}
@@ -4545,7 +4550,8 @@ body.fbsp-open #castoria-root{display:none!important;}
   .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
-  .fcs-img{height:100%;width:100%;object-fit:cover;object-position:70% center;filter:brightness(1.75) saturate(1.08);}
+  .fcs-vid{left:0;width:100%;background-position:62% 60%;}
+  .fcs-video{object-position:62% 60%;}
   .fcs-hotspot{display:none;}
   .fcs-overlay{display:none;}
   .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
@@ -6568,6 +6574,19 @@ function BannerCodeIntro({onDone}){
 function FeaturedClassBanner({onNavigate}){
   const go=()=>{if(typeof onNavigate==="function")onNavigate("classes");};
   const ref=useRef(null);
+  const vidRef=useRef(null);
+  // Moon-set video (owner, 2026-10-16; demo banner-video-demo.html option C). The poster paints at once
+  // (also as the box's CSS background, for iOS); the 1.6 MB clip only loads after the page has
+  // loaded, so it never competes with the first paint. Reduce Motion keeps the still.
+  useEffect(()=>{
+    const v=vidRef.current;if(!v)return;
+    try{if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;}catch(_){}
+    let started=false;
+    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set.mp4";const p=v.play();if(p&&p.catch)p.catch(()=>{});};
+    if(document.readyState==="complete")start();else window.addEventListener("load",start,{once:true});
+    const t=setTimeout(start,4000);
+    return()=>{clearTimeout(t);window.removeEventListener("load",start);};
+  },[]);
   const [collapsed,setCollapsed]=useState(false);
   const [fullH,setFullH]=useState(null);
   // Matrix code intro over the banner — DISABLED. It delayed task-focused
@@ -6663,17 +6682,13 @@ function FeaturedClassBanner({onNavigate}){
   useLayoutEffect(()=>{
     const el=ref.current;
     if(!el)return;
-    const img=el.querySelector(".fcs-img");
     const measure=()=>{
       if(window.innerWidth<=768){setFullH(null);return;}
       const w=el.clientWidth;
       if(!w)return;
-      // Ratio from the decoded image once we have it, otherwise from the img's
-      // own width/height attributes. A slow, cached-cold or outright failed
-      // artwork therefore still yields the right band height instead of
-      // leaving the black #0c0a08 background to size itself.
-      const nw=(img&&img.naturalWidth)||3360,nh=(img&&img.naturalHeight)||430;
-      setFullH(Math.round(w*nh/nw));
+      // Fixed 4.8:1 band (was the scene-study artwork's 3360:430). Tall enough that the
+      // video's people fit head to toe; no image load to wait for.
+      setFullH(Math.round(w/4.8));
     };
     measure();
     // ResizeObserver, not just window.resize: the banner is full-bleed inside
@@ -6685,12 +6700,10 @@ function FeaturedClassBanner({onNavigate}){
     if(typeof ResizeObserver!=="undefined"){ro=new ResizeObserver(measure);ro.observe(el);}
     window.addEventListener("resize",measure);
     window.addEventListener("orientationchange",measure);
-    if(img){img.addEventListener("load",measure);img.addEventListener("error",measure);}
     return()=>{
       if(ro)ro.disconnect();
       window.removeEventListener("resize",measure);
       window.removeEventListener("orientationchange",measure);
-      if(img){img.removeEventListener("load",measure);img.removeEventListener("error",measure);}
     };
   },[]);
   useEffect(()=>{
@@ -6703,7 +6716,7 @@ function FeaturedClassBanner({onNavigate}){
   return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}${inspireGo?" fci-go":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
-      <img className="fcs-img" src="/assets/banner/scene-study.jpg" alt="Featured Class — Scene Study Workshop" width="3360" height="430" fetchpriority="high" decoding="async"/>
+      <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set.jpg" muted loop playsInline preload="none"/></div>
       {/* Desktop: sharp HTML overlay over the dark left of the artwork (scrim hides baked-in text). */}
       <div className="fcs-overlay">
         <span className="fcs-ov-label">Featured Class</span>
