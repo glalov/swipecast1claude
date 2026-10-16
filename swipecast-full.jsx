@@ -4231,7 +4231,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Premium "Member" status card — dashboard welcome flourish. Rendered only for membership_status='active'.
    Soft Peach (owner's final pick, 2026-10-15; was purple → Peach & Gold → Champagne). Navy text,
    plain gold chip kept from Champagne. Not the flat button gold, so it reads as a status, not a CTA. */
-.cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#F9D3B6,#F4C3A0 55%,#ECB38C);}
+.cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(180deg,#F9D0B2,#F1BC97);}
+/* "Lit from above" (owner, 2026-10-15): even top-down light, no diagonal dark corner, hairline highlight on the top edge. */
+.cs-procard::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:rgba(255,255,255,.7);pointer-events:none;}
 /* No drop shadow and no animated edge line (owner, 2026-10-15). Chip = plain gold, as in the Champagne demo. */
 .cs-pc-chip{position:relative;width:25px;height:18px;border-radius:4px;margin-top:12px;background:linear-gradient(135deg,#E8B85A,#B98426);}
 /* Soft luxe shine passing through the "Premium" word (~every 7.5s) — Option B */
