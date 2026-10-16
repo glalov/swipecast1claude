@@ -18337,7 +18337,7 @@ function CastingDirectoryPage({onNavigate,isPremium=false}){
           <div className="cdx-colors-row">
             {ABC_CARD_COLORS.map(c=>{const on=sampleColor===c.key;return(
               <button key={c.key} type="button" role="radio" aria-checked={on} aria-label={c.name} onClick={()=>setSampleColor(c.key)} className={"cdx-sw"+(on?" on":"")}>
-                <span className="dot" style={{background:c.hex}}>{on&&<Ico n="check" s={15}/>}</span>
+                <span className="dot" style={{background:c.dot||c.hex,color:c.ink&&c.ink.dark?'#fff':undefined}}>{on&&<Ico n="check" s={15}/>}</span>
                 <span className="nm">{c.name}</span>
               </button>);})}
           </div>
@@ -53151,14 +53151,24 @@ const ABC_CARD_COLORS=[
   {key:'sky',name:'Sky',hex:'#E8F0F8'},
   {key:'blush',name:'Blush',hex:'#F8EAE6'},
   {key:'stone',name:'Stone',hex:'#EEEBE5'},
+  // Dark cards (owner, 2026-10-15; demo black-business-card-demo.html). Text flips light; the QR
+  // keeps a white plate so phones scan it; the mailing BACK side stays white (handwriting + postage).
+  {key:'black',name:'Black',hex:'#141416',ink:{dark:true,bar:'#2A2A30',lgbg:'#FFFFFF',lgfg:'#141416',lgtx:'#FFFFFF',name:'#FFFFFF',head:'#C9C9D3',sub:'#9A9AA6',sub2:'#9A9AA6',chipbg:'#24242A',chipfg:'#F2F2F5',chipbd:'#34343C',union:'#8FB4FF',rule:'#2A2A30',slug:'#FFFFFF',border:'#2A2A30',divider:'#2A2A30'}},
+  {key:'black-gold',name:'Black & Gold',hex:'#121214',dot:'linear-gradient(135deg,#121214 58%,#D6AE5C 58%)',ink:{dark:true,bar:'#D6AE5C',lgbg:'#D6AE5C',lgfg:'#121214',lgtx:'#D6AE5C',name:'#FFFFFF',head:'#D6AE5C',sub:'#A3A0A8',sub2:'#A3A0A8',chipbg:'rgba(0,0,0,0)',chipfg:'#E9D3A2',chipbd:'rgba(214,174,92,.6)',union:'#E9D3A2',rule:'#2E2A22',slug:'#E9D3A2',border:'#2E2A22',divider:'#2E2A22'}},
+  {key:'charcoal',name:'Charcoal',hex:'#24211E',ink:{dark:true,bar:'#F3ECE1',lgbg:'#F3ECE1',lgfg:'#24211E',lgtx:'#F3ECE1',name:'#F6EFE4',head:'#D9CFC1',sub:'#A99E90',sub2:'#A99E90',chipbg:'#302C28',chipfg:'#F3ECE1',chipbd:'#3E3833',union:'#A9C4FF',rule:'#3A3530',slug:'#F6EFE4',border:'#3A3530',divider:'#3A3530'}},
 ];
+const ABC_INK_LIGHT={dark:false,bar:'#1A1A2E',lgbg:'#1A1A2E',lgfg:'#fff',lgtx:'#1A1A2E',name:'#1A1A2E',head:'#6B6B80',sub:'#8E8EA0',sub2:'#9090A0',chipbg:'#F0F0F8',chipfg:'#1A1A2E',chipbd:'#E0E0F0',union:'#2563EB',rule:'#EDEDF0',slug:'#1A1A2E',border:'#E0E0E8',divider:'#E8E8F0'};
+function abcInk(hex){const c=ABC_CARD_COLORS.find(x=>x.hex===hex);return c&&c.ink?{...ABC_INK_LIGHT,...c.ink}:ABC_INK_LIGHT;}
 function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoOffX=0,photoOffY=0,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen}){
   const format=ABC_CARD_FORMATS[formatKey]||ABC_CARD_FORMATS.business;
   const large=formatKey!=='business';
-  const logo=(<div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:large?22:19,height:large?22:19,background:'#1A1A2E',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:'#fff'}}><LogoMark/></div><span style={{fontSize:large?9.5:9,fontWeight:800,color:'#1A1A2E',letterSpacing:1.5}}>CASTSLATE</span></div>);
+  // Dark card colours flip the front's ink; the back (mailing side) always stays light.
+  const T=side==='back'?ABC_INK_LIGHT:abcInk(cardBg);
+  const CB=(side==='back'&&abcInk(cardBg).dark)?'#FFFFFF':cardBg;
+  const logo=(<div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:large?22:19,height:large?22:19,background:T.lgbg,borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:T.lgfg}}><LogoMark/></div><span style={{fontSize:large?9.5:9,fontWeight:800,color:T.lgtx,letterSpacing:1.5}}>CASTSLATE</span></div>);
   return(
-    <div role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:cardBg,border:'1.5px solid #E0E0E8',borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
-      <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:'#1A1A2E',zIndex:2}}/>
+    <div role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:CB,border:'1.5px solid '+T.border,borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
+      <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:T.bar,zIndex:2}}/>
       {watermark&&<div style={{position:'absolute',inset:'-40%',zIndex:5,pointerEvents:'none',transform:'rotate(-25deg)',display:'grid',gridTemplateColumns:'repeat(6,1fr)',gridTemplateRows:'repeat(7,1fr)',alignItems:'center',justifyItems:'center'}}>
         {Array.from({length:42}).map((_,i)=>(
           <span key={i} style={{fontSize:large?20:16,fontWeight:800,letterSpacing:'0.12em',textTransform:'uppercase',color:'rgba(140,140,150,0.6)',whiteSpace:'nowrap'}}>Preview</span>
@@ -53189,14 +53199,14 @@ function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',ma
           </div>
           <div style={{flex:1,padding:large?'22px 22px 15px':'16px 14px 12px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5,overflow:'hidden'}}>
             <div style={{marginBottom:large?13:7,flexShrink:0}}>{logo}</div>
-            <div style={{fontWeight:800,fontSize:large?25:17,color:'#1A1A2E',letterSpacing:large?-0.8:-0.5,lineHeight:1.15,marginBottom:large?4:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{displayName||'Your Name'}</div>
-            <div style={{fontSize:large?13:11,color:'#6B6B80',marginBottom:large?4:3,fontWeight:600,flexShrink:0}}>{headline||'Actor'}</div>
-            {showLocation&&location&&<div style={{fontSize:large?10.5:10,color:'#8E8EA0',marginBottom:large?5:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{location}</div>}
-            {tags&&tags.length>0&&<div style={{display:'flex',gap:4,flexWrap:'nowrap',marginBottom:large?5:3,overflow:'hidden',flexShrink:0}}>{tags.slice(0,3).map((tag,i)=><span key={i} style={{fontSize:large?8.5:8,fontWeight:600,padding:'2px 7px',borderRadius:4,background:'#F0F0F8',color:'#1A1A2E',border:'1px solid #E0E0F0',whiteSpace:'nowrap',flexShrink:0}}>{tag}</span>)}</div>}
-            {showUnion&&unionStatus&&<div style={{fontSize:large?10:9.5,fontWeight:700,color:unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB',marginBottom:large?5:3,flexShrink:0}}>{unionStatus}</div>}
-            {(directContact||!large)&&<div style={{fontSize:large?9.5:8.5,color:'#6B6B80',marginBottom:large?5:0,minHeight:large?undefined:11,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0,visibility:directContact?'visible':'hidden'}}><span style={{fontWeight:700,color:'#1A1A2E'}}>Direct contact: </span>{directContact||'Reserved contact space'}</div>}
+            <div style={{fontWeight:800,fontSize:large?25:17,color:T.name,letterSpacing:large?-0.8:-0.5,lineHeight:1.15,marginBottom:large?4:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{displayName||'Your Name'}</div>
+            <div style={{fontSize:large?13:11,color:T.head,marginBottom:large?4:3,fontWeight:600,flexShrink:0}}>{headline||'Actor'}</div>
+            {showLocation&&location&&<div style={{fontSize:large?10.5:10,color:T.sub,marginBottom:large?5:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0}}>{location}</div>}
+            {tags&&tags.length>0&&<div style={{display:'flex',gap:4,flexWrap:'nowrap',marginBottom:large?5:3,overflow:'hidden',flexShrink:0}}>{tags.slice(0,3).map((tag,i)=><span key={i} style={{fontSize:large?8.5:8,fontWeight:600,padding:'2px 7px',borderRadius:4,background:T.chipbg,color:T.chipfg,border:'1px solid '+T.chipbd,whiteSpace:'nowrap',flexShrink:0}}>{tag}</span>)}</div>}
+            {showUnion&&unionStatus&&<div style={{fontSize:large?10:9.5,fontWeight:700,color:unionStatus.toLowerCase().includes('non')?T.sub:T.union,marginBottom:large?5:3,flexShrink:0}}>{unionStatus}</div>}
+            {(directContact||!large)&&<div style={{fontSize:large?9.5:8.5,color:T.head,marginBottom:large?5:0,minHeight:large?undefined:11,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flexShrink:0,visibility:directContact?'visible':'hidden'}}><span style={{fontWeight:700,color:T.name}}>Direct contact: </span>{directContact||'Reserved contact space'}</div>}
             <div style={{flex:'1 1 auto',minHeight:0}}/>
-            <div style={{borderTop:'1px solid #EDEDF0',paddingTop:large?7:5,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:8,flexShrink:0}}><div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:'#9090A0',lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:'#1A1A2E',lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{publicSlug||'your-profile'}</div></div><div style={{flexShrink:0,textAlign:'center'}}>{qrDataUrl?<><img src={qrDataUrl} alt="QR code" style={{width:large?54:46,height:large?54:46,display:'block',borderRadius:2}}/><div style={{fontSize:6,color:'#9090A0',letterSpacing:0.3,marginTop:2,whiteSpace:'nowrap'}}>SCAN TO VIEW</div></>:<div style={{width:46,height:46,background:'#F0F0F8',borderRadius:4,border:'1.5px dashed #D0D0E0',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontSize:8,color:'#C0C0D0',fontWeight:700}}>QR</div></div>}</div></div>
+            <div style={{borderTop:'1px solid '+T.rule,paddingTop:large?7:5,display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:8,flexShrink:0}}><div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:T.sub2,lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:T.slug,lineHeight:1.3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{publicSlug||'your-profile'}</div></div><div style={{flexShrink:0,textAlign:'center'}}>{qrDataUrl?<><img src={qrDataUrl} alt="QR code" style={{width:large?54:46,height:large?54:46,display:'block',borderRadius:T.dark?4:2,background:T.dark?'#fff':undefined,padding:T.dark?3:0,boxSizing:'border-box'}}/><div style={{fontSize:6,color:T.sub2,letterSpacing:0.3,marginTop:2,whiteSpace:'nowrap'}}>SCAN TO VIEW</div></>:<div style={{width:46,height:46,background:'#F0F0F8',borderRadius:4,border:'1.5px dashed #D0D0E0',display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{fontSize:8,color:'#C0C0D0',fontWeight:700}}>QR</div></div>}</div></div>
           </div>
         </>
       )}
@@ -53348,8 +53358,9 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     const ctx=canvas.getContext('2d');
     ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
     ctx.scale(pixelScale,pixelScale);
+    const T=abcInk(cardBg);
     ctx.fillStyle=cardBg;ctx.fillRect(0,0,CW,CH);
-    ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,TB);
+    ctx.fillStyle=T.bar;ctx.fillRect(0,0,CW,TB);
 
     const PW=Math.round(CW*selectedFormat.photoPct);
     if(selectedPhoto){
@@ -53372,25 +53383,25 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     }else{
       ctx.fillStyle='#E0E0EE';ctx.fillRect(0,TB,PW,CH-TB);
     }
-    ctx.strokeStyle='#E8E8F0';ctx.lineWidth=2;
+    ctx.strokeStyle=T.divider;ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(PW,0);ctx.lineTo(PW,CH);ctx.stroke();
 
     const IX=PW+30;let IY=36;
     // CS logo
-    ctx.fillStyle='#1A1A2E';
+    ctx.fillStyle=T.lgbg;
     _abcRoundRect(ctx,IX,IY-18,24,24,4);ctx.fill();
-    ctx.fillStyle='#ffffff';
+    ctx.fillStyle=T.lgfg;
     const ls=24/32;
     ctx.save();ctx.translate(IX,IY-18);ctx.scale(ls,ls);
     ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);
     ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);
     ctx.closePath();ctx.fill();ctx.restore();
-    ctx.fillStyle='#1A1A2E';ctx.font='bold 17px Arial,sans-serif';ctx.textAlign='left';
+    ctx.fillStyle=T.lgtx;ctx.font='bold 17px Arial,sans-serif';ctx.textAlign='left';
     ctx.fillText('CASTSLATE',IX+30,IY+1);
     IY+=46;
 
     // Name
-    ctx.fillStyle='#1A1A2E';
+    ctx.fillStyle=T.name;
     let fs2=52;ctx.font=`bold ${fs2}px Arial,sans-serif`;
     let nameText=displayName||'Your Name';
     const maxNW=CW-IX-24;
@@ -53399,12 +53410,12 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     ctx.fillText(nameText,IX,IY);IY+=Math.round(fs2*0.9)+10;
 
     // Headline
-    ctx.fillStyle='#6B6B80';ctx.font='30px Arial,sans-serif';
+    ctx.fillStyle=T.head;ctx.font='30px Arial,sans-serif';
     ctx.fillText(headline||'Actor',IX,IY);IY+=38;
 
     // Location
     if(showLocation&&location){
-      ctx.fillStyle='#8E8EA0';ctx.font='26px Arial,sans-serif';
+      ctx.fillStyle=T.sub;ctx.font='26px Arial,sans-serif';
       ctx.fillText(location,IX,IY);IY+=36;
     }
 
@@ -53415,9 +53426,9 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
         const tw=ctx.measureText(tag).width;
         const pw=tw+24,ph=34;
         if(tx+pw>CW-20)break;
-        ctx.fillStyle='#F0F0F8';_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.fill();
-        ctx.strokeStyle='#E0E0F0';ctx.lineWidth=1;_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.stroke();
-        ctx.fillStyle='#1A1A2E';ctx.fillText(tag,tx+12,IY+4);
+        ctx.fillStyle=T.chipbg;_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.fill();
+        ctx.strokeStyle=T.chipbd;ctx.lineWidth=1;_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.stroke();
+        ctx.fillStyle=T.chipfg;ctx.fillText(tag,tx+12,IY+4);
         tx+=pw+10;
       }
       IY+=44;
@@ -53425,18 +53436,18 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
 
     // Union
     if(showUnion&&unionStatus){
-      ctx.fillStyle=unionStatus.toLowerCase().includes('non')?'#8E8EA0':'#2563EB';
+      ctx.fillStyle=unionStatus.toLowerCase().includes('non')?T.sub:T.union;
       ctx.font='bold 24px Arial,sans-serif';
       ctx.fillText(unionStatus,IX,IY);IY+=34;
     }
 
     // Optional phone number or email entered directly in the card builder
     if(directContact){
-      ctx.font='bold 22px Arial,sans-serif';ctx.fillStyle='#1A1A2E';
+      ctx.font='bold 22px Arial,sans-serif';ctx.fillStyle=T.name;
       const label='Direct contact: ';
       ctx.fillText(label,IX,IY);
       const labelWidth=ctx.measureText(label).width;
-      ctx.font='22px Arial,sans-serif';ctx.fillStyle='#6B6B80';
+      ctx.font='22px Arial,sans-serif';ctx.fillStyle=T.head;
       let contactText=directContact;
       const maxContactWidth=CW-IX-labelWidth-24;
       while(ctx.measureText(contactText).width>maxContactWidth&&contactText.length>3)contactText=contactText.slice(0,-1);
@@ -53446,11 +53457,11 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
 
     // Bottom
     const BY=CH-130;
-    ctx.strokeStyle='#EDEDF0';ctx.lineWidth=1;
+    ctx.strokeStyle=T.rule;ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(IX-10,BY);ctx.lineTo(CW-14,BY);ctx.stroke();
-    ctx.fillStyle='#9090A0';ctx.font='18px monospace';
+    ctx.fillStyle=T.sub2;ctx.font='18px monospace';
     ctx.fillText('castslate.com/talent/',IX,BY+34);
-    ctx.fillStyle='#1A1A2E';ctx.font='bold 24px monospace';
+    ctx.fillStyle=T.slug;ctx.font='bold 24px monospace';
     let st=publicSlug||'';
     while(ctx.measureText(st).width>CW-IX-140&&st.length>3)st=st.slice(0,-1);
     if(st!==publicSlug)st+='…';
@@ -53461,8 +53472,10 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
       try{
         const qrImg=await _abcLoadImg(qrDataUrl);
         const QS=100,QX=CW-QS-24,QY=BY-20;
+        // Dark cards: a white plate with a quiet zone so phones still scan it.
+        if(T.dark){ctx.fillStyle='#FFFFFF';_abcRoundRect(ctx,QX-6,QY-6,QS+12,QS+12,6);ctx.fill();}
         ctx.drawImage(qrImg,QX,QY,QS,QS);
-        ctx.fillStyle='#8E8EA0';ctx.font='11px Arial,sans-serif';
+        ctx.fillStyle=T.sub;ctx.font='11px Arial,sans-serif';
         ctx.textAlign='right';
         ctx.fillText('SCAN TO VIEW PROFILE',QX+QS,QY+QS+15);
         ctx.textAlign='left';
@@ -53474,7 +53487,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
   const drawBackCard=useCallback(async()=>{
     const format=selectedFormat,CW=format.width,CH=format.height;
     const canvas=document.createElement('canvas');canvas.width=CW;canvas.height=CH;
-    const ctx=canvas.getContext('2d');ctx.fillStyle=cardBg;ctx.fillRect(0,0,CW,CH);
+    const ctx=canvas.getContext('2d');ctx.fillStyle=abcInk(cardBg).dark?'#FFFFFF':cardBg;ctx.fillRect(0,0,CW,CH);
     ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,Math.max(12,Math.round(CH*.012)));
     const leftW=Math.round(CW*.57),pad=Math.round(CH*.055),logoSize=Math.round(CH*.052);
     _abcDrawCanvasLogo(ctx,pad,pad,logoSize);
@@ -53720,7 +53733,7 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
               <div role="radiogroup" aria-label="Card color" style={{display:'flex',gap:12,flexWrap:'wrap'}}>
                 {ABC_CARD_COLORS.map(c=>{const on=cardColor===c.key;return(
                   <button key={c.key} type="button" role="radio" aria-checked={on} aria-label={c.name} onClick={()=>{setCardColor(c.key);try{localStorage.setItem('cs_card_color',c.key);}catch(_){}}} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:6,background:'none',border:'none',padding:0,cursor:'pointer',fontFamily:'inherit'}}>
-                    <span style={{width:42,height:42,borderRadius:'50%',background:c.hex,border:on?'2px solid #1A1A2E':'1.5px solid #D6D3CC',boxShadow:on?'0 0 0 3px rgba(26,26,46,.14)':'none',display:'grid',placeItems:'center',color:'#1A1A2E'}}>{on&&<Ico n="check" s={16}/>}</span>
+                    <span style={{width:42,height:42,borderRadius:'50%',background:c.dot||c.hex,border:on?'2px solid #1A1A2E':'1.5px solid #D6D3CC',boxShadow:on?'0 0 0 3px rgba(26,26,46,.14)':'none',display:'grid',placeItems:'center',color:c.ink&&c.ink.dark?'#fff':'#1A1A2E'}}>{on&&<Ico n="check" s={16}/>}</span>
                     <span style={{fontSize:11.5,fontWeight:on?800:600,color:on?'var(--t1)':'var(--t2)'}}>{c.name}</span>
                   </button>);})}
               </div>
