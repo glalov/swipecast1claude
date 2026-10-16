@@ -4409,8 +4409,10 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Video band (2026-10-16): 5.6:1 before JS measures; the clip fills the right 70%, starting under the text scrim. */
 .featured-class-stripe{aspect-ratio:5.6/1;}
 .featured-class-stripe.is-collapsed{aspect-ratio:auto;}
-.fcs-vid{position:absolute;top:0;right:0;bottom:0;width:70%;background:#0c0a08 url(/assets/banner/moon-set.jpg) 50% 61.5%/cover no-repeat;}
-.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 61.5%;filter:brightness(1.12) contrast(1.04);}
+.fcs-vid{position:absolute;top:0;right:0;bottom:0;width:68%;background:#0c0a08 url(/assets/banner/moon-set-v2.jpg) 50% 62%/cover no-repeat;
+  /* No visible start line: the clip fades in from the dark text side (owner, 2026-10-16). */
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 24%);mask-image:linear-gradient(90deg,transparent 0%,#000 24%);}
+.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;filter:brightness(1.12) contrast(1.04);}
 .fcs-hotspot{display:none;}
 .fcs-mobile{display:none;}
 /* Desktop: sharp HTML overlay (label/title/tagline/button) over the dark left of the artwork; a scrim hides the soft baked-in text underneath. */
@@ -4422,7 +4424,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(2px,0.45vw,7px);background:#F0B860;color:#231706;border:none;border-radius:8px;padding:clamp(6px,0.6vw,10px) clamp(13px,1.25vw,22px);font-size:clamp(10px,0.78vw,12.5px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* Compact scrolled strip — own layout, not a crop of the full banner. */
 .fcs-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;opacity:0;pointer-events:none;transition:opacity .28s ease;
-  background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/moon-set.jpg) center 60%/cover;}
+  background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/moon-set-v2.jpg) center 60%/cover;}
 .featured-class-stripe.is-collapsed .fcs-compact{opacity:1;pointer-events:auto;}
 .fcs-compact-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
 .fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;line-height:1.2;white-space:nowrap;}
@@ -4550,7 +4552,7 @@ body.fbsp-open #castoria-root{display:none!important;}
   .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
-  .fcs-vid{left:0;width:100%;background-position:62% 60%;}
+  .fcs-vid{left:0;width:100%;background-position:62% 60%;-webkit-mask-image:none;mask-image:none;}
   .fcs-video{object-position:62% 60%;}
   .fcs-hotspot{display:none;}
   .fcs-overlay{display:none;}
@@ -6582,7 +6584,7 @@ function FeaturedClassBanner({onNavigate}){
     const v=vidRef.current;if(!v)return;
     try{if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;}catch(_){}
     let started=false;
-    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set.mp4";const p=v.play();if(p&&p.catch)p.catch(()=>{});};
+    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set-v2.mp4";const p=v.play();if(p&&p.catch)p.catch(()=>{});};
     if(document.readyState==="complete")start();else window.addEventListener("load",start,{once:true});
     const t=setTimeout(start,4000);
     return()=>{clearTimeout(t);window.removeEventListener("load",start);};
@@ -6716,7 +6718,7 @@ function FeaturedClassBanner({onNavigate}){
   return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}${inspireGo?" fci-go":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
-      <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set.jpg" muted loop playsInline preload="none"/></div>
+      <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set-v2.jpg" muted loop playsInline preload="none"/></div>
       {/* Desktop: sharp HTML overlay over the dark left of the artwork (scrim hides baked-in text). */}
       <div className="fcs-overlay">
         <span className="fcs-ov-label">Featured Class</span>
