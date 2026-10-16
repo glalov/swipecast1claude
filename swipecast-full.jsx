@@ -4234,8 +4234,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 .cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(180deg,#F9D0B2,#F1BC97);}
 /* "Lit from above" (owner, 2026-10-15): even top-down light, no diagonal dark corner, hairline highlight on the top edge. */
 .cs-procard::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:rgba(255,255,255,.7);pointer-events:none;}
-/* No drop shadow and no animated edge line (owner, 2026-10-15). Chip = plain gold, as in the Champagne demo. */
-.cs-pc-chip{position:relative;width:25px;height:18px;border-radius:4px;margin-top:12px;background:linear-gradient(135deg,#E8B85A,#B98426);}
+/* No drop shadow and no animated edge line (owner, 2026-10-15). Chip = outline only: thin navy outline + contact lines, no fill (owner pick, option 6). */
+.cs-pc-chip{position:relative;width:25px;height:18px;border-radius:4px;margin-top:12px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(26,26,46,.55);}
+.cs-pc-chip svg{position:absolute;inset:0;width:100%;height:100%;stroke:rgba(26,26,46,.45);}
 /* Soft luxe shine passing through the "Premium" word (~every 7.5s) — Option B */
 .cs-prem-shine{position:relative;display:inline-block;overflow:hidden;padding:1px 3px;border-radius:3px;animation:cs-prem-glow 7.5s ease-in-out infinite;}
 .cs-prem-shine::after{content:"";position:absolute;top:0;bottom:0;left:-80%;width:70%;transform:skewX(-18deg);pointer-events:none;background:linear-gradient(105deg,transparent,rgba(255,246,214,.75) 45%,rgba(255,255,255,.9) 50%,rgba(255,246,214,.75) 55%,transparent);animation:cs-prem-sweep 7.5s ease-in-out infinite;}
@@ -19383,7 +19384,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <span style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700,color:"rgba(26,26,46,.72)"}}>CastSlate</span>
               <span className="cs-prem-shine" style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#1A1A2E"}}>Premium</span>
             </div>
-            <div className="cs-pc-chip" aria-hidden="true"/>
+            <div className="cs-pc-chip" aria-hidden="true"><svg viewBox="0 0 25 18" fill="none" strokeWidth=".7"><path d="M0 6h7.5M0 12h7.5M17.5 6h7.5M17.5 12h7.5M7.5 2.5v13M17.5 2.5v13M7.5 9h10"/><rect x="7.5" y="2.5" width="10" height="13" rx="2"/></svg></div>
             <div style={{marginTop:12,fontSize:15,fontWeight:600,color:"#1A1A2E",position:"relative",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myProfile?.display_name||firstName}</div>
             <div style={{marginTop:2,fontSize:10,letterSpacing:0.5,color:"rgba(26,26,46,.68)",position:"relative"}}>Member since <b style={{fontWeight:700,color:"#1A1A2E"}}>{(myProfile?.premium_started_at||myProfile?.membership_start_date)?new Date(myProfile.premium_started_at||myProfile.membership_start_date).getFullYear():new Date().getFullYear()}</b></div>
           </div>
