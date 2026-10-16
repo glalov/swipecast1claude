@@ -2483,7 +2483,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* ── Unified profile type (IMDb system, measured on imdb.com 2026-10-15): one font, one size;
    importance by shade — bio #000 > body .87 > secondary .54; labels 500, section titles 22/600. ── */
 .pp-uni{--pp-ink:rgba(0,0,0,.87);--pp-ink2:rgba(0,0,0,.54);}
-.pp-uni.pl-cinematic{--pp-ink:rgba(241,236,227,.92);--pp-ink2:rgba(241,236,227,.6);}
+.pp-uni.pl-cinematic{--pp-ink:rgba(243,236,225,.92);--pp-ink2:rgba(243,236,225,.6);}
 .pp-uni .card{font-family:Roboto,Helvetica,Arial,sans-serif;}
 .pp-uni .card :is(button,.btn-s,.btn-p,.btn-teal,.tag){font-family:'DM Sans',sans-serif;}
 .pp-uni .pl-sh{font-family:Roboto,Helvetica,Arial,sans-serif!important;font-size:22px!important;line-height:26.4px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important;color:var(--pp-ink)!important;}
@@ -2514,7 +2514,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    500 dark; 3 prose + long lists 400; 4 field names 400 muted (t3, never lighter), group titles
    and table headers 500 muted. Bio keeps its own #000. ── */
 .pp-uni{--pp-h:#16120E;--pp-val:#1C1814;--pp-body:#2A241E;--pp-lbl:#433B32;}
-.pp-uni.pl-cinematic{--pp-h:var(--pp-ink);--pp-val:var(--pp-ink);--pp-body:var(--pp-ink);--pp-lbl:rgba(241,236,227,.72);}
+.pp-uni.pl-cinematic{--pp-h:#F6EFE4;--pp-val:#F6EFE4;--pp-body:rgba(243,236,225,.86);--pp-lbl:rgba(243,236,225,.62);}
 .pp-uni .pl-sh{color:var(--pp-h)!important;}
 .pp-uni .pp-lbl,.pp-uni .pp-plays-label{font-weight:400!important;color:var(--pp-lbl)!important;}
 .pp-uni .pp-lbl.pp-grp,.pp-uni .pp-cred-catlbl,.pp-uni .pp-cred-head{font-weight:500!important;color:var(--pp-lbl)!important;}
@@ -2564,7 +2564,18 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pl-strip-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .pl-look .pp-play.is-primary{background:var(--pl-acc);border-color:var(--pl-acc);}
 .pl-acc-gold .pp-play.is-primary{color:#1A1A2E;}
-.pl-cinematic{--bg:#121216;--s1:#1B1B22;--s2:#26262F;--bdr:#2E2E38;--t1:#F1ECE3;--t2:#CFC8BC;--t3:#A39C90;color:var(--t1);}
+/* Cinematic = warm "theatre" dark (owner, 2026-10-15; demo cinematic-dark-theme-demo.html): espresso page,
+   cards one clear step lighter with a faint warm top edge, cream text, gold only as accent. Was cold #121216. */
+.pl-cinematic{--bg:#16120E;--s1:#201A15;--s2:#2A231C;--bdr:#3A3128;--t1:#F3ECE1;--t2:#D9CFC1;--t3:#A99E90;color:var(--t1);}
+.pl-cinematic .card,.pl-cinematic .pl-hero{box-shadow:inset 0 1px 0 rgba(255,236,210,.05);}
+.pl-cinematic .pl-hero-img{position:relative;}
+.pl-cinematic .pl-hero-img::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(32,26,21,0) 70%,rgba(32,26,21,.85));}
+@media(max-width:767px){.pl-cinematic .pl-hero-img::after{background:linear-gradient(180deg,rgba(32,26,21,0) 72%,rgba(32,26,21,.9));}}
+/* The one hero action is filled, not a thin outline that gets lost on dark. */
+.pl-cinematic .pl-hero-btns .pl-btn.ghost:only-child{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
+.pl-cinematic.pl-acc-gold .pl-btn:not(.ghost),.pl-cinematic.pl-acc-gold .pl-hero-btns .pl-btn.ghost:only-child{color:#16120E;}
+/* Outside its own /talent/ page (admin catalog, CD overlay) the page stays cream and the profile sits in its own dark frame. */
+html:not(.pl-body-cinematic) .pp-uni.pl-cinematic{background:var(--bg);border-radius:16px;padding:16px;}
 .pl-cinematic .tag-acc{color:var(--t1);background:var(--s2);}
 .pl-cinematic .btn-p{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
 .pl-cinematic.pl-acc-gold .btn-p{color:#1A1A2E;}
@@ -2576,7 +2587,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Accent everywhere (owner 2026-10-15, demo accent-color-demo.html v3): visible even with no reel/socials. --pl-acc-ink = text-safe shade (gold too pale as text on light pages). */
 .pl-look{--pl-acc-ink:var(--pl-acc);}
 .pl-look.pl-acc-gold{--pl-acc-ink:#94722A;}
-.pl-look.pl-cinematic.pl-acc-gold{--pl-acc-ink:#C9A24A;}
+.pl-look.pl-cinematic.pl-acc-gold{--pl-acc-ink:#D6AE5C;}
 .pl-look .pl-hero-txt .tag-acc{background:var(--pl-acc)!important;color:#fff!important;}
 .pl-look.pl-acc-gold .pl-hero-txt .tag-acc{color:#1A1A2E!important;}
 .pl-nm-line{width:44px;height:3px;border-radius:3px;background:var(--pl-acc);margin:-2px 0 14px;}
@@ -2584,7 +2595,19 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni.pl-look .pl-sh{border-left:3px solid var(--pl-acc);padding-left:10px;}
 .pp-uni.pl-look .pp-play.is-primary{color:var(--pl-acc-ink)!important;}
 .pl-look .pp-resume{color:var(--pl-acc-ink)!important;}
-html.pl-body-cinematic .app>main{background:#121216;}
+html.pl-body-cinematic .app>main{background:#16120E;}
+/* Dark nav + footer on a cinematic profile page, so no bright white bar slices the top. Pop-up menus keep the light palette. */
+html.pl-body-cinematic .nav{background:#16120E;border-bottom-color:#2C251E;--t1:#F3ECE1;--t2:#D9CFC1;--t3:#A99E90;--bdr:#3A3128;--s2:#2A231C;--acc:#2A8472;}
+html.pl-body-cinematic .nav .logo{color:#F3ECE1;}
+html.pl-body-cinematic .nav .logo-i{background:#F3ECE1;color:#16120E;}
+html.pl-body-cinematic .nav-links>span{color:#E8DFD2;}
+html.pl-body-cinematic .nav-links>span:hover{background:rgba(255,255,255,.07);}
+html.pl-body-cinematic .nav-links>span.act{background:rgba(255,255,255,.1);color:#fff;}
+html.pl-body-cinematic .nav-links>span.nav-attn,html.pl-body-cinematic .nav-links>span.nav-attn.act{color:#E8A54A;background:rgba(232,144,42,.14);}
+html.pl-body-cinematic .nav .btn-p{background:#F3ECE1;color:#16120E;}
+html.pl-body-cinematic .nav .nav-ddm,html.pl-body-cinematic .nav .join-dd-menu,html.pl-body-cinematic .nav .join-dd-menu-m,html.pl-body-cinematic .nav [class*="menu"]{--t1:#241F19;--t2:#3A322A;--t3:#433B32;--bdr:#E4DCCB;--s2:#F2ECE0;--acc:#1A1A2E;color:#241F19;}
+html.pl-body-cinematic .site-footer{background:#110E0B;border-top-color:#2C251E;}
+html.pl-body-cinematic .site-footer::before{background:#110E0B;}
 html.pl-body-editorial .app>main{background:#FFFFFF;}
 @media(max-width:767px){.pl-hero{grid-template-columns:minmax(0,1fr);}.pl-hero-txt{padding:20px;}.pl-hero-nm{font-size:clamp(32px,9vw,44px);}.pl-strip{grid-template-columns:repeat(2,minmax(0,1fr));}.pl-hero-btns .pl-btn{flex:1 1 auto;justify-content:center;}}
 .pp-plays-label{margin-bottom:6px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
@@ -14539,7 +14562,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   useEffect(()=>{
     const cls=["pl-body-cinematic","pl-body-editorial"],el=document.documentElement;
     cls.forEach(c=>el.classList.remove(c));
-    if(plTheme!=="classic")el.classList.add("pl-body-"+plTheme);
+    // Only on the profile's own /talent/ page: in the admin catalog or a CD overlay the
+    // surrounding page keeps its normal colours (the profile then gets its own dark frame).
+    if(plTheme!=="classic"&&window.location.pathname.indexOf("/talent/")===0)el.classList.add("pl-body-"+plTheme);
     return()=>cls.forEach(c=>el.classList.remove(c));
   },[plTheme]);
 
@@ -14674,7 +14699,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const heroName=freshProfile?.display_name||talent.name||talent.display_name||"—";
   const canMessage=!isOwnProfile&&!!talentDbId&&talentDbId!==session?.user?.id;
   const heroMessage=()=>{if(viewerIsCd||session){setCdAction("dm");return;}try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");};
-  return(<div className={"page pp-uni"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":PL_ACCENTS[look.accent]}:undefined}>
+  return(<div className={"page pp-uni"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":(look.theme==="cinematic"&&look.accent==="gold")?"#D6AE5C":PL_ACCENTS[look.accent]}:undefined}>
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div style={{fontSize:13,color:"#fff",fontWeight:600}}><Ico n="eye" s={22}/> Previewing your public profile — this is how casting directors see you.</div>
