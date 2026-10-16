@@ -4231,9 +4231,10 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Premium "Member" status card — dashboard welcome flourish. Rendered only for membership_status='active'.
    Soft Peach (owner's final pick, 2026-10-15; was purple → Peach & Gold → Champagne). Navy text,
    plain gold chip kept from Champagne. Not the flat button gold, so it reads as a status, not a CTA. */
-.cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(180deg,#F9D0B2,#F1BC97);}
-/* "Lit from above" (owner, 2026-10-15): even top-down light, no diagonal dark corner, hairline highlight on the top edge. */
-.cs-procard::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:rgba(255,255,255,.7);pointer-events:none;}
+.cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(180deg,#FAD5B9,#EFB892);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 -1px 0 rgba(150,80,40,.18);}
+/* "3D card" (owner, 2026-10-15, shading demo option 4): soft vertical light, bright top edge, faint inner
+   bottom edge, one soft diagonal sheen across the face. Still no outer shadow. Chip styled separately. */
+.cs-procard::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.28) 48%,rgba(255,255,255,0) 60%);pointer-events:none;}
 /* No drop shadow and no animated edge line (owner, 2026-10-15). Chip = outline only: thin navy outline + contact lines, no fill (owner pick, option 6). */
 .cs-pc-chip{position:relative;width:25px;height:18px;border-radius:4px;margin-top:12px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(26,26,46,.55);}
 .cs-pc-chip svg{position:absolute;inset:0;width:100%;height:100%;stroke:rgba(26,26,46,.45);}
