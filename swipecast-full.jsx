@@ -4228,9 +4228,11 @@ body.fbsp-open #castoria-root{display:none!important;}
 @keyframes abc-pulse{0%,100%{box-shadow:0 0 6px var(--amber);opacity:.75;}50%{box-shadow:0 0 14px var(--amber);opacity:1;}}
 @keyframes abc-btnshine{0%{transform:translateX(0) skewX(-18deg);}55%,100%{transform:translateX(422%) skewX(-18deg);}}
 @media(prefers-reduced-motion:reduce){.abc-prem,.abc-prem::after,.abc-prem .abc-glow-o,.abc-prem .abc-dot{animation:none!important;}.abc-prem::after{display:none;}}
-/* Premium "Member" status card — dashboard welcome flourish (brand purple). Rendered only for membership_status='active'. */
-.cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#7a4fd6,#4d2a9c 60%,#7a4fd6);box-shadow:0 18px 40px -22px rgba(77,42,156,.6);}
-.cs-procard .cs-pc-edge{position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(120deg,#a07bff,#ffe9a8,#a07bff);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cs-pc-edge 6s linear infinite;opacity:.85;pointer-events:none;}
+/* Premium "Member" status card — dashboard welcome flourish. Rendered only for membership_status='active'.
+   Peach & Gold (owner, 2026-10-15; was purple, the only purple on the page). Peach = welcome, gold = earned;
+   deliberately not the flat button gold, so it reads as a status, not a CTA. Navy text. */
+.cs-procard{position:relative;overflow:hidden;width:230px;flex:none;border-radius:14px;padding:15px 17px;background:linear-gradient(145deg,#F7C6A3,#F3BE8E 50%,#EDB565);box-shadow:0 18px 40px -22px rgba(180,110,45,.55);}
+.cs-procard .cs-pc-edge{position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(120deg,#FFF0DC,rgba(26,26,46,.4),#FFF0DC);background-size:200% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:cs-pc-edge 6s linear infinite;opacity:.85;pointer-events:none;}
 @keyframes cs-pc-edge{to{background-position:200% 50%;}}
 @media(prefers-reduced-motion:reduce){.cs-procard .cs-pc-edge{animation:none;}}
 /* Soft luxe shine passing through the "Premium" word (~every 7.5s) — Option B */
@@ -19378,12 +19380,12 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           <div className="cs-procard" aria-label="Premium member card">
             <div className="cs-pc-edge"/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative"}}>
-              <span style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700,color:"#d6c8f7"}}>CastSlate</span>
-              <span className="cs-prem-shine" style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#ffe9a8"}}>Premium</span>
+              <span style={{fontSize:10,letterSpacing:2,textTransform:"uppercase",fontWeight:700,color:"rgba(26,26,46,.72)"}}>CastSlate</span>
+              <span className="cs-prem-shine" style={{fontSize:10,fontWeight:800,letterSpacing:1.4,color:"#1A1A2E"}}>Premium</span>
             </div>
-            <div style={{width:25,height:18,borderRadius:4,marginTop:12,background:"linear-gradient(135deg,#ffe9a8,#e6b84e)",position:"relative"}}/>
-            <div style={{marginTop:12,fontSize:15,fontWeight:600,color:"#fff",position:"relative",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myProfile?.display_name||firstName}</div>
-            <div style={{marginTop:2,fontSize:10,letterSpacing:0.5,color:"#d0c2f2",position:"relative"}}>Member since {(myProfile?.premium_started_at||myProfile?.membership_start_date)?new Date(myProfile.premium_started_at||myProfile.membership_start_date).getFullYear():new Date().getFullYear()}</div>
+            <div style={{width:25,height:18,borderRadius:4,marginTop:12,background:"linear-gradient(135deg,#2C2E4C,#15162B)",position:"relative"}}/>
+            <div style={{marginTop:12,fontSize:15,fontWeight:600,color:"#1A1A2E",position:"relative",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{myProfile?.display_name||firstName}</div>
+            <div style={{marginTop:2,fontSize:10,letterSpacing:0.5,color:"rgba(26,26,46,.7)",position:"relative"}}>Member since <b style={{fontWeight:700,color:"#1A1A2E"}}>{(myProfile?.premium_started_at||myProfile?.membership_start_date)?new Date(myProfile.premium_started_at||myProfile.membership_start_date).getFullYear():new Date().getFullYear()}</b></div>
           </div>
         )}
       </div>
