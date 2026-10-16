@@ -3087,22 +3087,23 @@ body.sheet-push .b2t-cube{display:none;}
   .tad-donts{grid-template-columns:1fr;}
   .tad-mlitem{grid-template-columns:26px 1fr;}
 }
-/* ── Casting Companies Directory dashboard card: "The Slate", Chalk White ──
+/* ── Casting Companies Directory dashboard card: "The Slate", Paper White ──
+   (owner, 2026-10-15: board went Chalk White → Paper White so it lifts off the cream page.)
    A clapperboard: cream board, black clapper stripes, chalk-ruled PROD / ROLL /
    TAKE board. Owner's call 2026-10-04: chalk white, and the clapper does NOT
    animate (it is a still image of a slate). Only the hover lift and the
    blinking "rolling" dot move. */
-.cdxs{position:relative;overflow:hidden;border-radius:16px;cursor:pointer;background:#F7F2E8;border:1.5px solid #D9CFBC;color:#1A1A1F;transition:transform .3s,box-shadow .3s;}
+.cdxs{position:relative;overflow:hidden;border-radius:16px;cursor:pointer;background:#FFFFFF;border:1.5px solid #D9CFBC;color:#1A1A1F;box-shadow:0 2px 10px -4px rgba(26,26,31,.12);transition:transform .3s,box-shadow .3s;}
 .cdxs:hover{transform:translateY(-3px);box-shadow:0 24px 48px -20px rgba(26,26,31,.35);}
 .cdxs:focus-visible{outline:2px solid #1A1A1F;outline-offset:3px;}
-.cdxs-clap{position:relative;height:30px;background:repeating-linear-gradient(-45deg,#1A1A1F 0 16px,#F7F2E8 16px 32px);border-bottom:2px solid #1A1A1F;}
-.cdxs-hinge{position:absolute;left:6px;top:24px;width:12px;height:12px;border-radius:50%;background:#F7F2E8;border:2px solid #1A1A1F;z-index:4;}
+.cdxs-clap{position:relative;height:30px;background:repeating-linear-gradient(-45deg,#1A1A1F 0 16px,#FFFFFF 16px 32px);border-bottom:2px solid #1A1A1F;}
+.cdxs-hinge{position:absolute;left:6px;top:24px;width:12px;height:12px;border-radius:50%;background:#FFFFFF;border:2px solid #1A1A1F;z-index:4;}
 .cdxs-in{position:relative;z-index:3;padding:18px 20px 20px;}
 .cdxs-kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#1A1A1F;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
 .cdxs-rec{width:7px;height:7px;border-radius:50%;background:#E5484D;box-shadow:0 0 6px rgba(229,72,77,.7);animation:cdxsRec 1.6s steps(1) infinite;}
 @keyframes cdxsRec{50%{opacity:.25;}}
 .cdxs-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.cdxs-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:#1A1A1F;color:#F7F2E8;}
+.cdxs-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:#1A1A1F;color:#FFFFFF;}
 .cdxs h3{font-weight:800;font-size:15.5px;color:#1A1A1F;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;line-height:1.3;}
 .cdxs p.cdxs-sub{font-size:13px;color:#4A4238;margin:0 0 14px;line-height:1.55;}
 .cdxs-board{display:grid;grid-template-columns:1.25fr 1fr 1.15fr;border:1.5px solid rgba(26,26,31,.55);border-radius:6px;margin:0 0 14px;font-family:'Courier New',ui-monospace,monospace;}
