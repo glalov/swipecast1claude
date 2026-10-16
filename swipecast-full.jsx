@@ -2567,7 +2567,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Cinematic = warm "theatre" dark (owner, 2026-10-15; demo cinematic-dark-theme-demo.html): espresso page,
    cards one clear step lighter with a faint warm top edge, cream text, gold only as accent. Was cold #121216. */
 .pl-cinematic{--bg:#16120E;--s1:#201A15;--s2:#2A231C;--bdr:#3A3128;--t1:#F3ECE1;--t2:#D9CFC1;--t3:#A99E90;color:var(--t1);}
-.pl-cinematic .card,.pl-cinematic .pl-hero{box-shadow:inset 0 1px 0 rgba(255,236,210,.05);}
+/* Dark cards: no outlines - the lighter card tone alone separates them; dividers are one faint solid style (owner, 2026-10-16). */
+.pl-cinematic .card,.pl-cinematic .pl-hero{border-color:transparent!important;box-shadow:none;}
+.pl-cinematic .pp-stats,.pl-cinematic .pp-div{border-top:1px solid rgba(243,236,225,.06)!important;}
 .pl-cinematic .pl-hero-img{position:relative;}
 .pl-cinematic .pl-hero-img::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(32,26,21,0) 70%,rgba(32,26,21,.85));}
 @media(max-width:767px){.pl-cinematic .pl-hero-img::after{background:linear-gradient(180deg,rgba(32,26,21,0) 72%,rgba(32,26,21,.9));}}
@@ -2577,6 +2579,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* .pp-frame wraps the profile content (not the site footer the page renders inside itself). Normally it has no
    box at all. Outside its own /talent/ page (admin catalog, CD overlay) the page stays cream and the frame becomes
    the dark stage, so admin sees the profile exactly as the public page shows it, ending before the footer. */
+/* No bio above the stats: the stats divider would sit right under the card edge (a double line). All themes. */
+.pp-uni .pp-stats:first-child{border-top:0!important;padding-top:0!important;}
 .pp-frame{display:contents;}
 html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{display:block;background:var(--bg);border-radius:18px;padding:28px 28px 32px;margin-bottom:28px;}
 @media(max-width:767px){html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.pp-frame{padding:14px;}}
@@ -14882,7 +14886,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           </div>
         )}
         {ethnicityText&&(
-          <div style={{display:"flex",gap:10,alignItems:"baseline",flexWrap:"wrap",margin:"12px 0 14px",paddingTop:10,borderTop:statsData.length?"1px dashed var(--bdr)":"1px solid var(--bdr)"}}>
+          <div className="pp-div" style={{display:"flex",gap:10,alignItems:"baseline",flexWrap:"wrap",margin:"12px 0 14px",paddingTop:10,borderTop:statsData.length?"1px dashed var(--bdr)":"1px solid var(--bdr)"}}>
             <div className="pp-lbl" style={{fontSize:10,color:"var(--t3)",textTransform:"uppercase",letterSpacing:"0.07em",flexShrink:0}}>Ethnicity</div>
             <div className="pp-val" style={{fontSize:14,fontWeight:600,color:"var(--t1)",lineHeight:1.45,minWidth:0}}>{ethnicityText}</div>
           </div>
@@ -14898,7 +14902,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         {!isOwnProfile&&talentDbId&&talentDbId!==session?.user?.id&&(()=>{
           const talentFirst=(talent.name||talent.display_name||"this actor").split(" ")[0];
           return(
-          <div style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginTop:2}}>
+          <div className="pp-div" style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginTop:2}}>
             {viewerIsCd?(
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 <button className="btn-p btn-sm" onClick={()=>setCdAction("invite")}><Ico n="mail" s={22}/> Invite to a Casting</button>
@@ -15049,7 +15053,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           {rows.map(([k,v])=><div key={k}><div className="pp-lbl" style={{fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:2}}>{k}</div><div className="pp-val" style={{fontSize:14,fontWeight:700,color:"var(--t1)"}}>{v}</div></div>)}
         </div>}
         {notes&&<div className="pp-txt" style={{marginTop:rows.length?12:0,fontSize:13,color:"var(--t2)",lineHeight:1.55}}><span className="pp-inl-lbl">Notes to wardrobe:</span> {notes}</div>}
-        {mods.length>0&&<div className="pp-txt" style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
+        {mods.length>0&&<div className="pp-txt pp-div" style={{marginTop:12,paddingTop:10,borderTop:"1px dashed var(--bdr)",display:"flex",gap:16,flexWrap:"wrap",fontSize:13,color:"var(--t2)"}}>
           {mods.map(([k,v])=><span key={k}><span className="pp-inl-lbl">{k}:</span> <strong style={{color:"var(--t1)"}}>{v?"Yes":"No"}</strong></span>)}
           <span className="pp-sec" style={{fontSize:11,color:"var(--t3)"}}>{isOwnProfile?"· hidden from the public — only you and casting directors you submit to can see this":"· visible only to casting directors this actor submitted to"}</span>
         </div>}
