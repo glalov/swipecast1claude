@@ -4445,7 +4445,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fci-half.l{left:0;}
 .fci-half.r{right:0;}
 .fci-row{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,.7vw,10px);}
-.fci-word{font-family:'Anton',Impact,sans-serif;font-weight:400;color:#fff;text-transform:uppercase;letter-spacing:.012em;line-height:.92;white-space:nowrap;font-size:clamp(17px,3.3vw,50px);opacity:0;will-change:transform,opacity;}
+.fci-word{font-family:'Anton',Impact,sans-serif;font-weight:400;color:#fff;text-transform:uppercase;letter-spacing:.012em;line-height:.92;white-space:nowrap;font-size:clamp(24px,5vw,90px);opacity:0;will-change:transform,opacity;}
 .fci-go .fci-w1{animation:fciWipeL .38s cubic-bezier(.16,1,.3,1) .08s both;}
 .fci-go .fci-w2{animation:fciWipeR .38s cubic-bezier(.16,1,.3,1) .30s both;}
 .fci-go .fci-row{animation:fciFade .26s ease 1.58s both;}
