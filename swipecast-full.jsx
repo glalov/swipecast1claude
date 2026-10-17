@@ -2400,6 +2400,14 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .page.page-browse{max-width:1160px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
+.card.tm-card{margin:0;padding:clamp(24px,2.4vw,32px);display:flex;flex-direction:column;min-width:0;border-radius:20px;}
+.tm-qm{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:72px;line-height:.62;color:var(--teal);height:34px;margin:0 0 10px;}
+.tm-q{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:500;font-size:clamp(16.5px,1.45vw,19px);line-height:1.55;letter-spacing:-.1px;color:var(--t1);flex:1;text-wrap:pretty;}
+.tm-mark{background:none;color:inherit;font-weight:700;background-image:linear-gradient(transparent 62%,rgba(42,132,114,.26) 62%);}
+.tm-who{display:flex;align-items:center;gap:13px;margin-top:26px;padding-top:18px;border-top:1px solid var(--bdr);}
+.tm-av{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--bdr);}
+.tm-n{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;color:var(--t1);}
+.tm-r{font-size:12.5px;color:var(--t2);margin-top:2px;}
 .landing-hero-desc{color:var(--t1);font-size:17.5px;line-height:1.6;font-weight:500;max-width:520px;margin-bottom:26px;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
@@ -26728,25 +26736,18 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
       <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
         {[
-          {q:"At a networking night at Ripley Grier, I handed an agent my CastSlate QR card instead of a resume. He scanned my reel on the spot — and I had a callback the same day.",n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",chip:"Callback the same day",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=160&q=80",imgPos:"center 20%"},
-          {q:"I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly saved me hours.",n:"Jordan Blake",r:"Casting Director · Commercials",chip:"CD · 10+ yrs experience",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=160&q=80",imgPos:"center 15%"},
-          {q:"I like that I can submit without feeling pushed into an upgrade. The casting details are clear and the process feels straightforward.",n:"Ethan Cole",r:"Actor · LA · Non-Union",chip:"Working actor",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=160&q=80",imgPos:"center 10%"}
+          {q:["At a networking night at Ripley Grier, I handed an agent my CastSlate QR card instead of a resume. He scanned my reel on the spot — and ","I had a callback the same day.",""],n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=160&q=80",imgPos:"center 20%"},
+          {q:["I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly ","saved me hours.",""],n:"Jordan Blake",r:"Casting Director · Commercials",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=160&q=80",imgPos:"center 15%"},
+          {q:["I like that I can ","submit without feeling pushed into an upgrade."," The casting details are clear and the process feels straightforward."],n:"Ethan Cole",r:"Actor · LA · Non-Union",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=160&q=80",imgPos:"center 10%"}
         ].map((t,i)=>
-          <div key={i} className="card" style={{padding:28,display:"flex",flexDirection:"column"}}>
-            <span style={{display:"inline-flex",alignItems:"center",gap:6,alignSelf:"flex-start",background:"rgba(79,139,127,.1)",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:.3,padding:"5px 11px",borderRadius:999,marginBottom:16}}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-              User feedback
-            </span>
-            <p style={{fontSize:14,lineHeight:1.65,color:"var(--t1)",marginBottom:20,fontWeight:500,flex:1}}>"{t.q}"</p>
-            <div style={{display:"flex",alignItems:"center",gap:12,paddingTop:16,borderTop:"1px solid var(--bdr)"}}>
-              <img src={t.img} alt={t.n} style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",objectPosition:t.imgPos,flexShrink:0,border:"1px solid var(--bdr)"}}/>
-              <div><div style={{fontSize:13,fontWeight:700}}>{t.n}</div><div style={{fontSize:11,color:"var(--t3)"}}>{t.r}</div></div>
-            </div>
-            <span style={{display:"inline-flex",alignItems:"center",gap:6,alignSelf:"flex-start",background:"rgba(27,135,62,.08)",color:"var(--grn)",fontSize:11,fontWeight:600,padding:"5px 11px",borderRadius:999,marginTop:16}}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-              {t.chip}
-            </span>
-          </div>
+          <figure key={i} className="card tm-card">
+            <div className="tm-qm" aria-hidden="true">“</div>
+            <blockquote className="tm-q">{t.q[0]}<mark className="tm-mark">{t.q[1]}</mark>{t.q[2]}</blockquote>
+            <figcaption className="tm-who">
+              <img className="tm-av" src={t.img} alt={t.n} style={{objectPosition:t.imgPos}}/>
+              <div><div className="tm-n">{t.n}</div><div className="tm-r">{t.r}</div></div>
+            </figcaption>
+          </figure>
         )}
       </div>
     </section>
