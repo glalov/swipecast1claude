@@ -461,6 +461,17 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
        finished downloading MID-INTRO on cold first loads, re-rendering the name
        ("blink"). System fonts are always instantly available on every OS. */
     #cs-intro .cs-intro-name{{position:relative;white-space:nowrap;color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:-1.2px;}}
+    /* Desktop sizing: the lockup scales with the screen (about 30vw wide, 52px
+       type floor = the old size, 720px-wide cap) and sits at ~47% of the screen
+       height instead of dead centre. Phones/tablets (<1024px) keep the original
+       fixed sizes. Everything is in em off the .cs-intro-mark font-size, so the
+       box, gap and name stay in proportion. */
+    @media (min-width:1024px){{
+      #cs-intro .cs-intro-hold{{box-sizing:border-box;padding-bottom:6vh;}}
+      #cs-intro .cs-intro-mark{{font-size:clamp(52px,4.74vw,113px);gap:.3077em;}}
+      #cs-intro .cs-intro-box{{width:1.4231em;height:1.4231em;border-radius:.3077em;}}
+      #cs-intro .cs-intro-name{{font-size:1em;letter-spacing:-.023em;}}
+    }}
     @-webkit-keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @keyframes cs-intro-in{{to{{opacity:1;-webkit-transform:none;transform:none;}}}}
     @-webkit-keyframes cs-breathe{{from{{-webkit-transform:scale(1);transform:scale(1);}}to{{-webkit-transform:scale(1.016);transform:scale(1.016);}}}}
