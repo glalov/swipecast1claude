@@ -6621,8 +6621,11 @@ function FeaturedClassBanner({onNavigate}){
   //     return true;
   //   }catch(e){return false;}
   const [introOn,setIntroOn]=useState(false);
-  // "Stage Curtain" banner intro. Plays on EVERY load and refresh by design —
-  // there is no session gate. Two flags, not one: inspireOn mounts the veil on
+  // "Stage Curtain" banner intro. Plays once per page load (entering the site
+  // or refreshing, in any tab) and NOT again when the visitor navigates away
+  // and comes back to Home inside the app: window.__CS_INSPIRE_PLAYED lives
+  // only as long as the page's JS context, so a refresh or a fresh visit
+  // resets it, while in-app navigation does not. No sessionStorage on purpose. Two flags, not one: inspireOn mounts the veil on
   // the very first render so the banner artwork is never on screen before the
   // intro, and inspireGo starts the animation only once the entry curtain has
   // actually been removed from the DOM. Collapsing these into one flag is what
@@ -6632,6 +6635,8 @@ function FeaturedClassBanner({onNavigate}){
     try{
       if(typeof window==="undefined")return false;
       if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;
+      if(window.__CS_INSPIRE_PLAYED)return false;
+      window.__CS_INSPIRE_PLAYED=true;
     }catch(e){}
     return true;
   });
