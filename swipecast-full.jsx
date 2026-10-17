@@ -2405,7 +2405,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tm-q{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:500;font-size:clamp(16.5px,1.45vw,19px);line-height:1.55;letter-spacing:-.1px;color:var(--t1);flex:1;text-wrap:pretty;}
 .tm-mark{background:none;color:inherit;font-weight:700;background-image:linear-gradient(transparent 62%,rgba(42,132,114,.26) 62%);}
 .tm-who{display:flex;align-items:center;gap:13px;margin-top:26px;padding-top:18px;border-top:1px solid var(--bdr);}
-.tm-av{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--bdr);}
+.tm-av{position:relative;display:block;width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid var(--bdr);background:#E8E2D6;}
+.tm-av img{position:absolute;display:block;max-width:none;height:auto;}
 .tm-n{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;color:var(--t1);}
 .tm-r{font-size:12.5px;color:var(--t2);margin-top:2px;}
 /* First testimonial card: "Midnight with a warm glow" (owner approved 2026-10-17, demo card-variants.html variation 1). */
@@ -26745,15 +26746,15 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
       <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
         {[
-          {q:["At a networking night at Ripley Grier, I handed an agent my CastSlate QR card instead of a resume. He scanned my reel on the spot — and ","I had a callback the same day.",""],n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=160&q=80",imgPos:"center 20%"},
-          {q:["I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly ","saved me hours.",""],n:"Jordan Blake",r:"Casting Director · Commercials",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=160&q=80",imgPos:"center 15%"},
-          {q:["I like that I can ","submit without feeling pushed into an upgrade."," The casting details are clear and the process feels straightforward."],n:"Ethan Cole",r:"Actor · LA · Non-Union",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=160&q=80",imgPos:"center 10%"}
+          {q:["At a networking night at Ripley Grier, I handed an agent my CastSlate QR card instead of a resume. He scanned my reel on the spot — and ","I had a callback the same day.",""],n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=320&q=80",imgPos:"center 20%",crop:[150,-21.25,-43]},
+          {q:["I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly ","saved me hours.",""],n:"Jordan Blake",r:"Casting Director · Commercials",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=320&q=80",imgPos:"center 15%",crop:[150,-18,0]},
+          {q:["I like that I can ","submit without feeling pushed into an upgrade."," The casting details are clear and the process feels straightforward."],n:"Ethan Cole",r:"Actor · LA · Non-Union",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=320&q=80",imgPos:"center 10%",crop:[120,-20,-10]}
         ].map((t,i)=>
           <figure key={i} className={"card tm-card"+(i===0?" tm-feat":"")}>
             <div className="tm-qm" aria-hidden="true">“</div>
             <blockquote className="tm-q">{t.q[0]}<mark className="tm-mark">{t.q[1]}</mark>{t.q[2]}</blockquote>
             <figcaption className="tm-who">
-              <img className="tm-av" src={t.img} alt={t.n} style={{objectPosition:t.imgPos}}/>
+              <span className="tm-av"><img src={t.img} alt={t.n} style={{width:t.crop[0]+"%",left:t.crop[1]+"%",top:t.crop[2]+"%"}}/></span>
               <div><div className="tm-n">{t.n}</div><div className="tm-r">{t.r}</div></div>
             </figcaption>
           </figure>
