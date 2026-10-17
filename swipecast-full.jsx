@@ -2408,6 +2408,15 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tm-av{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--bdr);}
 .tm-n{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;color:var(--t1);}
 .tm-r{font-size:12.5px;color:var(--t2);margin-top:2px;}
+/* First testimonial card: "Midnight with a warm glow" (owner approved 2026-10-17, demo card-variants.html variation 1). */
+.card.tm-card.tm-feat{background:radial-gradient(circle at 92% -4%,rgba(240,184,96,.30),rgba(240,184,96,0) 46%),linear-gradient(162deg,#1A1A2E 0%,#23234A 100%);border-color:rgba(240,184,96,.38);box-shadow:0 22px 44px -22px rgba(26,26,46,.75);}
+.tm-feat .tm-qm{color:#F0B860;}
+.tm-feat .tm-q{color:#FFF8EA;}
+.tm-feat .tm-mark{background-image:linear-gradient(transparent 60%,rgba(240,184,96,.55) 60%);}
+.tm-feat .tm-who{border-top-color:rgba(240,184,96,.28);}
+.tm-feat .tm-n{color:#fff;}
+.tm-feat .tm-r{color:#D3CEE0;}
+.tm-feat .tm-av{border-color:transparent;box-shadow:0 0 0 2px #1E1E3C,0 0 0 4px rgba(240,184,96,.85);}
 .landing-hero-desc{color:var(--t1);font-size:17.5px;line-height:1.6;font-weight:500;max-width:520px;margin-bottom:26px;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
@@ -26740,7 +26749,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           {q:["I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly ","saved me hours.",""],n:"Jordan Blake",r:"Casting Director · Commercials",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=160&q=80",imgPos:"center 15%"},
           {q:["I like that I can ","submit without feeling pushed into an upgrade."," The casting details are clear and the process feels straightforward."],n:"Ethan Cole",r:"Actor · LA · Non-Union",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=160&q=80",imgPos:"center 10%"}
         ].map((t,i)=>
-          <figure key={i} className="card tm-card">
+          <figure key={i} className={"card tm-card"+(i===0?" tm-feat":"")}>
             <div className="tm-qm" aria-hidden="true">“</div>
             <blockquote className="tm-q">{t.q[0]}<mark className="tm-mark">{t.q[1]}</mark>{t.q[2]}</blockquote>
             <figcaption className="tm-who">
