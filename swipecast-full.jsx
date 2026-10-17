@@ -6603,10 +6603,32 @@ function FeaturedClassBanner({onNavigate}){
     const v=vidRef.current;if(!v)return;
     try{if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;}catch(_){}
     let started=false;
-    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set-v2.mp4";const p=v.play();if(p&&p.catch)p.catch(()=>{});};
+    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set-v3.mp4";const p=v.play();if(p&&p.catch)p.catch(()=>{});};
     if(document.readyState==="complete")start();else window.addEventListener("load",start,{once:true});
     const t=setTimeout(start,4000);
-    return()=>{clearTimeout(t);window.removeEventListener("load",start);};
+    // Coming back to the tab. Browsers drop the video track while a tab is in the
+    // background and, on return, wait for the next keyframe before painting again
+    // (the clip used to have one every 10s, so the banner sat frozen for seconds;
+    // v3 has one every 0.5s). A long absence can also leave the element paused.
+    // wake() restarts it the moment the tab is visible, and if the clock still has
+    // not moved 200ms later (decoder stuck) a seek to the same spot kicks it loose.
+    // Event-driven, no polling. The clip is a loop, so where it resumes is
+    // indistinguishable from "it never stopped".
+    let wt=0;
+    const wake=()=>{
+      if(document.hidden||!started)return;
+      if(v.paused||v.ended){const p=v.play();if(p&&p.catch)p.catch(()=>{});}
+      const at=v.currentTime;
+      window.clearTimeout(wt);
+      wt=window.setTimeout(()=>{
+        if(document.hidden||v.paused)return;
+        if(v.currentTime===at){try{v.currentTime=at;}catch(_){}}
+      },200);
+    };
+    document.addEventListener("visibilitychange",wake);
+    window.addEventListener("pageshow",wake);
+    window.addEventListener("focus",wake);
+    return()=>{clearTimeout(t);window.clearTimeout(wt);window.removeEventListener("load",start);document.removeEventListener("visibilitychange",wake);window.removeEventListener("pageshow",wake);window.removeEventListener("focus",wake);};
   },[]);
   const [collapsed,setCollapsed]=useState(false);
   const [fullH,setFullH]=useState(null);
