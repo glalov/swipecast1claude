@@ -4526,18 +4526,18 @@ body.fbsp-open #castoria-root{display:none!important;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:24px;background:#15131f;overflow:hidden;display:flex;align-items:center;border:none;transition:height .42s cubic-bezier(.4,0,.2,1);}
+.mq-stripe{position:relative;width:100%;height:30px;background:#1e2a45;overflow:hidden;display:flex;align-items:center;border:none;border-top:1px solid rgba(255,215,154,.45);border-bottom:1px solid rgba(255,215,154,.45);transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
-.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:#FFD79A;}
-.mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#FFD79A;opacity:.8;margin:0 26px;flex-shrink:0;}
+.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#FFE2B3;}
+.mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#FFE2B3;opacity:.8;margin:0 26px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
 /* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
    element a finger touched, which latched animation-play-state:paused here and
    stopped the marquee for the rest of the session — the "marquee freezes on
    some loads" bug. A touch device never matches hover:hover + pointer:fine. */
 @media (hover:hover) and (pointer:fine){.mq-stripe:hover .mq-track{animation-play-state:paused;}}
-.mq-stripe.is-collapsed{height:0;}
+.mq-stripe.is-collapsed{height:0;border-top-width:0;border-bottom-width:0;}
 @media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
   .member-banner{padding:8px 12px !important;justify-content:space-between !important;gap:10px;}
@@ -4547,8 +4547,8 @@ body.fbsp-open #castoria-root{display:none!important;}
   .member-banner .mb-star{font-size:13px;}
   .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
   .member-banner .mb-cta-price{display:none;}
-  .mq-stripe{height:24px;}
-  .mq-item{font-size:10px;letter-spacing:1.8px;}
+  .mq-stripe{height:28px;}
+  .mq-item{font-size:11px;letter-spacing:1.8px;}
   .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
@@ -6787,7 +6787,7 @@ function MarqueeStripe(){
     document.addEventListener("visibilitychange",resume);
     return()=>{ window.removeEventListener("pageshow",resume); document.removeEventListener("visibilitychange",resume); };
   },[]);
-  const PHRASES=["Every Submission Gets Seen","Find Roles","Trusted by Working Actors & Casting Directors","New Classes Open Weekly","Build Your Actor Profile","Get Seen by Casting Professionals"];
+  const PHRASES=["Every Submission Gets Seen","Find Roles","Built for Working Actors & Casting Directors","New Classes Open Weekly","Build Your Actor Profile","Get Seen by Casting Professionals"];
   // Repeat the sequence enough times per group that one group is wider than any
   // viewport, so the seamless -50% loop never shows a gap.
   const renderGroup=(gk)=>{
