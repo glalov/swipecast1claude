@@ -6574,7 +6574,7 @@ function BannerCodeIntro({onDone}){
 // baked into the image). An invisible hotspot sits over the baked-in
 // "view classes" button and routes to the Classes page.
 function FeaturedClassBanner({onNavigate}){
-  const go=()=>{if(typeof onNavigate==="function")onNavigate("classes");};
+  const go=()=>{if(typeof onNavigate==="function")onNavigate("search");};
   const ref=useRef(null);
   const vidRef=useRef(null);
   // Moon-set video (owner, 2026-10-16; demo banner-video-demo.html option C). The poster paints at once
@@ -6715,32 +6715,32 @@ function FeaturedClassBanner({onNavigate}){
     return()=>window.removeEventListener("scroll",onScroll);
   },[]);
   const style=fullH?{height:collapsed?60:fullH}:undefined;
-  return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}${inspireGo?" fci-go":""}`} role="region" aria-label="Featured class: Scene Study Workshop" style={style}>
+  return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}${inspireGo?" fci-go":""}`} role="region" aria-label="Open casting calls: Find roles, get seen" style={style}>
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
       <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set-v2.jpg" muted loop playsInline preload="none"/></div>
       {/* Desktop: sharp HTML overlay over the dark left of the artwork (scrim hides baked-in text). */}
       <div className="fcs-overlay">
-        <span className="fcs-ov-label">Featured Class</span>
-        <span className="fcs-ov-title">Scene Study<br/>Workshop</span>
-        <span className="fcs-ov-tag">Deepen your craft and bring depth, truth, and connection to every scene.</span>
-        <button type="button" className="fcs-ov-btn" onClick={go}>View Classes <Tri/></button>
+        <span className="fcs-ov-label">Open Casting Calls</span>
+        <span className="fcs-ov-title">Find Roles.<br/>Get Seen.</span>
+        <span className="fcs-ov-tag">Casting calls open now.</span>
+        <button type="button" className="fcs-ov-btn" onClick={go}>Browse Castings <Tri/></button>
       </div>
       {/* Mobile: live, readable title + button over the cover-cropped photo. */}
       <div className="fcs-mobile">
-        <span className="fcs-m-label">Featured Class</span>
-        <span className="fcs-m-title">Scene Study Workshop</span>
-        <button type="button" className="fcs-m-btn" onClick={go}>View Classes <Tri/></button>
+        <span className="fcs-m-label">Open Casting Calls</span>
+        <span className="fcs-m-title">Find Roles. Get Seen.</span>
+        <button type="button" className="fcs-m-btn" onClick={go}>Browse Castings <Tri/></button>
       </div>
       {introOn&&<BannerCodeIntro onDone={()=>setIntroOn(false)}/>}
     </div>
     {/* Compact state — purpose-built thin strip shown once scrolled. */}
     <div className="fcs-compact" aria-hidden={!collapsed}>
       <div className="fcs-compact-text">
-        <span className="fcs-compact-label">Featured Class</span>
-        <span className="fcs-compact-title">Scene Study Workshop</span>
+        <span className="fcs-compact-label">Open Casting Calls</span>
+        <span className="fcs-compact-title">Find Roles. Get Seen.</span>
       </div>
-      <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>View Classes <Tri/></button>
+      <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>Browse Castings <Tri/></button>
     </div>
     {/* Intro veil — last child so it paints over both banner states, and
         aria-hidden + pointer-events:none so it is invisible to screen readers
