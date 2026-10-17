@@ -4545,11 +4545,11 @@ body.fbsp-open #castoria-root{display:none!important;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:30px;background:#1e2a45;overflow:hidden;display:flex;align-items:center;border:none;border-top:1px solid rgba(255,215,154,.45);border-bottom:1px solid rgba(255,215,154,.45);transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
+.mq-stripe{position:relative;width:100%;height:30px;background:#2C2C48;overflow:hidden;display:flex;align-items:center;border:none;border-top:1px solid rgba(240,184,96,.5);border-bottom:1px solid rgba(240,184,96,.5);transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
-.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#FFE2B3;}
-.mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#FFE2B3;opacity:.8;margin:0 26px;flex-shrink:0;}
+.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#F0B860;}
+.mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#F0B860;opacity:.8;margin:0 26px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
 /* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
    element a finger touched, which latched animation-play-state:paused here and
