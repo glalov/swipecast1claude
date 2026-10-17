@@ -2410,7 +2410,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tm-n{font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;color:var(--t1);}
 .tm-r{font-size:12.5px;color:var(--t2);margin-top:2px;}
 /* First testimonial card: "Midnight with a warm glow" (owner approved 2026-10-17, demo card-variants.html variation 1). */
-.card.tm-card.tm-feat{background:radial-gradient(circle at 92% -4%,rgba(240,184,96,.30),rgba(240,184,96,0) 46%),linear-gradient(162deg,#1A1A2E 0%,#23234A 100%);border-color:rgba(240,184,96,.38);box-shadow:0 22px 44px -22px rgba(26,26,46,.75);}
+.card.tm-card.tm-feat{background:radial-gradient(circle at 92% -4%,rgba(240,184,96,.30),rgba(240,184,96,0) 46%),linear-gradient(162deg,#1A1A2E 0%,#23234A 100%);border-color:rgba(240,184,96,.38);}
 .tm-feat .tm-qm{color:#F0B860;}
 .tm-feat .tm-q{color:#FFF8EA;}
 .tm-feat .tm-mark{background-image:linear-gradient(transparent 60%,rgba(240,184,96,.55) 60%);}
