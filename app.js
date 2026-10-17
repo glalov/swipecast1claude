@@ -28,15 +28,6 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    none at the very top. Toggled by the .scrolled class (window.scrollY>4). */
 .nav.scrolled{box-shadow:0 6px 18px -6px rgba(10,10,10,.16);}
 @media(max-width:900px){.nav.scrolled{box-shadow:0 5px 16px rgba(10,10,10,.15);}}
-/* Frosted-glass nav (owner approved 2026-10-17; demo nav-options.html option A). Only once the banner has folded away
-   (.featured-class-stripe.is-collapsed, or no such stripe on inner pages) AND the page has scrolled (.nav.scrolled).
-   At the top of the page the nav sits on the dark .site-top backing, which stays. That backing goes clear only AFTER the
-   .42s collapse has finished (0.5s delay, instant on the way back up); dropping it earlier would bring back the seam
-   flash described above. Browsers without :has() or backdrop-filter keep today's solid white nav. */
-@supports (selector(:has(*))) and ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .site-top:has(.nav.scrolled):not(:has(.featured-class-stripe:not(.is-collapsed))){background:transparent;transition:background-color 0s linear .5s;}
-  .site-top:has(.nav.scrolled):not(:has(.featured-class-stripe:not(.is-collapsed))) .nav{background:rgba(255,253,249,.66);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);border-bottom-color:rgba(26,26,46,.09);transition:box-shadow .22s ease,background-color 0s linear .5s,-webkit-backdrop-filter 0s linear .5s,backdrop-filter 0s linear .5s;}
-}
 /* Browse Castings join stripe (approved 2026-09-24): 56px, a touch thinner than the 65px nav,
    soft navy from the Manager Mode card, the casting-team photo flush to the right
    edge with the whole scene kept (the blurred actor, the team, the camera). The
