@@ -4416,12 +4416,12 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fcs-hotspot{display:none;}
 .fcs-mobile{display:none;}
 /* Desktop: sharp HTML overlay (label/title/tagline/button) over the dark left of the artwork; a scrim hides the soft baked-in text underneath. */
-.fcs-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:clamp(3px,0.55vw,8px);padding-left:clamp(28px,4.3vw,86px);padding-right:40px;pointer-events:none;}
+.fcs-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:clamp(4px,0.7vw,10px);padding-left:clamp(28px,4.3vw,86px);padding-right:40px;pointer-events:none;}
 .fcs-overlay::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0c0a08 0%,#0c0a08 19%,rgba(12,10,8,0.92) 28%,rgba(12,10,8,0.55) 38%,rgba(12,10,8,0) 48%);}
-.fcs-ov-label{font-size:clamp(9px,0.66vw,11px);font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#FFD79A;line-height:1;}
-.fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;text-transform:uppercase;font-size:clamp(17px,2vw,34px);line-height:1.04;color:#fff;letter-spacing:.5px;}
+.fcs-ov-label{font-size:clamp(10px,0.83vw,14px);font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#FFD79A;line-height:1;}
+.fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;text-transform:uppercase;font-size:clamp(19px,2.52vw,43px);line-height:1.04;color:#fff;letter-spacing:.5px;}
 .fcs-ov-tag{font-size:clamp(10px,0.85vw,13px);line-height:1.35;color:#ECE8E0;max-width:32ch;}
-.fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(2px,0.45vw,7px);background:#F0B860;color:#231706;border:none;border-radius:8px;padding:clamp(6px,0.6vw,10px) clamp(13px,1.25vw,22px);font-size:clamp(10px,0.78vw,12.5px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
+.fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(3px,0.57vw,9px);background:#F0B860;color:#231706;border:none;border-radius:8px;padding:clamp(7px,0.76vw,13px) clamp(15px,1.58vw,28px);font-size:clamp(11px,0.98vw,16px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* Compact scrolled strip — own layout, not a crop of the full banner. */
 .fcs-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;opacity:0;pointer-events:none;transition:opacity .28s ease;
   background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/moon-set-v2.jpg) center 60%/cover;}
@@ -6721,14 +6721,13 @@ function FeaturedClassBanner({onNavigate}){
       <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set-v2.jpg" muted loop playsInline preload="none"/></div>
       {/* Desktop: sharp HTML overlay over the dark left of the artwork (scrim hides baked-in text). */}
       <div className="fcs-overlay">
-        <span className="fcs-ov-label">Open Casting Calls</span>
+        <span className="fcs-ov-label">Casting Calls</span>
         <span className="fcs-ov-title">Find Roles.<br/>Get Seen.</span>
-        <span className="fcs-ov-tag">Casting calls open now.</span>
         <button type="button" className="fcs-ov-btn" onClick={go}>Browse Castings <Tri/></button>
       </div>
       {/* Mobile: live, readable title + button over the cover-cropped photo. */}
       <div className="fcs-mobile">
-        <span className="fcs-m-label">Open Casting Calls</span>
+        <span className="fcs-m-label">Casting Calls</span>
         <span className="fcs-m-title">Find Roles. Get Seen.</span>
         <button type="button" className="fcs-m-btn" onClick={go}>Browse Castings <Tri/></button>
       </div>
@@ -6737,7 +6736,7 @@ function FeaturedClassBanner({onNavigate}){
     {/* Compact state — purpose-built thin strip shown once scrolled. */}
     <div className="fcs-compact" aria-hidden={!collapsed}>
       <div className="fcs-compact-text">
-        <span className="fcs-compact-label">Open Casting Calls</span>
+        <span className="fcs-compact-label">Casting Calls</span>
         <span className="fcs-compact-title">Find Roles. Get Seen.</span>
       </div>
       <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>Browse Castings <Tri/></button>
