@@ -55645,7 +55645,7 @@ function App(){
         </div>
         <div className="nav-actions" style={{display:"flex",gap:12,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
-            {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{borderColor:"var(--acc)",color:"var(--acc)",display:"inline-flex",alignItems:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
+            {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{display:"inline-flex",alignItems:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
             {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>{navT('nav.dashboard')}</button>:null}
             {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
             {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{navT('nav.myProfile')}</button>:null}
