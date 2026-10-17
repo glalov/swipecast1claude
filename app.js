@@ -2296,8 +2296,8 @@ body.fbsp-open #castoria-root{display:none!important;}
   .member-banner .mb-star{font-size:13px;}
   .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
   .member-banner .mb-cta-price{display:none;}
-  .mq-stripe{height:28px;}
-  .mq-item{font-size:11px;letter-spacing:1.8px;}
+  .mq-stripe{height:24px;}
+  .mq-item{font-size:10px;letter-spacing:1.8px;}
   .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
