@@ -6601,7 +6601,27 @@ function FeaturedClassBanner({onNavigate}){
     const v=vidRef.current;if(!v)return;
     try{if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;}catch(_){}
     let started=false;
-    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set-v3.mp4";const p=v.play();if(p&&p.catch)p.catch(()=>{});};
+    // Safari in Low Power Mode (and a "Never Auto-Play" site setting) rejects even muted
+    // autoplay. A rejected play() used to be swallowed, leaving the banner frozen on its
+    // poster for the whole visit. Now a rejection arms a one-shot retry on the visitor's
+    // first real gesture (click, tap or key; scroll does not count as user activation in
+    // WebKit), which Safari does allow to start video even in Low Power Mode.
+    let armed=false;
+    const gestures=["pointerdown","click","touchend","keydown"];
+    const onGesture=()=>{
+      gestures.forEach(e=>window.removeEventListener(e,onGesture,true));
+      armed=false;
+      if(started&&v.paused)tryPlay();
+    };
+    const tryPlay=()=>{
+      const p=v.play();
+      if(p&&p.catch)p.catch(()=>{
+        if(armed)return;
+        armed=true;
+        gestures.forEach(e=>window.addEventListener(e,onGesture,true));
+      });
+    };
+    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set-v3.mp4";tryPlay();};
     if(document.readyState==="complete")start();else window.addEventListener("load",start,{once:true});
     const t=setTimeout(start,4000);
     // Coming back to the tab. Browsers drop the video track while a tab is in the
@@ -6615,7 +6635,7 @@ function FeaturedClassBanner({onNavigate}){
     let wt=0;
     const wake=()=>{
       if(document.hidden||!started)return;
-      if(v.paused||v.ended){const p=v.play();if(p&&p.catch)p.catch(()=>{});}
+      if(v.paused||v.ended)tryPlay();
       const at=v.currentTime;
       window.clearTimeout(wt);
       wt=window.setTimeout(()=>{
@@ -6626,7 +6646,7 @@ function FeaturedClassBanner({onNavigate}){
     document.addEventListener("visibilitychange",wake);
     window.addEventListener("pageshow",wake);
     window.addEventListener("focus",wake);
-    return()=>{clearTimeout(t);window.clearTimeout(wt);window.removeEventListener("load",start);document.removeEventListener("visibilitychange",wake);window.removeEventListener("pageshow",wake);window.removeEventListener("focus",wake);};
+    return()=>{clearTimeout(t);window.clearTimeout(wt);gestures.forEach(e=>window.removeEventListener(e,onGesture,true));window.removeEventListener("load",start);document.removeEventListener("visibilitychange",wake);window.removeEventListener("pageshow",wake);window.removeEventListener("focus",wake);};
   },[]);
   const [collapsed,setCollapsed]=useState(false);
   const [fullH,setFullH]=useState(null);
