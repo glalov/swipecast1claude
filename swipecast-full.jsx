@@ -4470,7 +4470,6 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fci-go .fci-row{animation:fciFade .26s ease 1.58s both;}
 .fci-go .fci-half.l{animation:fciPartL .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
 .fci-go .fci-half.r{animation:fciPartR .52s cubic-bezier(.7,0,.25,1) 1.62s both;}
-.fci-go .fcs-full{animation:fciZoom .70s cubic-bezier(.2,.8,.25,1) 1.62s both;}
 /* Mobile only. The desktop size is 3.3vw, which collapses to the 17px floor on
    a phone — far too small for the whole point of this. Below 768px the banner
    becomes a fixed 148px band, so size the type off the viewport instead: 15.5vw
@@ -4484,7 +4483,6 @@ body.fbsp-open #castoria-root{display:none!important;}
 @keyframes fciFade{from{opacity:1;}to{opacity:0;}}
 @keyframes fciPartL{from{transform:none;}to{transform:translate3d(-101%,0,0);}}
 @keyframes fciPartR{from{transform:none;}to{transform:translate3d(101%,0,0);}}
-@keyframes fciZoom{from{transform:scale(1.06);}to{transform:none;}}
 @media(prefers-reduced-motion:reduce){.fci-veil{display:none;}.fci-on .fcs-full{animation:none;}}
 /* ── Banner code intro (homepage, once per session). Matrix-style code rain
    fills the featured-class banner; the site statement decodes out of the rain
