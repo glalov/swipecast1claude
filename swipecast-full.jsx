@@ -4545,11 +4545,11 @@ body.fbsp-open #castoria-root{display:none!important;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:30px;background:#2C2C48;overflow:hidden;display:flex;align-items:center;border:none;border-top:1px solid rgba(240,184,96,.5);border-bottom:1px solid rgba(240,184,96,.5);transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
+.mq-stripe{position:relative;width:100%;height:32px;background:#F0B860;overflow:hidden;display:flex;align-items:center;border:none;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
-.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#F0B860;}
-.mq-item::after{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:#F0B860;opacity:.8;margin:0 26px;flex-shrink:0;}
+.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#2C2C48;}
+.mq-item::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#2C2C48;margin:0 28px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
 /* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
    element a finger touched, which latched animation-play-state:paused here and
@@ -4566,9 +4566,9 @@ body.fbsp-open #castoria-root{display:none!important;}
   .member-banner .mb-star{font-size:13px;}
   .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
   .member-banner .mb-cta-price{display:none;}
-  .mq-stripe{height:24px;}
-  .mq-item{font-size:10px;letter-spacing:1.8px;}
-  .mq-item::after{margin:0 20px;}
+  .mq-stripe{height:28px;}
+  .mq-item{font-size:11px;letter-spacing:1.4px;}
+  .mq-item::after{margin:0 22px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
   .fcs-vid{left:0;width:100%;background-position:62% 60%;-webkit-mask-image:none;mask-image:none;}
