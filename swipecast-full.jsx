@@ -4546,17 +4546,15 @@ body.fbsp-open #castoria-root{display:none!important;}
 .mq-stripe{position:relative;width:100%;height:30px;background:#0C0A08;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:0 solid transparent;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
-.mq-item{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:500;font-size:13px;letter-spacing:.3px;color:rgba(233,226,212,.8);text-decoration:none;}
+.mq-item{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,234,224,.82);text-decoration:none;}
 .mq-txt{white-space:pre;}
-.mq-item em{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;font-size:14.5px;line-height:1;letter-spacing:.2px;color:#FFD98F;}
+.mq-item em{font-style:normal;color:#FFD98F;}
 a.mq-item{cursor:pointer;}
 a.mq-item:hover .mq-txt{text-decoration:underline;text-underline-offset:3px;}
 a.mq-item:focus-visible{outline:1px solid #F0B860;outline-offset:3px;}
 .mq-go{align-self:center;flex-shrink:0;color:#F0B860;margin-left:8px;transition:transform .2s ease;}
 a.mq-item:hover .mq-go{transform:translateX(3px);}
-.mq-mark{position:absolute;left:0;top:0;bottom:0;z-index:2;display:flex;align-items:center;padding:0 56px 0 16px;background:linear-gradient(90deg,#0C0A08 40%,rgba(12,10,8,0));pointer-events:none;}
-.mq-mark::before{content:"";width:6px;height:6px;background:#F0B860;transform:rotate(45deg);}
-.mq-item::after{content:"·";align-self:center;color:rgba(240,184,96,.7);font-size:18px;line-height:1;margin:0 20px;flex-shrink:0;}
+.mq-item::after{content:"";display:inline-block;align-self:center;width:4px;height:4px;background:rgba(240,184,96,.6);transform:rotate(45deg);margin:0 30px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 /* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
    element a finger touched, which latched animation-play-state:paused here and
@@ -4574,10 +4572,8 @@ a.mq-item:hover .mq-go{transform:translateX(3px);}
   .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
   .member-banner .mb-cta-price{display:none;}
   .mq-stripe{height:28px;}
-  .mq-item{font-size:12px;letter-spacing:.2px;}
-  .mq-item em{font-size:13.5px;}
-  .mq-item::after{margin:0 14px;}
-  .mq-mark{padding:0 40px 0 12px;}
+  .mq-item{font-size:10.5px;letter-spacing:1.2px;}
+  .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
   .fcs-vid{left:0;width:100%;background-position:62% 60%;-webkit-mask-image:none;mask-image:none;}
@@ -6876,15 +6872,16 @@ function MarqueeStripe({onNavigate}){
     return()=>window.removeEventListener("resize",fit);
   },[]);
   // Only claims the site already makes elsewhere (footer, landing, pricing,
-  // classes). [before, gold word, after, page to open].
+  // classes), kept short because they are set in capitals.
+  // [before, gold word, after, page to open].
   const ITEMS=[
     ["Every submission ","gets seen",""],
     ["","Free"," actor account","register-talent"],
-    ["","No"," credit card to sign up"],
-    ["Profiles seen ","one at a time",", never lost in a grid"],
+    ["","No"," credit card"],
+    ["","One"," profile at a time"],
     ["Premium from ","$10.75","/mo","pricing"],
-    ["","Unlimited"," submissions with Premium"],
-    ["Acting classes in ","New York"," & online"]
+    ["","Unlimited"," submissions"],
+    ["Classes in ","NYC"," & online"]
   ];
   const go=(e,page)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(page);};
   // Repeat the sequence enough times per group that one group is wider than any
@@ -6901,7 +6898,6 @@ function MarqueeStripe({onNavigate}){
     return out;
   };
   return(<div className={`mq-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="CastSlate highlights">
-    <span className="mq-mark" aria-hidden="true"/>
     <div className="mq-track" ref={trackRef}>
       <div className="mq-group">{renderGroup("a",false)}</div>
       <div className="mq-group" aria-hidden="true">{renderGroup("b",true)}</div>
