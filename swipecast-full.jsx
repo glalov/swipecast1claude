@@ -4543,12 +4543,19 @@ body.fbsp-open #castoria-root{display:none!important;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:30px;background:#2A3463;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:1px solid #F0B860;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
+.mq-stripe{position:relative;width:100%;height:30px;background:#0C0A08;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:0 solid transparent;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
-.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#FFD98F;}
-.mq-item::after{content:"";display:inline-block;width:5px;height:5px;background:#F0B860;transform:rotate(45deg);margin:0 28px;flex-shrink:0;}
-@keyframes mq-scroll{from{transform:translateX(-50%);}to{transform:translateX(0);}}
+.mq-item{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,234,224,.82);text-decoration:none;}
+.mq-txt{white-space:pre;}
+.mq-item em{font-style:normal;color:#FFD98F;}
+a.mq-item{cursor:pointer;}
+a.mq-item:hover .mq-txt{text-decoration:underline;text-underline-offset:3px;}
+a.mq-item:focus-visible{outline:1px solid #F0B860;outline-offset:3px;}
+.mq-go{align-self:center;flex-shrink:0;color:#F0B860;margin-left:8px;transition:transform .2s ease;}
+a.mq-item:hover .mq-go{transform:translateX(3px);}
+.mq-item::after{content:"";display:inline-block;align-self:center;width:4px;height:4px;background:rgba(240,184,96,.6);transform:rotate(45deg);margin:0 30px;flex-shrink:0;}
+@keyframes mq-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 /* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
    element a finger touched, which latched animation-play-state:paused here and
    stopped the marquee for the rest of the session — the "marquee freezes on
@@ -4565,8 +4572,8 @@ body.fbsp-open #castoria-root{display:none!important;}
   .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
   .member-banner .mb-cta-price{display:none;}
   .mq-stripe{height:28px;}
-  .mq-item{font-size:11px;letter-spacing:1.4px;}
-  .mq-item::after{margin:0 22px;}
+  .mq-item{font-size:10.5px;letter-spacing:1.2px;}
+  .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
   .fcs-vid{left:0;width:100%;background-position:62% 60%;-webkit-mask-image:none;mask-image:none;}
@@ -6828,8 +6835,8 @@ function FeaturedClassBanner({onNavigate}){
 // Thin sliding marquee shown directly above the featured-class banner on the
 // homepage. Collapses to 0 height on scroll (same >40px threshold as the
 // banner) so the two fold away together. Text is duplicated into two identical
-// groups; the -50%→0 keyframe gives a seamless left→right loop with no jump.
-function MarqueeStripe(){
+// groups; the 0→-50% keyframe gives a seamless right→left loop with no jump.
+function MarqueeStripe({onNavigate}){
   const [collapsed,setCollapsed]=useState(false);
   const trackRef=useRef(null);
   useEffect(()=>{
@@ -6854,18 +6861,46 @@ function MarqueeStripe(){
     document.addEventListener("visibilitychange",resume);
     return()=>{ window.removeEventListener("pageshow",resume); document.removeEventListener("visibilitychange",resume); };
   },[]);
-  const PHRASES=["Every Submission Gets Seen","Find Roles","Built for Working Actors & Casting Directors","New Classes Open Weekly","Build Your Actor Profile","Get Seen by Casting Professionals"];
+  // Constant reading speed: one group's width / 55px per second, recomputed
+  // when the viewport changes.
+  useEffect(()=>{
+    const el=trackRef.current;
+    if(!el)return;
+    const fit=()=>{const half=el.scrollWidth/2;if(half>0)el.style.animationDuration=Math.max(20,half/55)+"s";};
+    fit();
+    window.addEventListener("resize",fit);
+    return()=>window.removeEventListener("resize",fit);
+  },[]);
+  // Only claims the site already makes elsewhere (footer, landing, pricing,
+  // classes), kept short because they are set in capitals.
+  // [before, gold word, after, page to open].
+  const ITEMS=[
+    ["Every submission ","gets seen",""],
+    ["","Free"," actor account","register-talent"],
+    ["","No"," credit card"],
+    ["","One"," profile at a time"],
+    ["Premium from ","$10.75","/mo","pricing"],
+    ["","Unlimited"," submissions"],
+    ["Classes in ","NYC"," & online"]
+  ];
+  const go=(e,page)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(page);};
   // Repeat the sequence enough times per group that one group is wider than any
   // viewport, so the seamless -50% loop never shows a gap.
-  const renderGroup=(gk)=>{
-    const items=[];
-    for(let r=0;r<4;r++)PHRASES.forEach((p,i)=>items.push(<span key={gk+"-"+r+"-"+i} className="mq-item">{p}</span>));
-    return items;
+  const renderGroup=(gk,hidden)=>{
+    const out=[];
+    for(let r=0;r<4;r++)ITEMS.forEach(([pre,em,post,page],i)=>{
+      const k=gk+"-"+r+"-"+i;
+      const txt=<span className="mq-txt">{pre}<em>{em}</em>{post}</span>;
+      out.push(page
+        ?<a key={k} className="mq-item" href={"/"+page} tabIndex={hidden?-1:undefined} onClick={e=>go(e,page)}>{txt}<svg className="mq-go" width="13" height="10" viewBox="0 0 13 10" aria-hidden="true"><path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg></a>
+        :<span key={k} className="mq-item">{txt}</span>);
+    });
+    return out;
   };
   return(<div className={`mq-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="CastSlate highlights">
     <div className="mq-track" ref={trackRef}>
-      <div className="mq-group">{renderGroup("a")}</div>
-      <div className="mq-group" aria-hidden="true">{renderGroup("b")}</div>
+      <div className="mq-group">{renderGroup("a",false)}</div>
+      <div className="mq-group" aria-hidden="true">{renderGroup("b",true)}</div>
     </div>
   </div>);
 }
@@ -55657,7 +55692,7 @@ function App(){
       <div className="site-top" ref={siteTopRef}>
       {/* Thin sliding marquee directly above the featured-class banner —
           homepage only. Folds away in sync with the banner on scroll. */}
-      {page==="home"&&<MarqueeStripe/>}
+      {page==="home"&&<MarqueeStripe onNavigate={navigate}/>}
       {/* Featured-class banner — homepage only. Replaces the old yearly promo
           stripe in this slot. Uses the Scene Study Workshop artwork as-is; the
           "view classes" hotspot routes to the Classes page. */}
