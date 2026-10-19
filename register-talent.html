@@ -127,18 +127,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20261019-174943"/>
+  <link rel="preload" as="script" href="/app.js?v=20261019-215627"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20261019-174943 -->
-  <meta name="build-version" content="20261019-174943"/>
+  <!-- BUILD: 20261019-215627 -->
+  <meta name="build-version" content="20261019-215627"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20261019-174943";
+        var B="20261019-215627";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -226,6 +226,17 @@
        finished downloading MID-INTRO on cold first loads, re-rendering the name
        ("blink"). System fonts are always instantly available on every OS. */
     #cs-intro .cs-intro-name{position:relative;white-space:nowrap;color:#fff;font-size:52px;font-weight:800;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;letter-spacing:-1.2px;}
+    /* Desktop sizing: the lockup scales with the screen (about 30vw wide, 52px
+       type floor = the old size, 720px-wide cap) and sits at ~47% of the screen
+       height instead of dead centre. Phones/tablets (<1024px) keep the original
+       fixed sizes. Everything is in em off the .cs-intro-mark font-size, so the
+       box, gap and name stay in proportion. */
+    @media (min-width:1024px){
+      #cs-intro .cs-intro-hold{box-sizing:border-box;padding-bottom:6vh;}
+      #cs-intro .cs-intro-mark{font-size:clamp(52px,4.74vw,113px);gap:.3077em;}
+      #cs-intro .cs-intro-box{width:1.4231em;height:1.4231em;border-radius:.3077em;}
+      #cs-intro .cs-intro-name{font-size:1em;letter-spacing:-.023em;}
+    }
     @-webkit-keyframes cs-intro-in{to{opacity:1;-webkit-transform:none;transform:none;}}
     @keyframes cs-intro-in{to{opacity:1;-webkit-transform:none;transform:none;}}
     @-webkit-keyframes cs-breathe{from{-webkit-transform:scale(1);transform:scale(1);}to{-webkit-transform:scale(1.016);transform:scale(1.016);}}
@@ -577,7 +588,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20261019-174943"
+        "/app.js?v=20261019-215627"
       ];
       function step(){
         var it=STEPS.shift();
@@ -618,7 +629,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20261019-174943';
+      s.src='/castoria.js?v=20261019-215627';
       s.async=true;
       document.body.appendChild(s);
     }

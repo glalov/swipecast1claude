@@ -6597,67 +6597,103 @@ function BannerCodeIntro({onDone}){
 // artwork exactly as-is (headline, tagline, and "view classes" button are
 // baked into the image). An invisible hotspot sits over the baked-in
 // "view classes" button and routes to the Classes page.
+// Home banner moon-set clip (see FeaturedClassBanner). v5 encodes (2026-10-19):
+// desktop 1920px at ~1.6 Mbit/s (6 MB; v4 was 2580px, 3.3 Mbit/s, 11.8 MB, which
+// Safari would not start until a large share had arrived), phone 1280px ~0.9 Mbit/s,
+// lite 960px ~0.45 Mbit/s for slow connections. All faststart, keyframe every 0.48s.
+let csMoonVid=null;
+function csMoonSrc(lite){
+  let phone=false;try{phone=!!(window.matchMedia&&window.matchMedia("(max-width: 768px)").matches);}catch(_){}
+  let slow=lite;try{if(!slow&&typeof csVideoMode==="function")slow=csVideoMode()==="lite";}catch(_){}
+  return slow?"/assets/banner/moon-set-v5-lite.mp4":phone?"/assets/banner/moon-set-v5-m.mp4":"/assets/banner/moon-set-v5.mp4";
+}
+function csMoonVideo(){
+  if(csMoonVid)return csMoonVid;
+  const v=document.createElement("video");
+  v.className="fcs-video";
+  // Muted + playsinline as real attributes BEFORE src: Safari decides autoplay
+  // eligibility from the attributes, not just the properties.
+  v.muted=true;v.defaultMuted=true;
+  ["muted","playsinline","webkit-playsinline","loop","autoplay"].forEach(a=>v.setAttribute(a,""));
+  v.setAttribute("aria-hidden","true");v.setAttribute("tabindex","-1");
+  v.setAttribute("poster","/assets/banner/moon-set-v4.jpg");
+  try{v.disableRemotePlayback=true;}catch(_){}
+  v.preload="auto";
+  v.src=csMoonSrc(false);
+  csMoonVid=v;
+  return v;
+}
+function csMoonGoLite(v,play){
+  const lite=csMoonSrc(true);
+  if(v.getAttribute("src")===lite)return;
+  v.setAttribute("src",lite);try{v.load();}catch(_){}
+  if(play)play();
+}
+
 function FeaturedClassBanner({onNavigate}){
   const go=()=>{if(typeof onNavigate==="function")onNavigate("search");};
   const ref=useRef(null);
-  const vidRef=useRef(null);
-  // Moon-set video (owner, 2026-10-16; demo banner-video-demo.html option C). The poster paints at once
-  // (also as the box's CSS background, for iOS); the 1.6 MB clip only loads after the page has
-  // loaded, so it never competes with the first paint. Reduce Motion keeps the still.
+  const vidHostRef=useRef(null);
+  // Moon-set video. One <video> element for the whole visit (csMoonVideo): it is
+  // created the first time Home renders and is only MOVED in and out of the banner
+  // on later visits, so coming back from Browse Castings etc. resumes instantly from
+  // already-buffered data instead of re-downloading and sitting frozen. Loading
+  // starts the moment the banner mounts (it is the first thing on screen) rather
+  // than after window "load", which on Safari waited behind app.js, the format reel
+  // and the landing clips. Reduce Motion keeps the still (CSS background poster).
   useEffect(()=>{
-    const v=vidRef.current;if(!v)return;
+    const host=vidHostRef.current;if(!host)return;
     try{if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;}catch(_){}
-    // React sets `muted` as a property only, so the DOM never gets the muted attribute
-    // (every other banner video on the page has it). Safari evaluates autoplay
-    // eligibility from the attribute / defaultMuted, so set both before play().
-    v.defaultMuted=true;v.muted=true;v.setAttribute("muted","");
-    let started=false;
+    const v=csMoonVideo();
+    if(v.parentNode!==host)host.appendChild(v);
     // Safari in Low Power Mode (and a "Never Auto-Play" site setting) rejects even muted
-    // autoplay. A rejected play() used to be swallowed, leaving the banner frozen on its
-    // poster for the whole visit. Now a rejection arms a one-shot retry on the visitor's
-    // first real gesture (click, tap or key; scroll does not count as user activation in
-    // WebKit), which Safari does allow to start video even in Low Power Mode.
-    let armed=false;
+    // autoplay. A rejection arms a one-shot retry on the visitor's first real gesture
+    // (click, tap or key; scroll does not count as user activation in WebKit).
+    let armed=false,gone=false;
     const gestures=["pointerdown","click","touchend","keydown"];
     const onGesture=()=>{
       gestures.forEach(e=>window.removeEventListener(e,onGesture,true));
       armed=false;
-      if(started&&v.paused)tryPlay();
+      if(!gone&&v.paused)tryPlay();
     };
     const tryPlay=()=>{
-      const p=v.play();
+      let p;try{p=v.play();}catch(_){}
       if(p&&p.catch)p.catch(()=>{
-        if(armed)return;
+        if(armed||gone)return;
         armed=true;
         gestures.forEach(e=>window.addEventListener(e,onGesture,true));
       });
     };
-    const start=()=>{if(started)return;started=true;v.src=(window.matchMedia&&window.matchMedia("(max-width: 768px)").matches)?"/assets/banner/moon-set-v4-m.mp4":"/assets/banner/moon-set-v4.mp4";tryPlay();};
-    if(document.readyState==="complete")start();else window.addEventListener("load",start,{once:true});
-    const t=setTimeout(start,4000);
-    // Coming back to the tab. Browsers drop the video track while a tab is in the
-    // background and, on return, wait for the next keyframe before painting again
-    // (the clip used to have one every 10s, so the banner sat frozen for seconds;
-    // v3 has one every 0.5s). A long absence can also leave the element paused.
-    // wake() restarts it the moment the tab is visible, and if the clock still has
-    // not moved 200ms later (decoder stuck) a seek to the same spot kicks it loose.
-    // Event-driven, no polling. The clip is a loop, so where it resumes is
-    // indistinguishable from "it never stopped".
+    tryPlay();
+    // Still not able to play smoothly 6s in (weak wifi): drop to the light copy.
+    const st=setTimeout(()=>{if(!gone&&!document.hidden&&v.readyState<3)csMoonGoLite(v,tryPlay);},6000);
+    // Coming back to the tab: browsers drop the video track while a tab is in the
+    // background and can leave the element paused. wake() restarts it the moment the
+    // tab is visible, and if the clock still has not moved 200ms later (decoder
+    // stuck) a seek to the same spot kicks it loose. The clip is a loop, so where it
+    // resumes is indistinguishable from "it never stopped".
     let wt=0;
     const wake=()=>{
-      if(document.hidden||!started)return;
+      if(document.hidden||gone)return;
       if(v.paused||v.ended)tryPlay();
       const at=v.currentTime;
       window.clearTimeout(wt);
       wt=window.setTimeout(()=>{
-        if(document.hidden||v.paused)return;
+        if(document.hidden||v.paused||gone)return;
         if(v.currentTime===at){try{v.currentTime=at;}catch(_){}}
       },200);
     };
     document.addEventListener("visibilitychange",wake);
     window.addEventListener("pageshow",wake);
     window.addEventListener("focus",wake);
-    return()=>{clearTimeout(t);window.clearTimeout(wt);gestures.forEach(e=>window.removeEventListener(e,onGesture,true));window.removeEventListener("load",start);document.removeEventListener("visibilitychange",wake);window.removeEventListener("pageshow",wake);window.removeEventListener("focus",wake);};
+    return()=>{
+      gone=true;clearTimeout(st);window.clearTimeout(wt);
+      gestures.forEach(e=>window.removeEventListener(e,onGesture,true));
+      document.removeEventListener("visibilitychange",wake);window.removeEventListener("pageshow",wake);window.removeEventListener("focus",wake);
+      // Detach but keep the element (and its buffer) for the next visit to Home.
+      try{v.pause();}catch(_){}
+      if(v.parentNode===host)host.removeChild(v);
+    };
   },[]);
   const [collapsed,setCollapsed]=useState(false);
   const [fullH,setFullH]=useState(null);
@@ -6793,7 +6829,7 @@ function FeaturedClassBanner({onNavigate}){
   return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}${inspireGo?" fci-go":""}`} role="region" aria-label="Open casting calls: Find roles, get seen" style={style}>
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
-      <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set-v4.jpg" muted loop playsInline preload="none"/></div>
+      <div className="fcs-vid" aria-hidden="true" ref={vidHostRef}/>
       {/* Desktop: sharp HTML overlay over the dark left of the artwork (scrim hides baked-in text). */}
       <div className="fcs-overlay">
         <span className="fcs-ov-label">Casting Calls</span>
