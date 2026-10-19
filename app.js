@@ -2305,11 +2305,9 @@ a.mq-item:focus-visible{outline:1px solid #F0B860;outline-offset:3px;}
 a.mq-item:hover .mq-go{transform:translateX(3px);}
 .mq-item::after{content:"";display:inline-block;align-self:center;width:4.5px;height:4.5px;background:rgba(240,184,96,.6);transform:rotate(45deg);margin:0 32px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-/* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
-   element a finger touched, which latched animation-play-state:paused here and
-   stopped the marquee for the rest of the session — the "marquee freezes on
-   some loads" bug. A touch device never matches hover:hover + pointer:fine. */
-@media (hover:hover) and (pointer:fine){.mq-stripe:hover .mq-track{animation-play-state:paused;}}
+/* No pause-on-hover (owner, 2026-10-19): the marquee keeps scrolling whatever the
+   pointer does. It used to pause under a mouse, and on iOS a stuck synthetic
+   :hover once latched that pause for the whole session. */
 .mq-stripe.is-collapsed{height:0;border-top-width:0;border-bottom-width:0;}
 @media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
