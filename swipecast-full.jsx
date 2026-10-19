@@ -6595,37 +6595,41 @@ function BannerCodeIntro({onDone}){
 // artwork exactly as-is (headline, tagline, and "view classes" button are
 // baked into the image). An invisible hotspot sits over the baked-in
 // "view classes" button and routes to the Classes page.
-// Home banner moon-set clip (see FeaturedClassBanner). v5 encodes (2026-10-19):
-// desktop 1920px at ~1.6 Mbit/s (6 MB; v4 was 2580px, 3.3 Mbit/s, 11.8 MB, which
-// Safari would not start until a large share had arrived), phone 1280px ~0.9 Mbit/s,
-// lite 960px ~0.45 Mbit/s for slow connections. All faststart, keyframe every 0.48s.
+// Home banner moon-set clip (see FeaturedClassBanner). v5 encodes (2026-10-19),
+// all faststart with a keyframe every 0.48s:
+//   xl 2560px ~1.9 Mbit/s (7.1 MB)  Retina laptops/desktops (banner > 1800 device px)
+//   v5 1920px ~1.6 Mbit/s (6.0 MB)  regular screens, iPad
+//   m  1280px ~0.9 Mbit/s (3.4 MB)  phones
+// The banner NEVER drops to a low-res copy: the site-wide "lite" mode (sticky for
+// the session once any clip stalls) made it blurry after a refresh on store wifi.
+// The page shell (build-html.py) creates the element and starts the download
+// before app.js; csMoonVideo() adopts it. Same pick() in both places.
 let csMoonVid=null;
-function csMoonSrc(lite){
+function csMoonSrc(){
+  if(typeof window.__csMoonPick==="function")return window.__csMoonPick();
+  const w=window.innerWidth||1280,d=window.devicePixelRatio||1;
   let phone=false;try{phone=!!(window.matchMedia&&window.matchMedia("(max-width: 768px)").matches);}catch(_){}
-  let slow=lite;try{if(!slow&&typeof csVideoMode==="function")slow=csVideoMode()==="lite";}catch(_){}
-  return slow?"/assets/banner/moon-set-v5-lite.mp4":phone?"/assets/banner/moon-set-v5-m.mp4":"/assets/banner/moon-set-v5.mp4";
+  if(phone)return "/assets/banner/moon-set-v5-m.mp4";
+  return (w*0.68*d>1800)?"/assets/banner/moon-set-v5-xl.mp4":"/assets/banner/moon-set-v5.mp4";
 }
 function csMoonVideo(){
   if(csMoonVid)return csMoonVid;
-  const v=document.createElement("video");
-  v.className="fcs-video";
-  // Muted + playsinline as real attributes BEFORE src: Safari decides autoplay
-  // eligibility from the attributes, not just the properties.
-  v.muted=true;v.defaultMuted=true;
-  ["muted","playsinline","webkit-playsinline","loop","autoplay"].forEach(a=>v.setAttribute(a,""));
-  v.setAttribute("aria-hidden","true");v.setAttribute("tabindex","-1");
-  v.setAttribute("poster","/assets/banner/moon-set-v4.jpg");
-  try{v.disableRemotePlayback=true;}catch(_){}
-  v.preload="auto";
-  v.src=csMoonSrc(false);
+  let v=window.__csMoonVid||null;
+  if(!v){
+    v=document.createElement("video");
+    v.className="fcs-video";
+    // Muted + playsinline as real attributes BEFORE src: Safari decides autoplay
+    // eligibility from the attributes, not just the properties.
+    v.muted=true;v.defaultMuted=true;
+    ["muted","playsinline","webkit-playsinline","loop","autoplay"].forEach(a=>v.setAttribute(a,""));
+    v.setAttribute("aria-hidden","true");v.setAttribute("tabindex","-1");
+    v.setAttribute("poster","/assets/banner/moon-set-v4.jpg");
+    try{v.disableRemotePlayback=true;}catch(_){}
+    v.preload="auto";
+    v.src=csMoonSrc();
+  }
   csMoonVid=v;
   return v;
-}
-function csMoonGoLite(v,play){
-  const lite=csMoonSrc(true);
-  if(v.getAttribute("src")===lite)return;
-  v.setAttribute("src",lite);try{v.load();}catch(_){}
-  if(play)play();
 }
 
 function FeaturedClassBanner({onNavigate}){
@@ -6663,8 +6667,8 @@ function FeaturedClassBanner({onNavigate}){
       });
     };
     tryPlay();
-    // Still not able to play smoothly 6s in (weak wifi): drop to the light copy.
-    const st=setTimeout(()=>{if(!gone&&!document.hidden&&v.readyState<3)csMoonGoLite(v,tryPlay);},6000);
+    // Moved out of the page-shell holder: drop the empty holder.
+    try{const hold=document.getElementById("cs-moon-hold");if(hold&&!hold.firstChild)hold.remove();}catch(_){}
     // Coming back to the tab: browsers drop the video track while a tab is in the
     // background and can leave the element paused. wake() restarts it the moment the
     // tab is visible, and if the clock still has not moved 200ms later (decoder
@@ -6685,7 +6689,7 @@ function FeaturedClassBanner({onNavigate}){
     window.addEventListener("pageshow",wake);
     window.addEventListener("focus",wake);
     return()=>{
-      gone=true;clearTimeout(st);window.clearTimeout(wt);
+      gone=true;window.clearTimeout(wt);
       gestures.forEach(e=>window.removeEventListener(e,onGesture,true));
       document.removeEventListener("visibilitychange",wake);window.removeEventListener("pageshow",wake);window.removeEventListener("focus",wake);
       // Detach but keep the element (and its buffer) for the next visit to Home.

@@ -537,6 +537,43 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
   </style>
 </head>
 <body>
+  <script>
+    /* Home banner (moon-set) video starts downloading HERE, in the first bytes
+       of the page, instead of after the 4 MB app bundle has loaded and run
+       (that wait was the 3-20s frozen start on Safari). The React banner adopts
+       this exact element (window.__csMoonVid), so nothing downloads twice.
+       Size by real screen pixels: Retina laptops/desktops get the sharp 2560px
+       file, normal screens 1920px, phones 1280px. Never a low-res copy. */
+    (function(){{
+      function pick(){{
+        var w=window.innerWidth||1280,d=window.devicePixelRatio||1,ph=false;
+        try{{ph=window.matchMedia("(max-width: 768px)").matches;}}catch(e){{}}
+        if(ph)return "/assets/banner/moon-set-v5-m.mp4";
+        return (w*0.68*d>1800)?"/assets/banner/moon-set-v5-xl.mp4":"/assets/banner/moon-set-v5.mp4";
+      }}
+      window.__csMoonPick=pick;
+      try{{
+        var p=location.pathname;
+        if(p!=="/"&&p!=="/index.html")return;
+        if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+        var v=document.createElement("video");
+        v.className="fcs-video";
+        v.muted=true;v.defaultMuted=true;
+        ["muted","playsinline","webkit-playsinline","loop","autoplay"].forEach(function(a){{v.setAttribute(a,"");}});
+        v.setAttribute("aria-hidden","true");v.setAttribute("tabindex","-1");
+        v.setAttribute("poster","/assets/banner/moon-set-v4.jpg");
+        try{{v.disableRemotePlayback=true;}}catch(e){{}}
+        v.preload="auto";
+        v.src=pick();
+        var h=document.createElement("div");
+        h.id="cs-moon-hold";h.setAttribute("aria-hidden","true");
+        h.style.cssText="position:fixed;left:0;top:0;width:4px;height:2px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;";
+        h.appendChild(v);document.body.appendChild(h);
+        window.__csMoonVid=v;
+        try{{var q=v.play();if(q&&q.catch)q.catch(function(){{}});}}catch(e){{}}
+      }}catch(e){{}}
+    }})();
+  </script>
   <!-- Intro reveal — logo fades in & the cube spins, then the black curtain (#cs-intro-bg)
        slides down at an even pace. The logo sits in a counter-moving holder so it stays
        perfectly still; the curtain's clipping edge cuts down through the logo, wiping it
