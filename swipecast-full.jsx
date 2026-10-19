@@ -4428,10 +4428,10 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Video band (2026-10-16): 5.6:1 before JS measures; the clip fills the right 70%, starting under the text scrim. */
 .featured-class-stripe{aspect-ratio:5.6/1;}
 .featured-class-stripe.is-collapsed{aspect-ratio:auto;}
-.fcs-vid{position:absolute;top:0;right:0;bottom:0;width:68%;background:#0c0a08 url(/assets/banner/moon-set-v2.jpg) 50% 62%/cover no-repeat;
+.fcs-vid{position:absolute;top:0;right:0;bottom:0;width:68%;background:#0c0a08 url(/assets/banner/moon-set-v4.jpg) 50% 62%/cover no-repeat;
   /* No visible start line: the clip fades in from the dark text side (owner, 2026-10-16). */
   -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 24%);mask-image:linear-gradient(90deg,transparent 0%,#000 24%);}
-.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;filter:brightness(1.12) contrast(1.04);}
+.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;filter:brightness(1.04) contrast(1.07);}
 .fcs-hotspot{display:none;}
 .fcs-mobile{display:none;}
 /* Desktop: sharp HTML overlay (label/title/tagline/button) over the dark left of the artwork; a scrim hides the soft baked-in text underneath. */
@@ -4443,7 +4443,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(3px,0.57vw,9px);background:#F0B860;color:#231706;border:none;border-radius:8px;padding:clamp(7px,0.76vw,13px) clamp(15px,1.58vw,28px);font-size:clamp(11px,0.98vw,16px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* Compact scrolled strip — own layout, not a crop of the full banner. */
 .fcs-compact{position:absolute;inset:0;display:flex;align-items:center;gap:16px;padding:0 24px;opacity:0;pointer-events:none;transition:opacity .28s ease;
-  background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/moon-set-v2.jpg) center 60%/cover;}
+  background:linear-gradient(100deg, rgba(10,9,14,.92) 0%, rgba(20,18,26,.86) 55%, rgba(20,18,26,.74) 100%), url(/assets/banner/moon-set-v4.jpg) center 60%/cover;}
 .featured-class-stripe.is-collapsed .fcs-compact{opacity:1;pointer-events:auto;}
 .fcs-compact-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
 .fcs-compact-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;line-height:1.2;white-space:nowrap;}
@@ -6625,7 +6625,7 @@ function FeaturedClassBanner({onNavigate}){
         gestures.forEach(e=>window.addEventListener(e,onGesture,true));
       });
     };
-    const start=()=>{if(started)return;started=true;v.src="/assets/banner/moon-set-v3.mp4";tryPlay();};
+    const start=()=>{if(started)return;started=true;v.src=(window.matchMedia&&window.matchMedia("(max-width: 768px)").matches)?"/assets/banner/moon-set-v4-m.mp4":"/assets/banner/moon-set-v4.mp4";tryPlay();};
     if(document.readyState==="complete")start();else window.addEventListener("load",start,{once:true});
     const t=setTimeout(start,4000);
     // Coming back to the tab. Browsers drop the video track while a tab is in the
@@ -6786,7 +6786,7 @@ function FeaturedClassBanner({onNavigate}){
   return(<aside ref={ref} className={`featured-class-stripe${collapsed?" is-collapsed":""}${inspireOn?" fci-on":""}${inspireGo?" fci-go":""}`} role="region" aria-label="Open casting calls: Find roles, get seen" style={style}>
     {/* Full state — original artwork, untouched. */}
     <div className="fcs-full">
-      <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set-v2.jpg" muted loop playsInline preload="none"/></div>
+      <div className="fcs-vid" aria-hidden="true"><video ref={vidRef} className="fcs-video" poster="/assets/banner/moon-set-v4.jpg" muted loop playsInline preload="none"/></div>
       {/* Desktop: sharp HTML overlay over the dark left of the artwork (scrim hides baked-in text). */}
       <div className="fcs-overlay">
         <span className="fcs-ov-label">Casting Calls</span>
