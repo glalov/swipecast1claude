@@ -6600,6 +6600,10 @@ function FeaturedClassBanner({onNavigate}){
   useEffect(()=>{
     const v=vidRef.current;if(!v)return;
     try{if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;}catch(_){}
+    // React sets `muted` as a property only, so the DOM never gets the muted attribute
+    // (every other banner video on the page has it). Safari evaluates autoplay
+    // eligibility from the attribute / defaultMuted, so set both before play().
+    v.defaultMuted=true;v.muted=true;v.setAttribute("muted","");
     let started=false;
     // Safari in Low Power Mode (and a "Never Auto-Play" site setting) rejects even muted
     // autoplay. A rejected play() used to be swallowed, leaving the banner frozen on its
