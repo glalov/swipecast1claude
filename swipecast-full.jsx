@@ -4543,15 +4543,20 @@ body.fbsp-open #castoria-root{display:none!important;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:30px;background:#15120E;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:0.5px solid rgba(240,184,96,.85);transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
+.mq-stripe{position:relative;width:100%;height:30px;background:#0C0A08;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:0 solid transparent;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
-.mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#EDE5D6;}
-.mq-stat b{color:#FFD98F;font-weight:800;margin-right:6px;font-variant-numeric:tabular-nums;}
-.mq-live{position:absolute;left:0;top:0;bottom:0;z-index:2;display:flex;align-items:center;gap:8px;padding:0 40px 0 14px;background:linear-gradient(90deg,#15120E 62%,rgba(21,18,14,0));font-family:'DM Sans',sans-serif;font-weight:800;font-size:11px;letter-spacing:1.8px;color:#fff;pointer-events:none;}
-.mq-live-dot{width:7px;height:7px;border-radius:50%;background:#FF4D3D;animation:mq-pulse 1.8s ease-out infinite;}
-@keyframes mq-pulse{0%{box-shadow:0 0 0 0 rgba(255,77,61,.55);}70%{box-shadow:0 0 0 7px rgba(255,77,61,0);}100%{box-shadow:0 0 0 0 rgba(255,77,61,0);}}
-.mq-item::after{content:"";display:inline-block;width:5px;height:5px;background:#F0B860;transform:rotate(45deg);margin:0 28px;flex-shrink:0;}
+.mq-item{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:500;font-size:13px;letter-spacing:.3px;color:rgba(233,226,212,.8);text-decoration:none;}
+.mq-txt{white-space:pre;}
+.mq-item em{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:700;font-size:14.5px;line-height:1;letter-spacing:.2px;color:#FFD98F;}
+a.mq-item{cursor:pointer;}
+a.mq-item:hover .mq-txt{text-decoration:underline;text-underline-offset:3px;}
+a.mq-item:focus-visible{outline:1px solid #F0B860;outline-offset:3px;}
+.mq-go{align-self:center;flex-shrink:0;color:#F0B860;margin-left:8px;transition:transform .2s ease;}
+a.mq-item:hover .mq-go{transform:translateX(3px);}
+.mq-mark{position:absolute;left:0;top:0;bottom:0;z-index:2;display:flex;align-items:center;padding:0 56px 0 16px;background:linear-gradient(90deg,#0C0A08 40%,rgba(12,10,8,0));pointer-events:none;}
+.mq-mark::before{content:"";width:6px;height:6px;background:#F0B860;transform:rotate(45deg);}
+.mq-item::after{content:"·";align-self:center;color:rgba(240,184,96,.7);font-size:18px;line-height:1;margin:0 20px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 /* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
    element a finger touched, which latched animation-play-state:paused here and
@@ -4559,7 +4564,7 @@ body.fbsp-open #castoria-root{display:none!important;}
    some loads" bug. A touch device never matches hover:hover + pointer:fine. */
 @media (hover:hover) and (pointer:fine){.mq-stripe:hover .mq-track{animation-play-state:paused;}}
 .mq-stripe.is-collapsed{height:0;border-top-width:0;border-bottom-width:0;}
-@media (prefers-reduced-motion:reduce){.mq-track,.mq-live-dot{animation:none;}}
+@media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
   .member-banner{padding:8px 12px !important;justify-content:space-between !important;gap:10px;}
   .member-banner .mb-msg{position:static;width:auto;flex:1 1 auto;min-width:0;justify-content:flex-start;text-align:left;padding:0;font-size:12px;gap:7px;letter-spacing:0;overflow:hidden;}
@@ -4569,9 +4574,10 @@ body.fbsp-open #castoria-root{display:none!important;}
   .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
   .member-banner .mb-cta-price{display:none;}
   .mq-stripe{height:28px;}
-  .mq-item{font-size:11px;letter-spacing:1.4px;}
-  .mq-item::after{margin:0 22px;}
-  .mq-live{font-size:10px;padding:0 30px 0 10px;gap:6px;}
+  .mq-item{font-size:12px;letter-spacing:.2px;}
+  .mq-item em{font-size:13.5px;}
+  .mq-item::after{margin:0 14px;}
+  .mq-mark{padding:0 40px 0 12px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
   .fcs-vid{left:0;width:100%;background-position:62% 60%;-webkit-mask-image:none;mask-image:none;}
@@ -6834,37 +6840,14 @@ function FeaturedClassBanner({onNavigate}){
 // homepage. Collapses to 0 height on scroll (same >40px threshold as the
 // banner) so the two fold away together. Text is duplicated into two identical
 // groups; the 0→-50% keyframe gives a seamless right→left loop with no jump.
-function MarqueeStripe(){
+function MarqueeStripe({onNavigate}){
   const [collapsed,setCollapsed]=useState(false);
-  const [stats,setStats]=useState(null);
   const trackRef=useRef(null);
   useEffect(()=>{
     const onScroll=()=>setCollapsed(window.scrollY>40);
     onScroll();
     window.addEventListener("scroll",onScroll,{passive:true});
     return()=>window.removeEventListener("scroll",onScroll);
-  },[]);
-  // Live numbers for the ticker. Same rule the Browse page uses for a live
-  // casting: open, published, past its go-live time, and not expired by
-  // expires_at or deadline (castingIsExpired). Only ids and dates are fetched.
-  useEffect(()=>{
-    let alive=true;
-    (async()=>{
-      try{
-        if(!window.sb)return;
-        const {data,error}=await window.sb.from("castings")
-          .select("id,created_at,deadline,expires_at")
-          .eq("status","open").eq("published",true)
-          .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
-          .limit(2000);
-        if(!alive||error||!Array.isArray(data))return;
-        const live=data.filter(c=>!castingIsExpired(c));
-        const weekAgo=Date.now()-7*24*60*60*1000;
-        const newWeek=live.filter(c=>c.created_at&&new Date(c.created_at).getTime()>weekAgo).length;
-        setStats({open:live.length,newWeek});
-      }catch(_){}
-    })();
-    return()=>{alive=false;};
   },[]);
   // The CSS hover-pause is desktop-only now, so nothing in our own styles can
   // stop the scroll on a phone. This covers the other half: a browser that
@@ -6883,7 +6866,7 @@ function MarqueeStripe(){
     return()=>{ window.removeEventListener("pageshow",resume); document.removeEventListener("visibilitychange",resume); };
   },[]);
   // Constant reading speed: one group's width / 55px per second, recomputed
-  // when the items or the viewport change.
+  // when the viewport changes.
   useEffect(()=>{
     const el=trackRef.current;
     if(!el)return;
@@ -6891,26 +6874,37 @@ function MarqueeStripe(){
     fit();
     window.addEventListener("resize",fit);
     return()=>window.removeEventListener("resize",fit);
-  },[stats]);
-  // Every item is a fact: live counts from the database, and claims the home
-  // page already makes. A count only shows when it is worth showing, so a
-  // quiet week never advertises an empty site.
-  const items=[];
-  if(stats&&stats.open>=10)items.push({n:stats.open,t:"open castings right now"});
-  if(stats&&stats.newWeek>=3)items.push({n:stats.newWeek,t:"new castings this week"});
-  items.push({t:"Free actor account"},{t:"No credit card to sign up"},{t:"60-second signup"},{t:"Premium from $10.75/mo"});
+  },[]);
+  // Only claims the site already makes elsewhere (footer, landing, pricing,
+  // classes). [before, gold word, after, page to open].
+  const ITEMS=[
+    ["Every submission ","gets seen",""],
+    ["","Free"," actor account","register-talent"],
+    ["","No"," credit card to sign up"],
+    ["Profiles seen ","one at a time",", never lost in a grid"],
+    ["Premium from ","$10.75","/mo","pricing"],
+    ["","Unlimited"," submissions with Premium"],
+    ["Acting classes in ","New York"," & online"]
+  ];
+  const go=(e,page)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(page);};
   // Repeat the sequence enough times per group that one group is wider than any
   // viewport, so the seamless -50% loop never shows a gap.
-  const renderGroup=(gk)=>{
+  const renderGroup=(gk,hidden)=>{
     const out=[];
-    for(let r=0;r<4;r++)items.forEach((it,i)=>out.push(<span key={gk+"-"+r+"-"+i} className={"mq-item"+(it.n!=null?" mq-stat":"")}>{it.n!=null&&<b>{it.n}</b>}{it.t}</span>));
+    for(let r=0;r<4;r++)ITEMS.forEach(([pre,em,post,page],i)=>{
+      const k=gk+"-"+r+"-"+i;
+      const txt=<span className="mq-txt">{pre}<em>{em}</em>{post}</span>;
+      out.push(page
+        ?<a key={k} className="mq-item" href={"/"+page} tabIndex={hidden?-1:undefined} onClick={e=>go(e,page)}>{txt}<svg className="mq-go" width="13" height="10" viewBox="0 0 13 10" aria-hidden="true"><path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg></a>
+        :<span key={k} className="mq-item">{txt}</span>);
+    });
     return out;
   };
-  return(<div className={`mq-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="CastSlate live activity">
-    <span className="mq-live" aria-hidden="true"><span className="mq-live-dot"/>LIVE</span>
+  return(<div className={`mq-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="CastSlate highlights">
+    <span className="mq-mark" aria-hidden="true"/>
     <div className="mq-track" ref={trackRef}>
-      <div className="mq-group">{renderGroup("a")}</div>
-      <div className="mq-group" aria-hidden="true">{renderGroup("b")}</div>
+      <div className="mq-group">{renderGroup("a",false)}</div>
+      <div className="mq-group" aria-hidden="true">{renderGroup("b",true)}</div>
     </div>
   </div>);
 }
@@ -55702,7 +55696,7 @@ function App(){
       <div className="site-top" ref={siteTopRef}>
       {/* Thin sliding marquee directly above the featured-class banner —
           homepage only. Folds away in sync with the banner on scroll. */}
-      {page==="home"&&<MarqueeStripe/>}
+      {page==="home"&&<MarqueeStripe onNavigate={navigate}/>}
       {/* Featured-class banner — homepage only. Replaces the old yearly promo
           stripe in this slot. Uses the Scene Study Workshop artwork as-is; the
           "view classes" hotspot routes to the Classes page. */}
