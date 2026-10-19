@@ -2180,7 +2180,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .fcs-vid{position:absolute;top:0;right:0;bottom:0;width:68%;background:#0c0a08 url(/assets/banner/moon-set-v4.jpg) 50% 62%/cover no-repeat;
   /* No visible start line: the clip fades in from the dark text side (owner, 2026-10-16). */
   -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 24%);mask-image:linear-gradient(90deg,transparent 0%,#000 24%);}
-.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;filter:brightness(1.12) contrast(1.04);}
+.fcs-video{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 62%;filter:brightness(1.04) contrast(1.07);}
 .fcs-hotspot{display:none;}
 .fcs-mobile{display:none;}
 /* Desktop: sharp HTML overlay (label/title/tagline/button) over the dark left of the artwork; a scrim hides the soft baked-in text underneath. */
