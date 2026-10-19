@@ -4543,10 +4543,10 @@ body.fbsp-open #castoria-root{display:none!important;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:30px;background:#0C0A08;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:0 solid transparent;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
+.mq-stripe{position:relative;width:100%;height:36px;background:#0C0A08;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:0 solid transparent;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
-.mq-item{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(240,234,224,.82);text-decoration:none;}
+.mq-item{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(240,234,224,.82);text-decoration:none;}
 .mq-txt{white-space:pre;}
 .mq-item em{font-style:normal;color:#FFD98F;}
 a.mq-item{cursor:pointer;}
@@ -4554,7 +4554,7 @@ a.mq-item:hover .mq-txt{text-decoration:underline;text-underline-offset:3px;}
 a.mq-item:focus-visible{outline:1px solid #F0B860;outline-offset:3px;}
 .mq-go{align-self:center;flex-shrink:0;color:#F0B860;margin-left:8px;transition:transform .2s ease;}
 a.mq-item:hover .mq-go{transform:translateX(3px);}
-.mq-item::after{content:"";display:inline-block;align-self:center;width:4px;height:4px;background:rgba(240,184,96,.6);transform:rotate(45deg);margin:0 30px;flex-shrink:0;}
+.mq-item::after{content:"";display:inline-block;align-self:center;width:4.5px;height:4.5px;background:rgba(240,184,96,.6);transform:rotate(45deg);margin:0 32px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 /* Pause-on-hover is for MICE ONLY. iOS leaves a synthetic :hover on the last
    element a finger touched, which latched animation-play-state:paused here and
