@@ -2292,7 +2292,7 @@ body.fbsp-open #castoria-root{display:none!important;}
    featured-class banner (homepage). Folds to 0 height in sync with the
    banner on scroll. Seamless left→right loop via two duplicated groups
    animated from -50% back to 0. ── */
-.mq-stripe{position:relative;width:100%;height:30px;background:#15120E;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:1px solid #F0B860;transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
+.mq-stripe{position:relative;width:100%;height:30px;background:#15120E;overflow:hidden;display:flex;align-items:center;border:none;border-bottom:0.5px solid rgba(240,184,96,.85);transition:height .42s cubic-bezier(.4,0,.2,1),border-width .42s cubic-bezier(.4,0,.2,1);}
 .mq-track{display:flex;width:max-content;flex-shrink:0;animation:mq-scroll 210s linear infinite;will-change:transform;}
 .mq-group{display:flex;flex-shrink:0;align-items:center;}
 .mq-item{display:inline-flex;align-items:center;white-space:nowrap;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#EDE5D6;}
