@@ -127,18 +127,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20261020-215220"/>
+  <link rel="preload" as="script" href="/app.js?v=20261020-222323"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20261020-215220 -->
-  <meta name="build-version" content="20261020-215220"/>
+  <!-- BUILD: 20261020-222323 -->
+  <meta name="build-version" content="20261020-222323"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20261020-215220";
+        var B="20261020-222323";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -161,6 +161,9 @@
       gap:18px;z-index:99999;-webkit-transition:opacity .3s;transition:opacity .3s;
     }
     #cs-loading.hide{opacity:0;pointer-events:none;}
+    /* Shell words come from CSS (data-t), not page text, so search engines never quote
+       "Loading… Something went wrong" as a page description (2026-10-20). */
+    #cs-loading [data-t]::before,#cs-error [data-t]::before{content:attr(data-t);}
     #cs-loading .spinner{
       width:42px;height:42px;border-radius:50%;
       border:3px solid rgba(255,255,255,0.08);
@@ -354,7 +357,7 @@
        perfectly still; the curtain's clipping edge cuts down through the logo, wiping it
        away top-down (no fade, no movement) while revealing the site (~4.0s). The whole
        overlay is removed from the DOM afterward so nothing can linger. Plays on every page load. -->
-  <div id="cs-intro" aria-hidden="true">
+  <div id="cs-intro" aria-hidden="true" data-nosnippet>
     <div id="cs-intro-bg">
       <div class="cs-intro-hold">
         <div class="cs-intro-mark">
@@ -473,21 +476,21 @@
   <div id="cs-loading" data-nosnippet>
     <div class="logo">
       <div class="logo-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#1B1C20"/></svg></div>
-      CastSlate
+      <span data-t="CastSlate"></span>
     </div>
     <div class="spinner"></div>
-    <div class="label">Loading…</div>
+    <div class="label" data-t="Loading…"></div>
   </div>
   <!-- Error screen — shown if something goes wrong before React mounts -->
   <div id="cs-error" data-nosnippet>
     <div class="logo" style="color:#fff;font-size:20px;font-weight:800;font-family:-apple-system,sans-serif;display:-webkit-flex;display:flex;align-items:center;gap:10px;margin-bottom:4px;">
       <div style="width:32px;height:32px;background:#fff;border-radius:7px;display:-webkit-flex;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#1B1C20"/></svg></div>
-      CastSlate
+      <span data-t="CastSlate"></span>
     </div>
-    <div class="err-title">Something went wrong</div>
-    <div class="err-msg">CastSlate couldn't start. Please try refreshing the page.</div>
+    <div class="err-title" data-t="Something went wrong"></div>
+    <div class="err-msg" data-t="CastSlate couldn&#39;t start. Please try refreshing the page."></div>
     <div class="err-detail" id="cs-err-detail"></div>
-    <button onclick="window.location.reload()">Reload</button>
+    <button onclick="window.location.reload()" data-t="Reload"></button>
   </div>
   <div id="root"></div>
   <div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0"><h1>Contact CastSlate</h1><p>Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies.</p></div>
@@ -635,7 +638,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20261020-215220"
+        "/app.js?v=20261020-222323"
       ];
       function step(){
         var it=STEPS.shift();
@@ -676,7 +679,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20261020-215220';
+      s.src='/castoria.js?v=20261020-222323';
       s.async=true;
       document.body.appendChild(s);
     }
