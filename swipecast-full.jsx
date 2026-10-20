@@ -6910,27 +6910,26 @@ function MarqueeStripe({onNavigate}){
     return()=>window.removeEventListener("resize",fit);
   },[]);
   // Only claims the site already makes elsewhere (footer, landing, pricing,
-  // classes), kept short because they are set in capitals.
-  // [before, gold word, after, page to open].
+  // classes), kept short because they are set in capitals. No money talk
+  // (price, credit card) up here; the owner wants benefits only (2026-10-20).
+  // [before, gold word, after, page to open, link href if not "/"+page].
   const ITEMS=[
     ["Every submission ","gets seen",""],
     ["","Free"," actor account","register-talent"],
-    ["","No"," credit card"],
-    ["","One"," profile at a time"],
-    ["Premium from ","$10.75","/mo","pricing"],
-    ["","Unlimited"," submissions"],
-    ["Classes in ","NYC"," & online"]
+    ["Reviewed ","one profile"," at a time"],
+    ["","650+"," talent agencies & managers directory"],
+    ["","Browse"," castings","search","/browse-castings"]
   ];
   const go=(e,page)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(page);};
   // Repeat the sequence enough times per group that one group is wider than any
   // viewport, so the seamless -50% loop never shows a gap.
   const renderGroup=(gk,hidden)=>{
     const out=[];
-    for(let r=0;r<4;r++)ITEMS.forEach(([pre,em,post,page],i)=>{
+    for(let r=0;r<4;r++)ITEMS.forEach(([pre,em,post,page,href],i)=>{
       const k=gk+"-"+r+"-"+i;
       const txt=<span className="mq-txt">{pre}<em>{em}</em>{post}</span>;
       out.push(page
-        ?<a key={k} className="mq-item" href={"/"+page} tabIndex={hidden?-1:undefined} onClick={e=>go(e,page)}>{txt}<svg className="mq-go" width="13" height="10" viewBox="0 0 13 10" aria-hidden="true"><path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg></a>
+        ?<a key={k} className="mq-item" href={href||"/"+page} tabIndex={hidden?-1:undefined} onClick={e=>go(e,page)}>{txt}<svg className="mq-go" width="13" height="10" viewBox="0 0 13 10" aria-hidden="true"><path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg></a>
         :<span key={k} className="mq-item">{txt}</span>);
     });
     return out;
