@@ -4156,6 +4156,10 @@ a.site-footer-link{text-decoration:none;}
 .nyc-guide-item{min-width:0;}
 .nyc-guide-item h3{font-size:15px;font-weight:700;color:var(--t1);margin:0 0 6px;}
 .nyc-guide-item p{font-size:14.5px;line-height:1.65;color:var(--t2);margin:0;}
+.nyc-guide-close{margin-top:28px;padding:18px 22px;background:#fff;border:1px solid var(--bdr);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;}
+.nyc-guide-close p{margin:0;font-size:15px;line-height:1.55;color:var(--t1);min-width:0;}
+.nyc-guide-close .btn-p{flex:none;text-decoration:none;white-space:nowrap;}
+@media (max-width:640px){.nyc-guide-close{flex-direction:column;align-items:stretch;text-align:center;}.nyc-guide-close .btn-p{justify-content:center;}}
 .nyc-crosslink{margin:36px 0 0;font-size:14px;color:var(--t2);text-align:center;}
 .nyc-crosslink a{color:var(--teal);font-weight:700;text-decoration:none;margin-left:4px;}
 .nyc-crosslink a:hover{text-decoration:underline;text-underline-offset:3px;}
@@ -15998,8 +16002,9 @@ const NYC_GUIDE=[
   ["Where New York productions shoot","Shoots happen on location all over Manhattan, Brooklyn, Queens, the Bronx and Staten Island, and at studios like Silvercup and Kaufman Astoria in Queens and Steiner in Brooklyn. Many New York listings film just across the river in Jersey City and Hoboken, so they're included here too."],
   ["Have this ready before you submit","A current headshot that looks like you today, a one-page résumé, a short reel or slate if you have one, and a simple self-tape setup: a plain background, light facing you and clear sound. Check the shoot dates and only submit when you're actually available."],
   ["Stay safe","Real casting directors don't charge you to audition and won't ask for bank details or your Social Security number before you're booked. If a listing asks for money up front, walk away."],
-  ["How it works on CastSlate","Every listing on this page is open now. Create a free actor profile and your first submission is free. Casting directors review submissions one profile at a time, so your headshot is actually looked at instead of lost in a grid."],
 ];
+// Full-width closing line under the 2x3 grid (owner picked layout B, 2026-10-20).
+const NYC_GUIDE_CLOSE="Every listing above is open now. Your first submission is free, and casting directors review one profile at a time.";
 // In-app jump to the NYC page from a real <a href> (crawlable link; footer/Browse).
 // navigate("search") pushes /browse-castings; swap that entry for the landing URL and
 // nudge SearchPage, which reads the landing key from the URL.
@@ -16011,10 +16016,15 @@ function openNycLanding(onNavigate){
     window.dispatchEvent(new Event("cs:landing"));
   }catch(_){}
 }
-function NycGuide(){
+function NycGuide({isLoggedIn,onNavigate}){
+  // Signed out: sign up. Signed in: back up to the listings.
+  const cta=isLoggedIn
+    ?<button className="btn-p" onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}>Browse castings <Tri/></button>
+    :<a className="btn-p" href="/register-talent" onClick={e=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate("register-talent");}}>Create free profile <Tri/></a>;
   return(<section className="nyc-guide" aria-labelledby="nyc-guide-h">
     <h2 id="nyc-guide-h">How to find casting calls in New York City</h2>
     <div className="nyc-guide-grid">{NYC_GUIDE.map(([h,p])=><div key={h} className="nyc-guide-item"><h3>{h}</h3><p>{p}</p></div>)}</div>
+    <div className="nyc-guide-close"><p>{NYC_GUIDE_CLOSE}</p>{cta}</div>
   </section>);
 }
 function urlToLandingKey(){
@@ -16525,7 +16535,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             </div>);})()}
         </>}
     </>
-    {landingKey==="new-york"&&<NycGuide/>}
+    {landingKey==="new-york"&&<NycGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
     {!landingKey&&<p className="nyc-crosslink">Looking for work in New York? <a href="/casting-calls/new-york" onClick={e=>{e.preventDefault();setPg(1);openNycLanding(onNavigate);}}>Casting calls in NYC <Tri/></a></p>}
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
     <div className="page-foot-gap" aria-hidden="true"/>

@@ -51,8 +51,8 @@ const NYC_GUIDE = [
   ["Where New York productions shoot", "Shoots happen on location all over Manhattan, Brooklyn, Queens, the Bronx and Staten Island, and at studios like Silvercup and Kaufman Astoria in Queens and Steiner in Brooklyn. Many New York listings film just across the river in Jersey City and Hoboken, so they're included here too."],
   ["Have this ready before you submit", "A current headshot that looks like you today, a one-page résumé, a short reel or slate if you have one, and a simple self-tape setup: a plain background, light facing you and clear sound. Check the shoot dates and only submit when you're actually available."],
   ["Stay safe", "Real casting directors don't charge you to audition and won't ask for bank details or your Social Security number before you're booked. If a listing asks for money up front, walk away."],
-  ["How it works on CastSlate", "Every listing on this page is open now. Create a free actor profile and your first submission is free. Casting directors review submissions one profile at a time, so your headshot is actually looked at instead of lost in a grid."],
 ];
+const NYC_GUIDE_CLOSE = "Every listing above is open now. Your first submission is free, and casting directors review one profile at a time.";
 
 const NY_TERMS = ["new york","new york, ny","new york,ny","nyc","n.y.c","manhattan","brooklyn","queens","the bronx","bronx","staten island","long island","yonkers","westchester","jersey city","hoboken","newark","north jersey","new jersey","nj","nassau","suffolk","harlem","astoria","flushing","the heights","washington heights","upper east","upper west","midtown","downtown","tribeca","soho","noho","lower east","east village","west village","chelsea","flatiron","gramercy","murray hill","hell's kitchen","lincoln center","inwood","riverdale","soundview","fordham","jamaica","corona","elmhurst","ridgewood","bay ridge","bensonhurst","park slope","williamsburg","bushwick","bedford","crown heights","flatbush","east new york","rockaway","fresh meadows","bayside","forest hills","rego park","sunnyside","woodside","jackson heights","maspeth","north bergen","weehawken","union city","bayonne"];
 function locHasTerm(loc, term) {
@@ -164,7 +164,7 @@ function inject(html, key, list, dyn) {
   const block = `<div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0;white-space:normal">
 <h1>${esc(P.label)}</h1><p>${D}</p>
 ${items ? `<h2>Open now (${list.length})</h2><ul>${items}</ul>` : `<p>No open castings in this category right now — new castings are added every week.</p>`}
-${key === "new-york" ? `<h2>How to find casting calls in New York City</h2>${NYC_GUIDE.map(([h, p]) => `<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join("")}` : ""}
+${key === "new-york" ? `<h2>How to find casting calls in New York City</h2>${NYC_GUIDE.map(([h, p]) => `<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join("")}<p>${esc(NYC_GUIDE_CLOSE)} <a href="${ORIGIN}/register-talent">Create a free actor profile</a></p>` : ""}
 <p><a href="${ORIGIN}/browse-castings">Browse all casting calls</a></p>
 <h2>More casting calls</h2><ul>${others}</ul>
 </div>`;
