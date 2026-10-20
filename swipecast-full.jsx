@@ -25660,21 +25660,25 @@ function CdSubmissionBody({app,onPlay}){
 }
 // pri: the front card asks the browser for its photo first ("high"); the cards stacked
 // behind it ("low") wait, so on a slow phone the photo people see arrives first (2026-10-20).
-function SwipeCardPhoto({t,alt="",draggable,pri}){
+function SwipeCardPhoto({t,alt="",draggable,pri,hold}){
   const pos=t.pos||"center 8%";
   const base={width:"100%",height:"100%",objectFit:"cover",objectPosition:pos,display:"block"};
-  if(!t.zoom)return <img src={t.img} alt={alt} draggable={draggable} decoding="async" fetchpriority={pri}
+  if(!t.zoom)return <img src={hold?undefined:t.img} alt={alt} draggable={draggable} decoding="async" fetchpriority={pri}
     style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:pos}}/>;
   // inline-block, NOT block: a bare <img> is inline-level and baseline-aligned,
   // which leaves ~5px of descender space under the photo. Every other card has
   // that gap, so the wrapper has to sit on the baseline the same way or this
   // card's name rides 5px higher than the rest of the deck.
   return(<div style={{display:"inline-block",verticalAlign:"baseline",width:"100%",height:"68%",overflow:"hidden"}}>
-    <img src={t.img} alt={alt} draggable={draggable} decoding="async" fetchpriority={pri}
+    <img src={hold?undefined:t.img} alt={alt} draggable={draggable} decoding="async" fetchpriority={pri}
       style={{...base,transform:`scale(${t.zoom})`,transformOrigin:pos}}/>
   </div>);
 }
 
+// Outside photos (Unsplash/Pexels) self-hosted as assets/landing/deck-<name>.jpg since
+// 2026-10-20: the exact bytes those URLs served (same crop, same quality), so a slow phone
+// gets every deck photo from castslate.com in priority order instead of opening two more
+// photo services. The original source URL is kept in each card's comment history (git).
 const LANDING_SWIPE_DEMO=[
   // Nayara leads the deck (owner's pick, 2026-09-24). Framed by the owner in the
   // fitter (castslate-nayara-fit-tool.html) against the ORIGINAL 4:5 photo:
@@ -25694,16 +25698,16 @@ const LANDING_SWIPE_DEMO=[
   // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
   // the shot before object-position ever ran, throwing the crop away. w=1200 keeps
   // the 3:2 source at retina size (86KB). Photo: Pexels #4668550 by Vlada Karpovich.
-  {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"https://images.pexels.com/photos/4668550/pexels-photo-4668550.jpeg?auto=compress&cs=tinysrgb&w=1200",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
-  {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"https://images.unsplash.com/photo-1624395213043-fa2e123b2656?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
-  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&h=800&fit=crop&crop=top&q=90",skills:["Drama Training","Voiceover","Stage Combat"]},
-  {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop&crop=top&q=90",skills:["Improv","Yale Drama MFA","Basketball"]},
-  {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"https://images.unsplash.com/photo-1601412436009-d964bd02edbc?w=600&h=800&fit=facearea&facepad=3&q=90",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
-  {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",skills:["Music Video","Indie","Dance"]},
+  {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"/assets/landing/deck-kira-vance.jpg",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
+  {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
+  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"/assets/landing/deck-zara-banks.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
+  {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"/assets/landing/deck-evan-calder.jpg",skills:["Improv","Yale Drama MFA","Basketball"]},
+  {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"/assets/landing/deck-marisol-veyra.jpg",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
+  {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"/assets/landing/deck-malik-jensen.jpg",skills:["Music Video","Indie","Dance"]},
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:3,name:"Matthew Caldwell",age:28,gender:"Male",height:"6'0\"",pos:"center 50%",img:"/assets/landing/matthew-caldwell.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
-  {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=800&fit=crop&crop=top&q=90",skills:["Military Background","Boxing","Bass Vocals"]},
+  {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"/assets/landing/deck-tyrone-matthews.jpg",skills:["Military Background","Boxing","Bass Vocals"]},
 ];
 // Plays the entrance once per page load. Module-level so it survives in-app
 // navigation (Home → other page → Home doesn't replay), but resets on a real
@@ -25719,6 +25723,12 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   const [nudge,setNudge]=useState(0);
   const [intro,setIntro]=useState(true);
   const [armed,setArmed]=useState(false);
+  // Slow Android connections (the page shell sets window.__csMoonWait): the photos of the
+  // cards stacked BEHIND the front one get their src only once the front photo is in
+  // (cs:hero-ready) or after 15s, so the photo everyone sees first doesn't share a weak
+  // connection with 12 others. Everyone else loads them all at once, as before. (2026-10-20)
+  const [backOk,setBackOk]=useState(()=>{try{return !window.__csMoonWait;}catch(_){return true;}});
+  React.useEffect(()=>{if(backOk)return;const ok=()=>setBackOk(true);window.addEventListener("cs:hero-ready",ok);const t=setTimeout(ok,15000);return()=>{window.removeEventListener("cs:hero-ready",ok);clearTimeout(t);};},[backOk]);
   const [superFly,setSuperFly]=useState(false);
   const dragging=useRef(false);
   const startX=useRef(0);
@@ -25763,7 +25773,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       const warm=(d,pri)=>new Promise(res=>{const im=new Image();im.decoding="async";try{im.fetchPriority=pri;}catch(_){}im.onload=im.onerror=()=>res();im.src=d.img;if(im.decode)im.decode().catch(()=>{});});
       const front=demo[0];
       const rest=()=>demo.slice(1).forEach(d=>warm(d,"low"));
-      if(front){let fired=false;const go=()=>{if(!fired){fired=true;rest();}};warm(front,"high").then(()=>{try{window.dispatchEvent(new Event("cs:hero-ready"));}catch(_){}go();});setTimeout(go,4000);}else rest();
+      if(front){let fired=false;const go=()=>{if(!fired){fired=true;rest();}};warm(front,"high").then(()=>{try{window.dispatchEvent(new Event("cs:hero-ready"));}catch(_){}go();});setTimeout(go,window.__csMoonWait?15000:4000);}else rest();
     }catch(e){}
     let started=false,endTm,poll,safety,lead;
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
@@ -25837,11 +25847,11 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{position:"relative",width:300,height:450}}>
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
-          <SwipeCardPhoto t={nt} pri="low"/>
+          <SwipeCardPhoto t={nt} pri="low" hold={!backOk}/>
         </div>}
         {intro&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
           <div key={"swin"+i} className={"s-card "+(armed?"sw-intro-back":"sw-pre")} style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none",boxShadow:"none"}}>
-            <SwipeCardPhoto t={bc} pri="low"/>
+            <SwipeCardPhoto t={bc} pri="low" hold={!backOk}/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:30,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
@@ -26369,7 +26379,15 @@ function FormatReel(){
     // second copy of the row (needed for the seamless wrap) reuses the same files
     // once the first copy has buffered, so both don't split the bandwidth —
     // unless that copy is already on screen (very wide monitors).
+    // Slow Android (window.__csMoonWait): the reel also waits for the front deck photo
+    // (cs:hero-ready, 15s fallback) — on a phone the reel sits just below the first
+    // screen and its 7 clips (~2 MB) were sharing the weak connection with that photo.
+    let hold=false, pend=false;
+    try{ hold=!!window.__csMoonWait; }catch(_){}
+    const release=function(){ if(!hold) return; hold=false; if(pend) begin(); };
+    if(hold){ window.addEventListener('cs:hero-ready',release); timers.push(setTimeout(release,15000)); unhooks.push(function(){ window.removeEventListener('cs:hero-ready',release); }); }
     const begin=function(){
+      if(hold){ pend=true; return; }
       if(begun||gone) return; begun=true;
       if(nearIo){ nearIo.disconnect(); nearIo=null; }
       vids.slice(0,n).forEach(setSrc);
