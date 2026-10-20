@@ -4566,8 +4566,11 @@ a.site-footer-link{text-decoration:none;}
 a.mq-item{cursor:pointer;}
 a.mq-item:hover .mq-txt{text-decoration:underline;text-underline-offset:3px;}
 a.mq-item:focus-visible{outline:1px solid #F0B860;outline-offset:3px;}
-.mq-go{align-self:center;flex-shrink:0;color:#F0B860;margin-left:8px;transition:transform .2s ease;}
-a.mq-item:hover .mq-go{transform:translateX(3px);}
+.mq-go{align-self:center;flex-shrink:0;color:#F0B860;margin-left:9px;transition:transform .2s ease;animation:mq-nudge 4s ease-in-out infinite;}
+.mq-go.mq-go-b{animation-delay:2s;}
+@keyframes mq-nudge{0%,68%,100%{transform:translateX(0);}74%{transform:translateX(6px);}80%{transform:translateX(0);}86%{transform:translateX(6px);}92%{transform:translateX(0);}}
+a.mq-item:hover .mq-go{animation:none;transform:translateX(3px);}
+@media (prefers-reduced-motion:reduce){.mq-go{animation:none;}}
 .mq-item::after{content:"";display:inline-block;align-self:center;width:4.5px;height:4.5px;background:rgba(240,184,96,.6);transform:rotate(45deg);margin:0 32px;flex-shrink:0;}
 @keyframes mq-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 /* No pause-on-hover (owner, 2026-10-19): the marquee keeps scrolling whatever the
@@ -4585,6 +4588,7 @@ a.mq-item:hover .mq-go{transform:translateX(3px);}
   .member-banner .mb-cta-price{display:none;}
   .mq-stripe{height:28px;}
   .mq-item{font-size:10.5px;letter-spacing:1.2px;}
+  .mq-go{width:8px;height:10px;margin-left:7px;}
   .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
   .featured-class-stripe.is-collapsed{height:54px;}
@@ -6943,7 +6947,7 @@ function MarqueeStripe({onNavigate}){
       const k=gk+"-"+r+"-"+i;
       const txt=<span className="mq-txt">{pre}<em>{em}</em>{post}</span>;
       out.push(page
-        ?<a key={k} className="mq-item" href={href||"/"+page} tabIndex={hidden?-1:undefined} onClick={e=>go(e,page)}>{txt}<svg className="mq-go" width="13" height="10" viewBox="0 0 13 10" aria-hidden="true"><path d="M1 5h10M7 1l4 4-4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg></a>
+        ?<a key={k} className="mq-item" href={href||"/"+page} tabIndex={hidden?-1:undefined} onClick={e=>go(e,page)}>{txt}<svg className={"mq-go"+(i%2?" mq-go-b":"")} width="10" height="12" viewBox="0 0 12 14" aria-hidden="true"><path d="M2.2 1.1 10.6 6.2a.9.9 0 0 1 0 1.6L2.2 12.9A.9.9 0 0 1 .8 12.1V1.9A.9.9 0 0 1 2.2 1.1Z" fill="currentColor"/></svg></a>
         :<span key={k} className="mq-item">{txt}</span>);
     });
     return out;
