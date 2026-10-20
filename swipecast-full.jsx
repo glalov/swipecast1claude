@@ -4149,6 +4149,16 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-heading{font-family:'DM Sans',sans-serif;color:#fff;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
 .site-footer-link{display:block;color:#9A9BA5;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease,transform .18s ease;font-family:'DM Sans',sans-serif;}
 .site-footer-link:hover{color:#fff;transform:translateX(2px);}
+a.site-footer-link{text-decoration:none;}
+.nyc-guide{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--bdr);min-width:0;}
+.nyc-guide h2{font-family:'Playfair Display',Georgia,serif;font-size:clamp(22px,2.4vw,28px);font-weight:700;color:var(--t1);margin:0 0 20px;line-height:1.2;}
+.nyc-guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:22px 36px;min-width:0;}
+.nyc-guide-item{min-width:0;}
+.nyc-guide-item h3{font-size:15px;font-weight:700;color:var(--t1);margin:0 0 6px;}
+.nyc-guide-item p{font-size:14.5px;line-height:1.65;color:var(--t2);margin:0;}
+.nyc-crosslink{margin:36px 0 0;font-size:14px;color:var(--t2);text-align:center;}
+.nyc-crosslink a{color:var(--teal);font-weight:700;text-decoration:none;margin-left:4px;}
+.nyc-crosslink a:hover{text-decoration:underline;text-underline-offset:3px;}
 .site-footer-social-row{display:flex;gap:14px;align-items:center;justify-content:center;padding:18px 0 22px;border-top:none;margin-top:0;}
 .site-footer.has-b2t .site-footer-social-row{margin-top:96px;}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#9A9BA5;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
@@ -7979,6 +7989,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <h4 className="site-footer-heading">{t('footer.talent')}</h4>
             <L to="register-talent">{t('footer.createProfile')}</L>
             <L to="search">{t('footer.browse')}</L>
+            <a className="site-footer-link" href="/casting-calls/new-york" onClick={e=>{e.preventDefault();openNycLanding(onNavigate);}}>Casting Calls in NYC</a>
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="manager-mode">{t('footer.managerMode')}</L>
             <L to="agency-directory">Agencies Directory</L>
@@ -15937,7 +15948,7 @@ function canonCastingCity(loc){
 // crawler list of the matching live castings. KEEP THE TWO LISTS IN SYNC: same
 // keys, same labels, same match rules, or Google sees one list and people another.
 const LANDING_PAGES={
-  "new-york":{label:"Casting Calls in New York",title:"Casting Calls in New York City — Open Auditions | CastSlate"},
+  "new-york":{label:"Casting Calls in New York",title:"Casting Calls NYC — Open Auditions in New York City | CastSlate"},
   "film":{label:"Film Casting Calls",title:"Film Casting Calls — Feature, Indie, Short & Student Films | CastSlate"},
   "student-films":{label:"Student Film Casting Calls",title:"Student Film Casting Calls & Auditions | CastSlate"},
   "short-films":{label:"Short Film Casting Calls",title:"Short Film Casting Calls & Auditions | CastSlate"},
@@ -15977,6 +15988,35 @@ function landingMatches(c,key){
     }
   }
 }
+// Guide under the NYC listings (2026-10-20). One strong NYC page instead of six look-alikes:
+// api/landing.js 301s every *-nyc key here. KEEP IN SYNC with NYC_GUIDE in api/landing.js,
+// which serves the same text to crawlers.
+const NYC_GUIDE=[
+  ["How NYC casting works","Most film, TV and commercial roles in New York are cast by a casting director who posts a breakdown: the project, the roles and who they're looking for. Actors submit a headshot, résumé and, ideally, a short reel or self-tape. The casting director shortlists, then asks for a self-tape or an in-person audition. Student films, short films and indie features shooting across the five boroughs are where many New York actors build their first credits."],
+  ["Union or non-union","SAG-AFTRA covers film, TV and commercials; Actors' Equity covers stage work. If you're not in a union yet, submit to roles marked Non-Union or \"Union and non-union welcome\". A non-union actor hired on a SAG-AFTRA project can become eligible to join through a Taft-Hartley waiver."],
+  ["Open calls vs. submissions","An open call means anyone who fits the role can show up at the posted place and time. That's common in theater, where Equity runs Equity Principal Auditions (EPAs) and Equity Chorus Calls (ECCs). Most screen work is by submission: you apply online and wait to be invited."],
+  ["Where New York productions shoot","Shoots happen on location all over Manhattan, Brooklyn, Queens, the Bronx and Staten Island, and at studios like Silvercup and Kaufman Astoria in Queens and Steiner in Brooklyn. Many New York listings film just across the river in Jersey City and Hoboken, so they're included here too."],
+  ["Have this ready before you submit","A current headshot that looks like you today, a one-page résumé, a short reel or slate if you have one, and a simple self-tape setup: a plain background, light facing you and clear sound. Check the shoot dates and only submit when you're actually available."],
+  ["Stay safe","Real casting directors don't charge you to audition and won't ask for bank details or your Social Security number before you're booked. If a listing asks for money up front, walk away."],
+  ["How it works on CastSlate","Every listing on this page is open now. Create a free actor profile and your first submission is free. Casting directors review submissions one profile at a time, so your headshot is actually looked at instead of lost in a grid."],
+];
+// In-app jump to the NYC page from a real <a href> (crawlable link; footer/Browse).
+// navigate("search") pushes /browse-castings; swap that entry for the landing URL and
+// nudge SearchPage, which reads the landing key from the URL.
+function openNycLanding(onNavigate){
+  if(typeof onNavigate==="function")onNavigate("search");
+  try{
+    window.history.replaceState(window.history.state,"","/casting-calls/new-york");
+    document.title=LANDING_PAGES["new-york"].title;
+    window.dispatchEvent(new Event("cs:landing"));
+  }catch(_){}
+}
+function NycGuide(){
+  return(<section className="nyc-guide" aria-labelledby="nyc-guide-h">
+    <h2 id="nyc-guide-h">How to find casting calls in New York City</h2>
+    <div className="nyc-guide-grid">{NYC_GUIDE.map(([h,p])=><div key={h} className="nyc-guide-item"><h3>{h}</h3><p>{p}</p></div>)}</div>
+  </section>);
+}
 function urlToLandingKey(){
   try{const m=window.location.pathname.match(/^\/casting-calls\/([a-z0-9-]+)\/?$/);return m&&landingDef(m[1])?m[1]:null;}catch(_){return null;}
 }
@@ -15987,6 +16027,10 @@ let _castingsCache=null,_talentCache=null;
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile,active=true,restoreCasting=null,onRestoreConsumed}){
   const t=useT();
   const {lang}=useLanguage();
+  // openNycLanding() swaps the URL to /casting-calls/new-york; re-render so the
+  // landing filter (read from the URL) applies even when Browse is already open.
+  const [,setLandingTick]=useState(0);
+  useEffect(()=>{const h=()=>setLandingTick(n=>n+1);window.addEventListener("cs:landing",h);window.addEventListener("popstate",h);return()=>{window.removeEventListener("cs:landing",h);window.removeEventListener("popstate",h);};},[]);
   const [mode,setMode]=useState("castings"); // always open castings, talent directory removed
   const [q,setQ]=useState("");
   const [f,setF]=useState({gender:"",ethnicity:"",location:"",union:"",type:"",castingType:""});
@@ -16481,6 +16525,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             </div>);})()}
         </>}
     </>
+    {landingKey==="new-york"&&<NycGuide/>}
+    {!landingKey&&<p className="nyc-crosslink">Looking for work in New York? <a href="/casting-calls/new-york" onClick={e=>{e.preventDefault();setPg(1);openNycLanding(onNavigate);}}>Casting calls in NYC <Tri/></a></p>}
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
     <div className="page-foot-gap" aria-hidden="true"/>
     {/* Portalled to <body> on purpose. The sheet is position:fixed, and the page push

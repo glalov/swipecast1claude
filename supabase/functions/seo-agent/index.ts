@@ -22,6 +22,7 @@ const SITE = "https://www.castslate.com/";
 const ORIGIN = "https://www.castslate.com";
 const REPORT_TO = "officecasting01@gmail.com";
 const INDEXNOW_KEY = "a6124d7bc19f64d5eba71e5868b9a59a";
+const NYC_KEY = /(^|-)(nyc|new-?york|ny|manhattan|brooklyn|queens|bronx|staten-island)(-|$)/;
 const BUILTIN = ["new-york", "film", "student-films", "short-films", "commercials", "tv-and-streaming", "non-union", "sag-aftra", "theater"];
 const GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-flash-lite-latest"];
 const MAX_NEW_PAGES = 2;
@@ -124,7 +125,8 @@ Each page lists live casting calls that match simple rules. Return JSON: {"pages
 {"key":"lowercase-hyphen-slug","label":"short page heading","title":"<= 60 chars, ends with | CastSlate","description":"<= 155 chars, honest, inviting","city":"canonical city or null","type_re":"regex or null","union_re":"regex or null","text_re":"regex or null","source_query":"the search it targets"}
 Rules: only propose pages for searches by people looking for acting work/castings/auditions. city must be exactly one of the canonical cities given, or null.
 type_re matches the casting type field (values listed), union_re the union field, text_re the title+tagline. Keep regexes simple (alternation of words).
-Never promise anything untrue (no "paid" unless the rule only matches paid work, no numbers). Do not duplicate an existing page.`;
+Never promise anything untrue (no "paid" unless the rule only matches paid work, no numbers). Do not duplicate an existing page.
+New York City is covered by ONE page (new-york). Never propose a page for New York / NYC or any borough, in any form.`;
 const TITLE_SYSTEM = `You rewrite one search-result title and description for a CastSlate casting-calls landing page to earn more clicks from people searching for it.
 Return JSON {"title":"<= 60 chars, ends with | CastSlate","description":"<= 155 chars"}. Honest, specific, no clickbait, no numbers you can't know, no emojis.`;
 
@@ -198,6 +200,10 @@ Union values in use: ${unions.join(" | ")}`;
       if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(k) || k.length < 3 || k.length > 60 || existingKeys.has(k)) continue;
       const rules: Rules = { city: p.city || null, type_re: p.type_re || null, union_re: p.union_re || null, text_re: p.text_re || null };
       if (rules.city && !cities.includes(rules.city)) continue;
+      // NYC look-alike pages split Google's signal and pushed /casting-calls/new-york from
+      // page 1 to page 4 (Sep 26 → Oct 10, 2026). New York has exactly one page; api/landing.js
+      // 301s any *-nyc / new-york key to it.
+      if (rules.city === "New York" || NYC_KEY.test(k)) continue;
       if ([rules.type_re, rules.union_re, rules.text_re].some((r) => r && !safeRe(r))) continue;
       if (!rules.city && !rules.type_re && !rules.union_re && !rules.text_re) continue;
       const n = live.filter((c) => matchRules(c, rules)).length;

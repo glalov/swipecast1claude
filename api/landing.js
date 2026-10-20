@@ -16,8 +16,8 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_J8nl6
 const ORIGIN = "https://www.castslate.com";
 
 const PAGES = {
-  "new-york": { label: "Casting Calls in New York", title: "Casting Calls in New York City — Open Auditions | CastSlate",
-    desc: "Open casting calls and auditions in New York City for film, TV, theater and commercials. Free to join — create your actor profile and submit today." },
+  "new-york": { label: "Casting Calls in New York", title: "Casting Calls NYC — Open Auditions in New York City | CastSlate",
+    desc: "Open casting calls and auditions in New York City for film, TV, theater and commercials, plus a guide to how NYC casting works. Free to join." },
   "film": { label: "Film Casting Calls", title: "Film Casting Calls — Feature, Indie, Short & Student Films | CastSlate",
     desc: "Open casting calls for feature, independent, short, student and experimental films. Browse roles and submit your actor profile free on CastSlate." },
   "student-films": { label: "Student Film Casting Calls", title: "Student Film Casting Calls & Auditions | CastSlate",
@@ -35,6 +35,24 @@ const PAGES = {
   "theater": { label: "Theater Casting Calls", title: "Theater Casting Calls & Stage Auditions | CastSlate",
     desc: "Theater and stage casting calls, including Off-Broadway productions. Browse roles and submit your actor profile free on CastSlate." },
 };
+
+// New York has exactly ONE landing page. The SEO agent once made six NYC look-alikes
+// (open-casting-calls-nyc, non-union-nyc, film-casting-nyc, …) that split Google's signal
+// and pushed /casting-calls/new-york from page 1 to page 4 (Sep 26 → Oct 10, 2026). Any
+// such key now 301s here, so their credit flows into the one page.
+const NYC_KEY = /(^|-)(nyc|new-?york|ny|manhattan|brooklyn|queens|bronx|staten-island)(-|$)/;
+
+// Visible guide under the NYC listings. KEEP IN SYNC with NYC_GUIDE in swipecast-full.jsx
+// (the crawler copy must match what visitors see).
+const NYC_GUIDE = [
+  ["How NYC casting works", "Most film, TV and commercial roles in New York are cast by a casting director who posts a breakdown: the project, the roles and who they're looking for. Actors submit a headshot, résumé and, ideally, a short reel or self-tape. The casting director shortlists, then asks for a self-tape or an in-person audition. Student films, short films and indie features shooting across the five boroughs are where many New York actors build their first credits."],
+  ["Union or non-union", "SAG-AFTRA covers film, TV and commercials; Actors' Equity covers stage work. If you're not in a union yet, submit to roles marked Non-Union or \"Union and non-union welcome\". A non-union actor hired on a SAG-AFTRA project can become eligible to join through a Taft-Hartley waiver."],
+  ["Open calls vs. submissions", "An open call means anyone who fits the role can show up at the posted place and time. That's common in theater, where Equity runs Equity Principal Auditions (EPAs) and Equity Chorus Calls (ECCs). Most screen work is by submission: you apply online and wait to be invited."],
+  ["Where New York productions shoot", "Shoots happen on location all over Manhattan, Brooklyn, Queens, the Bronx and Staten Island, and at studios like Silvercup and Kaufman Astoria in Queens and Steiner in Brooklyn. Many New York listings film just across the river in Jersey City and Hoboken, so they're included here too."],
+  ["Have this ready before you submit", "A current headshot that looks like you today, a one-page résumé, a short reel or slate if you have one, and a simple self-tape setup: a plain background, light facing you and clear sound. Check the shoot dates and only submit when you're actually available."],
+  ["Stay safe", "Real casting directors don't charge you to audition and won't ask for bank details or your Social Security number before you're booked. If a listing asks for money up front, walk away."],
+  ["How it works on CastSlate", "Every listing on this page is open now. Create a free actor profile and your first submission is free. Casting directors review submissions one profile at a time, so your headshot is actually looked at instead of lost in a grid."],
+];
 
 const NY_TERMS = ["new york","new york, ny","new york,ny","nyc","n.y.c","manhattan","brooklyn","queens","the bronx","bronx","staten island","long island","yonkers","westchester","jersey city","hoboken","newark","north jersey","new jersey","nj","nassau","suffolk","harlem","astoria","flushing","the heights","washington heights","upper east","upper west","midtown","downtown","tribeca","soho","noho","lower east","east village","west village","chelsea","flatiron","gramercy","murray hill","hell's kitchen","lincoln center","inwood","riverdale","soundview","fordham","jamaica","corona","elmhurst","ridgewood","bay ridge","bensonhurst","park slope","williamsburg","bushwick","bedford","crown heights","flatbush","east new york","rockaway","fresh meadows","bayside","forest hills","rego park","sunnyside","woodside","jackson heights","maspeth","north bergen","weehawken","union city","bayonne"];
 function locHasTerm(loc, term) {
@@ -146,6 +164,7 @@ function inject(html, key, list, dyn) {
   const block = `<div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0;white-space:normal">
 <h1>${esc(P.label)}</h1><p>${D}</p>
 ${items ? `<h2>Open now (${list.length})</h2><ul>${items}</ul>` : `<p>No open castings in this category right now — new castings are added every week.</p>`}
+${key === "new-york" ? `<h2>How to find casting calls in New York City</h2>${NYC_GUIDE.map(([h, p]) => `<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join("")}` : ""}
 <p><a href="${ORIGIN}/browse-castings">Browse all casting calls</a></p>
 <h2>More casting calls</h2><ul>${others}</ul>
 </div>`;
@@ -163,6 +182,9 @@ module.exports = async (req, res) => {
   const key = String((req.query && req.query.key) || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
   const html = readIndexHtml();
   if (!html) { res.statusCode = 302; res.setHeader("Location", "/browse-castings"); res.end(); return; }
+  if (!PAGES[key] && NYC_KEY.test(key)) {
+    res.statusCode = 301; res.setHeader("Location", "/casting-calls/new-york"); res.end(); return;
+  }
   let dyn = null;
   if (!PAGES[key]) {
     dyn = key ? (await fetchDbPages(key))[0] || null : null;
