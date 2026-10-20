@@ -564,7 +564,17 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
         v.setAttribute("poster","/assets/banner/moon-set-v4.jpg");
         try{{v.disableRemotePlayback=true;}}catch(e){{}}
         v.preload="auto";
-        v.src=pick();
+        /* Slow connections the browser can report (Android Chrome: navigator.connection)
+           start the banner clip only once the front deck photo is in (cs:hero-ready),
+           the window load, or 25s — the sharp poster shows until then. On a slow phone
+           the 3 MB clip was starving app.js and the photos (page 20s -> 13s, main photo
+           35s -> 26s in testing). iPhone/Mac Safari and every fast or unknown connection
+           start it right here, exactly as before. (2026-10-20, owner-approved) */
+        var csC=navigator.connection,csSlow=false;
+        try{{csSlow=!!(csC&&(csC.saveData||/^(slow-2g|2g|3g)$/.test(csC.effectiveType||"")||(typeof csC.downlink==="number"&&csC.downlink>0&&csC.downlink<2)));}}catch(e){{}}
+        var csGo=function(){{if(v.getAttribute("src"))return;v.src=pick();try{{var q=v.play();if(q&&q.catch)q.catch(function(){{}});}}catch(e){{}}}};
+        if(csSlow){{window.__csMoonWait=true;window.addEventListener("cs:hero-ready",csGo);window.addEventListener("load",csGo);setTimeout(csGo,25000);}}
+        else v.src=pick();
         var h=document.createElement("div");
         h.id="cs-moon-hold";h.setAttribute("aria-hidden","true");
         h.style.cssText="position:fixed;left:0;top:0;width:4px;height:2px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;";

@@ -25658,17 +25658,19 @@ function CdSubmissionBody({app,onPlay}){
     </div>}
   </>);
 }
-function SwipeCardPhoto({t,alt="",draggable}){
+// pri: the front card asks the browser for its photo first ("high"); the cards stacked
+// behind it ("low") wait, so on a slow phone the photo people see arrives first (2026-10-20).
+function SwipeCardPhoto({t,alt="",draggable,pri}){
   const pos=t.pos||"center 8%";
   const base={width:"100%",height:"100%",objectFit:"cover",objectPosition:pos,display:"block"};
-  if(!t.zoom)return <img src={t.img} alt={alt} draggable={draggable} decoding="async"
+  if(!t.zoom)return <img src={t.img} alt={alt} draggable={draggable} decoding="async" fetchpriority={pri}
     style={{width:"100%",height:"68%",objectFit:"cover",objectPosition:pos}}/>;
   // inline-block, NOT block: a bare <img> is inline-level and baseline-aligned,
   // which leaves ~5px of descender space under the photo. Every other card has
   // that gap, so the wrapper has to sit on the baseline the same way or this
   // card's name rides 5px higher than the rest of the deck.
   return(<div style={{display:"inline-block",verticalAlign:"baseline",width:"100%",height:"68%",overflow:"hidden"}}>
-    <img src={t.img} alt={alt} draggable={draggable} decoding="async"
+    <img src={t.img} alt={alt} draggable={draggable} decoding="async" fetchpriority={pri}
       style={{...base,transform:`scale(${t.zoom})`,transformOrigin:pos}}/>
   </div>);
 }
@@ -25754,7 +25756,15 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     // Warm every deck photo now, while the curtain still covers the page —
     // the back cards only enter the DOM when the deal-in starts, and cold
     // image fetch+decode mid-animation was a visible desktop stutter.
-    try{demo.forEach(d=>{const im=new Image();im.decoding="async";im.src=d.img;if(im.decode)im.decode().catch(()=>{});});}catch(e){}
+    // Front card FIRST (2026-10-20): all 13 used to start at once, so on a slow
+    // phone the photo everyone sees first (it's the page's main image for Google's
+    // speed score) arrived 5th, ~7s after the others. The rest follow once it's in.
+    try{
+      const warm=(d,pri)=>new Promise(res=>{const im=new Image();im.decoding="async";try{im.fetchPriority=pri;}catch(_){}im.onload=im.onerror=()=>res();im.src=d.img;if(im.decode)im.decode().catch(()=>{});});
+      const front=demo[0];
+      const rest=()=>demo.slice(1).forEach(d=>warm(d,"low"));
+      if(front){let fired=false;const go=()=>{if(!fired){fired=true;rest();}};warm(front,"high").then(()=>{try{window.dispatchEvent(new Event("cs:hero-ready"));}catch(_){}go();});setTimeout(go,4000);}else rest();
+    }catch(e){}
     let started=false,endTm,poll,safety,lead;
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
     const hasSplash=typeof document!=='undefined'&&document.getElementById('cs-intro');
@@ -25827,11 +25837,11 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
       <div style={{position:"relative",width:300,height:450}}>
         {!intro&&<div className="s-card" style={{transform:"scale(.94) translateY(10px)",opacity:.35,zIndex:1,pointerEvents:"none"}}>
-          <SwipeCardPhoto t={nt}/>
+          <SwipeCardPhoto t={nt} pri="low"/>
         </div>}
         {intro&&Array.from({length:total-1},(_,k)=>k+1).map(i=>{const bc=demo[Math.min(i,total-1)];const rest=`translateY(${i*5}px) scale(${(1-i*0.03).toFixed(3)})`;const ro=Math.max(0.74,1-i*0.035).toFixed(2);return(
           <div key={"swin"+i} className={"s-card "+(armed?"sw-intro-back":"sw-pre")} style={{"--rest":rest,"--ro":ro,"--d":`${(0.45+i*0.10).toFixed(2)}s`,zIndex:total-i,pointerEvents:"none",boxShadow:"none"}}>
-            <SwipeCardPhoto t={bc}/>
+            <SwipeCardPhoto t={bc} pri="low"/>
           </div>);})}
         <div className={"s-card"+(intro?(armed?" sw-intro-top":" sw-pre"):"")}
           style={{transform:cardTransform,transition:cardTransition,zIndex:30,cursor:dragging.current?"grabbing":"grab",touchAction:"pan-y",userSelect:"none"}}
@@ -25841,7 +25851,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           onPointerCancel={()=>{if(!dragging.current){setDx(0);return;}const d=dxRef.current;dragging.current=false;if(d>50)advance(1);else if(d<-50)advance(-1);else setDx(0);}}>
           <div className="sw-overlay" style={{color:"var(--red)",opacity:ac==="pass"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>PASS</div>
           <div className="sw-overlay" style={{color:"var(--grn)",opacity:ac==="yes"?Math.min(1,Math.abs(dx)/70):0,transition:"opacity .1s"}}>CALLBACK <Ico n="check" s={24}/></div>
-          <SwipeCardPhoto t={t} alt={t.name} draggable="false"/>
+          <SwipeCardPhoto t={t} alt={t.name} draggable="false" pri="high"/>
           <div className="s-card-info">
             <h3 style={{fontSize:17,margin:"0 0 2px"}}>{t.name}</h3>
             <div className="s-card-meta">{t.age} · {t.gender} · {t.height}</div>
@@ -26140,11 +26150,11 @@ function csFetchClip(url,prio){
   } else if(prio<j.prio){ j.prio=prio; }
   return j.promise;
 }
-function csArmLoopVideo(v){
-  let visible=true, gone=false;
+function csArmLoopVideo(v,farRoot){
+  let visible=true, gone=false, far=false;
   try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); }catch(_){}
   const kick=function(force){
-    if(gone||document.hidden||!v.getAttribute('src')||!v.paused)return;
+    if(gone||far||document.hidden||!v.getAttribute('src')||!v.paused)return;
     if(!force&&window.__csScrolling)return; // resumed on cs:scroll-idle
     const p=v.play(); if(p&&p.catch)p.catch(function(){});
   };
@@ -26199,7 +26209,7 @@ function csArmLoopVideo(v){
   // (touchstart/pointerdown on a touch screen do NOT unlock media). The clip
   // may read !paused while frozen, so call play() directly, not via kick().
   const unlock=function(){
-    if(gone||!v.getAttribute('src')) return;
+    if(gone||far||!v.getAttribute('src')) return;
     const p=v.play(); if(p&&p.catch)p.catch(function(){});
   };
   v.addEventListener('playing',onPlaying);
@@ -26218,10 +26228,22 @@ function csArmLoopVideo(v){
   // Visibility only decides whether WE nudge a paused clip. We never pause
   // anything ourselves; the browser's own off-screen pausing of autoplay video
   // resumes instantly from buffer when the card comes back.
-  let io=null;
+  let io=null, farIo=null;
   if(typeof IntersectionObserver!=='undefined'){
     io=new IntersectionObserver(function(es){ es.forEach(function(e){ visible=e.isIntersecting; if(visible) kick(false); }); },{threshold:0});
     io.observe(v);
+    // Media conductor (2026-10-20): a clip more than ~half a screen above or below
+    // the viewport is paused, so the decoder and the network serve only what is
+    // (nearly) on screen. It resumes from its buffer before it scrolls back in,
+    // and it's a seamless loop, so nobody can tell it ever stopped. farRoot = the
+    // element whose position counts (the whole reel for reel cards, whose own
+    // boxes are clipped sideways by the reel's overflow).
+    farIo=new IntersectionObserver(function(es){ es.forEach(function(e){
+      far=!e.isIntersecting;
+      if(far){ if(v.getAttribute('src')&&!v.paused){ try{ v.pause(); }catch(_){} } }
+      else kick(true);
+    }); },{rootMargin:'60% 0px',threshold:0});
+    farIo.observe(farRoot||v);
   }
   let lastT=-1, stuck=0;
   const guard=setInterval(function(){
@@ -26238,7 +26260,7 @@ function csArmLoopVideo(v){
   },2500);
   kick(false);
   return function(){
-    gone=true; clearInterval(guard); clearTimeout(resumeT); if(io) io.disconnect();
+    gone=true; clearInterval(guard); clearTimeout(resumeT); if(io) io.disconnect(); if(farIo) farIo.disconnect();
     window.removeEventListener('pageshow',onResume); window.removeEventListener('focus',onResume);
     v.removeEventListener('playing',onPlaying); v.removeEventListener('timeupdate',onTime);
     v.removeEventListener('loadeddata',onReady); v.removeEventListener('canplay',onReady);
@@ -26288,9 +26310,13 @@ function BufferedLoopVideo(props){
       started=true; liteWhenReel();
     };
     window.addEventListener('cs:vid-lite',toLite);
-    const t=setTimeout(start,1000);
+    // Media conductor (2026-10-20): no 1s "start anyway" timer and no 3000px reach.
+    // The clip downloads once it is about one screen away, so at page load the
+    // banner, app.js and the hero photos have the connection to themselves
+    // (Lighthouse mobile measured 36 MB at load and a 28.6s LCP before this).
+    const t=0;
     if(typeof IntersectionObserver!=='undefined'){
-      io=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) start(); },{rootMargin:'3000px 0px',threshold:0});
+      io=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) start(); },{rootMargin:'100% 0px',threshold:0});
       io.observe(v);
       near=new IntersectionObserver(function(es){ if(csVidMode==='lite'&&started&&es.some(function(e){ return e.isIntersecting; })) goLite(-1); },{rootMargin:'1200px 0px',threshold:0});
       near.observe(v);
@@ -26315,9 +26341,10 @@ function FormatReel(){
     // Motion is pure CSS (GPU compositor) and never pauses. Every clip is a
     // 3:4 loop (0.3-2.7MB, 9.8MB for all seven) that starts at page load.
     const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
-    const offs=vids.map(csArmLoopVideo);
+    const wrap=reel.parentNode||reel;
+    const offs=vids.map(function(v){ return csArmLoopVideo(v,wrap); });
     const n=FORMAT_CARDS.length, timers=[], unhooks=[];
-    let gone=false;
+    let gone=false, begun=false, nearIo=null;
     const urlOf=function(v){ return csVidMode==='lite'?csLiteUrl(v.dataset.src):v.dataset.src; };
     const setSrc=function(v){ const u=urlOf(v); if(v.getAttribute('src')===u) return; v.preload='auto'; v.setAttribute('src',u); try{ v.load(); }catch(_){} };
     // Lite clips play PROGRESSIVELY, straight from the network. They are tiny
@@ -26329,24 +26356,36 @@ function FormatReel(){
     // Mid-visit switch (an HD clip stalled): swap every card that is not
     // already rolling smoothly in HD to its lite file.
     const liteAll=function(){
+      if(!begun) return; // not loading yet; begin() picks the lite files itself
       vids.forEach(function(v,i){
         if(v.readyState>=4&&!v.paused&&v.classList.contains('is-on')) return; // HD already fully playing
         if(i<n||vids[i-n].readyState>=3) setSrc(v);
       });
     };
     window.addEventListener('cs:vid-lite',liteAll);
-    // The second copy of the row (needed for the seamless wrap) reuses the same
-    // files. Give each copy its src once the first copy has buffered, so both
-    // don't split the bandwidth at load — unless that copy is already on screen
-    // (very wide monitors), in which case it starts right away.
-    vids.slice(n).forEach(function(dup,i){
-      const orig=vids[i];
-      const go=function(){ if(!gone&&!dup.getAttribute('src')) setSrc(dup); };
-      if(orig.readyState>=4||dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
-      orig.addEventListener('canplaythrough',go);
-      unhooks.push(function(){ orig.removeEventListener('canplaythrough',go); });
-      timers.push(setTimeout(go,2500));
-    });
+    // Media conductor (2026-10-20): the reel's clips download only once the reel is
+    // about one screen away; until then each card shows its first-frame poster
+    // (the same picture the clip opens on). Then the first row loads, and the
+    // second copy of the row (needed for the seamless wrap) reuses the same files
+    // once the first copy has buffered, so both don't split the bandwidth —
+    // unless that copy is already on screen (very wide monitors).
+    const begin=function(){
+      if(begun||gone) return; begun=true;
+      if(nearIo){ nearIo.disconnect(); nearIo=null; }
+      vids.slice(0,n).forEach(setSrc);
+      vids.slice(n).forEach(function(dup,i){
+        const orig=vids[i];
+        const go=function(){ if(!gone&&!dup.getAttribute('src')) setSrc(dup); };
+        if(orig.readyState>=4||dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
+        orig.addEventListener('canplaythrough',go);
+        unhooks.push(function(){ orig.removeEventListener('canplaythrough',go); });
+        timers.push(setTimeout(go,2500));
+      });
+    };
+    if(typeof IntersectionObserver!=='undefined'){
+      nearIo=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) begin(); },{rootMargin:'100% 0px',threshold:0});
+      nearIo.observe(wrap);
+    } else begin();
     // "Reel is rolling": every original card can play through (or 8s passed).
     // The two big landing clips wait for this on slow connections so they
     // don't steal the reel's bandwidth at load.
@@ -26358,7 +26397,7 @@ function FormatReel(){
     firsts.forEach(function(v){ v.addEventListener('canplaythrough',checkReady); unhooks.push(function(){ v.removeEventListener('canplaythrough',checkReady); }); });
     timers.push(setTimeout(function(){ if(!window.__csReelReady){ window.__csReelReady=true; try{ window.dispatchEvent(new Event('cs:reel-ready')); }catch(_){} } },8000));
     checkReady();
-    return function(){ gone=true; csVidQueueStop(); window.removeEventListener('cs:vid-lite',liteAll); offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
+    return function(){ gone=true; if(nearIo) nearIo.disconnect(); csVidQueueStop(); window.removeEventListener('cs:vid-lite',liteAll); offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
   // Clips live in /video-formats/reel3/ (was reel2/, loop/): pre-cropped to
@@ -26372,7 +26411,7 @@ function FormatReel(){
           {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel3/'+c.file+'.mp4'; return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
               <img className="fmt-poster" src={'/video-formats/reel3/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
-              <video className="fmt-video" src={first?(lite?csLiteUrl(url):url):undefined} data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
+              <video className="fmt-video" data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
                 <span className="fmt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="22" height="22" dangerouslySetInnerHTML={{__html:FORMAT_ICONS[c.icon]}}/></span>
