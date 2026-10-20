@@ -26311,12 +26311,12 @@ function BufferedLoopVideo(props){
     };
     window.addEventListener('cs:vid-lite',toLite);
     // Media conductor (2026-10-20): no 1s "start anyway" timer and no 3000px reach.
-    // The clip downloads once it is about one screen away, so at page load the
+    // The clip downloads once it is about 1.5 screens away, so at page load the
     // banner, app.js and the hero photos have the connection to themselves
     // (Lighthouse mobile measured 36 MB at load and a 28.6s LCP before this).
     const t=0;
     if(typeof IntersectionObserver!=='undefined'){
-      io=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) start(); },{rootMargin:'100% 0px',threshold:0});
+      io=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) start(); },{rootMargin:'150% 0px',threshold:0});
       io.observe(v);
       near=new IntersectionObserver(function(es){ if(csVidMode==='lite'&&started&&es.some(function(e){ return e.isIntersecting; })) goLite(-1); },{rootMargin:'1200px 0px',threshold:0});
       near.observe(v);
