@@ -4893,6 +4893,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .news-card:hover{transform:translateY(-3px);box-shadow:0 16px 30px -22px rgba(26,26,46,.4);border-color:#cfd6e2;}
 .news-thumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--s2);}
 .news-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+/* News photos are full-size originals from the source sites; decoding="async" on the <img>
+   keeps their decode off the scroll (Chrome hitched 130-220ms on this section, 2026-10-20). */
 .news-cat{position:absolute;top:9px;left:9px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;padding:4px 9px;border-radius:999px;}
 .news-body{padding:13px 15px 15px;display:flex;flex-direction:column;flex:1;}
 .news-body h3{font-size:14.5px;font-weight:700;line-height:1.32;letter-spacing:-.01em;margin:0 0 10px;color:var(--t1);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
@@ -25958,7 +25960,7 @@ function NewsSection({onNavigate}){
   const InternalCard=(a)=>(
     <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
       <div className="news-thumb">
-        {a.image_url&&<img src={a.image_url} alt="" loading="lazy" onError={()=>dropBroken(a.slug)}/>}
+        {a.image_url&&<img src={a.image_url} alt="" loading="lazy" decoding="async" onError={()=>dropBroken(a.slug)}/>}
         <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
       </div>
       <div className="news-body">
@@ -25975,7 +25977,7 @@ function NewsSection({onNavigate}){
     return (
       <a key={a.slug} className="news-card" href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">
         <div className="news-thumb">
-          {img&&<img src={img} alt="" loading="lazy" referrerPolicy="no-referrer" onError={()=>dropBroken(a.slug)}/>}
+          {img&&<img src={img} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>dropBroken(a.slug)}/>}
           <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
         </div>
         <div className="news-body">
@@ -26133,7 +26135,7 @@ function csVideoGoLite(){
   try{ window.dispatchEvent(new Event('cs:vid-lite')); }catch(_){}
 }
 function csLiteUrl(src){
-  return src.replace('/video-formats/reel3/','/video-formats/reel3-lite/').replace('/assets/video/','/assets/video/lite/');
+  return src.replace('/video-formats/reel4/','/video-formats/reel4-lite/').replace('/assets/video/','/assets/video/lite/');
 }
 // Whole-file fetch queue: at most 2 downloads at once, lowest prio first.
 const csVidQ={active:0,max:2,wait:[],jobs:{}};
@@ -26163,11 +26165,22 @@ function csFetchClip(url,prio){
   } else if(prio<j.prio){ j.prio=prio; }
   return j.promise;
 }
-function csArmLoopVideo(v,farRoot){
-  let visible=true, gone=false, far=false;
+// One clip at a time (2026-10-20): giving 7 <video>s their src in the same instant froze
+// Chrome for ~0.8s mid-scroll (each starts a media player + decoder). Starts are queued
+// and run one per idle moment, ~120ms apart, so scrolling never stalls.
+const csStartQ=[];let csStartBusy=false;
+function csStartNext(){
+  if(!csStartQ.length){ csStartBusy=false; return; }
+  csStartBusy=true;
+  const run=function(){ const f=csStartQ.shift(); try{ f(); }catch(_){} setTimeout(csStartNext,120); };
+  if(typeof requestIdleCallback==='function') requestIdleCallback(run,{timeout:400}); else setTimeout(run,0);
+}
+function csQueueStart(f){ csStartQ.push(f); if(!csStartBusy) csStartNext(); }
+function csArmLoopVideo(v){
+  let visible=true, gone=false;
   try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); }catch(_){}
   const kick=function(force){
-    if(gone||far||document.hidden||!v.getAttribute('src')||!v.paused)return;
+    if(gone||document.hidden||!v.getAttribute('src')||!v.paused)return;
     if(!force&&window.__csScrolling)return; // resumed on cs:scroll-idle
     const p=v.play(); if(p&&p.catch)p.catch(function(){});
   };
@@ -26223,12 +26236,7 @@ function csArmLoopVideo(v,farRoot){
   // may read !paused while frozen, so call play() directly, not via kick().
   const unlock=function(){
     if(gone||!v.getAttribute('src')) return;
-    // A clip that is far off screen still gets played once inside the tap (then paused
-    // again): WebKit only lets a Low Power Mode clip start later if it was played during
-    // a real gesture. Skipping far clips here left them frozen when scrolled to (2026-10-20).
-    const p=v.play();
-    if(far){ const back=function(){ if(far){ try{ v.pause(); }catch(_){} } }; if(p&&p.then) p.then(back,function(){}); else back(); }
-    else if(p&&p.catch) p.catch(function(){});
+    const p=v.play(); if(p&&p.catch)p.catch(function(){});
   };
   v.addEventListener('playing',onPlaying);
   v.addEventListener('timeupdate',onTime);
@@ -26246,23 +26254,15 @@ function csArmLoopVideo(v,farRoot){
   // Visibility only decides whether WE nudge a paused clip. We never pause
   // anything ourselves; the browser's own off-screen pausing of autoplay video
   // resumes instantly from buffer when the card comes back.
-  let io=null, farIo=null;
+  let io=null;
   if(typeof IntersectionObserver!=='undefined'){
     io=new IntersectionObserver(function(es){ es.forEach(function(e){ visible=e.isIntersecting; if(visible) kick(false); }); },{threshold:0});
     io.observe(v);
-    // Media conductor (2026-10-20): a clip more than ~half a screen above or below
-    // the viewport is paused, so the decoder and the network serve only what is
-    // (nearly) on screen. It resumes from its buffer before it scrolls back in,
-    // and it's a seamless loop, so nobody can tell it ever stopped. farRoot = the
-    // element whose position counts (the whole reel for reel cards, whose own
-    // boxes are clipped sideways by the reel's overflow).
-    farIo=new IntersectionObserver(function(es){ es.forEach(function(e){
-      far=!e.isIntersecting;
-      if(far){ if(v.getAttribute('src')&&!v.paused){ try{ v.pause(); }catch(_){} } }
-      else kick(true);
-    }); },{rootMargin:'60% 0px',threshold:0});
-    farIo.observe(farRoot||v);
   }
+  // (2026-10-20) A "pause clips far off screen" step lived here for a few hours. It made
+  // Chrome freeze up to 0.8s while scrolling (every paused clip restarting at once) and
+  // Safari start reel cards late (WebKit doesn't keep buffering a paused clip). Removed:
+  // the browsers already throttle off-screen muted autoplay video themselves.
   let lastT=-1, stuck=0;
   const guard=setInterval(function(){
     if(visible) kick(false);
@@ -26278,7 +26278,7 @@ function csArmLoopVideo(v,farRoot){
   },2500);
   kick(false);
   return function(){
-    gone=true; clearInterval(guard); clearTimeout(resumeT); if(io) io.disconnect(); if(farIo) farIo.disconnect();
+    gone=true; clearInterval(guard); clearTimeout(resumeT); if(io) io.disconnect();
     window.removeEventListener('pageshow',onResume); window.removeEventListener('focus',onResume);
     v.removeEventListener('playing',onPlaying); v.removeEventListener('timeupdate',onTime);
     v.removeEventListener('loadeddata',onReady); v.removeEventListener('canplay',onReady);
@@ -26308,7 +26308,7 @@ function BufferedLoopVideo(props){
     const goLite=function(prio){
       const p=csFetchClip(csLiteUrl(src),prio);
       if(hooked) return; hooked=true;
-      p.then(function(u){ if(!gone){ v.setAttribute('src',u); try{ v.load(); }catch(_){} } });
+      p.then(function(u){ if(!gone) csQueueStart(function(){ if(gone) return; v.setAttribute('src',u); try{ v.load(); }catch(_){} }); });
     };
     const onReel=function(){ window.removeEventListener('cs:reel-ready',onReel); if(!gone) goLite(20); };
     const liteWhenReel=function(){
@@ -26319,7 +26319,7 @@ function BufferedLoopVideo(props){
       if(started)return; started=true;
       if(io){ io.disconnect(); io=null; }
       if(csVideoMode()==='lite'){ liteWhenReel(); return; }
-      v.preload='auto'; v.setAttribute('src',src); try{ v.load(); }catch(_){}
+      csQueueStart(function(){ if(gone) return; v.preload='auto'; v.setAttribute('src',src); try{ v.load(); }catch(_){} });
     };
     const toLite=function(){
       // switched mid-visit: drop an unfinished HD download, take the lite file
@@ -26360,11 +26360,11 @@ function FormatReel(){
     // 3:4 loop (0.3-2.7MB, 9.8MB for all seven) that starts at page load.
     const vids=Array.prototype.slice.call(reel.querySelectorAll('.fmt-video'));
     const wrap=reel.parentNode||reel;
-    const offs=vids.map(function(v){ return csArmLoopVideo(v,wrap); });
+    const offs=vids.map(csArmLoopVideo);
     const n=FORMAT_CARDS.length, timers=[], unhooks=[];
     let gone=false, begun=false, nearIo=null;
     const urlOf=function(v){ return csVidMode==='lite'?csLiteUrl(v.dataset.src):v.dataset.src; };
-    const setSrc=function(v){ const u=urlOf(v); if(v.getAttribute('src')===u) return; v.preload='auto'; v.setAttribute('src',u); try{ v.load(); }catch(_){} };
+    const setSrc=function(v){ csQueueStart(function(){ if(gone) return; const u=urlOf(v); if(v.getAttribute('src')===u) return; v.preload='auto'; v.setAttribute('src',u); try{ v.load(); }catch(_){} }); };
     // Lite clips play PROGRESSIVELY, straight from the network. They are tiny
     // (66-210 kbit/s each, ~1 Mbit/s for all seven), so each starts moving
     // after a fraction of a second of data. They used to be fetched WHOLE, two
@@ -26429,7 +26429,12 @@ function FormatReel(){
     return function(){ gone=true; if(nearIo) nearIo.disconnect(); csVidQueueStop(); window.removeEventListener('cs:vid-lite',liteAll); offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
   const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
-  // Clips live in /video-formats/reel3/ (was reel2/, loop/): pre-cropped to
+  // reel4/ (2026-10-20) = reel3's exact pixels with the colour label switched from BT.709
+  // to sRGB (h264_metadata, no re-encode). Safari draws BT.709 video lighter than the
+  // matching JPEG poster, so each card visibly "lit up" when its clip started; Chrome and
+  // Firefox ignore the label, so nothing changes there. Landing clips: *-v3c / *-v4c.
+  // New folder/names because /video-formats/ and /assets/video/ are cached immutable.
+  // Clips live in /video-formats/reel4/ (was reel3/, reel2/, loop/): pre-cropped to
   // the card's 3:4 frame at full source resolution. The old files were the same
   // 8s shot repeated to 60s at 16:9 (25MB total, most of it cropped away).
   // New folder = new URLs, so nobody is served the old immutable-cached files.
@@ -26437,9 +26442,9 @@ function FormatReel(){
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
         <div className="fmt-track">
-          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel3/'+c.file+'.mp4'; return (
+          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel4/'+c.file+'.mp4'; return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
-              <img className="fmt-poster" src={'/video-formats/reel3/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+              <img className="fmt-poster" src={'/video-formats/reel4/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
               <video className="fmt-video" data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
@@ -26881,7 +26886,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
-          <BufferedLoopVideo src="/assets/video/actor-journey-set-v3.mp4" poster="/assets/video/actor-journey-set-poster-v3.jpg" aria-label="Actors on a film set as the clapperboard marks the take, with the camera and boom mic rolling"/>
+          <BufferedLoopVideo src="/assets/video/actor-journey-set-v3c.mp4" poster="/assets/video/actor-journey-set-poster-v3.jpg" aria-label="Actors on a film set as the clapperboard marks the take, with the camera and boom mic rolling"/>
         </div>
         <div className="cinema-feature-copy">
           <p className="cf-label">The actor journey</p>
@@ -26973,7 +26978,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div className="hiw-card">
       <div className="hiw-card-inner">
         <div className="hiw-card-img">
-          <BufferedLoopVideo src="/assets/video/casting-director-set-v4.mp4" poster="/assets/video/casting-director-set-poster-v4.jpg" aria-label="Behind-the-scenes footage from a real film set: a camera operator filming two actors in a scene beside a small plane" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
+          <BufferedLoopVideo src="/assets/video/casting-director-set-v4c.mp4" poster="/assets/video/casting-director-set-poster-v4.jpg" aria-label="Behind-the-scenes footage from a real film set: a camera operator filming two actors in a scene beside a small plane" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
           <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
