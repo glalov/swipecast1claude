@@ -25727,8 +25727,11 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   // cards stacked BEHIND the front one get their src only once the front photo is in
   // (cs:hero-ready) or after 15s, so the photo everyone sees first doesn't share a weak
   // connection with 12 others. Everyone else loads them all at once, as before. (2026-10-20)
-  const [backOk,setBackOk]=useState(()=>{try{return !window.__csMoonWait;}catch(_){return true;}});
-  React.useEffect(()=>{if(backOk)return;const ok=()=>setBackOk(true);window.addEventListener("cs:hero-ready",ok);const t=setTimeout(ok,15000);return()=>{window.removeEventListener("cs:hero-ready",ok);clearTimeout(t);};},[backOk]);
+  // Every device since 2026-10-20: the photo people see first must not share the line
+  // with the 11 behind it (Safari on a busy connection showed it blank ~12s). Fallback
+  // 4s, 15s on slow Android. In-app return visits (intro already seen) skip the wait.
+  const [backOk,setBackOk]=useState(()=>{try{return !!window.__csHeroReady||swipeIntroSeen;}catch(_){return true;}});
+  React.useEffect(()=>{if(backOk)return;const ok=()=>setBackOk(true);window.addEventListener("cs:hero-ready",ok);const t=setTimeout(ok,window.__csMoonWait?15000:4000);return()=>{window.removeEventListener("cs:hero-ready",ok);clearTimeout(t);};},[backOk]);
   const [superFly,setSuperFly]=useState(false);
   const dragging=useRef(false);
   const startX=useRef(0);
@@ -25773,7 +25776,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       const warm=(d,pri)=>new Promise(res=>{const im=new Image();im.decoding="async";try{im.fetchPriority=pri;}catch(_){}im.onload=im.onerror=()=>res();im.src=d.img;if(im.decode)im.decode().catch(()=>{});});
       const front=demo[0];
       const rest=()=>demo.slice(1).forEach(d=>warm(d,"low"));
-      if(front){let fired=false;const go=()=>{if(!fired){fired=true;rest();}};warm(front,"high").then(()=>{try{window.dispatchEvent(new Event("cs:hero-ready"));}catch(_){}go();});setTimeout(go,window.__csMoonWait?15000:4000);}else rest();
+      if(front){let fired=false;const go=()=>{if(!fired){fired=true;rest();}};warm(front,"high").then(()=>{try{window.__csHeroReady=true;window.dispatchEvent(new Event("cs:hero-ready"));}catch(_){}go();});setTimeout(go,window.__csMoonWait?15000:4000);}else rest();
     }catch(e){}
     let started=false,endTm,poll,safety,lead;
     function play(){if(started)return;started=true;swipeIntroSeen=true;setArmed(true);endTm=setTimeout(()=>setIntro(false),2400);}
@@ -26219,8 +26222,13 @@ function csArmLoopVideo(v,farRoot){
   // (touchstart/pointerdown on a touch screen do NOT unlock media). The clip
   // may read !paused while frozen, so call play() directly, not via kick().
   const unlock=function(){
-    if(gone||far||!v.getAttribute('src')) return;
-    const p=v.play(); if(p&&p.catch)p.catch(function(){});
+    if(gone||!v.getAttribute('src')) return;
+    // A clip that is far off screen still gets played once inside the tap (then paused
+    // again): WebKit only lets a Low Power Mode clip start later if it was played during
+    // a real gesture. Skipping far clips here left them frozen when scrolled to (2026-10-20).
+    const p=v.play();
+    if(far){ const back=function(){ if(far){ try{ v.pause(); }catch(_){} } }; if(p&&p.then) p.then(back,function(){}); else back(); }
+    else if(p&&p.catch) p.catch(function(){});
   };
   v.addEventListener('playing',onPlaying);
   v.addEventListener('timeupdate',onTime);
@@ -26382,10 +26390,13 @@ function FormatReel(){
     // Slow Android (window.__csMoonWait): the reel also waits for the front deck photo
     // (cs:hero-ready, 15s fallback) — on a phone the reel sits just below the first
     // screen and its 7 clips (~2 MB) were sharing the weak connection with that photo.
-    let hold=false, pend=false;
-    try{ hold=!!window.__csMoonWait; }catch(_){}
+    // Every device since 2026-10-20 (Safari on a busy connection left the front photo
+    // blank for ~12s while the reel's 14 clips downloaded): wait for the front deck photo,
+    // at most 4s (15s on slow Android). Not on pages without the deck.
+    let slowW=false; try{ slowW=!!window.__csMoonWait; }catch(_){}
+    let hold=!window.__csHeroReady&&!swipeIntroSeen&&!!document.querySelector('.s-card'), pend=false;
     const release=function(){ if(!hold) return; hold=false; if(pend) begin(); };
-    if(hold){ window.addEventListener('cs:hero-ready',release); timers.push(setTimeout(release,15000)); unhooks.push(function(){ window.removeEventListener('cs:hero-ready',release); }); }
+    if(hold){ window.addEventListener('cs:hero-ready',release); timers.push(setTimeout(release,slowW?15000:4000)); unhooks.push(function(){ window.removeEventListener('cs:hero-ready',release); }); }
     const begin=function(){
       if(hold){ pend=true; return; }
       if(begun||gone) return; begun=true;
