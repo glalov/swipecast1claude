@@ -26401,14 +26401,29 @@ function FormatReel(){
       if(hold){ pend=true; return; }
       if(begun||gone) return; begun=true;
       if(nearIo){ nearIo.disconnect(); nearIo=null; }
-      vids.slice(0,n).forEach(setSrc);
+      // Cards load ONE AFTER ANOTHER in row order (2026-10-20): each next clip starts once
+      // the previous one can play (or after 1.5s). All 7 at once on a weak connection meant
+      // none was playable for ~25s in Safari. The second copy of the row (needed for the
+      // seamless wrap) waits for its original to be fully buffered, because Safari does not
+      // share one download between two <video>s; only a copy already on screen (very wide
+      // monitors) starts right away.
+      let k=0;
+      const nextCard=function(){
+        if(gone||k>=n) return;
+        const v=vids[k++]; let moved=false;
+        const on=function(){ if(moved) return; moved=true; v.removeEventListener('canplay',on); nextCard(); };
+        v.addEventListener('canplay',on); unhooks.push(function(){ v.removeEventListener('canplay',on); });
+        timers.push(setTimeout(on,1500));
+        setSrc(v);
+      };
+      nextCard();
       vids.slice(n).forEach(function(dup,i){
         const orig=vids[i];
         const go=function(){ if(!gone&&!dup.getAttribute('src')) setSrc(dup); };
-        if(orig.readyState>=4||dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
+        if(dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
         orig.addEventListener('canplaythrough',go);
         unhooks.push(function(){ orig.removeEventListener('canplaythrough',go); });
-        timers.push(setTimeout(go,2500));
+        timers.push(setTimeout(go,12000)); // safety net if canplaythrough never fires
       });
     };
     if(typeof IntersectionObserver!=='undefined'){
