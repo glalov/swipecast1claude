@@ -5787,6 +5787,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-site-ck{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 20px;font-size:15px;font-weight:600;color:var(--t1);}
 .lh-site-ck li{display:flex;align-items:center;gap:9px;}
 .lh-site-ck .ti{color:var(--teal);}
+.lh-site-tiers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;margin:0 0 22px;}
+.lh-site-tl{font-weight:800;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin:0 0 9px;}
+.lh-site-tl.pm{color:#94722A;}
+.lh-site-tiers .lh-site-ck{grid-template-columns:minmax(0,1fr);margin:0;}
+.lh-site-ck.pmk .ti{color:#C9A24A;}
 .lh-site-bens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:clamp(28px,4vw,40px);padding-top:24px;border-top:1px solid var(--bdr);}
 .lh-site-ben{display:flex;gap:12px;align-items:flex-start;min-width:0;}
 .lh-site-bi{flex:none;width:38px;height:38px;border-radius:11px;background:#464A73;color:#fff;display:flex;align-items:center;justify-content:center;}
@@ -26861,11 +26866,17 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <div className="lh-site-copy">
           <p className="lh-site-eyebrow">Your profile, your website</p>
           <h2>Skip the website builder.</h2>
-          <p className="lh-site-lede">Your CastSlate profile is your acting website — one link with everything casting needs. A site on Squarespace or Wix runs $16–25 a month, and you'd still have to build it.</p>
-          <ul className="lh-site-ck">{["About & bio","Reel & videos","Photo gallery","Résumé (PDF)","Credits & skills","Socials & contact"].map(t=><li key={t}><Ico n="check" s={17}/>{t}</li>)}</ul>
+          <p className="lh-site-lede">Your CastSlate profile is your acting website — one link with everything casting needs. Squarespace or Wix run $16–25 a month, and you'd still have to build it yourself.</p>
+          {/* Split Free / Premium (2026-10-20): the old single list promised gallery, reel, résumé
+              and socials under a "free profile" button, but free = 1 headshot, no videos, résumé
+              preview only, no social links (FREE_PLAN). Keep these lists true to the plans. */}
+          <div className="lh-site-tiers">
+            <div><p className="lh-site-tl">Free</p><ul className="lh-site-ck">{["Headshot","About & bio","Credits & skills","Message button"].map(t=><li key={t}><Ico n="check" s={17}/>{t}</li>)}</ul></div>
+            <div><p className="lh-site-tl pm">Premium adds</p><ul className="lh-site-ck pmk">{["Photo gallery","Reel & videos","Résumé (PDF)","Social links"].map(t=><li key={t}><Ico n="check" s={17}/>{t}</li>)}</ul></div>
+          </div>
           <div className="lh-site-row">
             <button type="button" className="lh-site-link" onClick={()=>onNavigate("register-talent")}>Create my free profile <Tri/></button>
-            <span className="lh-site-note">Premium from $10.75/mo</span>
+            <span className="lh-site-note">The full website is Premium, from $10.75/mo — less than a website builder.</span>
           </div>
         </div>
         <div className="lh-site-browser" aria-hidden="true">
@@ -26881,9 +26892,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </div>
       </div>
       <div className="lh-site-bens">
-        {[["tools-off","Nothing to build or maintain","No templates, no hosting, no domain renewals, no broken pages."],
-          ["refresh","Edit once, updated everywhere","A new credit shows on your page and résumé at once — and your QR card always opens the latest version."],
-          ["eye","Already in front of casting","When you submit, this is the page casting directors see. A personal website just sits there until someone finds it."]].map(([ic,t,d])=>(
+        {/* Each text is exactly 3 lines in the ~271px desktop column (owner wants the three even);
+            re-measure on the live page if the wording changes. */}
+        {[["tools-off","Nothing to build or maintain","No templates, no hosting, no domain renewals, no broken pages. Add a headshot and your page is ready to share."],
+          ["refresh","Edit once, updated everywhere","A new credit shows on your page right away. With Premium, your résumé and QR card update with it automatically."],
+          ["eye","Already in front of casting","When you submit, casting directors open your CastSlate profile. A personal website just sits there until someone finds it."]].map(([ic,t,d])=>(
           <div key={t} className="lh-site-ben"><span className="lh-site-bi"><Ico n={ic} s={20}/></span><div><b>{t}</b><p>{d}</p></div></div>))}
       </div>
     </section>
