@@ -14364,9 +14364,11 @@ Free submission used
           <>
             <div style={{marginBottom:4,display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:20}}><Ico n="movie" s={22}/></span>
-              <h2 style={{margin:0,fontSize:20,fontWeight:800}}>{videoNoteUrl?"Audition for":"Submit for"} {applyRole.name}</h2>
+              {/* Project in the title, role on the card and the button (owner 2026-10-21):
+                  the role name was in the title, the card, the placeholder AND the button. */}
+              <h2 style={{margin:0,fontSize:20,fontWeight:800}}>{videoNoteUrl?"Audition for":(c.title?"Submit to":"Submit for")} {c.title||applyRole.name}</h2>
             </div>
-            <p style={{color:"var(--t3)",fontSize:12,marginBottom:16}}>{c.title} · {c.prod}</p>
+            <p style={{color:"var(--t3)",fontSize:12,marginBottom:16}}>{c.title?(c.prod||"\u00a0"):[c.title,c.prod].filter(Boolean).join(" · ")}</p>
 
             {/* The role — first, so actors know who they're auditioning as before
                 writing a cover note (2026-09-27; many arrive straight from the
@@ -14501,7 +14503,7 @@ Free submission used
             {/* Cover note — optional, secondary */}
             <div className="form-group" style={{marginBottom:0}}>
               <label className="label">{t('search.coverNote')} <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(2 sentences max)</span></label>
-              <textarea className="textarea" placeholder={`One thing about ${niceRoleName(applyRole.name)||"this role"} you connect with.`} value={coverNote} onChange={e=>{const v=e.target.value;setCoverNote(v);writeApplyDraft(casting.id,applyRole,v);}}/>
+              <textarea className="textarea" placeholder="One thing about this role you connect with." value={coverNote} onChange={e=>{const v=e.target.value;setCoverNote(v);writeApplyDraft(casting.id,applyRole,v);}}/>
               {draftRestored&&coverNote&&<div style={{fontSize:12,color:"var(--t3)",marginTop:6}}>Draft restored — your note was saved.</div>}
             </div>
             {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap",marginTop:16,padding:"11px 14px",border:"1px dashed var(--bdr)",borderRadius:10,fontSize:13.5,color:"var(--t2)"}}>
