@@ -6303,6 +6303,25 @@ const PLAN_EXCLUSIVES={
 const FREE_PLAN={headshotsTotal:1,additionalPhotos:0,videos:0,submissionsTotal:1,castingTypes:2,castingMoodClips:0,castingSupportingPhotos:0};
 const PREMIUM_PLAN={headshotsTotal:Infinity,additionalPhotos:Infinity,videos:Infinity,submissionsTotal:Infinity,castingTypes:Infinity,castingMoodClips:1,castingSupportingPhotos:3};
 const PREMIUM_PRICE="from $10.75/month";
+// Apply draft kept across an upgrade (owner, 2026-10-21). Going to the plans
+// page or Stripe used to drop the role the actor was applying to, along with
+// their cover note and headshot pick. localStorage, not sessionStorage: the
+// Stripe round trip can come back in a new tab (Apple Pay, bank 3-D Secure).
+// Six hours covers a slow checkout without resurrecting a stale draft days later.
+const APPLY_DRAFT_KEY="sc_apply_draft_v1";
+const APPLY_DRAFT_TTL_MS=6*60*60*1000;
+function saveApplyDraft(d){
+  try{localStorage.setItem(APPLY_DRAFT_KEY,JSON.stringify({...d,ts:Date.now()}));}catch(_){}
+}
+function readApplyDraft(){
+  try{
+    const d=JSON.parse(localStorage.getItem(APPLY_DRAFT_KEY)||"null");
+    if(!d||!d.castingId||Date.now()-(d.ts||0)>APPLY_DRAFT_TTL_MS){localStorage.removeItem(APPLY_DRAFT_KEY);return null;}
+    return d;
+  }catch(_){return null;}
+}
+function clearApplyDraft(){try{localStorage.removeItem(APPLY_DRAFT_KEY);}catch(_){}}
+
 // Application waiting on sign-up / sign-in (owner, 2026-10-21). It used to live
 // in sessionStorage only, which is per tab: the confirmation link opens a NEW tab
 // (Gmail, a phone's mail app), so the actor landed on the dashboard instead of
@@ -7486,7 +7505,8 @@ function trackGoogleAdsPurchase(planType){
   }catch(_){}
 }
 
-function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType}){
+function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType,onResumeApply}){
+  const [draft]=useState(()=>successType==="premium"?readApplyDraft():null);
   const [activating,setActivating]=useState(successType==="premium");
   const [isPremium,setIsPremium]=useState(myProfile?.membership_status==="active");
 
@@ -7557,8 +7577,15 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
     </p>
     {isPremium&&<p style={{color:"var(--acc)",fontWeight:700,marginBottom:24,fontSize:15}}>Unlimited submissions unlocked <Ico n="check" s={24}/></p>}
     <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-      <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
-      <button className="btn-s" onClick={()=>onNavigate("my-profile")}>My Profile</button>
+      {isPremium&&draft&&onResumeApply
+        ?<>
+          <button className="btn-p" onClick={()=>onResumeApply(draft)}>{(()=>{const tt=draft.roleName||draft.castingTitle||"your role";const short=tt.length>32?tt.slice(0,30).trimEnd()+"…":tt;return `Finish your submission to “${short}”`;})()} <Tri/></button>
+          <button className="btn-s" onClick={()=>onNavigate("search")}>Browse Castings</button>
+        </>
+        :<>
+          <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
+          <button className="btn-s" onClick={()=>onNavigate("my-profile")}>My Profile</button>
+        </>}
     </div>
   </div><Footer onNavigate={onNavigate}/></div>);
 }
@@ -13374,6 +13401,19 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     }
     {let slide=false;try{slide=!!window.__csSlideApply;window.__csSlideApply=false;}catch(_){}setApplySlideIn(slide);setApplyLeaving(false);}
     setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
+    // Back from an upgrade: put the cover note and headshot pick back.
+    const draft=readApplyDraft();
+    if(draft&&String(draft.castingId)===String(casting?.id)&&draft.roleName===r?.name){
+      if(draft.coverNote)setCoverNote(draft.coverNote);
+      if(draft.selectedPhoto)setSelectedPhoto(draft.selectedPhoto);
+      clearApplyDraft();
+    }
+  };
+  // Leave for the plans page without losing the apply in progress.
+  const upgradeKeepingDraft=(role,{note="",photo=""}={})=>{
+    if(casting?.id)saveApplyDraft({castingId:casting.id,castingTitle:casting.title||"",roleName:role?.name||null,roleId:role?.id||null,roleIdx:Number.isInteger(role?.idx)?role.idx:null,coverNote:note,selectedPhoto:photo});
+    setApplyRole(null);
+    onNavigate&&onNavigate("membership");
   };
   useEffect(()=>{
     if(!autoApplyRole||!isLoggedIn||autoOpenedRef.current)return;
@@ -13640,7 +13680,7 @@ Free submission used
       </div>
       {/* CTA sells finishing THIS submission, not "Premium" in the abstract — the
           button names the casting the actor was just blocked from. */}
-      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"#EAC080",padding:"14px 16px",borderRadius:11,marginBottom:9}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return withTri(`Go unlimited — ${PREMIUM_PRICE} →`);const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return withTri(`Unlock & submit to “${short}” →`);})()}</button>
+      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);upgradeKeepingDraft({name:upgradeRole});}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"#EAC080",padding:"14px 16px",borderRadius:11,marginBottom:9}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return withTri(`Go unlimited — ${PREMIUM_PRICE} →`);const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return withTri(`Unlock & submit to “${short}” →`);})()}</button>
       <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, not right now</button>
       <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions</div>
     </div></div></BodyPortal>}
@@ -14350,7 +14390,7 @@ Free submission used
                   {!allowRecord&&!allowUpload&&(!isPremium
                     ?<div style={{background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"12px 14px"}}>
                       <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:10}}><span style={{marginRight:6}}><Ico n="lock" s={22}/></span>Video auditions are a <strong style={{color:"var(--t1)"}}>Premium</strong> feature. Free members apply with a headshot below — upgrade to record or upload an audition video.</div>
-                      <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("membership");}}>Upgrade to Premium</button>
+                      <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>upgradeKeepingDraft(applyRole,{note:coverNote,photo:selectedPhoto})}>Upgrade to Premium</button>
                     </div>
                     :<p style={{fontSize:13,color:"var(--t3)"}}>No submission format available.</p>)}
                 </div>
@@ -14381,7 +14421,7 @@ Free submission used
             </div>
             {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap",marginTop:16,padding:"11px 14px",border:"1px dashed var(--bdr)",borderRadius:10,fontSize:13.5,color:"var(--t2)"}}>
               <span style={{display:"inline-flex",alignItems:"center",gap:6}}><Ico n="video" s={16}/>Add an audition video <span style={{color:"var(--t3)"}}>· Premium</span></span>
-              <button type="button" onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("membership");}} style={{background:"none",border:0,padding:0,fontFamily:"inherit",fontSize:13.5,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer",whiteSpace:"nowrap"}}>Learn more ▸</button>
+              <button type="button" onClick={()=>upgradeKeepingDraft(applyRole,{note:coverNote,photo:selectedPhoto})} style={{background:"none",border:0,padding:0,fontFamily:"inherit",fontSize:13.5,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer",whiteSpace:"nowrap"}}>Learn more ▸</button>
             </div>}
 
             <div style={{display:"flex",gap:12,marginTop:20}}>
@@ -55347,6 +55387,16 @@ function App(){
     pushHist("casting-detail",{slug:castingSlug});
   };
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
+  // "Finish your submission" after Premium checkout: reopen the casting and the
+  // role through pendingApply, the same path a sign-in resume takes.
+  const resumeDraftApply=async(draft)=>{
+    const c=draft&&await fetchFullCasting(draft.castingId);
+    if(!c){clearApplyDraft();navigate("search");return;}
+    const role=draft.roleName?{name:draft.roleName,id:draft.roleId||undefined,idx:Number.isInteger(draft.roleIdx)?draft.roleIdx:undefined}:null;
+    if(role)setPendingApply({casting:c,role});else clearApplyDraft();
+    setPrevPage(page);setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");
+    pushHist("casting-detail",{slug:c.slug||String(c.id)});
+  };
   // The one place a complete casting is assembled from the database. Anything
   // that holds only a partial casting row hydrates through this before it is
   // handed to the detail page — see handleViewCasting.
@@ -56216,7 +56266,7 @@ function App(){
         {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
         {page==="actor-toolkit"&&<ActorToolkitPage session={session} myProfile={myProfile} onNavigate={navigate}/>}
         {page==="actor-business-card"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<ActorBusinessCardPage session={session} myProfile={myProfile} onNavigate={navigate}/>:<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>)}
-        {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
+        {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onResumeApply={resumeDraftApply} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
         {page==="unsubscribed"&&<UnsubscribedPage onNavigate={navigate}/>}
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
