@@ -23559,6 +23559,10 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   const Kicker=({icon,children})=><div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--teal-dk)",marginBottom:6,display:"flex",alignItems:"center",gap:6}}><Ico n={icon} s={14}/>{children}</div>;
   const H=({children})=><h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.6,margin:"0 0 6px",lineHeight:1.2}}>{children}</h2>;
   const Lead=({children})=><p style={{fontSize:14.5,color:"var(--t2)",margin:"0 0 20px",lineHeight:1.5}}>{children}</p>;
+  // Browse-all line under step 2 (owner 2026-10-21): a clear fallback for actors who
+  // don't take a match, instead of the small grey underline they missed.
+  const BrowseLine=({lead,label,tail,rule})=><div style={{textAlign:"center",marginTop:rule?16:14,paddingTop:rule?14:0,borderTop:rule?"1px solid var(--bdr)":0,fontSize:14.5,color:"var(--t2)",lineHeight:1.5}}>
+    {lead}<button type="button" onClick={()=>{onClose();onNavigate&&onNavigate("search");}} style={{background:"none",border:0,padding:0,fontFamily:"inherit",fontSize:14.5,fontWeight:800,color:"var(--teal-dk)",cursor:"pointer",whiteSpace:"nowrap"}}>{label} ▸</button>{tail}</div>;
   const Link=({onClick,children})=><button type="button" onClick={onClick} disabled={busy} style={{display:"block",width:"100%",textAlign:"center",marginTop:12,fontSize:13,color:"var(--t3)",textDecoration:"underline",cursor:"pointer",background:"none",border:0,fontFamily:"inherit"}}>{children}</button>;
   const Check=()=><ul style={{listStyle:"none",padding:0,margin:"0 0 18px"}}>{checklist.map(it=>(
     <li key={it.l} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderTop:"1px solid var(--bdr)",fontSize:14,color:it.ok?"var(--t3)":"var(--t1)"}}>
@@ -23613,7 +23617,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
       <Lead>New castings go up every day. Your matches will show on your dashboard as they arrive. Meanwhile, finish your profile so casting directors can find <i>you</i>.</Lead>
       <Check/>
       <button type="button" style={{...GM_GOLD,width:"100%"}} onClick={goProfile}>Finish my profile <Tri/></button>
-      <Link onClick={()=>{onClose();onNavigate&&onNavigate("search");}}>Browse all castings</Link>
+      <BrowseLine lead="Or " label="browse all castings" tail=" — new roles go up every day."/>
     </>:<>
       <Dots n={2}/>
       <Kicker icon="sparkles">Step 2 of 3</Kicker>
@@ -23634,7 +23638,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
             {opening===x.c.id?<><span className="gm-spin"/> Opening the role…</>:<>Submit to this role <Tri/></>}
           </button>
         </div>))}
-      <Link onClick={()=>{onClose();onNavigate&&onNavigate("search");}}>See all castings instead</Link>
+      <BrowseLine lead="Not quite you? " label="Browse all castings" rule/>
     </>;
   }else{
     body=<>
