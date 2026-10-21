@@ -13355,6 +13355,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       return;
     }
     if(!isLoggedIn){onRequireAuth&&onRequireAuth(casting,{...r,idx:i});return;}
+    // Already submitted to this role: nothing to do. Without this, a free actor
+    // who used their one submission on it got the upgrade prompt for the very
+    // role they had just applied to (2026-10-21).
+    if(applied.has(i))return;
     // Free actors who already used their one free submission → upgrade prompt instead of apply modal.
     if(isTalent&&!isPremium&&usedCount>=FREE_PLAN.submissionsTotal){
       setUpgradeRole(r?.name||null);
@@ -13916,11 +13920,22 @@ Free submission used
           </div>
           {canApply&&<div className="cd-side">
             <h3>Ready to apply?</h3>
-            <select className="select" value={applyPickIdx} onChange={e=>setApplyPickIdx(e.target.value)} style={{width:"100%"}}>
-              <option value="">Select a role…</option>
-              {sortedRoles.map((r,i)=><option key={i} value={i}>{r.name}{r.type?` — ${r.type}`:""}</option>)}
-            </select>
-            <button className="btn-teal apply-cta" onClick={()=>{const idx=applyPickIdx===""?0:parseInt(applyPickIdx,10);handleApply(sortedRoles[idx],idx);}}>{"Apply now"}</button>
+            {(()=>{
+              // Roles already submitted to are marked and can't be picked; with
+              // nothing picked, Apply goes to the first role still open to them.
+              const firstOpen=sortedRoles.findIndex((_,i)=>!applied.has(i));
+              const idx=applyPickIdx===""?firstOpen:parseInt(applyPickIdx,10);
+              if(firstOpen<0)return <span className="role-applied big">Applied to every role<Ico n="check" s={16}/></span>;
+              return(<>
+                <select className="select" value={applyPickIdx} onChange={e=>setApplyPickIdx(e.target.value)} style={{width:"100%"}}>
+                  <option value="">Select a role…</option>
+                  {sortedRoles.map((r,i)=><option key={i} value={i} disabled={applied.has(i)}>{applied.has(i)?"✓ ":""}{r.name}{r.type?` — ${r.type}`:""}{applied.has(i)?" (Applied)":""}</option>)}
+                </select>
+                {applied.has(idx)
+                  ?<span className="role-applied big">Applied<Ico n="check" s={16}/></span>
+                  :<button className="btn-teal apply-cta" onClick={()=>handleApply(sortedRoles[idx],idx)}>{"Apply now"}</button>}
+              </>);
+            })()}
             {/* The closing date is above the card, said once. */}
           </div>}
         </div>
