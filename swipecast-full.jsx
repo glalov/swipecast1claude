@@ -5064,6 +5064,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-top.rl-clickable:hover{background:#FBF8F1;}
 .rl-row.rl-open .rl-top{background:#FBF8F1;}
 .rl-top:focus-visible{outline:2px solid #376A60;outline-offset:-3px;}
+/* Applied role, row closed (owner 2026-10-21, "soft green"): faint green wash + a
+   "✓ Applied" chip by the name. Opened, both go and the Applied button carries it. */
+.rl-row.rl-applied,.rl-row.rl-applied .rl-top{background:#EEF6EC;}
+.rl-row.rl-applied .rl-top.rl-clickable:hover{background:#E6F1E3;}
+.rl-ap-chip{display:inline-flex;align-items:center;margin-left:10px;vertical-align:4px;font-size:12.5px;font-weight:700;letter-spacing:0;line-height:1;color:#2F6B33;background:#D9ECD5;padding:5px 10px;border-radius:999px;white-space:nowrap;}
 /* Type is set for readability first — a working actor reads these on a phone in
    bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
    far past the 4.5:1 AA floor. The meta sits at weight 500 rather than 600 —
@@ -14238,8 +14243,11 @@ Free submission used
           // one-role casting the map starts empty while the row shows open, and
           // !undefined would have made the first click a no-op.
           const toggle=()=>{if(foldable)setDescOpen(p=>({...p,[i]:!open}));};
+          // Only a closed, foldable row shows it: open (or unfoldable) rows already
+          // have the Applied button in view.
+          const appliedClosed=applied.has(i)&&foldable&&!open;
           return(
-          <div key={i} data-ri={i} className={"rl-row"+(open&&foldable?" rl-open":"")}>
+          <div key={i} data-ri={i} className={"rl-row"+(open&&foldable?" rl-open":"")+(appliedClosed?" rl-applied":"")}>
             <div className={"rl-top"+(foldable?" rl-clickable":"")}
               {...(foldable?{role:"button",tabIndex:0,"aria-expanded":open,
                 "aria-label":(open?"Collapse ":"Expand ")+(r.name||"role")+" details",
@@ -14247,7 +14255,7 @@ Free submission used
                 onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();}}}:{})}>
               <div style={{minWidth:0}}>
                 {r.type&&<div className="rl-kind">{r.type}</div>}
-                <div className="rl-nm">{r.name}</div>
+                <div className="rl-nm">{r.name}{appliedClosed&&<span className="rl-ap-chip">✓ Applied</span>}</div>
                 <div className="rl-mt">
                   {facets.map((f,fi)=>(<React.Fragment key={fi}>
                     {fi>0&&<span className="sep">&middot;</span>}{f}
