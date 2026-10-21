@@ -925,6 +925,7 @@ interface DecisionTone {
   kicker: string; card: string; cardBd: string; cta: string;
   badge: string;    // filename of the hexagon badge PNG
   bell: string;     // filename of the footer bell PNG, tinted to match
+  por?: string;     // portrait shadow tint; unset = the terracotta the shortlist shipped with
 }
 // Terracotta (2026-09-12, replaced sapphire, which read cold for the best news
 // an actor gets). Warm and celebratory, matches the noon upsell's sunset tones,
@@ -939,7 +940,7 @@ const HOLD_TONE: DecisionTone = {
   band: "#0F5A3C", band2: "#17805A", foot: "#0B4A31",
   onDark: "#7FE3B0", onCream: "#17805A", rule: "#2E9B6C", rule0: "rgba(15,90,60,0)",
   kicker: "#1E7A54", card: "#EAF7F0", cardBd: "#CFEADD", cta: "#116549",
-  badge: "email-hold-badge.png", bell: "email-bell.png",
+  badge: "email-hold-badge.png", bell: "email-bell.png", por: "rgba(15,90,60,0.22)",
 };
 
 // Rose Ember — the daily "you're getting noticed" recap. Deliberately clear of
@@ -966,6 +967,9 @@ interface DecisionArgs {
   // (shortlist only). When set, the star badge steps out: the two together
   // crowd the row. Absent, the headline row is exactly what it always was.
   portrait?: string;
+  // ctaCenter = centre the closing button (free-account decision emails, where the
+  // block just above it is a centred line). Unset, the button stays left-aligned.
+  ctaCenter?: boolean;
 }
 function decisionEmail(a: DecisionArgs): string {
   const t = a.tone;
@@ -1018,7 +1022,7 @@ function decisionEmail(a: DecisionArgs): string {
       ${a.portrait ? `<tr><td class="cs-pad" style="padding:30px 30px 0">
         <table width="100%" cellpadding="0" cellspacing="0"><tr>
           <td class="cs-por-cell" width="132" valign="top" style="width:132px">
-            <img class="cs-por" src="${a.portrait}" width="116" height="146" alt="Your submitted photo" style="display:block;width:116px;height:146px;border-radius:10px;border:3px solid #ffffff;box-shadow:0 6px 18px rgba(154,65,39,0.22)"/>
+            <img class="cs-por" src="${a.portrait}" width="116" height="146" alt="Your submitted photo" style="display:block;width:116px;height:146px;border-radius:10px;border:3px solid #ffffff;box-shadow:0 6px 18px ${t.por ?? "rgba(154,65,39,0.22)"}"/>
           </td>
           <td valign="middle" style="padding-left:18px">
             <h1 class="cs-h1" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:700;color:#1A1A2E;letter-spacing:-0.5px;line-height:1.22">${a.headTop}<br/><span style="color:${t.onCream}">${a.headAccent}</span></h1>
@@ -1038,8 +1042,9 @@ function decisionEmail(a: DecisionArgs): string {
       <tr><td class="cs-pad" style="padding:20px 30px 0"><p style="margin:0;font-size:15px;line-height:1.78;color:#5A5A72">${a.body}</p></td></tr>
 ${a.mid ?? card}
 ${a.after ?? ""}
-      <tr><td class="cs-pad cs-cta" style="padding:26px 30px 34px">
-        <table cellpadding="0" cellspacing="0"><tr><td style="background:${t.cta};border-radius:11px">
+      ${a.ctaCenter ? `<tr><td class="cs-pad cs-cta" align="center" style="padding:18px 30px 34px;text-align:center">
+        <table cellpadding="0" cellspacing="0" align="center" style="margin:0 auto">` : `<tr><td class="cs-pad cs-cta" style="padding:26px 30px 34px">
+        <table cellpadding="0" cellspacing="0">`}<tr><td style="background:${t.cta};border-radius:11px">
           <a href="${APP_URL}${a.href ?? "/talent-dashboard"}" style="display:inline-block;padding:16px 34px;font-size:14.5px;font-weight:800;letter-spacing:0.2px;color:#FFFFFF;text-decoration:none">${a.cta ?? "View my applications"} &nbsp;&rarr;</a>
         </td></tr></table>
       </td></tr>
@@ -1072,7 +1077,21 @@ function holdSubject(firstName: string, projectName?: string): string {
     : (firstName ? `${firstName}, your profile was reviewed on CastSlate` : "Your profile was reviewed on CastSlate");
 }
 
-function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string, portrait?: string): string {
+// Free accounts only (owner, 2026-10-21): a centred closing line and one
+// "Browse castings" button in place of "View my applications" — a free actor has
+// one submission, so "applications" read wrong. Deliberately no mention of
+// Premium, prices or limits: it reads as advice, not a pitch. The Apply button
+// on the site is where the free limit is explained. Premium emails are unchanged.
+function freeBrowseBlock(t: DecisionTone, lead: string, rest: string): string {
+  return `
+        <tr><td class="cs-pad" style="padding:26px 30px 0">
+          <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="border-top:1px solid ${t.cardBd};padding-top:22px;font-size:15px;line-height:1.7;color:#5A5A72;text-align:center">
+            <strong style="color:#1A1A2E">${lead}</strong> &mdash; ${rest}
+          </td></tr></table>
+        </td></tr>`;
+}
+
+function applicationSelectedHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string, portrait?: string, isFree = false): string {
   const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
   const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
   const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
@@ -1108,22 +1127,31 @@ function applicationSelectedHtml(firstName: string, projectName?: string, roleNa
     body: `${reviewer} shortlisted you${forRole}. Your submission stood out &mdash; you're on the short list to move forward.`,
     title,
     preheader: `${cdName ? esc(cdName) : "A casting director"} picked you out of the submissions. Here&rsquo;s what happens next.`,
-    after: nextSteps,
+    after: isFree ? nextSteps + freeBrowseBlock(t, "While you wait to hear back", "new roles go up every day. The actors who book keep submitting.") : nextSteps,
     portrait,
+    ...(isFree ? { cta: "Browse castings", href: "/browse-castings", ctaCenter: true } : {}),
   });
 }
 
-function applicationHoldHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string): string {
+// Free accounts also get their submitted photo beside the headline, like the
+// shortlist email (owner, 2026-10-21). "profile&nbsp;was" keeps the narrower
+// headline from leaving "was" alone on its own line.
+function applicationHoldHtml(firstName: string, projectName?: string, roleName?: string, cdName?: string, isFree = false, portrait?: string): string {
   const forRole  = roleName ? ` for <strong>${esc(roleName)}</strong>` : "";
   const reviewer = cdName ? `<strong>${esc(cdName)}</strong>` : "A casting director";
   const title    = projectName ? `${esc(projectName)}${roleName ? ` &middot; ${esc(roleName)}` : ""}` : "";
   return decisionEmail({
     tone: HOLD_TONE,
-    headTop: firstName ? `${esc(firstName)}, your profile was` : "Your profile was", headAccent: "reviewed",
+    headTop: (firstName ? `${esc(firstName)}, your profile` : "Your profile") + (isFree && portrait ? "&nbsp;was" : " was"), headAccent: "reviewed",
     body: `${reviewer} opened your submission${forRole} and moved you to under consideration ` +
           `&mdash; you're still in for the role while they finalize casting. Nothing is needed from you right now.`,
     title,
     preheader: `${cdName ? esc(cdName) : "A casting director"} reviewed your profile${roleName ? ` for ${esc(roleName)}` : ""} and kept you under consideration. Nothing needed yet.`,
+    ...(isFree ? {
+      after: freeBrowseBlock(HOLD_TONE, "Keep your options open", "casting directors post new roles every day."),
+      cta: "Browse castings", href: "/browse-castings", ctaCenter: true,
+      ...(portrait ? { portrait } : {}),
+    } : {}),
   });
 }
 
@@ -1371,7 +1399,7 @@ serve(async (req) => {
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: shortlistSubject(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined),
-        html: applicationSelectedHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined, portrait),
+        html: applicationSelectedHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined, portrait, profile.membership_status !== "active"),
       });
       if (!sent.ok) {
         console.error("[send-notification-email] shortlist send error:", sent.err);
@@ -1397,10 +1425,21 @@ serve(async (req) => {
       if (authErr || !authData?.user?.email) {
         return json({ ok: false, results: { email: "error:could_not_retrieve_user_email" } });
       }
+      // Free accounts: the photo they submitted. decide_application does not send
+      // application_id for holds, but a free actor has one submission, so the
+      // casting finds it. Matched on talent_id, so it is always their own photo.
+      const isFree = profile.membership_status !== "active";
+      let holdPortrait: string | undefined;
+      if (isFree && (application_id || casting_id)) {
+        let q = supabase.from("applications").select("selected_photo_url").eq("talent_id", to_user_id);
+        q = application_id ? q.eq("id", application_id) : q.eq("casting_id", casting_id);
+        const { data: appRow } = await q.order("created_at", { ascending: false }).limit(1).maybeSingle();
+        holdPortrait = submissionPhotoUrl(appRow?.selected_photo_url);
+      }
       const sent = await sendEmail({
         from: FROM_EMAIL, to: [authData.user.email], replyTo: CONTACT_EMAIL,
         subject: holdSubject(firstName, project_name?.trim() || undefined),
-        html: applicationHoldHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined),
+        html: applicationHoldHtml(firstName, project_name?.trim() || undefined, role_name?.trim() || undefined, cd_name?.trim() || undefined, isFree, holdPortrait),
       });
       if (!sent.ok) {
         console.error("[send-notification-email] hold send error:", sent.err);
