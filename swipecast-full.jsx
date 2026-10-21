@@ -6335,12 +6335,6 @@ function pendingApplyMeta(pending){
   const r=pending.role||null;
   return {pending_apply:{casting_id:String(c.id),role_id:r&&r.id?String(r.id):null,role_name:r&&r.name||null,ts:Date.now()}};
 }
-// Confirmation links come back to the site they were started on when that is a
-// Vercel preview, so a preview can be tested end to end. Supabase only honours a
-// redirect on its allow list and otherwise falls back to the Site URL, so
-// production behaviour is unchanged either way.
-const AUTH_REDIRECT_URL=(()=>{try{const h=window.location.hostname;if(/\.vercel\.app$/.test(h))return window.location.origin;}catch(_){}return "https://www.castslate.com";})();
-
 const UPGRADE_MSG=`You've used your free submission. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), the Casting Companies Directory (131 active casting offices), the Acting & Film School Directory (351 schools and film programs), and more.`;
 // ─── Contact-info filter — bio / cover note / messages must not carry links,
 //     phone numbers, emails, or social handles (mirrored by a DB trigger).
@@ -8180,7 +8174,7 @@ function RegisterTalent({onNavigate}){
     setResentOk(false);setErr("");
     try{
       const email=f.email.trim().toLowerCase();
-      const {error}=await window.sb.auth.resend({type:"signup",email,options:{emailRedirectTo:AUTH_REDIRECT_URL}});
+      const {error}=await window.sb.auth.resend({type:"signup",email,options:{emailRedirectTo:"https://www.castslate.com"}});
       if(error)throw error;
       setResentOk(true);
       setResendCooldown(60);
@@ -8241,7 +8235,7 @@ function RegisterTalent({onNavigate}){
       console.log("[auth] signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
-        options:{emailRedirectTo:AUTH_REDIRECT_URL,data:signupMeta}
+        options:{emailRedirectTo:"https://www.castslate.com",data:signupMeta}
       }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
@@ -8426,7 +8420,7 @@ function RegisterCD({onNavigate}){
   const resendConfirmation=async()=>{
     setResentOk(false);setErr("");
     try{
-      const {error}=await window.sb.auth.resend({type:"signup",email:f.email.trim().toLowerCase(),options:{emailRedirectTo:AUTH_REDIRECT_URL}});
+      const {error}=await window.sb.auth.resend({type:"signup",email:f.email.trim().toLowerCase(),options:{emailRedirectTo:"https://www.castslate.com"}});
       if(error)throw error;
       setResentOk(true);
       setResendCooldown(60);
@@ -8469,7 +8463,7 @@ function RegisterCD({onNavigate}){
       console.log("[auth] CD signUp attempt:",email);
       const {data,error}=await withTimeout(window.sb.auth.signUp({
         email,password:f.password,
-        options:{emailRedirectTo:AUTH_REDIRECT_URL,data:signupMeta}
+        options:{emailRedirectTo:"https://www.castslate.com",data:signupMeta}
       }),30000,"Sign up");
       if(error){
         const em=(error.message||"").toLowerCase();
@@ -8605,7 +8599,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
     if(!clean||!clean.includes("@")){setErr("Enter your email above, then tap Resend.");return;}
     setResending(true);
     try{
-      const {error}=await window.sb.auth.resend({type:"signup",email:clean,options:{emailRedirectTo:AUTH_REDIRECT_URL}});
+      const {error}=await window.sb.auth.resend({type:"signup",email:clean,options:{emailRedirectTo:"https://www.castslate.com"}});
       if(error)throw error;
       setResentOk(true);setResendCooldown(60);
     }catch(e){console.warn("[auth] login-page resend failed:",e?.message||e);setErr("We couldn't resend the confirmation email. Please try again in a minute.");}
@@ -12205,7 +12199,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
   const resendSignupEmail=async()=>{
     setResentOk(false);setResendErr("");
     try{
-      const {error}=await window.sb.auth.resend({type:"signup",email:suEmail.trim().toLowerCase(),options:{emailRedirectTo:AUTH_REDIRECT_URL}});
+      const {error}=await window.sb.auth.resend({type:"signup",email:suEmail.trim().toLowerCase(),options:{emailRedirectTo:"https://www.castslate.com"}});
       if(error)throw error;
       setResentOk(true);
       setResendCooldown(60);
@@ -12235,7 +12229,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
       const {data,error}=await window.sb.auth.signUp({
         email,password:suPass,
         options:{
-          emailRedirectTo:AUTH_REDIRECT_URL,
+          emailRedirectTo:"https://www.castslate.com",
           data:{user_type:"talent",display_name:(firstName+" "+lastName).trim(),onboarded:false,...pendingApplyMeta(pending)}
         }
       });
@@ -54843,6 +54837,12 @@ function App(){
             // (and restores any pending application). This is the FIRST login, so
             // route by account type: new talent → Pricing (surface the offer),
             // everyone else → dashboard.
+            // An application is waiting: SIGNED_IN routes to the casting, so stay
+            // out of its way. Checked before any await — SIGNED_IN is parked on
+            // loadProfile at this point and has not cleared the saved application
+            // yet. Routing here as well raced it and usually won, which dropped
+            // new actors on the dashboard instead of the form (2026-10-21).
+            if(peekPostAuthApply()||otpData?.user?.user_metadata?.pending_apply||window.__csResumedApply)return;
             let dest="dashboard";
             const uid=otpData?.user?.id;
             if(uid){
@@ -55066,6 +55066,7 @@ function App(){
                 if(meta)window.sb.auth.updateUser({data:{pending_apply:null}}).catch(()=>{});
                 if(pa){
                   clearPostAuthApply();
+                  try{window.__csResumedApply=true;}catch(_){}
                   if(pa?.casting){
                     setPendingApply(pa);
                     setViewingCasting(pa.casting);
