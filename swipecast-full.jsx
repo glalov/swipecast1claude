@@ -14456,7 +14456,7 @@ Free submission used
               {draftRestored&&coverNote&&<div style={{fontSize:12,color:"var(--t3)",marginTop:6}}>Draft restored — your note was saved.</div>}
             </div>
             {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap",marginTop:16,padding:"11px 14px",border:"1px dashed var(--bdr)",borderRadius:10,fontSize:13.5,color:"var(--t2)"}}>
-              <span style={{display:"inline-flex",alignItems:"center",gap:6}}><Ico n="video" s={16}/>Add an audition video <span style={{color:"var(--t3)"}}>· Premium</span></span>
+              <span style={{display:"flex",alignItems:"flex-start",gap:6,flex:"1 1 260px",minWidth:0,lineHeight:1.45}}><span style={{flexShrink:0,marginTop:1}}><Ico n="video" s={16}/></span><span><strong style={{fontWeight:700,color:"var(--t1)"}}>Premium members can add a self-tape here</strong> — so the casting director sees you act, not just your headshot.</span></span>
               <button type="button" onClick={()=>leaveApplyFor("membership")} style={{background:"none",border:0,padding:0,fontFamily:"inherit",fontSize:13.5,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer",whiteSpace:"nowrap"}}>Learn more ▸</button>
             </div>}
 
