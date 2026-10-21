@@ -3449,14 +3449,12 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-close:hover{background:var(--s2);}
 @keyframes mmFade{from{opacity:0;}to{opacity:1;}}
 @keyframes pageFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-/* Submit form <-> plans page. Learn more slides the plans page in from the right;
-   Back slides the casting (and the form left open) in from the left. */
-@keyframes csFwdIn{from{opacity:0;transform:translateX(32px);}to{opacity:1;transform:none;}}
-@keyframes csBackIn{from{opacity:0;transform:translateX(-32px);}to{opacity:1;transform:none;}}
-body.cs-pg-fwd main{animation:csFwdIn .34s cubic-bezier(.22,.8,.3,1) both;}
-body.cs-pg-back main,.cs-back-in{animation:csBackIn .34s cubic-bezier(.22,.8,.3,1) both;}
-.cs-back-dim{animation:csDimIn .34s ease both;}
-@media(prefers-reduced-motion:reduce){body.cs-pg-fwd main,body.cs-pg-back main,.cs-back-in,.cs-back-dim{animation:none;}}
+/* Submit form <-> plans page uses the dashboard -> Edit Profile slide (.cs-slide-out /
+   .cs-slide-in): the casting + form slide out right as one card, the plans page slides
+   in from the left; Back slides the casting + form in from the left. */
+.cs-back-dim{animation:csDimIn .25s ease both;}
+.cs-out-dim{animation:csDimOut .25s ease both;}
+@media(prefers-reduced-motion:reduce){.cs-back-dim,.cs-out-dim{animation:none;}}
 @media(prefers-reduced-motion:reduce){.mobile-menu,.mobile-menu-inner{animation:none;}}
 .join-dropdown{position:relative;display:inline-flex;}
 /* Logged-out account CTA: one restrained invitation glow after auth resolves,
@@ -7161,6 +7159,9 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
 //     their current plan + expiry instead of plan options.
 function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting}){
   const isMobile=useViewportWidth()<768;
+  // From the submit form's Learn more / Upgrade: slide in like the profile editor does
+  // from the dashboard. Read at mount so the class is on the first paint.
+  const [slideIn]=useState(()=>{try{if(sessionStorage.getItem('cs_slide_membership')==='1'){sessionStorage.removeItem('cs_slide_membership');return true;}}catch(_){}return false;});
   // Only show "industry doesn't need a membership" when we KNOW the user is CD/industry.
   // Never gate on a null/loading profile — default to showing talent plans.
   const userType=(myProfile?.user_type||"").toLowerCase();
@@ -7245,7 +7246,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     return(<button className={p.key==="yearly"?"btn-p":"btn-s"} style={featBtn} onClick={()=>{try{sessionStorage.setItem("sc_pending_plan",p.key);}catch(_){}onNavigate("login");}}>Sign in to subscribe</button>);
   };
 
-  return(<div className="page page-wide">
+  return(<div className={"page page-wide"+(slideIn?" cs-slide-in":"")}>
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
     <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
@@ -13258,12 +13259,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     }catch(_){return null;}
   });
   const [backIn,setBackIn]=useState(!!initResume);
-  useLayoutEffect(()=>{
-    if(!backIn)return;
-    document.body.classList.add("cs-pg-back");
-    const t=setTimeout(()=>{document.body.classList.remove("cs-pg-back");setBackIn(false);},420);
-    return()=>{clearTimeout(t);document.body.classList.remove("cs-pg-back");};
-  },[]);// eslint-disable-line
+  useEffect(()=>{if(!backIn)return;const t=setTimeout(()=>setBackIn(false),320);return()=>clearTimeout(t);},[]);// eslint-disable-line
+  // Leaving for the plans page: page + open form slide out right together first.
+  const [slidingOut,setSlidingOut]=useState(false);
   const [applyRole,setApplyRole]=useState(initResume?initResume.role:null);
   const [applySlideIn,setApplySlideIn]=useState(false);  // arrived from the get-matched popup
   const [applyLeaving,setApplyLeaving]=useState(false);  // sliding out to the flow's last step
@@ -13494,9 +13492,15 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(rs&&String(rs.castingId)===String(casting?.id)){try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}}
   },[applyRole]);// eslint-disable-line
   const leaveApplyFor=(dest,role=applyRole)=>{
+    if(slidingOut)return;
     leavingApplyRef.current=!!applyRole;
-    if(dest==="membership"){try{const b=document.body;b.classList.remove("cs-pg-fwd");void b.offsetWidth;b.classList.add("cs-pg-fwd");setTimeout(()=>b.classList.remove("cs-pg-fwd"),420);}catch(_){}}
     try{if(role&&casting?.id!=null)localStorage.setItem(APPLY_RESUME_KEY,JSON.stringify({castingId:casting.id,castingTitle:casting.title||"",roleId:role.id||(Number.isInteger(role.idx)?realRoleIds[role.idx]:null)||null,roleName:role.name||"",idx:Number.isInteger(role.idx)?role.idx:null,photo:applyRole?selectedPhoto:"",formOpen:!!applyRole,path:window.location.pathname,at:Date.now()}));}catch(_){}
+    if(dest==="membership"){
+      // Same slide as dashboard -> Edit Profile: out right (250ms), then the plans page slides in.
+      setSlidingOut(true);try{sessionStorage.setItem('cs_slide_membership','1');}catch(_){}
+      setTimeout(()=>{setApplyRole(null);onNavigate&&onNavigate(dest);},250);
+      return;
+    }
     setApplyRole(null);onNavigate&&onNavigate(dest);
   };
   // The role clicked on a Browse card (its name or Apply) opens unfolded and is
@@ -13714,7 +13718,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const castingScheduled=castingIsScheduled(c);
   const applicationsClosed=castingArchived||castingExpired||castingScheduled;
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
-  return(<div className="page" style={{maxWidth:1080}}>
+  return(<div className={"page"+(slidingOut?" cs-slide-out":backIn?" cs-slide-in":"")} style={{maxWidth:1080}}>
     <div style={{display:"flex",justifyContent:inSheet?"flex-end":"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
       {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{backLabel}</button>}
       <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting"><Ico n="flag" s={22}/> Report</button>
@@ -14344,7 +14348,7 @@ Free submission used
       const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
       const allowUpload=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="upload");
       return(
-      <BodyPortal><div className={"modal-overlay"+(applySlideIn||applyLeaving?" gm-ov":"")+(backIn?" cs-back-dim":"")} style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":backIn?" cs-back-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
+      <BodyPortal><div className={"modal-overlay"+(applySlideIn||applyLeaving?" gm-ov":"")+(slidingOut?" cs-out-dim":backIn?" cs-back-dim":"")} style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":slidingOut?" cs-slide-out":backIn?" cs-slide-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
             <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
