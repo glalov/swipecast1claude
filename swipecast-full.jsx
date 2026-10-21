@@ -6322,6 +6322,38 @@ function readApplyDraft(){
 }
 function clearApplyDraft(){try{localStorage.removeItem(APPLY_DRAFT_KEY);}catch(_){}}
 
+// Application waiting on sign-up / sign-in (owner, 2026-10-21). It used to live
+// in sessionStorage only, which is per tab: the confirmation link opens a NEW tab
+// (Gmail, a phone's mail app), so the actor landed on the dashboard instead of
+// the form the auth gate promised. Kept in both stores now; localStorage reaches
+// the new tab and lasts long enough for a slow inbox. A different device is
+// covered separately by pending_apply in the new account's user_metadata.
+const POST_AUTH_APPLY_KEY="sc_post_auth_apply";
+const POST_AUTH_APPLY_TTL_MS=3*24*60*60*1000;
+function savePostAuthApply(pa){
+  try{sessionStorage.setItem(POST_AUTH_APPLY_KEY,JSON.stringify({casting:pa.casting,role:pa.role}));}catch(_){}
+  try{localStorage.setItem(POST_AUTH_APPLY_KEY,JSON.stringify({casting:pa.casting,role:pa.role,ts:Date.now()}));}catch(_){}
+}
+function peekPostAuthApply(){
+  try{const raw=sessionStorage.getItem(POST_AUTH_APPLY_KEY);if(raw)return JSON.parse(raw);}catch(_){}
+  try{
+    const d=JSON.parse(localStorage.getItem(POST_AUTH_APPLY_KEY)||"null");
+    if(d&&d.casting&&Date.now()-(d.ts||0)<POST_AUTH_APPLY_TTL_MS)return d;
+    if(d)localStorage.removeItem(POST_AUTH_APPLY_KEY);
+  }catch(_){}
+  return null;
+}
+function clearPostAuthApply(){
+  try{sessionStorage.removeItem(POST_AUTH_APPLY_KEY);}catch(_){}
+  try{localStorage.removeItem(POST_AUTH_APPLY_KEY);}catch(_){}
+}
+// What the account itself carries, for a confirmation opened on another device.
+function pendingApplyMeta(pending){
+  const c=pending&&pending.casting;
+  if(!c||!c.id)return {};
+  const r=pending.role||null;
+  return {pending_apply:{casting_id:String(c.id),role_id:r&&r.id?String(r.id):null,role_name:r&&r.name||null,ts:Date.now()}};
+}
 const UPGRADE_MSG=`You've used your free submission. Upgrade to Premium for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), the Casting Companies Directory (131 active casting offices), the Acting & Film School Directory (351 schools and film programs), and more.`;
 // ─── Contact-info filter — bio / cover note / messages must not carry links,
 //     phone numbers, emails, or social handles (mirrored by a DB trigger).
@@ -12225,7 +12257,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         email,password:suPass,
         options:{
           emailRedirectTo:"https://www.castslate.com",
-          data:{user_type:"talent",display_name:(firstName+" "+lastName).trim(),onboarded:false}
+          data:{user_type:"talent",display_name:(firstName+" "+lastName).trim(),onboarded:false,...pendingApplyMeta(pending)}
         }
       });
       if(error){
@@ -12247,7 +12279,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
       }
       // Save pending apply so it survives email confirmation + page reload
       if(pending){
-        try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+        savePostAuthApply(pending);
       }
       if(data?.session){
         // Email confirmation off — session issued immediately, proceed
@@ -12281,7 +12313,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
       }
       // Save pending apply in case onComplete triggers a re-render race
       if(pending){
-        try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+        savePostAuthApply(pending);
       }
       onComplete();
     }catch(e){setErr(e?.message||"Something went wrong. Please try again.");}
@@ -12311,12 +12343,12 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
       }catch(_){}
       // Save pending apply before redirect — it survives the OAuth round-trip
       if(pending){
-        try{sessionStorage.setItem("sc_post_auth_apply",JSON.stringify({casting:pending.casting,role:pending.role}));}catch(_){}
+        savePostAuthApply(pending);
       }
       try{sessionStorage.setItem("sc_oauth_login","1");}catch(_){}
       window.location.href=data.url;
     }catch(e){
-      try{sessionStorage.removeItem("sc_post_auth_apply");}catch(_){}
+      clearPostAuthApply();
       const name=provider.charAt(0).toUpperCase()+provider.slice(1);
       setErr(`${name} sign-in failed. Please try again.`);
     }
@@ -13411,6 +13443,16 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     setDescOpen(p=>({...p,[i]:true}));
     setTimeout(()=>{try{const el=document.querySelector('.rl-row[data-ri="'+i+'"]');if(el)el.scrollIntoView({behavior:"smooth",block:"center"});}catch(_){}},380);
   },[focusRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
+  // A headshot added while this page is open (the "Add your headshot" step that
+  // sits over the apply form after sign-up) reaches us through myProfile. Without
+  // this the form kept saying "Add a headshot to apply" with the photo already
+  // saved (2026-10-21).
+  const profHeadshot=myProfile?.headshot_url||"";
+  useEffect(()=>{
+    if(!profHeadshot)return;
+    setMyPhotos(prev=>prev.includes(profHeadshot)?prev:[profHeadshot,...prev]);
+    setSelectedPhoto(prev=>prev||profHeadshot);
+  },[profHeadshot]);
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!casting)return;
     const {data:{session:s}}=await window.sb.auth.getSession();
@@ -54845,6 +54887,12 @@ function App(){
             // (and restores any pending application). This is the FIRST login, so
             // route by account type: new talent → Pricing (surface the offer),
             // everyone else → dashboard.
+            // An application is waiting: SIGNED_IN routes to the casting, so stay
+            // out of its way. Checked before any await — SIGNED_IN is parked on
+            // loadProfile at this point and has not cleared the saved application
+            // yet. Routing here as well raced it and usually won, which dropped
+            // new actors on the dashboard instead of the form (2026-10-21).
+            if(peekPostAuthApply()||otpData?.user?.user_metadata?.pending_apply||window.__csResumedApply)return;
             let dest="dashboard";
             const uid=otpData?.user?.id;
             if(uid){
@@ -55057,10 +55105,18 @@ function App(){
             if(e==="SIGNED_IN"){
               let routed=false;
               try{
-                const raw=sessionStorage.getItem("sc_post_auth_apply");
-                if(raw){
-                  const pa=JSON.parse(raw);
-                  sessionStorage.removeItem("sc_post_auth_apply");
+                let pa=peekPostAuthApply();
+                // Confirmed on another device: nothing saved here, so read the
+                // application the account was created with, once.
+                const meta=s.user.user_metadata&&s.user.user_metadata.pending_apply;
+                if(!pa&&meta&&meta.casting_id&&Date.now()-(meta.ts||0)<POST_AUTH_APPLY_TTL_MS){
+                  const c=await fetchFullCasting(meta.casting_id);
+                  if(c)pa={casting:c,role:meta.role_name?{id:meta.role_id||undefined,name:meta.role_name}:null};
+                }
+                if(meta)window.sb.auth.updateUser({data:{pending_apply:null}}).catch(()=>{});
+                if(pa){
+                  clearPostAuthApply();
+                  try{window.__csResumedApply=true;}catch(_){}
                   if(pa?.casting){
                     setPendingApply(pa);
                     setViewingCasting(pa.casting);
@@ -55427,7 +55483,7 @@ function App(){
       if(window.location.search||window.location.hash)return;
       const path=(window.location.pathname||"/").replace(/\/+$/,"")||"/";
       if(!NEUTRAL_RETURN_PATHS.includes(path))return;
-      if(sessionStorage.getItem("sc_post_auth_apply")||sessionStorage.getItem("sc_pending_plan")||sessionStorage.getItem("sc_return_to"))return;
+      if(peekPostAuthApply()||sessionStorage.getItem("sc_pending_plan")||sessionStorage.getItem("sc_return_to"))return;
       if(!consumeDailyPricing(uid))return;
       navigate(PRICING_DEST);
     }catch(_){}
@@ -55784,7 +55840,7 @@ function App(){
   // the step and coming back restores it.
   const headshotStepAllowedHere=(()=>{
     if(page==="login"||page==="success"||page==="plan-summary")return false;
-    try{if(sessionStorage.getItem("sc_post_auth_apply"))return false;}catch(_){}
+    if(peekPostAuthApply())return false;
     return true;
   })();
   // Asked on the first three days the actor turns up without a photo, not once
