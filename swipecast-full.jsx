@@ -13405,7 +13405,6 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     {const rs=readApplyResume();
       if(rs&&String(rs.castingId)===String(casting?.id)&&rs.roleName===r?.name){
         if(rs.photo&&myPhotos.includes(rs.photo))photo=rs.photo;
-        try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}
       }}
     setApplyRole({...r,idx:i});setApplyErr("");setApplyOk(false);setSelectedPhoto(photo);setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
   };
@@ -13429,6 +13428,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   useEffect(()=>{
     if(resumedRef.current||autoApplyRole||!isLoggedIn||!casting)return;
     if(isDbCasting&&!rolesReady)return;
+    // Back from another page can hand over the casting before its roles arrive;
+    // wait for them rather than spending the one try on an empty list.
+    if(!(casting.roles||[]).length)return;
     resumedRef.current=true;
     const rs=readApplyResume();
     if(!rs||String(rs.castingId)!==String(casting.id))return;
@@ -13443,8 +13445,21 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(i<0&&Number.isInteger(rs.idx))i=rs.idx;
     if(i<0||!sorted[i]||applied.has(i))return;
     handleApply(sorted[i],i);
-  },[isLoggedIn,rolesReady,realRoleIds,casting?.id]);// eslint-disable-line
+  },[isLoggedIn,rolesReady,realRoleIds,casting?.id,casting?.roles?.length]);// eslint-disable-line
+  // The resume entry is cleared when the form is closed or submitted, not when it
+  // opens: the page can mount twice on arrival, and the second mount needs it too.
+  const leavingApplyRef=useRef(false);
+  const wasApplyOpenRef=useRef(false);
+  useEffect(()=>{
+    if(applyRole){wasApplyOpenRef.current=true;return;}
+    if(!wasApplyOpenRef.current)return;
+    wasApplyOpenRef.current=false;
+    if(leavingApplyRef.current){leavingApplyRef.current=false;return;}
+    const rs=readApplyResume();
+    if(rs&&String(rs.castingId)===String(casting?.id)){try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}}
+  },[applyRole]);// eslint-disable-line
   const leaveApplyFor=(dest,role=applyRole)=>{
+    leavingApplyRef.current=!!applyRole;
     try{if(role&&casting?.id!=null)localStorage.setItem(APPLY_RESUME_KEY,JSON.stringify({castingId:casting.id,castingTitle:casting.title||"",roleId:role.id||(Number.isInteger(role.idx)?realRoleIds[role.idx]:null)||null,roleName:role.name||"",idx:Number.isInteger(role.idx)?role.idx:null,photo:applyRole?selectedPhoto:"",path:window.location.pathname,at:Date.now()}));}catch(_){}
     setApplyRole(null);onNavigate&&onNavigate(dest);
   };
