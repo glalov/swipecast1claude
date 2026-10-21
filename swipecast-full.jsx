@@ -3453,8 +3453,14 @@ body.sheet-push .b2t-cube{display:none;}
    .cs-slide-in): the casting + form slide out right as one card, the plans page slides
    in from the left; Back slides the casting + form in from the left. */
 .cs-back-dim{animation:csDimIn .25s ease both;}
+/* Casting page and its form travel the same distance (the screen width), so they move
+   as one card. Same timing and curve as .cs-slide-out / .cs-slide-in. */
+.cs-slide-out-vw{animation:cs-slide-out-vw .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+@keyframes cs-slide-out-vw{from{transform:translateX(0);}to{transform:translateX(100vw);}}
+.cs-slide-in-vw{animation:cs-slide-in-vw .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+@keyframes cs-slide-in-vw{from{transform:translateX(-100vw);}to{transform:translateX(0);}}
 .cs-out-dim{animation:csDimOut .25s ease both;}
-@media(prefers-reduced-motion:reduce){.cs-back-dim,.cs-out-dim{animation:none;}}
+@media(prefers-reduced-motion:reduce){.cs-back-dim,.cs-out-dim,.cs-slide-out-vw,.cs-slide-in-vw{animation:none;}}
 @media(prefers-reduced-motion:reduce){.mobile-menu,.mobile-menu-inner{animation:none;}}
 .join-dropdown{position:relative;display:inline-flex;}
 /* Logged-out account CTA: one restrained invitation glow after auth resolves,
@@ -13718,7 +13724,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const castingScheduled=castingIsScheduled(c);
   const applicationsClosed=castingArchived||castingExpired||castingScheduled;
   const render=(txt)=>txt.split(/(\*[^*]+\*)/g).map((s,i)=>s.startsWith("*")&&s.endsWith("*")?<em key={i} style={{fontStyle:"italic",color:"var(--t1)"}}>{s.slice(1,-1)}</em>:<span key={i}>{s}</span>);
-  return(<div className={"page"+(slidingOut?" cs-slide-out":backIn?" cs-slide-in":"")} style={{maxWidth:1080}}>
+  return(<div className={"page"+(slidingOut?" cs-slide-out-vw":backIn?" cs-slide-in-vw":"")} style={{maxWidth:1080}}>
     <div style={{display:"flex",justifyContent:inSheet?"flex-end":"space-between",alignItems:"center",gap:10,marginBottom:20,flexWrap:"wrap"}}>
       {!inSheet&&<button className="btn-s btn-sm" onClick={onBack}>{backLabel}</button>}
       <button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this casting"><Ico n="flag" s={22}/> Report</button>
@@ -14348,7 +14354,7 @@ Free submission used
       const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
       const allowUpload=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="upload");
       return(
-      <BodyPortal><div className={"modal-overlay"+(applySlideIn||applyLeaving?" gm-ov":"")+(slidingOut?" cs-out-dim":backIn?" cs-back-dim":"")} style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":slidingOut?" cs-slide-out":backIn?" cs-slide-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
+      <BodyPortal><div className={"modal-overlay"+(applySlideIn||applyLeaving?" gm-ov":"")+(slidingOut?" cs-out-dim":backIn?" cs-back-dim":"")} style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":slidingOut?" cs-slide-out-vw":backIn?" cs-slide-in-vw":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
             <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
