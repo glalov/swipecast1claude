@@ -7489,6 +7489,8 @@ function trackGoogleAdsPurchase(planType){
 function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType}){
   const [activating,setActivating]=useState(successType==="premium");
   const [isPremium,setIsPremium]=useState(myProfile?.membership_status==="active");
+  // They left a submission form for the plans page — offer the way straight back to it.
+  const [resume]=useState(()=>{const r=successType==="premium"?readApplyResume():null;return r&&typeof r.path==="string"&&r.path.startsWith("/casting/")?r:null;});
 
   useEffect(()=>{
     if(successType!=="premium")return;
@@ -7556,6 +7558,9 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
         :"Your payment was received. Your Premium membership will activate within a minute — refresh the page if it doesn't appear."}
     </p>
     {isPremium&&<p style={{color:"var(--acc)",fontWeight:700,marginBottom:24,fontSize:15}}>Unlimited submissions unlocked <Ico n="check" s={24}/></p>}
+    {resume&&<div style={{display:"flex",justifyContent:"center",marginBottom:12}}>
+      <button className="btn-teal" onClick={()=>{try{window.location.assign(resume.path);}catch(_){}}}>Finish your submission{(()=>{const rn=niceRoleName(resume.roleName);return rn&&rn.length<=26?" for "+rn:"";})()} <Tri/></button>
+    </div>}
     <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
       <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
       <button className="btn-s" onClick={()=>onNavigate("my-profile")}>My Profile</button>
@@ -13196,6 +13201,27 @@ function niceRoleName(name){
   if(nm===nm.toUpperCase()&&/[A-Z]/.test(nm))return nm.toLowerCase().replace(/(^|[\s(\-–])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
   return nm;
 }
+// Cover-note drafts, kept per casting + role so leaving the submit form (Learn more,
+// Back, a closed tab) never throws away what the actor wrote. Cleared on submit.
+const APPLY_DRAFT_TTL=14*864e5;
+const applyDraftKey=(cid,r)=>"cs_apply_draft:"+cid+":"+((r&&(r.id||r.name))||"");
+function readApplyDraft(cid,r){
+  try{const k=applyDraftKey(cid,r);const d=JSON.parse(localStorage.getItem(k)||"null");
+    if(!d||!d.text)return "";
+    if(Date.now()-(d.at||0)>APPLY_DRAFT_TTL){localStorage.removeItem(k);return "";}
+    return d.text;}catch(_){return "";}
+}
+function writeApplyDraft(cid,r,text){
+  try{const k=applyDraftKey(cid,r);if(text&&text.trim())localStorage.setItem(k,JSON.stringify({text,at:Date.now()}));else localStorage.removeItem(k);}catch(_){}
+}
+// Written when the form sends the actor elsewhere (plans, profile). Their casting
+// page reopens the form for that role on return; the success page links back to it.
+const APPLY_RESUME_KEY="cs_apply_resume";
+const APPLY_RESUME_TTL=864e5;
+function readApplyResume(){
+  try{const d=JSON.parse(localStorage.getItem(APPLY_RESUME_KEY)||"null");
+    if(!d||Date.now()-(d.at||0)>APPLY_RESUME_TTL)return null;return d;}catch(_){return null;}
+}
 function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,myProfile,session,autoApplyRole,onAutoApplyConsumed,inSheet=false,onOpenCasting,backKey,focusRole=null}){
   const t=useT();
   const {lang}=useLanguage();
@@ -13272,6 +13298,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   const [rolesReady,setRolesReady]=useState(false);
   const [applied,setApplied]=useState(new Set());
   const [coverNote,setCoverNote]=useState("");
+  const [draftRestored,setDraftRestored]=useState(false);
   const [submitting,setSubmitting]=useState(false);
   const [applyErr,setApplyErr]=useState("");
   const [applyOk,setApplyOk]=useState(false);
@@ -13373,7 +13400,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       return;
     }
     {let slide=false;try{slide=!!window.__csSlideApply;window.__csSlideApply=false;}catch(_){}setApplySlideIn(slide);setApplyLeaving(false);}
-    setApplyRole({...r,idx:i});setCoverNote("");setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
+    {const d=readApplyDraft(casting?.id,r);setCoverNote(d);setDraftRestored(!!d);}
+    setApplyRole({...r,idx:i});setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
   };
   useEffect(()=>{
     if(!autoApplyRole||!isLoggedIn||autoOpenedRef.current)return;
@@ -13390,6 +13418,28 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(i<0||!sorted[i])return;
     handleApply(sorted[i],i);
   },[autoApplyRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
+  // Back from the plans page (or an upgrade): reopen the form they left, note intact.
+  const resumedRef=useRef(false);
+  useEffect(()=>{
+    if(resumedRef.current||autoApplyRole||!isLoggedIn||!casting)return;
+    if(isDbCasting&&!rolesReady)return;
+    resumedRef.current=true;
+    const rs=readApplyResume();
+    if(!rs||String(rs.castingId)!==String(casting.id))return;
+    try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}
+    if(casting.status==="archived"||castingIsExpired(casting))return;
+    const sorted=(casting.roles||[]).slice().sort(compareRoles);
+    let i=-1;
+    if(rs.roleId){const hit=Object.entries(realRoleIds).find(([,rid])=>rid===rs.roleId);if(hit)i=parseInt(hit[0],10);}
+    if(i<0&&rs.roleName)i=sorted.findIndex(x=>x&&x.name===rs.roleName);
+    if(i<0&&Number.isInteger(rs.idx))i=rs.idx;
+    if(i<0||!sorted[i]||applied.has(i))return;
+    handleApply(sorted[i],i);
+  },[isLoggedIn,rolesReady,realRoleIds,casting?.id]);// eslint-disable-line
+  const leaveApplyFor=(dest)=>{
+    try{if(applyRole)localStorage.setItem(APPLY_RESUME_KEY,JSON.stringify({castingId:casting.id,roleId:applyRole.id||realRoleIds[applyRole.idx]||null,roleName:applyRole.name||"",idx:applyRole.idx,path:window.location.pathname,at:Date.now()}));}catch(_){}
+    setApplyRole(null);onNavigate&&onNavigate(dest);
+  };
   // The role clicked on a Browse card (its name or Apply) opens unfolded and is
   // scrolled to the middle of the sheet, instead of every role arriving closed.
   const focusedRef=useRef(null);
@@ -13554,6 +13604,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
           }
         }else if(raw.includes("already submitted")||raw.includes("duplicate")||raw.includes("unique")||code==="23505"){
           setApplyErr("You've already applied to this role.");
+          writeApplyDraft(casting.id,applyRole,"");
           // treat as success locally — the row exists
           setApplied(p=>new Set([...p,applyRole.idx]));
         }else if(raw.includes("recursion")||raw.includes("policy")||raw.includes("permission")||raw.includes("row-level")||raw.includes("rls")||code==="42p17"||code==="42501"){
@@ -13573,6 +13624,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       // Meta Pixel: application submitted — key funnel event for ads optimization
       try{if(window.fbq)window.fbq('trackCustom','SubmitApplication');}catch(_){}
       try{window.dispatchEvent(new CustomEvent("sc:applied",{detail:{castingId:casting.id,castingTitle:casting.title,roleName:applyRole?.name||""}}));}catch(_){}
+      writeApplyDraft(casting.id,applyRole,"");
       setApplied(p=>new Set([...p,applyRole.idx]));
       setUsedCount(n=>n+1);
       setApplyOk(true);
@@ -14350,7 +14402,7 @@ Free submission used
                   {!allowRecord&&!allowUpload&&(!isPremium
                     ?<div style={{background:"rgba(99,60,180,0.05)",border:"1px solid rgba(99,60,180,0.25)",borderRadius:10,padding:"12px 14px"}}>
                       <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:10}}><span style={{marginRight:6}}><Ico n="lock" s={22}/></span>Video auditions are a <strong style={{color:"var(--t1)"}}>Premium</strong> feature. Free members apply with a headshot below — upgrade to record or upload an audition video.</div>
-                      <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("membership");}}>Upgrade to Premium</button>
+                      <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>leaveApplyFor("membership")}>Upgrade to Premium</button>
                     </div>
                     :<p style={{fontSize:13,color:"var(--t3)"}}>No submission format available.</p>)}
                 </div>
@@ -14363,7 +14415,7 @@ Free submission used
               {myPhotos.length===0?
                 <div style={{background:"rgba(232,144,42,0.07)",border:"1px solid rgba(232,144,42,0.35)",borderRadius:10,padding:16,textAlign:"center"}}>
                   <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:12}}>A headshot is required to apply — it's the first thing the casting director sees. Add one to your profile, then come back to submit.</div>
-                  <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("my-profile");}}>Add a headshot</button>
+                  <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>leaveApplyFor("my-profile")}>Add a headshot</button>
                 </div>:
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8}}>
                   {myPhotos.map((u,pi)=>
@@ -14377,11 +14429,12 @@ Free submission used
             {/* Cover note — optional, secondary */}
             <div className="form-group" style={{marginBottom:0}}>
               <label className="label">{t('search.coverNote')} <span style={{fontWeight:400,color:"var(--t3)",fontSize:11}}>(2 sentences max)</span></label>
-              <textarea className="textarea" placeholder={`One thing about ${niceRoleName(applyRole.name)||"this role"} you connect with.`} value={coverNote} onChange={e=>setCoverNote(e.target.value)}/>
+              <textarea className="textarea" placeholder={`One thing about ${niceRoleName(applyRole.name)||"this role"} you connect with.`} value={coverNote} onChange={e=>{const v=e.target.value;setCoverNote(v);writeApplyDraft(casting.id,applyRole,v);}}/>
+              {draftRestored&&coverNote&&<div style={{fontSize:12,color:"var(--t3)",marginTop:6}}>Draft restored — your note was saved.</div>}
             </div>
             {!isPremium&&<div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap",marginTop:16,padding:"11px 14px",border:"1px dashed var(--bdr)",borderRadius:10,fontSize:13.5,color:"var(--t2)"}}>
               <span style={{display:"inline-flex",alignItems:"center",gap:6}}><Ico n="video" s={16}/>Add an audition video <span style={{color:"var(--t3)"}}>· Premium</span></span>
-              <button type="button" onClick={()=>{setApplyRole(null);onNavigate&&onNavigate("membership");}} style={{background:"none",border:0,padding:0,fontFamily:"inherit",fontSize:13.5,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer",whiteSpace:"nowrap"}}>Learn more ▸</button>
+              <button type="button" onClick={()=>leaveApplyFor("membership")} style={{background:"none",border:0,padding:0,fontFamily:"inherit",fontSize:13.5,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer",whiteSpace:"nowrap"}}>Learn more ▸</button>
             </div>}
 
             <div style={{display:"flex",gap:12,marginTop:20}}>
