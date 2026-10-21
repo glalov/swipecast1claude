@@ -6657,8 +6657,10 @@ function csMoonVideo(){
   return v;
 }
 
-function FeaturedClassBanner({onNavigate}){
-  const go=()=>{if(typeof onNavigate==="function")onNavigate("search");};
+function FeaturedClassBanner({onNavigate,isLoggedIn=false}){
+  // Logged-out visitors get the signup CTA (owner, 2026-10-20); members keep Browse Castings.
+  const go=()=>{if(typeof onNavigate==="function")onNavigate(isLoggedIn?"search":"register-talent");};
+  const ctaLabel=isLoggedIn?"Browse Castings":"Join Free";
   const ref=useRef(null);
   const vidHostRef=useRef(null);
   // Moon-set video. One <video> element for the whole visit (csMoonVideo): it is
@@ -6861,13 +6863,13 @@ function FeaturedClassBanner({onNavigate}){
       <div className="fcs-overlay">
         <span className="fcs-ov-label">Casting Calls</span>
         <span className="fcs-ov-title">Find Roles.<br/>Get Seen.</span>
-        <button type="button" className="fcs-ov-btn" onClick={go}>Browse Castings <Tri/></button>
+        <button type="button" className="fcs-ov-btn" onClick={go}>{ctaLabel} <Tri/></button>
       </div>
       {/* Mobile: live, readable title + button over the cover-cropped photo. */}
       <div className="fcs-mobile">
         <span className="fcs-m-label">Casting Calls</span>
         <span className="fcs-m-title">Find Roles. Get Seen.</span>
-        <button type="button" className="fcs-m-btn" onClick={go}>Browse Castings <Tri/></button>
+        <button type="button" className="fcs-m-btn" onClick={go}>{ctaLabel} <Tri/></button>
       </div>
       {introOn&&<BannerCodeIntro onDone={()=>setIntroOn(false)}/>}
     </div>
@@ -6877,7 +6879,7 @@ function FeaturedClassBanner({onNavigate}){
         <span className="fcs-compact-label">Casting Calls</span>
         <span className="fcs-compact-title">Find Roles. Get Seen.</span>
       </div>
-      <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>Browse Castings <Tri/></button>
+      <button type="button" className="fcs-compact-btn" onClick={go} tabIndex={collapsed?0:-1}>{ctaLabel} <Tri/></button>
     </div>
     {/* Intro veil — last child so it paints over both banner states, and
         aria-hidden + pointer-events:none so it is invisible to screen readers
@@ -55894,7 +55896,7 @@ function App(){
       {/* Featured-class banner — homepage only. Replaces the old yearly promo
           stripe in this slot. Uses the Scene Study Workshop artwork as-is; the
           "view classes" hotspot routes to the Classes page. */}
-      {page==="home"&&<FeaturedClassBanner onNavigate={navigate}/>}
+      {page==="home"&&<FeaturedClassBanner onNavigate={navigate} isLoggedIn={isLoggedIn}/>}
       {/* Free-tier talent see this red banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} session={session} page={page} onNavigate={navigate}/>
