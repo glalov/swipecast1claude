@@ -13403,6 +13403,16 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     setDescOpen(p=>({...p,[i]:true}));
     setTimeout(()=>{try{const el=document.querySelector('.rl-row[data-ri="'+i+'"]');if(el)el.scrollIntoView({behavior:"smooth",block:"center"});}catch(_){}},380);
   },[focusRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
+  // A headshot added while this page is open (the "Add your headshot" step that
+  // sits over the apply form after sign-up) reaches us through myProfile. Without
+  // this the form kept saying "Add a headshot to apply" with the photo already
+  // saved (2026-10-21).
+  const profHeadshot=myProfile?.headshot_url||"";
+  useEffect(()=>{
+    if(!profHeadshot)return;
+    setMyPhotos(prev=>prev.includes(profHeadshot)?prev:[profHeadshot,...prev]);
+    setSelectedPhoto(prev=>prev||profHeadshot);
+  },[profHeadshot]);
   useEffect(()=>{(async()=>{
     if(!isLoggedIn||!casting)return;
     const {data:{session:s}}=await window.sb.auth.getSession();
