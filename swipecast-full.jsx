@@ -3449,6 +3449,14 @@ body.sheet-push .b2t-cube{display:none;}
 .mm-close:hover{background:var(--s2);}
 @keyframes mmFade{from{opacity:0;}to{opacity:1;}}
 @keyframes pageFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+/* Submit form <-> plans page. Learn more slides the plans page in from the right;
+   Back slides the casting (and the form left open) in from the left. */
+@keyframes csFwdIn{from{opacity:0;transform:translateX(32px);}to{opacity:1;transform:none;}}
+@keyframes csBackIn{from{opacity:0;transform:translateX(-32px);}to{opacity:1;transform:none;}}
+body.cs-pg-fwd main{animation:csFwdIn .34s cubic-bezier(.22,.8,.3,1) both;}
+body.cs-pg-back main,.cs-back-in{animation:csBackIn .34s cubic-bezier(.22,.8,.3,1) both;}
+.cs-back-dim{animation:csDimIn .34s ease both;}
+@media(prefers-reduced-motion:reduce){body.cs-pg-fwd main,body.cs-pg-back main,.cs-back-in,.cs-back-dim{animation:none;}}
 @media(prefers-reduced-motion:reduce){.mobile-menu,.mobile-menu-inner{animation:none;}}
 .join-dropdown{position:relative;display:inline-flex;}
 /* Logged-out account CTA: one restrained invitation glow after auth resolves,
@@ -13217,6 +13225,8 @@ function writeApplyDraft(cid,r,text){
 // Written when the form sends the actor elsewhere (plans, profile). Their casting
 // page reopens the form for that role on return; the success page links back to it.
 const APPLY_RESUME_KEY="cs_apply_resume";
+// Last loaded photo list, so a form reopened on Back has its headshot in the first frame.
+let applyPhotosCache=null;
 const APPLY_RESUME_TTL=864e5;
 function readApplyResume(){
   try{const d=JSON.parse(localStorage.getItem(APPLY_RESUME_KEY)||"null");
@@ -13229,7 +13239,32 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // picker and the landing page both open castings. Labelling every one of them
   // "Back to castings" told the reader the button did something it does not.
   const backLabel=t(backKey||'casting.back');
-  const [applyRole,setApplyRole]=useState(null);
+  // Back from the plans page with the form left open: render it open in the first
+  // frame (no spinner, no pop-in) and slide page + form in together.
+  const [initResume]=useState(()=>{
+    try{
+      if(!isLoggedIn||!casting)return null;
+      const rs=readApplyResume();
+      if(!rs||!rs.formOpen||String(rs.castingId)!==String(casting.id))return null;
+      if(casting.status==="archived"||castingIsExpired(casting))return null;
+      const sorted=(casting.roles||[]).slice().sort(compareRoles);
+      let i=rs.roleId?sorted.findIndex(x=>x&&x.id===rs.roleId):-1;
+      if(i<0&&rs.roleName)i=sorted.findIndex(x=>x&&x.name===rs.roleName);
+      if(i<0||!sorted[i])return null;
+      const uid=session?.user?.id;
+      const photos=applyPhotosCache&&applyPhotosCache.uid===uid?applyPhotosCache.list:[];
+      const note=readApplyDraft(casting.id,sorted[i]);
+      return {role:{...sorted[i],idx:i},note,photos,photo:rs.photo&&photos.includes(rs.photo)?rs.photo:(photos[0]||"")};
+    }catch(_){return null;}
+  });
+  const [backIn,setBackIn]=useState(!!initResume);
+  useLayoutEffect(()=>{
+    if(!backIn)return;
+    document.body.classList.add("cs-pg-back");
+    const t=setTimeout(()=>{document.body.classList.remove("cs-pg-back");setBackIn(false);},420);
+    return()=>{clearTimeout(t);document.body.classList.remove("cs-pg-back");};
+  },[]);// eslint-disable-line
+  const [applyRole,setApplyRole]=useState(initResume?initResume.role:null);
   const [applySlideIn,setApplySlideIn]=useState(false);  // arrived from the get-matched popup
   const [applyLeaving,setApplyLeaving]=useState(false);  // sliding out to the flow's last step
   const [roleBriefOpen,setRoleBriefOpen]=useState(false);
@@ -13297,16 +13332,16 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   // form and then "This role is no longer available" on Submit.
   const [rolesReady,setRolesReady]=useState(false);
   const [applied,setApplied]=useState(new Set());
-  const [coverNote,setCoverNote]=useState("");
-  const [draftRestored,setDraftRestored]=useState(false);
+  const [coverNote,setCoverNote]=useState(initResume?initResume.note:"");
+  const [draftRestored,setDraftRestored]=useState(!!(initResume&&initResume.note));
   const [submitting,setSubmitting]=useState(false);
   const [applyErr,setApplyErr]=useState("");
   const [applyOk,setApplyOk]=useState(false);
   const [realRoleIds,setRealRoleIds]=useState({});
   const [applyPickIdx,setApplyPickIdx]=useState(""); // top "Ready to apply?" role picker
   const [roleInstructions,setRoleInstructions]=useState({}); // roleId -> audition instruction fields
-  const [myPhotos,setMyPhotos]=useState([]);
-  const [selectedPhoto,setSelectedPhoto]=useState("");
+  const [myPhotos,setMyPhotos]=useState(initResume?initResume.photos:[]);
+  const [selectedPhoto,setSelectedPhoto]=useState(initResume?initResume.photo:"");
   const [showReport,setShowReport]=useState(false);
   const [videoNoteUrl,setVideoNoteUrl]=useState("");
   const videoNoteUrlRef=useRef(""); // ref mirror so submitApp always reads freshest value
@@ -13424,7 +13459,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     handleApply(sorted[i],i);
   },[autoApplyRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
   // Back from the plans page (or an upgrade): reopen the form they left, note intact.
-  const resumedRef=useRef(false);
+  const resumedRef=useRef(!!initResume);
   useEffect(()=>{
     if(resumedRef.current||autoApplyRole||!isLoggedIn||!casting)return;
     if(isDbCasting&&!rolesReady)return;
@@ -13460,7 +13495,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   },[applyRole]);// eslint-disable-line
   const leaveApplyFor=(dest,role=applyRole)=>{
     leavingApplyRef.current=!!applyRole;
-    try{if(role&&casting?.id!=null)localStorage.setItem(APPLY_RESUME_KEY,JSON.stringify({castingId:casting.id,castingTitle:casting.title||"",roleId:role.id||(Number.isInteger(role.idx)?realRoleIds[role.idx]:null)||null,roleName:role.name||"",idx:Number.isInteger(role.idx)?role.idx:null,photo:applyRole?selectedPhoto:"",path:window.location.pathname,at:Date.now()}));}catch(_){}
+    if(dest==="membership"){try{const b=document.body;b.classList.remove("cs-pg-fwd");void b.offsetWidth;b.classList.add("cs-pg-fwd");setTimeout(()=>b.classList.remove("cs-pg-fwd"),420);}catch(_){}}
+    try{if(role&&casting?.id!=null)localStorage.setItem(APPLY_RESUME_KEY,JSON.stringify({castingId:casting.id,castingTitle:casting.title||"",roleId:role.id||(Number.isInteger(role.idx)?realRoleIds[role.idx]:null)||null,roleName:role.name||"",idx:Number.isInteger(role.idx)?role.idx:null,photo:applyRole?selectedPhoto:"",formOpen:!!applyRole,path:window.location.pathname,at:Date.now()}));}catch(_){}
     setApplyRole(null);onNavigate&&onNavigate(dest);
   };
   // The role clicked on a Browse card (its name or Apply) opens unfolded and is
@@ -13499,6 +13535,9 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
       if(prof?.headshot_url)list.push(prof.headshot_url);
       (prof?.additional_photos||[]).forEach(u=>{if(u&&!list.includes(u))list.push(u);});
       setMyPhotos(list);
+      applyPhotosCache={uid:s.user.id,list};
+      // A form reopened before photos loaded: keep its pick, or take the headshot now.
+      if(initResume)setSelectedPhoto(p=>p&&list.includes(p)?p:(list[0]||""));
       // lifetime submission count for the free-actor gate — one free submission per account
       if(isTalent&&!isPremium){
         // CastSlate Submit rows (source='castslate') are filed by CastSlate on the
@@ -14305,7 +14344,7 @@ Free submission used
       const allowRecord=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="record");
       const allowUpload=isPremium&&(!instr||instr.submission_type==="both"||instr.submission_type==="upload");
       return(
-      <BodyPortal><div className={"modal-overlay"+(applySlideIn||applyLeaving?" gm-ov":"")} style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
+      <BodyPortal><div className={"modal-overlay"+(applySlideIn||applyLeaving?" gm-ov":"")+(backIn?" cs-back-dim":"")} style={{overflowX:"hidden"}} onClick={()=>!submitting&&setApplyRole(null)}><div className={"modal"+(applyLeaving?" gm-s-out":applySlideIn?" gm-s-in":backIn?" cs-back-in":"")} onClick={e=>e.stopPropagation()} style={{maxWidth:600,maxHeight:"92vh",overflowY:"auto"}}>
         {applyOk?
           <div style={{textAlign:"center",padding:"32px 8px"}}>
             <div style={{width:72,height:72,borderRadius:"50%",background:"rgba(80,200,120,0.15)",color:"#27ae60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,fontWeight:800,margin:"0 auto 20px"}}><Ico n="check" s={24}/></div>
@@ -54602,7 +54641,11 @@ function App(){
     });
   },[]);
   const [viewingProfile,setViewingProfile]=useState(null);
+  // Last casting shown, so Back from another page restores a DB casting at once
+  // instead of a spinner while it is fetched again.
+  const lastCastingRef=useRef(null);
   const [viewingCasting,setViewingCasting]=useState(()=>{const slug=urlToCastingSlug();return slug?(CASTINGS.find(c=>c.slug===slug)||null):null;});
+  useEffect(()=>{if(viewingCasting)lastCastingRef.current=viewingCasting;},[viewingCasting]);
   // ── Refresh restore for the slide-in casting sheet ────────────────────────
   // Reloading while the sheet was open used to drop the reader onto the
   // standalone full casting page: the URL is /casting/<slug>, and urlToPage maps
@@ -55047,7 +55090,7 @@ function App(){
         setPage(p);
         if(p!=="profile")setViewingProfile(null);
         if(p!=="casting-detail"){setViewingCasting(null);}
-        else if(st.castingSlug){const c=CASTINGS.find(x=>x.slug===st.castingSlug);if(c)setViewingCasting(c);}
+        else if(st.castingSlug){const lc=lastCastingRef.current;const c=CASTINGS.find(x=>x.slug===st.castingSlug)||(lc&&(lc.slug===st.castingSlug||String(lc.id)===st.castingSlug)?lc:null);if(c)setViewingCasting(c);}
         if(p==="talent-public"&&st.talentSlug)setViewingTalentSlug(st.talentSlug);
         else if(p!=="talent-public")setViewingTalentSlug(null);
         if(p==="news-article")setViewingNewsSlug(st.newsSlug||urlToNewsSlug());
@@ -55057,7 +55100,7 @@ function App(){
         setPage(p);
         setViewingProfile(null);
         if(p!=="casting-detail"){setViewingCasting(null);}
-        else{const slug=urlToCastingSlug();if(slug){const c=CASTINGS.find(x=>x.slug===slug);if(c)setViewingCasting(c);}}
+        else{const slug=urlToCastingSlug();if(slug){const lc=lastCastingRef.current;const c=CASTINGS.find(x=>x.slug===slug)||(lc&&(lc.slug===slug||String(lc.id)===slug)?lc:null);if(c)setViewingCasting(c);}}
         if(p==="talent-public"){setViewingTalentSlug(urlToTalentSlug());}
         else setViewingTalentSlug(null);
         if(p==="news-article"){setViewingNewsSlug(urlToNewsSlug());}
