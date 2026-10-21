@@ -7486,11 +7486,11 @@ function trackGoogleAdsPurchase(planType){
   }catch(_){}
 }
 
-function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType}){
+function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType,onResumeApply}){
   const [activating,setActivating]=useState(successType==="premium");
   const [isPremium,setIsPremium]=useState(myProfile?.membership_status==="active");
   // They left a submission form for the plans page — offer the way straight back to it.
-  const [resume]=useState(()=>{const r=successType==="premium"?readApplyResume():null;return r&&typeof r.path==="string"&&r.path.startsWith("/casting/")?r:null;});
+  const [resume]=useState(()=>successType==="premium"?readApplyResume():null);
 
   useEffect(()=>{
     if(successType!=="premium")return;
@@ -7558,8 +7558,8 @@ function PaymentSuccessPage({session,myProfile,onNavigate,onReload,successType})
         :"Your payment was received. Your Premium membership will activate within a minute — refresh the page if it doesn't appear."}
     </p>
     {isPremium&&<p style={{color:"var(--acc)",fontWeight:700,marginBottom:24,fontSize:15}}>Unlimited submissions unlocked <Ico n="check" s={24}/></p>}
-    {resume&&<div style={{display:"flex",justifyContent:"center",marginBottom:12}}>
-      <button className="btn-teal" onClick={()=>{try{window.location.assign(resume.path);}catch(_){}}}>Finish your submission{(()=>{const rn=niceRoleName(resume.roleName);return rn&&rn.length<=26?" for "+rn:"";})()} <Tri/></button>
+    {isPremium&&resume&&onResumeApply&&<div style={{display:"flex",justifyContent:"center",marginBottom:12}}>
+      <button className="btn-teal" onClick={()=>onResumeApply(resume)}>Finish your submission{(()=>{const rn=niceRoleName(resume.roleName);return rn&&rn.length<=26?" for "+rn:"";})()} <Tri/></button>
     </div>}
     <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
       <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
@@ -13401,7 +13401,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     }
     {let slide=false;try{slide=!!window.__csSlideApply;window.__csSlideApply=false;}catch(_){}setApplySlideIn(slide);setApplyLeaving(false);}
     {const d=readApplyDraft(casting?.id,r);setCoverNote(d);setDraftRestored(!!d);}
-    setApplyRole({...r,idx:i});setApplyErr("");setApplyOk(false);setSelectedPhoto(myPhotos[0]||"");setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
+    let photo=myPhotos[0]||"";
+    {const rs=readApplyResume();
+      if(rs&&String(rs.castingId)===String(casting?.id)&&rs.roleName===r?.name){
+        if(rs.photo&&myPhotos.includes(rs.photo))photo=rs.photo;
+        try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}
+      }}
+    setApplyRole({...r,idx:i});setApplyErr("");setApplyOk(false);setSelectedPhoto(photo);setVideoNoteUrl("");videoNoteUrlRef.current="";setShowVideoRecorder(false);
   };
   useEffect(()=>{
     if(!autoApplyRole||!isLoggedIn||autoOpenedRef.current)return;
@@ -13426,8 +13432,10 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     resumedRef.current=true;
     const rs=readApplyResume();
     if(!rs||String(rs.castingId)!==String(casting.id))return;
-    try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}
-    if(casting.status==="archived"||castingIsExpired(casting))return;
+    if(casting.status==="archived"||castingIsExpired(casting)){try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}return;}
+    // Still on the free plan with the free submission used: don't pop the upgrade
+    // prompt again on Back. The entry stays for the success page after an upgrade.
+    if(isTalent&&!isPremium&&usedCount>=FREE_PLAN.submissionsTotal)return;
     const sorted=(casting.roles||[]).slice().sort(compareRoles);
     let i=-1;
     if(rs.roleId){const hit=Object.entries(realRoleIds).find(([,rid])=>rid===rs.roleId);if(hit)i=parseInt(hit[0],10);}
@@ -13436,8 +13444,8 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(i<0||!sorted[i]||applied.has(i))return;
     handleApply(sorted[i],i);
   },[isLoggedIn,rolesReady,realRoleIds,casting?.id]);// eslint-disable-line
-  const leaveApplyFor=(dest)=>{
-    try{if(applyRole)localStorage.setItem(APPLY_RESUME_KEY,JSON.stringify({castingId:casting.id,roleId:applyRole.id||realRoleIds[applyRole.idx]||null,roleName:applyRole.name||"",idx:applyRole.idx,path:window.location.pathname,at:Date.now()}));}catch(_){}
+  const leaveApplyFor=(dest,role=applyRole)=>{
+    try{if(role&&casting?.id!=null)localStorage.setItem(APPLY_RESUME_KEY,JSON.stringify({castingId:casting.id,castingTitle:casting.title||"",roleId:role.id||(Number.isInteger(role.idx)?realRoleIds[role.idx]:null)||null,roleName:role.name||"",idx:Number.isInteger(role.idx)?role.idx:null,photo:applyRole?selectedPhoto:"",path:window.location.pathname,at:Date.now()}));}catch(_){}
     setApplyRole(null);onNavigate&&onNavigate(dest);
   };
   // The role clicked on a Browse card (its name or Apply) opens unfolded and is
@@ -13692,7 +13700,7 @@ Free submission used
       </div>
       {/* CTA sells finishing THIS submission, not "Premium" in the abstract — the
           button names the casting the actor was just blocked from. */}
-      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);onNavigate&&onNavigate("membership");}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"#EAC080",padding:"14px 16px",borderRadius:11,marginBottom:9}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return withTri(`Go unlimited — ${PREMIUM_PRICE} →`);const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return withTri(`Unlock & submit to “${short}” →`);})()}</button>
+      <button className="capm-cta" onClick={()=>{setShowUpgradePrompt(false);leaveApplyFor("membership",upgradeRole?{name:upgradeRole}:null);}} style={{width:"100%",border:"none",cursor:"pointer",fontWeight:800,fontSize:13.5,color:"#1A1A2E",background:"#EAC080",padding:"14px 16px",borderRadius:11,marginBottom:9}}>{(()=>{const tt=(casting?.title||"").trim();if(!tt)return withTri(`Go unlimited — ${PREMIUM_PRICE} →`);const short=tt.length>26?tt.slice(0,24).trimEnd()+"…":tt;return withTri(`Unlock & submit to “${short}” →`);})()}</button>
       <button onClick={()=>setShowUpgradePrompt(false)} style={{width:"100%",background:"transparent",border:"1px solid var(--bdr)",color:"var(--t2)",cursor:"pointer",fontWeight:700,fontSize:12.5,padding:"12px 14px",borderRadius:11}}>No thanks, not right now</button>
       <div style={{textAlign:"center",color:"var(--t3)",fontSize:10.5,marginTop:12}}>Premium · {PREMIUM_PRICE} · unlimited submissions</div>
     </div></div></BodyPortal>}
@@ -55400,6 +55408,16 @@ function App(){
     pushHist("casting-detail",{slug:castingSlug});
   };
   const clearPendingApply=useCallback(()=>setPendingApply(null),[]);
+  // "Finish your submission" after Premium checkout: open the casting and the role
+  // through pendingApply, the same path a sign-in resume takes. CastingDetailPage
+  // restores the note (per-role draft) and the headshot pick (resume entry).
+  const resumeDraftApply=async(rs)=>{
+    const c=rs&&await fetchFullCasting(rs.castingId);
+    if(!c){try{localStorage.removeItem(APPLY_RESUME_KEY);}catch(_){}navigate("search");return;}
+    if(rs.roleName)setPendingApply({casting:c,role:{name:rs.roleName,id:rs.roleId||undefined,idx:Number.isInteger(rs.idx)?rs.idx:undefined}});
+    setPrevPage(page);setViewingCasting(c);window.scrollTo(0,0);setPage("casting-detail");
+    pushHist("casting-detail",{slug:c.slug||String(c.id)});
+  };
   // The one place a complete casting is assembled from the database. Anything
   // that holds only a partial casting row hydrates through this before it is
   // handed to the detail page — see handleViewCasting.
@@ -56269,7 +56287,7 @@ function App(){
         {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
         {page==="actor-toolkit"&&<ActorToolkitPage session={session} myProfile={myProfile} onNavigate={navigate}/>}
         {page==="actor-business-card"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<ActorBusinessCardPage session={session} myProfile={myProfile} onNavigate={navigate}/>:<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>)}
-        {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
+        {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onResumeApply={resumeDraftApply} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
         {page==="unsubscribed"&&<UnsubscribedPage onNavigate={navigate}/>}
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
