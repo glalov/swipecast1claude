@@ -5067,7 +5067,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* Applied role, row closed (owner 2026-10-21, "soft green"): faint green wash + a
    "✓ Applied" chip by the name. Opened, both go and the Applied button carries it. */
 .rl-row.rl-applied,.rl-row.rl-applied .rl-top{background:#EEF6EC;}
-.rl-row.rl-applied .rl-top.rl-clickable:hover{background:#E6F1E3;}
+.rl-row.rl-applied .rl-top.rl-clickable:hover{background:#EEF6EC;} /* no darker hover on applied rows (owner) */
 .rl-ap-chip{display:inline-flex;align-items:center;margin-left:10px;vertical-align:4px;font-size:12.5px;font-weight:700;letter-spacing:0;line-height:1;color:#2F6B33;background:#D9ECD5;padding:5px 10px;border-radius:999px;white-space:nowrap;}
 /* Type is set for readability first — a working actor reads these on a phone in
    bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
