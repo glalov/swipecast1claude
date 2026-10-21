@@ -16197,8 +16197,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     else b.classList.remove("sheet-push");
     return()=>b.classList.remove("sheet-push");
   },[sheetCasting,sheetClosing]);
-  // `role` is set when the talent tapped a role pill on the card: the sheet then
-  // opens that role's application directly instead of the casting's front page.
+  // `role` opens that role's application directly. The card's Apply button no
+  // longer passes it (owner, 2026-10-21): the form over the casting hid what the
+  // casting was about, so Apply now opens the casting scrolled to that role,
+  // unfolded, like tapping the role name.
   // CastingDetailPage already owns this via autoApplyRole (login + expiry gated),
   // so nothing about the apply rules or the submission cap changes here.
   const [sheetRole,setSheetRole]=useState(null);
@@ -16627,7 +16629,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                         </button>
                         {r.id&&appliedRoleIds.has(r.id)
                           ?<span className="role-applied">Applied<Ico n="check" s={14}/></span>
-                          :<button type="button" className="b5-apply" onClick={e=>{e.stopPropagation();openSheet(rawC,r);}}>{withTri("Apply")}</button>}
+                          :<button type="button" className="b5-apply" onClick={e=>{e.stopPropagation();openSheet(rawC,null,{focus:r});}}>{withTri("Apply")}</button>}
                       </div>}
                     </div>);
                   })}
