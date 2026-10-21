@@ -22970,7 +22970,12 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm,pl
     }catch(e){setBusy(false);console.warn("[crop] error",e);onClose();}
   };
 
-  return(<div className={"modal-overlay"+(plain?" gm-ov":"")} onClick={()=>!busy&&onClose()}>
+  // plain = the first-run headshot step, which can sit over the casting apply
+  // form (a body-portal .modal-overlay, also z-index 200, later in the DOM). At
+  // the default z-index the form won every click, so "Save & Upload" landed on
+  // the form underneath and the photo was never uploaded (2026-10-21). Above the
+  // step's own overlay (400) as well.
+  return(<div className={"modal-overlay"+(plain?" gm-ov":"")} style={plain?{zIndex:410}:undefined} onClick={()=>!busy&&onClose()}>
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:540,padding:22}}>
       <h3 style={{fontSize:17,fontWeight:700,marginBottom:4}}>{label}</h3>
       <p style={{color:"var(--t2)",fontSize:12,marginBottom:14}}>Drag the image to reposition. Use the slider to zoom. The visible frame is exactly what casting directors will see.</p>
