@@ -5077,7 +5077,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    facet line. Label-above-name is the strongest hierarchy typography has, and it
    splits the two questions an actor asks in order: what kind of part is this,
    then who are they looking for. */
-.rl-kind{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#4F566A;margin-bottom:6px;}
+/* Role type: warm ink, a touch larger (owner 2026-10-21) — the cool #4F566A read faded
+   next to the ink SUBMITTED tag; the name stays the strongest thing in the row. */
+.rl-kind{font-size:11.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#3A322A;margin-bottom:6px;}
 .rl-nm{font-size:22px;font-weight:700;letter-spacing:-.4px;color:#0A0B18;line-height:1.2;}
 .rl-mt{font-size:14.5px;font-weight:500;color:#3D3E58;margin-top:6px;line-height:1.5;}
 .rl-mt .sep{color:#AFADBA;font-weight:500;margin:0 6px;}
