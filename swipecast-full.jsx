@@ -5069,6 +5069,34 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    Opened, it goes and the Applied button carries the status. */
 .rl-ap-tag{display:inline-flex;align-items:center;gap:4px;vertical-align:1px;padding:3px 8px;border:1.5px solid #1A1A2E;border-radius:6px;color:#1A1A2E;font-weight:800;font-size:11.5px;letter-spacing:.09em;line-height:1;text-transform:uppercase;white-space:nowrap;}
 .rl-kind .rl-ap-tag{margin-left:10px;}
+/* "Check your email" card after sign-up — design A, the Ticket (owner 2026-10-21). */
+.cf-card{background:var(--s1);border:1px solid var(--bdr);border-radius:20px;box-shadow:0 24px 60px -30px rgba(26,26,46,.35);overflow:hidden;margin:40px auto 56px;max-width:620px;}
+.cf-top{padding:38px 40px 24px;text-align:center;}
+.cf-env{width:76px;height:76px;border-radius:50%;background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;position:relative;}
+.cf-env b{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:#EAC080;border:3px solid var(--s1);}
+.cf-card h2{font-size:28px;font-weight:800;letter-spacing:-.8px;margin:0 0 8px;}
+.cf-lead{font-size:15px;color:var(--t2);line-height:1.6;margin:0 0 14px;}
+.cf-pill{display:inline-flex;align-items:center;gap:8px;max-width:100%;background:var(--s2);border:1px solid var(--bdr);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14.5px;color:#1A1A2E;overflow-wrap:anywhere;}
+.cf-steps{display:flex;align-items:center;justify-content:center;margin:24px 0 2px;font-size:12.5px;font-weight:700;}
+.cf-st{display:flex;align-items:center;gap:7px;color:var(--t3);white-space:nowrap;}
+.cf-st i{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;border:1.5px solid var(--bdr);background:#fff;}
+.cf-st.done{color:var(--teal-dk);}.cf-st.done i{background:var(--teal);border-color:var(--teal);color:#fff;}
+.cf-st.now{color:#1A1A2E;}.cf-st.now i{border-color:#1A1A2E;background:#1A1A2E;color:#fff;}
+.cf-bar{width:38px;height:2px;background:var(--bdr);margin:0 10px;flex:0 1 38px;}.cf-bar.done{background:var(--teal);}
+.cf-stub{margin:0 26px;border:1.5px dashed #D3C9B4;border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:center;background:#FFFCF4;text-align:left;color:#1A1A2E;}
+.cf-stub small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--t3);margin-bottom:3px;}
+.cf-stub strong{font-size:16px;}.cf-stub span{color:var(--t2);font-size:14px;}
+.cf-act{padding:24px 40px 26px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.cf-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.cf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
+.cf-help{font-size:13px;color:var(--t3);}
+.cf-note{width:100%;padding:10px 14px;border-radius:8px;font-size:13px;text-align:center;}
+.cf-note.ok{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);color:var(--grn);font-weight:600;}
+.cf-note.err{background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.3);color:#c0392b;}
+.cf-foot{border-top:1px solid var(--bdr);background:#FBF8F1;padding:14px 40px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.cf-link{background:none;border:0;font:inherit;font-size:13.5px;font-weight:700;color:var(--teal-dk);cursor:pointer;padding:0;}
+.cf-link.muted{color:var(--t3);}
+@media(max-width:600px){.cf-top,.cf-act{padding-left:20px;padding-right:20px;}.cf-foot{padding:14px 20px;}.cf-stub{margin:0 14px;}.cf-card h2{font-size:24px;}.cf-bar{margin:0 6px;}.cf-steps{font-size:11.5px;}.cf-row .cf-btn{width:100%;}}
 /* Type is set for readability first — a working actor reads these on a phone in
    bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
    far past the 4.5:1 AA floor. The meta sits at weight 500 rather than 600 —
@@ -12361,26 +12389,47 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     }
   };
 
-  if(signupDone)return(<div className="page" style={{maxWidth:640,margin:"0 auto"}}>
-    <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.3)",borderRadius:16,padding:"48px 36px",marginTop:40,textAlign:"center"}}>
-      <div style={{fontSize:48,marginBottom:16}}><Ico n="check" s={24}/></div>
-      <h2 style={{fontSize:24,fontWeight:800,marginBottom:10}}>Check your email to confirm</h2>
-      <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,marginBottom:8}}>We sent a confirmation link to <strong>{suEmail}</strong>.<br/>Click the link in that email, then log in here to continue your application.</p>
-      <p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>
-      {c&&<div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,padding:"14px 18px",marginBottom:24,textAlign:"left"}}>
-        <div style={{fontSize:11,color:"var(--t3)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:6}}>Saved — you're applying to</div>
-        <strong style={{fontSize:14}}>{c.title}</strong>{r&&<span style={{color:"var(--t2)",fontSize:13}}> · {r.name}</span>}
-        <p style={{fontSize:12,color:"var(--t3)",marginTop:4}}>After confirming your email and logging in, you'll be taken directly to the application form.</p>
-      </div>}
-      {resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={24}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}
-      {resendErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{resendErr}</div>}
-      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-        <button className="btn-p" onClick={()=>{setMode("login");setSignupDone(false);}}>Log In Now</button>
-        <button className="btn-s" onClick={resendCooldown>0?undefined:resendSignupEmail} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>
-        <button className="btn-s" onClick={onCancel}>Back to Casting</button>
+  if(signupDone){
+    // "Check your email" — design A, the Ticket (owner 2026-10-21). Same actions as
+    // before (log in, resend, back to casting) plus an inbox shortcut for the big
+    // webmail providers; any other domain gets no button.
+    const dom=String(suEmail||"").split("@")[1]?.toLowerCase()||"";
+    const inbox=/^(gmail|googlemail)\.com$/.test(dom)?{label:"Open Gmail",icon:"brand-gmail",href:"https://mail.google.com/mail/?authuser="+encodeURIComponent(suEmail)+"#search/castslate"}
+      :/^(outlook|hotmail|live|msn)\.[a-z.]+$/.test(dom)?{label:"Open Outlook",icon:"mail",href:"https://outlook.live.com/mail/0/"}
+      :/^(yahoo|ymail)\.[a-z.]+$/.test(dom)?{label:"Open Yahoo Mail",icon:"mail",href:"https://mail.yahoo.com/"}
+      :/^(icloud|me|mac)\.com$/.test(dom)?{label:"Open iCloud Mail",icon:"mail",href:"https://www.icloud.com/mail"}
+      :null;
+    const logIn=()=>{setMode("login");setSignupDone(false);};
+    return(<div className="page" style={{maxWidth:680,margin:"0 auto"}}>
+    <div className="cf-card">
+      <div className="cf-top">
+        <div className="cf-env"><Ico n="mail" s={36}/><b/></div>
+        <h2>One click and you're in.</h2>
+        <p className="cf-lead">We sent a confirmation link to</p>
+        <span className="cf-pill"><Ico n="at" s={16}/>{suEmail}</span>
+        <div className="cf-steps">
+          <span className="cf-st done"><i>✓</i>Account</span><span className="cf-bar done"/>
+          <span className="cf-st now"><i>2</i>Confirm email</span><span className="cf-bar"/>
+          <span className="cf-st"><i>3</i>{c?"Submit":"Log in"}</span>
+        </div>
+      </div>
+      {c&&<div className="cf-stub"><Ico n="ticket" s={26}/><div><small>Saved · you're applying to</small><strong>{c.title}</strong>{r&&<span> · {r.name}</span>}</div></div>}
+      <div className="cf-act">
+        {resentOk&&<div className="cf-note ok"><Ico n="check" s={16}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}
+        {resendErr&&<div className="cf-note err">{resendErr}</div>}
+        <div className="cf-row">
+          {inbox&&<a className="btn-p cf-btn" href={inbox.href} target="_blank" rel="noopener noreferrer"><Ico n={inbox.icon} s={18}/>{inbox.label}</a>}
+          <button className={(inbox?"btn-s":"btn-p")+" cf-btn"} onClick={logIn}>I've confirmed — log in <Tri/></button>
+        </div>
+        <div className="cf-help">Not there? Check spam and promotions.</div>
+      </div>
+      <div className="cf-foot">
+        <button className="cf-link" onClick={resendCooldown>0?undefined:resendSignupEmail} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>
+        <button className="cf-link muted" onClick={onCancel}>← {c?"Back to casting":"Back"}</button>
       </div>
     </div>
     <Footer onNavigate={onNavigate}/></div>);
+  }
 
   return(<div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
