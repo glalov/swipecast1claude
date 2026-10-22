@@ -4181,10 +4181,13 @@ a.site-footer-link{text-decoration:none;}
 .nyc-guide-item{min-width:0;}
 .nyc-guide-item h3{font-size:15px;font-weight:700;color:var(--t1);margin:0 0 6px;}
 .nyc-guide-item p{font-size:14.5px;line-height:1.65;color:var(--t2);margin:0;}
-.nyc-guide-close{margin-top:28px;padding:18px 22px;background:#fff;border:1px solid var(--bdr);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;}
-.nyc-guide-close p{margin:0;font-size:15px;line-height:1.55;color:var(--t1);min-width:0;}
-.nyc-guide-close .btn-p{flex:none;text-decoration:none;white-space:nowrap;}
-@media (max-width:640px){.nyc-guide-close{flex-direction:column;align-items:stretch;text-align:center;}.nyc-guide-close .btn-p{justify-content:center;}}
+.nyc-guide-close{margin-top:44px;padding-top:34px;border-top:1px solid var(--bdr);text-align:center;min-width:0;}
+.nyc-guide-close .ngc-h{font-family:'Playfair Display',Georgia,serif;font-size:clamp(26px,3vw,32px);font-weight:700;letter-spacing:-.3px;line-height:1.2;color:var(--t1);margin:0 0 10px;}
+.nyc-guide-close p{margin:0 auto 20px;font-size:16px;line-height:1.6;color:var(--t2);max-width:560px;}
+.nyc-guide-close .btn-p{display:inline-flex;align-items:center;gap:8px;text-decoration:none;white-space:nowrap;}
+.nyc-guide-close .ngc-sub{display:block;margin-top:14px;font-size:13.5px;color:var(--t3);}
+.nyc-guide-close .ngc-sub a{color:var(--teal-dk);font-weight:700;text-decoration:none;}
+@media (max-width:640px){.nyc-guide-close .btn-p{display:flex;justify-content:center;}}
 .nyc-crosslink{margin:36px 0 0;font-size:14px;color:var(--t2);text-align:center;}
 .nyc-crosslink a{color:var(--teal);font-weight:700;text-decoration:none;margin-left:4px;}
 .nyc-crosslink a:hover{text-decoration:underline;text-underline-offset:3px;}
@@ -16295,7 +16298,8 @@ const NYC_GUIDE=[
   ["Stay safe","Real casting directors don't charge you to audition and won't ask for bank details or your Social Security number before you're booked. Be wary of anyone who makes paid photos or classes a condition of casting. If a listing asks for money up front, walk away and report it."],
 ];
 // Full-width closing line under the 2x3 grid (owner picked layout B, 2026-10-20).
-const NYC_GUIDE_CLOSE="Every listing above is open now. Your first submission is free, and casting directors review one profile at a time.";
+// No "first submission is free" here — the limit isn't advertised before a first apply.
+const NYC_GUIDE_CLOSE="Every listing above is open now, and casting directors review one profile at a time.";
 // In-app jump to the NYC page from a real <a href> (crawlable link; footer/Browse).
 // navigate("search") pushes /browse-castings; swap that entry for the landing URL and
 // nudge SearchPage, which reads the landing key from the URL.
@@ -16308,14 +16312,19 @@ function openNycLanding(onNavigate){
   }catch(_){}
 }
 function NycGuide({isLoggedIn,onNavigate}){
-  // Signed out: sign up. Signed in: back up to the listings.
-  const cta=isLoggedIn
-    ?<button className="btn-p" onClick={()=>window.scrollTo({top:0,behavior:"smooth"})}>Browse castings <Tri/></button>
-    :<a className="btn-p" href="/register-talent" onClick={e=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate("register-talent");}}>Create free profile <Tri/></a>;
+  // Closing call to action, "C · Editorial" (owner 2026-10-22): signed-out visitors
+  // only — a member already has a profile, and "Browse castings" there pointed at
+  // the listings they had just read. Centred serif line, sign-up button, log-in link.
+  const go=(e,to)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(to);};
   return(<section className="nyc-guide" aria-labelledby="nyc-guide-h">
     <h2 id="nyc-guide-h">How to find casting calls in New York City</h2>
     <div className="nyc-guide-grid">{NYC_GUIDE.map(([h,p])=><div key={h} className="nyc-guide-item"><h3>{h}</h3><p>{p}</p></div>)}</div>
-    <div className="nyc-guide-close"><p>{NYC_GUIDE_CLOSE}</p>{cta}</div>
+    {!isLoggedIn&&<div className="nyc-guide-close">
+      <h3 className="ngc-h">Your next role is on this page.</h3>
+      <p>{NYC_GUIDE_CLOSE}</p>
+      <a className="btn-p" href="/register-talent" onClick={e=>go(e,"register-talent")}>Create your free profile <Tri/></a>
+      <span className="ngc-sub">Already a member? <a href="/login" onClick={e=>go(e,"login")}>Log in</a></span>
+    </div>}
   </section>);
 }
 function urlToLandingKey(){
