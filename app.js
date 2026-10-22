@@ -2861,7 +2861,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-row.rl-open .rl-cols>*:nth-child(2){transition-delay:.18s;}
 .rl-desc{font-size:16.5px;color:#0E1A22;line-height:1.66;max-width:62ch;}
 .rl-side{border-left:1px solid #e2e0d8;padding-left:30px;}
-.rl-side .btn-teal{width:100%;max-width:190px;display:inline-flex;align-items:center;justify-content:center;padding:13px 24px;font-size:16px;letter-spacing:-.2px;line-height:1.2;border-radius:9px;}
+/* Same size as the "Applied ✓" pill that replaces it (.role-applied.big): fits its
+   text, no padded-out width (owner 2026-10-21). Full width again on phones, below. */
+.rl-side .btn-teal{width:auto;max-width:none;display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;font-size:15px;letter-spacing:-.2px;line-height:1;border-radius:10px;border:1px solid transparent;}
 .rl-side .tag{display:block;text-align:center;}
 /* What accompanies the role, as objects rather than a sentence: four pills read
    in a glance where a line of prose has to be read to the end to find the
