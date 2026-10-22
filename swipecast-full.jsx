@@ -4841,7 +4841,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .scale-tagline{text-align:center;padding:clamp(40px,5vw,72px) 24px 0;margin:0 auto;max-width:900px;}
 .scale-tagline .st-lead{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;letter-spacing:2.4px;text-transform:uppercase;color:var(--t3);margin:0 0 16px;opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s ease;}
 .scale-tagline .st-names{font-family:'Source Serif 4',serif;font-weight:900;font-size:clamp(38px,7vw,72px);letter-spacing:-1px;line-height:1.05;margin:0;}
-.scale-tagline .st-names span{display:inline-block;opacity:0;}
+.scale-tagline .st-names span{display:inline-block;opacity:0;will-change:transform,opacity;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 .scale-tagline .st-sep{color:var(--t3);font-weight:400;transform:scale(.4);transition:opacity .55s ease,transform .55s ease;}
 .scale-tagline .st-a24{color:#0A0A0A;transform:translateX(-420px);transition:opacity .6s ease,transform .8s cubic-bezier(.2,.8,.25,1);}
 .scale-tagline .st-neon{color:#FF2D6F;transform:translateY(80px);transition:opacity .65s ease,transform .85s cubic-bezier(.2,.8,.25,1);}
@@ -27086,11 +27086,31 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     const el=taglineRef.current;
     if(!el)return;
     if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches){el.classList.add("st-in");return;}
+    // Slow-wifi fix (owner 2026-10-21): on a throttled load the line came into view
+    // while the page was still busy — the main thread froze ~1.7s right after st-in,
+    // so A24 (first, .3s delay) slid entirely inside the freeze and just popped in,
+    // and the 900-weight serif hadn't arrived. Now: give that font up to 2.5s, wait
+    // for an idle moment, then add st-in after two painted frames.
+    let dead=false;
+    const play=()=>{
+      let done=false;
+      const go=()=>{if(done||dead)return;done=true;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!dead)el.classList.add("st-in");}));};
+      const idle=(cb)=>{try{if(window.requestIdleCallback){window.requestIdleCallback(cb,{timeout:1200});return;}}catch(_){}setTimeout(cb,180);};
+      const F='900 72px "Source Serif 4"';
+      try{
+        if(document.fonts&&!document.fonts.check(F)){
+          document.fonts.load(F).then(()=>idle(go),()=>idle(go));
+          setTimeout(()=>idle(go),2500);
+          return;
+        }
+      }catch(_){}
+      idle(go);
+    };
     const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting){el.classList.add("st-in");io.disconnect();}});
+      entries.forEach(e=>{if(e.isIntersecting){io.disconnect();play();}});
     },{threshold:0.35});
     io.observe(el);
-    return()=>io.disconnect();
+    return()=>{dead=true;io.disconnect();};
   },[taglineOn]);
   const homeCtaRef=React.useRef(null);
   React.useEffect(()=>{
