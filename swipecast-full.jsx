@@ -5090,6 +5090,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .cf-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 .cf-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
 .cf-help{font-size:13px;color:var(--t3);}
+.cf-line{font-size:14.5px;color:var(--t2);line-height:1.55;margin:18px auto 0;max-width:420px;}
 .cf-note{width:100%;padding:10px 14px;border-radius:8px;font-size:13px;text-align:center;}
 .cf-note.ok{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);color:var(--grn);font-weight:600;}
 .cf-note.err{background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.3);color:#c0392b;}
@@ -8210,6 +8211,50 @@ const STRIPE_CD_LINK    = null;             // TODO: "https://buy.stripe.com/you
 // (public.email_signup_status). A Google account has no password and no pending
 // confirmation, so offering "Resend verification email" there was a dead end;
 // a confirmed email account just needs to log in.
+// "Check your email" card shown after every sign-up — design A, the Ticket (owner
+// 2026-10-21). Used by the Apply sign-up (AuthGate), the actor sign-up page and the
+// casting-director sign-up page; each passes its own last step and wording. The inbox
+// shortcut covers the big webmail providers; any other domain gets no button and
+// "log in" becomes the main action.
+function confirmInboxLink(email){
+  const dom=String(email||"").split("@")[1]?.toLowerCase()||"";
+  return /^(gmail|googlemail)\.com$/.test(dom)?{label:"Open Gmail",icon:"brand-gmail",href:"https://mail.google.com/mail/?authuser="+encodeURIComponent(email)+"#search/castslate"}
+    :/^(outlook|hotmail|live|msn)\.[a-z.]+$/.test(dom)?{label:"Open Outlook",icon:"mail",href:"https://outlook.live.com/mail/0/"}
+    :/^(yahoo|ymail)\.[a-z.]+$/.test(dom)?{label:"Open Yahoo Mail",icon:"mail",href:"https://mail.yahoo.com/"}
+    :/^(icloud|me|mac)\.com$/.test(dom)?{label:"Open iCloud Mail",icon:"mail",href:"https://www.icloud.com/mail"}
+    :null;
+}
+function ConfirmEmailCard({email,finalStep,line,stub,resentOk,err,cooldown,onResend,onLogin,backLabel,onBack}){
+  const inbox=confirmInboxLink(email);
+  return(<div className="cf-card">
+    <div className="cf-top">
+      <div className="cf-env"><Ico n="mail" s={36}/><b/></div>
+      <h2>One click and you're in.</h2>
+      <p className="cf-lead">We sent a confirmation link to</p>
+      <span className="cf-pill"><Ico n="at" s={16}/>{email}</span>
+      <div className="cf-steps">
+        <span className="cf-st done"><i>✓</i>Account</span><span className="cf-bar done"/>
+        <span className="cf-st now"><i>2</i>Confirm email</span><span className="cf-bar"/>
+        <span className="cf-st"><i>3</i>{finalStep}</span>
+      </div>
+      {line&&<p className="cf-line">{line}</p>}
+    </div>
+    {stub}
+    <div className="cf-act">
+      {resentOk&&<div className="cf-note ok"><Ico n="check" s={16}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}
+      {err&&<div className="cf-note err">{err}</div>}
+      <div className="cf-row">
+        {inbox&&<a className="btn-p cf-btn" href={inbox.href} target="_blank" rel="noopener noreferrer"><Ico n={inbox.icon} s={18}/>{inbox.label}</a>}
+        <button className={(inbox?"btn-s":"btn-p")+" cf-btn"} onClick={onLogin}>I've confirmed — log in <Tri/></button>
+      </div>
+      <div className="cf-help">Not there? Check spam and promotions.</div>
+    </div>
+    <div className="cf-foot">
+      <button className="cf-link" onClick={cooldown>0?undefined:onResend} disabled={cooldown>0} style={{opacity:cooldown>0?0.6:1}}>{cooldown>0?`Resend available in ${cooldown}s`:"Resend confirmation email"}</button>
+      <button className="cf-link muted" onClick={onBack}>← {backLabel}</button>
+    </div>
+  </div>);
+}
 function dupEmailMsg(kind){
   if(kind==="oauth")return "This email is already registered with Google. Use \"Continue with Google\" above to sign in.";
   if(kind==="confirmed")return "An account with this email already exists. Log in instead — or use \"Forgot password\" on the login page if you need to reset it.";
@@ -8368,7 +8413,7 @@ function RegisterTalent({onNavigate}){
       setErr(`${name} sign-up failed. Please try again.`);
     }
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Your free profile is ready. Click the link in that email, then log in to browse castings. You'll only need to activate a membership when you're ready to submit for a role.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={24}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page" style={{maxWidth:680,margin:"0 auto"}}><ConfirmEmailCard email={f.email} finalStep="Browse castings" line="Your free actor profile is ready. Confirm, log in, and start applying." resentOk={resentOk} err={err} cooldown={resendCooldown} onResend={resendConfirmation} onLogin={()=>onNavigate("login")} backLabel="Home" onBack={()=>onNavigate("home")}/><Footer onNavigate={onNavigate}/></div>);
   if(step===1)return(
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
@@ -8590,7 +8635,7 @@ function RegisterCD({onNavigate}){
       setErr(`${name} sign-up failed. Please try again.`);
     }
   };
-  if(done)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:560,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>Check your email to confirm</h3><p style={{marginBottom:12}}>We sent a verification link to <strong>{f.email}</strong>.</p><p style={{marginBottom:16,color:"var(--t2)",fontSize:14}}>Click the link to activate your account. Then log in to post your first casting.</p><p style={{fontSize:13,color:"var(--t3)",marginBottom:24}}>Check your inbox, spam, and promotions folders.</p>{resentOk&&<div style={{background:"rgba(46,204,113,0.1)",border:"1px solid rgba(46,204,113,0.3)",color:"var(--grn)",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16,fontWeight:600}}><Ico n="check" s={24}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}{err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}<div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}><button className="btn-p" onClick={()=>onNavigate("login")}>Go to Login</button><button className="btn-s" onClick={resendCooldown>0?undefined:resendConfirmation} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button><button className="btn-s" onClick={()=>onNavigate("home")}>Home</button></div></div><Footer onNavigate={onNavigate}/></div>);
+  if(done)return(<div className="page" style={{maxWidth:680,margin:"0 auto"}}><ConfirmEmailCard email={f.email} finalStep="Post a casting" line="Your casting account is ready. Confirm, log in, and post your first casting." resentOk={resentOk} err={err} cooldown={resendCooldown} onResend={resendConfirmation} onLogin={()=>onNavigate("login")} backLabel="Home" onBack={()=>onNavigate("home")}/><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: teal info panel */}
@@ -12389,47 +12434,12 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     }
   };
 
-  if(signupDone){
-    // "Check your email" — design A, the Ticket (owner 2026-10-21). Same actions as
-    // before (log in, resend, back to casting) plus an inbox shortcut for the big
-    // webmail providers; any other domain gets no button.
-    const dom=String(suEmail||"").split("@")[1]?.toLowerCase()||"";
-    const inbox=/^(gmail|googlemail)\.com$/.test(dom)?{label:"Open Gmail",icon:"brand-gmail",href:"https://mail.google.com/mail/?authuser="+encodeURIComponent(suEmail)+"#search/castslate"}
-      :/^(outlook|hotmail|live|msn)\.[a-z.]+$/.test(dom)?{label:"Open Outlook",icon:"mail",href:"https://outlook.live.com/mail/0/"}
-      :/^(yahoo|ymail)\.[a-z.]+$/.test(dom)?{label:"Open Yahoo Mail",icon:"mail",href:"https://mail.yahoo.com/"}
-      :/^(icloud|me|mac)\.com$/.test(dom)?{label:"Open iCloud Mail",icon:"mail",href:"https://www.icloud.com/mail"}
-      :null;
-    const logIn=()=>{setMode("login");setSignupDone(false);};
-    return(<div className="page" style={{maxWidth:680,margin:"0 auto"}}>
-    <div className="cf-card">
-      <div className="cf-top">
-        <div className="cf-env"><Ico n="mail" s={36}/><b/></div>
-        <h2>One click and you're in.</h2>
-        <p className="cf-lead">We sent a confirmation link to</p>
-        <span className="cf-pill"><Ico n="at" s={16}/>{suEmail}</span>
-        <div className="cf-steps">
-          <span className="cf-st done"><i>✓</i>Account</span><span className="cf-bar done"/>
-          <span className="cf-st now"><i>2</i>Confirm email</span><span className="cf-bar"/>
-          <span className="cf-st"><i>3</i>{c?"Submit":"Log in"}</span>
-        </div>
-      </div>
-      {c&&<div className="cf-stub"><Ico n="ticket" s={26}/><div><small>Saved · you're applying to</small><strong>{c.title}</strong>{r&&<span> · {r.name}</span>}</div></div>}
-      <div className="cf-act">
-        {resentOk&&<div className="cf-note ok"><Ico n="check" s={16}/> Confirmation email sent again. Please check your inbox and spam folder.</div>}
-        {resendErr&&<div className="cf-note err">{resendErr}</div>}
-        <div className="cf-row">
-          {inbox&&<a className="btn-p cf-btn" href={inbox.href} target="_blank" rel="noopener noreferrer"><Ico n={inbox.icon} s={18}/>{inbox.label}</a>}
-          <button className={(inbox?"btn-s":"btn-p")+" cf-btn"} onClick={logIn}>I've confirmed — log in <Tri/></button>
-        </div>
-        <div className="cf-help">Not there? Check spam and promotions.</div>
-      </div>
-      <div className="cf-foot">
-        <button className="cf-link" onClick={resendCooldown>0?undefined:resendSignupEmail} disabled={resendCooldown>0} style={{opacity:resendCooldown>0?0.6:1}}>{resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>
-        <button className="cf-link muted" onClick={onCancel}>← {c?"Back to casting":"Back"}</button>
-      </div>
-    </div>
+  if(signupDone)return(<div className="page" style={{maxWidth:680,margin:"0 auto"}}>
+    <ConfirmEmailCard email={suEmail} finalStep={c?"Submit":"Log in"}
+      stub={c&&<div className="cf-stub"><Ico n="ticket" s={26}/><div><small>Saved · you're applying to</small><strong>{c.title}</strong>{r&&<span> · {r.name}</span>}</div></div>}
+      resentOk={resentOk} err={resendErr} cooldown={resendCooldown} onResend={resendSignupEmail}
+      onLogin={()=>{setMode("login");setSignupDone(false);}} backLabel={c?"Back to casting":"Back"} onBack={onCancel}/>
     <Footer onNavigate={onNavigate}/></div>);
-  }
 
   return(<div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
