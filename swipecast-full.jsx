@@ -5064,11 +5064,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-top.rl-clickable:hover{background:#FBF8F1;}
 .rl-row.rl-open .rl-top{background:#FBF8F1;}
 .rl-top:focus-visible{outline:2px solid #376A60;outline-offset:-3px;}
-/* Applied role, row closed (owner 2026-10-21, "soft green"): faint green wash + a
-   "✓ Applied" chip by the name. Opened, both go and the Applied button carries it. */
-.rl-row.rl-applied,.rl-row.rl-applied .rl-top{background:#EEF6EC;}
-.rl-row.rl-applied .rl-top.rl-clickable:hover{background:#EEF6EC;} /* no darker hover on applied rows (owner) */
-.rl-ap-chip{display:inline-flex;align-items:center;margin-left:10px;vertical-align:4px;font-size:12.5px;font-weight:700;letter-spacing:0;line-height:1;color:#2F6B33;background:#D9ECD5;padding:5px 10px;border-radius:999px;white-space:nowrap;}
+/* Applied role, row closed (owner 2026-10-21, option "4b"): an outlined ink
+   "✓ SUBMITTED" tag beside the role type — no colour, no row tint, no hover change.
+   Opened, it goes and the Applied button carries the status. */
+.rl-ap-tag{display:inline-flex;align-items:center;gap:4px;vertical-align:1px;padding:3px 8px;border:1.5px solid #1A1A2E;border-radius:6px;color:#1A1A2E;font-weight:800;font-size:11.5px;letter-spacing:.09em;line-height:1;text-transform:uppercase;white-space:nowrap;}
+.rl-kind .rl-ap-tag{margin-left:10px;}
 /* Type is set for readability first — a working actor reads these on a phone in
    bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
    far past the 4.5:1 AA floor. The meta sits at weight 500 rather than 600 —
@@ -14254,8 +14254,8 @@ Free submission used
                 onClick:toggle,
                 onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();}}}:{})}>
               <div style={{minWidth:0}}>
-                {r.type&&<div className="rl-kind">{r.type}</div>}
-                <div className="rl-nm">{r.name}{appliedClosed&&<span className="rl-ap-chip">✓ Applied</span>}</div>
+                {(r.type||appliedClosed)&&<div className="rl-kind">{r.type}{appliedClosed&&<span className="rl-ap-tag">✓ Submitted</span>}</div>}
+                <div className="rl-nm">{r.name}</div>
                 <div className="rl-mt">
                   {facets.map((f,fi)=>(<React.Fragment key={fi}>
                     {fi>0&&<span className="sep">&middot;</span>}{f}
