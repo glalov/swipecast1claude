@@ -1915,6 +1915,10 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
 .site-footer-brand .logo .logo-i{background:#fff;color:#1B1C20;}
+/* Footer logo = the nav logo, inverted (owner 2026-10-22): same 38px mark with 9px
+   corners (40px at 900px and below, like the nav) — it was the 30px/7px base size. */
+.site-footer-brand .logo .logo-i{width:38px;height:38px;border-radius:9px;}
+@media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#9A9BA5;font-size:12.5px;line-height:1.65;margin-top:14px;max-width:280px;}
 .site-footer-heading{font-family:'DM Sans',sans-serif;color:#fff;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
 .site-footer-link{display:block;color:#9A9BA5;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease,transform .18s ease;font-family:'DM Sans',sans-serif;}
