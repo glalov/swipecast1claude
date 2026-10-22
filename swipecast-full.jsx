@@ -56141,7 +56141,10 @@ function App(){
     if(myProfile.banned||myProfile.suspended)return false;
     if(myProfile.account_status&&myProfile.account_status!=="active")return false;
     if(gmAppCount==null)return false;
-    return gmBasicsMissing||gmAppCount===0;
+    // Beginners only (owner 2026-10-21): an actor who has applied already knows
+    // what to do, so missing basics alone no longer brings the popup back — it rose
+    // right after a submission. gmAppCount goes up on sc:applied, so it stops at once.
+    return gmAppCount===0;
   })();
   useEffect(()=>{
     if(gmOpen||gmOff||gmDone||gmAwait||!gmWanted||!gmAllowedHere||showHeadshotStep||gmSkippedToday)return;
