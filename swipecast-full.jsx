@@ -14565,7 +14565,7 @@ Free submission used
               {myPhotos.length===0?
                 <div style={{background:"rgba(232,144,42,0.07)",border:"1px solid rgba(232,144,42,0.35)",borderRadius:10,padding:16,textAlign:"center"}}>
                   <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.55,marginBottom:12}}>A headshot is required to apply — it's the first thing the casting director sees. Add one to your profile, then come back to submit.</div>
-                  <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>leaveApplyFor("my-profile")}>Add a headshot</button>
+                  <button className="btn-p btn-sm" style={{fontSize:12}} onClick={()=>{try{window.dispatchEvent(new CustomEvent("sc:add-headshot"));}catch(_){}}}>Add a headshot</button>
                 </div>:
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8}}>
                   {myPhotos.map((u,pi)=>
@@ -54842,6 +54842,11 @@ function App(){
   // Session-scoped state + a per-day localStorage key, mirroring how the
   // once-a-day pricing screen remembers itself.
   const [headshotStepOff,setHeadshotStepOff]=useState(false);
+  // The same headshot step, opened on demand by the apply form's "Add a headshot"
+  // (owner 2026-10-21) instead of sending the actor to the profile editor. Saving
+  // only stores the photo and closes; the form picks it up through myProfile.
+  const [formHeadshot,setFormHeadshot]=useState(false);
+  useEffect(()=>{const h=()=>setFormHeadshot(true);window.addEventListener("sc:add-headshot",h);return()=>window.removeEventListener("sc:add-headshot",h);},[]);
   // Set when user returns from Persona/Didit after completing verification
   const [verificationReturn,setVerificationReturn]=useState(false);
   // Mobile debug panel tick — forces re-render so the panel reflects live window.__SC_DBG
@@ -56457,6 +56462,13 @@ function App(){
         onSaved={photoSaved}
         onSkip={dismissHeadshotStep}
         leaving={hsLeaving}
+      />}
+      {formHeadshot&&!showHeadshotStep&&<HeadshotStep
+        session={session}
+        displayName={myProfile?.display_name}
+        onSaved={(url)=>{setFormHeadshot(false);if(url)setMyProfile(p=>p?{...p,headshot_url:url}:p);setTimeout(()=>loadProfile(session?.user?.id),450);}}
+        onSkip={()=>setFormHeadshot(false)}
+        leaving={false}
       />}
       {(gmOpen||gmDone)&&(!showHeadshotStep||hsLeaving)&&<GetMatchedFlow
         key={gmDone?"done":"flow"}
