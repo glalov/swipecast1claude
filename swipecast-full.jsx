@@ -2419,6 +2419,15 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tm-feat .tm-r{color:#D3CEE0;}
 .tm-feat .tm-av{border-color:transparent;}
 .tm-feat .tm-av:after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(240,184,96,.9);pointer-events:none;}
+/* Editorial testimonials (layout C, owner 2026-10-21) */
+.tm-ed{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:stretch;}
+.card.tm-card.tm-big{padding:clamp(28px,3vw,42px);}
+.tm-big .tm-q{font-size:clamp(21px,2.1vw,28px);line-height:1.4;}
+.tm-tag{display:inline-block;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal-dk);margin-bottom:18px;}
+.tm-stack{display:flex;flex-direction:column;justify-content:center;gap:26px;min-width:0;}
+.tm-small{margin:0;border-left:3px solid var(--bdr);padding:4px 0 4px 22px;min-width:0;}
+.tm-small .tm-q{font-size:17px;}
+.tm-small .tm-who{margin-top:16px;padding-top:0;border-top:0;}
 .landing-hero-desc{color:var(--t1);font-size:17.5px;line-height:1.6;font-weight:500;max-width:520px;margin-bottom:26px;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
@@ -27308,22 +27317,31 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <section style={{padding:"60px 40px 40px",maxWidth:1200,margin:"0 auto"}}>
       <div className="section-label">What people are saying</div>
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
-      <div className="landing-testimonials" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20}}>
-        {[
+      {/* Layout "C · Editorial" (owner 2026-10-21): the casting director leads as a large
+          quote; the two actor quotes sit beside it as quieter notes. No spotlight card and
+          no highlighter marks — it read as a sales pitch. Same quotes and photos as before. */}
+      {(()=>{const T=[
           {q:["At a networking night at Ripley Grier, I handed an agent my CastSlate QR card instead of a resume. He scanned my reel on the spot — and ","I had a callback the same day.",""],n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=320&q=80",imgPos:"center 20%",crop:[150,-21.25,-43]},
           {q:["I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly ","saved me hours.",""],n:"Jordan Blake",r:"Casting Director · Commercials",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=320&q=80",imgPos:"center 15%",crop:[150,-18,0]},
           {q:["I like that I can ","submit without feeling pushed into an upgrade."," The casting details are clear and the process feels straightforward."],n:"Ethan Cole",r:"Actor · LA · Non-Union",img:"https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=320&q=80",imgPos:"center 10%",crop:[120,-20,-10]}
-        ].map((t,i)=>
-          <figure key={i} className={"card tm-card"+(i===0?" tm-feat":"")}>
-            <div className="tm-qm" aria-hidden="true">“</div>
-            <blockquote className="tm-q">{t.q[0]}<mark className="tm-mark">{t.q[1]}</mark>{t.q[2]}</blockquote>
-            <figcaption className="tm-who">
-              <span className="tm-av"><img src={t.img} alt={t.n} style={{width:t.crop[0]+"%",left:t.crop[1]+"%",top:t.crop[2]+"%"}}/></span>
-              <div><div className="tm-n">{t.n}</div><div className="tm-r">{t.r}</div></div>
-            </figcaption>
+        ];
+        const who=(t)=>(<figcaption className="tm-who">
+          <span className="tm-av"><img src={t.img} alt={t.n} style={{width:t.crop[0]+"%",left:t.crop[1]+"%",top:t.crop[2]+"%"}}/></span>
+          <div><div className="tm-n">{t.n}</div><div className="tm-r">{t.r}</div></div>
+        </figcaption>);
+        return(<div className="tm-ed landing-testimonials">
+          <figure className="card tm-card tm-big">
+            <span className="tm-tag">From a casting director</span>
+            <blockquote className="tm-q">“{T[1].q.join("")}”</blockquote>
+            {who(T[1])}
           </figure>
-        )}
-      </div>
+          <div className="tm-stack">
+            {[T[0],T[2]].map((t,i)=>(<figure key={i} className="tm-small">
+              <blockquote className="tm-q">“{t.q.join("")}”</blockquote>
+              {who(t)}
+            </figure>))}
+          </div>
+        </div>);})()}
     </section>
 
     {/* ───────── Home CTA card (warm teal block; full plans live on /pricing) ───────── */}
