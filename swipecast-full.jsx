@@ -13537,6 +13537,13 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
   },[autoApplyRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
   // Back from the plans page (or an upgrade): reopen the form they left, note intact.
   const resumedRef=useRef(!!initResume);
+  // Tells App a casting is on screen — as its own page OR as the Browse side sheet —
+  // so the get-matched popup never opens over it (owner 2026-10-21: it rose over an
+  // apply form opened from Browse right after the actor added a headshot).
+  useEffect(()=>{
+    try{window.dispatchEvent(new CustomEvent("sc:casting-view",{detail:1}));}catch(_){}
+    return()=>{try{window.dispatchEvent(new CustomEvent("sc:casting-view",{detail:-1}));}catch(_){}};
+  },[]);
   useEffect(()=>{
     if(resumedRef.current||autoApplyRole||!isLoggedIn||!casting)return;
     if(isDbCasting&&!rolesReady)return;
@@ -54849,6 +54856,9 @@ function App(){
   // (owner 2026-10-21) instead of sending the actor to the profile editor. Saving
   // only stores the photo and closes; the form picks it up through myProfile.
   const [formHeadshot,setFormHeadshot]=useState(false);
+  // How many castings are on screen (page or Browse sheet) — see sc:casting-view.
+  const [castingViews,setCastingViews]=useState(0);
+  useEffect(()=>{const h=(e)=>setCastingViews(n=>Math.max(0,n+((e&&e.detail)||0)));window.addEventListener("sc:casting-view",h);return()=>window.removeEventListener("sc:casting-view",h);},[]);
   useEffect(()=>{const h=()=>setFormHeadshot(true);window.addEventListener("sc:add-headshot",h);return()=>window.removeEventListener("sc:add-headshot",h);},[]);
   // Set when user returns from Persona/Didit after completing verification
   const [verificationReturn,setVerificationReturn]=useState(false);
@@ -56123,7 +56133,7 @@ function App(){
   const gmBasicsMissing=!gmBasicsDone(myProfile);
   const gmIsPremium=myProfile?.membership_status==="active";
   const gmCanMatch=gmAppCount===0||(gmIsPremium&&gmAppCount!=null);
-  const gmAllowedHere=headshotStepAllowedHere&&!["auth-gate","casting-gate","casting-detail","my-profile","membership","pricing","terms","privacy","unsubscribed","reset-password"].includes(page);
+  const gmAllowedHere=headshotStepAllowedHere&&castingViews===0&&!["auth-gate","casting-gate","casting-detail","my-profile","membership","pricing","terms","privacy","unsubscribed","reset-password"].includes(page);
   const gmSkippedToday=(()=>{try{return !!session?.user?.id&&localStorage.getItem("sc_gm_skip_"+session.user.id)===headshotStepDayKey;}catch(_){return false;}})();
   const gmWanted=(()=>{
     if(!authReady||!session?.user?.id||!myProfile||myProfile.id!==session.user.id)return false;
