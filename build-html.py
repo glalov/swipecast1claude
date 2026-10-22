@@ -3,6 +3,14 @@ import re, datetime, subprocess, os, sys, tempfile, shutil, time
 BUILD_VERSION = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
 JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Helpers/jsc"
 BABEL_CACHE = os.path.expanduser("~/.castslate_babel_standalone.js")
+# Self-hosted @font-face rules for DM Sans + Source Serif 4 (2026-10-21). Their
+# latin files are preloaded in the head so they download alongside app.js instead
+# of after React mounts (~19s on a slow connection, which made headings change
+# shape late). Same files/axes Google served — no visual change. Other subsets in
+# this CSS still point at fonts.gstatic.com and only load if those characters appear.
+SELF_FONTS_CSS = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor/fonts/fonts.css"), encoding="utf-8").read().strip()
+SELF_FONT_PRELOADS = ["/vendor/fonts/dmsans-latin-206ef647.woff2", "/vendor/fonts/serif-latin-0d04bb72.woff2"]
+SELF_FONT_PRELOAD_TAGS = "\n".join(f'  <link rel="preload" as="font" type="font/woff2" href="{u}" crossorigin/>' for u in SELF_FONT_PRELOADS)
 
 # ── Download Babel standalone if not cached ──────────────────────────────────
 def ensure_babel():
@@ -340,10 +348,13 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
        app CSS @imports these same URLs, which are already cached by then. -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <!-- DM Sans + Source Serif 4 are self-hosted and preloaded (see SELF_FONTS_CSS). -->
+{SELF_FONT_PRELOAD_TAGS}
+  <style id="cs-self-fonts">{SELF_FONTS_CSS}</style>
   <!-- One request, not four. Google Fonts serves every family from a single
        css2 call, and on a phone hotspot each separate stylesheet was its own
        round trip before any text could paint. -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;family=Poppins:wght@500;600;700;800&amp;family=Source+Serif+4:opsz,wght@8..60,600;8..60,700;8..60,900&amp;family=Roboto:wght@400;500;600&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@1,9..40,400&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;family=Poppins:wght@500;600;700;800&amp;family=Roboto:wght@400;500;600&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'"/>
   <!-- Tabler line-icon webfont (replaces emoji UI icons). Loaded async so a
        slow CDN can never block the first paint — the intro must start
        instantly; icons are only consumed after React mounts anyway. -->
