@@ -5096,7 +5096,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .cf-foot{border-top:1px solid var(--bdr);background:#FBF8F1;padding:14px 40px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 .cf-link{background:none;border:0;font:inherit;font-size:13.5px;font-weight:700;color:var(--teal-dk);cursor:pointer;padding:0;}
 .cf-link.muted{color:var(--t3);}
-@media(max-width:600px){.cf-top,.cf-act{padding-left:20px;padding-right:20px;}.cf-foot{padding:14px 20px;}.cf-stub{margin:0 14px;}.cf-card h2{font-size:24px;}.cf-bar{margin:0 6px;}.cf-steps{font-size:11.5px;}.cf-row .cf-btn{width:100%;}}
+@media(max-width:600px){.cf-card{margin:24px 0 40px;}.cf-top,.cf-act{padding-left:18px;padding-right:18px;}.cf-foot{padding:14px 18px;}.cf-stub{margin:0 14px;}.cf-card h2{font-size:24px;}.cf-steps{font-size:11px;}.cf-st{gap:5px;}.cf-st i{width:20px;height:20px;font-size:11px;}.cf-bar{flex:1 1 12px;width:auto;min-width:10px;max-width:30px;margin:0 5px;}.cf-row,.cf-row .cf-btn{width:100%;}}
 /* Type is set for readability first — a working actor reads these on a phone in
    bad light. The description is 15.6:1 on white and the meta line 10.3:1, both
    far past the 4.5:1 AA floor. The meta sits at weight 500 rather than 600 —
