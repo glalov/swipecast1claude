@@ -23363,7 +23363,9 @@ function CompanyStep({uid,displayName,initialRole,onSaved,onCancel}){
   </div>);
 }
 
-function HeadshotStep({session,displayName,onSaved,onSkip,leaving}){
+// forApply: opened from the apply form's "Add a headshot" — applying wording, not the
+// sign-up "Last step / You're in" copy (owner 2026-10-21).
+function HeadshotStep({session,displayName,onSaved,onSkip,leaving,forApply=false}){
   const [pick,setPick]=useState(null);   // File|Blob passed to ImageCropModal
   const [cam,setCam]=useState(false);
   const [busy,setBusy]=useState(false);
@@ -23416,12 +23418,13 @@ function HeadshotStep({session,displayName,onSaved,onSkip,leaving}){
         a lower z-index, so leaving this mounted would bury it. */}
     {<div className={"modal-overlay gm-ov"+(pick?" gm-clear":"")} style={{zIndex:400,padding:16,overflowY:"auto",alignItems:"flex-start"}}>
       <div className={"modal"+(leaving?" gm-s-out":"")} style={{maxWidth:430,padding:"28px 26px",margin:"auto",textAlign:"center",visibility:pick?"hidden":"visible"}}>
-        <div style={{fontSize:10.5,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--amber-dk)",marginBottom:10}}>Last step</div>
+        <div style={{fontSize:10.5,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--amber-dk)",marginBottom:10}}>{forApply?"Needed to apply":"Last step"}</div>
         <h2 style={{fontSize:23,fontWeight:800,letterSpacing:-.8,margin:"0 0 8px"}}>
           {first?`Add your headshot, ${first}`:"Add your headshot"}
         </h2>
         <p style={{color:"var(--t2)",fontSize:13.5,lineHeight:1.55,margin:"0 0 18px"}}>
-          You're in. One photo and casting directors can start reviewing you — a clear phone photo is genuinely fine.
+          {forApply?"Your headshot is what the casting director sees first. Add one and you'll be right back to your submission — a clear phone photo is genuinely fine."
+            :"You're in. One photo and casting directors can start reviewing you — a clear phone photo is genuinely fine."}
         </p>
 
         {err&&<div style={{background:"rgba(214,59,59,0.09)",border:"1px solid rgba(214,59,59,0.3)",color:"#B03030",padding:"10px 13px",borderRadius:9,fontSize:12.5,lineHeight:1.5,marginBottom:14,textAlign:"left"}}>{err}</div>}
@@ -56469,6 +56472,7 @@ function App(){
         onSaved={(url)=>{setFormHeadshot(false);if(url)setMyProfile(p=>p?{...p,headshot_url:url}:p);setTimeout(()=>loadProfile(session?.user?.id),450);}}
         onSkip={()=>setFormHeadshot(false)}
         leaving={false}
+        forApply
       />}
       {(gmOpen||gmDone)&&(!showHeadshotStep||hsLeaving)&&<GetMatchedFlow
         key={gmDone?"done":"flow"}
