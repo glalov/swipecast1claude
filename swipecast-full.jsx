@@ -4223,7 +4223,7 @@ body.fbsp-open #castoria-root{display:none!important;}
     -webkit-mask-composite:source-in;
     mask-image:linear-gradient(180deg,transparent 0%,#000 30%),linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent 100%);
     mask-composite:intersect;}
-  .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take.webp);}
+  .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-v2.webp);}
 }
 /* PREVIEW ONLY (2026-10-23): ?footerart=wide shows the owner the wider fit before it ships.
    The panel may grow up to 1.35x past "contain", top-anchored, so it fills the width on
