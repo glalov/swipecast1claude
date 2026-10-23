@@ -442,7 +442,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
       will-change:transform;
     }}
-    #cs-intro.cs-go #cs-intro-bg{{-webkit-animation:cs-bg-down 1.6s cubic-bezier(.45,0,.55,1) forwards;animation:cs-bg-down 1.6s cubic-bezier(.45,0,.55,1) forwards;}}
+    #cs-intro.cs-go #cs-intro-bg{{-webkit-animation:cs-bg-down 1.6s ease forwards;animation:cs-bg-down 1.6s ease forwards;}}
     /* Counter-moving holder: it rises at the exact speed the curtain (#cs-intro-bg)
        falls, so the logo stays perfectly still on screen while the curtain's
        overflow:hidden edge cuts down through it. Logo never travels with the curtain. */
@@ -451,7 +451,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
       will-change:transform;
     }}
-    #cs-intro.cs-go .cs-intro-hold{{-webkit-animation:cs-mark-up 1.6s cubic-bezier(.45,0,.55,1) forwards;animation:cs-mark-up 1.6s cubic-bezier(.45,0,.55,1) forwards;}}
+    #cs-intro.cs-go .cs-intro-hold{{-webkit-animation:cs-mark-up 1.6s ease forwards;animation:cs-mark-up 1.6s ease forwards;}}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(28px) scale(.965);transform:translateY(28px) scale(.965);
@@ -666,8 +666,8 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
          220ms in and runs 550ms. Was 2260 with a 400ms hairline (it ended inside
          the turn and cost nothing), 1940 when the effect was a 380ms flash, and
          1450 before that with no beat at all.
-         2026-10-22: owner chose 1900 + a slow, even 1.6s fall (WME-style
-         curtain, tuned in castslate-curtain-speed-demo.html). The beat after
+         2026-10-22: owner chose 1900 + a slow 1.6s fall on WME's own `ease`
+         curve (tuned in castslate-curtain-speed-demo.html). The beat after
          the hairline is now ~100ms; the slower fall carries the moment. */
       var t0=Date.now(),MIN=1900,CAP=15000,gone=false,goAt=0;
       function appReady(){{
