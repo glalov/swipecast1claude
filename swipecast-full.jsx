@@ -2257,6 +2257,10 @@ const css = `
 html.animtest-pyramid .b2t-cube .pyramid{animation:none!important;}
 html.animtest-logo .nav .logo-i{animation:none!important;}
 html.animtest-marquee .mq-track,html.animtest-marquee .mq-go{animation:none!important;}
+html.animtest-all *,html.animtest-all *::before,html.animtest-all *::after{animation:none!important;transition:none!important;}
+html.animtest-cube .b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}
+html.animtest-cube .b2t-cube.show{opacity:1!important;}
+html.animtest-cube .b2t-cube .mark,html.animtest-cube .b2t-cube .pyramid{animation:none!important;}
 :root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#3A322A;--t3:#433B32;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2A8472;--teal-dk:#206557;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#0E0C0B;}
 *{box-sizing:border-box;}
