@@ -4226,7 +4226,7 @@ body.fbsp-open #castoria-root{display:none!important;}
    any vertical trim comes 12% from the top / 88% from the bottom so the CUT! bubble stays. */
 @media(min-width:901px){
   html.fa-wide2 .site-footer-art-img{inset:0;width:auto;aspect-ratio:auto;transform:none;background-size:cover;background-position:center 12%;}
-  html.fa-wide2 .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-21x9.webp);}
+  html.fa-wide2 .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-21x9-v2.webp);}
 }
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
