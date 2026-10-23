@@ -2252,7 +2252,7 @@ const BLOG_POSTS = [
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#3A322A;--t3:#433B32;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2A8472;--teal-dk:#206557;--amber:#E8902A;--amber-dk:#C8761B;}
-html,body{min-height:100vh;background:#1B1C20;}
+html,body{min-height:100vh;background:#0E0C0B;}
 *{box-sizing:border-box;}
 html{width:100%;max-width:100%;}
 body{color:var(--t1);font-family:'DM Sans',sans-serif;overflow-x:hidden;width:100%;max-width:100%;margin:0;display:flex;flex-direction:column;}
@@ -3369,7 +3369,7 @@ body.sheet-push .b2t-cube{display:none;}
   /* Pricing cards → single column */
   .pricing-cards-grid{grid-template-columns:1fr !important;transform:none !important;max-width:420px !important;margin-left:auto !important;margin-right:auto !important;}
   /* Footer safe-area: dark bg fills iPhone bottom safe zone, no white stripe */
-  html{background:#1B1C20 !important;}
+  html{background:#0E0C0B !important;}
   .site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom)) !important;}
   /* Tablet/mobile: lighter but still comfortable gap above the footer */
   .site-footer-spacer{min-height:32px;}
@@ -4022,7 +4022,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
   position:relative;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;
-  background:#26272D;color:#C2C2CC;
+  background:#26211D;color:#C9BDAF;
   border:none;border-top:1px solid rgba(255,255,255,0.05);
   padding:15px 16px;
   font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;
@@ -4030,9 +4030,9 @@ body.fbsp-open #castoria-root{display:none!important;}
   /* Same seam guard: this bar sits directly on top of the dark footer, so a
      sub-pixel gap between the two shows cream. Paint one pixel of the bar's own
      colour underneath it. */
-  box-shadow:0 1px 0 0 #26272D;
+  box-shadow:0 1px 0 0 #26211D;
 }
-.site-backtotop:hover{background:#2F3037;color:#fff;}
+.site-backtotop:hover{background:#302A25;color:#fff;}
 .site-backtotop-arrow{display:inline-block;font-size:13px;transition:transform .2s ease;}
 .site-backtotop:hover .site-backtotop-arrow{transform:translateY(-2px);}
 /* Breathing room between page content (e.g. pagination) and the Back-to-top bar. */
@@ -4154,7 +4154,7 @@ body.fbsp-open #castoria-root{display:none!important;}
        with .app + .page being flex columns with min-height:100vh, the footer
        always sticks to the very bottom of the viewport even on short pages. ─── */
 .site-footer{
-  background:#1B1C20;color:#A8A8B3;
+  background:#141110;color:#B5ADA3;
   border-top:1px solid rgba(255,255,255,0.06);
   position:relative;
   width:100vw;
@@ -4175,7 +4175,7 @@ body.fbsp-open #castoria-root{display:none!important;}
      The -1px half guards the seam ABOVE the footer, where the final CTA (dark)
      meets it. On light pages that pixel just reads as the footer's own top
      edge; on dark ones it closes the gap the cream was blinking through. */
-  box-shadow:0 1px 0 0 #1B1C20, 0 -1px 0 0 #1B1C20;
+  box-shadow:0 1px 0 0 #0E0C0B, 0 -1px 0 0 #141110;
   flex-shrink:0;
   /* Slow-wifi / Windows pass (2026-10-08): the light top hairline read as a
      pale line on bright laptop screens (it is lighter than both the Manager
@@ -4186,18 +4186,18 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* 3px dark apron above the footer. Windows laptops run at 125%/150% scaling,
    where the 1px shadow above becomes 1.25-1.5 device px and a cream row could
    still round through mid-scroll. No rounding at any scale reaches 3px. */
-.site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#1B1C20;pointer-events:none;}
+.site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#141110;pointer-events:none;}
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
-.site-footer-brand .logo .logo-i{background:#fff;color:#1B1C20;}
+.site-footer-brand .logo .logo-i{background:#fff;color:#141110;}
 /* Footer logo = the nav logo, inverted (owner 2026-10-22): same 38px mark with 9px
    corners (40px at 900px and below, like the nav) — it was the 30px/7px base size. */
 .site-footer-brand .logo .logo-i{width:38px;height:38px;border-radius:9px;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
-.site-footer-blurb{color:#9A9BA5;font-size:12.5px;line-height:1.65;margin-top:14px;max-width:280px;}
-.site-footer-heading{font-family:'DM Sans',sans-serif;color:#fff;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
-.site-footer-link{display:block;color:#9A9BA5;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease,transform .18s ease;font-family:'DM Sans',sans-serif;}
+.site-footer-blurb{color:#B5ADA3;font-size:12.5px;line-height:1.65;margin-top:14px;max-width:280px;}
+.site-footer-heading{font-family:'DM Sans',sans-serif;color:#F3EBE0;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
+.site-footer-link{display:block;color:#B5ADA3;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease,transform .18s ease;font-family:'DM Sans',sans-serif;}
 .site-footer-link:hover{color:#fff;transform:translateX(2px);}
 a.site-footer-link{text-decoration:none;}
 .nyc-guide{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--bdr);min-width:0;}
@@ -4218,9 +4218,14 @@ a.site-footer-link{text-decoration:none;}
 .nyc-crosslink a:hover{text-decoration:underline;text-underline-offset:3px;}
 .site-footer-social-row{display:flex;gap:14px;align-items:center;justify-content:center;padding:18px 0 22px;border-top:none;margin-top:0;}
 .site-footer.has-b2t .site-footer-social-row{margin-top:96px;}
-.site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#9A9BA5;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
+.site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#B5ADA3;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.16);transform:translateY(-2px);}
-.site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;flex-wrap:wrap;font-size:12px;color:#6F7078;}
+.site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;flex-wrap:wrap;font-size:12px;color:#857B71;}
+/* Warm near-black footer (owner 2026-10-23, demo option 1): the copyright strip sits one
+   step deeper than the link area. The spread shadow paints it edge to edge and down
+   through the safe-area padding; clip-path keeps it from rising above the divider line.
+   html,body share this colour so overscroll below the footer matches. */
+.site-footer-bottom{box-shadow:0 0 0 100vmax #0E0C0B;clip-path:inset(0 -100vmax -100vmax);background:#0E0C0B;}
 .site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-left:0;}
 .site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
