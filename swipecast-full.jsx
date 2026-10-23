@@ -2249,8 +2249,14 @@ const BLOG_POSTS = [
 // ═══════════════════════════════════════════
 // STYLES
 // ═══════════════════════════════════════════
+// TEMPORARY (2026-10-23): Safari footer-stutter hunt. ?animtest=pyramid|logo|marquee (comma list)
+// stops just that one looping animation so the owner can find the culprit. Remove after.
+try{const m=(location.search.match(/[?&]animtest=([a-z,]+)/)||[])[1];if(m)m.split(',').forEach(k=>document.documentElement.classList.add('animtest-'+k));}catch(_){}
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
+html.animtest-pyramid .b2t-cube .pyramid{animation:none!important;}
+html.animtest-logo .nav .logo-i{animation:none!important;}
+html.animtest-marquee .mq-track,html.animtest-marquee .mq-go{animation:none!important;}
 :root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#3A322A;--t3:#433B32;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2A8472;--teal-dk:#206557;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#0E0C0B;}
 *{box-sizing:border-box;}
