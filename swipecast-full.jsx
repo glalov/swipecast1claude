@@ -2258,6 +2258,8 @@ html.animtest-pyramid .b2t-cube .pyramid{animation:none!important;}
 html.animtest-logo .nav .logo-i{animation:none!important;}
 html.animtest-marquee .mq-track,html.animtest-marquee .mq-go{animation:none!important;}
 html.animtest-all *,html.animtest-all *::before,html.animtest-all *::after{animation:none!important;transition:none!important;}
+html.animtest-anims *,html.animtest-anims *::before,html.animtest-anims *::after{animation:none!important;}
+html.animtest-trans *,html.animtest-trans *::before,html.animtest-trans *::after{transition:none!important;}
 html.animtest-cube .b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}
 html.animtest-cube .b2t-cube.show{opacity:1!important;}
 html.animtest-cube .b2t-cube .mark,html.animtest-cube .b2t-cube .pyramid{animation:none!important;}
