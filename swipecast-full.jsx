@@ -4652,8 +4652,11 @@ a.mq-item:hover .mq-go{animation:none;transform:translateX(3px);}
   .fcs-mobile{display:flex;flex-direction:column;gap:5px;position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:2;max-width:62%;line-height:normal;}
   .fcs-mobile::before{content:"";position:absolute;inset:-22px -56px -22px -30px;z-index:-1;background:linear-gradient(90deg,rgba(8,8,10,0.72) 0%,rgba(8,8,10,0.4) 56%,rgba(8,8,10,0) 100%);}
   .fcs-m-label{font-size:9.5px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;color:#FFD79A;}
-  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:21px;line-height:1.03;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);}
-  .fcs-m-btn{align-self:flex-start;margin-top:6px;background:#F0B860;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;}
+  .fcs-m-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:20px;line-height:1.06;letter-spacing:-.2px;color:#fff;text-shadow:0 1px 7px rgba(0,0,0,0.6);}
+  .fcs-m-l1,.fcs-m-l2{display:block;}
+  .fcs-m-l2{color:#E9B95C;}
+  .fcs-full::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(8,7,6,.62) 0%,rgba(8,7,6,.32) 30%,rgba(8,7,6,0) 46%);}
+  .fcs-m-btn{align-self:flex-start;margin-top:9px;background:#F0B860;color:#231706;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:800;line-height:1;cursor:pointer;}
   .fcs-compact{padding:0 16px;gap:12px;}
   .fcs-compact-title{font-size:13px;}
   .fcs-compact-btn{padding:7px 13px;font-size:10.5px;}
@@ -6994,7 +6997,9 @@ function FeaturedClassBanner({onNavigate}){
       {/* Mobile: live, readable title + button over the cover-cropped photo. */}
       <div className="fcs-mobile">
         <span className="fcs-m-label">Casting Calls</span>
-        <span className="fcs-m-title">Find Roles. Get Seen.</span>
+        {/* Two lines (2026-10-22, owner-approved demo D): one line ran "Get Seen." across
+            the astronaut. Stacked it ends at ~119px, left of him at ~165-200px. */}
+        <span className="fcs-m-title"><span className="fcs-m-l1">Find Roles.</span><span className="fcs-m-l2">Get Seen.</span></span>
         <button type="button" className="fcs-m-btn" onClick={go}>Browse Castings <Tri/></button>
       </div>
       {introOn&&<BannerCodeIntro onDone={()=>setIntroOn(false)}/>}
