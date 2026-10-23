@@ -2252,7 +2252,7 @@ const BLOG_POSTS = [
 // TEMPORARY (2026-10-23): Safari footer-stutter hunt. ?animtest=pyramid|logo|marquee (comma list)
 // stops just that one looping animation so the owner can find the culprit. Remove after.
 try{const m=(location.search.match(/[?&]animtest=([a-z0-9,]+)/)||[])[1];if(m){m.split(',').forEach(k=>document.documentElement.classList.add('animtest-'+k));
-  const G={g1:['mm-breathe','sw-flip-travel','sw-flip-turn','sw-ring','sw-star-glow','sw-star-fill'],g2:['fmtSlide','scLiveRing','scLiveDot'],g3:['cs-card-float-a','cs-card-float-b','cs-card-float-c','cs-card-float-d'],g4:['adxpulse']};
+  const G={g1:['mm-breathe','sw-flip-travel','sw-flip-turn','sw-ring','sw-star-glow','sw-star-fill'],g2:['fmtSlide','scLiveRing','scLiveDot'],g3:['cs-card-float-a','cs-card-float-b','cs-card-float-c','cs-card-float-d'],g4:['adxpulse'],g5:['joinFreeSoftInvitation','joinFreeSoftHalo']};
   const names=new Set(m.split(',').flatMap(k=>G[k]||[]));
   if(names.size&&document.getAnimations)setInterval(()=>{try{document.getAnimations().forEach(x=>{if(names.has(x.animationName)&&x.playState==='running')x.pause();});}catch(_){}},400);}}catch(_){}
 const css = `
