@@ -4207,38 +4207,19 @@ body.fbsp-open #castoria-root{display:none!important;}
    still round through mid-scroll. No rounding at any scale reaches 3px. */
 .site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#0E0C0B;pointer-events:none;}
 .site-footer-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
-/* Comic panel behind the footer, DC-style (owner 2026-10-23: version A, desktop only, 12%).
-   The WHOLE panel is always shown (the film crew on the left and the "CUT!" bubble on the
-   right are the joke): the image box is "contain"-sized against the footer with container
-   query units, anchored to the bottom, and fades at its top and side edges into the dark.
-   background-size:cover cropped the sides on narrower/taller footers (owner report).
-   Warm tint is baked into the WebP. Still image only: nothing here may animate (Safari). */
+/* Comic panel behind the footer, DC-style (owner 2026-10-23: desktop only, 12%, edge to
+   edge with no fades). Sized like "cover" with container query units so it fills the whole
+   footer, anchored to the TOP so on wide/short footers the trimming comes off the bottom
+   ground strip and the "CUT!" bubble (top right) always stays. The image's printed comic
+   frame is cropped off in the v2 file; warm tint is baked in. Still image only: nothing
+   here may animate (Safari stutter). */
 .site-footer-art{display:none;}
 @media(min-width:901px){
   .site-footer-art{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;container-type:size;}
-  .site-footer-art-img{position:absolute;left:50%;bottom:0;transform:translateX(-50%);
-    width:min(100cqw,calc(100cqh * 16 / 9));aspect-ratio:16/9;opacity:.12;
-    background-repeat:no-repeat;background-size:100% 100%;
-    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 30%),linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent 100%);
-    -webkit-mask-composite:source-in;
-    mask-image:linear-gradient(180deg,transparent 0%,#000 30%),linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent 100%);
-    mask-composite:intersect;}
+  .site-footer-art-img{position:absolute;left:50%;top:0;transform:translateX(-50%);
+    width:max(100cqw,calc(100cqh * 16 / 9));aspect-ratio:16/9;opacity:.12;
+    background-repeat:no-repeat;background-size:100% 100%;}
   .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-v2.webp);}
-}
-/* PREVIEW ONLY (2026-10-23): ?footerart=wide shows the owner the wider fit before it ships.
-   The panel may grow up to 1.35x past "contain", top-anchored, so it fills the width on
-   normal desktop windows and only the bottom ground strip (max ~26%) is trimmed. */
-@media(min-width:901px){
-  html.fa-wide .site-footer-art-img{width:min(100cqw,calc(100cqh * 16 / 9 * 1.35));top:0;bottom:auto;
-    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 14%),linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);
-    mask-image:linear-gradient(180deg,transparent 0%,#000 14%),linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);}
-}
-/* PREVIEW ONLY: ?footerart=full is edge to edge with no fades. Sized like "cover"
-   (fills the whole footer), anchored to the top so any trimming comes off the bottom
-   ground strip; on narrow windows the sides trim instead. */
-@media(min-width:901px){
-  html.fa-full .site-footer-art-img{width:max(100cqw,calc(100cqh * 16 / 9));top:0;bottom:auto;
-    -webkit-mask-image:none;mask-image:none;}
 }
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
@@ -8018,8 +7999,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // the top of the page; on phones the layer is display:none and never intersects, so it
   // is never downloaded at all.
   const artRef=React.useRef(null);
-  // PREVIEW ONLY: ?footerart=wide (see the html.fa-wide CSS). Remove once decided.
-  try{const m=location.search.match(/[?&]footerart=(wide|full)/);if(m)document.documentElement.classList.add('fa-'+m[1]);}catch(_){}
   React.useEffect(()=>{
     const el=artRef.current;if(!el)return;
     if(!('IntersectionObserver' in window)){el.classList.add('on');return;}
