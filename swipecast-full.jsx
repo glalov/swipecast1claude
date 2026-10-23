@@ -98,7 +98,7 @@ const TRANSLATIONS = {
     'footer.managerMode':'Manager Mode',
     'footer.forStudios':'For Studios','footer.apiAccess':'API Access',
     'footer.about':'About','footer.blog':'Blog','footer.careers':'Careers','footer.contact':'Contact',
-    'footer.faq':'FAQ','footer.helpCenter':'Help Center','footer.terms':'Terms of Use',
+    'footer.faq':'FAQ','footer.helpCenter':'Help Center','footer.terms':'Terms of Service',
     'footer.privacy':'Privacy Policy','footer.accessibility':'Accessibility',
     'footer.copyright':'© {year} CastSlate. All rights reserved. Casting, finally built for actors.',
     'footer.privacyLink':'Privacy','footer.termsLink':'Terms','footer.contactLink':'Contact',
@@ -2400,6 +2400,31 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .page.page-browse{max-width:1160px;}
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
+/* Legal hero (Terms + Privacy, 2026-10-22): full-bleed film still, title low so it never sits on a face. */
+.lgl-hero{position:relative;flex:0 0 auto;width:100%;height:clamp(300px,52vw,max(560px,36vw));overflow:hidden;background:#0B0A09;}
+.lgl-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 50%;opacity:0;transform:scale(1.04);animation:lglIn 1.6s cubic-bezier(.2,.7,.2,1) forwards;}
+.lgl-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,.16) 0%,rgba(10,9,8,.14) 45%,rgba(10,9,8,.80) 100%);}
+.lgl-hero-in{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 24px clamp(28px,3.5vw,48px);text-align:center;}
+.lgl-kick{font-family:'DM Sans',sans-serif;font-weight:600;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.78);margin-bottom:14px;opacity:0;animation:lglUp .9s .35s ease-out forwards;}
+.lgl-hero h1{margin:0;font-family:'Poppins',sans-serif;font-weight:700;font-size:clamp(40px,6.2vw,80px);line-height:1.02;letter-spacing:-.01em;color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.45);opacity:0;animation:lglUp .9s .5s ease-out forwards;}
+@keyframes lglIn{to{opacity:1;transform:scale(1);}}
+@keyframes lglUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.lgl-hero img,.lgl-kick,.lgl-hero h1{animation:none;opacity:1;transform:none;}}
+.page.lgl-page{max-width:1000px;padding-top:72px;}
+.lgl-date{font-family:'DM Sans',sans-serif;font-size:19px;color:var(--t3);margin:0 0 56px;}
+.lgl-caps{font-family:'DM Sans',sans-serif;font-size:18px;line-height:1.75;text-transform:uppercase;letter-spacing:.035em;color:var(--t2);margin:0 0 30px;}
+.lgl-doc h2{font-family:'Poppins',sans-serif;font-weight:600;font-size:24px;line-height:1.3;color:var(--t1);margin:48px 0 16px;}
+.lgl-doc h3{font-family:'Poppins',sans-serif;font-weight:600;font-size:19px;line-height:1.35;color:var(--t1);margin:32px 0 12px;}
+.lgl-doc p,.lgl-doc li{font-family:'DM Sans',sans-serif;font-size:17px;line-height:1.85;color:var(--t2);}
+.lgl-doc p{margin:0 0 20px;}
+.lgl-doc strong{color:var(--t1);font-weight:600;}
+@media (max-width:700px){
+  .page.lgl-page{padding-top:44px;}
+  .lgl-date{font-size:16px;margin-bottom:36px;}
+  .lgl-caps,.lgl-doc p,.lgl-doc li{font-size:16px;}
+  .lgl-doc h2{font-size:20px;}
+  .lgl-doc h3{font-size:17px;}
+}
 .card.tm-card{margin:0;padding:clamp(24px,2.4vw,32px);display:flex;flex-direction:column;min-width:0;border-radius:20px;}
 .tm-qm{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:72px;line-height:.62;color:var(--teal);height:34px;margin:0 0 10px;}
 .tm-q{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:500;font-size:clamp(16.5px,1.45vw,19px);line-height:1.55;letter-spacing:-.1px;color:var(--t1);flex:1;text-wrap:pretty;}
@@ -12060,6 +12085,19 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
 // ═══════════════════════════════════════════
 // PAGE: TERMS OF SERVICE
 // ═══════════════════════════════════════════
+const LEGAL_HEROES={
+  terms:{title:"Terms of Service",src:"/assets/legal/terms-hero-1200.jpg",srcSet:"/assets/legal/terms-hero-1200.jpg 1200w, /assets/legal/terms-hero-2400.jpg 2400w",
+    intro:"Please read these Terms of Service (\u201cTerms\u201d) carefully before using CastSlate, as they affect your legal rights and obligations. If you do not agree to be bound by all of these Terms, do not use the site."},
+  privacy:{title:"Privacy Policy",src:"/assets/legal/privacy-hero-1200.jpg",srcSet:"/assets/legal/privacy-hero-1200.jpg 1200w, /assets/legal/privacy-hero-1920.jpg 1920w",
+    intro:"Your privacy matters to us. This Privacy Policy explains what personal information CastSlate collects, why we collect it, how it is protected, and the choices and rights available to you."},
+};
+function LegalHero({kind}){
+  const h=LEGAL_HEROES[kind];
+  return(<header className="lgl-hero">
+    <img src={h.src} srcSet={h.srcSet} sizes="100vw" alt="" fetchpriority="high" decoding="async"/>
+    <div className="lgl-hero-in"><div className="lgl-kick">Legal</div><h1>{h.title}</h1></div>
+  </header>);
+}
 function TermsPage({onNavigate}){
   const [dbPage,setDbPage]=useState(null);
   const [loadErr,setLoadErr]=useState(false);
@@ -12074,23 +12112,20 @@ function TermsPage({onNavigate}){
   },[]);
   const S=({n,t,children})=><section style={{marginBottom:32}}><h3 style={{fontSize:18,fontWeight:700,marginBottom:10,color:"var(--t1)"}}>{n}. {t}</h3><div style={{color:"var(--t2)",fontSize:14,lineHeight:1.75}}>{children}</div></section>;
   const fmtDate=(iso)=>{try{return new Date(iso).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}catch(_){return iso;}};
-  if(dbPage===null&&!loadErr)return(<div className="page" style={{maxWidth:860}}><CastSlateLoader size="inline" text="Loading…"/></div>);
+  if(dbPage===null&&!loadErr)return(<><LegalHero kind="terms"/><div className="page lgl-page"><CastSlateLoader size="inline" text="Loading…"/></div></>);
   if(dbPage){
-    return(<div className="page" style={{maxWidth:860}}>
-      <div className="section-label">Legal</div>
-      <h1 className="section-title">{dbPage.title||"Terms of Service"}</h1>
-      <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: {fmtDate(dbPage.updated_at)}</p>
-      <div dangerouslySetInnerHTML={{__html:dbPage.content}}/>
+    return(<><LegalHero kind="terms"/><div className="page lgl-page">
+      <p className="lgl-date">Last updated {fmtDate(dbPage.updated_at)}</p>
+      <p className="lgl-caps">{LEGAL_HEROES.terms.intro}</p>
+      <div className="lgl-doc" dangerouslySetInnerHTML={{__html:dbPage.content}}/>
       <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
         <button className="btn-s" onClick={()=>onNavigate("privacy")}>Privacy Policy</button>
         <button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Legal</button>
       </div>
       <Footer onNavigate={onNavigate}/>
-    </div>);
+    </div></>);
   }
-  return(<div className="page" style={{maxWidth:860}}>
-    <div className="section-label">Legal</div>
-    <h1 className="section-title">Terms of Service</h1>
+  return(<><LegalHero kind="terms"/><div className="page lgl-page">
     <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: August 25, 2026 · Effective date: April 14, 2026</p>
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:24,marginBottom:36,color:"var(--t2)",fontSize:14,lineHeight:1.7}}>
       <strong style={{color:"var(--t1)"}}>Please read these Terms carefully.</strong> These Terms of Service ("Terms") govern your access to and use of the CastSlate websites, mobile applications, and related services (collectively, the "Service") operated by CastSlate, Inc. ("CastSlate", "we", "our", or "us"). By accessing or using the Service, you agree to be bound by these Terms and our <span onClick={()=>onNavigate("privacy")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Privacy Policy</span>. If you do not agree, do not use the Service.
@@ -12163,7 +12198,7 @@ function TermsPage({onNavigate}){
       <button className="btn-s" onClick={()=>onNavigate("privacy")}>Privacy Policy</button>
       <button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Legal</button>
     </div>
-    <Footer onNavigate={onNavigate}/></div>);
+    <Footer onNavigate={onNavigate}/></div></>);
 }
 
 // ═══════════════════════════════════════════
@@ -12184,23 +12219,20 @@ function PrivacyPage({onNavigate}){
   const S=({n,t,children})=><section style={{marginBottom:32}}><h3 style={{fontSize:18,fontWeight:700,marginBottom:10,color:"var(--t1)"}}>{n}. {t}</h3><div style={{color:"var(--t2)",fontSize:14,lineHeight:1.75}}>{children}</div></section>;
   const B=({children})=><ul style={{margin:"10px 0 10px 20px",color:"var(--t2)",fontSize:14,lineHeight:1.75}}>{children}</ul>;
   const fmtDate=(iso)=>{try{return new Date(iso).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}catch(_){return iso;}};
-  if(dbPage===null&&!loadErr)return(<div className="page" style={{maxWidth:860}}><CastSlateLoader size="inline" text="Loading…"/></div>);
+  if(dbPage===null&&!loadErr)return(<><LegalHero kind="privacy"/><div className="page lgl-page"><CastSlateLoader size="inline" text="Loading…"/></div></>);
   if(dbPage){
-    return(<div className="page" style={{maxWidth:860}}>
-      <div className="section-label">Legal</div>
-      <h1 className="section-title">{dbPage.title||"Privacy Policy"}</h1>
-      <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: {fmtDate(dbPage.updated_at)}</p>
-      <div dangerouslySetInnerHTML={{__html:dbPage.content}}/>
+    return(<><LegalHero kind="privacy"/><div className="page lgl-page">
+      <p className="lgl-date">Last updated {fmtDate(dbPage.updated_at)}</p>
+      <p className="lgl-caps">{LEGAL_HEROES.privacy.intro}</p>
+      <div className="lgl-doc" dangerouslySetInnerHTML={{__html:dbPage.content}}/>
       <div style={{borderTop:"1px solid var(--bdr)",paddingTop:24,marginTop:24,display:"flex",gap:12}}>
         <button className="btn-s" onClick={()=>onNavigate("terms")}>Terms of Service</button>
         <button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Privacy Team</button>
       </div>
       <Footer onNavigate={onNavigate}/>
-    </div>);
+    </div></>);
   }
-  return(<div className="page" style={{maxWidth:860}}>
-    <div className="section-label">Legal</div>
-    <h1 className="section-title">Privacy Policy</h1>
+  return(<><LegalHero kind="privacy"/><div className="page lgl-page">
     <p style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>Last updated: April 14, 2026 · Effective date: April 14, 2026</p>
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:12,padding:24,marginBottom:36,color:"var(--t2)",fontSize:14,lineHeight:1.7}}>
       <strong style={{color:"var(--t1)"}}>Your privacy matters to us.</strong> This Privacy Policy describes how CastSlate, Inc. ("CastSlate", "we", "our", or "us") collects, uses, discloses, and protects your information when you use our websites, mobile applications, and related services (the "Service"). By using the Service, you consent to the practices described in this Policy.
@@ -12300,7 +12332,7 @@ function PrivacyPage({onNavigate}){
       <button className="btn-s" onClick={()=>onNavigate("terms")}>Terms of Service</button>
       <button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Privacy Team</button>
     </div>
-    <Footer onNavigate={onNavigate}/></div>);
+    <Footer onNavigate={onNavigate}/></div></>);
 }
 
 // ═══════════════════════════════════════════
@@ -54697,7 +54729,7 @@ const PAGE_SEO={
   "careers":{title:"Careers at CastSlate",desc:"Join the team building the future of casting. Open roles at CastSlate."},
   "contact":{title:"Contact CastSlate",desc:"Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."},
   "faq":{title:"FAQ — How CastSlate Works for Actors & Casting Directors",desc:"Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."},
-  "terms":{title:"Terms of Use | CastSlate",desc:"CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."},
+  "terms":{title:"Terms of Service | CastSlate",desc:"CastSlate Terms of Service — the rules and guidelines for using the CastSlate casting platform."},
   "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "studios":{title:"For Studios & Production Companies | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
   "manager-mode":{title:"Manager Mode — Career Check-ins for Actors | CastSlate",desc:"CastSlate Manager Mode is a premium monthly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each month to become more castable."},

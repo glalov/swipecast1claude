@@ -768,7 +768,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
         <li><a href="/blog" style="color:#6366f1;font-weight:600;">Blog</a></li>
         <li><a href="/contact" style="color:#6366f1;font-weight:600;">Contact</a></li>
         <li><a href="/faq" style="color:#6366f1;font-weight:600;">FAQ</a></li>
-        <li><a href="/terms" style="color:#6366f1;font-weight:600;">Terms of Use</a></li>
+        <li><a href="/terms" style="color:#6366f1;font-weight:600;">Terms of Service</a></li>
         <li><a href="/privacy" style="color:#6366f1;font-weight:600;">Privacy Policy</a></li>
       </ul>
       <p style="font-size:13px;color:#888;">JavaScript is required to use CastSlate. Please enable JavaScript in your browser.</p>
@@ -1012,7 +1012,7 @@ ROUTES = [
     ("careers.html",          "/careers",         "Careers at CastSlate", "Join the team building the future of casting. Open roles at CastSlate."),
     ("contact.html",          "/contact",         "Contact CastSlate", "Get in touch with the CastSlate team. We're here to help actors, casting directors, and production companies."),
     ("faq.html",              "/faq",             "FAQ — How CastSlate Works for Actors & Casting Directors", "Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."),
-    ("terms.html",            "/terms",           "Terms of Use | CastSlate", "CastSlate Terms of Use — the rules and guidelines for using the CastSlate casting platform."),
+    ("terms.html",            "/terms",           "Terms of Service | CastSlate", "CastSlate Terms of Service — the rules and guidelines for using the CastSlate casting platform."),
     ("privacy.html",          "/privacy",         "Privacy Policy | CastSlate", "CastSlate Privacy Policy — how we collect, use, and protect your personal information."),
     ("manager-mode.html",     "/manager-mode",    "Manager Mode — Career Check-ins for Actors | CastSlate", "CastSlate Manager Mode is a premium weekly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each week to become more castable."),
     ("agency-directory.html", "/agency-directory", "Talent Agency & Management Directory \u2014 650+ Agencies in LA & NYC", "CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."),
