@@ -27391,9 +27391,10 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <section style={{padding:"60px 40px 40px",maxWidth:1200,margin:"0 auto"}}>
       <div className="section-label">What people are saying</div>
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
-      {/* Layout "C · Editorial" (owner 2026-10-21): the casting director leads as a large
-          quote; the two actor quotes sit beside it as quieter notes. No spotlight card and
-          no highlighter marks — it read as a sales pitch. Same quotes and photos as before. */}
+      {/* Layout "C · Editorial" (owner 2026-10-21): one quote leads as a large card; the
+          other two sit beside it as quieter notes. No spotlight card and no highlighter
+          marks — it read as a sales pitch. Since 2026-10-22 the actor callback quote
+          (Alyssa) leads, the casting director and Ethan sit in the stack. */}
       {(()=>{const T=[
           {q:["At a networking night at Ripley Grier, I handed an agent my CastSlate QR card instead of a resume. He scanned my reel on the spot — and ","I had a callback the same day.",""],n:"Alyssa Bennett",r:"Actor · NYC · Non-Union",img:"https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=320&q=80",imgPos:"center 20%",crop:[150,-21.25,-43]},
           {q:["I reviewed 60+ actors for a spec spot in one sitting. Clean profiles, organized media, no broken links. It honestly ","saved me hours.",""],n:"Jordan Blake",r:"Casting Director · Commercials",img:"https://images.unsplash.com/photo-1566753323558-f4e0952af115?w=320&q=80",imgPos:"center 15%",crop:[150,-18,0]},
@@ -27405,12 +27406,12 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         </figcaption>);
         return(<div className="tm-ed landing-testimonials">
           <figure className="card tm-card tm-big">
-            <span className="tm-tag">From a casting director</span>
-            <blockquote className="tm-q">“{T[1].q.join("")}”</blockquote>
-            {who(T[1])}
+            <span className="tm-tag">From an actor</span>
+            <blockquote className="tm-q">“{T[0].q.join("")}”</blockquote>
+            {who(T[0])}
           </figure>
           <div className="tm-stack">
-            {[T[0],T[2]].map((t,i)=>(<figure key={i} className="tm-small">
+            {[T[1],T[2]].map((t,i)=>(<figure key={i} className="tm-small">
               <blockquote className="tm-q">“{t.q.join("")}”</blockquote>
               {who(t)}
             </figure>))}
