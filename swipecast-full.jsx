@@ -4233,6 +4233,13 @@ body.fbsp-open #castoria-root{display:none!important;}
     -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 14%),linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);
     mask-image:linear-gradient(180deg,transparent 0%,#000 14%),linear-gradient(90deg,transparent 0%,#000 6%,#000 94%,transparent 100%);}
 }
+/* PREVIEW ONLY: ?footerart=full is edge to edge with no fades. Sized like "cover"
+   (fills the whole footer), anchored to the top so any trimming comes off the bottom
+   ground strip; on narrow windows the sides trim instead. */
+@media(min-width:901px){
+  html.fa-full .site-footer-art-img{width:max(100cqw,calc(100cqh * 16 / 9));top:0;bottom:auto;
+    -webkit-mask-image:none;mask-image:none;}
+}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
 .site-footer-brand .logo .logo-i{background:#fff;color:#0E0C0B;}
@@ -8012,7 +8019,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // is never downloaded at all.
   const artRef=React.useRef(null);
   // PREVIEW ONLY: ?footerart=wide (see the html.fa-wide CSS). Remove once decided.
-  try{if(/[?&]footerart=wide/.test(location.search))document.documentElement.classList.add('fa-wide');}catch(_){}
+  try{const m=location.search.match(/[?&]footerart=(wide|full)/);if(m)document.documentElement.classList.add('fa-'+m[1]);}catch(_){}
   React.useEffect(()=>{
     const el=artRef.current;if(!el)return;
     if(!('IntersectionObserver' in window)){el.classList.add('on');return;}
