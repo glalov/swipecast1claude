@@ -4221,6 +4221,12 @@ body.fbsp-open #castoria-root{display:none!important;}
     background-repeat:no-repeat;background-size:100% 100%;}
   .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-v2.webp);}
 }
+/* PREVIEW ONLY (2026-10-23): ?footerart=wide2 shows the new ultra-wide panel (1584x672,
+   ~2.36:1, full figures, no frame), cover-sized and centred so any trim is split top/bottom. */
+@media(min-width:901px){
+  html.fa-wide2 .site-footer-art-img{aspect-ratio:1584/672;width:max(100cqw,calc(100cqh * 1584 / 672));top:50%;transform:translate(-50%,-50%);}
+  html.fa-wide2 .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-wide.webp);}
+}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
 .site-footer-brand .logo .logo-i{background:#fff;color:#0E0C0B;}
@@ -7999,6 +8005,8 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // the top of the page; on phones the layer is display:none and never intersects, so it
   // is never downloaded at all.
   const artRef=React.useRef(null);
+  // PREVIEW ONLY: ?footerart=wide2 (see html.fa-wide2 CSS). Remove once decided.
+  try{if(/[?&]footerart=wide2/.test(location.search))document.documentElement.classList.add('fa-wide2');}catch(_){}
   React.useEffect(()=>{
     const el=artRef.current;if(!el)return;
     if(!('IntersectionObserver' in window)){el.classList.add('on');return;}
