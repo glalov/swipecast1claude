@@ -442,7 +442,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
       will-change:transform;
     }}
-    #cs-intro.cs-go #cs-intro-bg{{-webkit-animation:cs-bg-down .55s cubic-bezier(0,0,.2,1) forwards;animation:cs-bg-down .55s cubic-bezier(0,0,.2,1) forwards;}}
+    #cs-intro.cs-go #cs-intro-bg{{-webkit-animation:cs-bg-down 1.6s cubic-bezier(.45,0,.55,1) forwards;animation:cs-bg-down 1.6s cubic-bezier(.45,0,.55,1) forwards;}}
     /* Counter-moving holder: it rises at the exact speed the curtain (#cs-intro-bg)
        falls, so the logo stays perfectly still on screen while the curtain's
        overflow:hidden edge cuts down through it. Logo never travels with the curtain. */
@@ -451,7 +451,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
       will-change:transform;
     }}
-    #cs-intro.cs-go .cs-intro-hold{{-webkit-animation:cs-mark-up .55s cubic-bezier(0,0,.2,1) forwards;animation:cs-mark-up .55s cubic-bezier(0,0,.2,1) forwards;}}
+    #cs-intro.cs-go .cs-intro-hold{{-webkit-animation:cs-mark-up 1.6s cubic-bezier(.45,0,.55,1) forwards;animation:cs-mark-up 1.6s cubic-bezier(.45,0,.55,1) forwards;}}
     #cs-intro .cs-intro-mark{{
       display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:16px;
       opacity:0;-webkit-transform:translateY(28px) scale(.965);transform:translateY(28px) scale(.965);
@@ -665,8 +665,11 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
          two finishes last: the cube's 700ms turn, or the hairline, which starts
          220ms in and runs 550ms. Was 2260 with a 400ms hairline (it ended inside
          the turn and cost nothing), 1940 when the effect was a 380ms flash, and
-         1450 before that with no beat at all. */
-      var t0=Date.now(),MIN=2330,CAP=15000,gone=false,goAt=0;
+         1450 before that with no beat at all.
+         2026-10-22: owner chose 1900 + a slow, even 1.6s fall (WME-style
+         curtain, tuned in castslate-curtain-speed-demo.html). The beat after
+         the hairline is now ~100ms; the slower fall carries the moment. */
+      var t0=Date.now(),MIN=1900,CAP=15000,gone=false,goAt=0;
       function appReady(){{
         if(window.__CS_REACT_MOUNTED)return true;
         var r=document.getElementById('root');
@@ -686,15 +689,15 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
         if(gone)return;
         gone=true;goAt=Date.now();
         el.classList.add('cs-go');
-        /* 550ms is the curtain's own fall duration (cs-bg-down), so this is
+        /* 1600ms is the curtain's own fall duration (cs-bg-down), so this is
            the frame it is actually clear - not when the node is removed. */
-        setTimeout(csIntroDone,550);
-        setTimeout(kill,700);
+        setTimeout(csIntroDone,1600);
+        setTimeout(kill,1750);
         /* The fall is a CSS animation, and CSS animations do not advance
            while the tab is hidden - so a curtain that started dropping in a
            background tab would still be solid black on return. Wall-clock
            belt and braces: the node is gone by then either way. */
-        setTimeout(kill,1600);
+        setTimeout(kill,2600);
       }}
       /* Wall-clock watchdogs. The poll below re-arms itself with setTimeout;
          if any single timer is dropped or clamped (hidden tab, throttled
@@ -705,9 +708,9 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
       document.addEventListener('visibilitychange',function(){{
         if(document.visibilityState!=='visible')return;
         var e=Date.now()-t0;
-        /* Fall already begun but frozen while hidden - if its 550ms is long
+        /* Fall already begun but frozen while hidden - if its 1600ms is long
            past in wall-clock terms, take the node out rather than resume. */
-        if(gone){{ if(Date.now()-goAt>=700)kill(); }}
+        if(gone){{ if(Date.now()-goAt>=1750)kill(); }}
         else if(e>=MIN&&appReady())go();
       }});
       (function poll(){{
