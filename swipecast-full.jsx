@@ -4240,22 +4240,15 @@ a.site-footer-link{text-decoration:none;}
 .site-footer-bottom-links span:hover{color:#fff;}
 .site-footer-plain-links a{color:inherit;text-decoration:none;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;}
 .site-footer-plain-links a:hover{color:#F3EBE0;text-decoration:underline;}
-.footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
-.footer-cookie-card{min-height:50px;gap:10px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#4F8B7F 0%,#596bd8 52%,#d76a87 100%);color:#fff;box-shadow:0 16px 30px -24px rgba(91,106,216,.9),inset 0 1px 0 rgba(255,255,255,.28);animation:footerCardFloat 3.2s ease-in-out infinite;}
-.footer-cookie-card::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
-.footer-cookie-icon{position:relative;flex:0 0 auto;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.18);}
-.footer-cookie-icon svg{width:18px;height:18px;}
-.footer-cookie-title{display:block;color:#fff;font-size:12.5px;font-weight:900;line-height:1.1;white-space:nowrap;}
-.footer-cookie-sub{display:block;margin-top:2px;color:rgba(255,255,255,.72);font-size:10px;font-weight:750;white-space:nowrap;}
-.lang-toggle-btn{min-height:52px;gap:8px;padding:0 15px 0 9px;border-radius:999px;background:linear-gradient(135deg,#25283f,#34395d);color:#fff;font-size:13px;font-weight:900;letter-spacing:.2px;line-height:1;box-shadow:0 14px 26px -22px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.15);animation:footerLangLift 3.4s ease-in-out infinite .35s;}
-.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:30px;height:21px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 5px 10px rgba(0,0,0,.18);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
-.footer-flag-es::after{content:"";position:absolute;left:9px;top:7px;width:5px;height:7px;border-radius:2px;background:#b98324;box-shadow:0 0 0 1px rgba(255,255,255,.38);}
-.lang-toggle-btn svg{flex-shrink:0;width:16px;height:16px;}
-@keyframes footerControlSheen{0%,44%{transform:translateX(-130%);opacity:0;}55%{opacity:1;}78%,100%{transform:translateX(130%);opacity:0;}}
-@keyframes footerCardFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
-@keyframes footerLangLift{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
-@media(hover:hover){.footer-cookie-card:hover,.lang-toggle-btn:hover{transform:translateY(-3px);filter:brightness(1.05) saturate(1.1);}}
-@media(prefers-reduced-motion:reduce){.footer-cookie-card,.footer-cookie-card::before,.lang-toggle-btn{animation:none!important;}}
+/* Cookie Preferences + language switch, quiet version (owner 2026-10-23, demo A). The old
+   gradient card and navy pill floated nonstop and were off-palette; now Cookie Preferences
+   is one more text link and the language switch is a slim, still, outlined pill. */
+.site-footer-plain-links .footer-cookie-link{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;-webkit-tap-highlight-color:transparent;}
+.site-footer-plain-links .footer-cookie-link:hover{color:#F3EBE0;text-decoration:underline;}
+.footer-lang-pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid rgba(243,235,224,.22);border-radius:999px;background:none;color:#C9BDAF;font-family:inherit;font-size:12px;font-weight:600;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.footer-lang-pill:hover{border-color:rgba(243,235,224,.5);color:#F3EBE0;}
+.footer-lang-pill svg{flex-shrink:0;width:14px;height:14px;}
+.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:20px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
 /* ─── Cookie consent panel — "Amber Block": a cinematic bottom drawer that rises
       from the bottom edge on a dark espresso ground with a giant Anton headline.
       Committed single (dark) look on purpose — reads the same in light + dark. */
@@ -4404,7 +4397,6 @@ a.site-footer-link{text-decoration:none;}
   .site-footer-bottom{flex-direction:column;align-items:center;text-align:center;}
   .site-footer-bottom-links{width:100%;align-items:center;flex-direction:row;justify-content:center;margin-left:0;gap:12px;}
   .site-footer-plain-links{flex-basis:100%;justify-content:center;gap:12px 16px;}
-  .footer-cookie-card,.lang-toggle-btn{width:auto;justify-content:center;}
 }
 /* ─── Yearly promo stripe — large, premium banner above the main nav on homepage.
        Navy CastSlate palette + warm cream highlights, capsule-shaped actor image
@@ -5948,7 +5940,7 @@ button:disabled:hover .cs-tri{transform:none;}
 .mm-glass-btn .cs-tri{color:#FFE6C2;}
 .mm-end-btn .cs-tri{color:#8A5A12;}
 /* Slow network / data saver: pause decorative looping motion (never the nav logo, marquee or back-to-top cube). */
-.cs-slow-net .cls-featured-glow,.cs-slow-net .sw-btn.save::after,.cs-slow-net .landing-stat-live,.cs-slow-net .footer-cookie-card,.cs-slow-net .footer-cookie-card::before,.cs-slow-net .footer-cookie-card::after,.cs-slow-net .lang-toggle-btn{animation:none !important;}
+.cs-slow-net .cls-featured-glow,.cs-slow-net .sw-btn.save::after,.cs-slow-net .landing-stat-live{animation:none !important;}
 .home-cta-reassure{position:relative;margin:14px 0 0;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:500;color:rgba(255,255,255,.82);}
 .home-cta-sub{position:relative;display:flex;justify-content:center;align-items:center;gap:18px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,.22);}
 .home-cta-sub .txt{display:flex;flex-direction:column;text-align:left;}
@@ -8211,28 +8203,19 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
               <a href="/privacy" onClick={go("privacy")}>{t('footer.privacyLink')}</a>
               <a href="/terms" onClick={go("terms")}>{t('footer.termsLink')}</a>
               <a href="/contact" onClick={go("contact")}>{t('footer.contactLink')}</a>
+              <button className="footer-cookie-link" type="button" onClick={openCookies}>{t('footer.cookiePrefs')}</button>
             </div>
-            <button className="footer-cookie-card" type="button" onClick={openCookies}>
-              <span className="footer-cookie-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 3a9 9 0 1 0 9 9 4 4 0 0 1-5-5 4 4 0 0 1-4-4Z"/>
-                  <path d="M8 11h.01M12 16h.01M16 13h.01"/>
-                </svg>
-              </span>
-              <span>
-                <span className="footer-cookie-title">{t('footer.cookiePrefs')}</span>
-                <span className="footer-cookie-sub">Privacy controls</span>
-              </span>
-            </button>
             <button
-              className="lang-toggle-btn"
+              className="footer-lang-pill"
+              type="button"
               onClick={()=>setLang(l=>l==='en'?'es':'en')}
               aria-label={lang==='en'?'Switch to Spanish':'Switch to English'}>
-              <span className="footer-flag-es" aria-hidden="true"></span>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              </svg>
+              {lang==='en'
+                ? <span className="footer-flag-es" aria-hidden="true"></span>
+                : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>}
               {t('footer.switchLang')}
             </button>
           </div>
