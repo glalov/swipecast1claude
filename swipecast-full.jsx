@@ -2254,7 +2254,8 @@ const BLOG_POSTS = [
 try{const m=(location.search.match(/[?&]animtest=([a-z0-9,]+)/)||[])[1];if(m){m.split(',').forEach(k=>document.documentElement.classList.add('animtest-'+k));
   const G={g1:['mm-breathe','sw-flip-travel','sw-flip-turn','sw-ring','sw-star-glow','sw-star-fill'],g2:['fmtSlide','scLiveRing','scLiveDot'],g3:['cs-card-float-a','cs-card-float-b','cs-card-float-c','cs-card-float-d'],g4:['adxpulse'],g5:['joinFreeSoftInvitation','joinFreeSoftHalo']};
   const names=new Set(m.split(',').flatMap(k=>G[k]||[]));
-  if(names.size&&document.getAnimations)setInterval(()=>{try{document.getAnimations().forEach(x=>{if(names.has(x.animationName)&&x.playState==='running')x.pause();});}catch(_){}},400);}}catch(_){}
+  const rng=m.split(',').map(k=>k.match(/^r([a-z])([a-z])$/)).filter(Boolean);
+  if((names.size||rng.length)&&document.getAnimations)setInterval(()=>{try{document.getAnimations().forEach(x=>{const n=(x.animationName||'').toLowerCase();if(!n||x.playState!=='running')return;if(names.has(x.animationName)||rng.some(r=>n[0]>=r[1]&&n[0]<=r[2]))x.pause();});}catch(_){}},400);}}catch(_){}
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
 html.animtest-pyramid .b2t-cube .pyramid{animation:none!important;}
@@ -2263,6 +2264,7 @@ html.animtest-marquee .mq-track,html.animtest-marquee .mq-go{animation:none!impo
 html.animtest-all *,html.animtest-all *::before,html.animtest-all *::after{animation:none!important;transition:none!important;}
 html.animtest-anims *,html.animtest-anims *::before,html.animtest-anims *::after{animation:none!important;}
 html.animtest-trans *,html.animtest-trans *::before,html.animtest-trans *::after{transition:none!important;}
+html.animtest-layer .site-footer,html.animtest-layer .lh-mm{will-change:transform;}
 html.animtest-cube .b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}
 html.animtest-cube .b2t-cube.show{opacity:1!important;}
 html.animtest-cube .b2t-cube .mark,html.animtest-cube .b2t-cube .pyramid{animation:none!important;}
