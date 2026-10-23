@@ -4051,6 +4051,13 @@ body.fbsp-open #castoria-root{display:none!important;}
    is free (the section paints its own gradient into the seam), and paint an
    extra pixel with a shadow where layout must not move. ─── */
 .lh-mm{margin-top:-1px;}   /* iOS teaser → Manager Mode teaser */
+/* Directories wall → Manager Mode band. The wall's chip columns are translated
+   layers clipped by .adx-section's overflow:hidden, and the section ends on a
+   fractional pixel. Safari rounds that clip differently from the layer, so one
+   row of the chips' pale outlines leaked as a full-width light line (owner
+   report 2026-10-23, Safari only). Paint 3px of the wall's own colour on top of
+   the seam: an outer shadow is not clipped by .lh-mm's own overflow:hidden. */
+.adx-section + .lh-mm{box-shadow:0 -3px 0 0 #0F1012;position:relative;z-index:2;}
 /* Manager Mode teaser: stacked monthly letters + paper stamp. */
 .mm-stk{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:36px;}
 .mm-stk .mm-letter{position:relative;z-index:5;}
@@ -4200,7 +4207,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Apple-style hover (owner 2026-10-23): no slide, an underline appears under the words.
    width:fit-content keeps each link on its own line but limits the hover zone and the
    underline to the text itself, not the whole column. */
-.site-footer-link{display:block;width:fit-content;max-width:100%;color:#B5ADA3;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease;font-family:'DM Sans',sans-serif;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:1px;}
+.site-footer-link{display:block;width:fit-content;max-width:100%;color:#B5ADA3;font-size:13px;padding:5px 0;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:1px;}
 a.site-footer-link{text-decoration:none;}
 .site-footer-link:hover,a.site-footer-link:hover{color:#F3EBE0;text-decoration:underline;}
 .nyc-guide{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--bdr);min-width:0;}
@@ -4231,8 +4238,8 @@ a.site-footer-link{text-decoration:none;}
 .site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
-.site-footer-plain-links span{text-underline-offset:3px;text-decoration-thickness:1px;}
-.site-footer-plain-links span:hover{color:#F3EBE0;text-decoration:underline;}
+.site-footer-plain-links a{color:inherit;text-decoration:none;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;}
+.site-footer-plain-links a:hover{color:#F3EBE0;text-decoration:underline;}
 .footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
 .footer-cookie-card{min-height:50px;gap:10px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#4F8B7F 0%,#596bd8 52%,#d76a87 100%);color:#fff;box-shadow:0 16px 30px -24px rgba(91,106,216,.9),inset 0 1px 0 rgba(255,255,255,.28);animation:footerCardFloat 3.2s ease-in-out infinite;}
 .footer-cookie-card::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
@@ -7971,7 +7978,11 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
   // Reusable footer link — every link inherits the same hover treatment via .site-footer-link.
-  const L=({to,children})=><span className="site-footer-link" onClick={()=>onNavigate(to)}>{children}</span>;
+  // Real <a href> (owner 2026-10-23): Safari made the old onClick spans flicker on hover while
+  // the one <a> link (Casting Calls in NYC) stayed still. Anchors also give crawlers real links
+  // and let Cmd/Ctrl-click open a new tab; a plain click still routes in-app.
+  const go=to=>e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)return;e.preventDefault();onNavigate(to);};
+  const L=({to,children})=><a className="site-footer-link" href={PAGE_PATH[to]||"/"} onClick={go(to)}>{children}</a>;
   // Cookie modal lives at App level. We dispatch a custom DOM event rather than
   // threading an onOpenCookies prop through every page's Footer instance — App
   // listens for it once and toggles the modal.
@@ -8197,9 +8208,9 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           <span>{t('footer.copyright').replace('{year}', year)}</span>
           <div className="site-footer-bottom-links">
             <div className="site-footer-plain-links">
-              <span onClick={()=>onNavigate("privacy")}>{t('footer.privacyLink')}</span>
-              <span onClick={()=>onNavigate("terms")}>{t('footer.termsLink')}</span>
-              <span onClick={()=>onNavigate("contact")}>{t('footer.contactLink')}</span>
+              <a href="/privacy" onClick={go("privacy")}>{t('footer.privacyLink')}</a>
+              <a href="/terms" onClick={go("terms")}>{t('footer.termsLink')}</a>
+              <a href="/contact" onClick={go("contact")}>{t('footer.contactLink')}</a>
             </div>
             <button className="footer-cookie-card" type="button" onClick={openCookies}>
               <span className="footer-cookie-icon" aria-hidden="true">
