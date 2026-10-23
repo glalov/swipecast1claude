@@ -4182,7 +4182,9 @@ body.fbsp-open #castoria-root{display:none!important;}
      The -1px half guards the seam ABOVE the footer, where the final CTA (dark)
      meets it. On light pages that pixel just reads as the footer's own top
      edge; on dark ones it closes the gap the cream was blinking through. */
-  box-shadow:0 1px 0 0 #0E0C0B, 0 -1px 0 0 #0E0C0B;
+  /* 3px below (was 1px): Safari showed a pale line under the footer at the very bottom of the
+     page (owner report 2026-10-23); the footer ends on a fractional pixel (e.g. 13495.73). */
+  box-shadow:0 3px 0 0 #0E0C0B, 0 -1px 0 0 #0E0C0B;
   flex-shrink:0;
   /* Slow-wifi / Windows pass (2026-10-08): the light top hairline read as a
      pale line on bright laptop screens (it is lighter than both the Manager
