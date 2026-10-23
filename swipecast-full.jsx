@@ -4222,10 +4222,10 @@ body.fbsp-open #castoria-root{display:none!important;}
   .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-v2.webp);}
 }
 /* PREVIEW ONLY (2026-10-23): ?footerart=wide2 shows the original panel outpainted to
-   ultra-wide (1600x665, ~2.4:1, same characters, full figures, frame cropped), cover-sized
-   and centred so any trim is split top/bottom. */
+   ultra-wide (1600x665, ~2.4:1, same characters, full figures, frame cropped), cover-sized;
+   any vertical trim comes 12% from the top / 88% from the bottom so the CUT! bubble stays. */
 @media(min-width:901px){
-  html.fa-wide2 .site-footer-art-img{aspect-ratio:1600/665;width:max(100cqw,calc(100cqh * 1600 / 665));top:50%;transform:translate(-50%,-50%);}
+  html.fa-wide2 .site-footer-art-img{inset:0;width:auto;aspect-ratio:auto;transform:none;background-size:cover;background-position:center 12%;}
   html.fa-wide2 .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-21x9.webp);}
 }
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
