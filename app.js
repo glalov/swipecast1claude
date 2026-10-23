@@ -1903,7 +1903,7 @@ body.fbsp-open #castoria-root{display:none!important;}
        with .app + .page being flex columns with min-height:100vh, the footer
        always sticks to the very bottom of the viewport even on short pages. ─── */
 .site-footer{
-  background:#141110;color:#B5ADA3;
+  background:#0E0C0B;color:#B5ADA3;
   border-top:1px solid rgba(255,255,255,0.06);
   position:relative;
   width:100vw;
@@ -1924,7 +1924,7 @@ body.fbsp-open #castoria-root{display:none!important;}
      The -1px half guards the seam ABOVE the footer, where the final CTA (dark)
      meets it. On light pages that pixel just reads as the footer's own top
      edge; on dark ones it closes the gap the cream was blinking through. */
-  box-shadow:0 1px 0 0 #0E0C0B, 0 -1px 0 0 #141110;
+  box-shadow:0 1px 0 0 #0E0C0B, 0 -1px 0 0 #0E0C0B;
   flex-shrink:0;
   /* Slow-wifi / Windows pass (2026-10-08): the light top hairline read as a
      pale line on bright laptop screens (it is lighter than both the Manager
@@ -1935,11 +1935,11 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* 3px dark apron above the footer. Windows laptops run at 125%/150% scaling,
    where the 1px shadow above becomes 1.25-1.5 device px and a cream row could
    still round through mid-scroll. No rounding at any scale reaches 3px. */
-.site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#141110;pointer-events:none;}
+.site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#0E0C0B;pointer-events:none;}
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
-.site-footer-brand .logo .logo-i{background:#fff;color:#141110;}
+.site-footer-brand .logo .logo-i{background:#fff;color:#0E0C0B;}
 /* Footer logo = the nav logo, inverted (owner 2026-10-22): same 38px mark with 9px
    corners (40px at 900px and below, like the nav) — it was the 30px/7px base size. */
 .site-footer-brand .logo .logo-i{width:38px;height:38px;border-radius:9px;}
@@ -1970,11 +1970,9 @@ a.site-footer-link{text-decoration:none;}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#B5ADA3;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.16);transform:translateY(-2px);}
 .site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;flex-wrap:wrap;font-size:12px;color:#857B71;}
-/* Warm near-black footer (owner 2026-10-23, demo option 1): the copyright strip sits one
-   step deeper than the link area. The spread shadow paints it edge to edge and down
-   through the safe-area padding; clip-path keeps it from rising above the divider line.
-   html,body share this colour so overscroll below the footer matches. */
-.site-footer-bottom{box-shadow:0 0 0 100vmax #0E0C0B;clip-path:inset(0 -100vmax -100vmax);background:#0E0C0B;}
+/* One-colour warm near-black footer (owner 2026-10-23, one-color demo A, replacing the
+   two-step version): #0E0C0B top to bottom, the divider above the copyright line is the
+   only separation. html,body share this colour so overscroll below the footer matches. */
 .site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-left:0;}
 .site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
