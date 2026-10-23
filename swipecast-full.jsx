@@ -4208,14 +4208,22 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#0E0C0B;pointer-events:none;}
 .site-footer-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
 /* Comic panel behind the footer, DC-style (owner 2026-10-23: version A, desktop only, 12%).
-   Warm tint is baked into the WebP, so no CSS filter runs. Fades in from the top so it
-   rises out of the dark. Still image only: nothing here may animate (Safari stutter). */
+   The WHOLE panel is always shown (the film crew on the left and the "CUT!" bubble on the
+   right are the joke): the image box is "contain"-sized against the footer with container
+   query units, anchored to the bottom, and fades at its top and side edges into the dark.
+   background-size:cover cropped the sides on narrower/taller footers (owner report).
+   Warm tint is baked into the WebP. Still image only: nothing here may animate (Safari). */
 .site-footer-art{display:none;}
 @media(min-width:901px){
-  .site-footer-art{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.12;
-    background-repeat:no-repeat;background-size:cover;background-position:center 40%;
-    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 35%,#000 100%);mask-image:linear-gradient(180deg,transparent 0%,#000 35%,#000 100%);}
-  .site-footer-art.on{background-image:url(/assets/footer/cut-great-take.webp);}
+  .site-footer-art{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;container-type:size;}
+  .site-footer-art-img{position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:min(100cqw,calc(100cqh * 16 / 9));aspect-ratio:16/9;opacity:.12;
+    background-repeat:no-repeat;background-size:100% 100%;
+    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 30%),linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent 100%);
+    -webkit-mask-composite:source-in;
+    mask-image:linear-gradient(180deg,transparent 0%,#000 30%),linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent 100%);
+    mask-composite:intersect;}
+  .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take.webp);}
 }
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
@@ -8180,7 +8188,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       <span>{t('footer.backToTop')}</span>
     </button>}
     <footer className={"site-footer"+(backToTop?" has-b2t":"")}>
-      <div ref={artRef} className="site-footer-art" aria-hidden="true"></div>
+      <div ref={artRef} className="site-footer-art" aria-hidden="true"><div className="site-footer-art-img"></div></div>
       <div className="site-footer-inner">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
