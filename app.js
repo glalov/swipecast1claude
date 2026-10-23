@@ -1946,9 +1946,12 @@ body.fbsp-open #castoria-root{display:none!important;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#B5ADA3;font-size:12.5px;line-height:1.65;margin-top:14px;max-width:280px;}
 .site-footer-heading{font-family:'DM Sans',sans-serif;color:#F3EBE0;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
-.site-footer-link{display:block;color:#B5ADA3;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease,transform .18s ease;font-family:'DM Sans',sans-serif;}
-.site-footer-link:hover{color:#fff;transform:translateX(2px);}
+/* Apple-style hover (owner 2026-10-23): no slide, an underline appears under the words.
+   width:fit-content keeps each link on its own line but limits the hover zone and the
+   underline to the text itself, not the whole column. */
+.site-footer-link{display:block;width:fit-content;max-width:100%;color:#B5ADA3;font-size:13px;padding:5px 0;cursor:pointer;transition:color .18s ease;font-family:'DM Sans',sans-serif;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:1px;}
 a.site-footer-link{text-decoration:none;}
+.site-footer-link:hover,a.site-footer-link:hover{color:#F3EBE0;text-decoration:underline;}
 .nyc-guide{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--bdr);min-width:0;}
 .nyc-guide h2{font-family:'Playfair Display',Georgia,serif;font-size:clamp(22px,2.4vw,28px);font-weight:700;color:var(--t1);margin:0 0 20px;line-height:1.2;}
 .nyc-guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:22px 36px;min-width:0;}
@@ -1977,6 +1980,8 @@ a.site-footer-link{text-decoration:none;}
 .site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#fff;}
+.site-footer-plain-links span{text-underline-offset:3px;text-decoration-thickness:1px;}
+.site-footer-plain-links span:hover{color:#F3EBE0;text-decoration:underline;}
 .footer-cookie-card,.lang-toggle-btn{position:relative;display:inline-flex;align-items:center;overflow:hidden;isolation:isolate;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;flex-shrink:0;}
 .footer-cookie-card{min-height:50px;gap:10px;padding:9px 15px 9px 9px;border-radius:16px;background:linear-gradient(135deg,#4F8B7F 0%,#596bd8 52%,#d76a87 100%);color:#fff;box-shadow:0 16px 30px -24px rgba(91,106,216,.9),inset 0 1px 0 rgba(255,255,255,.28);animation:footerCardFloat 3.2s ease-in-out infinite;}
 .footer-cookie-card::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 0 34%,rgba(255,255,255,.32) 45%,transparent 57% 100%);transform:translateX(-130%);animation:footerControlSheen 3.8s ease-in-out infinite;}
