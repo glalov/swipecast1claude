@@ -2249,25 +2249,8 @@ const BLOG_POSTS = [
 // ═══════════════════════════════════════════
 // STYLES
 // ═══════════════════════════════════════════
-// TEMPORARY (2026-10-23): Safari footer-stutter hunt. ?animtest=pyramid|logo|marquee (comma list)
-// stops just that one looping animation so the owner can find the culprit. Remove after.
-try{const m=(location.search.match(/[?&]animtest=([a-z0-9,]+)/)||[])[1];if(m){m.split(',').forEach(k=>document.documentElement.classList.add('animtest-'+k));
-  const G={g1:['mm-breathe','sw-flip-travel','sw-flip-turn','sw-ring','sw-star-glow','sw-star-fill'],g2:['fmtSlide','scLiveRing','scLiveDot'],g3:['cs-card-float-a','cs-card-float-b','cs-card-float-c','cs-card-float-d'],g4:['adxpulse'],g5:['joinFreeSoftInvitation','joinFreeSoftHalo']};
-  const names=new Set(m.split(',').flatMap(k=>G[k]||[]));
-  const rng=m.split(',').map(k=>k.match(/^r([a-z])([a-z])$/)).filter(Boolean);
-  if((names.size||rng.length)&&document.getAnimations)setInterval(()=>{try{document.getAnimations().forEach(x=>{const n=(x.animationName||'').toLowerCase();if(!n||x.playState!=='running')return;if(names.has(x.animationName)||rng.some(r=>n[0]>=r[1]&&n[0]<=r[2]))x.pause();});}catch(_){}},400);}}catch(_){}
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
-html.animtest-pyramid .b2t-cube .pyramid{animation:none!important;}
-html.animtest-logo .nav .logo-i{animation:none!important;}
-html.animtest-marquee .mq-track,html.animtest-marquee .mq-go{animation:none!important;}
-html.animtest-all *,html.animtest-all *::before,html.animtest-all *::after{animation:none!important;transition:none!important;}
-html.animtest-anims *,html.animtest-anims *::before,html.animtest-anims *::after{animation:none!important;}
-html.animtest-trans *,html.animtest-trans *::before,html.animtest-trans *::after{transition:none!important;}
-html.animtest-layer .site-footer,html.animtest-layer .lh-mm{will-change:transform;}
-html.animtest-cube .b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}
-html.animtest-cube .b2t-cube.show{opacity:1!important;}
-html.animtest-cube .b2t-cube .mark,html.animtest-cube .b2t-cube .pyramid{animation:none!important;}
 :root{--bg:#FAF6EE;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#3A322A;--t3:#433B32;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2A8472;--teal-dk:#206557;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#0E0C0B;}
 *{box-sizing:border-box;}
@@ -4075,6 +4058,16 @@ body.fbsp-open #castoria-root{display:none!important;}
    report 2026-10-23, Safari only). Paint 3px of the wall's own colour on top of
    the seam: an outer shadow is not clipped by .lh-mm's own overflow:hidden. */
 .adx-section + .lh-mm{box-shadow:0 -3px 0 0 #0F1012;position:relative;z-index:2;}
+/* Safari stutter fix (owner 2026-10-23). In Safari, hovering a footer link made the
+   whole footer AND the Manager Mode card above it shudder, but only while some looping
+   animation was running anywhere on the page. No single animation was to blame
+   (each group was paused in turn; only pausing ALL of them helped), so the fix is
+   on the receiving end: give these two large blocks their own compositing layer, so
+   a hover repaint stays inside the footer instead of re-rasterising the shared page
+   layer at fractional offsets. Verified by the owner in Safari via a test switch.
+   Neither block contains position:fixed/sticky children (the cube is a sibling in
+   <main>), so the new containing block changes nothing. */
+.site-footer,.lh-mm{will-change:transform;}
 /* Manager Mode teaser: stacked monthly letters + paper stamp. */
 .mm-stk{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:36px;}
 .mm-stk .mm-letter{position:relative;z-index:5;}
