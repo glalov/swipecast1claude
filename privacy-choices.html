@@ -17,10 +17,14 @@
 body{background:#fff;font-family:"Open Sans",Arial,sans-serif;color:#696969}
 a{color:#1A5DBA}
 .band{background:#0E0C0B;height:122px;display:flex;align-items:center;justify-content:center;gap:22px;text-decoration:none}
-.band .mark{width:70px;height:70px;border-radius:16px;background:#F3EBE0;display:grid;place-items:center}
-.band .mark svg{width:42px;height:42px}
-.band .word{font:800 78px/1 'DM Sans',sans-serif;letter-spacing:.06em;color:#fff;text-transform:uppercase}
-@media(max-width:640px){.band{height:84px;gap:12px}.band .mark{width:42px;height:42px;border-radius:10px}.band .mark svg{width:26px;height:26px}.band .word{font-size:38px}}
+.band{gap:16px}
+/* Same logo as the site nav (.nav .logo): navy #1A1A2E tile, white arrow mark filling it,
+   "CastSlate" in DM Sans 800 with -0.5px tracking (scaled up, same proportions). A faint
+   ring keeps the navy tile visible on the near-black band. */
+.band .mark{width:72px;height:72px;border-radius:17px;background:#1A1A2E;color:#fff;display:block;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.22)}
+.band .mark svg{display:block;width:100%;height:100%}
+.band .word{font:800 50px/1 'DM Sans',sans-serif;letter-spacing:-1.2px;color:#fff}
+@media(max-width:640px){.band{height:84px;gap:10px}.band .mark{width:44px;height:44px;border-radius:10px}.band .word{font-size:30px;letter-spacing:-.7px}}
 .wrap{max-width:572px;margin:0 auto;padding:62px 16px 40px}
 .copy{text-align:center;font-size:15px;line-height:22px}
 .copy p+p{margin-top:22px}
@@ -80,7 +84,7 @@ textarea.input{height:96px;padding:8px 10px;resize:vertical;line-height:1.5}
 .powered b{font:800 22px 'DM Sans',sans-serif;color:#0E0C0B;letter-spacing:-.3px;vertical-align:-2px}
 .pp{display:block;text-align:center;margin-top:30px;font-size:14px;text-decoration:underline}
 </style></head><body>
-<a class="band" href="/" aria-label="CastSlate home"><span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0E0C0B"/></svg></span><span class="word">CastSlate</span></a>
+<a class="band" href="/" aria-label="CastSlate home"><span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="currentColor"/></svg></span><span class="word">CastSlate</span></a>
 <main class="wrap">
   <div class="copy">
     <p>CastSlate does not sell personal information in exchange for money. CastSlate may share limited personal information with third parties, such as through cookies and similar technologies on our websites, in ways that may be considered "sales" or "sharing" under state privacy laws. Residents of <b>Covered States</b> (CA, CO, CT, DE, IA, IN, KY, MD, MN, MT, NE, NH, NJ, OR, RI, TN, TX, UT, or VA) have the right to opt out of these uses of their personal information. CA residents may also request that we limit use and disclosure of their "Sensitive Personal Information" (as defined under the California Consumer Privacy Act).</p>
