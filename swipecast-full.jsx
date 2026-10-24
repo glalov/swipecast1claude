@@ -88,7 +88,7 @@ const TRANSLATIONS = {
     'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
-    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed. Free accounts included — upgrade to Premium (from $10.75/mo) for unlimited submissions, Slate Video, Business Card, Manager Mode, the Talent Agency & Manager Directory (650+ agencies and managers in LA, Beverly Hills & NYC), the Casting Companies Directory (131 active casting offices), the Acting & Film School Directory (351 schools and film programs), and more.',
+    'footer.blurb':'The casting platform built for working actors. Every submission gets seen — guaranteed.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.successStories':'Success Stories',
@@ -338,7 +338,7 @@ const TRANSLATIONS = {
     'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
-    'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado. Cuentas gratuitas incluidas — mejora a Premium (desde $10.75/mes) para postulaciones ilimitadas, el directorio de agencias, el de directores de casting, el de escuelas de actuación y cine, y más.',
+    'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Cada postulación es vista — garantizado.',
     'footer.talent':'Talento','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
     'footer.createProfile':'Crear perfil','footer.browse':'Convocatorias','footer.classes':'Clases',
     'footer.resources':'Recursos','footer.successStories':'Historias de éxito',
@@ -4171,7 +4171,13 @@ body.fbsp-open #castoria-root{display:none!important;}
        with .app + .page being flex columns with min-height:100vh, the footer
        always sticks to the very bottom of the viewport even on short pages. ─── */
 .site-footer{
-  background:#0E0C0B;color:#B5ADA3;
+  background:#0E0C0B;color:#F3EBE0;
+  /* One font for every footer text (owner 2026-10-23, unified demo C, abduzeedo sizes):
+     Neue Haas Grotesk if present, else Helvetica Neue (built into Apple devices). Only the
+     CastSlate wordmark keeps the brand font. Colours: cream #F3EBE0 main text, warm grey
+     #968B7F quiet text, rgba(243,235,224,.14) lines. */
+  font-family:"neue-haas-grotesk-text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   border-top:1px solid rgba(255,255,255,0.06);
   position:relative;
   width:100vw;
@@ -4208,18 +4214,18 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#0E0C0B;pointer-events:none;}
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
-.site-footer-brand .logo{color:#fff;cursor:pointer;}
-.site-footer-brand .logo .logo-i{background:#fff;color:#0E0C0B;}
+.site-footer-brand .logo{color:#F3EBE0;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.site-footer-brand .logo .logo-i{background:#F3EBE0;color:#0E0C0B;}
 /* Footer logo = the nav logo, inverted (owner 2026-10-22): same 38px mark with 9px
    corners (40px at 900px and below, like the nav) — it was the 30px/7px base size. */
 .site-footer-brand .logo .logo-i{width:38px;height:38px;border-radius:9px;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
-.site-footer-blurb{color:#B5ADA3;font-size:12.5px;line-height:1.65;margin-top:14px;max-width:280px;}
-.site-footer-heading{font-family:'DM Sans',sans-serif;color:#F3EBE0;font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
+.site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:16px;max-width:300px;}
+.site-footer-heading{font-family:inherit;color:#968B7F;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 16px;}
 /* Apple-style hover (owner 2026-10-23): no slide, an underline appears under the words.
    width:fit-content keeps each link on its own line but limits the hover zone and the
    underline to the text itself, not the whole column. */
-.site-footer-link{display:block;width:fit-content;max-width:100%;color:#B5ADA3;font-size:13px;padding:5px 0;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:1px;}
+.site-footer-link{display:block;width:fit-content;max-width:100%;color:#F3EBE0;font-size:14px;font-weight:500;line-height:24px;padding:0;cursor:pointer;font-family:inherit;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:1px;}
 a.site-footer-link{text-decoration:none;}
 .site-footer-link:hover,a.site-footer-link:hover{color:#F3EBE0;text-decoration:underline;}
 .nyc-guide{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--bdr);min-width:0;}
@@ -4239,26 +4245,28 @@ a.site-footer-link{text-decoration:none;}
 .nyc-crosslink a{color:var(--teal);font-weight:700;text-decoration:none;margin-left:4px;}
 .nyc-crosslink a:hover{text-decoration:underline;text-underline-offset:3px;}
 .site-footer-social-row{display:flex;gap:14px;align-items:center;justify-content:center;padding:18px 0 22px;border-top:none;margin-top:0;}
-.site-footer.has-b2t .site-footer-social-row{margin-top:96px;}
-.site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#B5ADA3;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
-.site-footer-social:hover{color:#fff;background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.16);transform:translateY(-2px);}
-.site-footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;flex-wrap:wrap;font-size:12px;color:#857B71;}
+/* 126px (was 96): the unified footer's tighter 24px link rows made the footer ~30px
+   shorter, so the fixed cube (bottom:150px) sat on "Resources"; this keeps it clear. */
+.site-footer.has-b2t .site-footer-social-row{margin-top:126px;}
+.site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#F3EBE0;background:none;border:1px solid rgba(243,235,224,.14);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
+.site-footer-social:hover{color:#F3EBE0;background:rgba(243,235,224,.06);border-color:rgba(243,235,224,.32);transform:translateY(-2px);}
+.site-footer-bottom{border-top:1px solid rgba(243,235,224,.14);padding-top:22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;flex-wrap:wrap;font-size:12px;line-height:24px;color:#968B7F;}
 /* One-colour warm near-black footer (owner 2026-10-23, one-color demo A, replacing the
    two-step version): #0E0C0B top to bottom, the divider above the copyright line is the
    only separation. html,body share this colour so overscroll below the footer matches. */
 .site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-left:0;}
 .site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
-.site-footer-bottom-links span:hover{color:#fff;}
-.site-footer-plain-links a{color:inherit;text-decoration:none;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;}
+.site-footer-bottom-links span:hover{color:#F3EBE0;}
+.site-footer-plain-links a{color:#F3EBE0;font-weight:500;text-decoration:none;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;}
 .site-footer-plain-links a:hover{color:#F3EBE0;text-decoration:underline;}
 /* Cookie Preferences + language switch, quiet version (owner 2026-10-23, demo A). The old
    gradient card and navy pill floated nonstop and were off-palette; now Cookie Preferences
    is one more text link and the language switch is a slim, still, outlined pill. */
-.site-footer-plain-links .footer-cookie-link{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;-webkit-tap-highlight-color:transparent;}
+.site-footer-plain-links .footer-cookie-link{font:inherit;font-weight:500;color:#F3EBE0;background:none;border:0;padding:0;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;-webkit-tap-highlight-color:transparent;}
 .site-footer-plain-links .footer-cookie-link:hover{color:#F3EBE0;text-decoration:underline;}
-.footer-lang-pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid rgba(243,235,224,.22);border-radius:999px;background:none;color:#C9BDAF;font-family:inherit;font-size:12px;font-weight:600;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
-.footer-lang-pill:hover{border-color:rgba(243,235,224,.5);color:#F3EBE0;}
+.footer-lang-pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid rgba(243,235,224,.14);border-radius:999px;background:none;color:#F3EBE0;font-family:inherit;font-size:12px;font-weight:500;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.footer-lang-pill:hover{border-color:rgba(243,235,224,.4);color:#F3EBE0;}
 .footer-lang-pill svg{flex-shrink:0;width:14px;height:14px;}
 .footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:20px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
 /* ─── Cookie consent panel — "Amber Block": a cinematic bottom drawer that rises
