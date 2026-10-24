@@ -1817,6 +1817,13 @@ body.fbsp-open #castoria-root{display:none!important;}
    Neither block contains position:fixed/sticky children (the cube is a sibling in
    <main>), so the new containing block changes nothing. */
 .site-footer,.lh-mm{will-change:transform;}
+/* Side effect of those layers (owner report 2026-10-23, Safari): the Manager Mode band ends
+   on a fractional pixel (e.g. 12122.06) and the two layers round their edges separately, so a
+   1px gap opened and the cream .app showed through as a white line. Draw the footer 3px
+   higher so it always overlaps whatever is above it; the footer's existing 0 3px shadow fills
+   the 3px this vacates at its bottom. top (not margin) so layout and the short-page pin are
+   untouched. */
+.site-footer{top:-3px;}
 /* Manager Mode teaser: stacked monthly letters + paper stamp. */
 .mm-stk{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:36px;}
 .mm-stk .mm-letter{position:relative;z-index:5;}
