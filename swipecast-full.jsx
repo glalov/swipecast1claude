@@ -4206,20 +4206,7 @@ body.fbsp-open #castoria-root{display:none!important;}
    where the 1px shadow above becomes 1.25-1.5 device px and a cream row could
    still round through mid-scroll. No rounding at any scale reaches 3px. */
 .site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#0E0C0B;pointer-events:none;}
-.site-footer-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
-/* Comic panel behind the footer, DC-style (owner 2026-10-23: desktop only, 12%, edge to
-   edge, no fades, no speech bubble). The art is the original panel outpainted to
-   ultra-wide (~2.4:1) so it fits wide footers with the fighters' feet in frame; the printed
-   comic frame is cropped off and the warm tint is baked into the WebP. Cover-sized; any
-   vertical trim comes 12% from the top / 88% from the bottom (extra street sits below the
-   feet). Still image only: nothing here may animate (Safari stutter). */
-.site-footer-art{display:none;}
-@media(min-width:901px){
-  .site-footer-art{display:block;position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
-  .site-footer-art-img{position:absolute;inset:0;opacity:.12;
-    background-repeat:no-repeat;background-size:cover;background-position:center 12%;}
-  .site-footer-art.on .site-footer-art-img{background-image:url(/assets/footer/cut-great-take-21x9-v2.webp);}
-}
+.site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#fff;cursor:pointer;}
 .site-footer-brand .logo .logo-i{background:#fff;color:#0E0C0B;}
@@ -7993,18 +7980,6 @@ function PageLoader({text}){
 // ═══════════════════════════════════════════
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
-  // Desktop footer art ("CUT! Great take" comic panel, owner 2026-10-23). The image is only
-  // attached once the footer is within ~800px of the viewport, so it never competes with
-  // the top of the page; on phones the layer is display:none and never intersects, so it
-  // is never downloaded at all.
-  const artRef=React.useRef(null);
-  React.useEffect(()=>{
-    const el=artRef.current;if(!el)return;
-    if(!('IntersectionObserver' in window)){el.classList.add('on');return;}
-    const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){el.classList.add('on');io.disconnect();}},{rootMargin:'800px 0px'});
-    io.observe(el);
-    return()=>io.disconnect();
-  },[]);
   const {lang,setLang}=useLanguage();
   // Reusable footer link — every link inherits the same hover treatment via .site-footer-link.
   // Real <a href> (owner 2026-10-23): Safari made the old onClick spans flicker on hover while
@@ -8183,7 +8158,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       <span>{t('footer.backToTop')}</span>
     </button>}
     <footer className={"site-footer"+(backToTop?" has-b2t":"")}>
-      <div ref={artRef} className="site-footer-art" aria-hidden="true"><div className="site-footer-art-img"></div></div>
       <div className="site-footer-inner">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
