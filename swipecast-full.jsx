@@ -7991,10 +7991,6 @@ function PageLoader({text}){
 // ═══════════════════════════════════════════
 // FOOTER (shared across all pages)
 // ═══════════════════════════════════════════
-// "Your Privacy Choices" footer link (owner 2026-10-23). PREVIEW-GATED until the owner approves:
-// shown only after visiting with ?pcpreview=1 (kept for the tab via sessionStorage).
-// To launch, make this simply true.
-const privacyChoicesOn=(()=>{try{if(/[?&]pcpreview=1/.test(location.search))sessionStorage.setItem('cs_pc_preview','1');return sessionStorage.getItem('cs_pc_preview')==='1';}catch(_){return false;}})();
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
@@ -8233,8 +8229,8 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
               <a href="/terms" onClick={go("terms")}>{t('footer.termsLink')}</a>
               <a href="/contact" onClick={go("contact")}>{t('footer.contactLink')}</a>
               <button className="footer-cookie-link" type="button" onClick={openCookies}>{t('footer.cookiePrefs')}</button>
-              {privacyChoicesOn&&<a className="footer-privacy-choices" href="/privacy-choices" target="_blank" rel="noopener" title={t('footer.privacyChoices')+' (opens in a new window)'}>{t('footer.privacyChoices')}
-                <svg viewBox="0 0 30 14" aria-hidden="true"><rect x=".5" y=".5" width="29" height="13" rx="6.5" fill="#fff" stroke="#0066FF"/><path d="M7 .5h9.5L13 13.5H7a6.5 6.5 0 0 1 0-13z" fill="#0066FF"/><path d="M5.2 7.2l1.8 1.8 3.4-3.6" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M19.6 4.6l4.4 4.8M24 4.6l-4.4 4.8" stroke="#0066FF" strokeWidth="1.4" strokeLinecap="round"/></svg></a>}
+              <a className="footer-privacy-choices" href="/privacy-choices" target="_blank" rel="noopener" title={t('footer.privacyChoices')+' (opens in a new window)'}>{t('footer.privacyChoices')}
+                <svg viewBox="0 0 30 14" aria-hidden="true"><rect x=".5" y=".5" width="29" height="13" rx="6.5" fill="#fff" stroke="#0066FF"/><path d="M7 .5h9.5L13 13.5H7a6.5 6.5 0 0 1 0-13z" fill="#0066FF"/><path d="M5.2 7.2l1.8 1.8 3.4-3.6" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M19.6 4.6l4.4 4.8M24 4.6l-4.4 4.8" stroke="#0066FF" strokeWidth="1.4" strokeLinecap="round"/></svg></a>
             </div>
             <button
               className="footer-lang-pill"
