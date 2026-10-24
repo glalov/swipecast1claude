@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Privacy Choices | CastSlate</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Submit a privacy request to CastSlate under state privacy laws.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=DM+Sans:wght@800&display=swap" rel="stylesheet">
+<!-- Cloudflare Turnstile (privacy-friendly bot check). Explicit render so the widget id can be reset after an error. -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=csTurnstileReady" async defer></script>
+<style>
+/* "Your Privacy Choices" request page (owner 2026-10-23). Layout copies the Sony Pictures
+   privacy request page: black brand band, centred grey explanation, required state picker
+   with residency disclaimer, requester tiles with tooltips, bot check, light-blue Submit.
+   Standalone page (not the React app) so it loads fast and works on its own. */
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;font-family:"Open Sans",Arial,sans-serif;color:#696969}
+a{color:#1A5DBA}
+.band{background:#0E0C0B;height:122px;display:flex;align-items:center;justify-content:center;gap:22px;text-decoration:none}
+.band .mark{width:70px;height:70px;border-radius:16px;background:#F3EBE0;display:grid;place-items:center}
+.band .mark svg{width:42px;height:42px}
+.band .word{font:800 78px/1 'DM Sans',sans-serif;letter-spacing:.06em;color:#fff;text-transform:uppercase}
+@media(max-width:640px){.band{height:84px;gap:12px}.band .mark{width:42px;height:42px;border-radius:10px}.band .mark svg{width:26px;height:26px}.band .word{font-size:38px}}
+.wrap{max-width:572px;margin:0 auto;padding:62px 16px 40px}
+.copy{text-align:center;font-size:15px;line-height:22px}
+.copy p+p{margin-top:22px}
+.copy b{color:#333;font-weight:700}
+form{margin-top:66px}
+.q{display:flex;align-items:flex-start;gap:4px;font-size:16px;font-weight:600;color:#333;margin:0 0 8px}
+.q .req{color:#D9372C;font-size:14px;line-height:1;margin-top:-4px}
+.mt{margin-top:22px}
+.field{position:relative}
+.input{width:100%;height:38px;border:1px solid #CCC;border-radius:3px;padding:0 10px;font:15px "Open Sans",Arial,sans-serif;color:#333;outline:none;background:#fff}
+.input:focus{border-color:#45A2DC}
+#state{padding-right:40px}
+.bad .input,.input.bad{border-color:#E57373}
+.clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.clear svg{width:20px;height:20px}
+.errmsg{color:#C62828;font-size:13px;margin-top:4px;display:none}
+.errmsg.on{display:block}
+.list{position:absolute;left:0;right:0;top:100%;background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.16);border-radius:0 0 3px 3px;max-height:230px;overflow:auto;z-index:5;display:none}
+.list.on{display:block}
+.list div{padding:8px 18px;font-size:15px;color:#333;cursor:pointer;line-height:20px}
+.list div:hover,.list div.hl{background:#F2F2F2}
+.disc{margin-top:18px;display:none}
+.disc.on{display:block}
+.disc h5{font-size:16px;font-weight:600;color:#333;margin-bottom:6px}
+.disc p{font-size:15.5px;line-height:23.5px}
+.tiles{display:flex;gap:10px;flex-wrap:wrap}
+.tile{position:relative;width:178px;min-height:74px;padding:8px 12px;border:1px solid #9E9E9E;border-radius:3px;background:#F5F5F5;color:#696969;font:14px/20px "Open Sans",Arial,sans-serif;cursor:pointer;text-align:center}
+.tile:hover{border-color:#45A2DC;color:#45A2DC;background:#fff}
+.tile.on{background:#45A2DC;border-color:#45A2DC;color:#fff}
+.tip{position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);width:296px;background:#292B2C;color:#fff;font-size:16px;line-height:24px;text-align:left;padding:10px 14px;border-radius:3px;box-shadow:0 2px 8px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .15s;z-index:6}
+.tip::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:0;border-right-color:#292B2C}
+.tile:hover .tip,.tile:focus-visible .tip{opacity:1}
+@media(max-width:820px){.tip{left:50%;top:calc(100% + 10px);transform:translateX(-50%);width:240px}.tip::before{left:50%;top:-8px;margin:0 0 0 -8px;border:8px solid transparent;border-top:0;border-bottom-color:#292B2C}}
+.more{display:none}
+.more.on{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}}
+.sub{font-size:13px;color:#696969;margin:-4px 0 8px}
+.lbl{display:block;font-size:13px;color:#555;margin-bottom:4px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:#333;line-height:21px;margin-top:10px;cursor:pointer}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:#45A2DC;flex:0 0 auto}
+textarea.input{height:96px;padding:8px 10px;resize:vertical;line-height:1.5}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.bot{margin:30px 0 0 auto;min-height:65px;width:300px;max-width:100%;display:flex;justify-content:flex-end}
+.warn{margin-top:16px;border:1px solid #F4A621;background:#FFFCF3;border-radius:3px;padding:10px 14px;display:none;align-items:center;gap:12px;font-size:14px;color:#333}
+.warn.on{display:flex}
+.warn i{width:20px;height:20px;border-radius:50%;background:#F4A621;color:#fff;font-style:normal;font-weight:700;display:grid;place-items:center;flex:0 0 auto}
+.warn.red{border-color:#E57373;background:#FFF6F6}.warn.red i{background:#D9372C}
+.actions{display:flex;justify-content:flex-end;margin-top:12px}
+.submit{height:38px;padding:0 18px;border:0;border-radius:3px;background:#45A2DC;color:#fff;font:600 15px "Open Sans",Arial,sans-serif;cursor:pointer}
+.submit:disabled{background:#A8D3F0;cursor:not-allowed}
+.done{display:none;margin-top:30px;text-align:center;font-size:16px;color:#333;line-height:1.6}
+.done.on{display:block}
+.done small{display:block;margin-top:8px;font-size:13px;color:#696969}
+.foot{max-width:596px;margin:0 auto;border-top:1px solid #E0E0E0;padding:14px 16px 30px}
+.powered{text-align:right;font-size:13px}
+.powered b{font:800 22px 'DM Sans',sans-serif;color:#0E0C0B;letter-spacing:-.3px;vertical-align:-2px}
+.pp{display:block;text-align:center;margin-top:30px;font-size:14px;text-decoration:underline}
+</style></head><body>
+<a class="band" href="/" aria-label="CastSlate home"><span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4,16 L12,9 L12,12 L20,12 L20,9 L28,16 L20,23 L20,20 L12,20 L12,23 Z" fill="#0E0C0B"/></svg></span><span class="word">CastSlate</span></a>
+<main class="wrap">
+  <div class="copy">
+    <p>CastSlate does not sell personal information in exchange for money. CastSlate may share limited personal information with third parties, such as through cookies and similar technologies on our websites, in ways that may be considered "sales" or "sharing" under state privacy laws. Residents of <b>Covered States</b> (CA, CO, CT, DE, IA, IN, KY, MD, MN, MT, NE, NH, NJ, OR, RI, TN, TX, UT, or VA) have the right to opt out of these uses of their personal information. CA residents may also request that we limit use and disclosure of their "Sensitive Personal Information" (as defined under the California Consumer Privacy Act).</p>
+    <p>If you are a resident of a Covered State and would like to opt out of targeted/cross-context behavioral advertising, sales, or sharing of personal information taking place via cookies and similar technologies, click Cookie Preferences in the footer of the CastSlate website. To opt out of other "sales" or "sharing" of your personal information, or if you are a CA resident who would like to limit our processing of your Sensitive Personal Information, please fill out and submit the form below.</p>
+    <p>We honor opt-out preference signals sent from your browser (such as Global Privacy Control), which will opt you out of sales and sharing of your personal information. Depending on how you have interacted with CastSlate and our ability to identify you, this may only opt you out of sales and sharing that take place via cookies and similar technologies.</p>
+  </div>
+
+  <form id="f" novalidate autocomplete="on">
+    <div class="q"><span class="req">*</span>I am a resident of</div>
+    <div class="field" id="sf">
+      <input class="input" id="state" type="text" role="combobox" aria-expanded="false" aria-controls="states" aria-label="I am a resident of" autocomplete="off">
+      <button type="button" class="clear" id="clr" aria-label="Clear"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#444" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="list" id="states" role="listbox"></div>
+    </div>
+    <div class="errmsg" id="stateErr">This field is required</div>
+    <div class="disc" id="disc"><h5>Residency Disclaimer</h5><p>In accordance with applicable law and as further detailed in our Privacy Policy, only California, Colorado, Connecticut, Delaware, Indiana, Iowa, Kentucky, Oregon, Maryland, Minnesota, Montana, Nebraska, New Hampshire, New Jersey, Rhode Island, Tennessee, Texas, Utah, and Virginia residents are able to submit such requests at this time.</p></div>
+
+    <div class="q mt"><span class="req">*</span>I am submitting this request as</div>
+    <div class="tiles">
+      <button type="button" class="tile" data-v="consumer">A consumer<span class="tip">"Consumer" means a natural person who is a California resident.</span></button>
+      <button type="button" class="tile" data-v="agent">An authorized representative of a consumer<span class="tip">A person authorized by the consumer to submit a request on the consumer's behalf.</span></button>
+    </div>
+
+    <div class="more" id="more">
+      <div class="q mt"><span class="req">*</span><span id="youLbl">Your information</span></div>
+      <div class="grid2">
+        <div><label class="lbl" for="fn">First name</label><input class="input" id="fn" autocomplete="given-name" maxlength="80"></div>
+        <div><label class="lbl" for="ln">Last name</label><input class="input" id="ln" autocomplete="family-name" maxlength="80"></div>
+      </div>
+      <div style="margin-top:12px"><label class="lbl" for="em">Email</label><input class="input" id="em" type="email" autocomplete="email" maxlength="160"></div>
+      <div class="sub" style="margin-top:6px">Use the email address connected to your CastSlate account, if you have one.</div>
+
+      <div id="agentBox" style="display:none">
+        <div class="q mt"><span class="req">*</span>Consumer's information</div>
+        <div class="grid2">
+          <div><label class="lbl" for="cfn">Consumer's first name</label><input class="input" id="cfn" maxlength="80"></div>
+          <div><label class="lbl" for="cln">Consumer's last name</label><input class="input" id="cln" maxlength="80"></div>
+        </div>
+        <div style="margin-top:12px"><label class="lbl" for="cem">Consumer's email</label><input class="input" id="cem" type="email" maxlength="160"></div>
+        <div class="sub" style="margin-top:6px">We may contact the consumer to confirm that you are authorized to act for them.</div>
+      </div>
+
+      <div class="q mt"><span class="req">*</span>I would like to</div>
+      <label class="check"><input type="checkbox" id="optOut" checked> Opt out of the sale or sharing of my personal information, including for targeted advertising</label>
+      <label class="check" id="spiRow" style="display:none"><input type="checkbox" id="spi"> Limit the use and disclosure of my Sensitive Personal Information (California residents)</label>
+
+      <div class="q mt" style="font-weight:600">Anything else we should know? <span style="font-weight:400;color:#888;font-size:14px">&nbsp;(optional)</span></div>
+      <textarea class="input" id="det" maxlength="2000"></textarea>
+    </div>
+
+    <div class="hp" aria-hidden="true"><label>Website<input id="website" tabindex="-1" autocomplete="off"></label></div>
+    <div class="bot"><div id="ts"></div></div>
+    <div class="warn" id="warn"><i>!</i><span id="warnTxt">Please read the Residency Disclaimer above.</span></div>
+    <div class="actions"><button class="submit" id="go" type="submit" disabled>Submit</button></div>
+    <div class="done" id="done"><b>Thank you. Your request has been received.</b><small id="doneId"></small></div>
+  </form>
+</main>
+<footer class="foot"><div class="powered">Powered by <b>CastSlate</b></div><a class="pp" href="/privacy">Privacy Policy</a></footer>
+<script>
+// Cloudflare Turnstile site key. "1x00000000000000000000AA" is Cloudflare's public TEST key
+// (always passes, shows a test widget). Replace with CastSlate's real site key before launch.
+var TURNSTILE_SITE_KEY = "1x00000000000000000000AA";
+var FN_URL = "https://mvqhqbjjvgkftninjcby.supabase.co/functions/v1/privacy-request";
+var STATES=["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+var COVERED=new Set(["California","Colorado","Connecticut","Delaware","Indiana","Iowa","Kentucky","Oregon","Maryland","Minnesota","Montana","Nebraska","New Hampshire","New Jersey","Rhode Island","Tennessee","Texas","Utah","Virginia"]);
+var $=function(id){return document.getElementById(id)};
+var inp=$('state'), list=$('states'), sf=$('sf');
+var chosen='', role='', hl=-1, token='', tsId=null, sending=false, errMsg='', startedAt=Date.now();
+var emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+window.csTurnstileReady=function(){
+  tsId=turnstile.render('#ts',{sitekey:TURNSTILE_SITE_KEY,theme:'light',
+    callback:function(t){token=t;update();},
+    'expired-callback':function(){token='';update();},
+    'error-callback':function(){token='';update();}});
+};
+
+function render(q){
+  var ql=q.toLowerCase();
+  var m=STATES.filter(function(s){var sl=s.toLowerCase();return sl.indexOf(ql)===0||(ql.length>1&&sl.indexOf(ql)>=0);});
+  list.innerHTML=m.map(function(s,i){return '<div role="option" data-s="'+s+'" class="'+(i===hl?'hl':'')+'">'+s+'</div>';}).join('');
+  list.classList.toggle('on',m.length>0);inp.setAttribute('aria-expanded',m.length>0);
+}
+function pick(s){chosen=s;inp.value=s;list.classList.remove('on');hl=-1;update();}
+function contactOk(){
+  var ok=$('fn').value.trim()&&$('ln').value.trim()&&emailRe.test($('em').value.trim());
+  if(role==='agent') ok=ok&&$('cfn').value.trim()&&$('cln').value.trim()&&emailRe.test($('cem').value.trim());
+  return !!ok;
+}
+function update(){
+  var covered=chosen&&COVERED.has(chosen), nonCovered=chosen&&!covered;
+  sf.classList.toggle('bad',!chosen); $('stateErr').classList.toggle('on',!chosen);
+  $('disc').classList.toggle('on',!!nonCovered);
+  var showMore=covered&&!!role;
+  $('more').classList.toggle('on',showMore);
+  $('agentBox').style.display=role==='agent'?'block':'none';
+  $('youLbl').textContent=role==='agent'?'Your information (authorized representative)':'Your information';
+  var isCA=chosen==='California'; $('spiRow').style.display=isCA?'flex':'none'; if(!isCA)$('spi').checked=false;
+  var anyAsk=$('optOut').checked||$('spi').checked;
+  var w=$('warn'); w.classList.remove('red');
+  if(errMsg){w.classList.add('on','red');$('warnTxt').textContent=errMsg;}
+  else if(nonCovered){w.classList.add('on');$('warnTxt').textContent='Please read the Residency Disclaimer above.';}
+  else w.classList.remove('on');
+  $('go').disabled=sending||!(covered&&role&&contactOk()&&anyAsk&&token);
+}
+function showError(msg){errMsg=msg;update();}
+
+inp.addEventListener('focus',function(){render(inp.value===chosen?'':inp.value);});
+inp.addEventListener('input',function(){chosen='';hl=-1;render(inp.value);update();});
+inp.addEventListener('keydown',function(e){var opts=list.children;
+  if(e.key==='ArrowDown'){hl=Math.min(hl+1,opts.length-1);render(inp.value);e.preventDefault();}
+  else if(e.key==='ArrowUp'){hl=Math.max(hl-1,0);render(inp.value);e.preventDefault();}
+  else if(e.key==='Enter'){if(opts[hl]){pick(opts[hl].dataset.s);}e.preventDefault();}
+  else if(e.key==='Escape'){list.classList.remove('on');}});
+inp.addEventListener('blur',function(){setTimeout(function(){list.classList.remove('on');if(!chosen){var exact=STATES.find(function(s){return s.toLowerCase()===inp.value.trim().toLowerCase();});if(exact)pick(exact);else inp.value='';}update();},150);});
+list.addEventListener('mousedown',function(e){var d=e.target.closest('[data-s]');if(d){e.preventDefault();pick(d.dataset.s);}});
+$('clr').addEventListener('click',function(){chosen='';inp.value='';update();inp.focus();});
+document.querySelectorAll('.tile').forEach(function(t){t.addEventListener('click',function(){role=t.dataset.v;document.querySelectorAll('.tile').forEach(function(x){x.classList.toggle('on',x===t);});update();});});
+function edited(){errMsg='';update();}
+['fn','ln','em','cfn','cln','cem','optOut','spi','det'].forEach(function(id){$(id).addEventListener('input',edited);$(id).addEventListener('change',edited);});
+['em','cem'].forEach(function(id){$(id).addEventListener('blur',function(){var v=$(id).value.trim();$(id).classList.toggle('bad',!!v&&!emailRe.test(v));});});
+
+$('f').addEventListener('submit',function(e){
+  e.preventDefault(); if($('go').disabled)return;
+  sending=true; update(); $('go').textContent='Sending…';
+  var body={state:chosen,requester_type:role,first_name:$('fn').value.trim(),last_name:$('ln').value.trim(),email:$('em').value.trim(),
+    consumer_first_name:$('cfn').value.trim(),consumer_last_name:$('cln').value.trim(),consumer_email:$('cem').value.trim(),
+    request_opt_out:$('optOut').checked,request_limit_spi:$('spi').checked,details:$('det').value.trim(),
+    website:$('website').value,started_at:startedAt,turnstile_token:token};
+  fetch(FN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json().catch(function(){return {ok:false,error:'server_error'};});})
+    .then(function(d){
+      if(d&&d.ok){
+        document.querySelectorAll('#f > *:not(#done)').forEach(function(el){el.style.display='none';});
+        $('done').classList.add('on'); if(d.id)$('doneId').textContent='Reference: '+d.id;
+        window.scrollTo({top:$('f').offsetTop-40,behavior:'smooth'});
+        return;
+      }
+      var msgs={bot_check_failed:'The security check expired. Please complete it again and resubmit.',rate_limited:'Too many requests from this connection. Please try again in an hour.',too_fast:'Please take a moment to review the form, then submit again.'};
+      showError(msgs[d&&d.error]||'Something went wrong. Please try again, or email team@castslate.com.');
+      throw 0;
+    })
+    .catch(function(){ if(!$('done').classList.contains('on')){ token=''; if(window.turnstile&&tsId!==null)turnstile.reset(tsId); } })
+    .finally(function(){sending=false;$('go').textContent='Submit';update();});
+});
+update();
+</script>
+</body></html>

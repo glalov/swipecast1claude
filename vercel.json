@@ -28,6 +28,7 @@
     { "source": "/contact", "destination": "/contact.html" },
     { "source": "/faq", "destination": "/faq.html" },
     { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/privacy-choices", "destination": "/privacy-choices.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/manager-mode", "destination": "/manager-mode.html" },
     { "source": "/tapelink", "destination": "/tapelink.html" },

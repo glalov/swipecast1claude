@@ -103,6 +103,7 @@ const TRANSLATIONS = {
     'footer.copyright':'© {year} CastSlate. All rights reserved. Casting, finally built for actors.',
     'footer.privacyLink':'Privacy','footer.termsLink':'Terms','footer.contactLink':'Contact',
     'footer.cookiePrefs':'Cookie Preferences',
+    'footer.privacyChoices':'Your Privacy Choices',
     'footer.switchLang':'Español',
     // Landing
     'landing.liveNow':'Live now · Trusted by working actors and casting directors',
@@ -352,6 +353,7 @@ const TRANSLATIONS = {
     'footer.copyright':'© {year} CastSlate. Todos los derechos reservados. Casting, finalmente para actores.',
     'footer.privacyLink':'Privacidad','footer.termsLink':'Términos','footer.contactLink':'Contacto',
     'footer.cookiePrefs':'Preferencias de cookies',
+    'footer.privacyChoices':'Tus opciones de privacidad',
     'footer.switchLang':'English',
     // Landing
     'landing.liveNow':'En vivo · Confiado por actores y directores de casting profesionales',
@@ -4265,6 +4267,9 @@ a.site-footer-link{text-decoration:none;}
    is one more text link and the language switch is a slim, still, outlined pill. */
 .site-footer-plain-links .footer-cookie-link{font:inherit;font-weight:500;color:#F3EBE0;background:none;border:0;padding:0;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;-webkit-tap-highlight-color:transparent;}
 .site-footer-plain-links .footer-cookie-link:hover{color:#F3EBE0;text-decoration:underline;}
+/* Your Privacy Choices + California's official privacy-options toggle icon (as on Sony Pictures). */
+.site-footer-plain-links a.footer-privacy-choices{display:inline-flex;align-items:center;gap:7px;}
+.site-footer-plain-links a.footer-privacy-choices svg{width:30px;height:14px;flex:0 0 auto;}
 .footer-lang-pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid rgba(243,235,224,.14);border-radius:999px;background:none;color:#F3EBE0;font-family:inherit;font-size:12px;font-weight:500;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
 .footer-lang-pill:hover{border-color:rgba(243,235,224,.4);color:#F3EBE0;}
 .footer-lang-pill svg{flex-shrink:0;width:14px;height:14px;}
@@ -7986,6 +7991,10 @@ function PageLoader({text}){
 // ═══════════════════════════════════════════
 // FOOTER (shared across all pages)
 // ═══════════════════════════════════════════
+// "Your Privacy Choices" footer link (owner 2026-10-23). PREVIEW-GATED until the owner approves:
+// shown only after visiting with ?pcpreview=1 (kept for the tab via sessionStorage).
+// To launch, make this simply true.
+const privacyChoicesOn=(()=>{try{if(/[?&]pcpreview=1/.test(location.search))sessionStorage.setItem('cs_pc_preview','1');return sessionStorage.getItem('cs_pc_preview')==='1';}catch(_){return false;}})();
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
@@ -8224,6 +8233,8 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
               <a href="/terms" onClick={go("terms")}>{t('footer.termsLink')}</a>
               <a href="/contact" onClick={go("contact")}>{t('footer.contactLink')}</a>
               <button className="footer-cookie-link" type="button" onClick={openCookies}>{t('footer.cookiePrefs')}</button>
+              {privacyChoicesOn&&<a className="footer-privacy-choices" href="/privacy-choices" target="_blank" rel="noopener" title={t('footer.privacyChoices')+' (opens in a new window)'}>{t('footer.privacyChoices')}
+                <svg viewBox="0 0 30 14" aria-hidden="true"><rect x=".5" y=".5" width="29" height="13" rx="6.5" fill="#fff" stroke="#0066FF"/><path d="M7 .5h9.5L13 13.5H7a6.5 6.5 0 0 1 0-13z" fill="#0066FF"/><path d="M5.2 7.2l1.8 1.8 3.4-3.6" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M19.6 4.6l4.4 4.8M24 4.6l-4.4 4.8" stroke="#0066FF" strokeWidth="1.4" strokeLinecap="round"/></svg></a>}
             </div>
             <button
               className="footer-lang-pill"
