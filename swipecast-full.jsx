@@ -100,6 +100,7 @@ const TRANSLATIONS = {
     'footer.about':'About','footer.blog':'Blog','footer.careers':'Careers','footer.contact':'Contact',
     'footer.faq':'FAQ','footer.helpCenter':'Help Center','footer.terms':'Terms of Service',
     'footer.privacy':'Privacy Policy','footer.accessibility':'Accessibility',
+    'footer.fairCasting':'Fair Casting & Inclusion',
     'footer.copyright':'© {year} CastSlate. All rights reserved. Casting, finally built for actors.',
     'footer.privacyLink':'Privacy','footer.termsLink':'Terms','footer.contactLink':'Contact',
     'footer.cookiePrefs':'Cookie Preferences',
@@ -350,6 +351,7 @@ const TRANSLATIONS = {
     'footer.about':'Acerca de','footer.blog':'Blog','footer.careers':'Empleos','footer.contact':'Contacto',
     'footer.faq':'Preguntas frecuentes','footer.helpCenter':'Centro de ayuda','footer.terms':'Términos de uso',
     'footer.privacy':'Política de privacidad','footer.accessibility':'Accesibilidad',
+    'footer.fairCasting':'Casting justo e inclusión',
     'footer.copyright':'© {year} CastSlate. Todos los derechos reservados. Casting, finalmente para actores.',
     'footer.privacyLink':'Privacidad','footer.termsLink':'Términos','footer.contactLink':'Contacto',
     'footer.cookiePrefs':'Preferencias de cookies',
@@ -2426,6 +2428,56 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .lgl-caps,.lgl-doc p,.lgl-doc li{font-size:16px;}
   .lgl-doc h2{font-size:20px;}
   .lgl-doc h3{font-size:17px;}
+}
+.lgl-hero.lgl-bright::after{background:linear-gradient(180deg,rgba(10,9,8,.10) 0%,rgba(10,9,8,.18) 45%,rgba(10,9,8,.86) 100%);}
+/* Fair Casting & Inclusion (2026-10-24): About-page layout, dark ink for low-vision readers, film-costume card tints. */
+.page.fci .info-hero p{color:var(--t1);}
+.page.fci .info-hero h1{line-height:1.12;}
+.fci-stand{position:relative;overflow:hidden;width:100%;max-width:800px;margin:0 auto 60px;padding:44px 48px;border-radius:14px;background:#1A1A2E;text-align:center;}
+.fci-stand::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#2A8472 83.33% 100%);}
+.fci-stand .section-label{color:rgba(255,255,255,.7);margin-bottom:16px;}
+.fci-stand p{margin:0;font-weight:700;font-size:22px;line-height:1.55;letter-spacing:-.3px;color:#fff;}
+.fci-sec{width:100%;max-width:800px;margin:0 auto 60px;}
+.fci-head{text-align:center;margin-bottom:28px;}
+.fci-head h2{font-size:28px;font-weight:800;margin:0 0 12px;}
+.fci-head p,.fci-after{color:var(--t1);font-size:16px;line-height:1.65;max-width:620px;margin:0 auto;}
+.fci-head p+p{margin-top:12px;}
+.fci-after{text-align:center;margin-top:24px;}
+.fci a{color:var(--teal-dk);font-weight:600;text-underline-offset:3px;}
+.fci .card{min-width:0;}
+.fci .card h3{font-size:18px;font-weight:700;margin:0 0 8px;color:var(--t1);}
+.fci .card p,.fci .card li{color:var(--t1);font-size:15px;line-height:1.6;margin:0;}
+.fci .card ul{margin:0;padding-left:18px;}
+.fci .card li{margin-bottom:4px;}
+.fci-yellow{background:#FFF5D6;border-color:#F0DE9E;border-top:4px solid #E9B729;}
+.fci-blue{background:#E9F0FB;border-color:#C9D8EF;border-top:4px solid #3E6FB8;}
+.fci-green{background:#E5F3EA;border-color:#C2E0CC;border-top:4px solid #2E8B57;}
+.fci-coral{background:#FCE9E0;border-color:#F2CDBB;border-top:4px solid #DD6B3F;}
+.fci-lilac{background:#F0EAF8;border-color:#D9CCEB;border-top:4px solid #7B5BB5;}
+.fci-teal{background:#E2F2EF;border-color:#BEDFD8;border-top:4px solid #2A8472;}
+.fci .card.fci-zero{text-align:center;padding:28px 32px;}
+.fci .card.fci-zero p{font-size:16px;}
+.fci .card.fci-zero p.fci-big{font-size:17px;font-weight:700;line-height:1.6;margin-bottom:12px;}
+.fci-tag{display:inline-block;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
+.fci-ok{color:#206557;}
+.fci-no{color:#9A3B2C;}
+.fci-cta{text-align:center;margin-top:28px;}
+.fci a.fci-btn{display:inline-block;background:var(--teal);color:#fff;font-weight:700;font-size:15px;padding:13px 26px;border-radius:10px;text-decoration:none;}
+.fci a.fci-btn:hover{background:var(--teal-dk);}
+.fci-fine{width:100%;max-width:620px;margin:0 auto;text-align:center;border-top:1px solid var(--bdr);padding-top:36px;}
+.fci-fine h2{font-size:20px;font-weight:800;margin:0 0 10px;}
+.fci-fine p{color:var(--t1);font-size:15px;line-height:1.65;margin:0;}
+.fci-fine p.fci-date{font-size:14px;margin-top:12px;}
+.fci-thanks{width:100%;max-width:620px;margin:56px auto 0;text-align:center;font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.4;color:var(--t1);}
+@media (max-width:768px){
+  .page.fci .info-hero h1{font-size:34px;letter-spacing:-1.2px;}
+  .fci .grid-2{gap:16px;}
+  .fci-sec{margin-bottom:48px;}
+  .fci-head h2{font-size:24px;}
+  .fci-stand{padding:32px 22px;margin-bottom:48px;}
+  .fci-stand p{font-size:18px;}
+  .fci .card.fci-zero{padding:22px 20px;}
+  .fci-thanks{font-size:19px;}
 }
 .card.tm-card{margin:0;padding:clamp(24px,2.4vw,32px);display:flex;flex-direction:column;min-width:0;border-radius:20px;}
 .tm-qm{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:72px;line-height:.62;color:var(--teal);height:34px;margin:0 0 10px;}
@@ -7780,6 +7832,7 @@ function ReportModal({open,onClose,session,target}){
     <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:520}}>
       <h2 style={{marginBottom:6}}>Report {target?.kind==="profile"?"this profile":"this casting"}</h2>
       <p style={{color:"var(--t2)",fontSize:13,marginTop:0,marginBottom:18,lineHeight:1.6}}>This goes to the CastSlate safety team. You don't need to be certain — if something feels off, telling us is enough. We read every one, and the person you're reporting never sees your name.</p>
+      <p style={{fontSize:13,marginTop:-10,marginBottom:18}}><a href="/fair-casting" target="_blank" rel="noopener" style={{color:"var(--teal-dk)",fontWeight:600,textUnderlineOffset:3}}>Read our Fair Casting &amp; Inclusion commitment</a></p>
       {!isAuthed?<>
         <div style={{background:"var(--s2)",border:"1px solid var(--bdr)",borderRadius:10,padding:14,fontSize:13,color:"var(--t2)",marginBottom:16}}>You need to be signed in to submit a report. This lets us follow up if we need more details.</div>
         <div style={{display:"flex",gap:10}}><button className="btn-s" onClick={onClose} style={{flex:1}}>Close</button></div>
@@ -8215,6 +8268,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           <div>
             <h4 className="site-footer-heading">{t('footer.company')}</h4>
             <L to="about">{t('footer.about')}</L>
+            <L to="fair-casting">{t('footer.fairCasting')}</L>
             <L to="blog">{t('footer.blog')}</L>
             <L to="careers">{t('footer.careers')}</L>
             <L to="contact">{t('footer.contact')}</L>
@@ -12136,12 +12190,14 @@ const LEGAL_HEROES={
     intro:"Please read these Terms of Service (\u201cTerms\u201d) carefully before using CastSlate, as they affect your legal rights and obligations. If you do not agree to be bound by all of these Terms, do not use the site."},
   privacy:{title:"Privacy Policy",src:"/assets/legal/privacy-hero-1200.jpg",srcSet:"/assets/legal/privacy-hero-1200.jpg 1200w, /assets/legal/privacy-hero-1920.jpg 1920w",
     intro:"Your privacy matters to us. This Privacy Policy explains what personal information CastSlate collects, why we collect it, how it is protected, and the choices and rights available to you."},
+  // La La Land's "Another Day of Sun" still: bright, so it gets the heavier floor (.lgl-bright).
+  inclusion:{title:"Fair Casting & Inclusion",kick:"Our Commitment",cls:"lgl-bright",pos:"center 40%",src:"/assets/legal/inclusion-hero-1200.jpg",srcSet:"/assets/legal/inclusion-hero-1200.jpg 1200w, /assets/legal/inclusion-hero-2400.jpg 2400w"},
 };
 function LegalHero({kind}){
   const h=LEGAL_HEROES[kind];
-  return(<header className="lgl-hero">
-    <img src={h.src} srcSet={h.srcSet} sizes="100vw" alt="" fetchpriority="high" decoding="async"/>
-    <div className="lgl-hero-in"><div className="lgl-kick">Legal</div><h1>{h.title}</h1></div>
+  return(<header className={"lgl-hero"+(h.cls?" "+h.cls:"")}>
+    <img src={h.src} srcSet={h.srcSet} sizes="100vw" alt="" fetchpriority="high" decoding="async" style={h.pos?{objectPosition:h.pos}:undefined}/>
+    <div className="lgl-hero-in"><div className="lgl-kick">{h.kick||"Legal"}</div><h1>{h.title}</h1></div>
   </header>);
 }
 function TermsPage({onNavigate}){
@@ -12379,6 +12435,130 @@ function PrivacyPage({onNavigate}){
       <button className="btn-s" onClick={()=>onNavigate("contact")}>Contact Privacy Team</button>
     </div>
     <Footer onNavigate={onNavigate}/></div></>);
+}
+
+// ═══════════════════════════════════════════
+// PAGE: FAIR CASTING & INCLUSION (2026-10-24)
+// ═══════════════════════════════════════════
+// Laid out like the About page (centered heads, 800px column, .card/.grid-2);
+// card tints are the costume colours of the La La Land hero still.
+// Copy must match the Terms + Privacy Policy and what the site really does
+// (ethnicity optional, age hidden by default, get_disabilities CD-only,
+// report-alert emails every report). Change those and this page must change too.
+function FairCastingPage({onNavigate}){
+  const go=(p)=>(e)=>{e.preventDefault();onNavigate(p);};
+  const C=({c,h,children})=><div className={"card fci-"+c}><h3>{h}</h3><p>{children}</p></div>;
+  return(<><LegalHero kind="inclusion"/><div className="page fci">
+    <div className="info-hero">
+      <div className="section-label">Fair Casting &amp; Inclusion</div>
+      <h1>Whoever you are, wherever you come from, you belong here.</h1>
+      <p>Here&rsquo;s how we look after each other on CastSlate, and what to do if something ever goes wrong.</p>
+    </div>
+
+    <div className="fci-stand">
+      <div className="section-label">Where we stand</div>
+      <p>We stand against all forms of racism, xenophobia, antisemitism, Islamophobia, religious intolerance, homophobia, transphobia, biphobia, sexism, misogyny, ageism, ableism, and other forms of prejudice or discrimination.</p>
+    </div>
+
+    <section className="fci-sec">
+      <div className="fci-head">
+        <h2>You Belong Here</h2>
+        <p>Talent comes from everywhere: every neighborhood and every country, every faith and every family, every age and every kind of body. Whoever you are and whatever brought you to acting, you are welcome on CastSlate, exactly as you are.</p>
+      </div>
+      <div className="grid-2">
+        <C c="yellow" h="Seen for your work">We built CastSlate so that every actor gets a fair chance to be seen for their work, and so casting directors can discover the widest possible range of performers.</C>
+        <C c="blue" h="A promise for everyone">It applies to everyone here: actors, casting directors, producers, filmmakers, teachers and our own team. We want you to feel safe, respected and proud to be part of it.</C>
+      </div>
+    </section>
+
+    <section className="fci-sec">
+      <div className="fci-head"><h2>Zero Tolerance for Discrimination</h2></div>
+      <div className="card fci-zero">
+        <p className="fci-big">CastSlate has a zero-tolerance policy toward discrimination, harassment, or prejudice based on race, ethnicity, national origin, nationality, religion, spiritual beliefs, sex, gender, gender identity, gender expression, sexual orientation, age, disability, physical appearance, body type, or socioeconomic background.</p>
+        <p>The same protection covers pregnancy, marital or family status, immigration or citizenship status, medical and mental health conditions, and any other characteristic protected by applicable law.</p>
+      </div>
+      <p className="fci-after">This applies everywhere on CastSlate: casting postings, messages, profile content, feedback on submissions and classes. Slurs, demeaning stereotypes, unwanted sexual comments and requests that have nothing to do with the role are never acceptable here.</p>
+    </section>
+
+    <section className="fci-sec">
+      <div className="fci-head">
+        <h2>How Role Requirements Work</h2>
+        <p>Casting is a little different from other kinds of work. Sometimes a role truly calls for a performer of a certain gender, age range or background, for example when portraying a real historical person, when the character&rsquo;s identity is central to the story, or to tell a community&rsquo;s story authentically. Casting directors are welcome to describe these needs honestly.</p>
+        <p>What they may not do is go beyond what the role genuinely needs.</p>
+      </div>
+      <div className="grid-2">
+        <div className="card fci-green"><div className="fci-tag fci-ok">Welcome</div><ul>
+          <li>&ldquo;Female, plays 30&ndash;40&rdquo; for a written character</li>
+          <li>An ethnicity that is part of a character or true story</li>
+          <li>A requirement to speak a language or perform a skill</li>
+          <li>Inviting performers with lived experience of a disability for a character who has one</li>
+        </ul></div>
+        <div className="card fci-coral"><div className="fci-tag fci-no">Never allowed</div><ul>
+          <li>&ldquo;No [group] need apply&rdquo;</li>
+          <li>Excluding people for traits that have nothing to do with the character</li>
+          <li>Asking about religion, sexuality or health when the role does not call for it</li>
+          <li>Demeaning or stereotyped language in a role description</li>
+        </ul></div>
+      </div>
+      <p className="fci-after">When a role is open to everyone, it is listed as &ldquo;Any ethnicity&rdquo; or &ldquo;Any age range&rdquo;. People who post opportunities remain responsible for following the employment, union and anti-discrimination laws that apply to their production.</p>
+    </section>
+
+    <section className="fci-sec">
+      <div className="fci-head">
+        <h2>Your Story, Your Choice</h2>
+        <p>Details like ethnicity, gender, disability and age can help casting directors find the right actor, but they are personal, and you decide what to share.</p>
+      </div>
+      <div className="grid-2">
+        <C c="yellow" h="Ethnicity is optional">You decide whether to list it at all. If you do, you can change it or remove it whenever you like in Edit Profile.</C>
+        <C c="blue" h="Your real age is hidden">By default, casting directors see the age range you can play. You can choose to show more at any time in Edit Profile.</C>
+        <C c="lilac" h="Disability details stay private">If you add them, only you, signed-in casting directors and CastSlate staff can see them, and only to support authentic casting.</C>
+        <C c="teal" h="Your information is never sold">We never sell your personal information. Our <a href="/privacy" onClick={go("privacy")}>Privacy Policy</a> explains in full how it is collected, used and protected.</C>
+      </div>
+    </section>
+
+    <section className="fci-sec">
+      <div className="fci-head">
+        <h2>Built for Everyone</h2>
+        <p>Actors with disabilities, including mental health conditions, are warmly welcome on CastSlate, on the same terms as everyone else. We are working to make the site easy to use with screen readers, keyboards and other assistive technology. If any part of CastSlate is hard for you to use, please tell us at <a href="mailto:team@castslate.com">team@castslate.com</a> and we will help you directly.</p>
+      </div>
+    </section>
+
+    <section className="fci-sec">
+      <div className="fci-head">
+        <h2>If Something Feels Wrong, Tell Us</h2>
+        <p>You don&rsquo;t need to be certain something was wrong to tell us. We read every report, and you will never be in trouble for speaking up. We do not tolerate retaliation against anyone who reports in good faith.</p>
+      </div>
+      <div className="grid-2">
+        <C c="coral" h="On a casting or profile">Use the <strong>Report</strong> button on the page. Your report goes straight to the CastSlate team, and the person you report never sees your name.</C>
+        <C c="green" h="Anything else">For a message or something that happened off the site, email <a href="mailto:team@castslate.com">team@castslate.com</a> with as much detail as you are comfortable sharing.</C>
+      </div>
+      <p className="fci-after">If you are ever in immediate danger, please contact local emergency services first.</p>
+      <div className="fci-cta"><a className="fci-btn" href="mailto:team@castslate.com?subject=Report%20a%20problem">Report a problem</a></div>
+    </section>
+
+    <section className="fci-sec">
+      <div className="fci-head">
+        <h2>How We Protect This Community</h2>
+        <p>Every confirmed violation gets a response. When we learn that a posting, profile or message breaks these rules, whether from a report or from our own review, we may:</p>
+      </div>
+      <div className="grid-2">
+        <C c="blue" h="Ask for a correction">When a posting crosses the line, we ask the poster to correct the wording so the role is described fairly.</C>
+        <C c="yellow" h="Remove the content">We edit, hide or remove postings, messages or profile content that break these rules, so no one else sees them.</C>
+        <C c="teal" h="Restrict the account">We can limit an account&rsquo;s ability to post castings or send messages while we look into what happened and decide what comes next.</C>
+        <C c="lilac" h="Ban the account">Serious or repeated violations lead to a permanent ban from CastSlate, because the safety and dignity of everyone here comes first.</C>
+      </div>
+      <p className="fci-after">We look at each situation carefully, and we may act right away when someone&rsquo;s safety is at risk. These steps are described in more detail in our <a href="/terms" onClick={go("terms")}>Terms of Service</a>.</p>
+    </section>
+
+    <div className="fci-fine">
+      <h2>How This Page Fits With Our Terms</h2>
+      <p>This page is a plain-language summary of how we expect CastSlate to be used. It works alongside our <a href="/terms" onClick={go("terms")}>Terms of Service</a> and <a href="/privacy" onClick={go("privacy")}>Privacy Policy</a>, and if anything here conflicts with those documents, they control.</p>
+      <p className="fci-date">Last updated October 24, 2026</p>
+    </div>
+
+    <p className="fci-thanks">Thank you for helping make CastSlate a place where every actor is welcome.</p>
+    <Footer onNavigate={onNavigate}/>
+  </div></>);
 }
 
 // ═══════════════════════════════════════════
@@ -54746,6 +54926,7 @@ const PAGE_PATH={
   "classes":"/classes","contact":"/contact","resources":"/resources","trust-safety":"/trust-safety",
   "faq":"/faq","studios":"/studios",
   "api-info":"/api-info","terms":"/terms","privacy":"/privacy","careers":"/careers",
+  "fair-casting":"/fair-casting",
   "auth-gate":"/auth-gate","account-settings":"/account-settings",
   "pay-talent":"/pay-talent",
   "actor-toolkit":"/actor-toolkit",
@@ -54778,6 +54959,7 @@ const PAGE_SEO={
   "faq":{title:"FAQ — How CastSlate Works for Actors & Casting Directors",desc:"Frequently asked questions about CastSlate — how it works, account types, submissions, and pricing."},
   "terms":{title:"Terms of Service | CastSlate",desc:"CastSlate Terms of Service — the rules and guidelines for using the CastSlate casting platform."},
   "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
+  "fair-casting":{title:"Fair Casting & Inclusion | CastSlate",desc:"CastSlate has zero tolerance for discrimination and harassment. How role requirements work, how your personal details stay private, and how to report a problem."},
   "studios":{title:"For Studios & Production Companies | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
   "manager-mode":{title:"Manager Mode — Career Check-ins for Actors | CastSlate",desc:"CastSlate Manager Mode is a premium monthly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each month to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
@@ -56593,6 +56775,7 @@ function App(){
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}
         {page==="privacy"&&<PrivacyPage onNavigate={navigate}/>}
+        {page==="fair-casting"&&<FairCastingPage onNavigate={navigate}/>}
         {page==="careers"&&<CareersPage onNavigate={navigate}/>}
         {page==="pay-talent"&&<PayTalentPage onNavigate={navigate}/>}
         {page==="actor-toolkit"&&<ActorToolkitPage session={session} myProfile={myProfile} onNavigate={navigate}/>}
