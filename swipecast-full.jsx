@@ -4077,6 +4077,11 @@ body.fbsp-open #castoria-root{display:none!important;}
    the 3px this vacates at its bottom. top (not margin) so layout and the short-page pin are
    untouched. */
 .site-footer{top:-3px;}
+/* Same Safari rounding, at the page bottom (owner report 2026-10-23): a sliver of the cream
+   .app showed as a light line under the footer. On pages with a footer, paint .app's own
+   bottom 12px in the footer colour; the footer always covers that strip, so only a rounding
+   sliver can ever reveal it, and then it shows dark instead of cream. */
+.app:has(.site-footer){background:linear-gradient(to top,#0E0C0B 0,#0E0C0B 12px,var(--bg) 12px) var(--bg);}
 /* Manager Mode teaser: stacked monthly letters + paper stamp. */
 .mm-stk{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:36px;}
 .mm-stk .mm-letter{position:relative;z-index:5;}
