@@ -2443,11 +2443,11 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Fair Casting & Inclusion (2026-10-24): About-page layout, dark ink for low-vision readers, film-costume card tints. */
 .page.fci .info-hero p{color:var(--t1);}
 .page.fci .info-hero h1{line-height:1.12;}
-.fci-stand{position:relative;overflow:hidden;width:100%;max-width:800px;margin:0 auto 60px;padding:44px 48px;border-radius:14px;background:#1A1A2E;text-align:center;}
+.fci-stand{position:relative;overflow:hidden;width:100%;max-width:800px;margin:0 auto 80px;padding:44px 48px;border-radius:14px;background:#1A1A2E;text-align:center;}
 .fci-stand::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#2A8472 83.33% 100%);}
 .fci-stand .section-label{color:rgba(255,255,255,.7);margin-bottom:16px;}
 .fci-stand p{margin:0;font-weight:700;font-size:22px;line-height:1.55;letter-spacing:-.3px;color:#fff;}
-.fci-stand p+p{margin-top:16px;}
+.fci-stand p+p{margin-top:16px;font-size:18px;font-weight:500;line-height:1.6;color:rgba(255,255,255,.9);}
 .fci-sec{width:100%;max-width:800px;margin:0 auto 60px;}
 .fci-head{text-align:center;margin-bottom:28px;}
 .fci-head h2{font-size:28px;font-weight:800;margin:0 0 12px;}
@@ -2468,6 +2468,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci .card.fci-teal{background:#E2F2EF;border-color:#BEDFD8;border-top:4px solid #2A8472;}
 .fci .card.fci-zero{text-align:center;padding:28px 32px;}
 .fci-head h2.fci-zero-h{font-size:32px;text-decoration:underline;text-decoration-color:#1A1A2E;text-decoration-thickness:4px;text-underline-offset:10px;}
+.fci-head h2.fci-belong-h{font-size:32px;}
+.fci-sec.fci-welcome{max-width:880px;padding:48px 40px 44px;border-radius:22px;background:linear-gradient(180deg,#FFF1EA 0%,#FFF8F1 55%,#FFFBF5 100%);border:1px solid #F3DCCF;box-shadow:0 10px 30px rgba(221,107,63,0.07);}
+.fci-welcome .section-label{color:#B5532E;margin-bottom:10px;}
+.fci-bar{width:132px;height:5px;margin:4px auto 18px;border-radius:3px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#2A8472 83.33% 100%);}
 .fci .card.fci-zero,.fci .card.fci-zero:hover{border:2px solid #1A1A2E;box-shadow:none;}
 .fci .card.fci-zero p{font-size:16px;}
 .fci .card.fci-zero p.fci-big{font-size:17px;font-weight:700;line-height:1.6;margin-bottom:12px;}
@@ -2489,7 +2493,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .fci-sec{margin-bottom:48px;}
   .fci-head h2{font-size:24px;}
   .fci-head h2.fci-zero-h{font-size:26px;text-decoration-thickness:3px;text-underline-offset:8px;}
-  .fci-stand{padding:32px 22px;margin-bottom:48px;}
+  .fci-stand{padding:32px 22px;margin-bottom:60px;}
+  .fci-stand p+p{font-size:15.5px;}
+  .fci-head h2.fci-belong-h{font-size:26px;}
+  .fci-sec.fci-welcome{padding:32px 18px 28px;border-radius:18px;}
   .fci-stand p{font-size:18px;}
   .fci .card.fci-zero{padding:22px 20px;}
   .fci-thanks{font-size:19px;}
@@ -12491,9 +12498,11 @@ function FairCastingPage({onNavigate}){
       <p>That includes prejudice against people of every faith: Christians, Muslims, Jews, Hindus, Buddhists, Sikhs, Jains, Bah&aacute;&rsquo;&iacute;s, followers of Indigenous and traditional religions, and people of no faith.</p>
     </div>
 
-    <section className="fci-sec">
+    <section className="fci-sec fci-welcome">
       <div className="fci-head">
-        <h2>You Belong Here</h2>
+        <div className="section-label">Welcome</div>
+        <h2 className="fci-belong-h">You Belong Here</h2>
+        <div className="fci-bar" aria-hidden="true"/>
         <p>Talent comes from everywhere: every neighborhood and every country, every faith and every family, every age and every kind of body. Whoever you are and whatever brought you to acting, you are welcome on CastSlate, exactly as you are.</p>
       </div>
       <div className="grid-2">
