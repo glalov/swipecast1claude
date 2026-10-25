@@ -12566,19 +12566,6 @@ function FairCastingPage({onNavigate}){
 
     <section className="fci-sec">
       <div className="fci-head">
-        <h2>If Something Feels Wrong, Tell Us</h2>
-        <p>You don&rsquo;t need to be certain something was wrong to tell us. Every report goes to our team, and speaking up in good faith will never count against you. We do not tolerate retaliation against anyone who reports in good faith.</p>
-      </div>
-      <div className="grid-2">
-        <C c="coral" h="On a casting or profile">Use the <strong>Report</strong> button on the page. Your report goes straight to the CastSlate team, and the person you report never sees your name.</C>
-        <C c="green" h="Anything else">For a message or something that happened off the site, email <a href="mailto:team@castslate.com">team@castslate.com</a> with as much detail as you are comfortable sharing.</C>
-      </div>
-      <p className="fci-after">If you are ever in immediate danger, please contact local emergency services first. If you&rsquo;re struggling or thinking about suicide, you can call or text <a href="tel:988">988</a> (US) any time to reach the Suicide &amp; Crisis Lifeline.</p>
-      <div className="fci-cta"><a className="fci-btn" href="mailto:team@castslate.com?subject=Report%20a%20problem">Report a problem</a></div>
-    </section>
-
-    <section className="fci-sec">
-      <div className="fci-head">
         <h2>How We Protect This Community</h2>
         <p>We take every report seriously. When we learn that a posting, profile or message breaks these rules, whether from a report or from our own review, we may:</p>
       </div>
