@@ -12482,7 +12482,7 @@ function FairCastingPage({onNavigate}){
 
     <div className="fci-stand">
       <div className="section-label">Where we stand</div>
-      <p>CastSlate stands against all forms of racism, colorism, xenophobia, antisemitism, Islamophobia, religious intolerance, casteism, homophobia, transphobia, biphobia, sexism, misogyny, ageism, ableism, sizeism, classism, and other forms of prejudice or discrimination.</p>
+      <p>CastSlate stands against all forms of racism, colorism, xenophobia, antiziganism, antisemitism, Islamophobia, religious intolerance, casteism, homophobia, transphobia, biphobia, interphobia, acephobia, sexism, misogyny, ageism, ableism, audism, sanism, sizeism, lookism, heightism, classism, linguicism, and every other form of prejudice or discrimination, whoever it targets.</p>
     </div>
 
     <section className="fci-sec">
