@@ -10393,7 +10393,7 @@ function TrustSafetyPage({onNavigate}){
     ["Protect your personal information","Share only what casting needs. Sensitive documents, financial details, home addresses or identity information should never go to contacts you don't know."],
     ["Respectful communication","Messages on CastSlate should stay professional. Pressure, explicit material or requests for private pictures are never acceptable here, from anyone."],
     ["Casting teams are approved","Casting directors post castings only after the CastSlate team reviews their account and approves it for posting. Accounts that misuse that trust can lose it."],
-    ["Private details stay private","Your real age is hidden by default, and disability details are visible only to signed-in casting directors. You decide what goes on your profile."]
+    ["Private details stay private","Your real age isn't shown on your profile by default, and disability details are visible only to signed-in casting directors. You decide what goes on your profile."]
   ];
   const compensation=[
     ["Paid","The listing states a payment, rate, stipend or other compensation. Confirm the exact terms in writing before you accept the work or agree to any dates."],
@@ -12552,7 +12552,7 @@ function FairCastingPage({onNavigate}){
       </div>
       <div className="grid-2">
         <C c="yellow" h="Ethnicity is optional">You decide whether to list it at all. If you do, you can change it or remove it whenever you like in Edit Profile.</C>
-        <C c="blue" h="Your real age is hidden">By default, casting directors see the age range you can play. You can choose to show more at any time in Edit Profile.</C>
+        <C c="blue" h="Your age stays off your profile">By default, your profile shows only the age range you can play. You can choose to show more at any time in Edit Profile.</C>
         <C c="lilac" h="Disability details stay private">If you add them, only you, signed-in casting directors and CastSlate staff can see them, and only to support authentic casting.</C>
         <C c="teal" h="Your information is never sold">We never sell your personal information. Our <a href="/privacy" onClick={go("privacy")}>Privacy Policy</a> explains in full how it is collected, used and protected.</C>
       </div>
@@ -12568,7 +12568,7 @@ function FairCastingPage({onNavigate}){
     <section className="fci-sec">
       <div className="fci-head">
         <h2>If Something Feels Wrong, Tell Us</h2>
-        <p>You don&rsquo;t need to be certain something was wrong to tell us. We read every report, and you will never be in trouble for speaking up. We do not tolerate retaliation against anyone who reports in good faith.</p>
+        <p>You don&rsquo;t need to be certain something was wrong to tell us. Every report goes to our team, and speaking up in good faith will never count against you. We do not tolerate retaliation against anyone who reports in good faith.</p>
       </div>
       <div className="grid-2">
         <C c="coral" h="On a casting or profile">Use the <strong>Report</strong> button on the page. Your report goes straight to the CastSlate team, and the person you report never sees your name.</C>
@@ -12581,7 +12581,7 @@ function FairCastingPage({onNavigate}){
     <section className="fci-sec">
       <div className="fci-head">
         <h2>How We Protect This Community</h2>
-        <p>Every confirmed violation gets a response. When we learn that a posting, profile or message breaks these rules, whether from a report or from our own review, we may:</p>
+        <p>We take every report seriously. When we learn that a posting, profile or message breaks these rules, whether from a report or from our own review, we may:</p>
       </div>
       <div className="grid-2">
         <C c="blue" h="Ask for a correction">When a posting crosses the line, we ask the poster to correct the wording so the role is described fairly.</C>
