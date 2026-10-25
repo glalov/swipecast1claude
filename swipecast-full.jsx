@@ -2467,7 +2467,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci .card.fci-lilac{background:#F0EAF8;border-color:#D9CCEB;border-top:4px solid #7B5BB5;}
 .fci .card.fci-teal{background:#E2F2EF;border-color:#BEDFD8;border-top:4px solid #2A8472;}
 .fci .card.fci-zero{text-align:center;padding:28px 32px;}
-.fci-head h2.fci-zero-h{font-size:32px;text-decoration:underline;text-decoration-color:#1A1A2E;text-decoration-thickness:4px;text-underline-offset:10px;}
+.fci-head h2.fci-zero-h{font-size:32px;}
 .fci-head h2.fci-belong-h{font-size:32px;}
 .fci-sec.fci-welcome{max-width:880px;padding:48px 40px 44px;border-radius:22px;background:linear-gradient(180deg,#FFF1EA 0%,#FFF8F1 55%,#FFFBF5 100%);border:1px solid #F3DCCF;box-shadow:0 10px 30px rgba(221,107,63,0.07);}
 .fci-welcome .section-label{color:#B5532E;margin-bottom:10px;}
@@ -2492,7 +2492,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .fci .grid-2{gap:16px;}
   .fci-sec{margin-bottom:48px;}
   .fci-head h2{font-size:24px;}
-  .fci-head h2.fci-zero-h{font-size:26px;text-decoration-thickness:3px;text-underline-offset:8px;}
+  .fci-head h2.fci-zero-h{font-size:26px;}
   .fci-stand{padding:32px 22px;margin-bottom:60px;}
   .fci-stand p+p{font-size:15.5px;}
   .fci-head h2.fci-belong-h{font-size:26px;}
@@ -12488,7 +12488,7 @@ function FairCastingPage({onNavigate}){
     <div className="info-hero">
       <div className="section-label">Fair Casting &amp; Inclusion</div>
       <h1>Whoever you are, wherever you come from, you belong here.</h1>
-      <p>Here&rsquo;s how we look after each other on CastSlate, and what to do if something ever goes wrong.</p>
+      <p>Here&rsquo;s how we look after each other on CastSlate.</p>
     </div>
 
     <div className="fci-stand">
@@ -12541,7 +12541,6 @@ function FairCastingPage({onNavigate}){
         </ul></div>
       </div>
       <p className="fci-after">When a role is open to everyone, it is listed as &ldquo;Any ethnicity&rdquo; or &ldquo;Any age range&rdquo;. People who post opportunities remain responsible for following the employment, union and anti-discrimination laws that apply to their production.</p>
-      <p className="fci-after">Some things are never part of any casting, whatever the role, such as nudity in auditions or real weapons. See <a href="/trust-safety#never-allowed" onClick={(e)=>{e.preventDefault();onNavigate("trust-safety");const to=()=>{const el=document.getElementById("never-allowed");if(el)el.scrollIntoView({block:"start"});};setTimeout(to,400);setTimeout(to,1000);}}>Never allowed on CastSlate</a>.</p>
     </section>
 
     <section className="fci-sec">
@@ -12566,16 +12565,9 @@ function FairCastingPage({onNavigate}){
 
     <section className="fci-sec">
       <div className="fci-head">
-        <h2>How We Protect This Community</h2>
-        <p>We take every report seriously. When we learn that a posting, profile or message breaks these rules, whether from a report or from our own review, we may:</p>
+        <h2>Keeping CastSlate Welcoming</h2>
+        <p>When a posting, profile or message doesn&rsquo;t meet these standards, we may ask for a correction, remove it, or limit or close the account, depending on what happened. We look at each situation carefully, and these steps are described in more detail in our <a href="/terms" onClick={go("terms")}>Terms of Service</a>.</p>
       </div>
-      <div className="grid-2">
-        <C c="blue" h="Ask for a correction">When a posting crosses the line, we ask the poster to correct the wording so the role is described fairly.</C>
-        <C c="yellow" h="Remove the content">We edit, hide or remove postings, messages or profile content that break these rules, so no one else sees them.</C>
-        <C c="teal" h="Restrict the account">We can limit an account&rsquo;s ability to post castings or send messages while we look into what happened and decide what comes next.</C>
-        <C c="lilac" h="Ban the account">Serious or repeated violations lead to a permanent ban from CastSlate, because the safety and dignity of everyone here comes first.</C>
-      </div>
-      <p className="fci-after">We look at each situation carefully, and we may act right away when someone&rsquo;s safety is at risk. These steps are described in more detail in our <a href="/terms" onClick={go("terms")}>Terms of Service</a>.</p>
     </section>
 
     <div className="fci-fine">
