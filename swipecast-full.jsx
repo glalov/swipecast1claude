@@ -15217,12 +15217,14 @@ function SmartVideo({src,title}){
 
 // ShowcaseVideoTile — fixed 3:4 portrait aspect ratio tile; clicking opens full-screen modal.
 // Uses #t=0.1 so the browser seeks to the first real frame and shows a thumbnail.
-// objectFit:"contain" lets portrait AND landscape videos display without cropping.
+// Horizontal videos switch to objectFit:"cover" once their size is known so they fill the tile like the
+// photos (owner, 2026-10-25); vertical ones stay "contain". Only the preview crops: the modal plays the full frame.
+const fillIfLandscape=e=>{const el=e.currentTarget;if(el.videoWidth>el.videoHeight)el.style.objectFit="cover";};
 function ShowcaseVideoTile({v,onOpen}){
   return(
     <div style={{position:"relative",overflow:"hidden",background:"#111",cursor:"pointer",borderRadius:8,aspectRatio:"3/4"}}
       onClick={()=>onOpen&&onOpen(v)}>
-      <video src={`${v.url}#t=0.1`} preload="metadata" playsInline muted
+      <video src={`${v.url}#t=0.1`} preload="metadata" playsInline muted onLoadedMetadata={fillIfLandscape}
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",display:"block",pointerEvents:"none"}}/>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
         <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
@@ -15630,7 +15632,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
                 item._tile==="video"
                 ?<div key={item.id||i} style={{position:"relative",background:"#111",borderRadius:8,overflow:"hidden",cursor:"pointer",border:"1px solid var(--bdr)",aspectRatio:"3/4"}}
                   onClick={()=>openMedia(1+showcaseTiles.length+i)}>
-                  <video src={`${item.url}#t=0.1`} preload="metadata" muted playsInline
+                  <video src={`${item.url}#t=0.1`} preload="metadata" muted playsInline onLoadedMetadata={fillIfLandscape}
                     style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",display:"block",pointerEvents:"none"}}/>
                   <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.38)"}}>
                     <div style={{width:40,height:40,borderRadius:"50%",background:"rgba(255,255,255,0.92)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.4)"}}>
