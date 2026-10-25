@@ -9144,10 +9144,10 @@ const BLOG_CONTENT={
 function BlogPage({onNavigate}){
   const [viewing,setViewing]=useState(null);
   if(viewing){const p=BLOG_POSTS.find(b=>b.id===viewing);return(<div className="page"><button className="btn-s btn-sm mb-20" onClick={()=>setViewing(null)}>← Back to Blog</button><div style={{maxWidth:720,margin:"0 auto"}}><div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:"var(--acc)",marginBottom:12}}>{p.category}</div><h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:12}}>{p.title}</h1><div style={{color:"var(--t3)",fontSize:13,marginBottom:32}}>{p.date} · {p.readTime} read</div>{(BLOG_CONTENT[p.id]||p.excerpt).split("\n\n").map((para,i)=><p key={i} style={{color:"var(--t2)",fontSize:15,lineHeight:1.8,marginBottom:20}}>{para}</p>)}</div><Footer onNavigate={onNavigate}/></div>);}
-  return(<div className="page"><div className="section-label">Blog</div><h1 className="section-title">CastSlate Journal</h1>
+  return(<><LegalHero kind="blog"/><div className="page">
     <div className="blog-grid">{BLOG_POSTS.map(p=><div key={p.id} className="card blog-card" onClick={()=>setViewing(p.id)}><div className="blog-cat">{p.category}</div><h3>{p.title}</h3><p>{p.excerpt}</p><div className="blog-meta">{p.date} · {p.readTime} read</div></div>)}</div>
     <div className="page-foot-gap" aria-hidden="true"/>
-    <Footer onNavigate={onNavigate}/></div>);
+    <Footer onNavigate={onNavigate}/></div></>);
 }
 
 // ═══════════════════════════════════════════
@@ -12228,6 +12228,8 @@ const LEGAL_HEROES={
   // Hail, Caesar! (2016) studio backlot: sound stages + water tower, no people, so the title never meets a face.
   safety:{title:"Casting Standards",kick:"Audition with Confidence",pos:"center 45%",src:"/assets/legal/safety-hero-1200.jpg",srcSet:"/assets/legal/safety-hero-1200.jpg 1200w, /assets/legal/safety-hero-2400.jpg 2400w"},
   about:{title:"About CastSlate",kick:"Our Story",pos:"center 45%",src:"/assets/legal/safety-hero-1200.jpg",srcSet:"/assets/legal/safety-hero-1200.jpg 1200w, /assets/legal/safety-hero-2400.jpg 2400w"},
+  // Hollywood (2020): the Hollywood sign letters at sunset, no faces.
+  blog:{title:"CastSlate Journal",kick:"Blog",pos:"center 55%",src:"/assets/legal/blog-hero-1200.jpg",srcSet:"/assets/legal/blog-hero-1200.jpg 1200w, /assets/legal/blog-hero-2048.jpg 2048w"},
   inclusion:{title:"Fair Casting & Inclusion",kick:"Our Commitment",cls:"lgl-bright",pos:"center 40%",src:"/assets/legal/inclusion-hero-1200.jpg",srcSet:"/assets/legal/inclusion-hero-1200.jpg 1200w, /assets/legal/inclusion-hero-2400.jpg 2400w"},
 };
 function LegalHero({kind}){
