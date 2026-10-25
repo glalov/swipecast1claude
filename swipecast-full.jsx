@@ -9084,7 +9084,7 @@ function ResetPasswordPage({onNavigate,session}){
 // PAGE: ABOUT
 // ═══════════════════════════════════════════
 function AboutPage({onNavigate}){
-  return(<div className="page">
+  return(<><LegalHero kind="about"/><div className="page">
     <div className="info-hero"><div className="section-label">About</div><h1>Casting Should Be<br/>Fair for Everyone</h1><p>CastSlate was born out of frustration. Actors shouldn't be overcharged just to be seen — and they shouldn't be buried in a grid of 200 headshots either. We built a Tinder-style casting platform where every submission is reviewed one-by-one, and the price is well below what legacy sites charge.</p></div>
     <div className="grid-2" style={{maxWidth:800,margin:"0 auto 60px"}}>
       <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Our Mission</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Democratize the casting process. Keep professional casting affordable for working actors. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
@@ -9108,7 +9108,7 @@ function AboutPage({onNavigate}){
       <div className="team-grid">{[{n:"Filmmakers",i:"movie",r:"Built by people who understand production pressure, tight deadlines, and the need to find the right performer without wasting time."},{n:"Casting Professionals",i:"masks-theater",r:"Shaped by people who know the casting process from the inside and believe every submission deserves a real human look."},{n:"Product Builders",i:"settings",r:"Designed by technologists focused on making casting cleaner, faster, and easier to use for both actors and casting teams."}].map((t,idx)=><div key={idx} className="team-card"><div className="avatar"><Ico n={t.i} s={28}/></div><h4>{t.n}</h4><p>{t.r}</p></div>)}</div>
     </div>
     <Footer onNavigate={onNavigate}/>
-  </div>);
+  </div></>);
 }
 
 // ═══════════════════════════════════════════
@@ -12227,6 +12227,7 @@ const LEGAL_HEROES={
   // La La Land's "Another Day of Sun" still: bright, so it gets the heavier floor (.lgl-bright).
   // Hail, Caesar! (2016) studio backlot: sound stages + water tower, no people, so the title never meets a face.
   safety:{title:"Casting Standards",kick:"Audition with Confidence",pos:"center 45%",src:"/assets/legal/safety-hero-1200.jpg",srcSet:"/assets/legal/safety-hero-1200.jpg 1200w, /assets/legal/safety-hero-2400.jpg 2400w"},
+  about:{title:"About CastSlate",kick:"Our Story",pos:"center 45%",src:"/assets/legal/safety-hero-1200.jpg",srcSet:"/assets/legal/safety-hero-1200.jpg 1200w, /assets/legal/safety-hero-2400.jpg 2400w"},
   inclusion:{title:"Fair Casting & Inclusion",kick:"Our Commitment",cls:"lgl-bright",pos:"center 40%",src:"/assets/legal/inclusion-hero-1200.jpg",srcSet:"/assets/legal/inclusion-hero-1200.jpg 1200w, /assets/legal/inclusion-hero-2400.jpg 2400w"},
 };
 function LegalHero({kind}){
