@@ -12571,13 +12571,6 @@ function FairCastingPage({onNavigate}){
       </div>
     </section>
 
-    <div className="fci-fine">
-      <h2>How This Page Fits With Our Terms</h2>
-      <p>This page is a plain-language summary of how we expect CastSlate to be used. It works alongside our <a href="/terms" onClick={go("terms")}>Terms of Service</a> and <a href="/privacy" onClick={go("privacy")}>Privacy Policy</a>, and if anything here conflicts with those documents, they control.</p>
-      <p className="fci-date">Last updated October 24, 2026</p>
-    </div>
-
-    <p className="fci-thanks">Thank you for helping make CastSlate a place where every actor is welcome.</p>
     <Footer onNavigate={onNavigate}/>
   </div></>);
 }
