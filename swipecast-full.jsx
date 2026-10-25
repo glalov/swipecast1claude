@@ -10377,10 +10377,10 @@ function ResourcesPage({onNavigate}){
 function TrustSafetyPage({onNavigate}){
   const promiseCards=[
     ["No audition fees","No one should ever ask you to pay a casting director, producer, agent or anyone else just to audition for a role or to be considered for it."],
-    ["Suspicious castings are removed","CastSlate reviews castings and removes listings, messages or accounts that look misleading, unsafe or exploitative, to keep the platform professional."],
-    ["Personal information is protected","Share only what casting needs. Sensitive documents, financial details, home addresses or identity information should never go to contacts you don't know."],
-    ["Respectful communication","Messages on CastSlate stay professional. Pressure, explicit material or requests for private pictures are never acceptable here, from anyone, at any stage."],
-    ["Casting teams are approved","Casting directors can only post castings after the CastSlate team reviews their account and approves it for posting. Accounts that misuse that trust lose it."],
+    ["Suspicious castings can be removed","CastSlate may review castings and remove listings, messages or accounts that look misleading, unsafe or exploitative, to help keep the platform professional."],
+    ["Protect your personal information","Share only what casting needs. Sensitive documents, financial details, home addresses or identity information should never go to contacts you don't know."],
+    ["Respectful communication","Messages on CastSlate should stay professional. Pressure, explicit material or requests for private pictures are never acceptable here, from anyone."],
+    ["Casting teams are approved","Casting directors post castings only after the CastSlate team reviews their account and approves it for posting. Accounts that misuse that trust can lose it."],
     ["Private details stay private","Your real age is hidden by default, and disability details are visible only to signed-in casting directors. You decide what goes on your profile."]
   ];
   const compensation=[
@@ -10402,10 +10402,10 @@ function TrustSafetyPage({onNavigate}){
     ["Minors contacted without guardians","Performers under 18 should always involve a parent or guardian. Any adult who asks a minor to talk privately, travel alone or keep their contact a secret is crossing a line, and a parent should step in."]
   ];
   const reportSteps=[
-    ["Save the evidence","Keep screenshots, profile names, listing titles, email addresses, phone numbers, payment requests and message timestamps. They help us act quickly."],
+    ["Save the evidence","Keep screenshots, profile names, listing titles, email addresses, phone numbers, payment requests and message timestamps. They help our team review it."],
     ["Stop the interaction","You never have to continue a conversation that feels unsafe, coercive, sexually inappropriate, financially suspicious or misleading. Simply stop replying."],
-    ["Tell the CastSlate team","Use the Report button or the contact page, and our team will review the listing, the account and the messages involved, and take the right action quickly."],
-    ["Use outside help when needed","If there is immediate danger, threats, stalking, financial theft or exploitation of a minor, contact local authorities or a trusted professional right away."]
+    ["Tell the CastSlate team","Use the Report button or the contact page, and our team can review the listing, the account and the messages involved, and decide on the right next step."],
+    ["Use outside help when needed","If there is immediate danger, threats, stalking, financial theft or exploitation of a minor, contact local authorities or a trusted professional right away. Your safety comes first."]
   ];
   const Card=({title,children,accent})=>(
     <div className="card" style={{padding:24,borderTop:`3px solid ${accent||"var(--acc)"}`}}>
@@ -10417,7 +10417,7 @@ function TrustSafetyPage({onNavigate}){
     <div className="info-hero" style={{maxWidth:900}}>
       <div className="section-label">Casting Standards</div>
       <h1>Audition smarter.<br/>Stay protected.</h1>
-      <p>CastSlate is built to help actors, models, casting teams, and producers connect with more clarity. This page explains the standards every casting on CastSlate is held to, and how to audition with confidence.</p>
+      <p>CastSlate is built to help actors, models, casting teams, and producers connect with more clarity. This page explains the standards we expect from every casting on CastSlate, and how to audition with confidence.</p>
       <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginTop:26}}>
         <button className="btn-p" onClick={()=>onNavigate("search")}>Browse Castings</button>
       </div>
@@ -10433,15 +10433,15 @@ function TrustSafetyPage({onNavigate}){
 
     <section id="never-allowed" style={{maxWidth:1040,margin:"0 auto 48px",scrollMarginTop:96}}>
       <div className="section-label">Never Allowed on CastSlate</div>
-      <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:10}}>Stories can show anything. Auditions can never put you at risk.</h2>
+      <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:10}}>Stories can show anything. Auditions should never put you at risk.</h2>
       <p style={{color:"var(--t1)",fontSize:15,lineHeight:1.7,maxWidth:780,marginBottom:22}}>Film and television tell hard stories, including violence and intimacy, and roles may portray them. What happens to a performer during casting is different. These four rules apply to every listing, audition and self-tape on CastSlate, with no exceptions.</p>
       <div className="grid-2">
-        <Card title="No sexual content involving minors" accent="var(--acc)">Roles, descriptions, auditions and self-tapes may never include sexual content involving anyone under 18. Any listing that does is removed immediately, the account is banned, and we notify the authorities as the law requires.</Card>
-        <Card title="No nudity or sexual acts in auditions" accent="var(--acc)">Auditions and self-tapes never include nudity, simulated sex or sexual acts. If a role involves nudity or intimate scenes, the listing must say so up front, and those scenes are read only, with no undressing and no physical contact.</Card>
-        <Card title="No real violence in auditions" accent="var(--acc)">No one is ever asked to hit, choke, restrain or be struck by another person in an audition or self-tape. Fight and stunt work happens only on set, planned and supervised by a professional stunt coordinator.</Card>
-        <Card title="No real weapons, drugs or dangerous stunts" accent="var(--acc)">Auditions and self-tapes never require real firearms or blades, real drugs or alcohol, fire, heights, water or anything else that could hurt you. Props only. If you are ever asked to, you can simply say no.</Card>
+        <Card title="No sexual content involving minors" accent="var(--acc)">Roles, descriptions, auditions and self-tapes may never include sexual content involving anyone under 18. Any listing found to do so is removed and the account banned, and we notify the authorities as the law requires.</Card>
+        <Card title="No nudity or sexual acts in auditions" accent="var(--acc)">Auditions and self-tapes must not include nudity, simulated sex or sexual acts. If a role involves nudity or intimate scenes, the listing must say so up front, and those scenes are read only, with no undressing and no physical contact.</Card>
+        <Card title="No real violence in auditions" accent="var(--acc)">No one may be asked to hit, choke, restrain or be struck by another person in an audition or self-tape. Fight and stunt work belongs on set, planned and supervised by a professional stunt coordinator.</Card>
+        <Card title="No real weapons, drugs or dangerous stunts" accent="var(--acc)">Auditions and self-tapes must not require real firearms or blades, real drugs or alcohol, fire, heights, water or anything else that could hurt you. Props only. If you are ever asked to, you can simply say no.</Card>
       </div>
-      <p style={{color:"var(--t1)",fontSize:16,fontWeight:700,lineHeight:1.6,maxWidth:940,marginTop:48,marginBottom:0}}>Listings that break these rules are removed, and serious or repeated violations lead to a permanent ban.</p>
+      <p style={{color:"var(--t1)",fontSize:16,fontWeight:700,lineHeight:1.6,maxWidth:940,marginTop:48,marginBottom:0}}>Listings that break these rules may be removed, and serious or repeated violations can lead to a permanent ban.</p>
     </section>
 
     <section style={{maxWidth:980,margin:"0 auto 54px"}}>
