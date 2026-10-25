@@ -2466,6 +2466,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci .card.fci-lilac{background:#F0EAF8;border-color:#D9CCEB;border-top:4px solid #7B5BB5;}
 .fci .card.fci-teal{background:#E2F2EF;border-color:#BEDFD8;border-top:4px solid #2A8472;}
 .fci .card.fci-zero{text-align:center;padding:28px 32px;}
+.fci-head h2.fci-zero-h{font-size:32px;text-decoration:underline;text-decoration-color:#1A1A2E;text-decoration-thickness:4px;text-underline-offset:10px;}
+.fci .card.fci-zero,.fci .card.fci-zero:hover{border:2px solid #1A1A2E;box-shadow:none;}
 .fci .card.fci-zero p{font-size:16px;}
 .fci .card.fci-zero p.fci-big{font-size:17px;font-weight:700;line-height:1.6;margin-bottom:12px;}
 .fci-tag{display:inline-block;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
@@ -2484,6 +2486,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .fci .grid-2{gap:16px;}
   .fci-sec{margin-bottom:48px;}
   .fci-head h2{font-size:24px;}
+  .fci-head h2.fci-zero-h{font-size:26px;text-decoration-thickness:3px;text-underline-offset:8px;}
   .fci-stand{padding:32px 22px;margin-bottom:48px;}
   .fci-stand p{font-size:18px;}
   .fci .card.fci-zero{padding:22px 20px;}
@@ -12497,7 +12500,7 @@ function FairCastingPage({onNavigate}){
     </section>
 
     <section className="fci-sec">
-      <div className="fci-head"><h2>Zero Tolerance for Discrimination</h2></div>
+      <div className="fci-head"><h2 className="fci-zero-h">Zero Tolerance for Discrimination</h2></div>
       <div className="card fci-zero">
         <p className="fci-big">CastSlate has a zero-tolerance policy toward discrimination, harassment, or prejudice based on race, ethnicity, national origin, nationality, religion, spiritual beliefs, sex, gender, gender identity, gender expression, sexual orientation, age, disability, physical appearance, body type, or socioeconomic background.</p>
         <p>The same protection covers pregnancy, marital or family status, immigration or citizenship status, medical and mental health conditions, and any other characteristic protected by applicable law.</p>
