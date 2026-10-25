@@ -488,8 +488,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pl-cinematic .card,.pl-cinematic .pl-hero{border-color:transparent!important;box-shadow:none;}
 .pl-cinematic .pp-stats,.pl-cinematic .pp-div{border-top:1px solid rgba(243,236,225,.06)!important;}
 .pl-cinematic .pl-hero-img{position:relative;}
-.pl-cinematic .pl-hero-img::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(32,26,21,0) 70%,rgba(32,26,21,.85));}
-@media(max-width:767px){.pl-cinematic .pl-hero-img::after{background:linear-gradient(180deg,rgba(32,26,21,0) 72%,rgba(32,26,21,.9));}}
+/* No photo fade on cinematic (owner, 2026-10-25): it turned light headshot backdrops into a muddy brown strip. */
 /* The one hero action is filled, not a thin outline that gets lost on dark. */
 .pl-cinematic .pl-hero-btns .pl-btn.ghost:only-child{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
 .pl-cinematic.pl-acc-gold .pl-btn:not(.ghost),.pl-cinematic.pl-acc-gold .pl-hero-btns .pl-btn.ghost:only-child{color:#16120E;}
