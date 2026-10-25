@@ -2447,6 +2447,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci-stand::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#2A8472 83.33% 100%);}
 .fci-stand .section-label{color:rgba(255,255,255,.7);margin-bottom:16px;}
 .fci-stand p{margin:0;font-weight:700;font-size:22px;line-height:1.55;letter-spacing:-.3px;color:#fff;}
+.fci-stand p+p{margin-top:16px;}
 .fci-sec{width:100%;max-width:800px;margin:0 auto 60px;}
 .fci-head{text-align:center;margin-bottom:28px;}
 .fci-head h2{font-size:28px;font-weight:800;margin:0 0 12px;}
@@ -12487,6 +12488,7 @@ function FairCastingPage({onNavigate}){
     <div className="fci-stand">
       <div className="section-label">Where we stand</div>
       <p>CastSlate stands against all forms of racism, colorism, xenophobia, antiziganism, antisemitism, Islamophobia, religious intolerance, casteism, homophobia, transphobia, biphobia, interphobia, acephobia, sexism, misogyny, ageism, ableism, audism, sanism, sizeism, lookism, heightism, classism, linguicism, and every other form of prejudice or discrimination, whoever it targets.</p>
+      <p>That includes prejudice against people of every faith: Christians, Muslims, Jews, Hindus, Buddhists, Sikhs, Jains, Bah&aacute;&rsquo;&iacute;s, followers of Indigenous and traditional religions, and people of no faith.</p>
     </div>
 
     <section className="fci-sec">
