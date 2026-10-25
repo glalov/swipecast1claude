@@ -2657,7 +2657,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* ── Unified profile type (IMDb system, measured on imdb.com 2026-10-15): one font, one size;
    importance by shade — bio #000 > body .87 > secondary .54; labels 500, section titles 22/600. ── */
 .pp-uni{--pp-ink:rgba(0,0,0,.87);--pp-ink2:rgba(0,0,0,.54);}
-.pp-uni.pl-cinematic{--pp-ink:rgba(243,236,225,.92);--pp-ink2:rgba(243,236,225,.6);}
+.pp-uni.pl-cinematic{--pp-ink:rgba(244,241,236,.92);--pp-ink2:rgba(244,241,236,.6);}
 .pp-uni .card{font-family:Roboto,Helvetica,Arial,sans-serif;}
 .pp-uni .card :is(button,.btn-s,.btn-p,.btn-teal,.tag){font-family:'DM Sans',sans-serif;}
 .pp-uni .pl-sh{font-family:Roboto,Helvetica,Arial,sans-serif!important;font-size:22px!important;line-height:26.4px!important;font-weight:600!important;letter-spacing:0!important;text-transform:none!important;color:var(--pp-ink)!important;}
@@ -2688,7 +2688,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
    500 dark; 3 prose + long lists 400; 4 field names 400 muted (t3, never lighter), group titles
    and table headers 500 muted. Bio keeps its own #000. ── */
 .pp-uni{--pp-h:#16120E;--pp-val:#1C1814;--pp-body:#2A241E;--pp-lbl:#433B32;}
-.pp-uni.pl-cinematic{--pp-h:#F6EFE4;--pp-val:#F6EFE4;--pp-body:rgba(243,236,225,.86);--pp-lbl:rgba(243,236,225,.62);}
+.pp-uni.pl-cinematic{--pp-h:#F6F3EE;--pp-val:#F6F3EE;--pp-body:rgba(244,241,236,.86);--pp-lbl:rgba(244,241,236,.62);}
 .pp-uni .pl-sh{color:var(--pp-h)!important;}
 .pp-uni .pp-lbl,.pp-uni .pp-plays-label{font-weight:400!important;color:var(--pp-lbl)!important;}
 .pp-uni .pp-lbl.pp-grp,.pp-uni .pp-cred-catlbl,.pp-uni .pp-cred-head{font-weight:500!important;color:var(--pp-lbl)!important;}
@@ -2716,7 +2716,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pl-pick-sw{display:flex;width:100%;height:44px;border-radius:8px;overflow:hidden;border:1px solid var(--bdr);}
 .pl-pick-sw i{flex:1;}
 .pl-sw-classic i:first-child{background:#FAF6EE;}.pl-sw-classic i:last-child{background:#FFFDF8;}
-.pl-sw-cinematic i:first-child{background:#121216;}.pl-sw-cinematic i:last-child{background:#1B1B22;}
+.pl-sw-cinematic i:first-child{background:#171615;}.pl-sw-cinematic i:last-child{background:#262422;}
 .pl-sw-editorial i:first-child{background:#FFFFFF;}.pl-sw-editorial i:last-child{background:#F4F1EB;}
 @media(max-width:560px){.pl-pick{grid-template-columns:minmax(0,1fr);}.pl-pick-th{flex-direction:row;align-items:center;}.pl-pick-sw{width:64px;height:32px;flex:none;}}
 .pl-hero{display:grid;grid-template-columns:minmax(0,.86fr) minmax(0,1fr);background:var(--s1);border:1px solid var(--bdr);border-radius:18px;overflow:hidden;margin-bottom:10px;}
@@ -2740,15 +2740,15 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pl-acc-gold .pp-play.is-primary{color:#1A1A2E;}
 /* Cinematic = warm "theatre" dark (owner, 2026-10-15; demo cinematic-dark-theme-demo.html): espresso page,
    cards one clear step lighter with a faint warm top edge, cream text, gold only as accent. Was cold #121216. */
-.pl-cinematic{--bg:#16120E;--s1:#2A221B;--s2:#382E25;--bdr:#3A3128;--t1:#F3ECE1;--t2:#D9CFC1;--t3:#A99E90;color:var(--t1);}
+.pl-cinematic{--bg:#171615;--s1:#262422;--s2:#35322F;--bdr:#3A3734;--t1:#F4F1EC;--t2:#DAD5CE;--t3:#A8A39C;color:var(--t1);}
 /* Dark cards: no outlines - the lighter card tone alone separates them; dividers are one faint solid style (owner, 2026-10-16). */
 .pl-cinematic .card,.pl-cinematic .pl-hero{border-color:transparent!important;box-shadow:none;}
-.pl-cinematic .pp-stats,.pl-cinematic .pp-div{border-top:1px solid rgba(243,236,225,.06)!important;}
+.pl-cinematic .pp-stats,.pl-cinematic .pp-div{border-top:1px solid rgba(244,241,236,.06)!important;}
 .pl-cinematic .pl-hero-img{position:relative;}
 /* No photo fade on cinematic (owner, 2026-10-25): it turned light headshot backdrops into a muddy brown strip. */
 /* The one hero action is filled, not a thin outline that gets lost on dark. */
 .pl-cinematic .pl-hero-btns .pl-btn.ghost:only-child{background:var(--pl-acc);border-color:var(--pl-acc);color:#fff;}
-.pl-cinematic.pl-acc-gold .pl-btn:not(.ghost),.pl-cinematic.pl-acc-gold .pl-hero-btns .pl-btn.ghost:only-child{color:#16120E;}
+.pl-cinematic.pl-acc-gold .pl-btn:not(.ghost),.pl-cinematic.pl-acc-gold .pl-hero-btns .pl-btn.ghost:only-child{color:#171615;}
 /* .pp-frame wraps the profile content (not the site footer the page renders inside itself). Normally it has no
    box at all. Outside its own /talent/ page (admin catalog, CD overlay) the page stays cream and the frame becomes
    the dark stage, so admin sees the profile exactly as the public page shows it, ending before the footer. */
@@ -2778,19 +2778,19 @@ html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.site-footer-spacer{background
 .pp-uni.pl-look .pl-sh{border-left:3px solid var(--pl-acc);padding-left:10px;}
 .pp-uni.pl-look .pp-play.is-primary{color:var(--pl-acc-ink)!important;}
 .pl-look .pp-resume{color:var(--pl-acc-ink)!important;}
-html.pl-body-cinematic .app>main{background:#16120E;}
+html.pl-body-cinematic .app>main{background:#171615;}
 /* Dark nav + footer on a cinematic profile page, so no bright white bar slices the top. Pop-up menus keep the light palette. */
-html.pl-body-cinematic .nav{background:#16120E;border-bottom-color:#2C251E;--t1:#F3ECE1;--t2:#D9CFC1;--t3:#A99E90;--bdr:#3A3128;--s2:#2A231C;--acc:#2A8472;}
-html.pl-body-cinematic .nav .logo{color:#F3ECE1;}
-html.pl-body-cinematic .nav .logo-i{background:#F3ECE1;color:#16120E;}
+html.pl-body-cinematic .nav{background:#171615;border-bottom-color:#2A2826;--t1:#F4F1EC;--t2:#DAD5CE;--t3:#A8A39C;--bdr:#3A3734;--s2:#2E2B28;--acc:#2A8472;}
+html.pl-body-cinematic .nav .logo{color:#F4F1EC;}
+html.pl-body-cinematic .nav .logo-i{background:#F4F1EC;color:#171615;}
 html.pl-body-cinematic .nav-links>span{color:#E8DFD2;}
 html.pl-body-cinematic .nav-links>span:hover{background:rgba(255,255,255,.07);}
 html.pl-body-cinematic .nav-links>span.act{background:rgba(255,255,255,.1);color:#fff;}
 html.pl-body-cinematic .nav-links>span.nav-attn,html.pl-body-cinematic .nav-links>span.nav-attn.act{color:#E8A54A;background:rgba(232,144,42,.14);}
-html.pl-body-cinematic .nav .btn-p{background:#F3ECE1;color:#16120E;}
+html.pl-body-cinematic .nav .btn-p{background:#F4F1EC;color:#171615;}
 html.pl-body-cinematic .nav .nav-ddm,html.pl-body-cinematic .nav .join-dd-menu,html.pl-body-cinematic .nav .join-dd-menu-m,html.pl-body-cinematic .nav [class*="menu"]{--t1:#241F19;--t2:#3A322A;--t3:#433B32;--bdr:#E4DCCB;--s2:#F2ECE0;--acc:#1A1A2E;color:#241F19;}
-html.pl-body-cinematic .site-footer{background:#110E0B;border-top-color:#2C251E;}
-html.pl-body-cinematic .site-footer::before{background:#110E0B;}
+html.pl-body-cinematic .site-footer{background:#121110;border-top-color:#2A2826;}
+html.pl-body-cinematic .site-footer::before{background:#121110;}
 html.pl-body-editorial .app>main{background:#FFFFFF;}
 @media(max-width:767px){.pl-hero{grid-template-columns:minmax(0,1fr);}.pl-hero-txt{padding:20px;}.pl-hero-nm{font-size:clamp(32px,9vw,44px);}.pl-strip{grid-template-columns:repeat(2,minmax(0,1fr));}.pl-hero-btns .pl-btn{flex:1 1 auto;justify-content:center;}}
 .pp-plays-label{margin-bottom:6px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
