@@ -8299,7 +8299,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <h4 className="site-footer-heading">{t('footer.support')}</h4>
             <L to="faq">{t('footer.faq')}</L>
             <L to="contact">{t('footer.helpCenter')}</L>
-            <L to="trust-safety">{t('footer.trustSafety')}</L>
             <L to="terms">{t('footer.terms')}</L>
             <L to="privacy">{t('footer.privacy')}</L>
             <L to="contact">{t('footer.accessibility')}</L>
