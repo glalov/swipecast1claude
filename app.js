@@ -203,12 +203,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci .card p,.fci .card li{color:var(--t1);font-size:15px;line-height:1.6;margin:0;}
 .fci .card ul{margin:0;padding-left:18px;}
 .fci .card li{margin-bottom:4px;}
-.fci .card.fci-yellow{background:#FFF5D6;border-color:#F0DE9E;border-top:4px solid #E9B729;}
-.fci .card.fci-blue{background:#E9F0FB;border-color:#C9D8EF;border-top:4px solid #3E6FB8;}
-.fci .card.fci-green{background:#E5F3EA;border-color:#C2E0CC;border-top:4px solid #2E8B57;}
-.fci .card.fci-coral{background:#FCE9E0;border-color:#F2CDBB;border-top:4px solid #DD6B3F;}
-.fci .card.fci-lilac{background:#F0EAF8;border-color:#D9CCEB;border-top:4px solid #7B5BB5;}
-.fci .card.fci-teal{background:#E2F2EF;border-color:#BEDFD8;border-top:4px solid #2A8472;}
+.fci .card.fci-yellow{border-top:3px solid #E9B729;}
+.fci .card.fci-blue{border-top:3px solid #3E6FB8;}
+.fci .card.fci-green{border-top:3px solid #2E8B57;}
+.fci .card.fci-coral{border-top:3px solid #DD6B3F;}
+.fci .card.fci-lilac{border-top:3px solid #7B5BB5;}
+.fci .card.fci-teal{border-top:3px solid #2A8472;}
 .fci .card.fci-zero{text-align:center;padding:28px 32px;}
 .fci-head h2.fci-zero-h{font-size:32px;}
 .fci-head h2.fci-belong-h{font-size:32px;}
