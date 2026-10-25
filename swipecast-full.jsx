@@ -2440,6 +2440,51 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .page.ts-page .ts-center p{max-width:720px;margin-left:auto;margin-right:auto;}
 .page.ts-page .card p,.page.ts-page section>p,.page.ts-page .info-hero p{color:var(--t1)!important;}
 .lgl-hero.lgl-bright::after{background:linear-gradient(180deg,rgba(10,9,8,.10) 0%,rgba(10,9,8,.18) 45%,rgba(10,9,8,.86) 100%);}
+/* About page (2026-10-25 redesign, owner-approved demo about-redesign-B3): editorial split layout, all rules scoped to .abt so the Footer inside .page is untouched. */
+.abt{width:100%;max-width:1040px;margin:0 auto;}
+.abt-lbl{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--teal);}
+.abt-open{display:grid;grid-template-columns:1.15fr 1fr;gap:72px;align-items:end;padding:48px 0 68px;border-bottom:1px solid var(--bdr);}
+.abt-open h1{margin:18px 0 0;font-weight:800;font-size:clamp(38px,4vw,56px);line-height:1.04;letter-spacing:-.035em;color:var(--acc);}
+.abt-open p{margin:0;font-size:19px;line-height:1.7;color:var(--t1);}
+.abt-two{display:grid;grid-template-columns:1fr 1fr;padding:64px 0 80px;}
+.abt-two>div{padding-right:56px;min-width:0;}
+.abt-two>div+div{padding:0 0 0 56px;border-left:1px solid var(--bdr);}
+.abt-num{font-family:'Poppins',sans-serif;font-weight:700;font-size:14px;color:var(--teal);letter-spacing:.06em;}
+.abt-two h3{margin:14px 0;font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--acc);}
+.abt-two p{margin:0;font-size:17px;line-height:1.75;color:var(--t2);}
+.abt-diff{display:grid;grid-template-columns:5fr 7fr;gap:80px;padding:76px 0 84px;border-top:1px solid var(--bdr);}
+.abt-diff-side{min-width:0;}
+.abt-stick{position:sticky;top:110px;}
+.abt h2{margin:0 0 18px;font-size:clamp(32px,3.6vw,46px);font-weight:800;letter-spacing:-.03em;line-height:1.1;color:var(--acc);}
+.abt-stick>p,.abt-coll-head p{margin:0;font-size:18px;line-height:1.7;color:var(--t2);}
+.abt-item{padding:0 0 36px;margin-bottom:36px;border-bottom:1px solid var(--bdr);min-width:0;}
+.abt-item:last-child{border:0;margin:0;padding:0;}
+.abt-item h3{margin:10px 0 14px;font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--acc);}
+.abt-item p{margin:0;font-size:17px;line-height:1.8;color:var(--t2);}
+.abt-item p strong{color:var(--acc);font-weight:700;}
+.abt-card-fig{margin:44px 0 0;max-width:390px;}
+.abt-card-fig figcaption{font-size:12px;color:#7A7064;margin-top:14px;padding-left:6px;}
+.abt-coll{padding:84px 0 96px;border-top:1px solid var(--bdr);}
+.abt-coll-head{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:end;margin-bottom:64px;}
+.abt-coll-head h2{margin:0;}
+.abt-three{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;}
+.abt-three>div{border-top:2px solid var(--acc);padding-top:26px;min-width:0;}
+.abt-three h4{margin:0 0 12px;font-size:20px;font-weight:800;color:var(--acc);letter-spacing:-.01em;}
+.abt-three p{margin:0;font-size:16px;line-height:1.75;color:var(--t2);}
+@media (max-width:900px){
+  .abt-open{grid-template-columns:1fr;gap:24px;padding:28px 0 44px;}
+  .abt-open h1{font-size:38px;}
+  .abt-open p{font-size:17px;}
+  .abt-two{grid-template-columns:1fr;padding:40px 0 52px;}
+  .abt-two>div{padding:0;}
+  .abt-two>div+div{padding:40px 0 0;margin-top:40px;border-left:0;border-top:1px solid var(--bdr);}
+  .abt-diff{grid-template-columns:1fr;gap:40px;padding:52px 0 56px;}
+  .abt-stick{position:static;}
+  .abt-card-fig{margin-top:32px;}
+  .abt-coll{padding:56px 0 64px;}
+  .abt-coll-head{grid-template-columns:1fr;gap:18px;margin-bottom:40px;}
+  .abt-three{grid-template-columns:1fr;gap:32px;}
+}
 /* Fair Casting & Inclusion (2026-10-24): About-page layout, dark ink for low-vision readers, film-costume card tints. */
 .page.fci .info-hero p{color:var(--t1);}
 .page.fci .info-hero h1{line-height:1.12;}
@@ -9084,28 +9129,57 @@ function ResetPasswordPage({onNavigate,session}){
 // PAGE: ABOUT
 // ═══════════════════════════════════════════
 function AboutPage({onNavigate}){
+  // Example QR Talent Card: a static copy of ActorCardPreview's business-card front in the default
+  // Terracotta colour (values from ABC_CARD_COLORS). Kira Vance is the landing deck's demo actor; the QR opens castslate.com.
+  const chip=t=><span key={t} style={{fontSize:8,fontWeight:600,padding:"2px 7px",borderRadius:4,background:"#8A4A3C",color:"#F5F1EC",border:"1px solid #9C5A4B",whiteSpace:"nowrap",flexShrink:0}}>{t}</span>;
+  const exampleCard=(<figure className="abt-card-fig" aria-hidden="true">
+    <div style={{background:"#7A3B2E",border:"1.5px solid #8C4A3D",borderRadius:10,overflow:"hidden",boxShadow:"0 8px 40px rgba(26,26,46,0.15)",display:"flex",width:"100%",maxWidth:390,aspectRatio:"1050 / 600",position:"relative"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:5,background:"#F3ECE1",zIndex:2}}/>
+      <div style={{width:"34%",flexShrink:0,position:"relative",marginTop:5,overflow:"hidden",background:"#E8E8F2"}}><div style={{position:"absolute",inset:0,backgroundImage:"url(/assets/landing/deck-kira-vance.jpg)",backgroundSize:"cover",backgroundPosition:"72% 30%"}}/></div>
+      <div style={{flex:1,padding:"16px 14px 12px",display:"flex",flexDirection:"column",minWidth:0,marginTop:5,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7}}><div style={{width:19,height:19,background:"#F3ECE1",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#7A3B2E"}}><LogoMark/></div><span style={{fontSize:9,fontWeight:800,color:"#F3ECE1",letterSpacing:1.5}}>CASTSLATE</span></div>
+        <div style={{fontWeight:800,fontSize:17,color:"#FFFFFF",letterSpacing:-0.5,lineHeight:1.15,marginBottom:3,whiteSpace:"nowrap"}}>Kira Vance</div>
+        <div style={{fontSize:11,color:"#F6D9C9",marginBottom:3,fontWeight:600}}>Actor</div>
+        <div style={{fontSize:10,color:"#E0B7AA",marginBottom:3}}>Los Angeles, CA</div>
+        <div style={{display:"flex",gap:4,flexWrap:"nowrap",marginBottom:3,overflow:"hidden"}}>{["Method Acting","Improv","Stage Combat"].map(chip)}</div>
+        <div style={{flex:"1 1 auto",minHeight:0}}/>
+        <div style={{borderTop:"1px solid #8C4A3D",paddingTop:5,display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:8}}>
+          <div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:"#E0B7AA",lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:"#FFFFFF",lineHeight:1.3,whiteSpace:"nowrap"}}>kira-vance</div></div>
+          <div style={{flexShrink:0,textAlign:"center"}}><img src="/assets/legal/about-card-qr.png" alt="" width="46" height="46" loading="lazy" style={{width:46,height:46,display:"block",borderRadius:4,background:"#fff",padding:3,boxSizing:"border-box"}}/><div style={{fontSize:6,color:"#E0B7AA",letterSpacing:0.3,marginTop:2,whiteSpace:"nowrap"}}>SCAN TO VIEW</div></div>
+        </div>
+      </div>
+    </div>
+    <figcaption>Example card</figcaption>
+  </figure>);
   return(<><LegalHero kind="about"/><div className="page">
-    <div className="info-hero"><div className="section-label">About</div><h1>Casting Should Be<br/>Fair for Everyone</h1><p>CastSlate was born out of frustration. Actors shouldn't be overcharged just to be seen — and they shouldn't be buried in a grid of 200 headshots either. We built a Tinder-style casting platform where every submission is reviewed one-by-one, and the price is well below what legacy sites charge.</p></div>
-    <div className="grid-2" style={{maxWidth:800,margin:"0 auto 60px"}}>
-      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Our Mission</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Democratize the casting process. Keep professional casting affordable for working actors. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
-      <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The Problem We Solve</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>Legacy platforms can cost actors hundreds of dollars a year — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. CastSlate fixes both.</p></div>
-    </div>
-    <div style={{maxWidth:800,margin:"0 auto 60px"}}>
-      <div style={{textAlign:"center",marginBottom:28}}>
-        <h2 style={{fontSize:28,fontWeight:800,marginBottom:12}}>What Makes CastSlate Different</h2>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:620,margin:"0 auto"}}>Most casting sites just store your headshot in a database. We build tools no other platform has — because we actually care whether our talent gets seen and gets better.</p>
-      </div>
-      <div className="grid-2">
-        <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>The QR Talent Card — an industry first</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>CastSlate is the first and only casting platform to give every actor a downloadable, printable QR business card. Take it to a networking event and hand it to an agent, casting director, filmmaker, or producer — they scan it and, in seconds, land directly on your full CastSlate profile: every headshot, every reel, all your media, in one place. No fumbling for links, no paper resumes. A decision-maker can scan, watch, and make a call on the spot. No other casting platform offers this.</p></div>
-        <div className="card"><h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Manager Mode — also a first</h3><p style={{color:"var(--t2)",fontSize:14,lineHeight:1.6}}>We're also the first platform to offer Manager Mode — individual, hands-on managing for each member. Most sites take your subscription and forget you exist. We do the opposite: personalized guidance to help you sharpen your craft, strengthen your profile, and make smarter career moves over time. Real support for your growth, not just a place to park a headshot.</p></div>
-      </div>
-    </div>
-    <div style={{maxWidth:900,margin:"0 auto 60px"}}>
-      <div style={{textAlign:"center",marginBottom:40}}>
-        <h2 style={{fontSize:28,fontWeight:800,marginBottom:12}}>Built by an Industry Collective</h2>
-        <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.65,maxWidth:620,margin:"0 auto"}}>CastSlate was founded from the shared experience of filmmakers, producers, casting directors, actors, and product builders who believe casting should be faster, fairer, and more transparent.</p>
-      </div>
-      <div className="team-grid">{[{n:"Filmmakers",i:"movie",r:"Built by people who understand production pressure, tight deadlines, and the need to find the right performer without wasting time."},{n:"Casting Professionals",i:"masks-theater",r:"Shaped by people who know the casting process from the inside and believe every submission deserves a real human look."},{n:"Product Builders",i:"settings",r:"Designed by technologists focused on making casting cleaner, faster, and easier to use for both actors and casting teams."}].map((t,idx)=><div key={idx} className="team-card"><div className="avatar"><Ico n={t.i} s={28}/></div><h4>{t.n}</h4><p>{t.r}</p></div>)}</div>
+    <div className="abt">
+      <section className="abt-open">
+        <div><div className="abt-lbl">About</div><h1>Casting Should&nbsp;Be<br/>Fair for Everyone</h1></div>
+        <p>CastSlate was born out of frustration. Actors shouldn't be overcharged just to be seen — and they shouldn't be buried in a grid of 200 headshots either. We built a Tinder-style casting platform where every submission is reviewed one-by-one, and the price is well below what legacy sites charge.</p>
+      </section>
+      <section className="abt-two">
+        <div><div className="abt-num">01</div><h3>Our Mission</h3><p>Democratize the casting process. Keep professional casting affordable for working actors. Guarantee that every submission gets a real, human look. Build tools that make casting faster, fairer, and more efficient.</p></div>
+        <div><div className="abt-num">02</div><h3>The Problem We Solve</h3><p>Legacy platforms can cost actors hundreds of dollars a year — a tax on people working service jobs. Meanwhile, CDs get overwhelmed with grid-view headshots and miss great talent. CastSlate fixes both.</p></div>
+      </section>
+      <section className="abt-diff">
+        <div className="abt-diff-side"><div className="abt-stick">
+          <h2>What Makes CastSlate Different</h2>
+          <p>Most casting sites just store your headshot in a database. We build tools no other platform has — because we actually care whether our talent gets seen and gets better.</p>
+          {exampleCard}
+        </div></div>
+        <div>
+          <div className="abt-item"><div className="abt-lbl">An industry first</div><h3>The QR Talent Card</h3><p>CastSlate is the first and only casting platform to give every actor a downloadable, printable QR business card. Take it to a networking event and hand it to an agent, casting director, filmmaker, or producer — they scan it and, in seconds, land directly on your full CastSlate profile: every headshot, every reel, all your media, in one place. No fumbling for links, no paper resumes. A decision-maker can scan, watch, and make a call on the spot. <strong>No other casting platform offers this.</strong></p></div>
+          <div className="abt-item"><div className="abt-lbl">Also a first</div><h3>Manager Mode</h3><p>We're also the first platform to offer Manager Mode — individual, hands-on managing for each member. Most sites take your subscription and forget you exist. We do the opposite: personalized guidance to help you sharpen your craft, strengthen your profile, and make smarter career moves over time. Real support for your growth, not just a place to park a headshot.</p></div>
+        </div>
+      </section>
+      <section className="abt-coll">
+        <div className="abt-coll-head"><h2>Built by an Industry Collective</h2><p>CastSlate was founded from the shared experience of filmmakers, producers, casting directors, actors, and product builders who believe casting should be faster, fairer, and more transparent.</p></div>
+        <div className="abt-three">
+          <div><h4>Filmmakers</h4><p>Built by people who understand production pressure, tight deadlines, and the need to find the right performer without wasting time.</p></div>
+          <div><h4>Casting Professionals</h4><p>Shaped by people who know the casting process from the inside and believe every submission deserves a real human look.</p></div>
+          <div><h4>Product Builders</h4><p>Designed by technologists focused on making casting cleaner, faster, and easier to use for both actors and casting teams.</p></div>
+        </div>
+      </section>
     </div>
     <Footer onNavigate={onNavigate}/>
   </div></>);
