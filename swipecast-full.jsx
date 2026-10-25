@@ -10510,7 +10510,7 @@ function TrustSafetyPage({onNavigate}){
       </div>
     </section>
 
-    <section style={{maxWidth:980,margin:"0 auto"}}>
+    <section style={{maxWidth:980,margin:"0 auto 88px"}}>
       <div className="card ts-center ts-tint" style={{padding:30}}>
         <div className="section-label">When in Doubt</div>
         <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.8,marginBottom:10}}>A real opportunity can withstand basic safety questions.</h2>
