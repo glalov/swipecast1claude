@@ -2470,6 +2470,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci .card.fci-zero,.fci .card.fci-zero:hover{border:2px solid #1A1A2E;box-shadow:none;}
 .fci .card.fci-zero p{font-size:16px;}
 .fci .card.fci-zero p.fci-big{font-size:17px;font-weight:700;line-height:1.6;margin-bottom:12px;}
+.fci .card.fci-zero p+p{margin-top:12px;}
 .fci-tag{display:inline-block;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
 .fci-ok{color:#206557;}
 .fci-no{color:#9A3B2C;}
@@ -12502,7 +12503,8 @@ function FairCastingPage({onNavigate}){
     <section className="fci-sec">
       <div className="fci-head"><h2 className="fci-zero-h">Zero Tolerance for Discrimination</h2></div>
       <div className="card fci-zero">
-        <p className="fci-big">CastSlate has a zero-tolerance policy toward discrimination, harassment, or prejudice based on race, ethnicity, national origin, nationality, religion, spiritual beliefs, sex, gender, gender identity, gender expression, sexual orientation, age, disability, physical appearance, body type, or socioeconomic background.</p>
+        <p className="fci-big">CastSlate has a zero-tolerance policy toward harassment and prejudice of any kind, and toward discrimination based on race, ethnicity, national origin, nationality, religion, spiritual beliefs, sex, gender, gender identity, gender expression, sexual orientation, age, disability, physical appearance, body type, or socioeconomic background.</p>
+        <p>Describing what a role genuinely requires, such as a character&rsquo;s age, gender or background, is part of casting and is allowed on CastSlate. Going beyond those needs is not.</p>
         <p>The same protection covers pregnancy, marital or family status, immigration or citizenship status, medical and mental health conditions, and any other characteristic protected by applicable law.</p>
       </div>
       <p className="fci-after">This applies everywhere on CastSlate: casting postings, messages, profile content, feedback on submissions and classes. Slurs, demeaning stereotypes, unwanted sexual comments and requests that have nothing to do with the role are never acceptable here.</p>
