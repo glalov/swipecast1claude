@@ -2280,7 +2280,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    because every child here is fully opaque and full-bleed (the nav is solid
    #FFFFFF, no backdrop-filter), so this is only ever visible in the seam. */
 .site-top{position:fixed;top:0;left:0;right:0;z-index:120;background:#0C0A08;}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:relative;z-index:1;background:#FFFFFF;border-bottom:1px solid var(--bdr);transition:box-shadow .22s ease;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;position:relative;z-index:1;background:#FFFDF8;border-bottom:1px solid var(--bdr);transition:box-shadow .22s ease;}
 /* Subtle drop-shadow under the nav once the page is scrolled even slightly;
    none at the very top. Toggled by the .scrolled class (window.scrollY>4). */
 .nav.scrolled{box-shadow:0 6px 18px -6px rgba(10,10,10,.16);}
