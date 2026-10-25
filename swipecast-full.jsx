@@ -2486,7 +2486,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci-fine h2{font-size:20px;font-weight:800;margin:0 0 10px;}
 .fci-fine p{color:var(--t1);font-size:15px;line-height:1.65;margin:0;}
 .fci-fine p.fci-date{font-size:14px;margin-top:12px;}
-.fci-thanks{width:100%;max-width:620px;margin:56px auto 0;text-align:center;font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.4;color:var(--t1);}
+.fci-thanks{width:100%;max-width:620px;margin:56px auto 88px;text-align:center;font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.4;color:var(--t1);}
 @media (max-width:768px){
   .page.fci .info-hero h1{font-size:34px;letter-spacing:-1.2px;}
   .fci .grid-2{gap:16px;}
@@ -2499,7 +2499,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
   .fci-sec.fci-welcome{padding:32px 18px 28px;border-radius:18px;}
   .fci-stand p{font-size:18px;}
   .fci .card.fci-zero{padding:22px 20px;}
-  .fci-thanks{font-size:19px;}
+  .fci-thanks{font-size:19px;margin-bottom:64px;}
 }
 .card.tm-card{margin:0;padding:clamp(24px,2.4vw,32px);display:flex;flex-direction:column;min-width:0;border-radius:20px;}
 .tm-qm{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:72px;line-height:.62;color:var(--teal);height:34px;margin:0 0 10px;}
