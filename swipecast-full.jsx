@@ -2434,6 +2434,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .page.ts-page section>.section-label,.page.ts-page section>h2{text-align:center;}
 .page.ts-page section>p{text-align:center;margin-left:auto;margin-right:auto;}
 .page.ts-page .ts-center{text-align:center;}
+.page.ts-page .card,.page.ts-page .card:hover{transition:none;border-color:var(--bdr);box-shadow:0 1px 2px rgba(26,26,46,0.03);}
+.page.ts-page section>.section-label,.page.ts-page .ts-center .section-label{color:var(--teal-dk);}
+.page.ts-page .card.ts-tint,.page.ts-page .card.ts-tint:hover{background:#EEF6F3;border-color:#CFE5DD;}
 .page.ts-page .ts-center p{max-width:720px;margin-left:auto;margin-right:auto;}
 .page.ts-page .card p,.page.ts-page section>p,.page.ts-page .info-hero p{color:var(--t1)!important;}
 .lgl-hero.lgl-bright::after{background:linear-gradient(180deg,rgba(10,9,8,.10) 0%,rgba(10,9,8,.18) 45%,rgba(10,9,8,.86) 100%);}
@@ -10424,11 +10427,11 @@ function TrustSafetyPage({onNavigate}){
       <div className="section-label">Platform Standards</div>
       <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:18}}>What CastSlate expects from casting activity</h2>
       <div className="grid-3">
-        {promiseCards.map(([title,body],i)=><Card key={title} title={title} accent="var(--acc)">{body}</Card>)}
+        {promiseCards.map(([title,body],i)=><Card key={title} title={title} accent="var(--teal)">{body}</Card>)}
       </div>
     </section>
 
-    <section id="never-allowed" style={{maxWidth:1040,margin:"0 auto 54px",scrollMarginTop:96}}>
+    <section id="never-allowed" style={{maxWidth:1040,margin:"0 auto 48px",scrollMarginTop:96}}>
       <div className="section-label">Never Allowed on CastSlate</div>
       <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:10}}>Stories can show anything. Auditions can never put you at risk.</h2>
       <p style={{color:"var(--t1)",fontSize:15,lineHeight:1.7,maxWidth:780,marginBottom:22}}>Film and television tell hard stories, including violence and intimacy, and roles may portray them. What happens to a performer during casting is different. These four rules apply to every listing, audition and self-tape on CastSlate, with no exceptions.</p>
@@ -10438,11 +10441,11 @@ function TrustSafetyPage({onNavigate}){
         <Card title="No real violence in auditions" accent="var(--acc)">No one is ever asked to hit, choke, restrain or be struck by another person in an audition or self-tape. Fight and stunt work happens only on set, planned and supervised by a professional stunt coordinator.</Card>
         <Card title="No real weapons, drugs or dangerous stunts" accent="var(--acc)">Auditions and self-tapes never require real firearms or blades, real drugs or alcohol, fire, heights, water or anything else that could hurt you. Props only. If you are ever asked to, you can simply say no.</Card>
       </div>
-      <p style={{color:"var(--t1)",fontSize:15,lineHeight:1.7,maxWidth:780,marginTop:20}}>Listings that break these rules are removed, and serious or repeated violations lead to a permanent ban.</p>
+      <p style={{color:"var(--t1)",fontSize:16,fontWeight:700,lineHeight:1.6,maxWidth:940,marginTop:48,marginBottom:0}}>Listings that break these rules are removed, and serious or repeated violations lead to a permanent ban.</p>
     </section>
 
     <section style={{maxWidth:980,margin:"0 auto 54px"}}>
-      <div className="card ts-center" style={{padding:30}}>
+      <div className="card ts-center ts-tint" style={{padding:30}}>
         <div className="section-label">Money Requests</div>
         <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-0.8,marginBottom:12}}>Never pay a stranger for a role.</h2>
         <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,marginBottom:14}}>Real casting directors and producers don&rsquo;t ask actors to pay them. If someone claiming to represent a project says you must pay them personally, buy their classes, join their private program or send money before you can audition, treat it as a serious warning sign.</p>
@@ -10477,9 +10480,9 @@ function TrustSafetyPage({onNavigate}){
       <div className="section-label">Privacy & Contact Boundaries</div>
       <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:18}}>Keep things professional.</h2>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))",gap:18}}>
-        <Card title="Protect private information" accent="var(--acc)">Never send Social Security numbers, bank logins, your home address, passport images or explicit images to contacts you don&rsquo;t know. A real hiring process explains why it needs sensitive details.</Card>
-        <Card title="Keep communication professional" accent="var(--acc)">Casting messages should stay about the role, audition material, scheduling, rates and production details. Sexualized messages, intimidation, threats or pressure to hide communication are never acceptable.</Card>
-        <Card title="Use written terms" accent="var(--acc)">Before work starts, make sure dates, location, pay, usage, travel, meals, wardrobe, intimacy requirements and cancellation terms are clear. If anything changes later, get the change in writing too.</Card>
+        <Card title="Protect private information" accent="var(--teal)">Never send Social Security numbers, bank logins, your home address, passport images or explicit images to contacts you don&rsquo;t know. A real hiring process explains why it needs sensitive details.</Card>
+        <Card title="Keep communication professional" accent="var(--teal)">Casting messages should stay about the role, audition material, scheduling, rates and production details. Sexualized messages, intimidation, threats or pressure to hide communication are never acceptable.</Card>
+        <Card title="Use written terms" accent="var(--teal)">Before work starts, make sure dates, location, pay, usage, travel, meals, wardrobe, intimacy requirements and cancellation terms are clear. If anything changes later, get the change in writing too.</Card>
       </div>
     </section>
 
@@ -10488,7 +10491,7 @@ function TrustSafetyPage({onNavigate}){
       <h2 style={{fontSize:30,fontWeight:800,letterSpacing:-1,marginBottom:18}}>We&rsquo;re here if something doesn&rsquo;t feel right.</h2>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:14}}>
         {reportSteps.map(([title,body],i)=><div key={title} className="card" style={{padding:22}}>
-          <div style={{width:30,height:30,borderRadius:10,background:"var(--acc)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,marginBottom:12}}>{i+1}</div>
+          <div style={{width:30,height:30,borderRadius:10,background:"var(--teal)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:13,marginBottom:12}}>{i+1}</div>
           <h3 style={{fontSize:15,fontWeight:800,marginBottom:8}}>{title}</h3>
           <p style={{color:"var(--t2)",fontSize:13,lineHeight:1.6,margin:0}}>{body}</p>
         </div>)}
@@ -10496,7 +10499,7 @@ function TrustSafetyPage({onNavigate}){
     </section>
 
     <section style={{maxWidth:980,margin:"0 auto"}}>
-      <div className="card ts-center" style={{padding:30}}>
+      <div className="card ts-center ts-tint" style={{padding:30}}>
         <div className="section-label">When in Doubt</div>
         <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.8,marginBottom:10}}>A real opportunity can withstand basic safety questions.</h2>
         <p style={{color:"var(--t2)",fontSize:15,lineHeight:1.75,margin:0}}>Ask who is producing the project, where the audition is held, whether pay is confirmed, what material will be recorded, who will see it, whether intimate content is involved, and what agreement applies. If the answer is pressure, secrecy, shame or money first, take a step back.</p>
