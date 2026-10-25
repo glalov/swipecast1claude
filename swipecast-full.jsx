@@ -2740,7 +2740,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pl-acc-gold .pp-play.is-primary{color:#1A1A2E;}
 /* Cinematic = warm "theatre" dark (owner, 2026-10-15; demo cinematic-dark-theme-demo.html): espresso page,
    cards one clear step lighter with a faint warm top edge, cream text, gold only as accent. Was cold #121216. */
-.pl-cinematic{--bg:#16120E;--s1:#201A15;--s2:#2A231C;--bdr:#3A3128;--t1:#F3ECE1;--t2:#D9CFC1;--t3:#A99E90;color:var(--t1);}
+.pl-cinematic{--bg:#16120E;--s1:#2A221B;--s2:#382E25;--bdr:#3A3128;--t1:#F3ECE1;--t2:#D9CFC1;--t3:#A99E90;color:var(--t1);}
 /* Dark cards: no outlines - the lighter card tone alone separates them; dividers are one faint solid style (owner, 2026-10-16). */
 .pl-cinematic .card,.pl-cinematic .pl-hero{border-color:transparent!important;box-shadow:none;}
 .pl-cinematic .pp-stats,.pl-cinematic .pp-div{border-top:1px solid rgba(243,236,225,.06)!important;}
