@@ -50282,7 +50282,7 @@ function AdminHeadshotCatalog({session,myProfile}){
     let data;
     try{
       data=await fetchAllRows(()=>window.sb.from("profiles")
-        .select("id,display_name,email,location,union_status,headshot_url,additional_photos,verified,featured,banned,suspended,created_at,membership_status")
+        .select("id,display_name,email,location,union_status,headshot_url,additional_photos,verified,featured,banned,suspended,created_at,membership_status,public_slug,visible")
         .eq("user_type","talent")
         .not("headshot_url","is",null)
         .neq("headshot_url","")
@@ -50386,6 +50386,7 @@ function CatalogCard({u,appCount,onOpen}){
   </div>);
 }
 function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
+  const [linkCopied,setLinkCopied]=useState(false);
   const [apps,setApps]=useState(null);
   const [openCastingId,setOpenCastingId]=useState(null); // drill into a project's roles
   const [decideApp,setDecideApp]=useState(null);         // application currently in the decision swiper
@@ -50494,6 +50495,22 @@ function AdminTalentCatalogDetail({u,session,myProfile,onBack}){
           </button>
           {annMsg&&<span style={{fontSize:12,fontWeight:600,color:annMsg.tone==="ok"?"#1d7b44":"#c0392b"}}>{annMsg.text}</span>}
         </div>}
+        {/* Public profile: the same castslate.com/talent/<slug> page an agent lands on from the actor's QR card.
+            The slug is created automatically the first time a talent account signs in. */}
+        <div style={{marginTop:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:.6,textTransform:"uppercase",color:"var(--t3)",marginBottom:5}}>Public profile</div>
+          {u.public_slug?(()=>{const url="https://www.castslate.com/talent/"+u.public_slug;return(
+            <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+              <button title="Copy link" onClick={()=>{try{navigator.clipboard.writeText(url).then(()=>{setLinkCopied(true);setTimeout(()=>setLinkCopied(false),1600);});}catch(_){}}}
+                style={{display:"inline-flex",alignItems:"center",gap:8,maxWidth:"100%",padding:"5px 10px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--s2)",color:"var(--t1)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+                <span style={{minWidth:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>castslate.com/talent/{u.public_slug}</span>
+                <span style={{fontSize:11,fontWeight:700,color:linkCopied?"#1d7b44":"var(--t3)",flexShrink:0}}>{linkCopied?"Copied":"Copy"}</span>
+              </button>
+              <a className="btn-p btn-sm" href={url} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:7,textDecoration:"none"}}><Ico n="external-link" s={14}/> Open public profile</a>
+              {u.visible===false&&<span style={{fontSize:12,fontWeight:600,color:"#c0392b"}}>Profile is hidden, so this link shows "not found" to visitors.</span>}
+            </div>);})()
+          :<div style={{fontSize:13,color:"var(--t3)"}}>No public link yet. It's created automatically the next time this actor signs in.</div>}
+        </div>
       </div>
       <div style={{fontSize:12,color:"var(--t3)",textAlign:"right",flexShrink:0}}>
         <div style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>{u.display_name||"Unknown"}</div>
