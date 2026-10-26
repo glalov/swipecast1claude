@@ -2710,7 +2710,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pn-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .pn-pair>*{min-width:0;}
 .pn-pair .form-group{margin:0;}
-.pl-pronouns{margin:-4px 0 8px;font-size:15px;font-weight:600;color:var(--t2);}
+.pl-pronouns{margin:0 0 6px;font-size:15px;font-weight:600;color:var(--t2);}
 @media(max-width:480px){.pn-pair{grid-template-columns:1fr;}}
 /* Profile section icons + info tips (2026-10-26) */
 .ps-title{display:inline-flex;align-items:center;gap:10px;}
@@ -15758,8 +15758,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
               {talent.type&&<span className="tag" style={{fontSize:11}}>{talent.type}</span>}
             </div>
             <h1 className="pl-hero-nm">{heroName}</h1>
-            {pronounsOn()&&freshProfile?.pronouns&&<p className="pl-pronouns">{freshProfile.pronouns}</p>}
             {look&&<div className="pl-nm-line" aria-hidden="true"/>}
+            {pronounsOn()&&freshProfile?.pronouns&&<p className="pl-pronouns">{freshProfile.pronouns}</p>}
             {/* A one-liner that only repeats the location would show the city twice. */}
             {look&&look.tagline&&look.tagline.trim().toLowerCase()!==String(locationText||"").trim().toLowerCase()&&<p className="pl-hero-line">{look.tagline}</p>}
             {(locationText||agentOrRep)&&<p className="pl-hero-meta">{[locationText,agentOrRep?"Rep: "+agentOrRep:""].filter(Boolean).join(" · ")}</p>}
