@@ -2706,6 +2706,74 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .pp-stats:not(:has(>:nth-child(4))){justify-content:flex-start;column-gap:48px!important;}
 .pp-uni .pp-stats .pp-val{white-space:nowrap;}
 @media(max-width:600px){.pp-uni .pp-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:16px!important;}.pp-uni .pp-stats .pp-val{white-space:normal;}}
+/* One-page profile (owner, 2026-10-25, demo one-page-profile-demo.html "Marissa Kent"): below the hero the
+   sections are no longer cards; they flow on the page split by thin rules, set in the demo's type (DM Sans
+   headings, small caps labels, pill chips, 3-column credits). Right column = sticky action panel + Links,
+   Representation, Union for every viewer. Everything is scoped to .pp-1p and beats the older .pp-uni rules. */
+.pp-1p{margin-top:36px;}
+.pp-1p.has-side{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:64px;}
+.pp-1p-main{min-width:0;}
+.pp-1p-side{min-width:0;}
+.pp-1p-stick{position:sticky;top:96px;display:flex;flex-direction:column;gap:30px;}
+.pp-uni .pp-1p-main>.card,.pp-uni .pp-1p-main>.card:hover{background:transparent!important;border:0!important;border-top:1px solid var(--bdr)!important;border-radius:0!important;box-shadow:none!important;padding:34px 0 38px!important;margin:0!important;transform:none!important;font-family:'DM Sans',sans-serif!important;}
+.pp-uni .pp-1p-main>.card:first-child{border-top:0!important;padding-top:4px!important;}
+.pp-uni .pp-1p-main>.card.pp-info:empty{display:none;}
+.pp-uni .pp-1p .pl-sh,.pp-uni.pl-look .pp-1p .pl-sh,.pp-uni.pl-editorial .pp-1p .pl-sh{font-family:'DM Sans',sans-serif!important;font-size:22px!important;line-height:1.25!important;font-weight:800!important;letter-spacing:-.02em!important;text-transform:none!important;color:var(--pp-h)!important;border-left:0!important;padding-left:0!important;}
+.pp-uni .pp-1p-main .pl-sh{margin-bottom:6px;}
+.pp-uni .pp-1p .pp-bio{font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.75;letter-spacing:0;color:var(--t1);}
+.pp-1p .pp-appear-h{margin-top:34px;}
+.pp-1p .pp-info>.pp-appear-h:first-child{margin-top:0;}
+.pp-uni .pp-1p .pp-lbl,.pp-uni .pp-1p .pp-plays-label,.pp-uni .pp-1p .pp-lbl.pp-grp,.pp-uni .pp-1p .pp-inl-lbl{font-family:'DM Sans',sans-serif!important;font-size:11px!important;line-height:1.4!important;font-weight:700!important;letter-spacing:.09em!important;text-transform:uppercase!important;color:var(--t3)!important;}
+.pp-uni .pp-1p .pp-val,.pp-uni .pp-1p .pp-key{font-family:'DM Sans',sans-serif!important;font-size:15px!important;line-height:1.45!important;font-weight:700!important;letter-spacing:0!important;color:var(--t1)!important;}
+.pp-uni .pp-1p .pp-txt,.pp-uni .pp-1p .pp-sec{font-family:'DM Sans',sans-serif!important;font-size:15.5px!important;line-height:1.7!important;font-weight:400!important;letter-spacing:0!important;}
+.pp-uni .pp-1p .pp-txt{color:var(--t1)!important;}
+.pp-uni .pp-1p .pp-sec{color:var(--t3)!important;}
+.pp-uni .pp-1p .pp-txt strong{font-weight:700;}
+.pp-uni .pp-1p .pp-stats{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(88px,1fr))!important;gap:16px 18px!important;border-top:0!important;padding-top:0!important;margin-bottom:0!important;}
+.pp-uni .pp-1p .pp-stats .pp-lbl{margin-bottom:4px!important;}
+.pp-uni .pp-1p .pp-stats .pp-val{white-space:normal;}
+.pp-uni .pp-1p .pp-div{border-top:1px dashed var(--bdr)!important;margin-top:18px!important;padding-top:16px!important;}
+.pp-uni .pp-1p .pp-plays{margin:18px 0 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pp-uni .pp-1p .pp-plays-label{margin:0 4px 0 0!important;}
+.pp-uni .pp-1p .pp-plays-list,.pp-uni .pp-1p .cma-chips{display:flex!important;flex-wrap:wrap;gap:7px;}
+.pp-uni .pp-1p .pp-chip,.pp-uni .pp-1p .pp-play,.pp-uni .pp-1p .cma-chip{display:inline-flex!important;align-items:center;gap:5px;font-family:'DM Sans',sans-serif!important;font-size:13px!important;line-height:1.3!important;font-weight:600!important;letter-spacing:0!important;padding:6px 12px!important;border-radius:999px!important;background:var(--s1)!important;border:1px solid var(--bdr)!important;color:var(--t1)!important;}
+.pp-uni .pp-1p .pp-chip+.pp-chip::before,.pp-uni .pp-1p .pp-play+.pp-play::before,.pp-uni .pp-1p .cma-chip+.cma-chip::before{content:none!important;}
+.pp-uni .pp-1p .pp-plays-list .pp-play.is-primary,.pp-uni.pl-look .pp-1p .pp-plays-list .pp-play.is-primary{background:var(--pl-acc,#1A1A2E)!important;border-color:var(--pl-acc,#1A1A2E)!important;color:#fff!important;}
+.pp-uni.pl-acc-gold .pp-1p .pp-plays-list .pp-play.is-primary{color:#1A1A2E!important;}
+.pp-uni .pp-1p .pp-play .ti{display:none!important;}
+.pp-uni .pp-1p .card div:has(>.pp-chip){display:flex!important;flex-wrap:wrap;gap:7px;}
+.pp-uni .pp-1p .pp-more{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--teal-dk);background:none;border:0;cursor:pointer;}
+.pp-uni .pp-1p .pp-lbl.pp-grp{margin-bottom:9px!important;}
+.pp-uni .pp-1p .pp-cred-head{display:none!important;}
+.pp-uni .pp-1p .pp-cred-catlbl{font-family:'DM Sans',sans-serif!important;font-size:12px!important;font-weight:800!important;letter-spacing:.12em!important;text-transform:uppercase!important;color:var(--teal-dk)!important;margin:22px 0 4px!important;}
+.pp-uni .pp-1p .pp-cred-cat:first-child .pp-cred-catlbl{margin-top:4px!important;}
+.pp-uni .pp-1p .pp-cred .credit-row{display:grid;grid-template-columns:60px minmax(0,1.2fr) minmax(0,1fr);grid-template-areas:"yr pt co" "yr rl co";column-gap:18px;row-gap:2px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr);}
+.pp-uni .pp-1p .pp-cred-cat:last-child .credit-row:last-child,.pp-uni .pp-1p .pp-cred>.credit-row:last-child{border-bottom:0;padding-bottom:0;}
+.pp-uni .pp-1p .credit-year{grid-area:yr;font-family:'DM Sans',sans-serif;font-size:14px!important;color:var(--t3)!important;}
+.pp-uni .pp-1p .credit-title{grid-area:pt;font-family:'DM Sans',sans-serif;font-size:15px!important;font-weight:700!important;letter-spacing:0!important;color:var(--t1)!important;}
+.pp-uni .pp-1p .credit-role{grid-area:rl;font-family:'DM Sans',sans-serif;font-size:14px!important;letter-spacing:0!important;color:var(--t2)!important;}
+.pp-uni .pp-1p .credit-meta{grid-area:co;font-family:'DM Sans',sans-serif;font-size:14px!important;letter-spacing:0!important;color:var(--t2)!important;}
+.pp-uni .pp-1p .pp-resume{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;color:var(--teal-dk)!important;font-weight:700;font-size:13px!important;}
+.pl-cinematic .pp-1p .pp-resume,.pl-cinematic .pp-1p .pp-cred-catlbl{color:#5FB3A2!important;}
+.pp-uni .pp-1p .pp-badge{display:inline-flex!important;align-items:center;gap:6px;font-family:'DM Sans',sans-serif!important;font-size:13px!important;font-weight:700!important;letter-spacing:0!important;padding:6px 11px!important;border-radius:7px!important;margin-right:0!important;background:rgba(42,132,114,.10)!important;color:var(--teal-dk)!important;}
+.pl-cinematic .pp-1p .pp-badge{background:rgba(95,179,162,.14)!important;color:#7CC7B6!important;}
+.pp-uni .pp-1p .pp-lang{display:grid!important;grid-template-columns:1fr 1fr;column-gap:28px;}
+.pp-uni .pp-1p .pp-logi{display:grid!important;grid-template-columns:1fr 1fr;column-gap:28px;}
+.pp-uni .pp-1p .pp-logi>:first-child{grid-column:1/-1;}
+.pp-uni .pp-1p .pp-logi>div{margin-bottom:0!important;}
+.pp-uni .pp-1p .card>div[style*="repeat(auto-fill,minmax(110px"]{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:16px 18px!important;}
+.pp-act{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:9px;box-shadow:0 14px 34px -24px rgba(36,31,25,.35);font-family:'DM Sans',sans-serif;}
+.pp-act button{width:100%;justify-content:center;display:inline-flex;align-items:center;gap:7px;padding:11px 14px!important;font-size:14px!important;}
+.pp-uni .pp-act .btn-p{background:var(--pl-acc,#2A8472)!important;border-color:var(--pl-acc,#2A8472)!important;color:#fff!important;}
+.pp-uni.pl-acc-gold .pp-act .btn-p{color:#1A1A2E!important;}
+.pp-act-hint{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--t3);text-align:center;}
+.pl-cinematic .pp-act{border-color:transparent;box-shadow:none;}
+.pp-sb h3{margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
+.pp-sb-links a{display:flex;align-items:center;gap:10px;padding:7px 0;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:var(--t1);text-decoration:none;}
+.pp-sb-links a:hover{color:var(--pl-acc,#2A8472);}
+.pp-sb-links a svg{color:var(--t3);flex-shrink:0;}
+.pp-sb-fact{font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.5;color:var(--t1);}
+@media(max-width:900px){.pp-1p{margin-top:20px;}.pp-1p.has-side{grid-template-columns:minmax(0,1fr);gap:0;}.pp-1p-side{order:-1;margin-bottom:26px;}.pp-1p-stick{position:static;gap:24px;}.pp-uni .pp-1p .pp-stats,.pp-uni .pp-1p .card>div[style*="repeat(auto-fill,minmax(110px"]{grid-template-columns:repeat(3,minmax(0,1fr))!important;}.pp-uni .pp-1p .pp-lang,.pp-uni .pp-1p .pp-logi{grid-template-columns:1fr;row-gap:22px;}.pp-uni .pp-1p .pp-cred .credit-row{grid-template-columns:48px minmax(0,1fr);grid-template-areas:"yr pt" "yr rl" "yr co";}}
 .pr-modal{background:var(--s1);border-radius:14px;padding:12px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);}
 .pr-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 10px;font-size:14px;flex-wrap:wrap;color:var(--t1);}
 .pr-frame{display:block;width:min(800px,calc(100vw - 48px),calc((100vh - 110px) * .8));aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 0 0 1px #e8e2d6;}
@@ -15521,6 +15589,8 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const heroName=freshProfile?.display_name||talent.name||talent.display_name||"—";
   const canMessage=!isOwnProfile&&!!talentDbId&&talentDbId!==session?.user?.id;
   const heroMessage=()=>{if(viewerIsCd||session){setCdAction("dm");return;}try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");};
+  // One-page layout (owner, 2026-10-25): sections flow on the page; CD/visitor actions sit in a sticky right column.
+  const showActionPanel=!isOwnProfile&&!!talentDbId&&talentDbId!==session?.user?.id;  // CD / visitor / other actor
   return(<div className={"page pp-uni"+(slidingBack?" cs-slide-out":"")+(look?" pl-look pl-"+look.theme+" pl-acc-"+look.accent:"")} style={look?{"--pl-acc":(look.theme==="cinematic"&&look.accent==="gold")?"#D6AE5C":PL_ACCENTS[look.accent]}:undefined}><div className="pp-frame">
     {isOwnProfile&&(
       <div style={{background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
@@ -15566,7 +15636,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
               {isOwnProfile&&<button type="button" className="pl-btn ghost" onClick={()=>setOwnMsgNote(v=>!v)}>Message</button>}
             </div>
             {isOwnProfile&&ownMsgNote&&<p className="pl-own-note" role="status">This is the button casting directors use to message you. Nothing is sent from your own preview.</p>}
-            {allSocialLinks.length>0&&<div className="pl-soc">{allSocialLinks.map(({label,url},i)=><a key={i} href={url.startsWith("http")?url:`https://${url}`} target="_blank" rel="noopener noreferrer">{label}</a>)}</div>}
           </div>
         </div>
         {hasShowcase&&<div className="pl-strip">
@@ -15621,7 +15690,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       {hasExtraMedia&&(
         <div style={{marginTop:8}}>
           <button onClick={()=>setShowAllMedia(v=>!v)}
-            style={{width:"100%",padding:"14px 18px",background:"#111",border:"none",borderRadius:8,fontSize:13,fontWeight:700,color:"#fff",cursor:"pointer",textAlign:"center",letterSpacing:"0.04em",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 1px 4px rgba(0,0,0,0.18)"}}>
+            style={{width:"100%",padding:"13px 18px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,fontSize:13,fontWeight:700,color:"var(--t1)",cursor:"pointer",textAlign:"center",letterSpacing:"0.04em",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {showAllMedia
               ?<>&#9650;&nbsp; View Less</>
               :<>&#9660;&nbsp; View More Media{extraMedia.length>0?` (${extraMedia.length})`:""}</>}
@@ -15653,8 +15722,10 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         </div>
       )}
 
+    </div>
+    <div className="pp-1p has-side"><div className="pp-1p-main">
       {/* Profile info card */}
-      <div className="card" style={{padding:"20px 22px",marginTop:10}}>
+      <div className="card pp-info" style={{padding:"20px 22px",marginTop:10}}>
         {!useHero&&<>
         {/* Tags row */}
         <div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
@@ -15692,6 +15763,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         {bioText&&<p className="pp-bio">{bioText}</p>}
 
         {/* Appearance stats */}
+        {useHero&&statsData.length>0&&<div className="pp-appear-h">{sectionHead("Appearance")}</div>}
         {statsData.length>0&&(
           <div className="pp-stats" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(96px,1fr))",gap:"10px 16px",marginBottom:ethnicityText?0:14,paddingTop:12,borderTop:"1px solid var(--bdr)"}}>
             {statsData.map(([l,v])=>(
@@ -15712,36 +15784,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         {/* Plays / casting archetypes — own row, wrapping chips, collapsible */}
         <PlaysChips types={castTypes}/>
 
-        {/* ── Card action bar — turns the public profile (where the actor's card
-            QR/link lands) into an active submission tool. Adapts to the viewer.
-            No anonymous writes: logged-out visitors are funneled to a free
-            account, preserving the return path. ── */}
-        {!isOwnProfile&&talentDbId&&talentDbId!==session?.user?.id&&(()=>{
-          const talentFirst=(talent.name||talent.display_name||"this actor").split(" ")[0];
-          return(
-          <div className="pp-div" style={{borderTop:"1px solid var(--bdr)",paddingTop:14,marginTop:2}}>
-            {viewerIsCd?(
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                <button className="btn-p btn-sm" onClick={()=>setCdAction("invite")}><Ico n="mail" s={22}/> Invite to a Casting</button>
-                <button className="btn-s btn-sm" onClick={()=>setCdAction("selftape")}><Ico n="video" s={22}/> Request Self-Tape</button>
-                <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}><Ico n="message-circle" s={22}/> Message</button>
-                <button className="btn-s btn-sm" onClick={()=>setCdAction("save")}><Ico n="star" s={24}/> Save</button>
-              </div>
-            ):session?(
-              <button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}><Ico n="message-circle" s={22}/> Message {talentFirst}</button>
-            ):(
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-                <div style={{minWidth:0}}>
-                  <div className="pp-val" style={{fontWeight:700,fontSize:14,color:"var(--t1)"}}>Want to work with {talentFirst}?</div>
-                  <div className="pp-sec" style={{fontSize:12.5,color:"var(--t2)",lineHeight:1.5,marginTop:2}}>Casting directors &amp; producers can invite {talentFirst} to a project or send a message — free to start.</div>
-                </div>
-                <button className="btn-p btn-sm" style={{flexShrink:0}} onClick={()=>{try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");}}>Create a free account <Tri/></button>
-              </div>
-            )}
-          </div>);
-        })()}
       </div>
-    </div>
 
     {/* ── SLATE VIDEO — private; shown to casting directors in submission review only, not on public profile ── */}
 
@@ -15821,13 +15864,13 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
     {(()=>{const acc=Array.isArray(freshProfile?.accents)?freshProfile.accents:[];const lng=Array.isArray(freshProfile?.languages)?freshProfile.languages:[];
       if(!acc.length&&!lng.length)return null;
       const pill=(x,i)=><span key={i} className="pp-chip">{x}</span>;
-      return <div className="card" style={{padding:"16px 20px",marginBottom:12}}>
-        {lng.length>0&&<>{sectionHead("Languages")}<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:acc.length?14:0}}>{lng.map(pill)}</div></>}
-        {acc.length>0&&<>{sectionHead("Accents")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{acc.map(pill)}</div></>}
+      return <div className="card pp-lang" style={{padding:"16px 20px",marginBottom:12}}>
+        {lng.length>0&&<div>{sectionHead("Languages")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{lng.map(pill)}</div></div>}
+        {acc.length>0&&<div>{sectionHead("Accents")}<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{acc.map(pill)}</div></div>}
       </div>;})()}
 
     {/* ── SELF-TAPE & LOGISTICS ── */}
-    {showLogistics&&<div className="card" style={{padding:"16px 20px",marginBottom:12}}>
+    {showLogistics&&<div className="card pp-logi" style={{padding:"16px 20px",marginBottom:12}}>
       {sectionHead("Self-Tape & Logistics")}
       {/* Self-tape first so the box reads in the same order as its title; the documents
           follow under their own group label (owner, 2026-10-15). */}
@@ -15887,6 +15930,31 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:other?14:0}}>{al.map((x,i)=><span key={i} className="pp-chip">{x}</span>)}</div></>}
         {other&&<p className="pp-txt" style={{fontSize:13.5,color:"var(--t2)",lineHeight:1.55,margin:0}}>{other}</p>}
       </div>;})()}
+
+    </div>
+    <aside className="pp-1p-side"><div className="pp-1p-stick">
+      {/* Action panel. Same buttons for everyone who can't act yet: logged-out visitors are sent to a free
+          casting account (return path kept); the actor's own preview shows what CDs see and sends nothing. */}
+      {(showActionPanel||isOwnProfile)&&(()=>{
+        const talentFirst=(talent.name||talent.display_name||"this actor").split(" ")[0];
+        const toSignup=()=>{try{sessionStorage.setItem("sc_return_to",window.location.pathname+window.location.search);}catch(_){}onNavigate("register-cd");};
+        const go=a=>isOwnProfile?()=>setOwnMsgNote(true):viewerIsCd?()=>setCdAction(a):toSignup;
+        return(<div className="pp-act">
+          {viewerIsCd||!session||isOwnProfile?<>
+            <button className="btn-p btn-sm" onClick={go("invite")}><Ico n="mail" s={20}/> Invite to a Casting</button>
+            <button className="btn-s btn-sm" onClick={go("selftape")}><Ico n="video" s={20}/> Request Self-Tape</button>
+            <button className="btn-s btn-sm" onClick={go("dm")}><Ico n="message-circle" s={20}/> Message</button>
+            <button className="btn-s btn-sm" onClick={go("save")}><Ico n="star" s={20}/> Save</button>
+            {isOwnProfile?<p className="pp-act-hint">{ownMsgNote?"Nothing is sent from your own preview.":"Casting directors see these buttons on your profile."}</p>
+              :!session&&<p className="pp-act-hint">Free casting account needed to contact {talentFirst}.</p>}
+          </>:<button className="btn-s btn-sm" onClick={()=>setCdAction("dm")}><Ico n="message-circle" s={20}/> Message {talentFirst}</button>}
+        </div>);
+      })()}
+      {allSocialLinks.length>0&&<div className="pp-sb"><h3>Links</h3><div className="pp-sb-links">{allSocialLinks.map(({key,label,url},i)=><a key={i} href={url.startsWith("http")?url:`https://${url}`} target="_blank" rel="noopener noreferrer"><SocialIcon platform={key} size={18}/>{label}</a>)}</div></div>}
+      {agentOrRep&&<div className="pp-sb"><h3>Representation</h3><div className="pp-sb-fact">{agentOrRep}</div></div>}
+      <div className="pp-sb"><h3>Union</h3><div className="pp-sb-fact">{unionText||"Non-Union"}</div></div>
+    </div></aside>
+    </div>
 
     {/* ── CD action modals ── */}
     {cdAction==="save"&&talentDbId&&<SaveToListModal cdId={session?.user?.id} talentId={talentDbId} talentName={talent.name||talent.display_name||"Talent"} onClose={()=>setCdAction(null)}/>}
