@@ -33,11 +33,11 @@ Deno.serve(async (req) => {
   } else return json(req, 405, { error: "method" });
   if (!/^[a-f0-9]{64}$/.test(token)) return json(req, 404, { error: "invalid" });
 
-  const { data: s } = await sb.from("phone_upload_sessions").select("id,user_id,expires_at,upload_count,max_files").eq("token", token).maybeSingle();
+  const { data: s } = await sb.from("phone_upload_sessions").select("id,user_id,expires_at,upload_count,max_files,single").eq("token", token).maybeSingle();
   if (!s) return json(req, 404, { error: "invalid" });
   if (new Date(s.expires_at).getTime() < Date.now()) return json(req, 410, { error: "expired" });
   const remaining = Math.max(0, (s.max_files || 12) - s.upload_count);
-  if (req.method === "GET") return json(req, 200, { ok: true, expires_at: s.expires_at, remaining, max_files: s.max_files || 12 });
+  if (req.method === "GET") return json(req, 200, { ok: true, expires_at: s.expires_at, remaining, single: !!s.single });
 
   if (remaining <= 0) return json(req, 429, { error: "limit" });
   const file = form!.get("file");

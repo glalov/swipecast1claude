@@ -16075,7 +16075,7 @@ function _phoneToJpeg(file){
 }
 // My Profile › Photos upload strip (owner, 2026-10-26, demo photo-upload-area-demo.html): one surface, two ways in,
 // split by a hairline "or". Files from either side go through the editor's crop + save queue (onFiles).
-function UploadStrip({title,hint,button,multiple,busy,maxFiles,onFiles}){
+function UploadStrip({title,hint,button,multiple,busy,single,onFiles}){
   const [drag,setDrag]=useState(false);
   const pick=e=>{const l=[...(e.target.files||[])].filter(f=>/^image\//.test(f.type));if(l.length)onFiles(multiple?l:l.slice(0,1));e.target.value="";};
   return(<div className={"pu-strip"+(drag?" is-drag":"")}
@@ -16088,11 +16088,11 @@ function UploadStrip({title,hint,button,multiple,busy,maxFiles,onFiles}){
       </div>
     </div>
     <div className="pu-or" aria-hidden="true"><i/>OR<i/></div>
-    <PhoneUploadSide maxFiles={maxFiles} onPhoto={f=>onFiles([f])}/>
+    <PhoneUploadSide single={single} onPhoto={f=>onFiles([f])}/>
   </div>);
 }
 // Right half of the strip: the QR is always on screen and renews itself when a code expires.
-function PhoneUploadSide({maxFiles,onPhoto}){
+function PhoneUploadSide({single,onPhoto}){
   const [sess,setSess]=useState(null);
   const [err,setErr]=useState("");
   const [count,setCount]=useState(0);
@@ -16101,12 +16101,12 @@ function PhoneUploadSide({maxFiles,onPhoto}){
   const startingRef=useRef(false);
   const start=async()=>{
     if(startingRef.current)return;startingRef.current=true;setErr("");
-    const {data,error}=await window.sb.rpc("create_phone_upload_session",{p_max_files:maxFiles});
+    const {data,error}=await window.sb.rpc("create_phone_upload_session",{p_single:!!single});
     startingRef.current=false;
     if(error||!data||!data[0]){setErr("The phone code couldn't load. Refresh the page to try again.");return;}
     seenRef.current=new Set();setCount(0);setSess(data[0]);
   };
-  useEffect(()=>{start();},[maxFiles]);
+  useEffect(()=>{start();},[single]);
   useEffect(()=>{
     if(!sess)return;
     let alive=true;
@@ -16129,7 +16129,7 @@ function PhoneUploadSide({maxFiles,onPhoto}){
   return(<div className="pu-way pu-phoneside">
     <div className="pu-qr">{qr?<img src={qr} alt="QR code to upload from your phone" width="108" height="108"/>:<span>Loading…</span>}</div>
     <div className="pu-waytxt"><h4>From your phone</h4>
-      <p>Scan with your phone's camera and pick from your camera roll. {maxFiles===1?"It opens":"Each photo opens"} here to crop.</p>
+      <p>Scan with your phone's camera and pick from your camera roll. {single?"It opens":"Each photo opens"} here to crop.</p>
       {err?<span className="pu-err">{err}</span>:<span className="pu-live"><i/>{count?`${count} photo${count===1?"":"s"} received`:"Ready"}</span>}
     </div>
   </div>);
@@ -16192,7 +16192,7 @@ function PhoneUploadPage(){
   const [busy,setBusy]=useState(false);
   const pickRef=useRef(null);
   useEffect(()=>{(async()=>{
-    try{const r=await fetch(PHONE_UPLOAD_FN+"?token="+token);const j=await r.json().catch(()=>({}));if(j&&j.max_files)setMax(j.max_files);setState(r.status===200?"ready":r.status===410?"expired":"invalid");}
+    try{const r=await fetch(PHONE_UPLOAD_FN+"?token="+token);const j=await r.json().catch(()=>({}));if(j&&j.single)setMax(1);setState(r.status===200?"ready":r.status===410?"expired":"invalid");}
     catch(_){setState("invalid");}
   })();},[token]);
   const upload=async(list)=>{
@@ -30043,7 +30043,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           title={isPremium?"From your computer":profile.headshot_url?"Replace your headshot":"From your computer"}
           hint={isPremium?"Drag photos here, or choose from your files.":"Drag a photo here, or choose one from your files."}
           button={isPremium?"Choose photos":profile.headshot_url?"Choose new photo":"Choose photo"}
-          maxFiles={isPremium?12:1}
+          single={!isPremium}
           onFiles={fs=>setPhoneQueue(q=>[...q,...fs])}/>}
         {/* Free user with no headshot: prominent upload area */}
         {!phoneUploadOn()&&!isPremium&&!profile.headshot_url&&(
