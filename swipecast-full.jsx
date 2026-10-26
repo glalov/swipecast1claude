@@ -2842,23 +2842,30 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .pp-1p .pp-plays{margin:18px 0 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .pp-uni .pp-1p .pp-plays-label{margin:0 4px 0 0!important;}
 .pp-uni .pp-1p .pp-plays-list,.pp-uni .pp-1p .cma-chips{display:flex!important;flex-wrap:wrap;gap:7px;}
-.pp-uni .pp-1p .pp-chip,.pp-uni .pp-1p .pp-play,.pp-uni .pp-1p .cma-chip{display:inline-flex!important;align-items:center;gap:5px;font-family:'DM Sans',sans-serif!important;font-size:13px!important;line-height:1.3!important;font-weight:600!important;letter-spacing:0!important;padding:6px 12px!important;border-radius:999px!important;background:var(--s1)!important;border:1px solid var(--bdr)!important;color:var(--t1)!important;}
+.pp-uni .pp-1p .pp-play,.pp-uni .pp-1p .cma-chip{display:inline-flex!important;align-items:center;gap:5px;font-family:'DM Sans',sans-serif!important;font-size:13px!important;line-height:1.3!important;font-weight:600!important;letter-spacing:0!important;padding:6px 12px!important;border-radius:999px!important;background:var(--s1)!important;border:1px solid var(--bdr)!important;color:var(--t1)!important;}
+/* Skills / accents / languages pills = version C (owner, 2026-10-26, demo profile-credits-skills-demo.html): white on the cream with the warm cream border, no shadow. */
+.pp-uni .pp-1p .pp-chip{display:inline-flex!important;align-items:center;gap:5px;font-family:'DM Sans',sans-serif!important;font-size:14.5px!important;line-height:1.3!important;font-weight:500!important;letter-spacing:0!important;padding:9px 16px!important;border-radius:999px!important;background:#FFFFFF!important;border:1px solid #E4DCCB!important;color:var(--t1)!important;}
+.pl-cinematic .pp-1p .pp-chip.pp-chip{background:var(--s1)!important;border-color:var(--bdr)!important;}
 .pp-uni .pp-1p .pp-chip+.pp-chip::before,.pp-uni .pp-1p .pp-play+.pp-play::before,.pp-uni .pp-1p .cma-chip+.cma-chip::before{content:none!important;}
 .pp-uni .pp-1p .pp-plays-list .pp-play.is-primary,.pp-uni.pl-look .pp-1p .pp-plays-list .pp-play.is-primary{background:var(--pl-acc,#1A1A2E)!important;border-color:var(--pl-acc,#1A1A2E)!important;color:#fff!important;}
 .pp-uni.pl-acc-gold .pp-1p .pp-plays-list .pp-play.is-primary{color:#1A1A2E!important;}
 .pp-uni .pp-1p .pp-play .ti{display:none!important;}
-.pp-uni .pp-1p .card div:has(>.pp-chip){display:flex!important;flex-wrap:wrap;gap:7px;}
+.pp-uni .pp-1p .card div:has(>.pp-chip){display:flex!important;flex-wrap:wrap;gap:10px;}
 .pp-uni .pp-1p .pp-more{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--teal-dk);background:none;border:0;cursor:pointer;}
 .pp-uni .pp-1p .pp-lbl.pp-grp{margin-bottom:9px!important;}
 .pp-uni .pp-1p .pp-cred-head{display:none!important;}
-.pp-uni .pp-1p .pp-cred-catlbl{font-family:'DM Sans',sans-serif!important;font-size:12px!important;font-weight:800!important;letter-spacing:.12em!important;text-transform:uppercase!important;color:var(--teal-dk)!important;margin:22px 0 4px!important;}
-.pp-uni .pp-1p .pp-cred-cat:first-child .pp-cred-catlbl{margin-top:4px!important;}
-.pp-uni .pp-1p .pp-cred .credit-row{display:grid;grid-template-columns:60px minmax(0,1.2fr) minmax(0,1fr);grid-template-areas:"yr pt co" "yr rl co";column-gap:18px;row-gap:2px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr);}
+/* Credits = version C (owner, 2026-10-26): teal label with a short bar + count, no icon; bigger rows; company · location stays one line. B (Backstage-like icon headings, two-line company) was rejected as copying. */
+.pp-uni .pp-1p .pp-cred-catlbl{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif!important;font-size:15px!important;line-height:1.4!important;font-weight:700!important;letter-spacing:0!important;text-transform:none!important;color:var(--teal-dk)!important;margin:30px 0 4px!important;}
+.pp-uni .pp-1p .pp-cred-catlbl::before{content:"";width:22px;height:2px;border-radius:2px;background:currentColor;flex:none;}
+.pp-uni .pp-1p .pp-cred-cat:first-child .pp-cred-catlbl{margin-top:8px!important;}
+.pp-cred-n{display:none;}
+.pp-uni .pp-1p .pp-cred-n{display:inline;font-weight:500;color:var(--t3);margin-left:-4px;}
+.pp-uni .pp-1p .pp-cred .credit-row{display:grid;grid-template-columns:64px minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"yr pt co" "yr rl co";column-gap:22px;row-gap:4px;align-items:start;padding:19px 0;border-bottom:1px solid var(--bdr);}
 .pp-uni .pp-1p .pp-cred-cat:last-child .credit-row:last-child,.pp-uni .pp-1p .pp-cred>.credit-row:last-child{border-bottom:0;padding-bottom:0;}
-.pp-uni .pp-1p .credit-year{grid-area:yr;font-family:'DM Sans',sans-serif;font-size:14px!important;color:var(--t3)!important;}
-.pp-uni .pp-1p .credit-title{grid-area:pt;font-family:'DM Sans',sans-serif;font-size:15px!important;font-weight:700!important;letter-spacing:0!important;color:var(--t1)!important;}
-.pp-uni .pp-1p .credit-role{grid-area:rl;font-family:'DM Sans',sans-serif;font-size:14px!important;letter-spacing:0!important;color:var(--t2)!important;}
-.pp-uni .pp-1p .credit-meta{grid-area:co;font-family:'DM Sans',sans-serif;font-size:14px!important;letter-spacing:0!important;color:var(--t2)!important;}
+.pp-uni .pp-1p .credit-year{grid-area:yr;font-family:'DM Sans',sans-serif;font-size:14px!important;color:var(--t3)!important;padding-top:2px;font-variant-numeric:tabular-nums;}
+.pp-uni .pp-1p .credit-title{grid-area:pt;font-family:'DM Sans',sans-serif;font-size:16.5px!important;font-weight:700!important;letter-spacing:-.005em!important;color:var(--t1)!important;}
+.pp-uni .pp-1p .credit-role{grid-area:rl;font-family:'DM Sans',sans-serif;font-size:15.5px!important;letter-spacing:0!important;color:var(--t2)!important;}
+.pp-uni .pp-1p .credit-meta{grid-area:co;font-family:'DM Sans',sans-serif;padding-top:1px;font-size:15px!important;letter-spacing:0!important;color:var(--t2)!important;}
 .pp-uni .pp-1p .pp-resume{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;color:var(--teal-dk)!important;font-weight:700;font-size:13px!important;}
 .pl-cinematic .pp-1p .pp-resume,.pl-cinematic .pp-1p .pp-cred-catlbl{color:#5FB3A2!important;}
 .pp-uni .pp-1p .pp-badge{display:inline-flex!important;align-items:center;gap:6px;font-family:'DM Sans',sans-serif!important;font-size:13px!important;font-weight:700!important;letter-spacing:0!important;padding:6px 11px!important;border-radius:7px!important;margin-right:0!important;background:rgba(42,132,114,.10)!important;color:var(--teal-dk)!important;}
@@ -2879,7 +2886,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-sb-links a:hover{color:var(--pl-acc,#2A8472);}
 .pp-sb-links a svg{color:var(--t3);flex-shrink:0;}
 .pp-sb-fact{font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.5;color:var(--t1);}
-@media(max-width:900px){.pp-1p{margin-top:20px;}.pp-1p.has-side{grid-template-columns:minmax(0,1fr);gap:0;}.pp-1p-side{order:-1;margin-bottom:26px;}.pp-1p-stick{position:static;gap:24px;}.pp-uni .pp-1p .pp-stats,.pp-uni .pp-1p .card>div[style*="repeat(auto-fill,minmax(110px"]{grid-template-columns:repeat(3,minmax(0,1fr))!important;}.pp-uni .pp-1p .pp-lang,.pp-uni .pp-1p .pp-logi{grid-template-columns:1fr;row-gap:22px;}.pp-uni .pp-1p .pp-cred .credit-row{grid-template-columns:48px minmax(0,1fr);grid-template-areas:"yr pt" "yr rl" "yr co";}}
+@media(max-width:900px){.pp-1p{margin-top:20px;}.pp-1p.has-side{grid-template-columns:minmax(0,1fr);gap:0;}.pp-1p-side{order:-1;margin-bottom:26px;}.pp-1p-stick{position:static;gap:24px;}.pp-uni .pp-1p .pp-stats,.pp-uni .pp-1p .card>div[style*="repeat(auto-fill,minmax(110px"]{grid-template-columns:repeat(3,minmax(0,1fr))!important;}.pp-uni .pp-1p .pp-lang,.pp-uni .pp-1p .pp-logi{grid-template-columns:1fr;row-gap:22px;}.pp-uni .pp-1p .pp-cred .credit-row{grid-template-columns:52px minmax(0,1fr);grid-template-areas:"yr pt" "yr rl" "yr co";column-gap:14px;padding:16px 0;}.pp-uni .pp-1p .credit-meta{margin-top:4px;}}
 .pr-modal{background:var(--s1);border-radius:14px;padding:12px;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);}
 .pr-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 10px;font-size:14px;flex-wrap:wrap;color:var(--t1);}
 .pr-frame{display:block;width:min(800px,calc(100vw - 48px),calc((100vh - 110px) * .8));aspect-ratio:8/10;border:0;background:#fff;box-shadow:0 0 0 1px #e8e2d6;}
@@ -15984,7 +15991,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       </div>
       <div className="credits-list pp-cred">{CREDIT_CATEGORIES.filter(cat=>creditsByCategory[cat]).map(cat=>(
         <div key={cat} className="pp-cred-cat">
-          <div className="pp-cred-catlbl">{cat}</div>
+          <div className="pp-cred-catlbl">{cat}<span className="pp-cred-n">· {creditsByCategory[cat].length}</span></div>
           <div className="credit-row pp-cred-head"><div>Year</div><div>Project</div><div>Role</div><div>Production Company · Location</div></div>
           {creditsByCategory[cat].map((c,i)=>(
             <div key={c.id||i} className="credit-row">
