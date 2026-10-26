@@ -9083,7 +9083,7 @@ function RegisterCD({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: LOGIN
 // ═══════════════════════════════════════════
-function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
+function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
   const t=useT();
   const [email,setEmail]=useState("");
   const [password,setPassword]=useState("");
@@ -9173,6 +9173,9 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
+    // Came here from a casting (its "Log In" button or the nav Sign in): save it so the
+    // Google round trip lands back on that casting, as AuthGate does.
+    try{const pa=getPending&&getPending();if(pa&&pa.casting)savePostAuthApply(pa);}catch(_){}
     if(provider==="google"&&googleDirectOn()){try{await googleDirectSignIn();}catch(_){setErr("Could not start Google sign-in. Please try again.");}return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
@@ -16189,6 +16192,9 @@ async function googleDirectSignIn(){
   // Google gets the hashed nonce; Supabase gets the raw one and checks it against the token.
   const nonce=_gRand(),state=_gRand();
   sessionStorage.setItem("cs_g_nonce",nonce);sessionStorage.setItem("cs_g_state",state);
+  // Same one-shot flag the old OAuth flow set: without it SIGNED_IN skips the post-login
+  // routing and a Google log-in stopped on the homepage (2026-10-26).
+  try{sessionStorage.setItem("sc_oauth_login","1");}catch(_){}
   const q=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:GOOGLE_RETURN,response_type:"id_token",scope:"openid email profile",nonce:await _gSha256(nonce),state,prompt:"select_account"});
   window.location.assign("https://accounts.google.com/o/oauth2/v2/auth?"+q.toString());
 }
@@ -16205,7 +16211,7 @@ try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1
     const token=h.get("id_token"),state=h.get("state"),err=h.get("error");
     let nonce="",want="";try{nonce=sessionStorage.getItem("cs_g_nonce")||"";want=sessionStorage.getItem("cs_g_state")||"";sessionStorage.removeItem("cs_g_nonce");sessionStorage.removeItem("cs_g_state");}catch(_){}
     window.history.replaceState(null,"","/");
-    if(err||!token)return; // cancelled at Google: just stay on the homepage
+    if(err||!token){try{sessionStorage.removeItem("sc_oauth_login");}catch(_){}return;} // cancelled at Google: just stay on the homepage
     const fallback=()=>{try{window.sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:"https://www.castslate.com",queryParams:{prompt:"select_account"}}});}catch(_){}};
     if(!state||state!==want||!window.sb?.auth?.signInWithIdToken){fallback();return;}
     window.sb.auth.signInWithIdToken({provider:"google",token,nonce}).then(({error})=>{if(error){console.warn("[auth] google id-token sign-in failed:",error.message);fallback();}}).catch(fallback);
@@ -55764,6 +55770,9 @@ function App(){
   const [viewingTalentSlug,setViewingTalentSlug]=useState(()=>urlToTalentSlug());
   const [viewingNewsSlug,setViewingNewsSlug]=useState(()=>urlToNewsSlug());
   const [prevPage,setPrevPage]=useState("home");
+  // The page shown before the current one, read when the Log In page starts a Google sign-in.
+  const pageBeforeRef=useRef("home");const pageNowRef=useRef(null);
+  useEffect(()=>{pageBeforeRef.current=pageNowRef.current;pageNowRef.current=page;},[page]);
   const [session,setSession]=useState(null);
   const [myProfile,setMyProfile]=useState(null);
   // Mirror of myProfile readable from the stable loadProfile callback. Lets a
@@ -57426,7 +57435,7 @@ function App(){
             gaslit signed-in users. */}
         {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
         {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
-        {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn} authNotice={authNotice} clearAuthNotice={clearAuthNotice}/>}
+        {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn} authNotice={authNotice} clearAuthNotice={clearAuthNotice} getPending={()=>["casting-gate","casting-detail","auth-gate"].includes(pageBeforeRef.current)?pendingApply:null}/>}
         {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"membership")}/>}
         {page==="plan-summary"&&(!authReady?<PageLoader text="Loading your plan…"/>:<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
           // Came from a casting they tried to apply to — bounce back to that casting.
