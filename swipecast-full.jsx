@@ -2706,6 +2706,12 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .pp-stats:not(:has(>:nth-child(4))){justify-content:flex-start;column-gap:48px!important;}
 .pp-uni .pp-stats .pp-val{white-space:nowrap;}
 @media(max-width:600px){.pp-uni .pp-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:16px!important;}.pp-uni .pp-stats .pp-val{white-space:normal;}}
+/* Pronouns (2026-10-26) */
+.pn-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pn-pair>*{min-width:0;}
+.pn-pair .form-group{margin:0;}
+.pl-pronouns{margin:-4px 0 8px;font-size:15px;font-weight:600;color:var(--t2);}
+@media(max-width:480px){.pn-pair{grid-template-columns:1fr;}}
 /* Profile section icons + info tips (2026-10-26) */
 .ps-title{display:inline-flex;align-items:center;gap:10px;}
 .ps-ico{width:24px;height:24px;flex:none;color:var(--pp-h,var(--t1));}
@@ -15423,6 +15429,23 @@ function SectionTitle({title}){
   </span>);
 }
 
+// Pronouns (owner, 2026-10-26, demo pronouns-demo.html): optional, display only (never used for matching).
+// Hidden until approved: PRONOUNS_LIVE, or ?pronouns=1 per browser (?pronouns=0 off).
+const PRONOUNS_LIVE=false;
+try{const g=new URLSearchParams(window.location.search).get("pronouns");if(g==="1")localStorage.setItem("cs_pronouns","1");if(g==="0")localStorage.removeItem("cs_pronouns");}catch(_){}
+function pronounsOn(){if(PRONOUNS_LIVE)return true;try{return localStorage.getItem("cs_pronouns")==="1";}catch(_){return false;}}
+const PRONOUN_OPTS=["He/Him","She/Her","They/Them","He/They","She/They","They/He","They/She","Any pronouns","Ask me"];
+function PronounsField({value,onChange}){
+  const own=!!value&&!PRONOUN_OPTS.includes(value);
+  const [writing,setWriting]=useState(own);
+  return(<div className="form-group"><label className="label">Pronouns</label>
+    <select className="select" style={{width:"100%"}} value={writing?"__own":(value||"")} onChange={e=>{const v=e.target.value;if(v==="__own"){setWriting(true);onChange("");}else{setWriting(false);onChange(v);}}}>
+      <option value="">Not shown</option>{PRONOUN_OPTS.map(o=><option key={o} value={o}>{o}</option>)}<option value="__own">Write my own…</option>
+    </select>
+    {writing&&<input className="input" style={{marginTop:8}} maxLength={24} placeholder="e.g. Ze/Hir, Xe/Xem, Fae/Faer" value={value} onChange={e=>onChange(e.target.value)}/>}
+  </div>);
+}
+
 function PlaysChips({types}){
   const [expanded,setExpanded]=useState(false);
   const list=Array.isArray(types)?types.filter(Boolean):[];
@@ -15735,6 +15758,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
               {talent.type&&<span className="tag" style={{fontSize:11}}>{talent.type}</span>}
             </div>
             <h1 className="pl-hero-nm">{heroName}</h1>
+            {pronounsOn()&&freshProfile?.pronouns&&<p className="pl-pronouns">{freshProfile.pronouns}</p>}
             {look&&<div className="pl-nm-line" aria-hidden="true"/>}
             {/* A one-liner that only repeats the location would show the city twice. */}
             {look&&look.tagline&&look.tagline.trim().toLowerCase()!==String(locationText||"").trim().toLowerCase()&&<p className="pl-hero-line">{look.tagline}</p>}
@@ -15845,6 +15869,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
         {/* Name */}
         <h1 style={{fontSize:32,fontWeight:800,letterSpacing:"-1px",marginBottom:4,lineHeight:1.1}}>{freshProfile?.display_name||talent.name||talent.display_name||"—"}</h1>
+        {pronounsOn()&&freshProfile?.pronouns&&<p className="pl-pronouns">{freshProfile.pronouns}</p>}
 
         {/* Location & rep */}
         {locationText&&<p style={{color:"var(--t2)",fontSize:16,marginBottom:3}}>{locationText}</p>}
@@ -29293,7 +29318,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const [slateUploading,setSlateUploading]=useState(false);
   const [f,setF]=useState(()=>({
     display_name:profile?.display_name||"",bio:profile?.bio||"",location:profile?.location||"",
-    age:profile?.age||"",gender:profile?.gender||"",ethnicity:profile?.ethnicity||"",
+    age:profile?.age||"",gender:profile?.gender||"",pronouns:profile?.pronouns||"",ethnicity:profile?.ethnicity||"",
     height:profile?.height||"",weight:profile?.weight||"",hair:profile?.hair||"",eyes:profile?.eyes||"",
     union_status:profile?.union_status||"Non-Union",agent:profile?.agent||"",training:profile?.training||"",
     skills:(profile?.skills||[]).join(", "),instagram:profile?.instagram||"",phone:profile?.phone||"",
@@ -29320,7 +29345,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     if(!profileInitializedRef.current){
       profileInitializedRef.current=true;
       setF(x=>({...x,display_name:profile.display_name||"",bio:profile.bio||"",location:profile.location||"",
-        age:profile.age||"",gender:profile.gender||"",ethnicity:profile.ethnicity||"",
+        age:profile.age||"",gender:profile.gender||"",pronouns:profile.pronouns||"",ethnicity:profile.ethnicity||"",
         height:profile.height||"",weight:profile.weight||"",hair:profile.hair||"",eyes:profile.eyes||"",
         union_status:profile.union_status||"Non-Union",agent:profile.agent||"",training:profile.training||"",
         skills:(profile.skills||[]).join(", "),instagram:profile.instagram||"",phone:profile.phone||"",
@@ -29518,6 +29543,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       const patch={
         display_name:f.display_name.trim()||null,bio:f.bio||null,location:f.location||null,
         age:f.age?parseInt(f.age):null,gender:f.gender||null,
+        ...(pronounsOn()?{pronouns:(f.pronouns||"").trim().slice(0,24)||null}:{}),
         // ethnicity / union_status / open_to_role_genders / age_range are derived
         // from these by the profiles_stats_sync trigger — never sent directly.
         ethnicities:Array.isArray(f.ethnicities)?f.ethnicities:[],
@@ -29863,7 +29889,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
       {!isCD&&<>
         <div className="card" style={{padding:24,marginBottom:16}}>
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Physical Stats</h3>
-          <div className="form-row"><div className="form-group"><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}<div style={{marginTop:14}}><label className="label">Roles I'm authentic to</label><ChipPicker options={AUTHENTIC_OPTS} value={f.authentic_genders} onChange={v=>setF(x=>({...x,authentic_genders:v,authentic_touched:true}))}/><div className="otrg-note">Select all that apply. This decides which roles we recommend to you — casting directors still see your gender above. Roles open to all genders are always included.{!f.authentic_touched&&<> Set from your gender; change it any time.</>}</div></div></div><div className="form-group"><div className="age-box">
+          <div className="form-row"><div className="form-group"><div className={pronounsOn()?"pn-pair":undefined}><div><label className="label">Gender</label><select className="select" style={{width:"100%"}} value={genderCustom?"__custom":f.gender} onChange={e=>{const v=e.target.value;if(v==="__custom"){setGenderCustom(true);up("gender","");}else{setGenderCustom(false);up("gender",v);}}}><option value="">—</option>{GENDER_IDENTITY_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}<option value="__custom">Custom / Other…</option></select>{genderCustom&&<input className="input" style={{marginTop:8}} placeholder="Describe your gender identity" value={f.gender} onChange={e=>up("gender",e.target.value)}/>}</div>{pronounsOn()&&<PronounsField value={f.pronouns} onChange={v=>up("pronouns",v)}/>}</div><div style={{marginTop:14}}><label className="label">Roles I'm authentic to</label><ChipPicker options={AUTHENTIC_OPTS} value={f.authentic_genders} onChange={v=>setF(x=>({...x,authentic_genders:v,authentic_touched:true}))}/><div className="otrg-note">Select all that apply. This decides which roles we recommend to you — casting directors still see your gender above. Roles open to all genders are always included.{!f.authentic_touched&&<> Set from your gender; change it any time.</>}</div></div></div><div className="form-group"><div className="age-box">
             <div className="age-box-row">
               <div><label className="label">Your age</label><input className="input" type="number" min="1" max="120" inputMode="numeric" style={{width:90,fontSize:16}} value={f.age} onChange={e=>up("age",e.target.value)}/></div>
               <div><label className="label">Age range I can play</label>
