@@ -15973,7 +15973,9 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 //    unchanged. Needs https://www.castslate.com/auth/google in the Google OAuth client's redirect URIs.
 //    Switched on by GOOGLE_DIRECT, or per browser by opening any page with ?gdirect=1 (?gdirect=0 turns it off).
 const GOOGLE_DIRECT=false;
-const GOOGLE_CLIENT_ID="993876265676-kjmv79146prhg1qrufh9tndpi1memcka.apps.googleusercontent.com";
+// CastSlate's own Google Cloud project ("castslate", owner account): this client has the /auth/google redirect
+// and is listed in Supabase's Google "Client IDs" after the original 993876265676 client (which nobody can access).
+const GOOGLE_CLIENT_ID="267021191194-mpe9lm5cvtpi9e1pomh3miclht6c50j0.apps.googleusercontent.com";
 const GOOGLE_RETURN="https://www.castslate.com/auth/google";
 function googleDirectOn(){if(GOOGLE_DIRECT)return true;try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1")localStorage.setItem("cs_gdirect","1");if(g==="0")localStorage.removeItem("cs_gdirect");return localStorage.getItem("cs_gdirect")==="1";}catch(_){return false;}}
 function _gRand(){const a=new Uint8Array(24);crypto.getRandomValues(a);return Array.from(a,x=>x.toString(16).padStart(2,"0")).join("");}
