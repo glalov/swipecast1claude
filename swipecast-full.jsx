@@ -12409,7 +12409,8 @@ const LEGAL_HEROES={
   // The Social Network: Sean and Mark waiting in the office (sharp still; owner 2026-10-26 replaced the soft deposition frame).
   terms:{title:"Terms of Service",pos:"center 25%",src:"/assets/legal/terms-hero-v2-1200.jpg",srcSet:"/assets/legal/terms-hero-v2-1200.jpg 1200w, /assets/legal/terms-hero-v2-1920.jpg 1920w",
     intro:"Please read these Terms of Service (\u201cTerms\u201d) carefully before using CastSlate, as they affect your legal rights and obligations. If you do not agree to be bound by all of these Terms, do not use the site."},
-  privacy:{title:"Privacy Policy",src:"/assets/legal/privacy-hero-1200.jpg",srcSet:"/assets/legal/privacy-hero-1200.jpg 1200w, /assets/legal/privacy-hero-1920.jpg 1920w",
+  // Blade Runner 2049: lone figure and car in the orange desert, no faces (owner 2026-10-26; replaced The Lives of Others).
+  privacy:{title:"Privacy Policy",pos:"center 55%",src:"/assets/legal/privacy-hero-v2-1200.jpg",srcSet:"/assets/legal/privacy-hero-v2-1200.jpg 1200w, /assets/legal/privacy-hero-v2-1920.jpg 1920w",
     intro:"Your privacy matters to us. This Privacy Policy explains what personal information CastSlate collects, why we collect it, how it is protected, and the choices and rights available to you."},
   // La La Land's "Another Day of Sun" still: bright, so it gets the heavier floor (.lgl-bright).
   // Hail, Caesar! (2016) studio backlot: sound stages + water tower, no people, so the title never meets a face.
