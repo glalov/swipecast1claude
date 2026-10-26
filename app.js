@@ -590,18 +590,11 @@ html:not(.pl-body-cinematic) .pp-uni.pl-cinematic>.site-footer-spacer{background
 .pp-uni.pl-look .pp-play.is-primary{color:var(--pl-acc-ink)!important;}
 .pl-look .pp-resume{color:var(--pl-acc-ink)!important;}
 html.pl-body-cinematic .app>main{background:#171615;}
-/* Dark nav + footer on a cinematic profile page, so no bright white bar slices the top. Pop-up menus keep the light palette. */
-html.pl-body-cinematic .nav{background:#171615;border-bottom-color:#2A2826;--t1:#F4F1EC;--t2:#DAD5CE;--t3:#A8A39C;--bdr:#3A3734;--s2:#2E2B28;--acc:#2A8472;}
-html.pl-body-cinematic .nav .logo{color:#F4F1EC;}
-html.pl-body-cinematic .nav .logo-i{background:#F4F1EC;color:#171615;}
-html.pl-body-cinematic .nav-links>span{color:#E8DFD2;}
-html.pl-body-cinematic .nav-links>span:hover{background:rgba(255,255,255,.07);}
-html.pl-body-cinematic .nav-links>span.act{background:rgba(255,255,255,.1);color:#fff;}
-html.pl-body-cinematic .nav-links>span.nav-attn,html.pl-body-cinematic .nav-links>span.nav-attn.act{color:#E8A54A;background:rgba(232,144,42,.14);}
-html.pl-body-cinematic .nav .btn-p{background:#F4F1EC;color:#171615;}
-html.pl-body-cinematic .nav .nav-ddm,html.pl-body-cinematic .nav .join-dd-menu,html.pl-body-cinematic .nav .join-dd-menu-m,html.pl-body-cinematic .nav [class*="menu"]{--t1:#241F19;--t2:#3A322A;--t3:#433B32;--bdr:#E4DCCB;--s2:#F2ECE0;--acc:#1A1A2E;color:#241F19;}
-html.pl-body-cinematic .site-footer{background:#121110;border-top-color:#2A2826;}
-html.pl-body-cinematic .site-footer::before{background:#121110;}
+/* Dark profile edges (owner, 2026-10-26, demo dark-profile-edges-demo.html option A): the site's normal light
+   nav on dark profiles too, and the standard near-black footer separated by a visible line (the seam patch
+   above it takes the page colour so the line shows). Was a charcoal nav + #121110 footer that blended in. */
+html.pl-body-cinematic .site-footer{border-top:1px solid rgba(244,241,236,.16);box-shadow:inset 0 1px 0 rgba(244,241,236,.18);}
+html.pl-body-cinematic .site-footer::before{background:#171615;}
 html.pl-body-editorial .app>main{background:#FFFFFF;}
 @media(max-width:767px){.pl-hero{grid-template-columns:minmax(0,1fr);}.pl-hero-txt{padding:20px;}.pl-hero-nm{font-size:clamp(32px,9vw,44px);}.pl-strip{grid-template-columns:repeat(2,minmax(0,1fr));}.pl-hero-btns .pl-btn{flex:1 1 auto;justify-content:center;}}
 .pp-plays-label{margin-bottom:6px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
