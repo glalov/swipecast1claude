@@ -2736,9 +2736,20 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pu-big:disabled{opacity:.6;}
 .pu-status{margin:0;font-size:14px;color:var(--t2);}
 .pu-fine{margin:0;font-size:12px;color:var(--t3);}
-.pu-inline{margin-bottom:16px;background:var(--s2);border-color:var(--bdr);}
-.pu-close{align-self:flex-start;background:none;border:0;padding:0;font:600 12.5px 'DM Sans',sans-serif;color:var(--t3);cursor:pointer;text-decoration:underline;}
-@media(max-width:760px),(hover:none) and (pointer:coarse){.pu-open,.pu-inline{display:none!important;}}
+.pu-strip{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);padding:24px 0;margin-bottom:6px;transition:background .15s;}
+.pu-strip.is-drag{background:var(--s2);}
+.pu-way{display:flex;align-items:center;gap:18px;padding:0 26px;min-width:0;}
+.pu-ico{width:52px;height:52px;border-radius:50%;background:var(--s2);display:grid;place-items:center;color:var(--teal-dk);flex:none;}
+.pu-waytxt{min-width:0;}
+.pu-waytxt h4{margin:0 0 4px;font-size:16px;font-weight:800;color:var(--acc);}
+.pu-waytxt p{margin:0 0 10px;font-size:13.5px;color:var(--t2);line-height:1.5;}
+.pu-choose{cursor:pointer;display:inline-flex;}
+.pu-or{display:flex;flex-direction:column;align-items:center;gap:8px;align-self:stretch;color:var(--t3);font-size:12px;font-weight:700;letter-spacing:.12em;}
+.pu-or i{flex:1;width:1px;background:var(--bdr);}
+.pu-phoneside .pu-qr{width:120px;height:120px;padding:5px;}
+.pu-phoneside .pu-qr img{width:108px;height:108px;}
+@media(max-width:860px){.pu-strip{grid-template-columns:minmax(0,1fr);}.pu-or{flex-direction:row;margin:14px 26px;}.pu-or i{height:1px;width:auto;}}
+@media(max-width:760px),(hover:none) and (pointer:coarse){.pu-or,.pu-phoneside{display:none!important;}.pu-way{padding:0;}}
 @media(max-width:760px){.pu-row{grid-template-columns:1fr;}.pu-qrcard{flex-direction:column;text-align:center;}}
 /* One-page profile (owner, 2026-10-25, demo one-page-profile-demo.html "Marissa Kent"): below the hero the
    sections are no longer cards; they flow on the page split by thin rules, set in the demo's type (DM Sans
@@ -16062,25 +16073,46 @@ function _phoneToJpeg(file){
     img.src=u;
   });
 }
-// The QR panel inside My Profile › Photos. Each photo that arrives is handed to onPhoto as a File, and the
-// editor runs it through the same crop + save step as an upload from the computer.
-function PhoneUploadPanel({maxFiles,onPhoto,onClose}){
+// My Profile › Photos upload strip (owner, 2026-10-26, demo photo-upload-area-demo.html): one surface, two ways in,
+// split by a hairline "or". Files from either side go through the editor's crop + save queue (onFiles).
+function UploadStrip({title,hint,button,multiple,busy,maxFiles,onFiles}){
+  const [drag,setDrag]=useState(false);
+  const pick=e=>{const l=[...(e.target.files||[])].filter(f=>/^image\//.test(f.type));if(l.length)onFiles(multiple?l:l.slice(0,1));e.target.value="";};
+  return(<div className={"pu-strip"+(drag?" is-drag":"")}
+    onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)}
+    onDrop={e=>{e.preventDefault();setDrag(false);const l=[...(e.dataTransfer.files||[])].filter(f=>/^image\//.test(f.type));if(l.length)onFiles(multiple?l:l.slice(0,1));}}>
+    <div className="pu-way">
+      <span className="pu-ico"><Ico n="upload" s={22}/></span>
+      <div className="pu-waytxt"><h4>{title}</h4><p>{hint}</p>
+        <label className="btn-p btn-sm pu-choose">{busy?"Uploading…":button}<input type="file" accept="image/*" multiple={multiple} hidden onChange={pick}/></label>
+      </div>
+    </div>
+    <div className="pu-or" aria-hidden="true"><i/>OR<i/></div>
+    <PhoneUploadSide maxFiles={maxFiles} onPhoto={f=>onFiles([f])}/>
+  </div>);
+}
+// Right half of the strip: the QR is always on screen and renews itself when a code expires.
+function PhoneUploadSide({maxFiles,onPhoto}){
   const [sess,setSess]=useState(null);
   const [err,setErr]=useState("");
   const [count,setCount]=useState(0);
   const [now,setNow]=useState(Date.now());
   const seenRef=useRef(new Set());
+  const startingRef=useRef(false);
   const start=async()=>{
-    setErr("");seenRef.current=new Set();setCount(0);
+    if(startingRef.current)return;startingRef.current=true;setErr("");
     const {data,error}=await window.sb.rpc("create_phone_upload_session",{p_max_files:maxFiles});
-    if(error||!data||!data[0]){setErr("Couldn't create a code. Please try again.");return;}
-    setSess(data[0]);
+    startingRef.current=false;
+    if(error||!data||!data[0]){setErr("The phone code couldn't load. Refresh the page to try again.");return;}
+    seenRef.current=new Set();setCount(0);setSess(data[0]);
   };
-  useEffect(()=>{start();},[]);
+  useEffect(()=>{start();},[maxFiles]);
   useEffect(()=>{
     if(!sess)return;
     let alive=true;
     const tick=async()=>{
+      setNow(Date.now());
+      if(new Date(sess.expires_at).getTime()<=Date.now()){start();return;}
       const {data}=await window.sb.from("phone_upload_files").select("id,url").eq("session_id",sess.session_id).order("created_at",{ascending:true});
       if(!alive||!data)return;
       for(const f of data){
@@ -16089,21 +16121,16 @@ function PhoneUploadPanel({maxFiles,onPhoto,onClose}){
         try{const b=await (await fetch(f.url)).blob();onPhoto(new File([b],"phone-photo.jpg",{type:b.type||"image/jpeg"}));}catch(_){setErr("A photo couldn't be loaded. Try sending it again.");}
       }
     };
-    tick();const t=setInterval(()=>{tick();setNow(Date.now());},2000);
+    tick();const t=setInterval(tick,2000);
     return()=>{alive=false;clearInterval(t);};
   },[sess?.session_id]);
   const link=sess?"https://www.castslate.com/phone-upload/"+sess.token:"";
-  const left=sess?Math.max(0,Math.round((new Date(sess.expires_at).getTime()-now)/1000)):0;
   const qr=link?"https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&color=1A1A2E&data="+encodeURIComponent(link):"";
-  return(<div className="pu-qrcard pu-inline">
-    <div className="pu-qr">{qr?<img src={qr} alt="QR code to upload photos from your phone" width="140" height="140"/>:<span>Creating…</span>}</div>
-    <div className="pu-qrtxt">
-      <span className="pu-eyebrow">Upload from your phone</span>
-      <p>Scan with your phone's camera, then choose {maxFiles===1?"a photo":"photos"}. {maxFiles===1?"It":"Each one"} opens here to crop, just like an upload from your computer.</p>
-      {sess&&(left>0?<span className="pu-live"><i/>{count?`${count} received · `:"Waiting for your phone · "}code works for {Math.floor(left/60)}:{String(left%60).padStart(2,"0")}</span>
-        :<button className="btn-s btn-sm" type="button" onClick={start}>Make a new code</button>)}
-      {err&&<span className="pu-err">{err}</span>}
-      <button type="button" className="pu-close" onClick={onClose}>Close</button>
+  return(<div className="pu-way pu-phoneside">
+    <div className="pu-qr">{qr?<img src={qr} alt="QR code to upload from your phone" width="108" height="108"/>:<span>Loading…</span>}</div>
+    <div className="pu-waytxt"><h4>From your phone</h4>
+      <p>Scan with your phone's camera and pick from your camera roll. {maxFiles===1?"It opens":"Each photo opens"} here to crop.</p>
+      {err?<span className="pu-err">{err}</span>:<span className="pu-live"><i/>{count?`${count} photo${count===1?"":"s"} received`:"Ready"}</span>}
     </div>
   </div>);
 }
@@ -29167,7 +29194,6 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   // Cropper state: {file, target: "headshot"|"additional", aspect, label}
   const [cropState,setCropState]=useState(null);
   // Upload from your phone: photos arrive into a queue and open in the crop dialog one at a time.
-  const [phoneOpen,setPhoneOpen]=useState(false);
   const [phoneQueue,setPhoneQueue]=useState([]);
   useEffect(()=>{
     if(cropState||!phoneQueue.length)return;
@@ -29987,6 +30013,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
                 :`${allPhotos.length} of 1 headshot included on Free Plan`}
             </p>
           </div>
+          {/* With the upload strip on, these buttons live in the strip instead. */}
+          {!phoneUploadOn()&&<>
           {/* Free user: headshot upload button (their 1 allowed photo) */}
           {!isPremium&&!profile.headshot_url&&(
             <label className="btn-p btn-sm" style={{cursor:"pointer",display:"inline-flex",alignItems:"center",gap:6}}>
@@ -30000,8 +30028,6 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               <input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
             </label>
           )}
-          {/* Upload from your phone: QR panel (computers only; hidden on phones by CSS) */}
-          {phoneUploadOn()&&(isPremium?photos.length<maxAdditional:true)&&<button type="button" className="btn-s btn-sm pu-open" onClick={()=>setPhoneOpen(v=>!v)}><Ico n="device-mobile" s={16}/> Upload from phone</button>}
           {/* Premium user: add gallery photo button */}
           {isPremium&&photos.length<maxAdditional&&(
             <label className="btn-p btn-sm" style={{cursor:"pointer"}}>
@@ -30009,11 +30035,18 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"additional",aspect:0.75,label:"Crop Photo"});e.target.value="";}}/>
             </label>
           )}
+          </>}
         </div>
 
-        {phoneOpen&&<PhoneUploadPanel maxFiles={isPremium?12:1} onPhoto={f=>setPhoneQueue(q=>[...q,f])} onClose={()=>setPhoneOpen(false)}/>}
+        {phoneUploadOn()&&(isPremium?photos.length<maxAdditional:true)&&<UploadStrip
+          multiple={isPremium} busy={uploading}
+          title={isPremium?"From your computer":profile.headshot_url?"Replace your headshot":"From your computer"}
+          hint={isPremium?"Drag photos here, or choose from your files.":"Drag a photo here, or choose one from your files."}
+          button={isPremium?"Choose photos":profile.headshot_url?"Choose new photo":"Choose photo"}
+          maxFiles={isPremium?12:1}
+          onFiles={fs=>setPhoneQueue(q=>[...q,...fs])}/>}
         {/* Free user with no headshot: prominent upload area */}
-        {!isPremium&&!profile.headshot_url&&(
+        {!phoneUploadOn()&&!isPremium&&!profile.headshot_url&&(
           <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:"40px 24px",background:"var(--s2)",borderRadius:10,border:"2px dashed var(--bdr)",cursor:"pointer",textAlign:"center",color:"var(--t2)"}}>
             <div style={{fontSize:40}}><Ico n="camera" s={22}/></div>
             <div style={{fontWeight:700,fontSize:15,color:"var(--t1)"}}>Upload Your Headshot</div>
