@@ -2812,7 +2812,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Dark cards: no outlines - the lighter card tone alone separates them; dividers are one faint solid style (owner, 2026-10-16). */
 .pl-cinematic .card,.pl-cinematic .pl-hero{border-color:transparent!important;box-shadow:none;}
 /* Name card = deep teal ink (owner, 2026-10-26, demo name-card-colors-demo.html): ties into the teal accent; chips, lines and muted text re-toned inside the card only. */
-.pl-cinematic .pl-hero{background:#1E2A28;--s2:#2B3B38;--bdr:#2F423E;--t3:#A7B5B1;}
+.pl-cinematic .pl-hero,.pl-cinematic .pp-act{background:#1E2A28;--s1:#1E2A28;--s2:#2B3B38;--bdr:#2F423E;--t3:#A7B5B1;}
+.pl-cinematic .pp-more-media{background:#1E2A28!important;border-color:#2F423E!important;}
 .pl-cinematic .pp-stats,.pl-cinematic .pp-div{border-top:1px solid rgba(244,241,236,.06)!important;}
 .pl-cinematic .pl-hero-img{position:relative;}
 /* No photo fade on cinematic (owner, 2026-10-25): it turned light headshot backdrops into a muddy brown strip. */
@@ -15684,7 +15685,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
       {/* View More Media / View Less — extra tiles at idx 1+showcaseTiles.length… */}
       {hasExtraMedia&&(
         <div style={{marginTop:8}}>
-          <button onClick={()=>setShowAllMedia(v=>!v)}
+          <button className="pp-more-media" onClick={()=>setShowAllMedia(v=>!v)}
             style={{width:"100%",padding:"13px 18px",background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:10,fontSize:13,fontWeight:700,color:"var(--t1)",cursor:"pointer",textAlign:"center",letterSpacing:"0.04em",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {showAllMedia
               ?<>&#9650;&nbsp; View Less</>
