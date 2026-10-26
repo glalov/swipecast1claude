@@ -2397,6 +2397,49 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:0.1px;}
 .social-btn-dark:hover{background:#2d2d44;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.18);}
 .social-btn-dark>svg{width:20px;height:20px;padding:4px;margin:-5px 0;box-sizing:content-box;background:#fff;border-radius:50%;}
+.cg-page{background:var(--bg);padding-bottom:20px}
+.cg-from{background:#EAF3F0;color:#206557;font-size:13.5px;font-weight:600;text-align:center;padding:10px 16px}
+.cg-main{max-width:1120px;margin:0 auto;padding:28px 24px 36px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
+.cg-cast{background:var(--s1);border:1px solid var(--bdr);border-radius:18px;overflow:hidden;min-width:0}
+.cg-hero{height:200px;background:#2a2622 center 40%/cover no-repeat;position:relative}
+.cg-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,11,0) 25%,rgba(14,12,11,.78))}
+.cg-ttl{position:absolute;left:24px;right:24px;bottom:18px;z-index:1;color:#fff;min-width:0}
+.cg-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cg-chip{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:rgba(255,255,255,.2);color:#fff;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.cg-ttl h1{margin:8px 0 0;font-size:32px;font-weight:800;letter-spacing:-.8px;line-height:1.1;color:#fff;overflow-wrap:anywhere}
+.cg-prod{font-size:14px;color:rgba(255,255,255,.85);margin-top:4px}
+.cg-body{padding:22px 24px 24px}
+.cg-tag{font-size:15.5px;line-height:1.6;color:var(--t2);margin:0 0 18px}
+.cg-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:22px}
+.cg-facts>div{background:var(--s2);border-radius:10px;padding:10px 12px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);min-width:0}
+.cg-facts b{display:block;font-size:14px;letter-spacing:0;text-transform:none;color:var(--t1);margin-top:3px;line-height:1.4}
+.cg-h{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;color:var(--t1)}
+.cg-role{border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#fff}
+.cg-rn{font-weight:800;font-size:16px;color:var(--t1)}.cg-rm{font-size:13px;color:var(--t3);margin-top:2px}
+.cg-ap{flex:none;font-size:13px;font-weight:700;color:#fff;background:#2A8472;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:inherit}
+.cg-ap:hover{background:#206557}
+.cg-lock{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--t3);margin-top:14px;line-height:1.5}
+.cg-side{position:sticky;top:96px;min-width:0;scroll-margin-top:90px}
+.cg-card{background:#fff;border:1px solid var(--bdr);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(36,31,25,.07)}
+.cg-form h2{font-size:24px!important;letter-spacing:-.6px!important;line-height:1.15}
+.cg-form .tabs{margin-bottom:18px!important}
+.cg-rolepill{display:inline-block;background:#EAF3F0;color:#206557;font-size:12.5px;border-radius:999px;padding:5px 12px;margin-bottom:12px}
+.cg-done .page,.cg-done{max-width:100%}
+.cg-how{max-width:1120px;margin:0 auto;padding:0 24px 40px}
+.cg-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cg-step{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px}
+.cg-step b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#1A1A2E;color:#fff;font-size:13px;margin-bottom:10px}
+.cg-step h4{margin:0 0 4px;font-size:16px;color:var(--t1)}.cg-step p{margin:0;font-size:14px;color:var(--t3);line-height:1.5}
+.cg-sticky{display:none}
+@media(max-width:900px){
+ .cg-main{grid-template-columns:minmax(0,1fr);padding:16px 16px 24px;gap:18px}.cg-side{position:static}
+ .cg-hero{height:165px}.cg-ttl{left:16px;right:16px}.cg-ttl h1{font-size:27px}.cg-body{padding:18px 16px}
+ .cg-how{padding:0 16px 96px}.cg-steps{grid-template-columns:minmax(0,1fr)}
+ .cg-card{padding:20px 16px}
+ .cg-sticky{display:block;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 88px calc(10px + env(safe-area-inset-bottom,0px)) 16px;transition:transform .25s ease;background:rgba(255,253,248,.96);border-top:1px solid var(--bdr)}
+ .cg-sticky.cg-hide{transform:translateY(110%)}
+ .cg-sticky button{width:100%;height:48px;border:0;border-radius:10px;background:#2A8472;color:#fff;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+}
 .page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;min-height:calc(100vh - 80px);}
 /* Kill the mobile tap delay / double-tap-zoom wait so buttons fire on the first tap. */
 button,a,[role="button"],.mm-link{touch-action:manipulation;}
@@ -12776,7 +12819,7 @@ function FairCastingPage({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: AUTH GATE (sign up / log in before applying)
 // ═══════════════════════════════════════════
-function AuthGate({pending,onComplete,onNavigate,onCancel}){
+function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
   const [mode,setMode]=useState("signup");
   const [premiumMsg,setPremiumMsg]=useState(false);
   const [loading,setLoading]=useState(false);
@@ -12831,7 +12874,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
         email,password:suPass,
         options:{
           emailRedirectTo:"https://www.castslate.com",
-          data:{user_type:"talent",display_name:(firstName+" "+lastName).trim(),onboarded:false,...pendingApplyMeta(pending)}
+          data:{user_type:"talent",display_name:(firstName+" "+lastName).trim(),onboarded:false,...pendingApplyMeta(pending),...(visitSource()?{signup_src:visitSource().src,signup_campaign:visitSource().campaign||null}:{})}
         }
       });
       if(error){
@@ -12896,7 +12939,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   const handleSocialAuth=async(provider)=>{
     setErr("");
-    if(provider==="google"&&googleDirectOn()){try{await googleDirectSignIn();}catch(_){setErr("Could not start Google sign-in. Please try again.");}return;}
+    if(provider==="google"&&googleDirectOn()){if(pending)savePostAuthApply(pending);try{await googleDirectSignIn();}catch(_){setErr("Could not start Google sign-in. Please try again.");}return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -12929,46 +12972,23 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
     }
   };
 
-  if(signupDone)return(<div className="page" style={{maxWidth:680,margin:"0 auto"}}>
+  if(signupDone)return(<div className={embedded?"cg-done":"page"} style={embedded?undefined:{maxWidth:680,margin:"0 auto"}}>
     <ConfirmEmailCard email={suEmail} finalStep={c?"Submit":"Log in"}
       stub={c&&<div className="cf-stub"><Ico n="ticket" s={26}/><div><small>Saved · you're applying to</small><strong>{c.title}</strong>{r&&<span> · {r.name}</span>}</div></div>}
       resentOk={resentOk} err={resendErr} cooldown={resendCooldown} onResend={resendSignupEmail}
       onLogin={()=>{setMode("login");setSignupDone(false);}} backLabel={c?"Back to casting":"Back"} onBack={onCancel}/>
-    <Footer onNavigate={onNavigate}/></div>);
+    {!embedded&&<Footer onNavigate={onNavigate}/>}</div>);
 
-  return(<div className="page"><div className="login-shell"><div className="login-split">
-      {/* LEFT: hero */}
-      <div className="login-hero">
-        <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
-        <div className="login-hero-overlay"/>
-        <div className="login-hero-copy">
-          <div className="eye">Free account for actors</div>
-          <h3>{c?"You're one step away.":<>Start getting<br/>seen today.</>}</h3>
-          {c?(
-            <div style={{background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"14px 16px",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
-              <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#FFD79A",marginBottom:6}}>You're applying to</div>
-              <div style={{fontWeight:700,fontSize:15,color:"#fff",marginBottom:2}}>{c.title}</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.82)"}}>{c.tagline} · {c.prod}</div>
-              {r&&<div style={{fontSize:12,color:"rgba(255,255,255,.82)",marginTop:6}}>Role: <strong style={{color:"#fff"}}>{r.name}</strong></div>}
-            </div>
-          ):(
-            <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-              {["Free account — no card required","Submit to casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* RIGHT: Sign up / Log in form */}
-      <div className="login-form-side"><div style={{maxWidth:440,width:"100%"}}>
+  const formBody=(<>
+        {embedded&&r&&<div className="cg-rolepill">Applying for <b>{r.name}</b></div>}
         <div className="tabs" style={{marginBottom:24}}>
           <button className={`tab ${mode==="signup"?"active":""}`} onClick={()=>{setMode("signup");setErr("");}}>Sign Up</button>
           <button className={`tab ${mode==="login"?"active":""}`} onClick={()=>{setMode("login");setErr("");}}>Log In</button>
         </div>
 
         {mode==="signup"?<>
-          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>Create your free actor account</h2>
-          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Takes about 60 seconds. No payment required.</p>
+          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:8}}>{embedded&&c?<>Apply to {c.title} free</>:"Create your free actor account"}</h2>
+          <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>{embedded&&c?"Make your free actor account and your application goes straight to this casting. About 60 seconds. No payment.":"Takes about 60 seconds. No payment required."}</p>
 
 
           {/* Social OAuth buttons */}
@@ -13018,7 +13038,35 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to CastSlate? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
         </>}
 
-        {onCancel&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>{c?"← Back to casting":"← Back"}</span></p>}
+        {onCancel&&!embedded&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>{c?"← Back to casting":"← Back"}</span></p>}
+  </>);
+  if(embedded)return(<div className="cg-form">{formBody}</div>);
+  return(<div className="page"><div className="login-shell"><div className="login-split">
+      {/* LEFT: hero */}
+      <div className="login-hero">
+        <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
+        <div className="login-hero-overlay"/>
+        <div className="login-hero-copy">
+          <div className="eye">Free account for actors</div>
+          <h3>{c?"You're one step away.":<>Start getting<br/>seen today.</>}</h3>
+          {c?(
+            <div style={{background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"14px 16px",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
+              <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#FFD79A",marginBottom:6}}>You're applying to</div>
+              <div style={{fontWeight:700,fontSize:15,color:"#fff",marginBottom:2}}>{c.title}</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.82)"}}>{c.tagline} · {c.prod}</div>
+              {r&&<div style={{fontSize:12,color:"rgba(255,255,255,.82)",marginTop:6}}>Role: <strong style={{color:"#fff"}}>{r.name}</strong></div>}
+            </div>
+          ):(
+            <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
+              {["Free account — no card required","Submit to casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* RIGHT: Sign up / Log in form */}
+      <div className="login-form-side"><div style={{maxWidth:440,width:"100%"}}>
+        {formBody}
       </div></div>
     </div></div>
     <Footer onNavigate={onNavigate}/></div>);
@@ -16461,6 +16509,71 @@ function castingTypeLabel(t){if(!t)return"";if(t==="Commercials & Branded Conten
 // ═══════════════════════════════════════════
 // PAGE: SEARCH / BROWSE
 // ═══════════════════════════════════════════
+// Casting landing gate (2026-10-26): what a signed-out visitor sees on any
+// /casting/<slug> link. Teaser on the left (story, pay, shoot dates, each role's
+// name/type/gender/age), the real AuthGate signup form on the right, so signing
+// up and applying is one step. Role descriptions, sides and how-to-submit stay
+// behind signup. Hidden until approved: CASTLAND_LIVE, or ?castland=1 per browser.
+const CASTLAND_LIVE=false;
+try{const g=new URLSearchParams(window.location.search).get("castland");if(g==="1")localStorage.setItem("cs_castland","1");if(g==="0")localStorage.removeItem("cs_castland");}catch(_){}
+function castLandOn(){if(CASTLAND_LIVE)return true;try{return localStorage.getItem("cs_castland")==="1";}catch(_){return false;}}
+// Where a visitor came from, from the link itself (?utm_source=craigslist) —
+// Craigslist hides the referrer. Kept 30 days so a later return still counts.
+try{const q=new URLSearchParams(window.location.search);const u=(q.get("utm_source")||"").trim().toLowerCase().slice(0,40);if(u)localStorage.setItem("cs_src",JSON.stringify({src:u,campaign:(q.get("utm_campaign")||"").slice(0,60),ts:Date.now()}));}catch(_){}
+function visitSource(){try{const d=JSON.parse(localStorage.getItem("cs_src")||"null");if(d&&Date.now()-(d.ts||0)<30*864e5)return d;}catch(_){}return null;}
+function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,onBack}){
+  const formRef=useRef(null);
+  const [formSeen,setFormSeen]=useState(false);
+  useEffect(()=>{const el=formRef.current;if(!el||typeof IntersectionObserver==="undefined")return;
+    const io=new IntersectionObserver(es=>setFormSeen(es[0].isIntersecting),{threshold:0.15});io.observe(el);return()=>io.disconnect();},[]);
+  const src=visitSource();
+  const img=getCastingImages(casting)[0]||"/assets/legal/blog-hero-1200.jpg";
+  const story=casting.synopsis||casting.tagline||casting.desc||"";
+  const shoot=cardShootChip(casting).replace(/^Shoots /,"");
+  const roles=Array.isArray(casting.roles)?casting.roles:[];
+  const toForm=()=>{const el=formRef.current;if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
+  const pick=(r)=>{onPickRole(r);setTimeout(toForm,30);};
+  const facts=[["Pay",casting.pay],["Shoots",shoot],["Union",casting.union]].filter(f=>f[1]);
+  return(<div className="cg-page">
+    {src&&src.src==="craigslist"&&<div className="cg-from">Coming from Craigslist? This is the casting you clicked. Applying is free.</div>}
+    <div className="cg-main">
+      <div className="cg-cast">
+        <div className="cg-hero" style={{backgroundImage:`url("${img}")`}}>
+          <div className="cg-ttl">
+            <div className="cg-chips">{castingIsPick(casting)&&<PickBadge/>}{casting.type&&<span className="cg-chip">{castingTypeLabel(casting.type)}</span>}{casting.location&&<span className="cg-chip">{casting.location}</span>}</div>
+            <h1>{casting.title}</h1>
+            {casting.prod&&<div className="cg-prod">{casting.prod}</div>}
+          </div>
+        </div>
+        <div className="cg-body">
+          {story&&<p className="cg-tag">{story}</p>}
+          {facts.length>0&&<div className="cg-facts">{facts.map(f=><div key={f[0]}>{f[0]}<b>{f[1]}</b></div>)}</div>}
+          {roles.length>0&&<>
+            <h2 className="cg-h">Open roles</h2>
+            {roles.map((r,i)=><div className="cg-role" key={r.id||i}>
+              <div style={{minWidth:0}}><div className="cg-rn">{r.name}</div><div className="cg-rm">{[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange)].filter(Boolean).join(" · ")}</div></div>
+              <button className="cg-ap" onClick={()=>pick(r)}>Apply free</button>
+            </div>)}
+          </>}
+          <div className="cg-lock"><Ico n="lock" s={16}/><span>Full role descriptions, sides and submission details open once you sign up.</span></div>
+        </div>
+      </div>
+      <div className="cg-side" ref={formRef}><div className="cg-card">
+        <AuthGate embedded pending={pending} onComplete={onComplete} onNavigate={onNavigate}/>
+      </div></div>
+    </div>
+    <div className="cg-how">
+      <h2 className="cg-h">How it works</h2>
+      <div className="cg-steps">
+        <div className="cg-step"><b>1</b><h4>Make your free account</h4><p>Name, email, done. Add a headshot after.</p></div>
+        <div className="cg-step"><b>2</b><h4>Apply to {casting.title}</h4><p>Pick a role. Your application lands with the casting team.</p></div>
+        <div className="cg-step"><b>3</b><h4>Hear back here</h4><p>Shortlists and decisions arrive by email and in your dashboard.</p></div>
+      </div>
+      <div style={{textAlign:"center",marginTop:24}}><button className="btn-s btn-sm" onClick={onBack}>← Back to Browse Castings</button></div>
+    </div>
+    <div className={"cg-sticky"+(formSeen?" cg-hide":"")}><button onClick={toForm}>Apply to {casting.title} free <Tri/></button></div>
+  </div>);
+}
 function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
   const [mounted,setMounted]=useState(false);
   useEffect(()=>{const t=setTimeout(()=>setMounted(true),30);return()=>clearTimeout(t);},[]);
@@ -57235,7 +57348,9 @@ function App(){
             </ErrorBoundary>
           :<PageLoader/>)}
         {page==="casting-gate"&&(viewingCasting
-          ?<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>
+          ?(castLandOn()
+            ?<CastingLandingGate casting={viewingCasting} pending={pendingApply&&pendingApply.casting&&pendingApply.casting.id===viewingCasting.id?pendingApply:{casting:viewingCasting,role:null}} onPickRole={(r)=>setPendingApply({casting:viewingCasting,role:r})} onComplete={completeAuth} onNavigate={navigate} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>
+            :<CastingGatePage casting={viewingCasting} onCreateProfile={()=>{setPage("auth-gate");pushHist("auth-gate");}} onLogin={()=>navigate("login")} onBack={()=>{setPendingApply(null);navigate(prevPage==="home"?"home":"search");}}/>)
           :<PageLoader/>)}
         {page==="auth-gate"&&<AuthGate pending={pendingApply} onComplete={completeAuth} onNavigate={navigate} onCancel={()=>{setPendingApply(null);setPage(viewingCasting?"casting-detail":"search");}}/>}
         {page==="dashboard"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?(profileRetryErr||profileRetrying?<div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:24}}>{profileRetryErr&&<p style={{color:"var(--red,#c0392b)",fontSize:14,textAlign:"center"}}>{profileRetryErr}</p>}<button className="btn-p btn-sm" disabled={profileRetrying} onClick={doRetryProfile}>{profileRetrying?"Retrying…":"Retry"}</button></div>:<PageLoader/>):isLoggedIn?
