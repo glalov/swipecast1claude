@@ -12357,7 +12357,8 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
 // PAGE: TERMS OF SERVICE
 // ═══════════════════════════════════════════
 const LEGAL_HEROES={
-  terms:{title:"Terms of Service",src:"/assets/legal/terms-hero-1200.jpg",srcSet:"/assets/legal/terms-hero-1200.jpg 1200w, /assets/legal/terms-hero-2400.jpg 2400w",
+  // The Social Network: Sean and Mark waiting in the office (sharp still; owner 2026-10-26 replaced the soft deposition frame).
+  terms:{title:"Terms of Service",pos:"center 25%",src:"/assets/legal/terms-hero-v2-1200.jpg",srcSet:"/assets/legal/terms-hero-v2-1200.jpg 1200w, /assets/legal/terms-hero-v2-1920.jpg 1920w",
     intro:"Please read these Terms of Service (\u201cTerms\u201d) carefully before using CastSlate, as they affect your legal rights and obligations. If you do not agree to be bound by all of these Terms, do not use the site."},
   privacy:{title:"Privacy Policy",src:"/assets/legal/privacy-hero-1200.jpg",srcSet:"/assets/legal/privacy-hero-1200.jpg 1200w, /assets/legal/privacy-hero-1920.jpg 1920w",
     intro:"Your privacy matters to us. This Privacy Policy explains what personal information CastSlate collects, why we collect it, how it is protected, and the choices and rights available to you."},
