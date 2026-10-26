@@ -17246,7 +17246,7 @@ function urlToLandingKey(){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
-function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,castingsVersion=0,session,myProfile,active=true,restoreCasting=null,onRestoreConsumed}){
+function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,onRequireLogin,castingsVersion=0,session,myProfile,active=true,restoreCasting=null,onRestoreConsumed}){
   const t=useT();
   const {lang}=useLanguage();
   // openNycLanding() swaps the URL to /casting-calls/new-york; re-render so the
@@ -17766,7 +17766,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
           ? <CastingDetailPage key={sheetCasting.id} casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} focusRole={sheetFocus} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full,null,{replace:true});}else{setSheetCasting(null);onNavigate("search");}}}/>
-          : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{setSheetCasting(null);onNavigate("auth-gate");}} onLogin={()=>{setSheetCasting(null);onNavigate("login");}} onBack={closeSheet}/>}
+          : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{const c=sheetCasting;setSheetCasting(null);if(onRequireAuth)onRequireAuth(c,null);else onNavigate("auth-gate");}} onLogin={()=>{const c=sheetCasting;setSheetCasting(null);if(onRequireLogin)onRequireLogin(c);else onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>,document.body)}
     <Footer onNavigate={onNavigate} backToTop/></div>);
@@ -55772,7 +55772,7 @@ function App(){
   const [prevPage,setPrevPage]=useState("home");
   // The page shown before the current one, read when the Log In page starts a Google sign-in.
   const pageBeforeRef=useRef("home");const pageNowRef=useRef(null);
-  useEffect(()=>{pageBeforeRef.current=pageNowRef.current;pageNowRef.current=page;},[page]);
+  useEffect(()=>{pageBeforeRef.current=pageNowRef.current;pageNowRef.current=page;if(page!=="login")loginFromCastingRef.current=null;},[page]);
   const [session,setSession]=useState(null);
   const [myProfile,setMyProfile]=useState(null);
   // Mirror of myProfile readable from the stable loadProfile callback. Lets a
@@ -56542,6 +56542,9 @@ function App(){
   useEffect(()=>{ window.__CS_NAV = p => navigate(p); },[navigate]);
   const viewProfile=(t)=>{setPrevPage(page);setViewingProfile(t);setPage("profile");pushHist("profile",t?.public_slug?{talentSlug:t.public_slug}:{});};
   const requireAuth=(casting,role)=>{setPendingApply({casting,role});window.scrollTo(0,0);setPage("auth-gate");pushHist("auth-gate");};
+  // Log In from a casting (e.g. the Browse side sheet): the Log In page saves this before a Google round trip.
+  const loginFromCastingRef=useRef(null);
+  const requireLogin=(casting)=>{if(!casting)return navigate("login");const pa={casting,role:null};setPendingApply(pa);loginFromCastingRef.current=pa;navigate("login");};
   const handleViewCasting=async(c,from)=>{
     if(!c)return;
     // NOTE: no scroll here. Hydration below is awaited, so scrolling at this
@@ -57365,7 +57368,7 @@ function App(){
         {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
-              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"} restoreCasting={sheetRestoreCasting} onRestoreConsumed={()=>setSheetRestoreCasting(null)}/>
+              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onRequireLogin={requireLogin} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"} restoreCasting={sheetRestoreCasting} onRestoreConsumed={()=>setSheetRestoreCasting(null)}/>
             </ErrorBoundary>
           </div>}
         {/* Full casting detail renders ONLY for logged-in users with auth resolved.
@@ -57435,7 +57438,7 @@ function App(){
             gaslit signed-in users. */}
         {page==="register-talent"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterTalent onNavigate={navigate}/>)}
         {page==="register-cd"&&(isLoggedIn?<LoggedInRedirect targetForTalent="my-profile" targetForCd="dashboard" myProfile={myProfile} onNavigate={navigate}/>:<RegisterCD onNavigate={navigate}/>)}
-        {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn} authNotice={authNotice} clearAuthNotice={clearAuthNotice} getPending={()=>["casting-gate","casting-detail","auth-gate"].includes(pageBeforeRef.current)?pendingApply:null}/>}
+        {page==="login"&&<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn} authNotice={authNotice} clearAuthNotice={clearAuthNotice} getPending={()=>loginFromCastingRef.current||(["casting-gate","casting-detail","auth-gate"].includes(pageBeforeRef.current)?pendingApply:null)}/>}
         {page==="membership"&&<MembershipPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"membership")}/>}
         {page==="plan-summary"&&(!authReady?<PageLoader text="Loading your plan…"/>:<PlanSummaryPage session={session} myProfile={myProfile} planKey={selectedPlan||"monthly"} onNavigate={navigate} onReload={()=>loadProfile(session?.user?.id)} onActivated={(returnInfo)=>{
           // Came from a casting they tried to apply to — bounce back to that casting.
