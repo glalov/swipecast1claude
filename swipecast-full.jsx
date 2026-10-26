@@ -2706,6 +2706,17 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .pp-stats:not(:has(>:nth-child(4))){justify-content:flex-start;column-gap:48px!important;}
 .pp-uni .pp-stats .pp-val{white-space:nowrap;}
 @media(max-width:600px){.pp-uni .pp-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:16px!important;}.pp-uni .pp-stats .pp-val{white-space:normal;}}
+/* Profile section icons + info tips (2026-10-26) */
+.ps-title{display:inline-flex;align-items:center;gap:10px;}
+.ps-ico{width:24px;height:24px;flex:none;color:var(--pp-h,var(--t1));}
+.ps-fillbg{fill:var(--bg);}
+.ps-tip{position:relative;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;color:var(--t3);cursor:help;margin-left:-2px;}
+.ps-tip:hover,.ps-tip:focus,.ps-tip.is-open{color:var(--t1);outline:none;}
+.ps-pop{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translate(-50%,4px);width:270px;background:#FFFDF8;color:#3A322A;border:1px solid #E4DCCB;border-radius:12px;padding:12px 14px;font:500 13px/1.5 'DM Sans',sans-serif;letter-spacing:0;text-transform:none;text-align:left;box-shadow:0 18px 40px -18px rgba(36,31,25,.45);opacity:0;visibility:hidden;transition:opacity .15s,transform .15s;z-index:40;white-space:normal;}
+.ps-pop b{display:block;color:#1A1A2E;font-weight:800;font-size:13px;margin-bottom:3px;}
+.ps-pop::after{content:"";position:absolute;left:50%;top:100%;width:10px;height:10px;background:#FFFDF8;border-right:1px solid #E4DCCB;border-bottom:1px solid #E4DCCB;transform:translate(-50%,-5px) rotate(45deg);}
+.ps-tip:hover .ps-pop,.ps-tip:focus .ps-pop,.ps-tip.is-open .ps-pop{opacity:1;visibility:visible;transform:translate(-50%,0);}
+@media(max-width:600px){.ps-pop{left:-120px;transform:none;}.ps-tip:hover .ps-pop,.ps-tip:focus .ps-pop,.ps-tip.is-open .ps-pop{transform:none;}.ps-pop::after{left:130px;}}
 /* Upload from your phone (private test, 2026-10-26) */
 .pu-page{max-width:1040px;}
 .pu-note{font-size:12.5px;color:var(--t3);margin-bottom:14px;}
@@ -15361,6 +15372,57 @@ function ShowcaseVideoTile({v,onOpen}){
 //     and leads the row; anything past PROFILE_PLAYS_VISIBLE collapses behind a
 //     "+N more" toggle so grandfathered profiles holding 20+ types still render
 //     at a sane height without a single stored value being touched.
+// Profile section icons + "?" info tips (owner, 2026-10-26, demo profile-section-icons-demo.html). Plain dark
+// line icons drawn for CastSlate; tips are a cream card on hover/focus/tap. Hidden until approved:
+// PROFILE_ICONS_LIVE, or ?profileicons=1 per browser (?profileicons=0 off).
+const PROFILE_ICONS_LIVE=false;
+try{const g=new URLSearchParams(window.location.search).get("profileicons");if(g==="1")localStorage.setItem("cs_profileicons","1");if(g==="0")localStorage.removeItem("cs_profileicons");}catch(_){}
+function profileIconsOn(){if(PROFILE_ICONS_LIVE)return true;try{return localStorage.getItem("cs_profileicons")==="1";}catch(_){return false;}}
+const PS_ICON={
+  about:<><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></>,
+  appearance:<><path d="M4 20V6l4 3 4-5 4 5 4-3v14z"/><path d="M4 16h16"/></>,
+  credits:<><rect x="3" y="10" width="18" height="10.5" rx="1.6"/><path d="M3.4 10 2.6 6.6 19.5 2.4l.9 3.5z"/><path d="M7.2 5.4l2.9 3.4M12.2 4.2l2.9 3.4"/><path d="M7 14.5h10M7 17.5h6"/></>,
+  training:<><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/></>,
+  skills:<path d="M12 3l2.6 5.6 6 .7-4.5 4 1.3 6L12 16.4 6.6 19.3l1.3-6-4.5-4 6-.7z"/>,
+  languages:<><path d="M4 5h9M8.5 3v2M6 5c.5 3.5 2.5 6 6 7.5M11 5c-.8 4-3.5 7-7 8.5"/><path d="M13 21l4-9 4 9M14.5 18h5"/></>,
+  accents:<><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></>,
+  selftape:<><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></>,
+  castmeas:<><path d="M10.6 3.3c3.1-1.4 7.2-1.4 10.4 0v5.2c0 3.6-2.3 6.2-5.2 6.2-.9 0-1.7-.2-2.4-.7"/><path d="M14.1 7.1l1.5.6M19.4 7.1l-1.5.6M15.2 11.5c.8-.6 1.7-.6 2.4 0"/><path className="ps-fillbg" d="M3 8.3c3.1-1.4 7.2-1.4 10.4 0v5.2c0 3.6-2.3 6.3-5.2 6.3S3 17.1 3 13.5z"/><path d="M5.6 11.6c.5-.6 1.3-.6 1.8 0M9 11.6c.5-.6 1.3-.6 1.8 0M6.1 14.8c1.1 1.3 3.1 1.3 4.2 0"/></>,
+  sizecard:<path d="M8 3l-5 4 3 3 2-1.5V21h8V8.5L18 10l3-3-5-4c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z"/>,
+  disabilities:<><circle cx="12" cy="4.5" r="1.8"/><path d="M12 7v6h5l2 5M12 10h4"/><path d="M8.5 11.5A5 5 0 1 0 15 18"/></>,
+};
+const PS_TIP={
+  about:"In the actor's own words: background, the kind of work they love and what makes them stand out.",
+  appearance:"Physical details as the actor entered them. Playing age is the range they can believably portray on camera, not their real age.",
+  credits:"Productions the actor has worked on, grouped by type, with their role and the company or director behind it. The résumé PDF has the full list.",
+  training:"Schools, studios and teachers the actor has trained with.",
+  skills:"Special skills for roles that need them, such as stunts, singing, sports or instruments. Grouped the same way the actor added them.",
+  languages:"Languages the actor speaks well enough to perform in.",
+  accents:"Accents and dialects the actor can do convincingly on camera.",
+  selftape:"How the actor records self-tapes, and whether they can travel or drive for a job.",
+  castmeas:"The character types and energies this actor plays best, chosen by the actor.",
+  sizecard:"Clothing sizes for the wardrobe department, so costume fittings go quickly once someone is booked.",
+  disabilities:"Shared by the actor for authentic casting. Only signed-in casting directors can see this section.",
+};
+function psKey(title){const t=String(title||"").toLowerCase();
+  if(t.startsWith("about"))return"about";if(t.startsWith("appearance"))return"appearance";if(t.startsWith("credits"))return"credits";
+  if(t.startsWith("training"))return"training";if(t.startsWith("skills"))return"skills";if(t.startsWith("languages"))return"languages";
+  if(t.startsWith("accents"))return"accents";if(t.startsWith("self-tape"))return"selftape";if(t.startsWith("cast me as"))return"castmeas";
+  if(t.startsWith("size card"))return"sizecard";if(t.startsWith("disabilities"))return"disabilities";return null;}
+function SectionTitle({title}){
+  const k=profileIconsOn()?psKey(title):null;
+  const [open,setOpen]=useState(false);
+  if(!k)return title;
+  return(<span className="ps-title">
+    <svg className="ps-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{PS_ICON[k]}</svg>
+    {title}
+    <span className={"ps-tip"+(open?" is-open":"")} tabIndex={0} role="button" aria-label={"About "+title} onClick={e=>{e.stopPropagation();setOpen(v=>!v);}} onBlur={()=>setOpen(false)}>
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M6.4 6.2a1.7 1.7 0 0 1 3.2.6c0 1.1-1.6 1.4-1.6 2.5" strokeLinecap="round"/><circle cx="8" cy="11.6" r=".35" fill="currentColor"/></svg>
+      <span className="ps-pop" role="tooltip"><b>{title}</b>{PS_TIP[k]}</span>
+    </span>
+  </span>);
+}
+
 function PlaysChips({types}){
   const [expanded,setExpanded]=useState(false);
   const list=Array.isArray(types)?types.filter(Boolean):[];
@@ -15577,7 +15639,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
   const sectionHead=(title,extra)=>(
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-      <div className="pl-sh" style={{fontSize:13,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)"}}>{title}</div>
+      <div className="pl-sh" style={{fontSize:13,fontWeight:700,letterSpacing:"0.07em",textTransform:"uppercase",color:"var(--t3)"}}><SectionTitle title={title}/></div>
       {extra}
     </div>
   );
@@ -28453,7 +28515,7 @@ function CastMeAsSection({talentId}){
   const plain=entries.filter(e=>!featured.includes(e));
   return(<div className="card mt-20">
     {mediaViewer&&<MediaViewer items={mediaViewer.items} startIdx={mediaViewer.idx} onClose={()=>setMediaViewer(null)}/>}
-    <h3 className="pl-sh pp-h3" style={{fontSize:18,fontWeight:700,marginBottom:4}}>Cast Me As</h3>
+    <h3 className="pl-sh pp-h3" style={{fontSize:18,fontWeight:700,marginBottom:4}}><SectionTitle title="Cast Me As"/></h3>
     <p className="pp-sec" style={{fontSize:13,color:"var(--t3)",marginBottom:20}}>Casting identity — the energies and archetypes this actor plays best.</p>
     {featured.length>0&&<div className="cma-hl" style={plain.length?undefined:{marginBottom:0}}>
       {featured.map(entry=>{
