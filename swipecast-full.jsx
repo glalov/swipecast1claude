@@ -2811,6 +2811,8 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pl-cinematic{--bg:#171615;--s1:#262422;--s2:#35322F;--bdr:#3A3734;--t1:#F4F1EC;--t2:#DAD5CE;--t3:#A8A39C;color:var(--t1);}
 /* Dark cards: no outlines - the lighter card tone alone separates them; dividers are one faint solid style (owner, 2026-10-16). */
 .pl-cinematic .card,.pl-cinematic .pl-hero{border-color:transparent!important;box-shadow:none;}
+/* Name card = deep teal ink (owner, 2026-10-26, demo name-card-colors-demo.html): ties into the teal accent; chips, lines and muted text re-toned inside the card only. */
+.pl-cinematic .pl-hero{background:#1E2A28;--s2:#2B3B38;--bdr:#2F423E;--t3:#A7B5B1;}
 .pl-cinematic .pp-stats,.pl-cinematic .pp-div{border-top:1px solid rgba(244,241,236,.06)!important;}
 .pl-cinematic .pl-hero-img{position:relative;}
 /* No photo fade on cinematic (owner, 2026-10-25): it turned light headshot backdrops into a muddy brown strip. */
