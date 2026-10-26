@@ -8666,6 +8666,7 @@ function RegisterTalent({onNavigate}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
+    if(provider==="google"&&googleDirectOn()){try{await googleDirectSignIn();}catch(_){setErr("Could not start Google sign-in. Please try again.");}return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -8887,6 +8888,7 @@ function RegisterCD({onNavigate}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
+    if(provider==="google"&&googleDirectOn()){try{await googleDirectSignIn();}catch(_){setErr("Could not start Google sign-in. Please try again.");}return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -9050,6 +9052,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice}){
   };
   const handleSocialAuth=async(provider)=>{
     setErr("");
+    if(provider==="google"&&googleDirectOn()){try{await googleDirectSignIn();}catch(_){setErr("Could not start Google sign-in. Please try again.");}return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -12828,6 +12831,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel}){
 
   const handleSocialAuth=async(provider)=>{
     setErr("");
+    if(provider==="google"&&googleDirectOn()){try{await googleDirectSignIn();}catch(_){setErr("Could not start Google sign-in. Please try again.");}return;}
     try{
       const {data,error}=await window.sb.auth.signInWithOAuth({
         provider,
@@ -15961,6 +15965,41 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 
     </div><Footer onNavigate={onNavigate}/></div>);
 }
+
+// ── Direct Google sign-in (owner, 2026-10-26). The old flow sent people to Google with Supabase's own
+//    callback, so Google's screen said "continue to mvqhqbjjvgkftninjcby.supabase.co" and a visitor reported it
+//    as a scam. Here Google returns an ID token to castslate.com/auth/google and we hand it to Supabase with
+//    signInWithIdToken, so every Google screen names castslate.com. Our own "Continue with Google" button is
+//    unchanged. Needs https://www.castslate.com/auth/google in the Google OAuth client's redirect URIs.
+//    Switched on by GOOGLE_DIRECT, or per browser by opening any page with ?gdirect=1 (?gdirect=0 turns it off).
+const GOOGLE_DIRECT=false;
+const GOOGLE_CLIENT_ID="993876265676-kjmv79146prhg1qrufh9tndpi1memcka.apps.googleusercontent.com";
+const GOOGLE_RETURN="https://www.castslate.com/auth/google";
+function googleDirectOn(){if(GOOGLE_DIRECT)return true;try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1")localStorage.setItem("cs_gdirect","1");if(g==="0")localStorage.removeItem("cs_gdirect");return localStorage.getItem("cs_gdirect")==="1";}catch(_){return false;}}
+function _gRand(){const a=new Uint8Array(24);crypto.getRandomValues(a);return Array.from(a,x=>x.toString(16).padStart(2,"0")).join("");}
+async function _gSha256(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,"0")).join("");}
+async function googleDirectSignIn(){
+  // Google gets the hashed nonce; Supabase gets the raw one and checks it against the token.
+  const nonce=_gRand(),state=_gRand();
+  sessionStorage.setItem("cs_g_nonce",nonce);sessionStorage.setItem("cs_g_state",state);
+  const q=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:GOOGLE_RETURN,response_type:"id_token",scope:"openid email profile",nonce:await _gSha256(nonce),state,prompt:"select_account"});
+  window.location.assign("https://accounts.google.com/o/oauth2/v2/auth?"+q.toString());
+}
+// Return leg: runs as soon as app.js loads, before the router reads the path. Lands on the homepage like the
+// old flow did, so the existing post-login routing (pending account type, apply drafts) works unchanged.
+(function(){
+  try{
+    if(window.location.pathname!=="/auth/google")return;
+    const h=new URLSearchParams((window.location.hash||"").replace(/^#/,""));
+    const token=h.get("id_token"),state=h.get("state"),err=h.get("error");
+    let nonce="",want="";try{nonce=sessionStorage.getItem("cs_g_nonce")||"";want=sessionStorage.getItem("cs_g_state")||"";sessionStorage.removeItem("cs_g_nonce");sessionStorage.removeItem("cs_g_state");}catch(_){}
+    window.history.replaceState(null,"","/");
+    if(err||!token)return; // cancelled at Google: just stay on the homepage
+    const fallback=()=>{try{window.sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:"https://www.castslate.com",queryParams:{prompt:"select_account"}}});}catch(_){}};
+    if(!state||state!==want||!window.sb?.auth?.signInWithIdToken){fallback();return;}
+    window.sb.auth.signInWithIdToken({provider:"google",token,nonce}).then(({error})=>{if(error){console.warn("[auth] google id-token sign-in failed:",error.message);fallback();}}).catch(fallback);
+  }catch(e){console.warn("[auth] google return failed:",e?.message||e);}
+})();
 
 function generatePublicSlug(name){
   return(name||"").toLowerCase().replace(/[^a-z0-9\s]/g,"").trim().replace(/\s+/g,"-").replace(/-+/g,"-").slice(0,50)||"talent";
