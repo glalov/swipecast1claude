@@ -15972,7 +15972,7 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
 //    signInWithIdToken, so every Google screen names castslate.com. Our own "Continue with Google" button is
 //    unchanged. Needs https://www.castslate.com/auth/google in the Google OAuth client's redirect URIs.
 //    Switched on by GOOGLE_DIRECT, or per browser by opening any page with ?gdirect=1 (?gdirect=0 turns it off).
-const GOOGLE_DIRECT=false;
+const GOOGLE_DIRECT=true; // ON for everyone since 2026-10-26 after the owner's test sign-ins (grant_type=id_token, status 200)
 // CastSlate's own Google Cloud project ("castslate", owner account): this client has the /auth/google redirect
 // and is listed in Supabase's Google "Client IDs" after the original 993876265676 client (which nobody can access).
 const GOOGLE_CLIENT_ID="267021191194-mpe9lm5cvtpi9e1pomh3miclht6c50j0.apps.googleusercontent.com";
