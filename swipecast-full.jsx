@@ -15375,7 +15375,7 @@ function ShowcaseVideoTile({v,onOpen}){
 // Profile section icons + "?" info tips (owner, 2026-10-26, demo profile-section-icons-demo.html). Plain dark
 // line icons drawn for CastSlate; tips are a cream card on hover/focus/tap. Hidden until approved:
 // PROFILE_ICONS_LIVE, or ?profileicons=1 per browser (?profileicons=0 off).
-const PROFILE_ICONS_LIVE=false;
+const PROFILE_ICONS_LIVE=true; // ON for everyone since 2026-10-26 (owner approved)
 try{const g=new URLSearchParams(window.location.search).get("profileicons");if(g==="1")localStorage.setItem("cs_profileicons","1");if(g==="0")localStorage.removeItem("cs_profileicons");}catch(_){}
 function profileIconsOn(){if(PROFILE_ICONS_LIVE)return true;try{return localStorage.getItem("cs_profileicons")==="1";}catch(_){return false;}}
 const PS_ICON={
