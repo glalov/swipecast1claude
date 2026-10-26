@@ -139,7 +139,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-sm{padding:8px 16px;font-size:12px;border-radius:6px;}
 .social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:0.1px;}
 .social-btn-dark:hover{background:#2d2d44;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.18);}
-.social-btn-dark>svg{width:20px;height:20px;padding:4px;box-sizing:content-box;background:#fff;border-radius:50%;}
+.social-btn-dark>svg{width:20px;height:20px;padding:4px;margin:-5px 0;box-sizing:content-box;background:#fff;border-radius:50%;}
 .page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;min-height:calc(100vh - 80px);}
 /* Kill the mobile tap delay / double-tap-zoom wait so buttons fire on the first tap. */
 button,a,[role="button"],.mm-link{touch-action:manipulation;}
