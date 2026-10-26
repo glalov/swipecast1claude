@@ -15431,7 +15431,7 @@ function SectionTitle({title}){
 
 // Pronouns (owner, 2026-10-26, demo pronouns-demo.html): optional, display only (never used for matching).
 // Hidden until approved: PRONOUNS_LIVE, or ?pronouns=1 per browser (?pronouns=0 off).
-const PRONOUNS_LIVE=false;
+const PRONOUNS_LIVE=true; // ON for everyone since 2026-10-26 (owner tested save + display)
 try{const g=new URLSearchParams(window.location.search).get("pronouns");if(g==="1")localStorage.setItem("cs_pronouns","1");if(g==="0")localStorage.removeItem("cs_pronouns");}catch(_){}
 function pronounsOn(){if(PRONOUNS_LIVE)return true;try{return localStorage.getItem("cs_pronouns")==="1";}catch(_){return false;}}
 const PRONOUN_OPTS=["He/Him","She/Her","They/Them","He/They","She/They","They/He","They/She","Any pronouns","Ask me"];
