@@ -5,7 +5,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const ALLOWED_ORIGINS = ["https://www.castslate.com", "https://castslate.com"];
-const MAX_FILES = 12;
 const MAX_BYTES = 15 * 1024 * 1024;
 const TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
@@ -34,11 +33,11 @@ Deno.serve(async (req) => {
   } else return json(req, 405, { error: "method" });
   if (!/^[a-f0-9]{64}$/.test(token)) return json(req, 404, { error: "invalid" });
 
-  const { data: s } = await sb.from("phone_upload_sessions").select("id,user_id,expires_at,upload_count").eq("token", token).maybeSingle();
+  const { data: s } = await sb.from("phone_upload_sessions").select("id,user_id,expires_at,upload_count,max_files").eq("token", token).maybeSingle();
   if (!s) return json(req, 404, { error: "invalid" });
   if (new Date(s.expires_at).getTime() < Date.now()) return json(req, 410, { error: "expired" });
-  const remaining = Math.max(0, MAX_FILES - s.upload_count);
-  if (req.method === "GET") return json(req, 200, { ok: true, expires_at: s.expires_at, remaining });
+  const remaining = Math.max(0, (s.max_files || 12) - s.upload_count);
+  if (req.method === "GET") return json(req, 200, { ok: true, expires_at: s.expires_at, remaining, max_files: s.max_files || 12 });
 
   if (remaining <= 0) return json(req, 429, { error: "limit" });
   const file = form!.get("file");

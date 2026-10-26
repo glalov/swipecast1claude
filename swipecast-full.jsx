@@ -2736,6 +2736,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pu-big:disabled{opacity:.6;}
 .pu-status{margin:0;font-size:14px;color:var(--t2);}
 .pu-fine{margin:0;font-size:12px;color:var(--t3);}
+.pu-inline{margin-bottom:16px;background:var(--s2);border-color:var(--bdr);}
+.pu-close{align-self:flex-start;background:none;border:0;padding:0;font:600 12.5px 'DM Sans',sans-serif;color:var(--t3);cursor:pointer;text-decoration:underline;}
+@media(max-width:760px),(hover:none) and (pointer:coarse){.pu-open,.pu-inline{display:none!important;}}
 @media(max-width:760px){.pu-row{grid-template-columns:1fr;}.pu-qrcard{flex-direction:column;text-align:center;}}
 /* One-page profile (owner, 2026-10-25, demo one-page-profile-demo.html "Marissa Kent"): below the hero the
    sections are no longer cards; they flow on the page split by thin rules, set in the demo's type (DM Sans
@@ -16042,6 +16045,11 @@ try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1
 //    15-minute token (create_phone_upload_session) and shows it as a QR code; the phone opens
 //    /phone-upload/<token>, needs no login, and posts photos to the phone-upload edge function, which files
 //    them under the token owner's talent-media folder. The desktop polls phone_upload_files (owner-only RLS).
+// Profile-editor button is off for members until the owner approves; ?phoneupload=1 turns it on for one
+// browser (?phoneupload=0 off). Read at load because the router rewrites the address.
+const PHONE_UPLOAD_LIVE=false;
+try{const g=new URLSearchParams(window.location.search).get("phoneupload");if(g==="1")localStorage.setItem("cs_phoneupload","1");if(g==="0")localStorage.removeItem("cs_phoneupload");}catch(_){}
+function phoneUploadOn(){if(PHONE_UPLOAD_LIVE)return true;try{return localStorage.getItem("cs_phoneupload")==="1";}catch(_){return false;}}
 const PHONE_UPLOAD_FN=(window.SC_CONFIG&&window.SC_CONFIG.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co")+"/functions/v1/phone-upload";
 function _phoneToJpeg(file){
   // iPhone HEIC becomes JPEG here; big photos are shrunk to 2400px on the long side before upload.
@@ -16053,6 +16061,51 @@ function _phoneToJpeg(file){
     img.onerror=()=>{URL.revokeObjectURL(u);reject(new Error("read"));};
     img.src=u;
   });
+}
+// The QR panel inside My Profile › Photos. Each photo that arrives is handed to onPhoto as a File, and the
+// editor runs it through the same crop + save step as an upload from the computer.
+function PhoneUploadPanel({maxFiles,onPhoto,onClose}){
+  const [sess,setSess]=useState(null);
+  const [err,setErr]=useState("");
+  const [count,setCount]=useState(0);
+  const [now,setNow]=useState(Date.now());
+  const seenRef=useRef(new Set());
+  const start=async()=>{
+    setErr("");seenRef.current=new Set();setCount(0);
+    const {data,error}=await window.sb.rpc("create_phone_upload_session",{p_max_files:maxFiles});
+    if(error||!data||!data[0]){setErr("Couldn't create a code. Please try again.");return;}
+    setSess(data[0]);
+  };
+  useEffect(()=>{start();},[]);
+  useEffect(()=>{
+    if(!sess)return;
+    let alive=true;
+    const tick=async()=>{
+      const {data}=await window.sb.from("phone_upload_files").select("id,url").eq("session_id",sess.session_id).order("created_at",{ascending:true});
+      if(!alive||!data)return;
+      for(const f of data){
+        if(seenRef.current.has(f.id))continue;
+        seenRef.current.add(f.id);setCount(c=>c+1);
+        try{const b=await (await fetch(f.url)).blob();onPhoto(new File([b],"phone-photo.jpg",{type:b.type||"image/jpeg"}));}catch(_){setErr("A photo couldn't be loaded. Try sending it again.");}
+      }
+    };
+    tick();const t=setInterval(()=>{tick();setNow(Date.now());},2000);
+    return()=>{alive=false;clearInterval(t);};
+  },[sess?.session_id]);
+  const link=sess?"https://www.castslate.com/phone-upload/"+sess.token:"";
+  const left=sess?Math.max(0,Math.round((new Date(sess.expires_at).getTime()-now)/1000)):0;
+  const qr=link?"https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&color=1A1A2E&data="+encodeURIComponent(link):"";
+  return(<div className="pu-qrcard pu-inline">
+    <div className="pu-qr">{qr?<img src={qr} alt="QR code to upload photos from your phone" width="140" height="140"/>:<span>Creating…</span>}</div>
+    <div className="pu-qrtxt">
+      <span className="pu-eyebrow">Upload from your phone</span>
+      <p>Scan with your phone's camera, then choose {maxFiles===1?"a photo":"photos"}. {maxFiles===1?"It":"Each one"} opens here to crop, just like an upload from your computer.</p>
+      {sess&&(left>0?<span className="pu-live"><i/>{count?`${count} received · `:"Waiting for your phone · "}code works for {Math.floor(left/60)}:{String(left%60).padStart(2,"0")}</span>
+        :<button className="btn-s btn-sm" type="button" onClick={start}>Make a new code</button>)}
+      {err&&<span className="pu-err">{err}</span>}
+      <button type="button" className="pu-close" onClick={onClose}>Close</button>
+    </div>
+  </div>);
 }
 function PhoneUploadTestPage({session,onNavigate}){
   const [sess,setSess]=useState(null);
@@ -16106,12 +16159,13 @@ function PhoneUploadTestPage({session,onNavigate}){
 function PhoneUploadPage(){
   const token=(window.location.pathname.match(/^\/phone-upload\/([a-f0-9]{64})$/)||[])[1]||"";
   const [state,setState]=useState("checking"); // checking | ready | expired | invalid
+  const [max,setMax]=useState(12);
   const [sent,setSent]=useState([]);
   const [status,setStatus]=useState("");
   const [busy,setBusy]=useState(false);
   const pickRef=useRef(null);
   useEffect(()=>{(async()=>{
-    try{const r=await fetch(PHONE_UPLOAD_FN+"?token="+token);setState(r.status===200?"ready":r.status===410?"expired":"invalid");}
+    try{const r=await fetch(PHONE_UPLOAD_FN+"?token="+token);const j=await r.json().catch(()=>({}));if(j&&j.max_files)setMax(j.max_files);setState(r.status===200?"ready":r.status===410?"expired":"invalid");}
     catch(_){setState("invalid");}
   })();},[token]);
   const upload=async(list)=>{
@@ -16135,10 +16189,10 @@ function PhoneUploadPage(){
       {state==="checking"&&<p className="pu-sub">Connecting…</p>}
       {state==="ready"&&<>
         <span className="pu-eyebrow">Connected to your computer</span>
-        <h1 className="pu-h">Add photos to your profile</h1>
-        <p className="pu-sub">Pick one or more photos. They'll appear on your computer screen right away.</p>
-        <input ref={pickRef} type="file" accept="image/*" multiple hidden onChange={e=>{const l=[...(e.target.files||[])];if(l.length)upload(l);}}/>
-        <button className="pu-big" type="button" disabled={busy} onClick={()=>pickRef.current&&pickRef.current.click()}>{busy?"Uploading…":"Choose photos"}</button>
+        <h1 className="pu-h">{max===1?"Add your headshot":"Add photos to your profile"}</h1>
+        <p className="pu-sub">{max===1?"Pick one photo. It will open on your computer screen to crop.":"Pick one or more photos. They'll open on your computer screen to crop."}</p>
+        <input ref={pickRef} type="file" accept="image/*" multiple={max>1} hidden onChange={e=>{const l=[...(e.target.files||[])];if(l.length)upload(l);}}/>
+        <button className="pu-big" type="button" disabled={busy} onClick={()=>pickRef.current&&pickRef.current.click()}>{busy?"Uploading…":max===1?"Choose a photo":"Choose photos"}</button>
         {status&&<p className="pu-status" role="status">{status}</p>}
         {sent.length>0&&<div className="pu-grid">{sent.map((u,i)=><div key={i} className="pu-tile"><img src={u} alt="Sent photo"/></div>)}</div>}
         <p className="pu-fine">This link only adds photos to your own account and stops working after 15 minutes.</p>
@@ -29112,6 +29166,15 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
   const [photoOrderDirty,setPhotoOrderDirty]=useState(false);
   // Cropper state: {file, target: "headshot"|"additional", aspect, label}
   const [cropState,setCropState]=useState(null);
+  // Upload from your phone: photos arrive into a queue and open in the crop dialog one at a time.
+  const [phoneOpen,setPhoneOpen]=useState(false);
+  const [phoneQueue,setPhoneQueue]=useState([]);
+  useEffect(()=>{
+    if(cropState||!phoneQueue.length)return;
+    const prem=profile?.membership_status==="active";
+    setCropState(prem?{file:phoneQueue[0],target:"additional",aspect:0.75,label:"Crop Photo"}:{file:phoneQueue[0],target:"headshot",aspect:0.8,label:"Crop Your Headshot"});
+    setPhoneQueue(q=>q.slice(1));
+  },[cropState,phoneQueue.length]);
   const [videos,setVideos]=useState(["","","","",""]);  // 5 video link slots (legacy)
   const [socialLinks,setSocialLinks]=useState({});      // social_links jsonb
   const [selectedSkills,setSelectedSkills]=useState([]); // canonical picks from SKILL_GROUPS
@@ -29937,6 +30000,8 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
               <input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/>
             </label>
           )}
+          {/* Upload from your phone: QR panel (computers only; hidden on phones by CSS) */}
+          {phoneUploadOn()&&(isPremium?photos.length<maxAdditional:true)&&<button type="button" className="btn-s btn-sm pu-open" onClick={()=>setPhoneOpen(v=>!v)}><Ico n="device-mobile" s={16}/> Upload from phone</button>}
           {/* Premium user: add gallery photo button */}
           {isPremium&&photos.length<maxAdditional&&(
             <label className="btn-p btn-sm" style={{cursor:"pointer"}}>
@@ -29946,6 +30011,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           )}
         </div>
 
+        {phoneOpen&&<PhoneUploadPanel maxFiles={isPremium?12:1} onPhoto={f=>setPhoneQueue(q=>[...q,f])} onClose={()=>setPhoneOpen(false)}/>}
         {/* Free user with no headshot: prominent upload area */}
         {!isPremium&&!profile.headshot_url&&(
           <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:10,padding:"40px 24px",background:"var(--s2)",borderRadius:10,border:"2px dashed var(--bdr)",cursor:"pointer",textAlign:"center",color:"var(--t2)"}}>
