@@ -15987,6 +15987,10 @@ async function googleDirectSignIn(){
   const q=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:GOOGLE_RETURN,response_type:"id_token",scope:"openid email profile",nonce:await _gSha256(nonce),state,prompt:"select_account"});
   window.location.assign("https://accounts.google.com/o/oauth2/v2/auth?"+q.toString());
 }
+// The router can rewrite the address before anyone clicks, so the ?gdirect test switch is read at load.
+try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1")localStorage.setItem("cs_gdirect","1");if(g==="0")localStorage.removeItem("cs_gdirect");}catch(_){}
+// The router can rewrite the address before anyone clicks, so the ?gdirect test switch is read at load.
+try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1")localStorage.setItem("cs_gdirect","1");if(g==="0")localStorage.removeItem("cs_gdirect");}catch(_){}
 // Return leg: runs as soon as app.js loads, before the router reads the path. Lands on the homepage like the
 // old flow did, so the existing post-login routing (pending account type, apply drafts) works unchanged.
 (function(){
