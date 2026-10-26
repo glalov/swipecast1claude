@@ -2859,6 +2859,13 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .pp-1p .pp-cred-catlbl::before{content:"";width:22px;height:2px;border-radius:2px;background:currentColor;flex:none;}
 .pp-uni .pp-1p .pp-cred-cat:first-child .pp-cred-catlbl{margin-top:8px!important;}
 .pp-cred-n{display:none;}
+/* Travel & driving pills = option A (owner, 2026-10-26). */
+.pp-doc{display:inline-flex;align-items:center;gap:9px;font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.3;font-weight:500;padding:8px 15px 8px 12px;border-radius:999px;background:#FFFFFF;border:1px solid #E4DCCB;color:var(--t1);}
+.pp-doc svg{flex:none;}
+.pp-doc-ok{width:18px;height:18px;border-radius:50%;background:#2A8472;color:#fff;display:grid;place-items:center;margin-left:2px;}
+.pp-doc.no{background:transparent;color:var(--t3);border-style:dashed;}
+.pl-cinematic .pp-doc{background:var(--s1);border-color:var(--bdr);}
+.pl-cinematic .pp-doc.no{background:transparent;}
 .pp-uni .pp-1p .pp-cred-n{display:inline;font-weight:500;color:var(--t3);margin-left:-4px;}
 .pp-uni .pp-1p .pp-cred .credit-row{display:grid;grid-template-columns:64px minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"yr pt co" "yr rl co";column-gap:22px;row-gap:4px;align-items:start;padding:19px 0;border-bottom:1px solid var(--bdr);}
 .pp-uni .pp-1p .pp-cred-cat:last-child .credit-row:last-child,.pp-uni .pp-1p .pp-cred>.credit-row:last-child{border-bottom:0;padding-bottom:0;}
@@ -15453,6 +15460,10 @@ const PS_ICON={
   sizecard:<path d="M8 3l-5 4 3 3 2-1.5V21h8V8.5L18 10l3-3-5-4c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z"/>,
   disabilities:<><circle cx="12" cy="4.5" r="1.8"/><path d="M12 7v6h5l2 5M12 10h4"/><path d="M8.5 11.5A5 5 0 1 0 15 18"/></>,
 };
+const PP_DOC_ICON={
+  "Driver's License":<><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><circle cx="8.3" cy="10.6" r="2.1"/><path d="M5.2 16c.6-1.6 1.7-2.4 3.1-2.4s2.5.8 3.1 2.4M14.2 10h4.3M14.2 13h4.3M14.2 16h2.6"/></>,
+  "Passport":<><rect x="4.5" y="2.5" width="15" height="19" rx="2.2"/><circle cx="12" cy="10.5" r="3.8"/><path d="M8.2 10.5h7.6M12 6.7c1.3 1.1 1.3 6.5 0 7.6M12 6.7c-1.3 1.1-1.3 6.5 0 7.6M9.3 17.8h5.4"/></>,
+};
 const PS_TIP={
   about:"In the actor's own words: background, the kind of work they love and what makes them stand out.",
   appearance:"Physical details as the actor entered them. Playing age is the range they can believably portray on camera, not their real age.",
@@ -16077,8 +16088,12 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
           <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
             {[["Driver's License",licenseText],["Passport",passportText]].filter(([,v])=>v).map(([l,v])=>{
               const yes=v==="Yes";
-              return(<span key={l} className="badge pp-badge" style={{gap:6,background:yes?"rgba(79,139,127,.10)":"var(--s2)",color:yes?"var(--teal-dk)":"var(--t3)",fontWeight:600}}>
-                <Ico n={yes?"check":"x"} s={13}/> {l}
+              /* Option A (owner, 2026-10-26, demo license-passport-icons-demo.html): white pill like Skills,
+                 ID-card / passport-booklet line icon, teal tick when they have it; No = dashed + grey. */
+              return(<span key={l} className={"pp-doc"+(yes?"":" no")}>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{PP_DOC_ICON[l]}</svg>
+                {yes?l:"No "+l.toLowerCase()}
+                {yes&&<span className="pp-doc-ok" aria-label="Yes"><svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path d="M3.8 8.3l2.7 2.6 5.7-5.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></span>}
               </span>);
             })}
           </div>
