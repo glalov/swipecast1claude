@@ -16058,7 +16058,7 @@ try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1
 //    them under the token owner's talent-media folder. The desktop polls phone_upload_files (owner-only RLS).
 // Profile-editor button is off for members until the owner approves; ?phoneupload=1 turns it on for one
 // browser (?phoneupload=0 off). Read at load because the router rewrites the address.
-const PHONE_UPLOAD_LIVE=false;
+const PHONE_UPLOAD_LIVE=true; // ON for everyone since 2026-10-26 after the owner's tests (upload, delete + re-send)
 try{const g=new URLSearchParams(window.location.search).get("phoneupload");if(g==="1")localStorage.setItem("cs_phoneupload","1");if(g==="0")localStorage.removeItem("cs_phoneupload");}catch(_){}
 function phoneUploadOn(){if(PHONE_UPLOAD_LIVE)return true;try{return localStorage.getItem("cs_phoneupload")==="1";}catch(_){return false;}}
 const PHONE_UPLOAD_FN=(window.SC_CONFIG&&window.SC_CONFIG.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co")+"/functions/v1/phone-upload";
