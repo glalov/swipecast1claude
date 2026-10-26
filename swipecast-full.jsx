@@ -15351,7 +15351,6 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
   const viewerIsCd=!!myProfile&&(myProfile.user_type==="cd"||myProfile.user_type==="admin"||myProfile.user_type==="super_admin");
   const talentDbId=typeof talent.id==="string"&&/^[0-9a-f]{8}-/i.test(String(talent.id))?talent.id:null;
   const [cdAction,setCdAction]=useState(null);
-  const [showReport,setShowReport]=useState(false);
   const [dbCredits,setDbCredits]=useState(null);
   const [uploadedVideos,setUploadedVideos]=useState([]);
   const [ownMsgNote,setOwnMsgNote]=useState(false); // owner previewing: explains the preview-only Message button
@@ -15594,11 +15593,12 @@ function TalentProfile({talent,onBack,onNavigate,session,myProfile,hideBack}){
         <button style={{background:"#fff",color:"#111",border:"none",borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}} onClick={()=>{if(slidingBack)return;setSlidingBack(true);try{sessionStorage.setItem('cs_slide_editor','1');}catch(_){}setTimeout(()=>{if(onNavigate){onNavigate("my-profile");}else if(onBack){onBack();}},250);}}>← Back to Edit Profile</button>
       </div>
     )}
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,marginBottom:16,flexWrap:"wrap"}}>
-      {!isOwnProfile&&!hideBack&&<button className="btn-s btn-sm" onClick={onBack}>← Back</button>}
-      {!isOwnProfile&&talent?.id&&<button className="btn-s btn-sm" onClick={()=>setShowReport(true)} style={{color:"var(--t3)",fontSize:11}} title="Report this profile"><Ico n="flag" s={22}/> Report</button>}
-    </div>
-    <ReportModal open={showReport} onClose={()=>setShowReport(false)} session={session} target={talent?.id?{kind:"profile",id:talent.id}:null}/>
+    {/* Back only where it closes an in-app view (admin lists, CD overlay). Public /talent/ pages pass hideBack:
+        visitors arrive from a QR scan or shared link, so there is nothing to go back to. Report button removed
+        from profiles (owner, 2026-10-26). */}
+    {!isOwnProfile&&!hideBack&&<div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+      <button className="btn-s btn-sm" onClick={onBack}>← Back</button>
+    </div>}
 
     {talent._coverNote&&<div className="card" style={{padding:"12px 16px",marginBottom:14,borderLeft:"3px solid var(--acc)",background:"var(--s1)"}}>
       <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--t3)",marginBottom:3}}>Cover note from {talent.name||"the applicant"}</div>
@@ -16005,7 +16005,7 @@ function PublicTalentProfilePage({slug,onNavigate,session,myProfile}){
       <button className="btn-p btn-sm" onClick={()=>onNavigate("home")}>Back to Home</button>
     </div>
   );
-  return <TalentProfile talent={talent} onBack={()=>window.history.back()} onNavigate={onNavigate} session={session} myProfile={myProfile}/>;
+  return <TalentProfile talent={talent} onBack={()=>window.history.back()} onNavigate={onNavigate} session={session} myProfile={myProfile} hideBack/>;
 }
 
 
@@ -56870,7 +56870,7 @@ function App(){
           :isLoggedIn?<PageLoader/>:<PageLoader/>)}
         {page==="profile"&&viewingProfile&&
           <ErrorBoundary label="Talent Profile" onReset={()=>navigate("search")}>
-            <TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile}/>
+            <TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile} hideBack/>
           </ErrorBoundary>}
         {page==="talent-public"&&viewingTalentSlug&&
           <ErrorBoundary label="Public Profile" onReset={()=>navigate("search")}>
