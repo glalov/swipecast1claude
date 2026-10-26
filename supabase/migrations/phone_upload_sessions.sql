@@ -1,0 +1,3 @@
+-- Applied 2026-10-26 via Supabase MCP (migration "phone_upload_sessions"). Kept here for the record.
+-- Tables phone_upload_sessions / phone_upload_files (RLS: owner select only; writes via service role in the
+-- phone-upload edge function) and RPC create_phone_upload_session() (authenticated only, 15-minute token).

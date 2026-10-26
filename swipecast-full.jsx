@@ -2706,6 +2706,37 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .pp-uni .pp-stats:not(:has(>:nth-child(4))){justify-content:flex-start;column-gap:48px!important;}
 .pp-uni .pp-stats .pp-val{white-space:nowrap;}
 @media(max-width:600px){.pp-uni .pp-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;column-gap:16px!important;}.pp-uni .pp-stats .pp-val{white-space:normal;}}
+/* Upload from your phone (private test, 2026-10-26) */
+.pu-page{max-width:1040px;}
+.pu-note{font-size:12.5px;color:var(--t3);margin-bottom:14px;}
+.pu-h{margin:0 0 6px;font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--acc);}
+.pu-sub{margin:0 0 18px;color:var(--t2);font-size:14.5px;}
+.pu-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;margin-bottom:26px;}
+.pu-drop{border:1.5px dashed var(--bdr);border-radius:14px;padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;background:var(--s2);min-height:210px;color:var(--t3);font-size:13px;}
+.pu-drop strong{color:var(--t1);font-size:15px;}
+.pu-qrcard{border:1px solid var(--bdr);border-radius:14px;padding:18px;display:flex;gap:16px;align-items:center;background:var(--s1);}
+.pu-qr{width:156px;height:156px;flex:none;background:#fff;border-radius:10px;border:1px solid var(--bdr);display:grid;place-items:center;font-size:12px;color:#7A7064;}
+.pu-qr img{width:140px;height:140px;display:block;}
+.pu-qrtxt{min-width:0;display:flex;flex-direction:column;gap:7px;}
+.pu-qrtxt p{margin:0;font-size:13.5px;color:var(--t2);}
+.pu-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-dk);}
+.pu-live{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:#1d7b44;}
+.pu-live i{width:8px;height:8px;border-radius:50%;background:#1d7b44;}
+.pu-err{font-size:12.5px;color:#c0392b;}
+.pu-h2{font-size:17px;font-weight:800;color:var(--acc);margin:0 0 10px;}
+.pu-h2 span{font-size:13px;font-weight:500;color:var(--t3);margin-left:6px;}
+.pu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+.pu-tile{aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:var(--s2);border:1px solid var(--bdr);}
+.pu-tile img{width:100%;height:100%;object-fit:cover;display:block;}
+.pu-empty{border:1px dashed var(--bdr);border-radius:12px;padding:18px;text-align:center;color:var(--t3);font-size:13.5px;}
+.pu-phone{max-width:460px;}
+.pu-card{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px;margin-top:10px;}
+.pu-card .pu-h,.pu-card .pu-sub{margin:0;}
+.pu-big{font:800 18px 'DM Sans',sans-serif;width:100%;padding:18px;border-radius:14px;border:0;background:var(--teal);color:#fff;cursor:pointer;}
+.pu-big:disabled{opacity:.6;}
+.pu-status{margin:0;font-size:14px;color:var(--t2);}
+.pu-fine{margin:0;font-size:12px;color:var(--t3);}
+@media(max-width:760px){.pu-row{grid-template-columns:1fr;}.pu-qrcard{flex-direction:column;text-align:center;}}
 /* One-page profile (owner, 2026-10-25, demo one-page-profile-demo.html "Marissa Kent"): below the hero the
    sections are no longer cards; they flow on the page split by thin rules, set in the demo's type (DM Sans
    headings, small caps labels, pill chips, 3-column credits). Right column = sticky action panel + Links,
@@ -16006,6 +16037,117 @@ try{const g=new URLSearchParams(window.location.search).get("gdirect");if(g==="1
     window.sb.auth.signInWithIdToken({provider:"google",token,nonce}).then(({error})=>{if(error){console.warn("[auth] google id-token sign-in failed:",error.message);fallback();}}).catch(fallback);
   }catch(e){console.warn("[auth] google return failed:",e?.message||e);}
 })();
+
+// ── Upload from your phone (2026-10-26, private test at /phone-upload-test). The desktop mints a one-off,
+//    15-minute token (create_phone_upload_session) and shows it as a QR code; the phone opens
+//    /phone-upload/<token>, needs no login, and posts photos to the phone-upload edge function, which files
+//    them under the token owner's talent-media folder. The desktop polls phone_upload_files (owner-only RLS).
+const PHONE_UPLOAD_FN=(window.SC_CONFIG&&window.SC_CONFIG.SUPABASE_URL||"https://mvqhqbjjvgkftninjcby.supabase.co")+"/functions/v1/phone-upload";
+function _phoneToJpeg(file){
+  // iPhone HEIC becomes JPEG here; big photos are shrunk to 2400px on the long side before upload.
+  return new Promise((resolve,reject)=>{
+    const u=URL.createObjectURL(file);const img=new Image();
+    img.onload=()=>{const k=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement("canvas");
+      c.width=Math.round(img.naturalWidth*k);c.height=Math.round(img.naturalHeight*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(u);c.toBlob(b=>b?resolve(b):reject(new Error("convert")),"image/jpeg",0.9);};
+    img.onerror=()=>{URL.revokeObjectURL(u);reject(new Error("read"));};
+    img.src=u;
+  });
+}
+function PhoneUploadTestPage({session,onNavigate}){
+  const [sess,setSess]=useState(null);
+  const [files,setFiles]=useState([]);
+  const [err,setErr]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [now,setNow]=useState(Date.now());
+  const start=async()=>{
+    setBusy(true);setErr("");setFiles([]);
+    const {data,error}=await window.sb.rpc("create_phone_upload_session");
+    setBusy(false);
+    if(error||!data||!data[0]){setErr("Couldn't create a code. Make sure you're signed in, then try again.");return;}
+    setSess(data[0]);
+  };
+  useEffect(()=>{if(session?.user?.id&&!sess&&!busy)start();},[session?.user?.id]);
+  useEffect(()=>{
+    if(!sess)return;
+    let alive=true;
+    const tick=async()=>{
+      const {data}=await window.sb.from("phone_upload_files").select("id,url,created_at").eq("session_id",sess.session_id).order("created_at",{ascending:true});
+      if(alive&&data)setFiles(data);
+    };
+    tick();const t=setInterval(()=>{tick();setNow(Date.now());},2000);
+    return()=>{alive=false;clearInterval(t);};
+  },[sess?.session_id]);
+  if(!session)return(<div className="page"><div className="card" style={{maxWidth:520,margin:"40px auto",textAlign:"center"}}><h2 style={{marginBottom:8}}>Sign in to test phone uploads</h2><button className="btn-p" onClick={()=>onNavigate("login")}>Sign in</button></div></div>);
+  const link=sess?"https://www.castslate.com/phone-upload/"+sess.token:"";
+  const left=sess?Math.max(0,Math.round((new Date(sess.expires_at).getTime()-now)/1000)):0;
+  const qr=link?"https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=8&color=1A1A2E&data="+encodeURIComponent(link):"";
+  return(<div className="page pu-page">
+    <div className="pu-note">Private test · photos land in your account's media folder, not on your profile yet.</div>
+    <h1 className="pu-h">Photos &amp; headshots</h1>
+    <p className="pu-sub">Add up to 12 photos. Your first photo is your main headshot.</p>
+    <div className="pu-row">
+      <div className="pu-drop"><strong>Drag photos here</strong><span>JPG, PNG or HEIC</span><button className="btn-s" type="button" disabled title="Not part of this test">Upload from computer</button></div>
+      <div className="pu-qrcard">
+        <div className="pu-qr">{qr?<img src={qr} alt="QR code to upload photos from your phone" width="140" height="140"/>:<span>{busy?"Creating…":""}</span>}</div>
+        <div className="pu-qrtxt">
+          <span className="pu-eyebrow">Upload from your phone</span>
+          <p>Scan with your phone's camera, then choose photos. They'll appear below in a few seconds.</p>
+          {sess&&(left>0?<span className="pu-live"><i/>Code works for {Math.floor(left/60)}:{String(left%60).padStart(2,"0")}</span>:<button className="btn-s btn-sm" onClick={start}>Make a new code</button>)}
+          {err&&<span className="pu-err">{err}</span>}
+        </div>
+      </div>
+    </div>
+    <h2 className="pu-h2">Received from your phone <span>{files.length?files.length:""}</span></h2>
+    {files.length?<div className="pu-grid">{files.map(f=><div key={f.id} className="pu-tile"><img src={f.url} alt="Photo from phone"/></div>)}</div>
+      :<div className="pu-empty">Photos you send from your phone show up here.</div>}
+  </div>);
+}
+function PhoneUploadPage(){
+  const token=(window.location.pathname.match(/^\/phone-upload\/([a-f0-9]{64})$/)||[])[1]||"";
+  const [state,setState]=useState("checking"); // checking | ready | expired | invalid
+  const [sent,setSent]=useState([]);
+  const [status,setStatus]=useState("");
+  const [busy,setBusy]=useState(false);
+  const pickRef=useRef(null);
+  useEffect(()=>{(async()=>{
+    try{const r=await fetch(PHONE_UPLOAD_FN+"?token="+token);setState(r.status===200?"ready":r.status===410?"expired":"invalid");}
+    catch(_){setState("invalid");}
+  })();},[token]);
+  const upload=async(list)=>{
+    setBusy(true);let done=0;
+    for(const f of list){
+      setStatus(`Uploading ${done+1} of ${list.length}…`);
+      try{
+        const blob=await _phoneToJpeg(f);
+        const fd=new FormData();fd.append("token",token);fd.append("file",new File([blob],"photo.jpg",{type:"image/jpeg"}));
+        const r=await fetch(PHONE_UPLOAD_FN,{method:"POST",body:fd});const j=await r.json().catch(()=>({}));
+        if(r.status===410){setState("expired");break;}
+        if(!r.ok){setStatus(j.error==="limit"?"You've reached 12 photos for this code.":"One photo couldn't be uploaded. Try again.");continue;}
+        setSent(s=>[...s,j.url]);done++;
+      }catch(_){setStatus("One photo couldn't be read. Try a different photo.");}
+    }
+    if(done)setStatus(done===1?"Sent. Check your computer screen.":`${done} photos sent. Check your computer screen.`);
+    setBusy(false);if(pickRef.current)pickRef.current.value="";
+  };
+  return(<div className="page pu-phone">
+    <div className="pu-card">
+      {state==="checking"&&<p className="pu-sub">Connecting…</p>}
+      {state==="ready"&&<>
+        <span className="pu-eyebrow">Connected to your computer</span>
+        <h1 className="pu-h">Add photos to your profile</h1>
+        <p className="pu-sub">Pick one or more photos. They'll appear on your computer screen right away.</p>
+        <input ref={pickRef} type="file" accept="image/*" multiple hidden onChange={e=>{const l=[...(e.target.files||[])];if(l.length)upload(l);}}/>
+        <button className="pu-big" type="button" disabled={busy} onClick={()=>pickRef.current&&pickRef.current.click()}>{busy?"Uploading…":"Choose photos"}</button>
+        {status&&<p className="pu-status" role="status">{status}</p>}
+        {sent.length>0&&<div className="pu-grid">{sent.map((u,i)=><div key={i} className="pu-tile"><img src={u} alt="Sent photo"/></div>)}</div>}
+        <p className="pu-fine">This link only adds photos to your own account and stops working after 15 minutes.</p>
+      </>}
+      {state==="expired"&&<><h1 className="pu-h">This code has expired</h1><p className="pu-sub">Codes work for 15 minutes. Make a new one on your computer and scan it again.</p></>}
+      {state==="invalid"&&<><h1 className="pu-h">This link doesn't work</h1><p className="pu-sub">Scan the QR code on your computer screen again.</p></>}
+    </div>
+  </div>);
+}
 
 function generatePublicSlug(name){
   return(name||"").toLowerCase().replace(/[^a-z0-9\s]/g,"").trim().replace(/\s+/g,"-").replace(/-+/g,"-").slice(0,50)||"talent";
@@ -55234,6 +55376,8 @@ function urlToPage(){
   if(/^\/casting\//.test(path))return"casting-detail";
   if(urlToLandingKey())return"search";
   if(/^\/talent\//.test(path))return"talent-public";
+  if(/^\/phone-upload\/[a-f0-9]{64}$/.test(path))return"phone-upload";
+  if(path==="/phone-upload-test")return"phone-upload-test";
   if(/^\/news\//.test(path))return"news-article";
   return PATH_PAGE[path]||"home";
 }
@@ -56918,6 +57062,8 @@ function App(){
           <ErrorBoundary label="Talent Profile" onReset={()=>navigate("search")}>
             <TalentProfile talent={viewingProfile} onBack={()=>{window.history.back();}} onNavigate={navigate} session={session} myProfile={myProfile} hideBack/>
           </ErrorBoundary>}
+        {page==="phone-upload"&&<ErrorBoundary label="Phone Upload" onReset={()=>navigate("home")}><PhoneUploadPage/></ErrorBoundary>}
+        {page==="phone-upload-test"&&<ErrorBoundary label="Phone Upload Test" onReset={()=>navigate("home")}><PhoneUploadTestPage session={session} onNavigate={navigate}/></ErrorBoundary>}
         {page==="talent-public"&&viewingTalentSlug&&
           <ErrorBoundary label="Public Profile" onReset={()=>navigate("search")}>
             <PublicTalentProfilePage slug={viewingTalentSlug} onNavigate={navigate} session={session} myProfile={myProfile}/>
