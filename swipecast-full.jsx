@@ -7640,6 +7640,8 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
   // From the submit form's Learn more / Upgrade: slide in like the profile editor does
   // from the dashboard. Read at mount so the class is on the first paint.
   const [slideIn]=useState(()=>{try{if(sessionStorage.getItem('cs_slide_membership')==='1'){sessionStorage.removeItem('cs_slide_membership');return true;}}catch(_){}return false;});
+  // Phone plan picker (owner, 2026-10-27, demo plans-mobile-demo.html B): which row is selected.
+  const [mobPlan,setMobPlan]=useState("yearly");
   // Only show "industry doesn't need a membership" when we KNOW the user is CD/industry.
   // Never gate on a null/loading profile — default to showing talent plans.
   const userType=(myProfile?.user_type||"").toLowerCase();
@@ -7752,6 +7754,49 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
     <div style={{textAlign:"center",marginBottom:16}}>
       <h3 style={{margin:0,fontSize:15,fontWeight:800,color:"var(--t2)",letterSpacing:-0.2}}>Then choose how long you're in.</h3>
     </div>
+    {isMobile?(()=>{
+      // Phones: the three cards stacked into ~1,500px, so here they are tap-to-select rows
+      // (price per month on the right, saving as a chip) with the chosen plan's details and
+      // ONE button underneath. Desktop keeps the three cards below, unchanged.
+      const SERIF="'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif";
+      const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(2);
+      const sub=p=>p.months===12?`$${fmt(p.total)} billed yearly`:p.months>1?`$${fmt(p.total)} every ${p.months} months`:"Billed monthly";
+      const chip=p=>(p.save||"").replace(" a year vs monthly","/yr").replace(" vs monthly","");
+      const sel=MEMBERSHIP_PLANS[mobPlan]||MEMBERSHIP_PLANS.yearly;
+      const excl=PLAN_EXCLUSIVES[sel.key]||[];
+      const CTA={yearly:`Go unlimited — $${sel.monthly.toFixed(2)}/mo`,six_month:"Choose 6 months",monthly:"Start monthly"};
+      const go=()=>{if(session?.user){onPickPlan(sel.key);return;}try{sessionStorage.setItem("sc_pending_plan",sel.key);}catch(_){}onNavigate("login");};
+      return(<div style={{maxWidth:520,margin:"0 auto"}}>
+        <div role="radiogroup" aria-label="Choose your plan" style={{display:"flex",flexDirection:"column",gap:12,paddingTop:8}}>
+          {Object.values(MEMBERSHIP_PLANS).map(p=>{const on=p.key===sel.key;return(
+            <button key={p.key} type="button" role="radio" aria-checked={on} onClick={()=>setMobPlan(p.key)}
+              style={{position:"relative",display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",cursor:"pointer",fontFamily:"inherit",
+                background:"#fff",border:`1.5px solid ${on?INK_DEEP:"#e7e4db"}`,boxShadow:on?`0 0 0 1px ${INK_DEEP}`:"none",borderRadius:14,padding:"15px 14px",color:"var(--t1)",transition:"border-color .2s,box-shadow .2s"}}>
+              {p.key==="yearly"&&<span style={{position:"absolute",top:-10,left:14,fontSize:9.5,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",background:INK_DEEP,color:BRASS_ON_DARK,borderRadius:999,padding:"3px 9px"}}>Best value</span>}
+              <span aria-hidden="true" style={{width:22,height:22,borderRadius:"50%",border:`2px solid ${on?INK_DEEP:"#C9BFAD"}`,flex:"none",display:"grid",placeItems:"center"}}>{on&&<span style={{width:11,height:11,borderRadius:"50%",background:INK_DEEP}}/>}</span>
+              <span style={{minWidth:0}}>
+                <span style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",fontWeight:700,fontSize:15}}>{p.label}{chip(p)&&<span style={{fontSize:11,fontWeight:700,color:"var(--grn)",background:"rgba(46,125,79,.1)",borderRadius:999,padding:"2px 7px"}}>{chip(p)}</span>}</span>
+                <span style={{display:"block",fontSize:12,color:"var(--t3)",marginTop:2}}>{sub(p)}</span>
+              </span>
+              <span style={{marginLeft:"auto",textAlign:"right",flex:"none"}}>
+                <span style={{display:"block",fontFamily:SERIF,fontWeight:600,fontSize:24,lineHeight:1}}>${p.monthly.toFixed(2)}</span>
+                <span style={{display:"block",fontSize:11,color:"var(--t3)",marginTop:2}}>/month</span>
+              </span>
+            </button>);})}
+        </div>
+        <div style={{background:INK_DEEP,color:"#fff",borderRadius:16,padding:"18px 18px",margin:"16px 0 12px"}}>
+          {excl.length>0&&<div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+            <div style={{fontSize:9.5,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:BRASS_ON_DARK}}>{sel.key==="yearly"?"Only on the yearly plan":"Included"}</div>
+            {excl.map(x=>(<div key={x} style={{display:"flex",gap:9,fontSize:13,color:"#e2e1da",lineHeight:1.45}}><span style={{color:BRASS_ON_DARK,fontWeight:700,flex:"none"}}>✦</span>{x}</div>))}
+          </div>}
+          <div style={{fontSize:12,color:"#c9c8c1",lineHeight:1.5}}>{sel.note} Total billed: <strong style={{color:"#fff"}}>${sel.total.toFixed(2)}</strong>{sel.months>1?` for ${sel.months} months`:" today"}</div>
+        </div>
+        <button type="button" className="btn-p" onClick={go}
+          style={{width:"100%",minHeight:50,borderRadius:10,background:INK_DEEP,borderColor:INK_DEEP,color:"#fff",fontSize:15,fontWeight:800}}>
+          {session?.user?(CTA[sel.key]||"Select plan"):"Sign in to subscribe"}
+        </button>
+      </div>);
+    })():
     <div className="grid-3" style={{gap:18,maxWidth:1100,margin:"0 auto"}}>
       {Object.values(MEMBERSHIP_PLANS).map(p=>{
         const featured=p.key==="yearly";
@@ -7792,7 +7837,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
           {planCardButton(p)}
         </div>);
       })}
-    </div>
+    </div>}
     {!session?.user&&<div style={{textAlign:"center",marginTop:28,fontSize:13,color:"var(--t3)"}}>
       No account yet?{" "}<span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("register-talent")}>Create a free account →</span>
     </div>}
