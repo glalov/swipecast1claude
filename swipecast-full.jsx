@@ -4069,6 +4069,10 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
 .b5-pickpill{overflow:hidden;}
 .b5-card.b5-pick{border-color:#D8CEB8;}
+/* "All castings" label after the CastSlate Picks (2026-10-27): same look as the Classes page's "All Classes". */
+.b5-allcast{display:flex;align-items:center;gap:10px;margin-top:16px;}
+.b5-allcast span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);white-space:nowrap;}
+.b5-allcast::after{content:"";flex:1;height:1px;background:var(--bdr);}
 /* Browse Pick card = "M4" (owner pick 2026-10-27): navy tab with cream text and a
    honey star, hanging from a 4px honey line over the story side only (stops at the
    roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
@@ -17737,7 +17741,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map(rawC=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div style={{display:"flex",flexDirection:"column",gap:16}}>{fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick gets a compact bottom-right shadow (owner-approved
                2026-09-26): tight, one direction, no spread — grounded, not a glow. */
@@ -17765,8 +17769,15 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             const isSaved=savedIds.has(c.id);
             const btnBase=pick.rest>0?`See all ${roleCount} roles`:roleCount>1?"Read the full breakdown":"Read the breakdown";
             const btnLabel=(cdn&&!cdn.expired&&cdn.days<=3?"Closing soon · ":"")+btnBase;
-            return(
-            <div key={c.id} className={"b5-card"+(isFeat?" b5-pick":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
+            /* Picks sort first (castingFeaturedRank). Right after the last Pick, a gap and an
+               "All castings" label in the Classes page's "All Classes" style set them apart
+               (owner, 2026-10-27, demo option 1: no label above, the card's Pick tab is enough).
+               Follows the filters automatically, since it only appears when a Pick is in the
+               filtered results and is followed by a regular casting. */
+            const afterPicks=ci>0&&castingIsPick(pageArr[ci-1])&&!isFeat;
+            return(<React.Fragment key={c.id}>
+            {afterPicks&&<div className="b5-allcast" role="separator" aria-label="All castings"><span>All castings</span></div>}
+            <div className={"b5-card"+(isFeat?" b5-pick":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
               onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
@@ -17829,7 +17840,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {pick.rest>0&&<span className="b5-more">+{pick.rest} more {pick.rest===1?"role":"roles"}</span>}
                 </div>}
               </div>
-            </div>);})}</div>
+            </div></React.Fragment>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
             <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:32,flexWrap:"wrap"}}>
               <button className="btn-s btn-sm" disabled={pg===1} onClick={()=>{setPg(p=>Math.max(1,p-1));window.scrollTo(0,0);}} style={{opacity:pg===1?0.4:1}}>{t('search.prev')}</button>
