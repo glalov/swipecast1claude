@@ -3172,6 +3172,8 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .search-bar{display:flex;gap:12px;margin-bottom:32px;}
 .search-bar .input{flex:1;}
 .filter-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}
+/* Browse: search field + filters white like the cards below them (owner, 2026-10-27). background-color only, so the select arrow stays. */
+.page-browse .search-bar .input,.page-browse .filter-row .select{background-color:#FFFFFF;}
 .results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
 .talent-thumb{border-radius:14px;overflow:hidden;background:var(--s1);border:1px solid var(--bdr);cursor:pointer;transition:all .3s;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
 .talent-thumb:hover{border-color:var(--acc);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.08);}
@@ -10308,7 +10310,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
         className={"cls-card-row"+(isFeatured?" cls-featured-glow":"")}
         style={{
           border:isFeatured?"2px solid #E7C98A":"1px solid var(--bdr)",
-          background:"var(--s1)",
+          background:"#FFFFFF", // pure white, same as the Browse casting cards (owner, 2026-10-27)
           boxShadow:isFeatured?undefined:"0 1px 6px rgba(0,0,0,0.05)",
         }}
         onMouseEnter={e=>{if(!isFeatured)e.currentTarget.style.boxShadow="0 6px 28px rgba(0,0,0,0.12)";e.currentTarget.style.transform="translateY(-1px)";}}
