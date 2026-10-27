@@ -7766,7 +7766,9 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
       const excl=PLAN_EXCLUSIVES[sel.key]||[];
       const CTA={yearly:`Go unlimited — $${sel.monthly.toFixed(2)}/mo`,six_month:"Choose 6 months",monthly:"Start monthly"};
       const go=()=>{if(session?.user){onPickPlan(sel.key);return;}try{sessionStorage.setItem("sc_pending_plan",sel.key);}catch(_){}onNavigate("login");};
-      return(<div style={{maxWidth:520,margin:"0 auto"}}>
+      // width:100% — the page is a flex container on phones, so without it the block shrank to
+      // its content and the rows narrowed when the shorter Monthly details were showing.
+      return(<div style={{width:"100%",maxWidth:520,margin:"0 auto",flex:"1 1 100%"}}>
         <div role="radiogroup" aria-label="Choose your plan" style={{display:"flex",flexDirection:"column",gap:12,paddingTop:8}}>
           {Object.values(MEMBERSHIP_PLANS).map(p=>{const on=p.key===sel.key;return(
             <button key={p.key} type="button" role="radio" aria-checked={on} onClick={()=>setMobPlan(p.key)}
