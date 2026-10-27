@@ -4118,7 +4118,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-ghost:hover{background:#1A1A2E;color:#fff;}
 /* Roles column: half-strength tint between the white card and the #F7F5F0 page, so no third hue
    (owner, 2026-10-27, demo "Half-strength"; replaced warm sage, then warm sand, the same evening). */
-.b5-side{border-left:1px solid #EEEAE2;padding:6px 22px;display:flex;flex-direction:column;justify-content:center;background:#FBFAF7;}
+.b5-side{border-left:1px solid #E6E2D9;padding:6px 22px;display:flex;flex-direction:column;justify-content:center;background:#FBFAF7;}
 .b5-side .b5-role+.b5-role{border-top-color:#EEEAE2;}
 .b5-role{display:grid;grid-template-columns:4px minmax(0,1fr);gap:0 12px;padding:10px 0;align-items:center;}
 .b5-role .b5-bar{grid-row:1 / span 2;}
@@ -4185,7 +4185,7 @@ body.sheet-push .b2t-cube{display:none;}
 @media (max-width:900px){
   .b5-grid{grid-template-columns:minmax(0,1fr);}
   .b5-main{padding:18px 18px 12px;}
-  .b5-side{border-left:0;border-top:1px solid #EEEAE2;padding:4px 18px 10px;}
+  .b5-side{border-left:0;border-top:1px solid #E6E2D9;padding:4px 18px 10px;}
   .b5-card.b5-pick::before{right:0;}
   .b5-ptab{padding-left:18px;}
   .b5-card.b5-pick .b5-main{padding-top:42px;}
