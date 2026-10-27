@@ -2666,6 +2666,9 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .tab.active{background:var(--acc);color:#fff;}
 .input{background:var(--s1);border:1px solid var(--bdr);border-radius:8px;padding:10px 14px;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;width:100%;transition:border-color .2s;outline:none;}
 .input:focus{border-color:var(--acc);}
+/* Browser autofill (Chrome/Edge pale blue, Safari yellow) keeps the site's field colours (owner, 2026-10-27,
+   demo autofill-fields-demo.html). The inset shadow repaints the fill; the long transition stops the flash. */
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,textarea:-webkit-autofill,select:-webkit-autofill{-webkit-box-shadow:0 0 0 1000px var(--s1) inset!important;box-shadow:0 0 0 1000px var(--s1) inset!important;-webkit-text-fill-color:var(--t1)!important;caret-color:var(--t1);transition:background-color 9999s ease-out 0s;}
 .input::placeholder{color:var(--t3);}
 .select{appearance:none;background:var(--s1) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E8EA0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--bdr);border-radius:8px;padding:10px 32px 10px 14px;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;outline:none;}
 .select:focus{border-color:var(--acc);}
