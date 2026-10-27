@@ -2401,9 +2401,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @property --gglow-a{syntax:'<angle>';inherits:false;initial-value:0deg;}
 @keyframes gglow{to{--gglow-a:360deg;}}
 .social-btn-dark{position:relative;isolation:isolate;background:transparent;color:#1F1F1F;border:1px solid rgba(0,0,0,.07);padding:0 20px;min-height:52px;border-radius:15px;font-weight:600;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .2s ease;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;letter-spacing:0.1px;}
-.social-btn-dark::before{content:"";position:absolute;inset:-6px -4px;border-radius:20px;z-index:-1;pointer-events:none;filter:blur(16px);opacity:.55;background:conic-gradient(from var(--gglow-a),#4285F4,#34A853,#FBBC05,#EA4335,#4285F4);animation:gglow 8s linear infinite;transition:opacity .25s ease;}
+.social-btn-dark::before{content:"";position:absolute;inset:-6px -4px -1px;border-radius:20px;z-index:-1;pointer-events:none;filter:blur(14px);opacity:.55;background:conic-gradient(from var(--gglow-a),#4285F4,#34A853,#FBBC05,#EA4335,#4285F4);animation:gglow 8s linear infinite;transition:opacity .25s ease;}
 .social-btn-dark::after{content:"";position:absolute;inset:0;border-radius:14px;z-index:-1;pointer-events:none;background:#fff;}
 .social-btn-dark:hover{transform:translateY(-1px);}
+/* Room under the Google button so its hover glow stays off "or ... with email" (owner, 2026-10-26, demo login-buttons-shape-demo.html C). */
+.social-btn-dark{margin-bottom:18px;}
+/* The main button under it (Log In / Create Account / Next) takes the same shape: 52px, radius 15, soft shadow. */
+.btn-p.auth-main{min-height:52px;border-radius:15px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 1px 2px rgba(26,26,46,.18),0 8px 18px -8px rgba(26,26,46,.35);transition:transform .2s ease,box-shadow .2s ease,background .2s ease;}
+.btn-p.auth-main:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 2px 4px rgba(26,26,46,.2),0 12px 24px -10px rgba(26,26,46,.42);}
 .social-btn-dark:hover::before{opacity:.85;}
 .social-btn-dark:focus-visible{outline:2px solid #4285F4;outline-offset:3px;}
 /* G at 24px; one smooth turn on hover (owner, 2026-10-26, demo google-button-F-spin-demo.html option 1). */
@@ -8856,7 +8861,7 @@ function RegisterTalent({onNavigate}){
           <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.location')} <span style={{color:"var(--red)"}}>*</span></label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{CASTING_MARKETS.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
-          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
+          <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
           {/* Agreement under the button, naming both ways in (owner 2026-10-26: same place and wording as the CD form). */}
           <AgreeLine onNavigate={onNavigate} btn={tr('reg.t.next').replace(/\s*→\s*$/,"")}/>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
@@ -9084,7 +9089,7 @@ function RegisterCD({onNavigate}){
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.cd.companyName')}</label><input className="input" placeholder={tr('reg.cd.companyName')} value={f.company_name} onChange={e=>up("company_name",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.cd.role')}</label><select className="select" style={{width:"100%"}} value={f.company_role} onChange={e=>up("company_role",e.target.value)}><option>Casting Director</option><option>Producer</option><option>Director</option><option>Casting Associate</option><option>Talent Manager</option><option>Studio Executive</option></select></div></div>
           <div className="form-group"><label className="label">{tr('reg.cd.location')}</label><input className="input" placeholder="City, State" value={f.location} onChange={e=>up("location",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.cd.website')}</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
-          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
+          <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
           <AgreeLine onNavigate={onNavigate} btn={tr('reg.cd.createAccount')}/>
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div></div>
@@ -9248,7 +9253,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}
       <div className="form-group"><label className="label">{t('login.email')}</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email"/></div>
       {!forgot&&<div className="form-group"><label className="label">{t('login.password')}</label><input className="input" type="password" placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></div>}
       {!forgot&&<div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",marginBottom:20}}><span style={{color:"var(--acc)",fontSize:13,cursor:"pointer"}} onClick={()=>{setForgot(true);setErr("");}}>{t('login.forgotPwd')}</span></div>}
-      <button type="submit" className="btn-p" style={{width:"100%",opacity:(loading||(forgot&&resetCooldown>0))?0.7:1}} disabled={loading||(forgot&&resetCooldown>0)}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?(resetCooldown>0?`Try again in ${resetCooldown}s`:t('login.sendReset')):t('login.logIn'))}</button>
+      <button type="submit" className="btn-p auth-main" style={{width:"100%",opacity:(loading||(forgot&&resetCooldown>0))?0.7:1}} disabled={loading||(forgot&&resetCooldown>0)}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?(resetCooldown>0?`Try again in ${resetCooldown}s`:t('login.sendReset')):t('login.logIn'))}</button>
       {!forgot&&<AgreeLine onNavigate={onNavigate} btn={t('login.logIn')} adult={false}/>}
       {!forgot&&(authNotice||/verify your email/i.test(err))&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8,opacity:(resending||resendCooldown>0)?0.6:1}} disabled={resending||resendCooldown>0} onClick={resendConfirm}>{resending?"Sending…":resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>}
       {resentOk&&<div style={{marginTop:8,textAlign:"center",color:"var(--grn)",fontWeight:600,fontSize:13}}><Ico n="check" s={24}/> New confirmation email sent — check your inbox &amp; spam folder.</div>}
@@ -13039,7 +13044,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
-          <button className="btn-p" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?<>Create Free Account & Apply <Tri/></>:<>Create Free Account <Tri/></>}</button>
+          <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?<>Create Free Account & Apply <Tri/></>:<>Create Free Account <Tri/></>}</button>
           <AgreeLine onNavigate={onNavigate} btn={c?"Create Free Account & Apply":"Create Free Account"}/>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
@@ -13063,7 +13068,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
             <span style={{color:"var(--blu)",cursor:"pointer"}} onClick={()=>onNavigate("login")}>Forgot password?</span>
           </div>
 
-          <button className="btn-p" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":c?<>Log In & Continue to Apply <Tri/></>:<>Log In <Tri/></>}</button>
+          <button className="btn-p auth-main" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":c?<>Log In & Continue to Apply <Tri/></>:<>Log In <Tri/></>}</button>
           <AgreeLine onNavigate={onNavigate} btn={c?"Log In & Continue to Apply":"Log In"} adult={false}/>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to CastSlate? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
