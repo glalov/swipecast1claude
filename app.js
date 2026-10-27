@@ -149,8 +149,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .social-btn-dark:hover{transform:translateY(-1px);}
 .social-btn-dark:hover::before{opacity:.85;}
 .social-btn-dark:focus-visible{outline:2px solid #4285F4;outline-offset:3px;}
-.social-btn-dark>svg{width:20px;height:20px;flex-shrink:0;}
-@media(prefers-reduced-motion:reduce){.social-btn-dark::before{animation:none;}}
+/* G at 24px; one smooth turn on hover (owner, 2026-10-26, demo google-button-F-spin-demo.html option 1). */
+@keyframes gspin{to{transform:rotate(360deg);}}
+.social-btn-dark>svg{width:24px;height:24px;flex-shrink:0;}
+.social-btn-dark:hover>svg{animation:gspin 1.2s ease;}
+@media(prefers-reduced-motion:reduce){.social-btn-dark::before,.social-btn-dark:hover>svg{animation:none;}}
 .cg-page{background:var(--bg);padding-bottom:20px}
 .cg-from{background:#EAF3F0;color:#206557;font-size:13.5px;font-weight:600;text-align:center;padding:10px 16px}
 .cg-main{max-width:1120px;margin:0 auto;padding:28px 24px 36px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
