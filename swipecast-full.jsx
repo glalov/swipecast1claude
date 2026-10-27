@@ -4076,6 +4076,10 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:340px;height:4px;background:#EAC080;pointer-events:none;}
 .b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 6px 26px;border-radius:0 0 8px 0;background:#1A1A2E;color:#FBF1DA;font-size:12.5px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
 .b5-ptab i{color:#EAC080;font-size:12px;line-height:1;}
+/* Dashboard upgrade banner button (C1, 2026-10-27): solid white on the coral gradient. */
+.dash-upg-btn{background:#fff;color:#1A1A2E;transition:background .15s;}
+.dash-upg-btn:hover{background:#FFF1EC;}
+.dash-upg-btn:focus-visible{outline:2px solid #fff;outline-offset:2px;}
 .b5-card.b5-pick .b5-main{padding-top:48px;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
@@ -20839,28 +20843,29 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
            repeat pricing wall), so this banner carries the upgrade ask. ── */}
       {!isPremium&&(
         <div style={{
-          // Material 3 error-container palette (the one the Gmail app uses on its
-          // storage warning): #B3261E error red, #8C1D18 body. The card sits half a
-          // step darker than the M3 error90 token (#F9DEDC → #F8D5D3), and carries
-          // NO shadow — flat, like the Gmail card it is modelled on.
-          background:"#F8D5D3",
+          // "C1" (owner pick 2026-10-27): the landing upgrade stripe's own coral
+          // gradient (ActivateMembershipBanner, #FF7A5C → #F0456E) so landing and
+          // dashboard read as one design. White text, solid white button. Replaces
+          // the Material error-container pink, which read as an error message.
+          background:"linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%)",
           borderRadius:14,padding:"16px 20px",marginBottom:28,
           display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap",
           boxShadow:"none"
         }}>
           <div style={{display:"flex",alignItems:"center",gap:14,minWidth:0}}>
-            <span style={{flexShrink:0,color:"#B3261E"}}><Ico n="bolt" s={24}/></span>
+            <span style={{flexShrink:0,width:42,height:42,borderRadius:12,background:"rgba(255,255,255,0.2)",color:"#FFD77A",display:"grid",placeItems:"center"}}><Ico n="bolt" s={22}/></span>
             <div style={{minWidth:0}}>
-              <div style={{fontWeight:800,fontSize:15.5,color:"#B3261E",marginBottom:2}}>Unlock your full casting potential</div>
-              <div style={{fontSize:13,color:"#8C1D18",lineHeight:1.4}}>
+              <div style={{fontWeight:800,fontSize:15.5,color:"#fff",marginBottom:2}}>Unlock your full casting potential</div>
+              <div style={{fontSize:13,fontWeight:500,color:"#FFF8EB",lineHeight:1.4}}>
                 Go Premium for unlimited submissions, Manager Mode, the agency, casting &amp; school directories, video reels &amp; your QR business card — {PREMIUM_PRICE}.
               </div>
             </div>
           </div>
           <button
+            className="dash-upg-btn"
             onClick={()=>onNavigate("pricing")}
-            style={{background:"transparent",color:"#B3261E",fontWeight:800,fontSize:13,padding:"11px 22px",
-              borderRadius:10,border:"1px solid #E7A9A5",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
+            style={{fontWeight:800,fontSize:13,padding:"11px 22px",
+              borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
               boxShadow:"none",flexShrink:0}}
           >See Premium Plans <Tri/></button>
         </div>
