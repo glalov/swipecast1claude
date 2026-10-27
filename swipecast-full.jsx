@@ -20848,15 +20848,17 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           // dashboard read as one design. White text, solid white button. Replaces
           // the Material error-container pink, which read as an error message.
           background:"linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%)",
-          borderRadius:14,padding:"16px 20px",marginBottom:28,
-          display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap",
+          // Sizes/layout match the C1 demo (castslate-dashboard-banner-restyle-demos.html): one row on
+          // desktop with the button on the right; it only wraps under the text on phones.
+          borderRadius:14,padding:isMobile?"16px 18px":"20px 24px",marginBottom:28,
+          display:"flex",alignItems:"center",justifyContent:"space-between",gap:18,flexWrap:isMobile?"wrap":"nowrap",
           boxShadow:"none"
         }}>
-          <div style={{display:"flex",alignItems:"center",gap:14,minWidth:0}}>
-            <span style={{flexShrink:0,width:42,height:42,borderRadius:12,background:"rgba(255,255,255,0.2)",color:"#FFD77A",display:"grid",placeItems:"center"}}><Ico n="bolt" s={22}/></span>
+          <div style={{display:"flex",alignItems:"center",gap:18,minWidth:0,flex:"1 1 auto"}}>
+            <span style={{flexShrink:0,width:44,height:44,borderRadius:12,background:"rgba(255,255,255,0.2)",color:"#FFD77A",display:"grid",placeItems:"center"}}><Ico n="bolt" s={22}/></span>
             <div style={{minWidth:0}}>
-              <div style={{fontWeight:800,fontSize:15.5,color:"#fff",marginBottom:2}}>Unlock your full casting potential</div>
-              <div style={{fontSize:13,fontWeight:500,color:"#FFF8EB",lineHeight:1.4}}>
+              <div style={{fontWeight:800,fontSize:isMobile?16:18,lineHeight:1.3,color:"#fff",marginBottom:3}}>Unlock your full casting potential</div>
+              <div style={{fontSize:isMobile?13.5:15,fontWeight:500,color:"#FFF8EB",lineHeight:1.45}}>
                 Go Premium for unlimited submissions, Manager Mode, the agency, casting &amp; school directories, video reels &amp; your QR business card — {PREMIUM_PRICE}.
               </div>
             </div>
@@ -20864,8 +20866,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           <button
             className="dash-upg-btn"
             onClick={()=>onNavigate("pricing")}
-            style={{fontWeight:800,fontSize:13,padding:"11px 22px",
-              borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
+            style={{fontWeight:700,fontSize:15,padding:"11px 18px",
+              borderRadius:9,border:"none",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
               boxShadow:"none",flexShrink:0}}
           >See Premium Plans <Tri/></button>
         </div>
