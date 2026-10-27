@@ -7763,7 +7763,6 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
       const sub=p=>p.months===12?`$${fmt(p.total)} billed yearly`:p.months>1?`$${fmt(p.total)} every ${p.months} months`:"Billed monthly";
       const chip=p=>(p.save||"").replace(" a year vs monthly","/yr").replace(" vs monthly","");
       const sel=MEMBERSHIP_PLANS[mobPlan]||MEMBERSHIP_PLANS.yearly;
-      const excl=PLAN_EXCLUSIVES[sel.key]||[];
       const CTA={yearly:`Go unlimited — $${sel.monthly.toFixed(2)}/mo`,six_month:"Choose 6 months",monthly:"Start monthly"};
       const go=()=>{if(session?.user){onPickPlan(sel.key);return;}try{sessionStorage.setItem("sc_pending_plan",sel.key);}catch(_){}onNavigate("login");};
       // width:100% — the page is a flex container on phones, so without it the block shrank to
@@ -7772,9 +7771,10 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
         <div role="radiogroup" aria-label="Choose your plan" style={{display:"flex",flexDirection:"column",gap:12,paddingTop:8}}>
           {Object.values(MEMBERSHIP_PLANS).map(p=>{const on=p.key===sel.key;return(
             <button key={p.key} type="button" role="radio" aria-checked={on} onClick={()=>setMobPlan(p.key)}
-              style={{position:"relative",display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",cursor:"pointer",fontFamily:"inherit",
+              style={{position:"relative",display:"block",width:"100%",textAlign:"left",cursor:"pointer",fontFamily:"inherit",
                 background:"#fff",border:`1.5px solid ${on?INK_DEEP:"#e7e4db"}`,boxShadow:on?`0 0 0 1px ${INK_DEEP}`:"none",borderRadius:14,padding:"15px 14px",color:"var(--t1)",transition:"border-color .2s,box-shadow .2s"}}>
               {p.key==="yearly"&&<span style={{position:"absolute",top:-10,left:14,fontSize:9.5,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",background:INK_DEEP,color:BRASS_ON_DARK,borderRadius:999,padding:"3px 9px"}}>Best value</span>}
+              <span style={{display:"flex",alignItems:"center",gap:12}}>
               <span aria-hidden="true" style={{width:22,height:22,borderRadius:"50%",border:`2px solid ${on?INK_DEEP:"#C9BFAD"}`,flex:"none",display:"grid",placeItems:"center"}}>{on&&<span style={{width:11,height:11,borderRadius:"50%",background:INK_DEEP}}/>}</span>
               <span style={{minWidth:0}}>
                 <span style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",fontWeight:700,fontSize:15}}>{p.label}{chip(p)&&<span style={{fontSize:11,fontWeight:700,color:"var(--grn)",background:"rgba(46,125,79,.1)",borderRadius:999,padding:"2px 7px"}}>{chip(p)}</span>}</span>
@@ -7784,15 +7784,23 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
                 <span style={{display:"block",fontFamily:SERIF,fontWeight:600,fontSize:24,lineHeight:1}}>${p.monthly.toFixed(2)}</span>
                 <span style={{display:"block",fontSize:11,color:"var(--t3)",marginTop:2}}>/month</span>
               </span>
+              </span>
+              {/* Details open inside the chosen row (demo plans-mobile-details-demo.html A), so they
+                  clearly belong to it and the button below is the only dark element. */}
+              <span style={{display:"grid",gridTemplateRows:on?"1fr":"0fr",transition:"grid-template-rows .35s ease"}} aria-hidden={!on}>
+                <span style={{overflow:"hidden",minHeight:0}}>
+                  <span style={{display:"block",borderTop:"1px solid #ECE5D6",marginTop:14,paddingTop:12}}>
+                    {(PLAN_EXCLUSIVES[p.key]||[]).length>0&&<>
+                      <span style={{display:"block",fontSize:9.5,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:BRASS_ON_LIGHT,marginBottom:8}}>{p.key==="yearly"?"Only on the yearly plan":"Included"}</span>
+                      {(PLAN_EXCLUSIVES[p.key]||[]).map(x=>(<span key={x} style={{display:"flex",gap:9,fontSize:13,color:"var(--t2)",lineHeight:1.45,marginBottom:7}}><span style={{color:BRASS_ON_LIGHT,fontWeight:700,flex:"none"}}>✦</span>{x}</span>))}
+                    </>}
+                    <span style={{display:"block",fontSize:12,color:"var(--t3)",lineHeight:1.5}}>{p.note} Total billed: <strong style={{color:"var(--t1)"}}>${p.total.toFixed(2)}</strong>{p.months>1?` for ${p.months} months`:" today"}</span>
+                  </span>
+                </span>
+              </span>
             </button>);})}
         </div>
-        <div style={{background:INK_DEEP,color:"#fff",borderRadius:16,padding:"18px 18px",margin:"16px 0 12px"}}>
-          {excl.length>0&&<div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
-            <div style={{fontSize:9.5,fontWeight:800,letterSpacing:1.6,textTransform:"uppercase",color:BRASS_ON_DARK}}>{sel.key==="yearly"?"Only on the yearly plan":"Included"}</div>
-            {excl.map(x=>(<div key={x} style={{display:"flex",gap:9,fontSize:13,color:"#e2e1da",lineHeight:1.45}}><span style={{color:BRASS_ON_DARK,fontWeight:700,flex:"none"}}>✦</span>{x}</div>))}
-          </div>}
-          <div style={{fontSize:12,color:"#c9c8c1",lineHeight:1.5}}>{sel.note} Total billed: <strong style={{color:"#fff"}}>${sel.total.toFixed(2)}</strong>{sel.months>1?` for ${sel.months} months`:" today"}</div>
-        </div>
+        <div style={{height:14}}/>
         <button type="button" className="btn-p" onClick={go}
           style={{width:"100%",minHeight:50,borderRadius:10,background:INK_DEEP,borderColor:INK_DEEP,color:"#fff",fontSize:15,fontWeight:800}}>
           {session?.user?(CTA[sel.key]||"Select plan"):"Sign in to subscribe"}
