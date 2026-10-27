@@ -4069,6 +4069,14 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
 .b5-pickpill{overflow:hidden;}
 .b5-card.b5-pick{border-color:#D8CEB8;}
+/* Browse Pick card = "M4" (owner pick 2026-10-27): navy tab with cream text and a
+   honey star, hanging from a 4px honey line over the story side only (stops at the
+   roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
+   gate and dashboard keep the PickBadge chip. */
+.b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:340px;height:4px;background:#EAC080;pointer-events:none;}
+.b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 6px 26px;border-radius:0 0 8px 0;background:#1A1A2E;color:#FBF1DA;font-size:12.5px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
+.b5-ptab i{color:#EAC080;font-size:12px;line-height:1;}
+.b5-card.b5-pick .b5-main{padding-top:48px;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;}
@@ -4152,6 +4160,9 @@ body.sheet-push .b2t-cube{display:none;}
   .b5-grid{grid-template-columns:minmax(0,1fr);}
   .b5-main{padding:18px 18px 12px;}
   .b5-side{border-left:0;border-top:1px solid var(--bdr);padding:4px 18px 10px;}
+  .b5-card.b5-pick::before{right:0;}
+  .b5-ptab{padding-left:18px;}
+  .b5-card.b5-pick .b5-main{padding-top:42px;}
 }
 
 .btn-teal.cc-cta{font-size:15px;padding:13px 22px;border-radius:10px;}
@@ -17703,7 +17714,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={"b5-grid"+(isArchived?" cs-archived-dim":"")}>
                 <div className="b5-main">
-                  {isFeat&&<div><PickBadge/></div>}
+                  {isFeat&&<span className="b5-ptab"><i className="ti ti-star-filled" aria-hidden="true"/>CastSlate Pick</span>}
                   <div className="b5-head">
                     {/* The title opens the sheet at every width (the card-level
                         click is off on phones so a scroll tap can't open one). */}
