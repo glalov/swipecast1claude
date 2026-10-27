@@ -3898,7 +3898,7 @@ body.sheet-push .b2t-cube{display:none;}
    submitting" panel; .cfoot-more is the signed-in "more roles" strip. Shares
    the page's card surface so it reads as the last row of the casting, not as
    an advert bolted to the bottom. */
-.cfoot{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;margin-bottom:32px;}
+.cfoot{background:#FFFFFF;border:1px solid var(--bdr);border-radius:12px;margin-bottom:32px;}
 .cfoot-join{padding:30px 32px;text-align:center;}
 .cfoot-join h3{font-size:21px;font-weight:700;letter-spacing:-.4px;margin:0 0 7px;}
 .cfoot-join .cfoot-sub{color:var(--t2);font-size:13.5px;line-height:1.65;margin:0 auto 22px;max-width:52ch;}
@@ -3925,7 +3925,7 @@ body.sheet-push .b2t-cube{display:none;}
 .cfoot-all{background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;color:var(--teal-dk);}
 .cfoot-all:hover{text-decoration:underline;text-underline-offset:.25em;}
 .cfoot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;}
-.cfoot-c{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:15px 16px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
+.cfoot-c{background:#FFFFFF;border:1px solid var(--bdr);border-radius:11px;padding:15px 16px;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
 .cfoot-c:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 6px 18px -10px rgba(26,26,46,.3);}
 .cfoot-c:focus-visible{outline:2px solid var(--teal);outline-offset:3px;}
 .cfoot-c-mt{display:flex;gap:7px;align-items:center;margin-bottom:9px;flex-wrap:wrap;}
@@ -4259,7 +4259,8 @@ body.fbsp-open #castoria-root{display:none!important;}
 .cd-deadline{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
   letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
 .cd-deadline.soon{color:#A8341C;}
-.cd-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+/* Casting page boxes white to match the white Browse cards (owner, 2026-10-27); the .cd-side apply panel stays beige. */
+.cd-card{background:#FFFFFF;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
   box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:24px;}
 .cd-grid{display:grid;grid-template-columns:1fr 288px;}
 .cd-grid.solo{grid-template-columns:1fr;}   /* no role picker: closed castings */
@@ -5493,8 +5494,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* One ledger, not six floating cards: the roles belong to a single casting, so
    they are ruled apart inside one bordered sheet rather than each carrying its
    own card outline. */
-.rl-list{border:1px solid var(--bdr);border-radius:12px;background:var(--s1);overflow:hidden;}
-.rl-row{background:var(--s1);position:relative;border-bottom:1px solid #EDE6D8;transition:background .3s ease;}
+.rl-list{border:1px solid var(--bdr);border-radius:12px;background:#FFFFFF;overflow:hidden;}
+.rl-row{background:#FFFFFF;position:relative;border-bottom:1px solid #EDE6D8;transition:background .3s ease;}
 .rl-row:last-child{border-bottom:none;}
 /* Teal spine. Grows from the middle of the row outward as it opens, so the
    motion reads as the row unfolding rather than as content being appended. */
@@ -5504,7 +5505,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 /* The whole header is the hit target, not a small chevron: on a phone the
    chevron alone is a 30px tap area inside a 120px row, which is exactly the
    miss everyone makes. Apply stops the click so the two never fight. */
-.rl-top{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:var(--s1);transition:background .25s;}
+.rl-top{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:#FFFFFF;transition:background .25s;}
 .rl-top.rl-clickable{cursor:pointer;}
 .rl-top.rl-clickable:hover{background:#FBF8F1;}
 .rl-row.rl-open .rl-top{background:#FBF8F1;}
