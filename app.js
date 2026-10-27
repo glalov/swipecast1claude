@@ -1804,7 +1804,8 @@ body.sheet-push .b2t-cube{display:none;}
    gold pick pill appear on CastSlate picks only. Own class names so the
    homepage Featured cards (.fcs-card-v2, cc-*) are untouched. No backticks
    or dollar-brace in this CSS: it lives inside a JS template literal. */
-.b5-card{position:relative;overflow:hidden;border-radius:14px;background:var(--s1);border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
+/* Pure white so each card stands off the cream page (owner, 2026-10-27, demo card-white option 1). */
+.b5-card{position:relative;overflow:hidden;border-radius:14px;background:#FFFFFF;border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
 .b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;}
 .b5-main{padding:24px 26px;display:grid;gap:10px;align-content:start;min-width:0;}
 .cs-pick{display:inline-flex;align-items:center;gap:7px;background:#FBF1DA;color:#5A3E0C;font-family:inherit;font-size:13px;line-height:16.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 20px 2px 18px;border:1px solid #E8D3A6;border-radius:999px;white-space:nowrap;}
