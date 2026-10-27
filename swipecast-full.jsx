@@ -28310,7 +28310,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <section ref={homeCtaRef} className="home-cta home-cta-construct">
       <div className="home-cta-inner">
         <span className="home-cta-blob b1"/><span className="home-cta-blob b2"/>
-        <p className="home-cta-eyebrow"><span className="dot"/>Free to submit</p>
+        <p className="home-cta-eyebrow"><span className="dot"/>For actors</p>
         <h2>It's time to get seen.</h2>
         <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Premium plans start at $10.75/mo when you want more.</p>
         <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
