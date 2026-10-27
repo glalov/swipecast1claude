@@ -4074,6 +4074,17 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-card.b5-pick{border-color:#D8CEB8;}
 /* "All castings" label after the CastSlate Picks (2026-10-27): same look as the Classes page's "All Classes". */
 .b5-allcast{display:flex;align-items:center;gap:10px;margin-top:16px;}
+.b5-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:32px;flex-wrap:wrap;}
+.b5-pg{min-width:38px;height:38px;padding:0 6px;border-radius:8px;border:1px solid var(--bdr);background:#FFFFFF;color:var(--t1);font:600 13.5px 'DM Sans',sans-serif;cursor:pointer;font-variant-numeric:tabular-nums;transition:border-color .15s;}
+.b5-pg:hover{border-color:#1A1A2E;}
+.b5-pg.on{background:#1A1A2E;border-color:#1A1A2E;color:#fff;cursor:default;}
+.b5-pg-gap{min-width:22px;text-align:center;color:var(--t3);font-weight:700;letter-spacing:1px;}
+.b5-pg-step{height:38px;padding:0 16px;border-radius:8px;border:1.25px solid #1A1A2E;background:#FFFFFF;color:#1A1A2E;font:700 13.5px 'DM Sans',sans-serif;cursor:pointer;transition:background .15s,color .15s;}
+.b5-pg-step:hover:not(:disabled){background:#1A1A2E;color:#fff;}
+.b5-pg-step:disabled{border-color:var(--bdr);color:var(--t3);opacity:.6;cursor:default;}
+.b5-pg:focus-visible,.b5-pg-step:focus-visible{outline:2px solid #1A1A2E;outline-offset:2px;}
+.b5-pg-short{display:none;}
+@media(max-width:480px){.b5-pg.nb{display:none;}.b5-pg-long{display:none;}.b5-pg-short{display:inline;}.b5-pg-step{padding:0;width:44px;font-size:16px;}.b5-pager{gap:5px;}}
 .b5-allcast span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);white-space:nowrap;}
 .b5-allcast::after{content:"";flex:1;height:1px;background:var(--bdr);}
 /* Browse Pick card = "M4" (owner pick 2026-10-27): navy tab with cream text and a
@@ -17844,12 +17855,25 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 </div>}
               </div>
             </div></React.Fragment>);})}</div>
-          {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);const pages=[];for(let i=1;i<=tp;i++)pages.push(i);return(
-            <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:32,flexWrap:"wrap"}}>
-              <button className="btn-s btn-sm" disabled={pg===1} onClick={()=>{setPg(p=>Math.max(1,p-1));window.scrollTo(0,0);}} style={{opacity:pg===1?0.4:1}}>{t('search.prev')}</button>
-              {pages.map(n=><button key={n} onClick={()=>{setPg(n);window.scrollTo(0,0);}} style={{minWidth:36,height:36,borderRadius:8,border:pg===n?"1px solid var(--acc)":"1px solid var(--bdr)",background:pg===n?"var(--acc)":"var(--s1)",color:pg===n?"#fff":"var(--t1)",fontWeight:600,fontSize:13,cursor:"pointer"}}>{n}</button>)}
-              <button className="btn-s btn-sm" disabled={pg===tp} onClick={()=>{setPg(p=>Math.min(tp,p+1));window.scrollTo(0,0);}} style={{opacity:pg===tp?0.4:1}}>{t('search.nextPage')}</button>
-            </div>);})()}
+          {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
+            /* Short pagination (owner, 2026-10-27): first, last and the pages around the current one,
+               with "…" gaps, instead of all 18 numbers in a row (wrapped into several rows on phones).
+               White buttons to match the white cards; current page stays navy; Prev/Next outlined. */
+            let win;if(tp<=7)win=Array.from({length:tp},(_,k)=>k+1);
+            else if(pg<=3)win=[1,2,3,4,"…",tp];
+            else if(pg>=tp-2)win=[1,"…",tp-3,tp-2,tp-1,tp];
+            else win=[1,"…",pg-1,pg,pg+1,"…",tp];
+            const go=n=>{setPg(n);window.scrollTo(0,0);};
+            // Phones keep only first, last, the current page and one neighbour at the ends; the
+            // rest get .nb and hide under 480px so the row (with arrow-only Prev/Next) fits one line.
+            const keep=n=>n===1||n===tp||n===pg||(pg===1&&n===2)||(pg===tp&&n===tp-1);
+            return(
+            <nav className="b5-pager" aria-label="Pages">
+              <button type="button" className="b5-pg-step" aria-label="Previous page" disabled={pg===1} onClick={()=>go(Math.max(1,pg-1))}><span className="b5-pg-long">{t('search.prev')}</span><span className="b5-pg-short" aria-hidden="true">←</span></button>
+              {win.map((n,k)=>n==="…"?<span key={"gap"+k} className="b5-pg-gap" aria-hidden="true">…</span>:
+                <button type="button" key={n} className={"b5-pg"+(pg===n?" on":"")+(keep(n)?"":" nb")} aria-current={pg===n?"page":undefined} aria-label={"Page "+n} onClick={()=>go(n)}>{n}</button>)}
+              <button type="button" className="b5-pg-step" aria-label="Next page" disabled={pg===tp} onClick={()=>go(Math.min(tp,pg+1))}><span className="b5-pg-long">{t('search.nextPage')}</span><span className="b5-pg-short" aria-hidden="true">→</span></button>
+            </nav>);})()}
         </>}
     </>
     {landingKey==="new-york"&&<NycGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
