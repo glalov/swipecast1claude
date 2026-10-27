@@ -4116,9 +4116,9 @@ body.sheet-push .b2t-cube{display:none;}
    the breakdown button is the calm secondary step, sized near Apply. */
 .b5-ghost{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;background:transparent;color:#1A1A2E;border:1.25px solid #1A1A2E;border-radius:8px;padding:6px 13px;cursor:pointer;}
 .b5-ghost:hover{background:#1A1A2E;color:#fff;}
-/* Roles column: one warm-sage panel (owner, 2026-10-27, demo "Sage · warm"); echoes the teal Apply buttons. */
-.b5-side{border-left:1px solid #E2E8DC;padding:6px 22px;display:flex;flex-direction:column;justify-content:center;background:#F4F6F0;}
-.b5-side .b5-role+.b5-role{border-top-color:#E2E8DC;}
+/* Roles column: one light warm-sand panel (owner, 2026-10-27, demo "Warm sand · light"; replaced warm sage the same day). */
+.b5-side{border-left:1px solid #EEE5D5;padding:6px 22px;display:flex;flex-direction:column;justify-content:center;background:#FBF6EE;}
+.b5-side .b5-role+.b5-role{border-top-color:#EEE5D5;}
 .b5-role{display:grid;grid-template-columns:4px minmax(0,1fr);gap:0 12px;padding:10px 0;align-items:center;}
 .b5-role .b5-bar{grid-row:1 / span 2;}
 .b5-role+.b5-role{border-top:1px solid var(--bdr);}
@@ -4184,7 +4184,7 @@ body.sheet-push .b2t-cube{display:none;}
 @media (max-width:900px){
   .b5-grid{grid-template-columns:minmax(0,1fr);}
   .b5-main{padding:18px 18px 12px;}
-  .b5-side{border-left:0;border-top:1px solid #E2E8DC;padding:4px 18px 10px;}
+  .b5-side{border-left:0;border-top:1px solid #EEE5D5;padding:4px 18px 10px;}
   .b5-card.b5-pick::before{right:0;}
   .b5-ptab{padding-left:18px;}
   .b5-card.b5-pick .b5-main{padding-top:42px;}
