@@ -8840,10 +8840,10 @@ function RegisterTalent({onNavigate}){
         <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
-          <div className="eye">Free account for actors</div>
-          <h3>Start getting<br/>seen today.</h3>
+          <div className="eye">For actors</div>
+          <h3>Get seen.<br/>Get booked.</h3>
           <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-            {["Free actor account","Submit to casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+            {["Castings posted by casting directors","Every submission reviewed individually","Headshots, reel and résumé in one profile"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
         </div>
       </div>
@@ -9227,9 +9227,9 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}
       <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
       <div className="login-hero-overlay"/>
       <div className="login-hero-copy">
-        <div className="eye">Free to submit</div>
+        <div className="eye">For actors</div>
         <h3>Get seen.<br/>Get booked.</h3>
-        <p>Join thousands of actors getting reviewed one profile at a time.</p>
+        <p>Join over a thousand actors getting reviewed one profile at a time.</p>
       </div>
     </div>
     <div className="login-form-side"><form onSubmit={submit} style={{maxWidth:420,width:"100%"}}>
@@ -13080,8 +13080,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
         <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
-          <div className="eye">Free account for actors</div>
-          <h3>{c?"You're one step away.":<>Start getting<br/>seen today.</>}</h3>
+          <div className="eye">For actors</div>
+          <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
           {c?(
             <div style={{background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"14px 16px",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
               <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#FFD79A",marginBottom:6}}>You're applying to</div>
@@ -13091,7 +13091,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
             </div>
           ):(
             <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-              {["Free actor account","Submit to casting calls","Reviewed one profile at a time"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+              {["Castings posted by casting directors","Every submission reviewed individually","Headshots, reel and résumé in one profile"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
             </div>
           )}
         </div>
