@@ -143,15 +143,15 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    glow sits behind the face but never behind the card. Within Google's branding rules (white button, untouched G). */
 @property --gglow-a{syntax:'<angle>';inherits:false;initial-value:0deg;}
 @keyframes gglow{to{--gglow-a:360deg;}}
-.social-btn-dark{position:relative;isolation:isolate;background:transparent;color:#1F1F1F;border:1px solid rgba(0,0,0,.07);padding:0 20px;min-height:52px;border-radius:15px;font-weight:600;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .2s ease;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;letter-spacing:0.1px;}
-.social-btn-dark::before{content:"";position:absolute;inset:-6px -4px -1px;border-radius:20px;z-index:-1;pointer-events:none;filter:blur(14px);opacity:.55;background:conic-gradient(from var(--gglow-a),#4285F4,#34A853,#FBBC05,#EA4335,#4285F4);animation:gglow 8s linear infinite;transition:opacity .25s ease;}
-.social-btn-dark::after{content:"";position:absolute;inset:0;border-radius:14px;z-index:-1;pointer-events:none;background:#fff;}
+.social-btn-dark{position:relative;isolation:isolate;background:transparent;color:#1F1F1F;border:1px solid rgba(0,0,0,.07);padding:0 20px;min-height:46px;border-radius:8px;font-weight:600;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .2s ease;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;letter-spacing:0.1px;}
+.social-btn-dark::before{content:"";position:absolute;inset:-6px -4px -1px;border-radius:12px;z-index:-1;pointer-events:none;filter:blur(14px);opacity:.55;background:conic-gradient(from var(--gglow-a),#4285F4,#34A853,#FBBC05,#EA4335,#4285F4);animation:gglow 8s linear infinite;transition:opacity .25s ease;}
+.social-btn-dark::after{content:"";position:absolute;inset:0;border-radius:7px;z-index:-1;pointer-events:none;background:#fff;}
 .social-btn-dark:hover{transform:translateY(-1px);}
 /* Room under the Google button so its hover glow stays off "or ... with email" (owner, 2026-10-26, demo login-buttons-shape-demo.html C). */
 .social-btn-dark{margin-bottom:18px;}
-/* The main button under it (Log In / Create Account / Next) takes the same shape: 52px, radius 15, soft shadow. */
-.btn-p.auth-main{min-height:52px;border-radius:15px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 1px 2px rgba(26,26,46,.18),0 8px 18px -8px rgba(26,26,46,.35);transition:transform .2s ease,box-shadow .2s ease,background .2s ease;}
-.btn-p.auth-main:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 2px 4px rgba(26,26,46,.2),0 12px 24px -10px rgba(26,26,46,.42);}
+/* Both buttons take the fields' shape: 46px, 8px corners; the main one is flat, no shadow
+   (owner, 2026-10-26, demo login-buttons-square-demo.html B). */
+.btn-p.auth-main{min-height:46px;border-radius:8px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:none;}
 .social-btn-dark:hover::before{opacity:.85;}
 .social-btn-dark:focus-visible{outline:2px solid #4285F4;outline-offset:3px;}
 /* G at 24px; one smooth turn on hover (owner, 2026-10-26, demo google-button-F-spin-demo.html option 1). */
