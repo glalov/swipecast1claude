@@ -17425,7 +17425,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // CastingDetailPage / CastingGatePage so apply + login gating are unchanged.
   const [sheetCasting,setSheetCasting]=useState(null);
   const [sheetPick,setSheetPick]=useState(null); // signed-out landing gate: role picked in the sheet
-  useEffect(()=>{setSheetPick(null);if(sheetCasting&&!isLoggedIn&&sheetCasting.featured!==true&&onPendingApply)onPendingApply({casting:sheetCasting,role:null});},[sheetCasting&&sheetCasting.id,isLoggedIn]);
+  useEffect(()=>{const rs=sheetCasting&&Array.isArray(sheetCasting.roles)?sheetCasting.roles:[];const only=rs.length===1?rs[0]:null;setSheetPick(only);if(sheetCasting&&!isLoggedIn&&sheetCasting.featured!==true&&onPendingApply)onPendingApply({casting:sheetCasting,role:only});},[sheetCasting&&sheetCasting.id,isLoggedIn]);
   const [sheetClosing,setSheetClosing]=useState(false);
   const sheetScrollY=useRef(0);
   // True when openSheet pushed a /casting/<slug> history entry that closeSheet
