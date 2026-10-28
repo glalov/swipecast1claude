@@ -17398,7 +17398,7 @@ function urlToLandingKey(){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
-function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,onRequireLogin,castingsVersion=0,session,myProfile,active=true,restoreCasting=null,onRestoreConsumed}){
+function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,onRequireLogin,castingsVersion=0,session,myProfile,active=true,restoreCasting=null,onRestoreConsumed,onPendingApply,onAuthComplete}){
   const t=useT();
   const {lang}=useLanguage();
   // openNycLanding() swaps the URL to /casting-calls/new-york; re-render so the
@@ -17422,6 +17422,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // Slide-in casting detail sheet (Browse only). Reuses the existing
   // CastingDetailPage / CastingGatePage so apply + login gating are unchanged.
   const [sheetCasting,setSheetCasting]=useState(null);
+  const [sheetPick,setSheetPick]=useState(null); // signed-out landing gate: role picked in the sheet
+  useEffect(()=>{setSheetPick(null);if(sheetCasting&&!isLoggedIn&&sheetCasting.featured!==true&&onPendingApply)onPendingApply({casting:sheetCasting,role:null});},[sheetCasting&&sheetCasting.id,isLoggedIn]);
   const [sheetClosing,setSheetClosing]=useState(false);
   const sheetScrollY=useRef(0);
   // True when openSheet pushed a /casting/<slug> history entry that closeSheet
@@ -17942,7 +17944,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         </div>
         {(isLoggedIn||sheetCasting.featured===true)
           ? <CastingDetailPage key={sheetCasting.id} casting={sheetCasting} onBack={closeSheet} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} isLoggedIn={isLoggedIn} onRequireAuth={onRequireAuth} myProfile={myProfile} session={session} inSheet={true} autoApplyRole={sheetRole} onAutoApplyConsumed={()=>setSheetRole(null)} focusRole={sheetFocus} onOpenCasting={(sc)=>{const full=allCastings.find(x=>String(x.id)===String(sc.id));if(full){openSheet(full,null,{replace:true});}else{setSheetCasting(null);onNavigate("search");}}}/>
-          : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{const c=sheetCasting;setSheetCasting(null);if(onRequireAuth)onRequireAuth(c,null);else onNavigate("auth-gate");}} onLogin={()=>{const c=sheetCasting;setSheetCasting(null);if(onRequireLogin)onRequireLogin(c);else onNavigate("login");}} onBack={closeSheet}/>}
+          : onPendingApply&&onAuthComplete
+            // Signed out (2026-10-28): the same landing gate as a direct /casting link — teaser, role picker, signup that applies.
+            ? <CastingLandingGate key={sheetCasting.id} casting={sheetCasting} pending={{casting:sheetCasting,role:sheetPick}} onPickRole={(r)=>{setSheetPick(r);onPendingApply({casting:sheetCasting,role:r});}} onComplete={()=>{setSheetCasting(null);onAuthComplete();}} onNavigate={(p)=>{setSheetCasting(null);onNavigate(p);}} onBack={closeSheet}/>
+            : <CastingGatePage casting={sheetCasting} onCreateProfile={()=>{const c=sheetCasting;setSheetCasting(null);if(onRequireAuth)onRequireAuth(c,null);else onNavigate("auth-gate");}} onLogin={()=>{const c=sheetCasting;setSheetCasting(null);if(onRequireLogin)onRequireLogin(c);else onNavigate("login");}} onBack={closeSheet}/>}
       </div>
     </>,document.body)}
     <Footer onNavigate={onNavigate} backToTop/></div>);
@@ -57867,7 +57872,7 @@ function App(){
         {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
-              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onRequireLogin={requireLogin} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"} restoreCasting={sheetRestoreCasting} onRestoreConsumed={()=>setSheetRestoreCasting(null)}/>
+              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onRequireLogin={requireLogin} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"} restoreCasting={sheetRestoreCasting} onRestoreConsumed={()=>setSheetRestoreCasting(null)} onPendingApply={setPendingApply} onAuthComplete={completeAuth}/>
             </ErrorBoundary>
           </div>}
         {/* Full casting detail renders ONLY for logged-in users with auth resolved.
