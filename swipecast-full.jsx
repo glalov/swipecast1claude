@@ -12998,9 +12998,10 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
   const r=pending?.role;
   // Signed-out casting page (owner, 2026-10-28, join card v1): once a role is
   // picked the form names it and its pay, so signing up reads as applying.
-  const rFirst=r&&r.name?String(r.name).trim().split(/\s+/)[0]:"";
+  // Full role name, never a first word: "Lifestyle Model" printed as "Apply to Lifestyle".
+  const rName=r&&r.name?String(r.name).trim():"";
   const rPay=r?fmtTopRate(roleTopRate([r])):"";
-  const signupBtn=embedded&&r?`Apply to ${rFirst} free`:c?"Create Free Account & Apply":"Create Free Account";
+  const signupBtn=embedded&&r?(rName&&rName.length<=24?`Apply for ${rName} free`:"Apply for this role free"):c?"Create Free Account & Apply":"Create Free Account";
 
   const resendSignupEmail=async()=>{
     setResentOk(false);setResendErr("");
