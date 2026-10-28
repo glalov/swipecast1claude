@@ -2443,6 +2443,15 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-card{background:#fff;border:1px solid var(--bdr);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(36,31,25,.07)}
 .cg-form h2{font-size:24px!important;letter-spacing:-.6px!important;line-height:1.15}
 .cg-form .tabs{margin-bottom:18px!important}
+.cg-pick{margin:0 0 20px;padding-bottom:18px;border-bottom:1px solid var(--bdr)}
+.cg-pick-l{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.cg-pick-chips{display:flex;flex-wrap:wrap;gap:8px}
+.cg-pchip{font:inherit;font-size:13.5px;font-weight:700;color:var(--t1);background:#fff;border:1.25px solid #CFE0DC;border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:baseline;gap:6px;max-width:100%;text-align:left}
+.cg-pchip span{font-size:12px;font-weight:600;color:var(--t3)}
+.cg-pchip:hover{border-color:#2A8472}
+.cg-pchip.on{background:#2A8472;border-color:#2A8472;color:#fff}
+.cg-pchip.on span{color:rgba(255,255,255,.8)}
+.cg-rpay{color:#206557;white-space:nowrap}
 .cg-rolepill{display:inline-block;background:#EAF3F0;color:#206557;font-size:12.5px;border-radius:999px;padding:5px 12px;margin-bottom:12px}
 .cg-done .page,.cg-done{max-width:100%}
 .cg-how{max-width:1120px;margin:0 auto;padding:0 24px 40px}
@@ -12987,6 +12996,11 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
   const [resendErr,setResendErr]=useState("");
   const c=pending?.casting;
   const r=pending?.role;
+  // Signed-out casting page (owner, 2026-10-28, join card v1): once a role is
+  // picked the form names it and its pay, so signing up reads as applying.
+  const rFirst=r&&r.name?String(r.name).trim().split(/\s+/)[0]:"";
+  const rPay=r?fmtTopRate(roleTopRate([r])):"";
+  const signupBtn=embedded&&r?`Apply to ${rFirst} free`:c?"Create Free Account & Apply":"Create Free Account";
 
   const resendSignupEmail=async()=>{
     setResentOk(false);setResendErr("");
@@ -13128,14 +13142,13 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
     {!embedded&&<Footer onNavigate={onNavigate}/>}</div>);
 
   const formBody=(<>
-        {embedded&&r&&<div className="cg-rolepill">Applying for <b>{r.name}</b></div>}
         <div className="tabs" style={{marginBottom:24}}>
           <button className={`tab ${mode==="signup"?"active":""}`} onClick={()=>{setMode("signup");setErr("");}}>Sign Up</button>
           <button className={`tab ${mode==="login"?"active":""}`} onClick={()=>{setMode("login");setErr("");}}>Log In</button>
         </div>
 
         {mode==="signup"?<>
-          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:embedded&&c?8:28}}>{embedded&&c?<>Apply to {c.title} free</>:"Create your free actor account"}</h2>
+          <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:embedded&&c?8:28}}>{embedded&&r?<>Apply for {r.name}{rPay?<> <span className="cg-rpay">— {rPay}</span></>:null}</>:embedded&&c?<>Apply to {c.title} free</>:"Create your free actor account"}</h2>
           {embedded&&c&&<p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>Make your free actor account and your application goes straight to this casting.</p>}
 
 
@@ -13156,8 +13169,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
-          <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":c?<>Create Free Account & Apply <Tri/></>:<>Create Free Account <Tri/></>}</button>
-          <AgreeLine onNavigate={onNavigate} btn={c?"Create Free Account & Apply":"Create Free Account"}/>
+          <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":<>{signupBtn} <Tri/></>}</button>
+          <AgreeLine onNavigate={onNavigate} btn={signupBtn}/>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </>:<>
@@ -16676,7 +16689,7 @@ function castingTypeLabel(t){if(!t)return"";if(t==="Commercials & Branded Conten
 // name/type/gender/age), the real AuthGate signup form on the right, so signing
 // up and applying is one step. Role descriptions, sides and how-to-submit stay
 // behind signup. Hidden until approved: CASTLAND_LIVE, or ?castland=1 per browser.
-const CASTLAND_LIVE=false;
+const CASTLAND_LIVE=true; // on for everyone 2026-10-28 (owner chose join card v1)
 try{const g=new URLSearchParams(window.location.search).get("castland");if(g==="1")localStorage.setItem("cs_castland","1");if(g==="0")localStorage.removeItem("cs_castland");}catch(_){}
 function castLandOn(){if(CASTLAND_LIVE)return true;try{return localStorage.getItem("cs_castland")==="1";}catch(_){return false;}}
 // Where a visitor came from, from the link itself (?utm_source=craigslist) —
@@ -16721,6 +16734,11 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
         </div>
       </div>
       <div className="cg-side" ref={formRef}><div className="cg-card">
+        {roles.length>1&&<div className="cg-pick">
+          <div className="cg-pick-l">Which role are you going for?</div>
+          <div className="cg-pick-chips">{roles.map((r,i)=>{const on=!!(pending&&pending.role&&(pending.role.id!=null?pending.role.id===r.id:pending.role.name===r.name));
+            return <button key={r.id||i} type="button" className={"cg-pchip"+(on?" on":"")} aria-pressed={on} onClick={()=>onPickRole(r)}>{r.name}{r.type?<span>{r.type}</span>:null}</button>;})}</div>
+        </div>}
         <AuthGate embedded pending={pending} onComplete={onComplete} onNavigate={onNavigate}/>
       </div></div>
     </div>
