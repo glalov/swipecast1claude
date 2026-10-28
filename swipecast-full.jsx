@@ -40761,7 +40761,7 @@ const ACG = (()=>{
     if(s.split(/\s+/).length>2)s=s.replace(/\s+\w+ed$/i,"");
     const ws=s.split(/\s+/);
     if(ws.length>7||!V3_VENUE_NOUN.test(s))return "";
-    return s;
+    return r13TrimVenue(s);
   }
   // Round 7: the location is the venue, never a corner of it. "A community
   // health center front desk" is a clinic; "the break room of a bus depot" is
@@ -40797,7 +40797,7 @@ const ACG = (()=>{
     // Round 4: a side room is never the headline location when the seed
     // offers somewhere the story actually happens.
     const mainFits=fits.filter(p=>!V6_SIDE_ROOM.test(p)),mainPlaces=places.filter(p=>!V6_SIDE_ROOM.test(p));
-    const venue0=(mainFits.length?pick(mainFits):fits.length?pick(fits):mainPlaces.length&&!need?pick(mainPlaces):places.length&&!need?pick(places):fam==="photo"?"a daylight photo studio":pick(GENERIC[need]||GENERIC[""]));
+    const venue0=(mainFits.length?pick(mainFits):fits.length?pick(fits):mainPlaces.length&&!need?pick(mainPlaces):places.length&&!need?pick(places):fam==="photo"?"a daylight photo studio":r13Generic(need,story));
     const venue=v3Scrub(venue0);
     if(!need)need=v3Need(venue);
     return {venue,need,placeNP:venue};
@@ -41281,7 +41281,7 @@ const ACG = (()=>{
   // says what they are: name| crew| company| sched| area|. Anything without a
   // prefix is a story key, exactly as before.
   function v3HistoryInit(h,existing,seenKeys){
-    h.cores=new Set();h.coreWords=new Set();h.schedKeys=new Set();h.areaUse={};h.lastCount={};h.typeRecent={};h.prevLasts=new Set();h.sentKeys=new Set();h.lastOpen4="";
+    h.cores=new Set();h.coreWords=new Set();h.schedKeys=new Set();h.r13G=new Map();R13_VEN_RECENT=new Map();h.areaUse={};h.lastCount={};h.typeRecent={};h.prevLasts=new Set();h.sentKeys=new Set();h.lastOpen4="";
     const areaSeen={},areaList={};
     // Round 9: the durable log keeps two kinds of memory. Identity - names,
     // crew, companies, character names, neighborhoods, and which premise was
@@ -41355,6 +41355,10 @@ const ACG = (()=>{
       // premise CATEGORIES stay permanent, because those are identity, not
       // phrasing.
       if(i<R9_PROSE_WINDOW)v3ListingSentences(c,c.roles).forEach(x=>h.sentKeys.add(v3SentKey(x)));
+      // Round 13: five-word phrase window over role lines and notes.
+      if(i<R9_PROSE_WINDOW)r13AddGrams(h.r13G,r13ItemText(c,c.roles));
+      if(i<R13_BG_WINDOW)(c.roles||[]).filter(r=>/background/i.test(`${r.role_type||""} ${r.name||""}`)).forEach(r=>(h.r13BgNames=h.r13BgNames||new Set()).add(clean(r.name)));
+      if(i<40&&c.shoot_location){const vh=r13VenueHead(c.shoot_location);R13_VEN_RECENT.set(vh,(R13_VEN_RECENT.get(vh)||0)+1);}
       // Round 9 step 8: title words and product categories have their own
       // windows. A distinctive word may not come back inside 60 listings, a
       // narrative title shares no content word with the last 100, and a
@@ -41598,7 +41602,8 @@ const ACG = (()=>{
   // Everything the harness tests per listing. A draft with any problem is
   // discarded and regenerated.
   const V3_INVERTED=/everything worth knowing|before any of that|\bup to then\b|follows from one thing|we join it late|it begins simply enough|\bhere is the\b|described out loud|the setup behind it|where it starts:|underneath it,|the story follows|wind back|rewind a little|the easy half|the simple part:|the other half:|the hinge of it|one detail carries|it all comes back to|all of it traces|everything points back|drop in halfway|open on the middle|start in the wrong place|we come in after|picks up mid-fall|damage already done|is the one this lands on/i;
-  function v3Sentences(t){return (String(t||"").match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[]).map(x=>x.trim()).filter(Boolean);}
+  // Round 13: "11 p.m.", "Dr." and "St." are not sentence ends (a sketch printed "at 11 p. … M.").
+  function v3Sentences(t){const P=String(t||"").replace(/\b([ap])\.m\./gi,"$1\u2024m\u2024").replace(/\b(Mr|Mrs|Ms|Dr|St|Jr|Sr|vs|Mt|Ft)\./g,"$1\u2024");return (P.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[]).map(x=>x.trim().replace(/\u2024/g,".")).filter(Boolean);}
   function v3Problems(item,c){
     const out=[];
     const roles=item._roles||[];
@@ -41741,6 +41746,7 @@ const ACG = (()=>{
     if(R8_ON)r8Problems(item).forEach(x=>out.push("r8: "+x));
     r10Problems(item,c).forEach(x=>out.push("r10: "+x));
     r11Problems(item).forEach(x=>out.push("r11: "+x));
+    r13Problems(item,c).forEach(x=>out.push("r13: "+x));
     if(c.h&&c.res&&v3TooClose(v3StoryWords(syn),(c.h.storyWords||[]).concat(c.res.storyWords||[])))out.push("story too close to a saved listing");
     if(c.h&&c.res){const seenHere=new Set();v3ListingSentences(item,roles).forEach(x=>{const k=v3SentKey(x);if((seenHere.has(k)&&x!==item.tagline)||v3SentUsed(k,c.h,c.res))out.push("reused sentence: "+x.slice(0,60));if(x!==item.tagline)seenHere.add(k);});}
     return out;
@@ -42415,10 +42421,12 @@ const ACG = (()=>{
       "the swing":[[`Covers several ensemble tracks`,`Swings the group numbers`,`Learns every ensemble track`],[`for the run ${at}`,`across the run`,`from the first week`],[`and goes on whenever someone is out`,`with paid put-in rehearsals`,`and is ready on short notice`]]
     }[e.s];
     const job={"the bartender on shift":1,"the front desk receptionist":1,"the night security guard":1,"the delivery driver":1}[e.s];
-    const P=B&&!job?B:(B||stage);
+    let P=B&&!job?B:(B||stage);
     if(!P)return null;
     // One sentence, anchored to this location, so it never repeats.
     const semi=B&&!job;
+    // Round 13: every combination is tried, freshest first, against the board.
+    if(R13_H){const combos=[];P[0].forEach(a=>P[1].forEach(b=>P[2].forEach(c=>combos.push([a,b,c]))));const ok=cgShuffle(combos).find(([a,b,c])=>r13Fresh(`${a} ${b} ${c}`,R13_H,R13_RES));if(ok){const [a,b,c]=ok;P=[[a],[b],[c]];}}
     return `${pick(P[0])} ${pick(P[1]).replace(/\.$/,"")}${semi?"; ":" "}${semi?pick(P[2]).replace(/^(A|You'll|Bring|Some|Simple|We'll|Patient|Steady|Continuity|Small|Natural|No|Quiet|Comfortable|Expect)\b/,w=>w.toLowerCase()):pick(P[2])}`.replace(/\s*;\s*/,"; ").replace(/\.?$/,".");
   }
   const V5_BIG_TYPES=/^(Feature Film|Independent Film|TV Series|Streaming Series|Limited Series|Miniseries|TV Pilot|Web Series)$/;
@@ -42991,7 +42999,7 @@ const ACG = (()=>{
 
   // 5. The shoot location names the main venue, never only a side room.
   const V6_SIDE_ROOM=/\b(break room|locker room|changing room|green room|waiting room|storage room|supply closet|back office|staff room|utility room|janitor'?s? closet|restroom|bathroom|stairwell|hallway|corridor|parking lot|loading dock|lobby)\b/i;
-  function v6GenericVenue(need){return pick({rural:["a farmhouse on a country road","a small-town main street"],water:["a waterfront pier","a harbor walkway"],industrial:["a warehouse floor","an industrial garage"],beach:["a beach boardwalk"]}[need]||["a storefront on a main street","an apartment building","a rented house"]);}
+  function v6GenericVenue(need){return r13Generic(need);}
   function v6MainVenue(venue){
     const v=String(venue||"").trim();
     const m=v.match(V6_SIDE_ROOM);
@@ -43738,7 +43746,7 @@ const ACG = (()=>{
     const people=named.filter(r=>!r._group&&!r._job);
     const usedStruct=new Set();
     const recent=cap>=4?{}:(c.structCounts||{});
-    c._used=c._used||new Set();
+    c._used=c._used||new Set();c._r13Here=new Set();
     const leads=people.filter(r=>/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||""));
     const out=[];
     for(const r of people){
@@ -43782,14 +43790,23 @@ const ACG = (()=>{
             // sketch already uses.
             if(!/^__/.test(ln)){const own=new Set(clean(`${r.name||""} ${r._slot||""}`).split(" "));const base=new Set(clean(sk.join(" ")).split(" "));if(clean(ln).split(" ").some(w=>w.length>=6&&!own.has(w)&&base.has(w)&&!/^(people|scenes?|camera|before|around|another|someone|something|nothing|everyone|anyone|during|through|without|between|across|within|because|should|having|either|little|really|enough|second|minutes?|hours?|moment|lines|actors?|shoot|sessions?|performances?|rehearsals?|setups?|episodes?)$/.test(w)))continue;}
             if(c.h&&added.some(z=>sk.indexOf(z)<0&&v3SentUsed(v3SentKey(z),c.h,c.res)))continue;
+            // Round 13: the move's own words may not be a stock phrase already on the board.
+            {const own=added.filter(z=>sk.indexOf(z)<0).join(" ");
+              if(c.h&&!r13Fresh(own,c.h,c.res,cap>=3?R13_GRAM_MAX:1))continue;
+              // ...and never twice in one listing ("can you be funny without winking" on two parts).
+              const og=[...r13Grams(own)];if(og.some(g=>c._r13Here&&c._r13Here.has(g)))continue;}
             done={id,text};break;
           }
           if(done)break;
         }
         if(done)break;
       }
+      // Round 13: when every move's wording is already on the board, a
+      // supporting part prints its own sketch rather than a stock line.
+      if(!done&&cap>=4&&!isLead&&sk.length){const idn=v8Identity(r,c.voice,c.fn).find(Boolean);if(idn)done={id:"plain:sketch",text:[idn].concat(sk).join(" ").replace(/\s{2,}/g," ").trim()};}
       if(!done)return null;
-      usedStruct.add(done.id);
+      if(done.id!=="plain:sketch")usedStruct.add(done.id);
+      c._r13Here=c._r13Here||new Set();r13Grams(done.text).forEach(g=>c._r13Here.add(g));
       r.description=v4Pronouns(done.text,r.gender).replace(/(^|[.!?]\s+)([a-z])/g,(m,a,b)=>a+b.toUpperCase());
       v3Sentences(r.description).slice(1).forEach(z=>c._used.add(v7Shape(z,c.names)));
       r._v8Struct=done.id;out.push(done.id);
@@ -44499,6 +44516,246 @@ const ACG = (()=>{
     for(const f of bank){const line=`${who} states: "${f(c)}"`;if(!v3SentUsed(v3SentKey(line),h,res))return line;}
     return "";
   }
+  // ── Round 13 (2026-10-28): no stock phrasing, no self-contradiction ─────
+  // The owner audited 150 drafts: the stories were unique but the wording
+  // around them was not ("one day, a handful of setups" in 15 listings,
+  // "Note: Local hire only." in 15, "Passersby on the Street" in 10, "A
+  // storefront on a main street" in 10), and about ten listings contradicted
+  // themselves (a grandparent aged 38-52, "steps in once" next to "two days,
+  // a few scenes each", a spec spot that "runs online for six months").
+  // Phrasing is now checked at the PHRASE level: any five-word run in a role
+  // line, a schedule note or a submission note may appear in at most
+  // R13_GRAM_MAX listings inside the prose window (a role line's own move
+  // must be unseen while a fresh one exists). Legal minors wording and
+  // the terse board status line ("Shoot dates TBD.") are exempt - those are
+  // field values, not prose.
+  const R13_GRAM_MAX=2;
+  const R13_EXEMPT=/^(Body|Stunt|Lighting|Photo) double for the actor playing|guardian|child[- ]performer|child[- ]labor|work permit|studio teacher|^(Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC)|^Dates (TBD|TBC);|^Records remotely|^Shoots remotely;|^Self-shot at home;|^(Shoots|Records|Works|Reads) /;
+  function r13Grams(text){
+    const out=new Set();
+    v3Sentences(text).filter(s=>!R13_EXEMPT.test(s)).forEach(s=>{
+      const w=clean(s).split(" ").filter(Boolean);
+      for(let i=0;i+5<=w.length;i++)out.add(w.slice(i,i+5).join(" "));
+    });
+    return out;
+  }
+  function r13ItemText(item,roles){
+    return [item.schedule_note,item.submission_requirements].concat((roles||item._roles||item.roles||[]).map(r=>r.description)).filter(Boolean).join(" ");
+  }
+  function r13AddGrams(map,text){const own=r13Grams(text);own.forEach(g=>map.set(g,(map.get(g)||0)+1));}
+  function r13GramCount(g,h,res){return ((h&&h.r13G&&h.r13G.get(g))||0)+((res&&res.r13G&&res.r13G.get(g))||0);}
+  // True when every five-word run in the line is still under its cap.
+  function r13Fresh(line,h,res,max){
+    const lim=max==null?R13_GRAM_MAX:max;
+    for(const g of r13Grams(line))if(r13GramCount(g,h,res)>=lim)return false;
+    return true;
+  }
+  // Venues: the fallback lists were three places long, so every brand brief
+  // without a seed venue landed on "a storefront on a main street".
+  const R13_GENERIC={
+    rural:["a farmhouse on a country road","a small-town main street","a roadside diner","a feed store","a county fairground","a gravel lot behind a grange hall","an orchard farm stand","a volunteer fire hall","a rural post office","a two-pump gas station"],
+    water:["a waterfront pier","a harbor walkway","a marina parking lot","a ferry landing","a boathouse","a fishing dock","a bait shop by the water","a lakeside pavilion"],
+    industrial:["a warehouse floor","an industrial garage","a print shop","a loading yard","a machine shop","a sign shop","a commercial kitchen","a self-storage facility"],
+    beach:["a beach boardwalk","a lifeguard stand","a beach parking lot","a seaside snack bar"],
+    home:["a rented house","a walk-up apartment","a garden apartment","a brownstone parlor floor","a townhouse","a family home","a two-bedroom apartment","a duplex"],
+    // Neutral places a brief can be shot in without telling a different story.
+    "":["a rented house","an apartment building","a walk-up apartment","a converted loft","a townhouse","a daylight studio","a production studio","a rooftop","a shared office","a brownstone parlor floor","a garden apartment","a corner storefront"]
+  };
+  let R13_VEN_RECENT=new Map();
+  // The batch's history, for builders that are called without it.
+  let R13_H=null,R13_RES=null;
+  // Crowd names: "Passersby on the Street (Background)" was on 10 of 150
+  // listings. A crowd name already used recently is rebuilt from the venue.
+  const R13_BG_WINDOW=60;
+  function r13BgName(r,venue,h,res){
+    const used=n=>(h&&h.r13BgNames&&h.r13BgNames.has(clean(n)))||(res&&res.r13BgNames&&res.r13BgNames.has(clean(n)));
+    const name=String(r.name||"");
+    if(!used(name))return name;
+    const V=titleCase(stripArticle(String(venue||"").split(",")[0].replace(/\s*\(.*$/,"").trim()));
+    if(!V||V.split(/\s+/).length>5)return name;
+    const crowd=(name.match(/^([A-Z][a-z]+)/)||[])[1]||"People";
+    const C={Passersby:["Passersby Outside the "+V,"Sidewalk Traffic by the "+V,"Street Crowd near the "+V],People:["People at the "+V,V+" Crowd","Everyday Crowd at the "+V],Customers:[V+" Customers","Shoppers at the "+V,"Walk-In Customers at the "+V],Regulars:[V+" Regulars","Regulars at the "+V,"The "+V+" Regulars"],Workers:[V+" Staff","Staff at the "+V,"Workers at the "+V],Neighbors:["Neighbors at the "+V,V+" Neighbors"]}[crowd]||[`${crowd} at the ${V}`,`${V} ${crowd}`];
+    const pickN=cgShuffle(C).map(x=>`${x} (Background)`).find(x=>!used(x));
+    return pickN||name;
+  }
+  function r13VenueHead(v){return clean(String(v||"").split(",")[0]).replace(/^(a|an|the) /,"");}
+  const R13_HOME=/\b(kitchen|apartment|living room|bedroom|bathroom|at home|household|their house|her house|his house|morning routine|roommates?|couch|sofa)\b/i;
+  function r13Generic(need,story){
+    const pool=(R13_HOME.test(String(story||""))?R13_GENERIC.home:R13_GENERIC[need]||R13_GENERIC[""]).slice();
+    const fresh=cgShuffle(pool).sort((a,b)=>(R13_VEN_RECENT.get(r13VenueHead(a))||0)-(R13_VEN_RECENT.get(r13VenueHead(b))||0));
+    return fresh[0];
+  }
+  // A venue cut down to its head noun must not end on the participle that
+  // introduced the cut ("a staff parking garage lit", "a regional newsroom
+  // sharing a floor").
+  const R13_DANGLE=/\s+(lit|sharing|serving|facing|overlooking|selling|run|kept|left|owned|lined|filled|packed|shut|turned|built|used|rented|borrowed|closing|opening|stuck|wedged|tucked|squeezed|attached)\b.*$/i;
+  function r13TrimVenue(s){
+    const t=String(s||"");let m=t.replace(R13_DANGLE,"");
+    for(let i=0;i<3;i++)m=m.replace(/\s+(with|a|an|the|of|and|in|on|at|for|by|from|to)$/i,"");
+    return m!==t&&m.split(/\s+/).length>=2&&V3_VENUE_NOUN.test(m)?m:t;
+  }
+  // Notes: listing-specific wording, fresh at the phrase level, or no note.
+  function r13NoteLine(c,h,res){
+    const town=(String(c.town||"").trim()||"the city").replace(/^Bronx$/,"the Bronx");
+    const o=[];
+    if(!c.remote)o.push(`Note: ${town}-area talent only; travel and lodging aren't covered.`,`Note: Please live within commuting distance of ${town}.`,`Note: We're hiring locally in ${town}; no travel is paid.`,`Note: Local to ${town} only, please.`,`Note: You'll need to get yourself to ${town} each day.`,`Note: This is a local hire for ${town}.`);
+    const N=c.days>1&&c.days<=6?v3Words(c.days):"";
+    if(c.days===2)o.push("Note: Must be available both days.","Note: Both days are required; no partial bookings.","Note: Please hold both dates before you submit.");
+    else if(N)o.push(`Note: Must be available all ${N} days.`,`Note: All ${N} days are required.`,`Note: Please hold all ${N} days before submitting.`);
+    else if(c.days===1&&!c.stage)o.push("Note: Must be available on the shoot date.","Note: The single shoot day is fixed.","Note: Please hold the shoot date before you submit.");
+    if(c.stage)o.push("Note: Must be available for all performances.","Note: Every performance date is required.");
+    if(!c.remote&&/^(ad|photo)$/.test(c.fam))o.push("Note: Wardrobe fitting the day before.","Note: There's a short fitting the afternoon before.","Note: Expect a fitting call the day before the shoot.","Note: Bring three outfits to the fitting the day before.");
+    if(c.remote)o.push(c.audio?"Note: Must have a quiet space to record.":"Note: Must have a quiet space and good lighting.","Note: You'll need a quiet room and a decent microphone.");
+    const ok=cgShuffle(o).find(x=>r13Fresh(x,h,res)&&!v3SentUsed(v3SentKey(x),h,res));
+    return ok||"";
+  }
+  // Minors: the legal content stays standard, but it names the parts it
+  // covers and is printed once.
+  function r13MinorsNote(roles){
+    const minors=(roles||[]).filter(r=>{const lo=parseInt(String(r.age_range||"").split("-")[0],10);return isFinite(lo)&&lo<18;});
+    if(!minors.length)return "";
+    const lab=r=>stripArticle(String(r._slot||r.name||"").replace(/\s*\((Background)\)\s*/i,"")).toLowerCase();
+    const who=minors.map(r=>`the ${lab(r)} (${r.age_range})`);
+    const list=who.length===1?who[0]:who.slice(0,-1).join(", ")+" and "+who[who.length-1];
+    const verb=who.length===1?"is":"are";
+    const long=minors.some(r=>+r.est_days>=3);
+    const g=pick([`${capFirst(list)} ${verb} under 18, so a parent or guardian stays on set the whole time.`,`For ${list}: a parent or guardian must be on set throughout.`,`A parent or guardian must stay on set with ${list}.`]);
+    const law=pick(["The production follows state child performer laws and handles permits.","State child performer rules apply, and the production files the permits.","Work permits and child performer laws are the production's job."]);
+    const school=long?pick([" A studio teacher is on set and school hours are protected."," School hours are kept free, with a studio teacher on set."]):"";
+    return `${g} ${law}${school}`;
+  }
+  // The finishing pass: fixes that are always right to make.
+  const R13_AGE_RULES=[
+    [/\bgrand(parent|mother|father|ma|pa|dad|mom)\b/i,58,85],
+    [/\b(retiree|retired)\b/i,58,80],
+    [/\bover (forty|40)\b/i,40,60],[/\bover (fifty|50)\b/i,50,68],[/\bover (sixty|60)\b/i,60,78],[/\bover (thirty|30)\b/i,30,48],
+    [/\b(nurse|doctor|surgeon|lawyer|attorney|professor|paramedic|pharmacist|therapist|accountant|branch manager)\b/i,23,null]
+  ];
+  function r13FixAges(roles){
+    (roles||[]).forEach(r=>{
+      if(/background/i.test(r.role_type||""))return;
+      const own=`${r.name||""} ${r._slot||""}`;
+      const d=String(r.description||"");
+      const m=String(r.age_range||"").match(/^(\d+)-(\d+)$/);if(!m)return;
+      let lo=+m[1],hi=+m[2];
+      for(const [re,min,max] of R13_AGE_RULES){
+        const hit=re.test(own)||(/over /.test(re.source)&&re.test(d));
+        if(!hit)continue;
+        if(lo<min){const span=Math.max(6,Math.min(14,hi-lo));lo=min;hi=Math.max(hi,min+span);}
+        if(max&&hi>max)hi=max;
+      }
+      if(/\bteen(ager)?s?\b/i.test(own)&&lo>=13&&hi>19)hi=19;
+      if(lo!==+m[1]||hi!==+m[2])r.age_range=`${lo}-${Math.max(lo+3,hi)}`;
+    });
+  }
+  const R13_MATERIALS=/headshot|r[ée]sum[ée]|self-tape|footage|\breel\b|full-length|full-body|digitals|\bcredits\b|sizes|sample|\bdemo\b|photos?\b|materials|to submit|submissions? should/i;
+  const R13_LOCAL=/\b(local hire|local talent|locals? only|local to|hiring locally|commuting distance|-area talent only|no travel|travel and lodging aren't)\b/i;
+  function r13Polish(item,h,res){
+    const roles=item._roles||[];
+    r13FixAges(roles);
+    // One minors note, naming the parts.
+    const req=String(item.submission_requirements||"");
+    const sents=v3Sentences(req);
+    const legal=s=>/guardian|child performer|child[- ]labor|work permit|studio teacher|^(For minors|Minors|Roles under 18):/i.test(s);
+    if(sents.some(legal)){
+      const note=r13MinorsNote(roles);
+      item.submission_requirements=sents.filter(s=>!legal(s)).concat(note?[note]:[]).join(" ").trim();
+    }
+    // Extra notes already on the board are dropped; the materials list and
+    // the legal minors wording are the listing's facts and stay.
+    if(h){
+      item.submission_requirements=v3Sentences(item.submission_requirements).filter(s=>legal(s)||R13_MATERIALS.test(s)||r13Fresh(s,h,res)).join(" ");
+      item.schedule_note=v3Sentences(item.schedule_note).filter(s=>R13_EXEMPT.test(s)||r13Fresh(s,h,res)).join(" ");
+    }
+    // Role lines: a later sentence that is a stock phrase already on the
+    // board (or already used by another part here) is dropped; the opening
+    // sentence, which names the part, always stays.
+    const fnType=V7_FN.test(String(item.type||""));
+    if(h){
+      const here=new Set();
+      roles.forEach(r=>{
+        const ss=v3Sentences(r.description);if(!ss.length)return;
+        const ok=x=>r13Fresh(x,h,res)&&![...r13Grams(x)].some(g=>here.has(g));
+        // A function-named part ("the MANAGER") has no identity sentence to
+        // protect, so its first line is checked too.
+        let keep=fnType?ss.filter(ok):[ss[0]].concat(ss.slice(1).filter(ok));
+        if(!keep.length)keep=[ss[0]];
+        if(keep.length<ss.length)r.description=keep.join(" ");
+        r13Grams(r.description).forEach(g=>here.add(g));
+      });
+    }
+    roles.filter(r=>/background/i.test(`${r.role_type||""} ${r.name||""}`)).forEach(r=>{const n=r13BgName(r,item.shoot_location||item._r8Venue,h,res);if(n!==r.name){r.name=n;if(r._groupName)r._groupName=n;}});
+    // Local-only wording and a nationwide talent search contradict.
+    // "$350 a day for the lead" when every part pays $350.
+    const paid=roles.filter(r=>!/background/i.test(r.role_type||""));
+    if(paid.length>1&&new Set(paid.map(r=>String(r.pay||"").match(/\$[\d,.]+/)).filter(Boolean).map(m=>m[0])).size===1)item.pay=String(item.pay||"").replace(/\bfor the lead\b/,"for every part");
+    const txt=`${item.schedule_note||""} ${item.submission_requirements||""}`;
+    if(R13_LOCAL.test(txt)&&/Nationwide/i.test(item.talent_scope||""))item.talent_scope="Local + self-report (within driving distance)";
+    // A function label half in capitals ("the SECOND witness").
+    if(V7_FN.test(String(item.type||""))){
+      const words=new Set();roles.forEach(r=>clean(`${r.name||""} ${r._slot||""}`).split(" ").forEach(w=>w.length>2&&words.add(w)));
+      roles.forEach(r=>{r.description=String(r.description||"").replace(/\b([A-Z]{3,})\b(?=\s+[a-z])/g,(m,w)=>words.has(w.toLowerCase())?w.toLowerCase():m);});
+    }
+    if(item.shoot_location)item.shoot_location=String(item.shoot_location).replace(/^([^,(]+)/,m=>{const t=r13TrimVenue(m.trim());return t.charAt(0).toUpperCase()+t.slice(1)+(m.endsWith(" ")?" ":"");});
+  }
+  // ── Round 13 validators ──────────────────────────────────────────────────
+  const R13_FEW=/\b(steps in once|in one scene|one scene only|just two scenes|two scenes\b|appears only at the very end|last (three|few) seconds|a one-day part|just one day for|is in one day only)\b/i;
+  const R13_MANY=/\b(a few scenes each|most setups on most days|appears across the whole|in nearly every scene|in every shot|is needed (both|all)|block out (both|all)|works every one of|every one of the)\b/i;
+  const R13_NODIAL=/\b(no dialogue|no lines|nearly wordless|stills only)\b/i;
+  const R13_TALK=/\b(the read\b|one line|two lines|a few lines|some dialogue|plenty of dialogue|almost no lines|one great line|has lines)\b/i;
+  const R13_NUM={one:1,two:2,three:3,four:4,five:5,six:6};
+  function r13Problems(item,c){
+    const out=[];
+    const roles=item._roles||[];
+    const type=String(item.type||"");
+    const h=c&&c.h,res=c&&c.res;
+    roles.forEach(r=>{
+      const d=String(r.description||"");
+      const nm=String(r.name||"").slice(0,30);
+      if(R13_FEW.test(d)&&R13_MANY.test(d))out.push(`role says both small and everywhere: ${nm}`);
+      if(/\bappears across the whole\b/i.test(d)&&/\bspot (one|two|three|1|2|3)\b/i.test(d))out.push(`whole-ad line on a one-spot part: ${nm}`);
+      if(R13_NODIAL.test(d)&&R13_TALK.test(d))out.push(`no-dialogue part also has lines/read: ${nm}`);
+      if(/\b\d{1,2} [ap]\.(\s|$)|(^|\.\s)[A-Z]\.$/.test(d))out.push(`broken abbreviation: ${nm}`);
+      if(/\b[A-Z]{3,}\b\s+[a-z]/.test(d)&&V7_FN.test(type))out.push(`half-capital label: ${nm}`);
+      const m=String(r.age_range||"").match(/^(\d+)-(\d+)$/);
+      if(m&&!/background/i.test(r.role_type||"")){
+        const own=`${r.name||""} ${r._slot||""}`;
+        for(const [re,min] of R13_AGE_RULES)if(re.test(own)&&+m[1]<min)out.push(`age ${r.age_range} too young for ${nm}`);
+      }
+      if(c&&c.h&&!/^__/.test(d)){
+        const bad=[...r13Grams(v3Sentences(d).slice(1).join(" "))].filter(g=>r13GramCount(g,h,res)>=R13_GRAM_MAX);
+        if(bad.length)out.push(`stock phrase reused: "${bad[0]}" (${nm})`);
+      }
+    });
+    // A spec spot never airs.
+    if(/^Spec Commercial$/.test(type)&&/\b(runs online|on air|airs|broadcast|usage|bought out)\b/i.test(`${item.synopsis} ${item.pay}`))out.push("spec spot claims usage/air time");
+    // Days the listing promises vs. days anyone works.
+    const maxDays=Math.max(0,...roles.map(r=>+r.est_days||0));
+    const said=`${item.tagline} ${item.pay} ${item.schedule_note}`.match(/\b(?:full|all) (two|three|four|five|six) days\b|\b(two|three|four|five|six) shoot days\b|\bboth days\b/gi)||[];
+    said.forEach(s=>{const n=/both/i.test(s)?2:R13_NUM[s.toLowerCase().match(/two|three|four|five|six/)[0]];if(n&&maxDays&&maxDays<n&&!/^(Theater|Broadway|Musical Theater|Off-Broadway|Off-Off-Broadway)/.test(type))out.push(`listing says ${n} days, longest part works ${maxDays}`);});
+    // Pay headline vs. role pay.
+    const amts=new Set(roles.map(r=>String(r.pay||"").match(/\$([\d,]+(?:\.\d+)?)/)).filter(Boolean).map(m=>+m[1].replace(/,/g,"")));
+    if(amts.size){
+      const top=Math.max(...amts);
+      const head=String(item.pay||"").replace(/\busage[^.]*\.|bought out[^.]*\.|\$[\d,.]+ (usage|buyout)[^.]*\./gi,"");
+      const hm=head.match(/\(\$([\d,]+)\)/);if(hm&&+hm[1].replace(/,/g,"")!==top)out.push("pay headline single figure is not the top rate");
+      // Background at union principal scale.
+      if(/SAG/i.test(item.union_status||"")){const pr=Math.max(0,...roles.filter(r=>!/background/i.test(r.role_type||"")).map(r=>+(String(r.pay).match(/\$([\d,.]+)/)||[0,"0"])[1].replace(/,/g,"")));roles.filter(r=>/background/i.test(r.role_type||"")).forEach(r=>{const v=+(String(r.pay).match(/\$([\d,.]+)/)||[0,"0"])[1].replace(/,/g,"");if(pr&&v>=pr)out.push("background paid principal scale on a union listing");});}
+    }
+    // Minors note printed twice.
+    if((String(item.submission_requirements||"").match(/guardian/gi)||[]).length>1)out.push("minors note printed twice");
+    // Venue cut mid-phrase.
+    if(item.shoot_location&&/\b(lit|sharing|with|of|and|the|at|by)\s*(\(|,|$)/i.test(String(item.shoot_location).split(/[,(]/)[0]+","))out.push("shoot location cut mid-phrase: "+item.shoot_location);
+    // Nationwide search on a local-only listing.
+    if(R13_LOCAL.test(`${item.schedule_note} ${item.submission_requirements}`)&&/Nationwide/i.test(item.talent_scope||""))out.push("local-only note on a nationwide search");
+    // A summary that says nothing but the cast and the format.
+    // Every sentence is the cast call or the "production starts" line.
+    const R13_CALLONLY=/^(Casting|Seeking|Now casting|We're looking for|We are looking for|Looking for|Open roles?:|Production starts soon|Our production team is shooting|Wanted for|[A-Z][a-z]+ (?:\w+ )?wanted for)\b/;
+    const R13_STORYCLAUSE=/\b(in which|about|where|who|whose|follows|following|centers on|centered on|story of|set in|built on|built around|when|while|until|after|shows|showing)\b/i;
+    const story=v3Sentences(item.synopsis).filter(x=>!(R13_CALLONLY.test(x)&&!R13_STORYCLAUSE.test(x))&&!/^(Light dialogue|No dialogue|Stills only|Principals have lines|Social usage|Runs online)/i.test(x));
+    if(!story.length)out.push("summary is only the cast call");
+    return out;
+  }
   // ── Round 12 (2026-10-27): no tagline or summary opens on "A"/"An" ──────
   // The board read "A cleaner who…", "A comedy feature film in which…", "A
   // student film shot in…" card after card. Shapes now lead on the project,
@@ -44629,7 +44886,10 @@ const ACG = (()=>{
       const dl=r8DialogueFact(roles,fam);if(dl)facts.push(dl);
       const us=r8UsageFact(c.usage,c.medium,type);if(us)facts.push(us);
       const want=len==="one"?0:len==="mid"?rand(1,2,1):3;
-      const chosen=cgShuffle(facts.slice()).slice(0,want).sort((a,b)=>facts.indexOf(a)-facts.indexOf(b));
+      let chosen=cgShuffle(facts.slice()).slice(0,want).sort((a,b)=>facts.indexOf(a)-facts.indexOf(b));
+      // Round 13: a cast call alone ("Casting a flour branded video.") says
+      // nothing about the work, so the concept line always follows it.
+      if(abOk&&!/^(label|story|people)$/.test(shape)&&chosen.indexOf(facts[0])<0)chosen=[facts[0]].concat(chosen).slice(0,Math.max(1,want));
       if(len==="long"&&chosen.length<2)len="mid";
       chosen.forEach(x=>S.push(x));
     }else{
@@ -44822,7 +45082,7 @@ const ACG = (()=>{
       if(!plan.read&&!item._r8Stage.perfStart)item._r8Stage.perfStart=item.shoot_end;
     }
     const noteOn=Math.random()<0.30;
-    const noteLine=noteOn?r8NoteLine({remote:kind==="remote",days,stage,fam,audio:/^(audio|anim)$/.test(fam)||type==="Voiceover"}):"";
+    const noteLine=noteOn?r13NoteLine({remote:kind==="remote",days,stage,fam,audio:/^(audio|anim)$/.test(fam)||type==="Voiceover",town:String(place||"").split(",")[0].trim()},h,res):"";
     const persona=String(item.schedule_note||"").trim();
     if(kind==="dated"){item.schedule_note=[persona,noteLine].filter(Boolean).join(" ");return true;}
     const verb=R8_VERB(type);
@@ -45262,9 +45522,9 @@ const ACG = (()=>{
       L.push(
         ()=>rk.length>1?`Day rates: ${rk.join(", ")}.`:`Of Note: ${M(top)}/day for ${span}.`,
         ()=>`Of Note: paid daily, ${M(lowest)}${wide?`-${M(top)}`:""}/day depending on the part.`,
-        ()=>`${M(top)} a day for the lead${wide?`; ${M(lowest)} a day for the smallest part`:""}. ${perkTxt}`,
+        ()=>`${M(top)} a day ${lowest===top?"for every part":"for the lead"}${wide?`; ${M(lowest)} a day for the smallest part`:""}. ${perkTxt}`,
         ()=>`Each role is paid by the day for every day it works, up to ${M(top)}.`,
-        ()=>`Paid per shoot day (${M(lowest)}${wide?` to ${M(top)}`:""}). ${pick(["Paid within two weeks of wrap.","Payroll runs the Friday after wrap.","Paid by direct deposit within 30 days."])}`
+        ()=>`Paid per shoot day (${wide?`${M(lowest)} to ${M(top)}`:M(top)}). ${pick(["Paid within two weeks of wrap.","Payroll runs the Friday after wrap.","Paid by direct deposit within 30 days."])}`
       );
     }
     return L;
@@ -45903,6 +46163,7 @@ const ACG = (()=>{
       if(item._roles)item._roles=item._roles.slice().sort(compareRoles);
       r10FixArticles(item);
       r12NoAOpen(item,{town:String(r8Place(city,area)||"").split(",")[0].trim().replace(/^Bronx$/,"the Bronx")},res);
+      r13Polish(item,h,res);
       item._lines=splitLines(item.synopsis).concat([item.tagline],(item._roles||named).map(r=>r.description)).filter(Boolean);
       item._storyTextKey=`${item.title||""} ${type} ${item.synopsis}`.slice(0,1200);
       item._skel=r10SkelOf(seed);
@@ -47561,6 +47822,7 @@ const ACG = (()=>{
     const count=Math.max(1,Math.floor(Number(targetCount)||5));
     const h=buildHistory(existing,seenKeys);
     const res={titles:new Set(),prods:new Set(),roles:new Set(),stories:new Set(),pays:new Set(),firsts:new Set(),lasts:new Set(),storyTexts:new Set(),traits:new Set(),ages:new Set(),roleCounts:new Set(),creatorKinds:new Set(),tags:new Set(),lines:new Set(),cores:new Set(),coreWords:new Set(),schedKeys:new Set(),areaUse:{},lastCount:{},typeCounts:{},_voiceCount:{},_s1Count:{},_typeFails:{}};
+    R13_H=h;R13_RES=res;
     res._batchN=count;
     const out=[];
     let attempts=0;
@@ -47631,6 +47893,9 @@ const ACG = (()=>{
       (res.storyWords=res.storyWords||[]).push(v3StoryWords(item.synopsis));
       res.sentKeys=res.sentKeys||new Set();
       v3ListingSentences(item,item._roles).forEach(x=>res.sentKeys.add(v3SentKey(x)));
+      r13AddGrams(res.r13G=res.r13G||new Map(),r13ItemText(item,item._roles));
+      (item._roles||[]).filter(r=>/background/i.test(`${r.role_type||""} ${r.name||""}`)).forEach(r=>(res.r13BgNames=res.r13BgNames||new Set()).add(clean(r.name)));
+      {const vh=r13VenueHead(item.shoot_location||item._r8Venue);if(vh)R13_VEN_RECENT.set(vh,(R13_VEN_RECENT.get(vh)||0)+1);}
       res._lastOpen4=clean(item.synopsis).split(" ").slice(0,4).join(" ");
       res.skeletons=res.skeletons||{};
       const sk=v3Skeleton(v3Sentences(item.synopsis)[0],item._v3ctx.L);res.skeletons[sk]=(res.skeletons[sk]||0)+1;

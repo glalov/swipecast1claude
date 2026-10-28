@@ -74,7 +74,8 @@ const ms=Date.now()-t0;
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const clean=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-const sentences=t=>(String(t||"").match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[]).map(x=>x.trim()).filter(Boolean);
+// Round 13: same abbreviation rule as the generator ("2 a.m." is not a sentence end).
+const sentences=t=>(String(t||"").replace(/\b([ap])\.m\./gi,"$1\u2024m\u2024").replace(/\b(Mr|Mrs|Ms|Dr|St|Jr|Sr|vs|Mt|Ft)\./g,"$1\u2024").match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[]).map(x=>x.trim().replace(/\u2024/g,".")).filter(Boolean);
 const allText=L=>[L.title,L.tagline,L.synopsis,L.pay,L.submission_requirements,L.schedule_note,L.shoot_location,...L.roles.map(r=>`${r.name} ${r.description} ${r.pay}`)].join("\n");
 const personText=L=>[L.title,L.tagline,L.synopsis,L.pay,L.submission_requirements,L.schedule_note,...L.roles.map(r=>`${r.description} ${r.pay}`)].join("\n");
 const dayNum=d=>Math.round(new Date(String(d).slice(0,10)+"T00:00:00Z").getTime()/86400000);
