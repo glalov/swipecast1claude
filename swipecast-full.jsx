@@ -4271,7 +4271,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .cd-deadline{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
   letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
 .cd-deadline.soon{color:#A8341C;}
-/* Casting page boxes white to match the white Browse cards (owner, 2026-10-27); the .cd-side apply panel stays beige. */
+/* Casting page boxes white to match the white Browse cards (owner, 2026-10-27); the .cd-side apply panel is pale teal since 2026-10-28. */
 .cd-card{background:#FFFFFF;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
   box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:24px;}
 .cd-grid{display:grid;grid-template-columns:1fr 288px;}
@@ -4299,6 +4299,12 @@ body.fbsp-open #castoria-root{display:none!important;}
   margin-top:16px;padding-top:14px;border-top:1px solid var(--bdr);}
 .cd-side{background:var(--s2);border-left:1px solid var(--bdr);padding:20px 22px;display:flex;
   flex-direction:column;justify-content:center;gap:10px;}
+/* Apply panel (owner, 2026-10-28, option A): pale teal tied to the Apply button, content at the top, Apply as wide as the role picker. */
+.cd-side{background:#F3F8F6;border-left-color:#DCEBE6;justify-content:flex-start;padding:28px 26px;gap:12px;}
+.cd-side .apply-cta{width:100%;}
+.cd-side .cd-side-sum{margin:0;font-size:13.5px;color:var(--t2);line-height:1.5;}
+.cd-side .cd-side-sum b{color:#206557;}
+.cd-side .cd-side-note{margin:0;font-size:12.5px;color:#5A5B70;}
 .cd-side h3{font-size:15px;font-weight:800;}
 .cd-side .apply-cta{margin-top:2px;}
 .cd-side .hint{font-size:12px;color:var(--t2);line-height:1.5;}
@@ -14810,6 +14816,8 @@ Free submission used
           </div>
           {canApply&&<div className="cd-side">
             <h3>Ready to apply?</h3>
+            {/* Count and top rate only: the closing date is stated once, above the card. */}
+            {(()=>{const tr=roleTopRate(c.roles);return <p className="cd-side-sum">{roleCount} {roleCount===1?"role":"roles"}{tr?<> · up to <b>{fmtTopRate(tr)}</b></>:null}</p>;})()}
             {(()=>{
               // Roles already submitted to are marked and can't be picked; with
               // nothing picked, Apply goes to the first role still open to them.
@@ -14824,6 +14832,7 @@ Free submission used
                 {applied.has(idx)
                   ?<span className="role-applied big">Applied<Ico n="check" s={16}/></span>
                   :<button className="btn-teal apply-cta" onClick={()=>handleApply(sortedRoles[idx],idx)}>{"Apply now"}</button>}
+                {!applied.has(idx)&&<p className="cd-side-note">Your profile is sent with your application.</p>}
               </>);
             })()}
             {/* The closing date is above the card, said once. */}
