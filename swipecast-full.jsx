@@ -2860,7 +2860,8 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .pp-uni .pp-1p .pp-txt strong{font-weight:700;}
 .pp-uni .pp-1p .pp-stats{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(88px,1fr))!important;gap:16px 18px!important;border-top:0!important;padding-top:0!important;margin-bottom:0!important;}
 .pp-uni .pp-1p .pp-stats .pp-lbl{margin-bottom:4px!important;}
-.pp-uni .pp-1p .pp-stats .pp-val{white-space:normal;}
+.pp-uni .pp-1p .pp-stats .pp-val{white-space:normal;overflow-wrap:anywhere;}
+.pp-uni .pp-1p .pp-stats>*{min-width:0;}
 .pp-uni .pp-1p .pp-div{border-top:1px dashed var(--bdr)!important;margin-top:18px!important;padding-top:16px!important;}
 .pp-uni .pp-1p .pp-plays{margin:18px 0 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .pp-uni .pp-1p .pp-plays-label{margin:0 4px 0 0!important;}
@@ -24442,7 +24443,7 @@ function CompanyStep({uid,displayName,initialRole,onSaved,onCancel}){
       <div className="form-group"><label className="label">{tr('reg.cd.companyName')}</label>
         <input className="input" autoFocus value={name} maxLength={120} placeholder="e.g. Northlight Casting" onChange={e=>{setName(e.target.value);if(err)setErr("");}}/></div>
       <div className="form-group"><label className="label">{tr('reg.cd.role')}</label>
-        <select className="select" style={{width:"100%"}} value={role} onChange={e=>setRole(e.target.value)}>{CD_COMPANY_ROLES.map(r=><option key={r}>{r}</option>)}</select></div>
+        <select className="select" style={{width:"100%"}} value={role} onChange={e=>setRole(e.target.value)}>{CD_COMPANY_ROLES.map(r=><option key={r} value={r}>{r}</option>)}</select></div>
       {err&&<div style={{margin:"2px 0 12px",fontSize:13,color:"#c0392b"}}>{err}</div>}
       <button type="submit" className="btn-p" style={{width:"100%"}} disabled={busy}>{busy?"Saving…":onCancel?"Save and continue":"Continue"}</button>
       {onCancel&&<button type="button" className="btn-s" style={{width:"100%",marginTop:10}} onClick={onCancel} disabled={busy}>Cancel</button>}
@@ -30703,11 +30704,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         </div>
         {/* Even rows on desktop (owner, 2026-10-14): men 14 boxes = 7+7, women 15 = 5+5+5. */}
         <div className="sz-grid" style={{"--cols":(()=>{const n=3+(SIZE_FIELDS[f.size_set]||[]).length;return n%7===0?7:n%5===0?5:n%6===0?6:7;})()}}>
-          <div><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height||""} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h}>{h}</option>)}</select></div>
-          <div><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight||""} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w}>{w}</option>)}</select></div>
-          <div><label className="label">Body type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option>{BODY_TYPES.map(b=><option key={b}>{b}</option>)}</select></div>
+          <div><label className="label">Height</label><select className="select" style={{width:"100%"}} value={f.height||""} onChange={e=>up("height",e.target.value)}><option value="">Select</option>{HEIGHTS.map(h=><option key={h} value={h}>{h}</option>)}</select></div>
+          <div><label className="label">Weight</label><select className="select" style={{width:"100%"}} value={f.weight||""} onChange={e=>up("weight",e.target.value)}><option value="">Select</option>{WEIGHTS.map(w=><option key={w} value={w}>{w}</option>)}</select></div>
+          <div><label className="label">Body type</label><select className="select" style={{width:"100%"}} value={f.body_type||""} onChange={e=>up("body_type",e.target.value)}><option value="">Select</option>{BODY_TYPES.map(b=><option key={b} value={b}>{b}</option>)}</select></div>
           {(SIZE_FIELDS[f.size_set]||[]).map(([k,opts])=>(
-            <div key={f.size_set+k}><label className="label">{k}</label><select className="select" style={{width:"100%"}} value={(f.sizes||{})[k]||""} onChange={e=>{const v=e.target.value;setF(x=>({...x,sizes:{...(x.sizes||{}),[k]:v}}));}}><option value="">Select</option>{opts.map(o=><option key={o}>{o}</option>)}</select></div>
+            <div key={f.size_set+k}><label className="label">{k}</label><select className="select" style={{width:"100%"}} value={(f.sizes||{})[k]||""} onChange={e=>{const v=e.target.value;setF(x=>({...x,sizes:{...(x.sizes||{}),[k]:v}}));}}><option value="">Select</option>{opts.map(o=><option key={o} value={o}>{o}</option>)}</select></div>
           ))}
         </div>
       </div>
@@ -30752,7 +30753,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         <div className="form-row">
           <div className="form-group"><label className="label">Category</label>
             <select className="select" style={{width:"100%"}} value={creditForm.category} onChange={e=>setCreditForm(x=>({...x,category:e.target.value}))}>
-              {CREDIT_CATEGORIES.map(c=><option key={c}>{c}</option>)}
+              {CREDIT_CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div className="form-group"><label className="label">Year</label>
