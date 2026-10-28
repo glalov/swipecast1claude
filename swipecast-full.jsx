@@ -5519,7 +5519,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    miss everyone makes. Apply stops the click so the two never fight. */
 .rl-top{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:#FFFFFF;transition:background .25s;}
 .rl-top.rl-clickable{cursor:pointer;}
-.rl-top.rl-clickable:hover{background:#FBFAF7;}
+/* Hover (owner, 2026-10-28, option A): row stays white; a short teal edge slides in and the chevron goes pale teal. Opening extends the edge to full height. */
+@media (hover:hover){.rl-row:not(.rl-open):has(>.rl-top.rl-clickable:hover)::before{top:33%;bottom:33%;}.rl-row:not(.rl-open) .rl-top.rl-clickable:hover .rl-chev{background:#EAF4F2;border-color:#CFE0DC;}}
 .rl-row.rl-open .rl-top,.rl-row.rl-open .rl-top.rl-clickable:hover{background:#FFFFFF;}
 .rl-top:focus-visible{outline:2px solid #376A60;outline-offset:-3px;}
 /* Applied role, row closed (owner 2026-10-21, option "4b"): an outlined ink
