@@ -5513,14 +5513,14 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    motion reads as the row unfolding rather than as content being appended. */
 .rl-row::before{content:"";position:absolute;left:0;top:50%;bottom:50%;width:3px;background:#4F8B7F;transition:top .42s cubic-bezier(.22,.9,.28,1),bottom .42s cubic-bezier(.22,.9,.28,1);}
 .rl-row.rl-open::before{top:0;bottom:0;}
-.rl-row.rl-open{background:#FBF8F1;border-bottom-color:#EDE6D8;}
+.rl-row.rl-open{background:#FFFFFF;border-bottom-color:#EDE6D8;box-shadow:inset 0 1px 0 #F1EEE7;}
 /* The whole header is the hit target, not a small chevron: on a phone the
    chevron alone is a 30px tap area inside a 120px row, which is exactly the
    miss everyone makes. Apply stops the click so the two never fight. */
 .rl-top{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:#FFFFFF;transition:background .25s;}
 .rl-top.rl-clickable{cursor:pointer;}
-.rl-top.rl-clickable:hover{background:#FBF8F1;}
-.rl-row.rl-open .rl-top{background:#FBF8F1;}
+.rl-top.rl-clickable:hover{background:#FBFAF7;}
+.rl-row.rl-open .rl-top,.rl-row.rl-open .rl-top.rl-clickable:hover{background:#FFFFFF;}
 .rl-top:focus-visible{outline:2px solid #376A60;outline-offset:-3px;}
 /* Applied role, row closed (owner 2026-10-21, option "4b"): an outlined ink
    "✓ SUBMITTED" tag beside the role type — no colour, no row tint, no hover change.
@@ -5610,7 +5610,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    self-tape. Described, never demanded — no "submit", no "required", no "you". */
 .rl-lead{font-size:12.5px;font-weight:700;color:#4A5560;margin-top:18px;padding-top:16px;border-top:1px solid #EFEDE6;}
 .rl-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;}
-.rl-pills .badge{font-size:13px;padding:7px 13px;gap:6px;font-weight:700;background:#EDE8DC;color:#14161F;border:1px solid #DFD8C8;}
+.rl-pills .badge{font-size:13px;padding:7px 13px;gap:6px;font-weight:700;background:#FFFFFF;color:#14161F;border:1px solid #E1DBCE;}
 .rl-pills .badge-tape{background:#EAF3F1;border-color:#CFE1DD;color:#173B34;}
 @media (max-width:900px){
   .rl-cols{grid-template-columns:1fr;gap:0;}
