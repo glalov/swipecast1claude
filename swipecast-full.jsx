@@ -5637,6 +5637,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    The mark is now a filled 28px illustration on no tile: the tile's six pixels
    went to the artwork. */
 .rl-coin{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+/* Role rows (owner, 2026-10-28, option A): pay without the green box - green rate, grey estimate underneath, no bill icon. */
+.rl-right .rl-pay{border:0;background:none;border-radius:0;padding:0 4px 0 0;}
+.rl-right .rl-pay .rl-coin{display:none;}
+.rl-right .rl-pay .s{border-top:0;margin-top:5px;padding-top:0;font-weight:600;color:#5A5B70;}
 /* CASTING BOARD (6+ roles): the list stays put and the panel beside it swaps,
    so an actor can compare every rate without losing their place. */
 .rb-wrap{display:grid;grid-template-columns:210px 1fr;min-height:260px;border:1px solid #D9E9E6;border-radius:14px;overflow:hidden;background:#fff;}
