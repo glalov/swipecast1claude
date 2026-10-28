@@ -1835,9 +1835,9 @@ body.sheet-push .b2t-cube{display:none;}
    honey star, hanging from a 4px honey line over the story side only (stops at the
    roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
    gate and dashboard keep the PickBadge chip. */
-.b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:340px;height:4px;background:#EAC080;pointer-events:none;}
-.b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 6px 26px;border-radius:0 0 8px 0;background:#1A1A2E;color:#FBF1DA;font-size:12.5px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
-.b5-ptab i{color:#EAC080;font-size:12px;line-height:1;}
+.b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:340px;height:4px;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);pointer-events:none;}
+.b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 6px 26px;border-radius:0 0 8px 0;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);color:#FFF8EB;font-size:12.5px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
+.b5-ptab i{color:#FFE7B8;font-size:12px;line-height:1;}
 /* Dashboard upgrade banner button (C1, 2026-10-27): solid white on the coral gradient. */
 .dash-upg-btn{background:#fff;color:#1A1A2E;transition:background .15s;}
 .dash-upg-btn:hover{background:#FFF1EC;}
