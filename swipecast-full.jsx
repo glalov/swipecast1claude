@@ -4116,6 +4116,11 @@ body.sheet-push .b2t-cube{display:none;}
    the breakdown button is the calm secondary step, sized near Apply. */
 .b5-ghost{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;background:transparent;color:#1A1A2E;border:1.25px solid #1A1A2E;border-radius:8px;padding:6px 13px;cursor:pointer;}
 .b5-ghost:hover{background:#1A1A2E;color:#fff;}
+.b5-save{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;background:transparent;color:var(--t2);border:1.25px solid var(--bdr);border-radius:8px;padding:6px 12px 6px 10px;cursor:pointer;transition:border-color .15s,color .15s;}
+.b5-save svg{width:15px;height:15px;flex:none;}
+.b5-save:hover{border-color:var(--teal);color:var(--teal-dk);}
+.b5-save.on{color:var(--teal-dk);border-color:var(--teal);}
+.b5-save:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 /* Roles column: half-strength tint between the white card and the #F7F5F0 page, so no third hue
    (owner, 2026-10-27, demo "Half-strength"; replaced warm sage, then warm sand, the same evening). */
 .b5-side{border-left:1px solid #E6E2D9;padding:6px 22px;display:flex;flex-direction:column;justify-content:center;background:#FBFAF7;}
@@ -17830,6 +17835,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     {isArchived||isExpiredCasting
                       ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
                       :<button type="button" className="b5-ghost" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{withTri(btnLabel)}</button>}
+                    {/* One Save per casting (owner, 2026-10-27): saved_castings is per casting, so the old
+                        per-role bookmarks all lit up together and looked broken. */}
+                    {!isClosedCard&&<button type="button" className={"b5-save"+(isSaved?" on":"")} aria-pressed={isSaved} aria-label={isSaved?"Saved. Remove from saved castings":"Save this casting"} onClick={e=>{e.stopPropagation();toggleSaveCasting(rawC);}}>
+                      <svg viewBox="0 0 24 24" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>{isSaved?"Saved":"Save"}
+                    </button>}
                     {applied.has(c.id)?<span className="tag tag-grn" style={{fontSize:11,fontWeight:700}}>{t('search.applied')}</span>:null}
                   </div>
                 </div>
@@ -17849,9 +17859,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                         <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><React.Fragment key={k}>{k?" · ":""}<span className="b5-pay">{x}</span></React.Fragment>)}</div>
                       </div>
                       {!isClosedCard&&<div className="b5-racts">
-                        <button type="button" className={"b5-bm"+(isSaved?" on":"")} aria-label={isSaved?"Saved":"Save casting"} aria-pressed={isSaved} onClick={e=>{e.stopPropagation();toggleSaveCasting(rawC);}}>
-                          <svg viewBox="0 0 24 24" fill={isSaved?"currentColor":"none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
-                        </button>
                         {r.id&&appliedRoleIds.has(r.id)
                           ?<span className="role-applied">Applied<Ico n="check" s={14}/></span>
                           :<button type="button" className="b5-apply" onClick={e=>{e.stopPropagation();openSheet(rawC,null,{focus:r});}}>{withTri("Apply")}</button>}
