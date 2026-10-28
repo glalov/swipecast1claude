@@ -43228,7 +43228,9 @@ const ACG = (()=>{
     const {fmt,np,cast,days,cat,doc,brand}=c;
     let venue=String(c.venue||"").replace(/^(A|An|The)\s/,m=>m.toLowerCase());
     for(let i=0;i<3;i++)venue=venue.replace(/\s+(in|on|at|a|an|the|of|with|for|and|to|by|from)$/i,"");
-    const art=x=>capFirst(v3Aa(x));
+    // Round 12 (2026-10-27): no headline opens on "A"/"An". The format leads
+    // bare, the way a board headline reads ("Short film set at a diner: ...").
+    const art=x=>capFirst(stripArticle(String(x)));
     const cands=[];
     if(doc){
       cands.push(`${art(fmt)} about ${np} — casting ${cast}.`,`${art(fmt)} about ${np}: ${cast}, ${days}.`);
@@ -43242,6 +43244,9 @@ const ACG = (()=>{
       if(venue&&!/studio|booth|stage|theater|soundstage|rehearsal|conference|writers/i.test(venue))cands.push(`${art(fmt)} shot ${placePrep(venue)} ${venue} — casting ${cast}, ${days}.`,`${art(fmt)} set ${placePrep(venue)} ${venue}: ${cast}, ${days}.`);
     }
     cands.push(`${art(fmt)} about ${np}, ${days} — casting ${cast}.`,`Casting ${cast} for ${v3Aa(fmt)} about ${np}, ${days}.`,`${art(fmt)} about ${np} (${days}): casting ${cast}.`);
+    // Round 12: headlines that lead on the call or the schedule, not the format.
+    if(np&&Math.random()<0.3)cands.push(pick([`Now casting ${v3Aa(fmt)} about ${np}: ${cast}, ${days}.`,`Looking for ${cast} — ${stripArticle(String(fmt))} about ${np}, ${days}.`]));
+    if(np&&!/^(a|an)\s/i.test(String(days)))cands.push(`${capFirst(days)} on ${v3Aa(fmt)} about ${np}. Casting ${cast}.`);
     // Round 6: the persona's own headline habits.
     const Pn=c.persona||{};
     if(!doc){
@@ -43259,6 +43264,7 @@ const ACG = (()=>{
     const ok=cgShuffle(cands).map(x=>v7Art(x.replace(/\s{2,}/g," ").replace(/ ,/g,","))).filter(x=>{
       const k=clean(x);
       if(h.tags.has(k)||res.tags.has(k))return no(x,"used");
+      if(R12_A_OPEN.test(x))return no(x,"opens on A");
       if(V7_TAG_BANNED.test(x))return no(x,"banned");
       if(x.split(/\s+/).length>26)return no(x,"long");
       // Round 8: a one-line brand brief names the format and category, and so
@@ -44493,6 +44499,47 @@ const ACG = (()=>{
     for(const f of bank){const line=`${who} states: "${f(c)}"`;if(!v3SentUsed(v3SentKey(line),h,res))return line;}
     return "";
   }
+  // ── Round 12 (2026-10-27): no tagline or summary opens on "A"/"An" ──────
+  // The board read "A cleaner who…", "A comedy feature film in which…", "A
+  // student film shot in…" card after card. Shapes now lead on the project,
+  // the place, the call or the title; whatever still opens on an article is
+  // rewritten here, and r11Problems rejects anything that slips through.
+  const R12_A_OPEN=/^\s*(A|An)\s/;
+  const R12_FMT=/^(?:A|An) ((?:[\w'’-]+ ){0,5}?)(film|feature|short|series|commercial|spot|video|ad|play|musical|campaign|shoot|documentary|doc|docu-series|podcast|reading|read|pilot|reel|trailer|piece|job|demo|presentation|lookbook|session|event|game|drama|comedy|thriller)\b/i;
+  const R12_PLACEY=/\b(town|village|county|state|island|ship|camp|station|farm|ranch|mountains?|desert|border|abroad|overseas|space|orbit|planet|lake|river|sea|coast|19\d\ds|18\d\ds|1\d{3}\b|in [A-Z][a-z]+)\b/;
+  function r12Lower(x){return String(x).replace(/^(A|An)\b/,m=>m.toLowerCase());}
+  function r12IsFormat(s1){const m=String(s1).match(R12_FMT);return !!m&&!/\b(who|whose|that|with)\b/i.test(m[1]||"");}
+  // A story sentence that opens on "A …": a place, "The …" or a plain
+  // lead-in, taken in turn so a batch never leans on one of them.
+  function r12Lead(s,c,res){
+    const words=String(s).split(/\s+/).length;
+    const town=String(c.town||"").trim();
+    const opts=[
+      ()=>town&&!R12_PLACEY.test(s)&&words<=26?`${pick(["In","Over in","Out in"])} ${town}, ${r12Lower(s)}`:null,
+      ()=>/^(A|An) (?:[\w'’-]+ ){0,4}?(who|whose)\b/.test(s)?String(s).replace(/^(A|An) /,"The "):null,
+      ()=>words<=27?`${pick(["The setup:","Where it starts:"])} ${r12Lower(s)}`:null,
+      ()=>String(s).replace(/^(A|An) /,"The ")
+    ];
+    const n=res?(res._r12n=(res._r12n||0)+1):Math.floor(Math.random()*opts.length);
+    for(let i=0;i<opts.length;i++){const out=opts[(n+i)%opts.length]();if(out)return out;}
+    return s;
+  }
+  // The last word on the openings, run on the finished draft.
+  function r12NoAOpen(item,c,res){
+    const fix=(text,tag)=>{
+      const t=String(text||"");
+      if(!R12_A_OPEN.test(t))return t;
+      const s1=v3Sentences(t)[0]||t,rest=t.slice(t.indexOf(s1)+s1.length);
+      let s2;
+      if(r12IsFormat(s1)){
+        const bare=s1.replace(/^(A|An) /,"").replace(/^./,m=>m.toUpperCase());
+        s2=tag?bare:pick([`This is ${r12Lower(s1)}`,`It's ${r12Lower(s1)}`,bare]);
+      }else s2=tag?s1.replace(/^(A|An) /,"The "):r12Lead(s1,c,res);
+      return s2+rest;
+    };
+    item.tagline=fix(item.tagline,true);
+    item.synopsis=fix(item.synopsis,false);
+  }
   // ── Round 11 (2026-10-04): summary openings ─────────────────────────────
   // Every summary had read "Casting/Seeking X for 'Title,' a format. Logline:
   // …". There are now thirteen opening shapes; a shape never repeats inside a
@@ -44513,8 +44560,8 @@ const ACG = (()=>{
     if(/^In '/.test(t))return "inthis";
     if(/^'[^']+' is\b/.test(t))return "titlefirst";
     if(/^(Production|Rehearsals|Recording) starts? soon\b/.test(t))return "coming";
-    if(/\bwanted for\b/.test(s1))return "wanted";
-    if(/^(A|An) [^.]*\b(tells how|is about|shooting in|shot remotely)\b/.test(s1))return "formatplace";
+    if(/\bwanted for\b/i.test(s1))return "wanted";
+    if(/^(A|An|This|It's|'[^']+,') [^.]*\b(tells how|is about|shooting in|shot remotely)\b/.test(s1)||/^[A-Z][a-z]+ [^.]*\b(shooting in|shot remotely)\b[^.]*\.$/.test(s1)&&!/\b(is|are|was|has)\b/.test(s1))return "formatplace";
     return "story";
   }
   function r11RecentOpen(h,res){return (res._r11Open||[]).slice().reverse().concat(h.r11Open||[]);}
@@ -44563,16 +44610,16 @@ const ACG = (()=>{
       const B={
         casting:()=>[pick([`Casting ${who} for ${art}.`,`Casting ${art}.`])],
         seeking:()=>[`Seeking ${who} for ${art}.`],
-        label:()=>abOk?[`${capFirst(art)}${where}.`,`Synopsis: ${capFirst(ab)}.`]:null,
+        label:()=>abOk?[`${capFirst(`${dc}${fmt}`)}${where}.`,`Synopsis: ${capFirst(ab)}.`]:null,
         story:()=>abOk&&!/\b(campaign|shoot|promo|video|ad|commercial|spot|content)\b/i.test(ab.split(/\s+/).slice(0,6).join(" "))?[`The ${noun} is built around ${ab}.`,`It's ${art}${where}.`]:null,
-        formatplace:()=>where?[`${capFirst(art)}${where}.`,`Open roles: ${who}.`]:null,
+        formatplace:()=>where?[`${pick(["This is ","It's ","",""])}${art}${where}.`.replace(/^(a|an) /,"").replace(/^./,m=>m.toUpperCase()),`Open roles: ${who}.`]:null,
         production:()=>[`Our ${group} is ${making} ${art} and needs ${who}.`],
         question:()=>[pick(r11Question("brand")),`We're casting ${who} for ${art}${placeIn}.`],
         people:()=>[`The ${noun} centers on ${who}.`,`It's ${art}${where}.`],
         role:()=>[`We're looking for ${who} for ${art}.`],
         titlefirst:null,inthis:null,
         coming:()=>[`Production starts soon on ${art}${where}.`,`Open roles: ${who}.`],
-        wanted:()=>[`${capFirst(who)} wanted for ${art}.`]
+        wanted:()=>[R12_A_OPEN.test(capFirst(who))?`Wanted for ${art}: ${who}.`:`${capFirst(who)} wanted for ${art}.`]
       };
       const order=cgShuffle(R11_OPEN_KEYS.filter(k=>B[k]&&B[k]()));
       shape=order.find(k=>!banned.has(k))||order.sort((a,b)=>lastAt(b)-lastAt(a))[0];
@@ -44606,9 +44653,11 @@ const ACG = (()=>{
       const N={
         casting:()=>kind==="docu"||kind==="job"?[`Casting ${lead} for ${TA} ${ab}.`]:[`Casting ${TA} ${ab}.`],
         seeking:()=>[`Seeking ${lead} for ${TA} ${ab}.`],
-        label:()=>[bare?`'${bare}' (${lenPh}${where}).`:`${capFirst(art)}${where}.`,clause?`${lab}: ${P}.`:`${lab}: ${capFirst(docLead.replace(/^The /,"the "))} ${p}.`],
-        story:()=>[storyS,bare?`'${bare}' is ${art}${where}.`:`It's ${art}${where}.`],
-        formatplace:()=>[clause?`${capFirst(art)}${placeIn}${T?`, ${T}`:""} tells how ${p}.`:`${capFirst(art)}${placeIn}${T?`, ${T}`:""} is about ${p}.`],
+        label:()=>[bare?`'${bare}' (${lenPh}${where}).`:`${capFirst(stripArticle(lenPh))}${where}.`,clause?`${lab}: ${P}.`:`${lab}: ${capFirst(docLead.replace(/^The /,"the "))} ${p}.`],
+        // Round 12: a premise that opens on "A …" is not the first thing on
+        // the card — the project line leads, or the premise gets a lead-in.
+        story:()=>R12_A_OPEN.test(storyS)?(Math.random()<0.5?[bare?`'${bare}' is ${art}${where}.`:`This is ${art}${where}.`,storyS]:[r12Lead(storyS,{town,lead:leadR},res),bare?`'${bare}' is ${art}${where}.`:`It's ${art}${where}.`]):[storyS,bare?`'${bare}' is ${art}${where}.`:`It's ${art}${where}.`],
+        formatplace:()=>[`${bare?`'${bare},' ${art}${placeIn},`:`This ${lenPh}${placeIn}`} ${clause?"tells how":"is about"} ${p}.`],
         production:()=>[`Our ${group} is ${making} ${TA} ${ab}.`],
         question:()=>[pick(r11Question(kind,G,stage,fam)),bare?`'${bare}' is ${art} ${ab}.`:`This ${lenPh} is a story ${ab}.`.replace("a story about","about")],
         people:()=>people.length>=2&&clause?[`At the center of ${bare?nm:art}: ${list(people.slice(0,3))}.`,`In this ${noun}, ${p}.`]:null,
@@ -44616,7 +44665,7 @@ const ACG = (()=>{
         inthis:()=>clause&&bare?[`In ${T} ${art}${where}, ${p}.`]:null,
         titlefirst:()=>bare?[`'${bare}' is ${art} ${ab}.`]:null,
         coming:()=>[`${stage?"Rehearsals start":audio?"Recording starts":"Production starts"} soon on ${TA} ${ab}.`],
-        wanted:()=>[`${capFirst(lead)} wanted for ${TA} ${ab}.`]
+        wanted:()=>[R12_A_OPEN.test(capFirst(lead))?`Wanted for ${TA} ${ab}: ${lead}.`:`${capFirst(lead)} wanted for ${TA} ${ab}.`]
       };
       const order=cgShuffle(R11_OPEN_KEYS.filter(k=>N[k]&&N[k]()));
       shape=order.find(k=>!banned.has(k))||order.sort((a,b)=>lastAt(b)-lastAt(a))[0];
@@ -45313,6 +45362,9 @@ const ACG = (()=>{
       const top=Math.max(0,...(payTxt.match(/\$[\d,]+/g)||[]).map(x=>+x.replace(/[$,]/g,"")));
       if(top>500)out.push("Off-Off-Broadway non-union pay above $500: $"+top);
     }
+    // Round 12: nothing on the card opens on "A"/"An".
+    if(R12_A_OPEN.test(String(item.tagline||"")))out.push("tagline opens on A/An");
+    if(R12_A_OPEN.test(String(item.synopsis||"")))out.push("summary opens on A/An");
     // 7. Summary grammar: a participle phrase used as a subject.
     {const s1=v3Sentences(String(item.synopsis||""))[0]||"";if(/\b\w+ing [a-z ]{3,40}\b(he|she|they) (is|are) not sure of has\b|\bnot sure of has\b/.test(s1))out.push("summary sentence is ungrammatical");}
     return out;
@@ -45850,6 +45902,9 @@ const ACG = (()=>{
       // taken again from the final types; articles are fixed last.
       if(item._roles)item._roles=item._roles.slice().sort(compareRoles);
       r10FixArticles(item);
+      r12NoAOpen(item,{town:String(r8Place(city,area)||"").split(",")[0].trim().replace(/^Bronx$/,"the Bronx")},res);
+      item._lines=splitLines(item.synopsis).concat([item.tagline],(item._roles||named).map(r=>r.description)).filter(Boolean);
+      item._storyTextKey=`${item.title||""} ${type} ${item.synopsis}`.slice(0,1200);
       item._skel=r10SkelOf(seed);
       item._r10Sig=(!seed._about&&!v3IsBrief(seed))?r10Sig(`${seed.p} ${turn}`):null;
       const c={fam,L,base:ctx.base,setup:ctx.setup,days:plan.days,rehearsal:plan.leadRehearse?plan.rehearsal:0,windowDays,mature,h,res};
