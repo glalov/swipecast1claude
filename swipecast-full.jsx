@@ -16706,6 +16706,8 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
   const story=casting.synopsis||casting.tagline||casting.desc||"";
   const shoot=cardShootChip(casting).replace(/^Shoots /,"");
   const roles=Array.isArray(casting.roles)?casting.roles:[];
+  // One role: it is the role, so the form names it from the start.
+  useEffect(()=>{if(roles.length===1&&!(pending&&pending.role))onPickRole(roles[0]);},[casting.id]);
   const toForm=()=>{const el=formRef.current;if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
   const pick=(r)=>{onPickRole(r);setTimeout(toForm,30);};
   const facts=[["Pay",casting.pay],["Shoots",shoot],["Union",casting.union]].filter(f=>f[1]);
