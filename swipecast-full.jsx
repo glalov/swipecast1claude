@@ -2422,6 +2422,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-main{max-width:1120px;margin:0 auto;padding:28px 24px 36px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
 .cg-cast{background:var(--s1);border:1px solid var(--bdr);border-radius:18px;overflow:hidden;min-width:0}
 .cg-hero{height:200px;background:#2a2622 center 40%/cover no-repeat;position:relative}
+.cg-hero.cg-noimg{height:auto;background:#fff;border-bottom:1px solid var(--bdr)}
+.cg-hero.cg-noimg:after{display:none}
+.cg-noimg .cg-ttl{position:static;padding:24px 24px 18px;color:var(--t1)}
+.cg-noimg .cg-ttl h1{color:var(--t1)}
+.cg-noimg .cg-prod{color:var(--t2)}
+.cg-noimg .cg-chip{background:var(--s2);color:var(--t2);-webkit-backdrop-filter:none;backdrop-filter:none}
 .cg-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,12,11,0) 25%,rgba(14,12,11,.78))}
 .cg-ttl{position:absolute;left:24px;right:24px;bottom:18px;z-index:1;color:#fff;min-width:0}
 .cg-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -16703,7 +16709,8 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
   useEffect(()=>{const el=formRef.current;if(!el||typeof IntersectionObserver==="undefined")return;
     const io=new IntersectionObserver(es=>setFormSeen(es[0].isIntersecting),{threshold:0.15});io.observe(el);return()=>io.disconnect();},[]);
   const src=visitSource();
-  const img=getCastingImages(casting)[0]||"/assets/legal/blog-hero-1200.jpg";
+  // The casting's own poster only. No stand-in photo (it borrowed the blog hero, owner 2026-10-28).
+  const img=getCastingImages(casting)[0]||"";
   const story=casting.synopsis||casting.tagline||casting.desc||"";
   const shoot=cardShootChip(casting).replace(/^Shoots /,"");
   const roles=Array.isArray(casting.roles)?casting.roles:[];
@@ -16716,7 +16723,7 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
     {src&&src.src==="craigslist"&&<div className="cg-from">Coming from Craigslist? This is the casting you clicked. Applying is free.</div>}
     <div className="cg-main">
       <div className="cg-cast">
-        <div className="cg-hero" style={{backgroundImage:`url("${img}")`}}>
+        <div className={"cg-hero"+(img?"":" cg-noimg")} style={img?{backgroundImage:`url("${img}")`}:undefined}>
           <div className="cg-ttl">
             <div className="cg-chips">{castingIsPick(casting)&&<PickBadge/>}{casting.type&&<span className="cg-chip">{castingTypeLabel(casting.type)}</span>}{casting.location&&<span className="cg-chip">{casting.location}</span>}</div>
             <h1>{casting.title}</h1>
