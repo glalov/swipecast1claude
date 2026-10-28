@@ -1859,10 +1859,12 @@ body.sheet-push .b2t-cube{display:none;}
    the breakdown button is the calm secondary step, sized near Apply. */
 .b5-ghost{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;background:transparent;color:#1A1A2E;border:1.25px solid #1A1A2E;border-radius:8px;padding:6px 13px;cursor:pointer;}
 .b5-ghost:hover{background:#1A1A2E;color:#fff;}
-.b5-save{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;background:transparent;color:var(--t2);border:1.25px solid var(--bdr);border-radius:8px;padding:6px 12px 6px 10px;cursor:pointer;transition:border-color .15s,color .15s;}
-.b5-save svg{width:15px;height:15px;flex:none;}
-.b5-save:hover{border-color:var(--teal);color:var(--teal-dk);}
-.b5-save.on{color:var(--teal-dk);border-color:var(--teal);}
+.b5-save{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:13px;background:#E8F3EF;color:#206557;border:1.25px solid #E8F3EF;border-radius:8px;padding:6px 12px 6px 10px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
+.b5-save svg{width:18px;height:18px;flex:none;}
+.b5-save:hover{background:#DCEDE7;border-color:#DCEDE7;}
+/* Saved = solid teal (owner, 2026-10-28, demo save option 3). */
+.b5-save.on{background:#2A8472;border-color:#2A8472;color:#fff;}
+.b5-save.on:hover{background:#206557;border-color:#206557;}
 .b5-save:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 /* Roles column: half-strength tint between the white card and the #F7F5F0 page, so no third hue
    (owner, 2026-10-27, demo "Half-strength"; replaced warm sage, then warm sand, the same evening). */
