@@ -143,11 +143,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .social-btn-dark{background:#1a1a2e;color:#fff;border:none;padding:0 20px;min-height:46px;border-radius:8px;font-weight:600;font-size:17px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;display:flex;align-items:center;justify-content:center;gap:12px;letter-spacing:0.1px;}
 .social-btn-dark:hover{background:#2d2d44;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.18);}
 .social-btn-dark>svg{width:26px;height:26px;flex-shrink:0;}
-/* Smallest phones: 15px so the long labels ("Create Free Account & Apply") stay on one line. */
-@media(max-width:360px){.social-btn-dark,.btn-p.auth-main{font-size:15px;}}
 /* Both buttons take the fields' shape: 46px, 8px corners; the main one is flat, no shadow
    (owner, 2026-10-26, demo login-buttons-square-demo.html B). */
 .btn-p.auth-main{min-height:46px;border-radius:8px;font-size:17px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-shadow:none;}
+/* Smallest phones: 15px so the long labels ("Create Free Account & Apply") stay on one line. */
+@media(max-width:360px){.social-btn-dark,.btn-p.auth-main{font-size:15px;}}
 .cg-page{background:var(--bg);padding-bottom:20px}
 .cg-from{background:#EAF3F0;color:#206557;font-size:13.5px;font-weight:600;text-align:center;padding:10px 16px}
 .cg-main{max-width:1120px;margin:0 auto;padding:28px 24px 36px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
