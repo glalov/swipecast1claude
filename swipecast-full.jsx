@@ -8848,7 +8848,7 @@ function RegisterTalent({onNavigate}){
   const [genderCustom,setGenderCustom]=useState(false);
   const up=(k,v)=>setF(x=>({...x,[k]:v}));
   const toggleType=t=>setF(x=>({...x,types:x.types.includes(t)?x.types.filter(y=>y!==t):[...x.types,t]}));
-  const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email address.");return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
+  const validStep1=()=>{if(!f.first||!f.last){setErr("Please enter your first and last name.");return false;}if(emailProblem(f.email)){setErr(emailProblem(f.email));return false;}if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return false;}if(!f.location){setErr("Please enter your location.");return false;}setErr("");return true;};
   const withTimeout=(promise,ms=30000,label="Request")=>Promise.race([promise,new Promise((_,rej)=>setTimeout(()=>rej(new Error(`${label} timed out. Check your connection and try again.`)),ms))]);
   const resendConfirmation=async()=>{
     setResentOk(false);setErr("");
@@ -8925,6 +8925,7 @@ function RegisterTalent({onNavigate}){
           setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
           window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;
         }
+        if(isEmailSendError(error.message)){setErr("We couldn't send a confirmation email to that address. Check it for typos, or use Continue with Google.");window.scrollTo(0,0);setLoading(false);submittingRef.current=false;return;}
         throw error;
       }
       if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
@@ -9057,7 +9058,7 @@ function RegisterTalent({onNavigate}){
             return;
           }
           if(ageNum<18){
-            if(!f.guardian_name||!f.guardian_email||!f.guardian_email.includes("@")){
+            if(!f.guardian_name||!f.guardian_email||emailProblem(f.guardian_email)){
               setErr("Talent under 18 must provide a parent or legal guardian's name and email.");
               window.scrollTo(0,0);
               return;
@@ -9112,7 +9113,7 @@ function RegisterCD({onNavigate}){
     if(submittingRef.current)return;
     setErr("");setDupEmail(false);setDupKind("");setResentOk(false);
     if(!f.first||!f.last){setErr("Please enter your first and last name.");return;}
-    if(!f.email||!f.email.includes("@")){setErr("Please enter a valid email.");return;}
+    if(emailProblem(f.email)){setErr(emailProblem(f.email));return;}
     if(!f.password||f.password.length<8){setErr("Password must be at least 8 characters.");return;}
     if(!f.company_name){setErr("Please enter your company or production.");return;}
     submittingRef.current=true;setLoading(true);
@@ -9154,6 +9155,7 @@ function RegisterCD({onNavigate}){
           setErr("An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.");
           setLoading(false);submittingRef.current=false;return;
         }
+        if(isEmailSendError(error.message)){setErr("We couldn't send a confirmation email to that address. Check it for typos, or use Continue with Google.");setLoading(false);submittingRef.current=false;return;}
         throw error;
       }
       if(data?.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){
@@ -13049,7 +13051,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
     if(submittingRef.current)return;
     setErr("");
     if(!firstName.trim()||!lastName.trim()){setErr("Please enter your first and last name.");return;}
-    if(!suEmail||!suEmail.includes("@")){setErr("Please enter a valid email address.");return;}
+    if(emailProblem(suEmail)){setErr(emailProblem(suEmail));return;}
     if(!suPass||suPass.length<8){setErr("Password must be at least 8 characters.");return;}
     submittingRef.current=true;setLoading(true);
     try{
@@ -13080,7 +13082,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           // Calm copy on a rate-limited confirmation email — retyping the address
           // makes it worse.
           const rate=error?.status===429||em.includes("rate limit")||em.includes("only request this")||em.includes("too many")||em.includes("exceeded")||em.includes("over_email_send");
-          setErr(rate?"We're sending a lot of verification emails right now. Your details are fine — wait about a minute, then try again with the same email.":(error.message||"Sign up failed. Please try again."));
+          setErr(rate?"We're sending a lot of verification emails right now. Your details are fine — wait about a minute, then try again with the same email.":isEmailSendError(error.message)?"We couldn't send a confirmation email to that address. Check it for typos, or use Continue with Google.":(error.message||"Sign up failed. Please try again."));
         }
         return;
       }
@@ -16727,6 +16729,21 @@ function castLandOn(){if(CASTLAND_LIVE)return true;try{return localStorage.getIt
 // Where a visitor came from, from the link itself (?utm_source=craigslist) —
 // Craigslist hides the referrer. Kept 30 days so a later return still counts.
 try{const q=new URLSearchParams(window.location.search);const u=(q.get("utm_source")||"").trim().toLowerCase().slice(0,40);if(u)localStorage.setItem("cs_src",JSON.stringify({src:u,campaign:(q.get("utm_campaign")||"").slice(0,60),ts:Date.now()}));}catch(_){}
+// Signup email check (2026-10-29): "@" alone let "name@yahoo" through, the confirmation email
+// bounced and Supabase answered with a raw mail-server error. Returns a message to show, or "".
+const EMAIL_FIX={"gmail.con":"gmail.com","gmail.co":"gmail.com","gmial.com":"gmail.com","gmai.com":"gmail.com","gamil.com":"gmail.com","gmail.cm":"gmail.com","yahoo.con":"yahoo.com","yaho.com":"yahoo.com","yahoo.co":"yahoo.com","hotmial.com":"hotmail.com","hotmail.con":"hotmail.com","outlook.con":"outlook.com","icloud.con":"icloud.com","iclod.com":"icloud.com"};
+const EMAIL_BARE={gmail:"gmail.com",yahoo:"yahoo.com",hotmail:"hotmail.com",outlook:"outlook.com",icloud:"icloud.com",aol:"aol.com"};
+function emailProblem(raw){
+  const e=String(raw||"").trim().toLowerCase();
+  if(!e)return "Please enter your email address.";
+  const at=e.split("@");const dom=at.length===2?at[1]:"";
+  const fix=EMAIL_FIX[dom]||EMAIL_BARE[dom];
+  if(fix)return `Check your email — did you mean ${at[0]}@${fix}?`;
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/.test(e))return "Please enter a full email address, like name@gmail.com.";
+  return "";
+}
+// Confirmation email could not be sent (bad or unreachable address).
+const isEmailSendError=m=>/sending confirmation|could not send email|invalid recipient|unexpected_failure/i.test(String(m||""));
 function visitSource(){try{const d=JSON.parse(localStorage.getItem("cs_src")||"null");if(d&&Date.now()-(d.ts||0)<30*864e5)return d;}catch(_){}return null;}
 function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,onBack}){
   const formRef=useRef(null);
