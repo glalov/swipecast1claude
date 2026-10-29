@@ -2500,7 +2500,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Browse Castings runs narrower than page-wide: the cards were capped at 1080
    to kill the dead zone, and everything above them has to share that edge or
    the column reads misaligned. Beats .page-wide on specificity, not order. */
-.page.page-browse{max-width:1160px;}
+.page.page-browse{max-width:1100px;} /* cards 1020px max (owner, 2026-10-28; was 1160 → 1080px cards) */
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
 /* Legal hero (Terms + Privacy, 2026-10-22): full-bleed film still, title low so it never sits on a face. */
@@ -4144,7 +4144,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-meta .pay{color:var(--teal);font-weight:600;}
 .b5-sum{margin:0;color:var(--t1);font-size:15px;line-height:1.5;max-width:68ch;}
 .b5-story-wrap{border-left:3px solid #EAC080;padding:2px 0 2px 12px;max-width:70ch;}
-.b5-story{margin:0;font-size:14.5px;line-height:1.55;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
+.b5-story{margin:0;font-size:14.5px;line-height:1.55;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;}
 .b5-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px;}
 /* Ink, not teal (owner-approved 2026-09-26): green on the card means Apply only;
    the breakdown button is the calm secondary step, sized near Apply. */
