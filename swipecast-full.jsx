@@ -2460,7 +2460,9 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-rn{font-weight:800;font-size:16px;color:var(--t1)}.cg-rm{font-size:13px;color:var(--t3);margin-top:2px}
 .cg-ap{flex:none;font-size:13px;font-weight:700;color:#fff;background:#2A8472;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:inherit}
 .cg-ap:hover{background:#206557}
-.cg-lock{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--t3);margin-top:14px;line-height:1.5}
+.cg-lock{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;color:var(--t1);margin-top:16px;line-height:1.5}
+.cg-lock>:first-child{color:#2A8472;flex:none;margin-top:1px}
+.cg-lock b{font-weight:700}
 .cg-side{position:sticky;top:96px;min-width:0;scroll-margin-top:90px}
 .cg-card{background:#fff;border:1px solid var(--bdr);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(36,31,25,.07)}
 .cg-form h2{font-size:24px!important;letter-spacing:-.6px!important;line-height:1.15}
@@ -16766,7 +16768,7 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
             </button>;})}
             </div>
           </>}
-          <div className="cg-lock"><Ico n="lock" s={16}/><span>Full role descriptions, sides and submission details open once you sign up.</span></div>
+          <div className="cg-lock"><Ico n="lock" s={18}/><span><b>Full role descriptions, sides and how to submit</b> open when you sign up, free.</span></div>
         </div>
       </div>
       <div className="cg-side" ref={formRef}><div className="cg-card">
