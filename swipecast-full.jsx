@@ -57777,7 +57777,6 @@ function App(){
       <nav className={"nav"+(navScrolled?" scrolled":"")}>
         <div className="logo" onClick={()=>navThen("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
         <div className="nav-links">
-          <span className={page==="home"?"act":""} onClick={()=>navigate("home")}>{navT('nav.home')}</span>
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           {classesOn&&<span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>}
           {/* One "Directories" item instead of two gold links side by side. Opens on hover,
@@ -57800,7 +57799,6 @@ function App(){
             </div>}
           </span>
           <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
-          <span className={page==="blog"?"act":""} onClick={()=>navigate("blog")}>{navT('nav.blog')}</span>
         </div>
         <div className="nav-actions" style={{display:"flex",gap:12,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
@@ -57861,7 +57859,6 @@ function App(){
         <div className={"mobile-menu-inner"+(menuClosing?" closing":"")} onClick={e=>e.stopPropagation()}>
           <button className="mm-close" aria-label="Close menu" onClick={closeMenu}><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
-            <button className="mm-link" onClick={()=>navThen("home")}>{navT('nav.home')}</button>
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
