@@ -2420,7 +2420,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-page{background:var(--bg);padding-bottom:20px}
 .cg-from{background:#EAF3F0;color:#206557;font-size:13.5px;font-weight:600;text-align:center;padding:10px 16px}
 .cg-main{max-width:1120px;margin:0 auto;padding:28px 24px 36px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
-.cg-cast{background:var(--s1);border:1px solid var(--bdr);border-radius:18px;overflow:hidden;min-width:0}
+.cg-cast{background:#fff;border:1px solid var(--bdr);border-radius:18px;overflow:hidden;min-width:0}
 .cg-hero{height:200px;background:#2a2622 center 40%/cover no-repeat;position:relative}
 .cg-hero.cg-noimg{height:auto;background:#fff;border-bottom:1px solid var(--bdr)}
 .cg-hero.cg-noimg:after{display:none}
@@ -2436,11 +2436,27 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-prod{font-size:14px;color:rgba(255,255,255,.85);margin-top:4px}
 .cg-body{padding:22px 24px 24px}
 .cg-tag{font-size:15.5px;line-height:1.6;color:var(--t2);margin:0 0 18px}
-.cg-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:22px}
-.cg-facts>div{background:var(--s2);border-radius:10px;padding:10px 12px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);min-width:0}
-.cg-facts b{display:block;font-size:14px;letter-spacing:0;text-transform:none;color:var(--t1);margin-top:3px;line-height:1.4}
+.cg-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0;margin-bottom:22px;border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+.cg-facts>div{background:#fff;padding:12px 14px;min-width:0;border-left:1px solid var(--bdr);margin-left:-1px}
+.cg-fk{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.cg-fpay{color:#206557!important}
+.cg-fsub{display:block;font-size:12.5px;color:#5A5B70;margin-top:3px;line-height:1.45}
+.cg-facts b{display:block;font-size:15.5px;font-weight:700;color:var(--t1);margin-top:3px;line-height:1.35}
 .cg-h{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;color:var(--t1)}
-.cg-role{border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:#fff}
+.cg-hint{font-size:13px;color:#5A5B70;margin:-4px 0 10px}
+.cg-roles{border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+.cg-role{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;background:#fff;border:0;border-top:1px solid #EEEAE2;padding:14px 16px;cursor:pointer;position:relative;color:inherit}
+.cg-role:first-child{border-top:0}
+.cg-role::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
+.cg-role:hover{background:#FBFAF7}
+.cg-role.on{background:#EAF4F2}
+.cg-role.on::before{background:#2A8472}
+.cg-role:focus-visible{outline:2px solid #1A1A2E;outline-offset:-2px}
+.cg-dot{width:20px;height:20px;border-radius:50%;border:2px solid #BFB8A9;flex:none;display:grid;place-items:center}
+.cg-role.on .cg-dot{border-color:#2A8472;background:#2A8472}
+.cg-role.on .cg-dot::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+.cg-rn,.cg-rm{display:block}
+.cg-rr{margin-left:auto;font-weight:700;color:#206557;font-size:14.5px;white-space:nowrap}
 .cg-rn{font-weight:800;font-size:16px;color:var(--t1)}.cg-rm{font-size:13px;color:var(--t3);margin-top:2px}
 .cg-ap{flex:none;font-size:13px;font-weight:700;color:#fff;background:#2A8472;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:inherit}
 .cg-ap:hover{background:#206557}
@@ -2469,7 +2485,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media(max-width:900px){
  .cg-main{grid-template-columns:minmax(0,1fr);padding:16px 16px 24px;gap:18px}.cg-side{position:static}
  .cg-hero{height:165px}.cg-ttl{left:16px;right:16px}.cg-ttl h1{font-size:27px}.cg-body{padding:18px 16px}
- .cg-how{padding:0 16px 96px}.cg-steps{grid-template-columns:minmax(0,1fr)}
+ .cg-how{padding:0 16px 96px}.cg-steps{grid-template-columns:minmax(0,1fr)}.cg-facts{grid-template-columns:minmax(0,1fr)}.cg-facts>div{border-left:0;margin-left:0;border-top:1px solid var(--bdr);margin-top:-1px}
  .cg-card{padding:20px 16px}
  .cg-sticky{display:block;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 88px calc(10px + env(safe-area-inset-bottom,0px)) 16px;transition:transform .25s ease;background:rgba(255,253,248,.96);border-top:1px solid var(--bdr)}
  .cg-sticky.cg-hide{transform:translateY(110%)}
@@ -16718,7 +16734,13 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
   useEffect(()=>{if(roles.length===1&&!(pending&&pending.role))onPickRole(roles[0]);},[casting.id]);
   const toForm=()=>{const el=formRef.current;if(el)el.scrollIntoView({behavior:"smooth",block:"start"});};
   const pick=(r)=>{onPickRole(r);setTimeout(toForm,30);};
-  const facts=[["Pay",casting.pay],["Shoots",shoot],["Union",casting.union]].filter(f=>f[1]);
+  // Pay as a short value ("Up to $875 flat"); the listing's own pay sentence sits under it (owner, 2026-10-28).
+  const topRate=roleTopRate(roles);
+  const payV=topRate?`Up to ${fmtTopRate(topRate)}`:(casting.pay||"");
+  const paySub=topRate&&casting.pay&&!/^\s*(up to\s*)?\$[\d,.]+(\s*(\/\w+|flat|per \w+))?\s*$/i.test(casting.pay)?casting.pay:"";
+  const facts=[["Pay",payV,paySub,true],["Shoots",shoot],["Union",casting.union]].filter(f=>f[1]);
+  const isPicked=r=>!!(pending&&pending.role&&(pending.role.id!=null?pending.role.id===r.id:pending.role.name===r.name));
+  const picked=pending&&pending.role;
   return(<div className="cg-page">
     {src&&src.src==="craigslist"&&<div className="cg-from">Coming from Craigslist? This is the casting you clicked. Applying is free.</div>}
     <div className="cg-main">
@@ -16732,23 +16754,22 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
         </div>
         <div className="cg-body">
           {story&&<p className="cg-tag">{story}</p>}
-          {facts.length>0&&<div className="cg-facts">{facts.map(f=><div key={f[0]}>{f[0]}<b>{f[1]}</b></div>)}</div>}
+          {facts.length>0&&<div className="cg-facts">{facts.map(f=><div key={f[0]}><span className="cg-fk">{f[0]}</span><b className={f[3]?"cg-fpay":undefined}>{f[1]}</b>{f[2]?<span className="cg-fsub">{f[2]}</span>:null}</div>)}</div>}
           {roles.length>0&&<>
-            <h2 className="cg-h">Open roles</h2>
-            {roles.map((r,i)=><div className="cg-role" key={r.id||i}>
-              <div style={{minWidth:0}}><div className="cg-rn">{r.name}</div><div className="cg-rm">{[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange)].filter(Boolean).join(" · ")}</div></div>
-              <button className="cg-ap" onClick={()=>pick(r)}>Apply free</button>
-            </div>)}
+            <h2 className="cg-h">{roles.length>1?"Pick your role":"The role"}</h2>
+            {roles.length>1&&<p className="cg-hint">Tap the one you're going for. Your application goes to that role.</p>}
+            <div className="cg-roles" role="radiogroup" aria-label="Roles">
+            {roles.map((r,i)=>{const on=isPicked(r);const rr=fmtTopRate(roleTopRate([r]));return <button type="button" role="radio" aria-checked={on} className={"cg-role"+(on?" on":"")} key={r.id||i} onClick={()=>{onPickRole(r);if(window.innerWidth<=900)setTimeout(toForm,30);}}>
+              <span className="cg-dot" aria-hidden="true"/>
+              <span style={{minWidth:0}}><span className="cg-rn">{r.name}</span><span className="cg-rm">{[r.type,roleGenderLabel(r.gender),roleAgeLabel(r.ageRange)].filter(Boolean).join(" · ")}</span></span>
+              {rr&&<span className="cg-rr">{rr}</span>}
+            </button>;})}
+            </div>
           </>}
           <div className="cg-lock"><Ico n="lock" s={16}/><span>Full role descriptions, sides and submission details open once you sign up.</span></div>
         </div>
       </div>
       <div className="cg-side" ref={formRef}><div className="cg-card">
-        {roles.length>1&&<div className="cg-pick">
-          <div className="cg-pick-l">Which role are you going for?</div>
-          <div className="cg-pick-chips">{roles.map((r,i)=>{const on=!!(pending&&pending.role&&(pending.role.id!=null?pending.role.id===r.id:pending.role.name===r.name));
-            return <button key={r.id||i} type="button" className={"cg-pchip"+(on?" on":"")} aria-pressed={on} onClick={()=>onPickRole(r)}>{r.name}{r.type?<span>{r.type}</span>:null}</button>;})}</div>
-        </div>}
         <AuthGate embedded pending={pending} onComplete={onComplete} onNavigate={onNavigate}/>
       </div></div>
     </div>
@@ -16761,7 +16782,7 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
       </div>
       <div style={{textAlign:"center",marginTop:24}}><button className="btn-s btn-sm" onClick={onBack}>← Back to Browse Castings</button></div>
     </div>
-    <div className={"cg-sticky"+(formSeen?" cg-hide":"")}><button onClick={toForm}>Apply to {casting.title} free <Tri/></button></div>
+    <div className={"cg-sticky"+(formSeen?" cg-hide":"")}><button onClick={toForm}>{picked&&picked.name&&String(picked.name).length<=24?<>Apply for {picked.name} free</>:<>Apply to {casting.title} free</>} <Tri/></button></div>
   </div>);
 }
 function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
