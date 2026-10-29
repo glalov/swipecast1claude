@@ -8709,7 +8709,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           <div>
             <h4 className="site-footer-heading">{t('footer.company')}</h4>
             <L to="about">{t('footer.about')}</L>
-            <L to="fair-casting">{t('footer.fairCasting')}</L>
             <L to="blog">{t('footer.blog')}</L>
             <L to="careers">{t('footer.careers')}</L>
             <L to="contact">{t('footer.contact')}</L>
