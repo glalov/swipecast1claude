@@ -4169,6 +4169,11 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-head .cc-title{margin:0;}
 .b5-tag{--tk:#5A5A72;display:inline-flex;align-items:stretch;border:1.5px solid var(--tk);border-radius:6px;overflow:hidden;font-size:12.5px;line-height:1;font-weight:600;white-space:nowrap;}
 .b5-tag-a{background:var(--tk);color:#fff;padding:5px 9px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:11.5px;display:flex;align-items:center;}
+.cs-idv{--iv:#17663F;display:inline-flex;align-items:stretch;border:1.5px solid var(--iv);border-radius:6px;overflow:hidden;line-height:1;white-space:nowrap;font-size:12.5px;font-weight:700;}
+.cs-idv-a{background:var(--iv);color:#fff;display:flex;align-items:center;padding:0 6px;}
+.cs-idv-a svg{width:14px;height:14px;display:block;}
+.cs-idv-b{color:var(--iv);background:#fff;padding:5px 9px 5px 8px;display:flex;align-items:center;letter-spacing:.01em;}
+.cs-idv.xs{font-size:12px;}
 .b5-tag-b{color:var(--tk);background:#fff;padding:5px 10px;display:flex;align-items:center;}
 .b5-urgent{font-size:12.5px;font-weight:700;color:#B3261E;background:#FCE4E1;border-radius:6px;padding:3px 8px;white-space:nowrap;}
 .b5-meta{color:var(--t3);font-size:14px;display:flex;flex-wrap:wrap;row-gap:4px;}
@@ -25063,8 +25068,13 @@ function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56",showDate=tru
 //     Does NOT imply a criminal background check.
 function IDVerifiedBadge({size="sm"}){
   return(<span style={{display:"inline-flex",alignItems:"center",gap:4}}>
-    <span style={{background:"rgba(46,204,113,0.12)",color:"#1d7b44",fontSize:size==="xs"?10:11,fontWeight:600,letterSpacing:0,padding:size==="xs"?"3px 8px":"4px 10px",borderRadius:100}}><Ico n="check" s={24}/> ID Verified</span>
-    <InfoTip color="#1d7b44" width={300} label="ID verification disclaimer">
+    {/* Same build as the split type tag (2026-10-29): solid shield block + outlined label,
+        so it holds its own next to it instead of reading as a faint pill. */}
+    <span className={"cs-idv"+(size==="xs"?" xs":"")}>
+      <span className="cs-idv-a" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.5 4 5.6v6.1c0 4.9 3.4 8.5 8 9.8 4.6-1.3 8-4.9 8-9.8V5.6z"/><path d="m8.4 12.1 2.5 2.5 4.8-5"/></svg></span>
+      <span className="cs-idv-b">ID Verified</span>
+    </span>
+    <InfoTip color="#17663F" width={300} label="ID verification disclaimer">
       This casting creator has completed third-party identity verification. Identity verification does not guarantee the legitimacy, safety, conduct, payment, or quality of any project, person, company, audition, job offer, or communication. Always use your own judgment and report suspicious activity.
     </InfoTip>
   </span>);
