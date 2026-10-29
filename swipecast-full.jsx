@@ -617,33 +617,17 @@ function withTri(label){
   return <>{label.replace(/\s*→$/,"")} <Tri/></>;
 }
 
-// ─── Split type tag (owner pick "F", 2026-10-29) ─────────────────────────────
-// Browse cards show the project type as two parts: the medium in a solid block,
-// the detail beside it ("FILM | Independent"). Colour comes from the type's
-// PROJECT_TYPE_TINTS family. Types with no natural detail show the block alone.
-const TYPE_SPLIT={
-  "Feature Film":["Film","Feature"],"Short Film":["Film","Short"],"Student Film":["Film","Student"],
-  "Independent Film":["Film","Independent"],"Experimental Film":["Film","Experimental"],"Documentary":["Film","Documentary"],
-  "TV Series":["TV","Series"],"TV Pilot":["TV","Pilot"],"Web Series":["Series","Web"],"Streaming Series":["Series","Streaming"],
-  "Limited Series":["Series","Limited"],"Miniseries":["Series","Mini"],"Vertical Series":["Series","Vertical"],"Pilot Presentation":["Series","Pilot Presentation"],
-  "Social Media Ad":["Ad","Social Media"],"Branded Content":["Commercial","Branded"],"Spec Commercial":["Commercial","Spec"],
-  "Ad Campaign":["Ad","Campaign"],"Promo Video":["Video","Promo"],"Product Demo":["Video","Product Demo"],
-  "Corporate Video":["Video","Corporate"],"Industrial / Training Video":["Video","Industrial"],"Educational Video":["Video","Educational"],
-  "Music Video":["Video","Music"],"Podcast / Audio Drama":["Audio","Podcast"],"Animation":["Voiceover","Animation"],"Video Game":["Voiceover","Video Game"],
-  "Off-Broadway Theater":["Theater","Off-Broadway"],"Off-Off-Broadway Theater":["Theater","Off-Off-Broadway"],"Musical Theater":["Theater","Musical"],
-  "Workshop / Staged Reading":["Theater","Staged Reading"],"Performance Art":["Stage","Performance Art"],
-  "Hosting / Presenter":["Host","Presenter"],"Reality / Docu-Series":["TV","Reality"],"Lifestyle / Unscripted":["TV","Unscripted"],
-  "Print Campaign":["Print","Campaign"],"Influencer / UGC Content":["UGC","Influencer"],
-  "Proof of Concept":["Film","Proof of Concept"],"Sizzle Reel":["Reel","Sizzle"],"Pitch Trailer":["Film","Pitch Trailer"],
-  "Background / Extras":["Background","Extras"],
-};
-function SplitTypeTag({type,lang}){
+// ─── Ticket type tag (owner pick "C", 2026-10-29) ────────────────────────────
+// Browse cards show the project type as a ticket stub: the type's glyph in a
+// stub, a perforated line, then the type name. Notched ends come from the CSS
+// mask on .b5-tag. Tint/ink and glyph follow the type's PROJECT_TYPE_* family.
+function TicketTypeTag({type,lang}){
   if(!type)return null;
-  const ink=(PROJECT_TYPE_TINTS[PROJECT_TYPE_GROUP[type]||"other"]||PROJECT_TYPE_TINTS.other)[1];
-  const parts=lang==="en"||!lang?TYPE_SPLIT[type]:null;
-  const main=parts?parts[0]:translateCastingType(type,lang);
-  return(<span className="b5-tag" style={{"--tk":ink}} title={type}>
-    <span className="b5-tag-a">{main}</span>{parts&&<span className="b5-tag-b">{parts[1]}</span>}
+  const t=canonicalProjectType(type);
+  const [tint,ink]=PROJECT_TYPE_TINTS[PROJECT_TYPE_GROUP[t]||"other"]||PROJECT_TYPE_TINTS.other;
+  return(<span className="b5-tag" style={{"--tk":ink,"--tt":tint,"--k":tint}} title={t}>
+    <span className="b5-tag-a"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" dangerouslySetInnerHTML={{__html:PROJECT_TYPE_GLYPHS[t]||PROJECT_TYPE_GLYPHS.Other}}/></span>
+    <span className="b5-tag-b">{translateCastingType(type,lang)}</span>
   </span>);
 }
 
@@ -4167,14 +4151,17 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;}
-.b5-tag{--tk:#5A5A72;display:inline-flex;align-items:stretch;border:1.5px solid var(--tk);border-radius:6px;overflow:hidden;font-size:12.5px;line-height:1;font-weight:600;white-space:nowrap;}
-.b5-tag-a{background:var(--tk);color:#fff;padding:5px 9px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:11.5px;display:flex;align-items:center;}
+.b5-tag{--tk:#5A5A72;--tt:#EDEAE3;--n:5px;display:inline-flex;align-items:stretch;background:var(--tt);color:var(--tk);font-size:12.5px;line-height:1;font-weight:700;white-space:nowrap;
+  -webkit-mask:radial-gradient(circle var(--n) at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--n) at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle var(--n) at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--n) at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat;}
+.b5-tag-a{display:flex;align-items:center;padding:5px 8px 5px 11px;border-right:1.5px dashed color-mix(in srgb,var(--tk) 40%,transparent);}
+.b5-tag-a svg{width:14px;height:14px;display:block;}
+.b5-tag-b{display:flex;align-items:center;padding:6px 12px 6px 9px;letter-spacing:.01em;}
 .cs-idv{--iv:#17663F;display:inline-flex;align-items:stretch;border:1.5px solid var(--iv);border-radius:6px;overflow:hidden;line-height:1;white-space:nowrap;font-size:12.5px;font-weight:700;}
 .cs-idv-a{background:var(--iv);color:#fff;display:flex;align-items:center;padding:0 6px;}
 .cs-idv-a svg{width:14px;height:14px;display:block;}
 .cs-idv-b{color:var(--iv);background:#fff;padding:5px 9px 5px 8px;display:flex;align-items:center;letter-spacing:.01em;}
 .cs-idv.xs{font-size:12px;}
-.b5-tag-b{color:var(--tk);background:#fff;padding:5px 10px;display:flex;align-items:center;}
 .b5-urgent{font-size:12.5px;font-weight:700;color:#B3261E;background:#FCE4E1;border-radius:6px;padding:3px 8px;white-space:nowrap;}
 .b5-meta{color:var(--t3);font-size:14px;display:flex;flex-wrap:wrap;row-gap:4px;}
 .b5-meta span+span::before{content:"·";margin:0 8px;color:var(--bdr);}
@@ -17928,7 +17915,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                           onClick:(e)=>{e.stopPropagation();openSheet(rawC);},
                           onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();openSheet(rawC);}}
                         })}>{c.title}</h3>
-                    <SplitTypeTag type={c.type} lang={lang}/>
+                    <TicketTypeTag type={c.type} lang={lang}/>
                     {soon&&<span className="b5-urgent">{cdn.label}</span>}
                     {isExpiredCasting&&!isArchived&&<span className="b5-urgent">Expired</span>}
                     {c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}
