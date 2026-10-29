@@ -2481,15 +2481,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-step{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px}
 .cg-step b{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#1A1A2E;color:#fff;font-size:13px;margin-bottom:10px}
 .cg-step h4{margin:0 0 4px;font-size:16px;color:var(--t1)}.cg-step p{margin:0;font-size:14px;color:var(--t3);line-height:1.5}
-.cg-sticky{display:none}
 @media(max-width:900px){
  .cg-main{grid-template-columns:minmax(0,1fr);padding:16px 16px 24px;gap:18px}.cg-side{position:static}
  .cg-hero{height:165px}.cg-ttl{left:16px;right:16px}.cg-ttl h1{font-size:27px}.cg-body{padding:18px 16px}
- .cg-how{padding:0 16px 96px}.cg-steps{grid-template-columns:minmax(0,1fr)}.cg-facts{grid-template-columns:minmax(0,1fr)}.cg-facts>div{border-left:0;margin-left:0;border-top:1px solid var(--bdr);margin-top:-1px}
+ .cg-how{padding:0 16px 24px}.cg-steps{grid-template-columns:minmax(0,1fr)}.cg-facts{grid-template-columns:minmax(0,1fr)}.cg-facts>div{border-left:0;margin-left:0;border-top:1px solid var(--bdr);margin-top:-1px}
  .cg-card{padding:20px 16px}
- .cg-sticky{display:block;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px 88px calc(10px + env(safe-area-inset-bottom,0px)) 16px;transition:transform .25s ease;background:rgba(255,253,248,.96);border-top:1px solid var(--bdr)}
- .cg-sticky.cg-hide{transform:translateY(110%)}
- .cg-sticky button{width:100%;height:48px;border:0;border-radius:10px;background:#2A8472;color:#fff;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 }
 .page{max-width:1200px;margin:0 auto;padding:40px 40px 0;width:100%;display:flex;flex-direction:column;flex:1 1 auto;min-height:calc(100vh - 80px);}
 /* Kill the mobile tap delay / double-tap-zoom wait so buttons fire on the first tap. */
@@ -16730,9 +16726,6 @@ try{const q=new URLSearchParams(window.location.search);const u=(q.get("utm_sour
 function visitSource(){try{const d=JSON.parse(localStorage.getItem("cs_src")||"null");if(d&&Date.now()-(d.ts||0)<30*864e5)return d;}catch(_){}return null;}
 function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,onBack}){
   const formRef=useRef(null);
-  const [formSeen,setFormSeen]=useState(false);
-  useEffect(()=>{const el=formRef.current;if(!el||typeof IntersectionObserver==="undefined")return;
-    const io=new IntersectionObserver(es=>setFormSeen(es[0].isIntersecting),{threshold:0.15});io.observe(el);return()=>io.disconnect();},[]);
   const src=visitSource();
   // The casting's own poster only. No stand-in photo (it borrowed the blog hero, owner 2026-10-28).
   const img=getCastingImages(casting)[0]||"";
@@ -16791,7 +16784,6 @@ function CastingLandingGate({casting,pending,onPickRole,onComplete,onNavigate,on
       </div>
       <div style={{textAlign:"center",marginTop:24}}><button className="btn-s btn-sm" onClick={onBack}>← Back to Browse Castings</button></div>
     </div>
-    <div className={"cg-sticky"+(formSeen?" cg-hide":"")}><button onClick={toForm}>{picked&&picked.name&&String(picked.name).length<=24?<>Apply for {picked.name} free</>:<>Apply to {casting.title} free</>} <Tri/></button></div>
   </div>);
 }
 function CastingGatePage({casting,onCreateProfile,onLogin,onBack}){
