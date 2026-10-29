@@ -617,6 +617,36 @@ function withTri(label){
   return <>{label.replace(/\s*→$/,"")} <Tri/></>;
 }
 
+// ─── Split type tag (owner pick "F", 2026-10-29) ─────────────────────────────
+// Browse cards show the project type as two parts: the medium in a solid block,
+// the detail beside it ("FILM | Independent"). Colour comes from the type's
+// PROJECT_TYPE_TINTS family. Types with no natural detail show the block alone.
+const TYPE_SPLIT={
+  "Feature Film":["Film","Feature"],"Short Film":["Film","Short"],"Student Film":["Film","Student"],
+  "Independent Film":["Film","Independent"],"Experimental Film":["Film","Experimental"],"Documentary":["Film","Documentary"],
+  "TV Series":["TV","Series"],"TV Pilot":["TV","Pilot"],"Web Series":["Series","Web"],"Streaming Series":["Series","Streaming"],
+  "Limited Series":["Series","Limited"],"Miniseries":["Series","Mini"],"Vertical Series":["Series","Vertical"],"Pilot Presentation":["Series","Pilot Presentation"],
+  "Social Media Ad":["Ad","Social Media"],"Branded Content":["Commercial","Branded"],"Spec Commercial":["Commercial","Spec"],
+  "Ad Campaign":["Ad","Campaign"],"Promo Video":["Video","Promo"],"Product Demo":["Video","Product Demo"],
+  "Corporate Video":["Video","Corporate"],"Industrial / Training Video":["Video","Industrial"],"Educational Video":["Video","Educational"],
+  "Music Video":["Video","Music"],"Podcast / Audio Drama":["Audio","Podcast"],"Animation":["Voiceover","Animation"],"Video Game":["Voiceover","Video Game"],
+  "Off-Broadway Theater":["Theater","Off-Broadway"],"Off-Off-Broadway Theater":["Theater","Off-Off-Broadway"],"Musical Theater":["Theater","Musical"],
+  "Workshop / Staged Reading":["Theater","Staged Reading"],"Performance Art":["Stage","Performance Art"],
+  "Hosting / Presenter":["Host","Presenter"],"Reality / Docu-Series":["TV","Reality"],"Lifestyle / Unscripted":["TV","Unscripted"],
+  "Print Campaign":["Print","Campaign"],"Influencer / UGC Content":["UGC","Influencer"],
+  "Proof of Concept":["Film","Proof of Concept"],"Sizzle Reel":["Reel","Sizzle"],"Pitch Trailer":["Film","Pitch Trailer"],
+  "Background / Extras":["Background","Extras"],
+};
+function SplitTypeTag({type,lang}){
+  if(!type)return null;
+  const ink=(PROJECT_TYPE_TINTS[PROJECT_TYPE_GROUP[type]||"other"]||PROJECT_TYPE_TINTS.other)[1];
+  const parts=lang==="en"||!lang?TYPE_SPLIT[type]:null;
+  const main=parts?parts[0]:translateCastingType(type,lang);
+  return(<span className="b5-tag" style={{"--tk":ink}} title={type}>
+    <span className="b5-tag-a">{main}</span>{parts&&<span className="b5-tag-b">{parts[1]}</span>}
+  </span>);
+}
+
 // ─── Casting Type Label Translation ──────────────────────────────────────────
 function translateCastingType(type, lang) {
   if (lang === 'en' || !type) return type;
@@ -4137,7 +4167,9 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;}
-.b5-tag{font-size:12.5px;font-weight:600;color:var(--t2);background:var(--s2);border-radius:6px;padding:3px 8px;white-space:nowrap;}
+.b5-tag{--tk:#5A5A72;display:inline-flex;align-items:stretch;border:1.5px solid var(--tk);border-radius:6px;overflow:hidden;font-size:12.5px;line-height:1;font-weight:600;white-space:nowrap;}
+.b5-tag-a{background:var(--tk);color:#fff;padding:5px 9px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:11.5px;display:flex;align-items:center;}
+.b5-tag-b{color:var(--tk);background:#fff;padding:5px 10px;display:flex;align-items:center;}
 .b5-urgent{font-size:12.5px;font-weight:700;color:#B3261E;background:#FCE4E1;border-radius:6px;padding:3px 8px;white-space:nowrap;}
 .b5-meta{color:var(--t3);font-size:14px;display:flex;flex-wrap:wrap;row-gap:4px;}
 .b5-meta span+span::before{content:"·";margin:0 8px;color:var(--bdr);}
@@ -17891,7 +17923,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                           onClick:(e)=>{e.stopPropagation();openSheet(rawC);},
                           onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();openSheet(rawC);}}
                         })}>{c.title}</h3>
-                    <span className="b5-tag">{translateCastingType(c.type,lang)}</span>
+                    <SplitTypeTag type={c.type} lang={lang}/>
                     {soon&&<span className="b5-urgent">{cdn.label}</span>}
                     {isExpiredCasting&&!isArchived&&<span className="b5-urgent">Expired</span>}
                     {c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}
