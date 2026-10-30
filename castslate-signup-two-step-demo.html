@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Two-Step Signup Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1a2e;--t3:#6b6b7b;--bdr:#e6dcc4;--fld:#fffdf6;--bg:#f4f2ee}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--ink)}
+.note{max-width:460px;margin:20px auto 0;padding:0 16px;font-size:13px;color:var(--t3);text-align:center}
+.tabs{display:flex;gap:8px;justify-content:center;margin:12px 0}.tabs button{border:1px solid var(--bdr);background:#fff;border-radius:20px;padding:6px 14px;font:600 13px 'DM Sans';cursor:pointer}.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.card{max-width:460px;margin:0 auto 40px;background:#fff;border-radius:16px;padding:36px 32px;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+h1{font-size:26px;letter-spacing:-.5px;margin:0 0 6px}.sub{color:var(--t3);margin:0 0 24px;font-size:15px}
+.btn{width:100%;min-height:46px;border:0;border-radius:8px;background:var(--ink);color:#fff;font:600 17px 'DM Sans';display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer}
+.btn svg{width:26px;height:26px}
+.or{display:flex;align-items:center;gap:12px;color:var(--t3);font-size:13px;margin:20px 0}.or:before,.or:after{content:"";flex:1;border-top:1px solid var(--bdr)}
+label{display:block;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin:0 0 6px}
+input{width:100%;height:46px;border:1px solid var(--bdr);border-radius:8px;background:var(--fld);padding:0 14px;font:15px 'DM Sans';margin-bottom:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.err{color:#b3261e;font-size:13px;margin:-8px 0 12px;min-height:0}
+.agree{font-size:12px;color:var(--t3);text-align:center;line-height:1.5;margin:12px 0 0}.agree a{color:var(--t3)}
+.small{text-align:center;font-size:13px;color:var(--t3);margin-top:18px}.small a{color:var(--ink);font-weight:600;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--bdr);border-radius:20px;padding:6px 12px;font-size:14px;margin-bottom:20px}
+.chip a{font-size:12px;color:var(--t3);cursor:pointer}
+.gbox{border:1px dashed var(--bdr);border-radius:10px;padding:14px;font-size:13px;color:var(--t3);margin-bottom:20px;text-align:center}
+.hide{display:none}
+@media(max-width:480px){.card{padding:28px 18px;border-radius:0}.row{grid-template-columns:1fr}}
+</style></head><body>
+<p class="note">Demo only, not live. Step 1 has no terms line. Terms + 18+ appear on step 2 (email) or on one short confirm screen right after Google.</p>
+<div class="tabs"><button class="on" onclick="go('s1')">1 · Start</button><button onclick="go('s2')">2 · Email details</button><button onclick="go('g2')">2 · After Google</button></div>
+<div class="card">
+ <!-- STEP 1 -->
+ <div id="s1">
+  <h1>Create your free actor account</h1><p class="sub">Get seen by casting directors.</p>
+  <button class="btn" onclick="go('g2')"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+  <div class="or">or sign up with email</div>
+  <label>Email</label><input id="em" type="email" placeholder="you@email.com">
+  <div class="err" id="emErr"></div>
+  <button class="btn" onclick="next()">Next</button>
+  <p class="small">Already have an account? <a>Log in</a></p>
+ </div>
+ <!-- STEP 2: EMAIL -->
+ <div id="s2" class="hide">
+  <span class="chip"><b id="emShow">you@email.com</b><a onclick="go('s1')">Change</a></span>
+  <h1>Almost done</h1><p class="sub">Your name and a password.</p>
+  <div class="row"><div><label>First name</label><input placeholder="First name"></div><div><label>Last name</label><input placeholder="Last name"></div></div>
+  <label>Password</label><input type="password" placeholder="At least 8 characters">
+  <button class="btn">Create Free Account</button>
+  <p class="agree">By clicking Create Free Account, you agree to CastSlate's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>, and confirm you're at least 18.</p>
+ </div>
+ <!-- STEP 2: AFTER GOOGLE -->
+ <div id="g2" class="hide">
+  <div class="gbox">(Google account chooser happens here)</div>
+  <span class="chip"><b>maria.perez@gmail.com</b></span>
+  <h1>Welcome, Maria</h1><p class="sub">One tap and you're in.</p>
+  <button class="btn">Continue to CastSlate</button>
+  <p class="agree">By continuing, you agree to CastSlate's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>, and confirm you're at least 18.</p>
+ </div>
+</div>
+<script>
+function go(id){['s1','s2','g2'].forEach(x=>document.getElementById(x).classList.toggle('hide',x!==id));document.querySelectorAll('.tabs button').forEach((b,i)=>b.classList.toggle('on',['s1','s2','g2'][i]===id));}
+function next(){const e=document.getElementById('em').value.trim();const ok=/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(e);document.getElementById('emErr').textContent=ok?'':'Please enter a full email address, like name@gmail.com.';if(ok){document.getElementById('emShow').textContent=e;go('s2');}}
+</script>
+</body></html>
