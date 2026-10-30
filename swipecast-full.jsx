@@ -27151,7 +27151,7 @@ function SwipeCardPhoto({t,alt="",draggable,pri,hold}){
 // gets every deck photo from castslate.com in priority order instead of opening two more
 // photo services. The original source URL is kept in each card's comment history (git).
 const LANDING_SWIPE_DEMO=[
-  // Nayara leads the deck (owner's pick, 2026-09-24). Framed by the owner in the
+  // Nayara (2nd card; led the deck 2026-09-24 to 2026-10-30). Framed by the owner in the
   // fitter (castslate-nayara-fit-tool.html) against the ORIGINAL 4:5 photo:
   // object-position 61% 11% + scale 1.95 with the origin at the same point
   // (re-framed closer by the owner 2026-09-24; was 60% 20% x1.42).
@@ -27161,10 +27161,11 @@ const LANDING_SWIPE_DEMO=[
   // the whole frame and read as changed lighting).
   // v4 (2026-09-25, owner's pick of three) = v3 with a +10% face-only midtone lift
   // (gamma .85 through a feathered ellipse on the face); background, hair, blazer untouched.
-  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v4.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
+  // Killian leads, Nayara follows (owner swap, 2026-10-30).
+  {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
   // Order (owner-approved 2026-10-04): woman / man alternating from Nayara, with
   // look-alikes kept apart and the older faces (46, 65, 38) spread through the deck.
-  {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
+  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v4.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
   // Kira's photo URL carries NO h=/fit=crop: the owner framed her against the
   // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
   // the shot before object-position ever ran, throwing the crop away. w=1200 keeps
