@@ -8834,6 +8834,7 @@ function dupEmailMsg(kind){
   return "An account with this email already exists. If you never received the verification email, resend it below — otherwise log in.";
 }
 function RegisterTalent({onNavigate}){
+  const [emStep,setEmStep]=useState(false); // two-step email signup (owner, 2026-10-30)
   const tr=useT();
   const [step,setStep]=useState(1);
   const [done,setDone]=useState(false);
@@ -9012,13 +9013,18 @@ function RegisterTalent({onNavigate}){
             <div style={{flex:1,height:1,background:"var(--bdr)"}}/><span>or sign up with email</span><div style={{flex:1,height:1,background:"var(--bdr)"}}/>
           </div>
           {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}{dupEmail&&<div style={{marginTop:10,display:"flex",gap:8,flexWrap:"wrap"}}>{dupKind==="oauth"?<button type="button" className="btn-s btn-sm" onClick={()=>handleSocialAuth("google")}>Continue with Google</button>:dupKind==="confirmed"?null:<button type="button" className="btn-s btn-sm" onClick={resendConfirmation}>Resend verification email</button>}<button type="button" className="btn-s btn-sm" onClick={()=>onNavigate("login")}>Go to Login</button></div>}{resentOk&&<div style={{marginTop:8,color:"var(--grn)",fontWeight:600}}><Ico n="check" s={24}/> Verification email re-sent — check your inbox.</div>}</div>}
-          <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
+          {!emStep?<>
           <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
+          <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={()=>{const pr=emailProblem(f.email);if(pr){setErr(pr);return;}setErr("");setEmStep(true);}}>Next <Tri/></button>
+          </>:<>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,fontSize:14}}><b>{f.email}</b><span onClick={()=>setEmStep(false)} style={{color:"var(--t3)",fontSize:12,cursor:"pointer",textDecoration:"underline"}}>Change</span></div>
+          <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
           <div className="form-group"><label className="label">{tr('reg.t.password')}</label><input className="input" type="password" placeholder={tr('reg.t.password')} value={f.password} onChange={e=>up("password",e.target.value)}/></div>
           <div className="form-group"><label className="label">{tr('reg.t.location')} <span style={{color:"var(--red)"}}>*</span></label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{CASTING_MARKETS.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
           <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
           {/* Agreement under the button, naming both ways in (owner 2026-10-26: same place and wording as the CD form). */}
-          <AgreeLine onNavigate={onNavigate} btn={tr('reg.t.next').replace(/\s*→\s*$/,"")}/>
+          <AgreeLine onNavigate={onNavigate} btn={tr('reg.t.next').replace(/\s*→\s*$/,"")} google={false}/>
+          </>}
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div></div>
       </div></div>
@@ -13010,6 +13016,7 @@ function FairCastingPage({onNavigate}){
 // PAGE: AUTH GATE (sign up / log in before applying)
 // ═══════════════════════════════════════════
 function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
+  const [emStep,setEmStep]=useState(false); // two-step email signup (owner, 2026-10-30)
   const [mode,setMode]=useState("signup");
   const [premiumMsg,setPremiumMsg]=useState(false);
   const [loading,setLoading]=useState(false);
@@ -13196,15 +13203,20 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
 
           {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:14}}>{err}</div>}
 
+          {!emStep?<>
+          <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
+          <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={()=>{const pr=emailProblem(suEmail);if(pr){setErr(pr);return;}setErr("");setEmStep(true);}}>Next <Tri/></button>
+          </>:<>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,fontSize:14}}><b>{suEmail}</b><span onClick={()=>setEmStep(false)} style={{color:"var(--t3)",fontSize:12,cursor:"pointer",textDecoration:"underline"}}>Change</span></div>
           <div className="form-row">
             <div className="form-group"><label className="label">First Name</label><input className="input" placeholder="Your first name" value={firstName} onChange={e=>setFirstName(e.target.value)}/></div>
             <div className="form-group"><label className="label">Last Name</label><input className="input" placeholder="Your last name" value={lastName} onChange={e=>setLastName(e.target.value)}/></div>
           </div>
-          <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
           <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":<>{signupBtn} <Tri/></>}</button>
-          <AgreeLine onNavigate={onNavigate} btn={signupBtn}/>
+          <AgreeLine onNavigate={onNavigate} btn={signupBtn} google={false}/>
+          </>}
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </>:<>
