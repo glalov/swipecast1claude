@@ -6456,22 +6456,29 @@ button:disabled:hover .cs-tri{transform:none;}
 
 /* ── Login: split layout — hero face stripe (left) + form (right) ── */
 .login-shell{padding:clamp(28px,4vw,56px) clamp(16px,4vw,40px);display:flex;justify-content:center;}
-.login-split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:600px;}
-.login-hero{position:relative;overflow:hidden;background:#3B6F65;}
-.login-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;}
-.login-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
-.login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,3vw,44px);color:#fff;}
+.login-split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:700px;}
+.login-hero{position:relative;display:flex;flex-direction:column;background:#17312D;min-width:0;}
+/* Photo on top, words on a solid panel under it, so nothing is written over the actor's face (owner, 2026-10-30). */
+.login-hero>img{position:relative;display:block;flex:1 1 auto;width:100%;height:0;min-height:300px;object-fit:cover;object-position:center 30%;}
+.login-hero-overlay{display:none;}
+.login-hero-copy{position:relative;padding:6px clamp(26px,3vw,40px) clamp(28px,3vw,38px);color:#fff;background:#17312D;}
+.login-hero-copy::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:70px;background:linear-gradient(180deg,rgba(23,49,45,0) 0%,#17312D 100%);pointer-events:none;}
 .login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
-.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;}
+.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,32px);letter-spacing:-1px;line-height:1.06;margin:0 0 14px;}
 .login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
-.login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;}
-@media(max-width:820px){
+.login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;min-width:0;}
+/* Tablets / narrow windows: keep photo beside the form, narrower photo column. */
+@media(max-width:1000px){
+  .login-split{grid-template-columns:minmax(230px,40%) 1fr;}
+  .login-form-side{padding:44px 30px;}
+}
+/* Phones: stack, photo keeps a square shape so the face always fits. */
+@media(max-width:560px){
   .login-shell{padding:18px 14px 32px;}
   .login-split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
-  .login-hero{min-height:560px;}
-  .login-hero>img{object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
-  .login-hero-copy{padding:22px 22px 24px;}
-  .login-form-side{padding:34px 22px 38px;}
+  .login-hero>img{flex:none;height:auto;min-height:0;aspect-ratio:1/1;max-height:340px;object-position:center 28%;}
+  .login-hero-copy{padding:4px 22px 24px;}
+  .login-form-side{padding:30px 22px 34px;}
 }
 /* Industry/CD signup: teal info panel (left side of the split card) */
 .cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5CA092 0%,#4F8B7F 48%,#3B6F65 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
@@ -8823,7 +8830,10 @@ function ConfirmEmailCard({email,finalStep,line,stub,resentOk,err,cooldown,onRes
 // Terms/Privacy agreement line (owner 2026-10-22). It sits directly under the button
 // that creates the account (or logs in) and names it — the old "By continuing…" line
 // sat above the Google button, far from the email form's submit.
-function AgreeLine({onNavigate,btn,google=true,adult=true,style}){
+function AgreeLine({onNavigate,btn,google=true,adult=true,style,quiet}){
+  // quiet: one short grey line, no bold button names (owner 2026-10-30, Backstage-style talent forms).
+  if(quiet){const Q=(to,txt)=><span onClick={()=>onNavigate&&onNavigate(to)} style={{color:"inherit",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:2}}>{txt}</span>;
+    return <p style={{textAlign:"center",color:"#8A8278",fontSize:12,lineHeight:1.5,margin:"12px 0 0",...style}}>By {quiet==="start"?"signing up":"creating an account"} you agree to our {Q("terms","Terms")} and {Q("privacy","Privacy Policy")}{adult?" and confirm you're 18 or older":""}.</p>;}
   const L=(to,txt)=><span onClick={()=>onNavigate&&onNavigate(to)} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>{txt}</span>;
   const B=(t)=><b style={{color:"var(--t1)",fontWeight:700}}>{t}</b>;
   return <p style={{textAlign:"center",color:"var(--t3)",fontSize:12.5,lineHeight:1.55,margin:"14px 0 0",...style}}>By clicking {btn?B(btn):null}{btn&&google?" or ":null}{google?B("Continue with Google"):null}, you agree to CastSlate's {L("terms","Terms of Service")} and {L("privacy","Privacy Policy")}{adult?", and confirm you're at least 18":""}.</p>;
@@ -9016,6 +9026,7 @@ function RegisterTalent({onNavigate}){
           {!emStep?<>
           <div className="form-group"><label className="label">{tr('reg.t.email')}</label><input className="input" type="email" placeholder="you@email.com" value={f.email} onChange={e=>up("email",e.target.value)}/></div>
           <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={()=>{const pr=emailProblem(f.email);if(pr){setErr(pr);return;}setErr("");setEmStep(true);}}>Next <Tri/></button>
+          <AgreeLine onNavigate={onNavigate} quiet="start" adult={false}/>
           </>:<>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,fontSize:14}}><b>{f.email}</b><span onClick={()=>setEmStep(false)} style={{color:"var(--t3)",fontSize:12,cursor:"pointer",textDecoration:"underline"}}>Change</span></div>
           <div className="form-row"><div className="form-group"><label className="label">{tr('reg.t.firstName')}</label><input className="input" placeholder={tr('reg.t.firstName')} value={f.first} onChange={e=>up("first",e.target.value)}/></div><div className="form-group"><label className="label">{tr('reg.t.lastName')}</label><input className="input" placeholder={tr('reg.t.lastName')} value={f.last} onChange={e=>up("last",e.target.value)}/></div></div>
@@ -9023,7 +9034,7 @@ function RegisterTalent({onNavigate}){
           <div className="form-group"><label className="label">{tr('reg.t.location')} <span style={{color:"var(--red)"}}>*</span></label><select className="select" style={{width:"100%"}} value={f.location} onChange={e=>up("location",e.target.value)}><option value="">Select your state</option>{CASTING_MARKETS.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
           <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={()=>{if(validStep1())setStep(2);}}>{tr('reg.t.next')}</button>
           {/* Agreement under the button, naming both ways in (owner 2026-10-26: same place and wording as the CD form). */}
-          <AgreeLine onNavigate={onNavigate} btn={tr('reg.t.next').replace(/\s*→\s*$/,"")} google={false}/>
+          <AgreeLine onNavigate={onNavigate} quiet/>
           </>}
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
         </div></div>
@@ -9080,7 +9091,7 @@ function RegisterTalent({onNavigate}){
         <div className="form-group"><label className="label">{tr('reg.t.skills')}</label><input className="input" placeholder="e.g. Stage Combat, Fluent Spanish" value={f.skills} onChange={e=>up("skills",e.target.value)}/></div>
         <div className="form-group"><label className="label">{tr('reg.t.agent')}</label><input className="input" placeholder="Agency name" value={f.agent} onChange={e=>up("agent",e.target.value)}/></div>
         <div style={{display:"flex",gap:12,marginTop:12}}><button className="btn-s" onClick={()=>setStep(2)} disabled={loading}>{tr('reg.t.back')}</button><button className="btn-p" style={{flex:1}} onClick={createAccount} disabled={loading}>{loading?tr('reg.t.creating'):tr('reg.t.createAccount')}</button></div>
-        <AgreeLine onNavigate={onNavigate} btn={tr('reg.t.createAccount')} google={false}/></>}
+        <AgreeLine onNavigate={onNavigate} quiet/></>}
 
       {/* Step 4 (Stripe) removed — signup is now free. Membership is activated
           later from the dedicated /membership page when the user wants to submit
@@ -9415,7 +9426,6 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}
       {!forgot&&<div className="form-group"><label className="label">{t('login.password')}</label><input className="input" type="password" placeholder="Your password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></div>}
       {!forgot&&<div style={{display:"flex",justifyContent:"flex-end",alignItems:"center",marginBottom:20}}><span style={{color:"var(--acc)",fontSize:13,cursor:"pointer"}} onClick={()=>{setForgot(true);setErr("");}}>{t('login.forgotPwd')}</span></div>}
       <button type="submit" className="btn-p auth-main" style={{width:"100%",opacity:(loading||(forgot&&resetCooldown>0))?0.7:1}} disabled={loading||(forgot&&resetCooldown>0)}>{loading?(forgot?t('login.sending'):t('login.loggingIn')):(forgot?(resetCooldown>0?`Try again in ${resetCooldown}s`:t('login.sendReset')):t('login.logIn'))}</button>
-      {!forgot&&<AgreeLine onNavigate={onNavigate} btn={t('login.logIn')} adult={false}/>}
       {!forgot&&(authNotice||/verify your email/i.test(err))&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8,opacity:(resending||resendCooldown>0)?0.6:1}} disabled={resending||resendCooldown>0} onClick={resendConfirm}>{resending?"Sending…":resendCooldown>0?`Resend available in ${resendCooldown}s`:"Resend confirmation email"}</button>}
       {resentOk&&<div style={{marginTop:8,textAlign:"center",color:"var(--grn)",fontWeight:600,fontSize:13}}><Ico n="check" s={24}/> New confirmation email sent — check your inbox &amp; spam folder.</div>}
       {forgot&&<button type="button" className="btn-s" style={{width:"100%",marginTop:8}} onClick={()=>{setForgot(false);setErr("");}}>{t('login.backToLogin')}</button>}
@@ -13206,6 +13216,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           {!emStep?<>
           <div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={suEmail} onChange={e=>setSuEmail(e.target.value)}/></div>
           <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={()=>{const pr=emailProblem(suEmail);if(pr){setErr(pr);return;}setErr("");setEmStep(true);}}>Next <Tri/></button>
+          <AgreeLine onNavigate={onNavigate} quiet="start" adult={false}/>
           </>:<>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,fontSize:14}}><b>{suEmail}</b><span onClick={()=>setEmStep(false)} style={{color:"var(--t3)",fontSize:12,cursor:"pointer",textDecoration:"underline"}}>Change</span></div>
           <div className="form-row">
@@ -13215,7 +13226,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           <div className="form-group"><label className="label">Password</label><input className="input" type="password" placeholder="At least 8 characters" value={suPass} onChange={e=>setSuPass(e.target.value)}/></div>
 
           <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={handleSignUp} disabled={loading}>{loading?"Creating account…":<>{signupBtn} <Tri/></>}</button>
-          <AgreeLine onNavigate={onNavigate} btn={signupBtn} google={false}/>
+          <AgreeLine onNavigate={onNavigate} quiet/>
           </>}
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
@@ -13240,7 +13251,6 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           </div>
 
           <button className="btn-p auth-main" style={{width:"100%"}} onClick={handleSignIn} disabled={loading}>{loading?"Logging in…":c?<>Log In & Continue to Apply <Tri/></>:<>Log In <Tri/></>}</button>
-          <AgreeLine onNavigate={onNavigate} btn={c?"Log In & Continue to Apply":"Log In"} adult={false}/>
 
           <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>New to CastSlate? <span onClick={()=>{setMode("signup");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Create a free account</span></p>
         </>}
