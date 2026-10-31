@@ -27220,7 +27220,7 @@ const LANDING_SWIPE_DEMO=[
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
-  {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"/assets/landing/deck-tyrone-matthews.jpg",skills:["Military Background","Boxing","Bass Vocals"]},
+  {id:8,name:"Otis Langford",age:62,gender:"Male",height:"6'3\"",pos:"center 35%",img:"/assets/landing/otis-langford.jpg",skills:["Military Background","Bass Vocals","Character Work"]},
 ];
 // Plays the entrance once per page load. Module-level so it survives in-app
 // navigation (Home → other page → Home doesn't replay), but resets on a real
