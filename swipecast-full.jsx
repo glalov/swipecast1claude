@@ -6458,47 +6458,42 @@ button:disabled:hover .cs-tri{transform:none;}
 .login-shell{padding:clamp(28px,4vw,56px) clamp(16px,4vw,40px);display:flex;justify-content:center;}
 .login-split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:700px;}
 .login-hero{position:relative;overflow:hidden;background:#3B6F65;min-width:0;}
-.login-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 26%;}
-.login-hero-overlay{display:none;}
-/* Sign-up headshot: full photo, no darkening; a small white name tag sits on his shirt,
-   well below the chin, never on the face (owner chose option B, 2026-10-30). */
-.login-hero-copy{position:absolute;left:22px;right:auto;bottom:22px;padding:13px 18px;border-radius:14px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 12px 30px -16px rgba(0,0,0,.45);color:#1A1A2E;}
-.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#2A8472;margin:0 0 4px;}
-.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;line-height:1.1;margin:0;}
-.login-hero-copy p{font-size:13px;line-height:1.5;color:#3A322A;margin:0;}
+/* Sign-up headshot: same big white words as /login, at the bottom over a soft fade.
+   His face sits low in this photo, so the photo is lifted and the words land on his
+   shirt, never on the chin or face (owner chose this 2026-10-30). */
+.login-hero>img{position:absolute;left:0;top:-22%;width:100%;height:122%;object-fit:cover;object-position:center top;}
+.login-hero-overlay{position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(180deg,rgba(20,40,40,0) 0%,rgba(20,40,40,.7) 100%);pointer-events:none;}
+.login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:0 40px 38px;color:#fff;}
+.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
+.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;text-shadow:0 2px 18px rgba(0,0,0,.25);}
+.login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
 .lh-checks,.lh-casting{display:none;}
-.lh-checks{flex-direction:column;gap:7px;}
-.lh-checks>div{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#3A322A;}
-.lh-checks svg{flex:none;}
 .login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;min-width:0;}
-/* /login keeps the original full-photo fade: that actor is small and mid-frame. */
-.login-hero-full .login-hero-overlay{display:block;position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
-.login-hero-full>img{object-position:center 25%;}
-.login-hero-full .login-hero-copy{left:0;right:0;bottom:0;padding:clamp(28px,3vw,44px);border-radius:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;color:#fff;}
-.login-hero-full .login-hero-copy .eye{font-size:11px;letter-spacing:1.6px;color:#FFD79A;margin:0 0 10px;}
-.login-hero-full .login-hero-copy h3{font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;}
-.login-hero-full .login-hero-copy p{font-size:14px;line-height:1.55;color:#fff;opacity:.92;max-width:320px;}
+/* /login: the original full-photo fade (that actor is small and mid-frame). */
+.login-hero-full>img{top:0;height:100%;object-position:center 25%;}
+.login-hero-full .login-hero-overlay{top:0;height:auto;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
+.login-hero-full .login-hero-copy{padding:clamp(28px,3vw,44px);}
+.login-hero-full .login-hero-copy h3{text-shadow:none;}
 /* Tablets / narrow windows: photo stays beside the form, narrower column. */
 @media(max-width:1000px){
   .login-split{grid-template-columns:minmax(230px,40%) 1fr;}
   .login-form-side{padding:44px 30px;}
-  .login-hero-copy{left:16px;bottom:16px;padding:11px 15px;}
-  .login-hero-copy h3{font-size:17px;}
+  .login-hero-copy{padding:0 26px 30px;}
 }
-/* Phones: stack. Photo shows head and shirt; the tag shrinks to one line on the shirt. */
+/* Phones: stack. Full 2:3 photo lifted a bit more; title only, on his shirt. */
 @media(max-width:560px){
   .login-shell{padding:18px 14px 32px;}
   .login-split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
   .login-hero{aspect-ratio:2/3;}
-  .login-hero>img{object-position:center 40%;}
-  .login-hero-copy{left:14px;right:auto;bottom:14px;padding:10px 14px;border-radius:12px;}
-  .login-hero-copy h3{font-size:16px;margin:0;}
-  .login-hero-copy .eye{display:none;}
+  .login-hero>img{top:-32%;height:132%;}
+  .login-hero-copy{padding:0 22px 22px;}
+  .login-hero-copy h3{font-size:28px;margin:0;}
+  .login-hero-copy p{display:none;}
   .login-hero.login-hero-full{aspect-ratio:auto;min-height:560px;}
-  .login-hero.login-hero-full>img{object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
-  .login-hero-full .login-hero-copy{left:0;right:0;bottom:0;padding:22px 22px 24px;}
-  .login-hero-full .login-hero-copy .eye{display:block;}
-  .login-hero-full .login-hero-copy h3{font-size:clamp(26px,3vw,34px);margin:0 0 10px;}
+  .login-hero.login-hero-full>img{top:0;object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
+  .login-hero-full .login-hero-copy{padding:22px 22px 24px;}
+  .login-hero-full .login-hero-copy h3{margin:0 0 10px;}
+  .login-hero-full .login-hero-copy p{display:block;}
   .login-form-side{padding:30px 22px 34px;}
 }
 /* Industry/CD signup: teal info panel (left side of the split card) */
@@ -9029,7 +9024,8 @@ function RegisterTalent({onNavigate}){
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
-          <h3>Get seen. Get booked.</h3>
+          <h3>Get seen.<br/>Get booked.</h3>
+          <p>Join over a thousand actors getting reviewed one profile at a time.</p>
           <div className="lh-checks">
             {["Castings posted by casting directors","Every submission reviewed individually"].map(b=><div key={b}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A8472" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
@@ -13286,7 +13282,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
-          <h3>{c?"You're one step away.":"Get seen. Get booked."}</h3>
+          <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
+          {!c&&<p>Join over a thousand actors getting reviewed one profile at a time.</p>}
           {c?(
             <div className="lh-casting" style={{background:"#F3EEE4",borderRadius:10,padding:"12px 14px"}}>
               <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#2A8472",marginBottom:5}}>You're applying to</div>
