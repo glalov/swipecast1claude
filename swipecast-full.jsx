@@ -6498,6 +6498,17 @@ button:disabled:hover .cs-tri{transform:none;}
   .login-hero-full .login-hero-copy p{display:block;}
   .login-form-side{padding:30px 22px 34px;}
 }
+/* Sign-up card photos (owner 2026-10-31): her (Pexels) on Sign Up, him on Log In. */
+.lh-ph{position:absolute;inset:0;transition:opacity .45s ease;}
+.lh-ph.off{opacity:0;}
+.lh-ph>img{position:absolute;left:0;top:0;width:100%;object-fit:cover;}
+.lh-her{background:#2B3A3E;}
+.lh-her>img{height:100%;object-position:58% 30%;}
+/* deeper eased fade: hides the sweater/couch edge in her photo that runs behind "Get booked" */
+.lh-her .lh-fade{position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(180deg,rgba(14,20,23,0) 0%,rgba(14,20,23,.18) 25%,rgba(14,20,23,.5) 50%,rgba(14,20,23,.8) 75%,rgba(14,20,23,.92) 100%);}
+.lh-him{background:#050B11;}
+.lh-him>img{height:calc((100% - var(--lh-text)) * 1.15);object-position:center bottom;}
+.lh-him .lh-fade{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);}
 /* Industry/CD signup: teal info panel (left side of the split card) */
 .cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5CA092 0%,#4F8B7F 48%,#3B6F65 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
 @media(max-width:820px){.cd-panel{padding:30px 24px;}}
@@ -9022,8 +9033,7 @@ function RegisterTalent({onNavigate}){
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
       <div className="login-hero">
-        <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
-        <div className="login-hero-overlay"/>
+        <div className={"lh-ph lh-her"}><img src="/assets/auth/signup-actor.jpg" alt="Actor portrait" onError={e=>{e.currentTarget.style.display="none";}}/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>Get seen.<br/>Get booked.</h3>
@@ -13280,8 +13290,9 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
   return(<div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
       <div className="login-hero">
-        <img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
-        <div className="login-hero-overlay"/>
+        {/* Sign Up shows her, Log In shows him; both stay mounted so the tab switch cross-fades (owner 2026-10-31). */}
+        <div className={"lh-ph lh-her"+(mode==="signup"?"":" off")}><img src="/assets/auth/signup-actor.jpg" alt="Actor portrait" onError={e=>{e.currentTarget.style.display="none";}}/><div className="lh-fade"/></div>
+        <div className={"lh-ph lh-him"+(mode==="login"?"":" off")}><img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
