@@ -6462,11 +6462,12 @@ button:disabled:hover .cs-tri{transform:none;}
 .login-hero-overlay{display:none;}
 /* Sign-up headshot: full photo, no darkening; a small white name tag sits on his shirt,
    well below the chin, never on the face (owner chose option B, 2026-10-30). */
-.login-hero-copy{position:absolute;left:22px;right:22px;bottom:22px;padding:18px 20px;border-radius:16px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 12px 30px -16px rgba(0,0,0,.45);color:#1A1A2E;}
-.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#2A8472;margin:0 0 6px;}
-.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.6px;line-height:1.1;margin:0 0 10px;}
+.login-hero-copy{position:absolute;left:22px;right:auto;bottom:22px;padding:13px 18px;border-radius:14px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 12px 30px -16px rgba(0,0,0,.45);color:#1A1A2E;}
+.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#2A8472;margin:0 0 4px;}
+.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.5px;line-height:1.1;margin:0;}
 .login-hero-copy p{font-size:13px;line-height:1.5;color:#3A322A;margin:0;}
-.lh-checks{display:flex;flex-direction:column;gap:7px;}
+.lh-checks,.lh-casting{display:none;}
+.lh-checks{flex-direction:column;gap:7px;}
 .lh-checks>div{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#3A322A;}
 .lh-checks svg{flex:none;}
 .login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;min-width:0;}
@@ -6481,19 +6482,19 @@ button:disabled:hover .cs-tri{transform:none;}
 @media(max-width:1000px){
   .login-split{grid-template-columns:minmax(230px,40%) 1fr;}
   .login-form-side{padding:44px 30px;}
-  .login-hero-copy{left:16px;right:16px;bottom:16px;padding:15px 16px;}
-  .login-hero-copy h3{font-size:19px;}
+  .login-hero-copy{left:16px;bottom:16px;padding:11px 15px;}
+  .login-hero-copy h3{font-size:17px;}
 }
 /* Phones: stack. Photo shows head and shirt; the tag shrinks to one line on the shirt. */
 @media(max-width:560px){
   .login-shell{padding:18px 14px 32px;}
   .login-split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
-  .login-hero{aspect-ratio:4/4.6;max-height:440px;}
-  .login-hero>img{object-position:center 60%;}
+  .login-hero{aspect-ratio:2/3;}
+  .login-hero>img{object-position:center 40%;}
   .login-hero-copy{left:14px;right:auto;bottom:14px;padding:10px 14px;border-radius:12px;}
   .login-hero-copy h3{font-size:16px;margin:0;}
-  .login-hero-copy .eye,.lh-checks,.lh-casting{display:none;}
-  .login-hero.login-hero-full{aspect-ratio:auto;max-height:none;min-height:560px;}
+  .login-hero-copy .eye{display:none;}
+  .login-hero.login-hero-full{aspect-ratio:auto;min-height:560px;}
   .login-hero.login-hero-full>img{object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
   .login-hero-full .login-hero-copy{left:0;right:0;bottom:0;padding:22px 22px 24px;}
   .login-hero-full .login-hero-copy .eye{display:block;}
