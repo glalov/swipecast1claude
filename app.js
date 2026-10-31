@@ -4186,12 +4186,14 @@ button:disabled:hover .cs-tri{transform:none;}
 /* ── Login: split layout — hero face stripe (left) + form (right) ── */
 .login-shell{padding:clamp(28px,4vw,56px) clamp(16px,4vw,40px);display:flex;justify-content:center;}
 .login-split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:700px;}
-.login-hero{position:relative;overflow:hidden;background:#3B6F65;min-width:0;}
+.login-hero{position:relative;overflow:hidden;background:#050B11;min-width:0;}
 /* Sign-up headshot: same big white words as /login, at the bottom over a soft fade.
-   His face sits low in this photo, so the photo is lifted and the words land on his
-   shirt, never on the chin or face (owner chose this 2026-10-30). */
-.login-hero>img{position:absolute;left:0;top:-22%;width:100%;height:122%;object-fit:cover;object-position:center top;}
-.login-hero-overlay{position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(180deg,rgba(20,40,40,0) 0%,rgba(20,40,40,.7) 100%);pointer-events:none;}
+   His chin sits ~80% down this photo, so the photo stops above the words and its
+   near-black shirt (#050B11) continues underneath: words never touch the chin or face
+   (owner chose this 2026-10-30). --lh-text = room kept for the words. */
+.login-hero{--lh-text:190px;}
+.login-hero>img{position:absolute;left:0;top:0;width:100%;height:calc((100% - var(--lh-text)) * 1.15);object-fit:cover;object-position:center bottom;}
+.login-hero-overlay{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);pointer-events:none;}
 .login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:0 40px 38px;color:#fff;}
 .login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
 .login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;text-shadow:0 2px 18px rgba(0,0,0,.25);}
@@ -4199,8 +4201,9 @@ button:disabled:hover .cs-tri{transform:none;}
 .lh-checks,.lh-casting{display:none;}
 .login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;min-width:0;}
 /* /login: the original full-photo fade (that actor is small and mid-frame). */
+.login-hero.login-hero-full{background:#3B6F65;}
 .login-hero-full>img{top:0;height:100%;object-position:center 25%;}
-.login-hero-full .login-hero-overlay{top:0;height:auto;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
+.login-hero-full .login-hero-overlay{top:0;bottom:0;height:auto;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
 .login-hero-full .login-hero-copy{padding:clamp(28px,3vw,44px);}
 .login-hero-full .login-hero-copy h3{text-shadow:none;}
 /* Tablets / narrow windows: photo stays beside the form, narrower column. */
@@ -4213,13 +4216,12 @@ button:disabled:hover .cs-tri{transform:none;}
 @media(max-width:560px){
   .login-shell{padding:18px 14px 32px;}
   .login-split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
-  .login-hero{aspect-ratio:2/3;}
-  .login-hero>img{top:-32%;height:132%;}
+  .login-hero{aspect-ratio:2/3;--lh-text:112px;}
   .login-hero-copy{padding:0 22px 22px;}
   .login-hero-copy h3{font-size:28px;margin:0;}
   .login-hero-copy p{display:none;}
   .login-hero.login-hero-full{aspect-ratio:auto;min-height:560px;}
-  .login-hero.login-hero-full>img{top:0;object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
+  .login-hero.login-hero-full>img{object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
   .login-hero-full .login-hero-copy{padding:22px 22px 24px;}
   .login-hero-full .login-hero-copy h3{margin:0 0 10px;}
   .login-hero-full .login-hero-copy p{display:block;}
