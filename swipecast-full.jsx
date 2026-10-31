@@ -6457,41 +6457,48 @@ button:disabled:hover .cs-tri{transform:none;}
 /* ── Login: split layout — hero face stripe (left) + form (right) ── */
 .login-shell{padding:clamp(28px,4vw,56px) clamp(16px,4vw,40px);display:flex;justify-content:center;}
 .login-split{width:100%;max-width:1040px;display:grid;grid-template-columns:minmax(0,440px) 1fr;background:#fff;border:1px solid var(--bdr);border-radius:26px;overflow:hidden;box-shadow:0 30px 72px -42px rgba(26,26,46,.5),0 3px 10px rgba(26,26,46,.05);min-height:700px;}
-.login-hero{position:relative;display:flex;flex-direction:column;background:#17312D;min-width:0;}
-/* Photo on top, words on a solid panel under it, so nothing is written over the actor's face (owner, 2026-10-30). */
-.login-hero>img{position:relative;display:block;flex:1 1 auto;width:100%;height:0;min-height:300px;object-fit:cover;object-position:center 30%;}
+.login-hero{position:relative;overflow:hidden;background:#3B6F65;min-width:0;}
+.login-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 26%;}
 .login-hero-overlay{display:none;}
-.login-hero-copy{position:relative;padding:6px clamp(26px,3vw,40px) clamp(28px,3vw,38px);color:#fff;background:#17312D;}
-.login-hero-copy::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:70px;background:linear-gradient(180deg,rgba(23,49,45,0) 0%,#17312D 100%);pointer-events:none;}
-.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
-.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,32px);letter-spacing:-1px;line-height:1.06;margin:0 0 14px;}
-.login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
+/* Sign-up headshot: full photo, no darkening; a small white name tag sits on his shirt,
+   well below the chin, never on the face (owner chose option B, 2026-10-30). */
+.login-hero-copy{position:absolute;left:22px;right:22px;bottom:22px;padding:18px 20px;border-radius:16px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 12px 30px -16px rgba(0,0,0,.45);color:#1A1A2E;}
+.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#2A8472;margin:0 0 6px;}
+.login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.6px;line-height:1.1;margin:0 0 10px;}
+.login-hero-copy p{font-size:13px;line-height:1.5;color:#3A322A;margin:0;}
+.lh-checks{display:flex;flex-direction:column;gap:7px;}
+.lh-checks>div{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#3A322A;}
+.lh-checks svg{flex:none;}
 .login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;min-width:0;}
-/* Tablets / narrow windows: keep photo beside the form, narrower photo column. */
+/* /login keeps the original full-photo fade: that actor is small and mid-frame. */
+.login-hero-full .login-hero-overlay{display:block;position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
+.login-hero-full>img{object-position:center 25%;}
+.login-hero-full .login-hero-copy{left:0;right:0;bottom:0;padding:clamp(28px,3vw,44px);border-radius:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;color:#fff;}
+.login-hero-full .login-hero-copy .eye{font-size:11px;letter-spacing:1.6px;color:#FFD79A;margin:0 0 10px;}
+.login-hero-full .login-hero-copy h3{font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;}
+.login-hero-full .login-hero-copy p{font-size:14px;line-height:1.55;color:#fff;opacity:.92;max-width:320px;}
+/* Tablets / narrow windows: photo stays beside the form, narrower column. */
 @media(max-width:1000px){
   .login-split{grid-template-columns:minmax(230px,40%) 1fr;}
   .login-form-side{padding:44px 30px;}
+  .login-hero-copy{left:16px;right:16px;bottom:16px;padding:15px 16px;}
+  .login-hero-copy h3{font-size:19px;}
 }
-/* Phones: stack, photo keeps a square shape so the face always fits. */
+/* Phones: stack. Photo shows head and shirt; the tag shrinks to one line on the shirt. */
 @media(max-width:560px){
   .login-shell{padding:18px 14px 32px;}
   .login-split{grid-template-columns:1fr;min-height:0;border-radius:22px;}
-  .login-hero>img{flex:none;height:auto;min-height:0;aspect-ratio:1/1;max-height:340px;object-position:center 28%;}
-  .login-hero-copy{padding:4px 22px 24px;}
+  .login-hero{aspect-ratio:4/4.6;max-height:440px;}
+  .login-hero>img{object-position:center 60%;}
+  .login-hero-copy{left:14px;right:auto;bottom:14px;padding:10px 14px;border-radius:12px;}
+  .login-hero-copy h3{font-size:16px;margin:0;}
+  .login-hero-copy .eye,.lh-checks,.lh-casting{display:none;}
+  .login-hero.login-hero-full{aspect-ratio:auto;max-height:none;min-height:560px;}
+  .login-hero.login-hero-full>img{object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
+  .login-hero-full .login-hero-copy{left:0;right:0;bottom:0;padding:22px 22px 24px;}
+  .login-hero-full .login-hero-copy .eye{display:block;}
+  .login-hero-full .login-hero-copy h3{font-size:clamp(26px,3vw,34px);margin:0 0 10px;}
   .login-form-side{padding:30px 22px 34px;}
-}
-/* /login keeps the original full-photo fade (owner, 2026-10-30): the actor there is small
-   and mid-frame, so the words never cover a face. Sign-up headshots use the panel above. */
-.login-hero.login-hero-full{display:block;position:relative;overflow:hidden;background:#3B6F65;}
-.login-hero.login-hero-full>img{position:absolute;inset:0;width:100%;height:100%;min-height:0;object-position:center 25%;}
-.login-hero-full .login-hero-overlay{display:block;position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
-.login-hero-full .login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,3vw,44px);background:none;}
-.login-hero-full .login-hero-copy::before{display:none;}
-.login-hero-full .login-hero-copy h3{font-size:clamp(26px,3vw,34px);line-height:1.08;margin:0 0 10px;}
-@media(max-width:560px){
-  .login-hero.login-hero-full{min-height:560px;}
-  .login-hero.login-hero-full>img{aspect-ratio:auto;max-height:none;object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
-  .login-hero-full .login-hero-copy{padding:22px 22px 24px;}
 }
 /* Industry/CD signup: teal info panel (left side of the split card) */
 .cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5CA092 0%,#4F8B7F 48%,#3B6F65 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
@@ -9021,9 +9028,9 @@ function RegisterTalent({onNavigate}){
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
-          <h3>Get seen.<br/>Get booked.</h3>
-          <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-            {["Castings posted by casting directors","Every submission reviewed individually","Headshots, reel and résumé in one profile"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+          <h3>Get seen. Get booked.</h3>
+          <div className="lh-checks">
+            {["Castings posted by casting directors","Every submission reviewed individually"].map(b=><div key={b}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A8472" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
         </div>
       </div>
@@ -13278,17 +13285,17 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
         <div className="login-hero-overlay"/>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
-          <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
+          <h3>{c?"You're one step away.":"Get seen. Get booked."}</h3>
           {c?(
-            <div style={{background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.25)",borderRadius:12,padding:"14px 16px",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
-              <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#FFD79A",marginBottom:6}}>You're applying to</div>
-              <div style={{fontWeight:700,fontSize:15,color:"#fff",marginBottom:2}}>{c.title}</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.82)"}}>{c.tagline} · {c.prod}</div>
-              {r&&<div style={{fontSize:12,color:"rgba(255,255,255,.82)",marginTop:6}}>Role: <strong style={{color:"#fff"}}>{r.name}</strong></div>}
+            <div className="lh-casting" style={{background:"#F3EEE4",borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#2A8472",marginBottom:5}}>You're applying to</div>
+              <div style={{fontWeight:700,fontSize:14.5,color:"#1A1A2E",marginBottom:2}}>{c.title}</div>
+              <div style={{fontSize:12,color:"#3A322A"}}>{c.tagline} · {c.prod}</div>
+              {r&&<div style={{fontSize:12,color:"#3A322A",marginTop:5}}>Role: <strong style={{color:"#1A1A2E"}}>{r.name}</strong></div>}
             </div>
           ):(
-            <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:2}}>
-              {["Castings posted by casting directors","Every submission reviewed individually","Headshots, reel and résumé in one profile"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:9,fontSize:13.5,color:"rgba(255,255,255,.94)"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+            <div className="lh-checks">
+              {["Castings posted by casting directors","Every submission reviewed individually"].map(b=><div key={b}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A8472" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
             </div>
           )}
         </div>
