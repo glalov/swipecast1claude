@@ -27336,7 +27336,18 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       setAnimating(false);
     },320);
   }
-  function reset(){setIdx(0);setAnimating(false);setFlyDir(0);setSuperFly(false);setDx(0);dragging.current=false;}
+  // Replay re-deals the deck with the same entrance as the first page load
+  // (owner 2026-10-31): cards start hidden (sw-pre), then on the next paint the
+  // top card rises in and the rest deal in behind it. Reduced motion: plain reset.
+  const replayTm=useRef([]);
+  React.useEffect(()=>()=>replayTm.current.forEach(clearTimeout),[]);
+  function reset(){
+    setIdx(0);setAnimating(false);setFlyDir(0);setSuperFly(false);setDx(0);dragging.current=false;
+    replayTm.current.forEach(clearTimeout);replayTm.current=[];
+    if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    setArmed(false);setIntro(true);
+    replayTm.current.push(setTimeout(()=>{setArmed(true);replayTm.current.push(setTimeout(()=>setIntro(false),2400));},60));
+  }
   if(done){return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:300,minHeight:500,gap:10,textAlign:"center"}}>
       <div style={{fontSize:46,marginBottom:2}}><Ico n="movie" s={22}/></div>
