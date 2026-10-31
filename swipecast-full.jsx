@@ -27218,7 +27218,7 @@ const LANDING_SWIPE_DEMO=[
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"/assets/landing/deck-marisol-veyra.jpg",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"/assets/landing/deck-malik-jensen.jpg",skills:["Music Video","Indie","Dance"]},
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
-  {id:3,name:"Matthew Caldwell",age:28,gender:"Male",height:"6'0\"",pos:"center 50%",img:"/assets/landing/matthew-caldwell.jpg",skills:["Drama","Film & TV","Screen Acting"]},
+  {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
   {id:8,name:"Tyrone Matthews",age:38,gender:"Male",height:"6'3\"",pos:"center 8%",img:"/assets/landing/deck-tyrone-matthews.jpg",skills:["Military Background","Boxing","Bass Vocals"]},
 ];
