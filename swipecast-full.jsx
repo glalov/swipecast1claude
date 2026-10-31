@@ -6480,6 +6480,19 @@ button:disabled:hover .cs-tri{transform:none;}
   .login-hero-copy{padding:4px 22px 24px;}
   .login-form-side{padding:30px 22px 34px;}
 }
+/* /login keeps the original full-photo fade (owner, 2026-10-30): the actor there is small
+   and mid-frame, so the words never cover a face. Sign-up headshots use the panel above. */
+.login-hero.login-hero-full{display:block;position:relative;overflow:hidden;background:#3B6F65;}
+.login-hero.login-hero-full>img{position:absolute;inset:0;width:100%;height:100%;min-height:0;object-position:center 25%;}
+.login-hero-full .login-hero-overlay{display:block;position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,26,46,.14) 0%,rgba(26,26,46,.22) 45%,rgba(20,40,40,.86) 100%);}
+.login-hero-full .login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:clamp(28px,3vw,44px);background:none;}
+.login-hero-full .login-hero-copy::before{display:none;}
+.login-hero-full .login-hero-copy h3{font-size:clamp(26px,3vw,34px);line-height:1.08;margin:0 0 10px;}
+@media(max-width:560px){
+  .login-hero.login-hero-full{min-height:560px;}
+  .login-hero.login-hero-full>img{aspect-ratio:auto;max-height:none;object-position:center top;height:calc(100% + 90px);transform:translateY(-70px);}
+  .login-hero-full .login-hero-copy{padding:22px 22px 24px;}
+}
 /* Industry/CD signup: teal info panel (left side of the split card) */
 .cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5CA092 0%,#4F8B7F 48%,#3B6F65 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
 @media(max-width:820px){.cd-panel{padding:30px 24px;}}
@@ -9397,7 +9410,7 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div className="login-shell"><div className="login-split">
-    <div className="login-hero">
+    <div className="login-hero login-hero-full">
       <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
       <div className="login-hero-overlay"/>
       <div className="login-hero-copy">
