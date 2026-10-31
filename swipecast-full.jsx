@@ -27192,7 +27192,13 @@ function SwipeCardPhoto({t,alt="",draggable,pri,hold}){
 // gets every deck photo from castslate.com in priority order instead of opening two more
 // photo services. The original source URL is kept in each card's comment history (git).
 const LANDING_SWIPE_DEMO=[
-  // Nayara (2nd card; led the deck 2026-09-24 to 2026-10-30). Framed by the owner in the
+  // Order (owner-approved 2026-10-31): the first three show range at once (most visitors
+  // swipe only 2-3 cards), man/woman alternating to card 10, look-alikes kept apart
+  // (Killian/Alexander, Nayara/Olivia), and Otis closes the deck as the last face remembered.
+  {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
+  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"/assets/landing/deck-zara-banks.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
+  {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
+  // Nayara (led the deck 2026-09-24 to 2026-10-30). Framed by the owner in the
   // fitter (castslate-nayara-fit-tool.html) against the ORIGINAL 4:5 photo:
   // object-position 61% 11% + scale 1.95 with the origin at the same point
   // (re-framed closer by the owner 2026-09-24; was 60% 20% x1.42).
@@ -27202,23 +27208,17 @@ const LANDING_SWIPE_DEMO=[
   // the whole frame and read as changed lighting).
   // v4 (2026-09-25, owner's pick of three) = v3 with a +10% face-only midtone lift
   // (gamma .85 through a feathered ellipse on the face); background, hair, blazer untouched.
-  // Killian leads, Nayara follows (owner swap, 2026-10-30).
-  {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
-  // Order (owner-approved 2026-10-04): woman / man alternating from Nayara, with
-  // look-alikes kept apart and the older faces (46, 65, 38) spread through the deck.
   {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v4.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
+  {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"/assets/landing/deck-malik-jensen.jpg",skills:["Music Video","Indie","Dance"]},
   // Kira's photo URL carries NO h=/fit=crop: the owner framed her against the
   // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
   // the shot before object-position ever ran, throwing the crop away. w=1200 keeps
   // the 3:2 source at retina size (86KB). Photo: Pexels #4668550 by Vlada Karpovich.
   {id:21,name:"Kira Vance",age:24,gender:"Female",height:"5'6\"",pos:"84% 38%",zoom:1.12,img:"/assets/landing/deck-kira-vance.jpg",skills:["Method Acting","Shakespearean Performance","Emotional Improvisation"]},
-  {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
-  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"/assets/landing/deck-zara-banks.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
+  {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik.jpg",skills:["Drama","Film & TV","Screen Acting"]},
+  {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"/assets/landing/deck-evan-calder.jpg",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"/assets/landing/deck-marisol-veyra.jpg",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
-  {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"/assets/landing/deck-malik-jensen.jpg",skills:["Music Video","Indie","Dance"]},
-  {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
-  {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
   {id:8,name:"Otis Langford",age:62,gender:"Male",height:"6'3\"",pos:"center 35%",img:"/assets/landing/otis-langford.jpg",skills:["Military Background","Bass Vocals","Character Work"]},
 ];
