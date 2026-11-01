@@ -6411,8 +6411,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
 .home-cta-inner h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(36px,6vw,64px);letter-spacing:-0.5px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
 .home-cta-lede{font-size:clamp(17px,2vw,21px);line-height:1.6;max-width:740px;margin:0 auto 30px;color:rgba(255,255,255,.86);position:relative;}
-.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:18px 38px;font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:#EAC080;color:#23333A;box-shadow:none;transition:transform .12s,background .2s;position:relative;}
-.home-cta-primary:hover{transform:translateY(-2px);background:#EEC98E;}
+.home-cta-primary{display:inline-flex;align-items:center;gap:9px;border:none;border-radius:13px;padding:18px 38px;font-size:17px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;background:#FFF8EB;color:#23333A;box-shadow:none;transition:transform .12s,background .2s;position:relative;}
+.home-cta-primary:hover{transform:translateY(-2px);background:#FFFFFF;}
 /* Forward "play" triangle inside CTA buttons (replaces the → glyph site-wide). */
 .cs-tri{display:inline-block;width:.58em;height:.68em;vertical-align:-.02em;flex-shrink:0;transition:transform .18s ease;}
 button:hover .cs-tri{transform:translateX(3px);}
