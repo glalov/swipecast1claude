@@ -4098,6 +4098,16 @@ body.sheet-push .b2t-cube{display:none;}
    homepage Featured cards (.fcs-card-v2, cc-*) are untouched. No backticks
    or dollar-brace in this CSS: it lives inside a JS template literal. */
 /* Pure white so each card stands off the cream page (owner, 2026-10-27, demo card-white option 1). */
+.b5-list{display:flex;flex-direction:column;gap:24px;}
+@media(min-width:901px){
+  .b5-list{gap:36px;}
+  .b5-card .b5-grid{min-height:440px;}
+  .b5-card .b5-main{padding:42px 44px;gap:17px;}
+  .b5-card.b5-pick .b5-main{padding-top:62px;}
+  .b5-card .b5-side{padding:22px 28px;}
+  .b5-card .b5-role{padding:18px 0;}
+  .b5-card .b5-actions{padding-top:10px;}
+}
 .b5-card{position:relative;overflow:hidden;border-radius:14px;background:#FFFFFF;border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
 .b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;}
 .b5-main{padding:30px 32px;display:grid;gap:13px;align-content:start;min-width:0;}
@@ -17910,7 +17920,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:24}}>{fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div className="b5-list">{fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick gets a compact bottom-right shadow (owner-approved
                2026-09-26): tight, one direction, no spread — grounded, not a glow. */
