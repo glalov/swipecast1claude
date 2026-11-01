@@ -4177,7 +4177,6 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-role.sup .b5-bar{background:#EAC080;}
 .b5-rname{font-weight:700;font-size:16px;color:var(--t1);overflow-wrap:anywhere;}
 .b5-rspec{font-size:14px;color:var(--t2);min-width:0;overflow-wrap:normal;margin-top:2px;}
-.b5-rpay{font-size:14px;font-weight:700;color:#206557;margin-top:2px;}
 .b5-rspec b{color:#206557;font-weight:700;}
 .b5-pay{white-space:nowrap;}
 .b5-racts{grid-column:2;margin-top:7px;display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;gap:8px;}
@@ -18008,7 +18007,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                             onClick={e=>{e.stopPropagation();openSheet(rawC,null,{focus:r});}}
                             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();openSheet(rawC,null,{focus:r});}}}>{r.name||label}</div>}
                         <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><React.Fragment key={k}>{k?" · ":""}<span className="b5-pay">{x}</span></React.Fragment>)}</div>
-                        {/^\$[\d,.]+(\/[a-z]+| flat| per [a-z]+)?$/i.test(String(r.pay||"").trim())&&<div className="b5-rpay">{String(r.pay).trim()}</div>}
                       </div>
                       {!isClosedCard&&<div className="b5-racts">
                         {r.id&&appliedRoleIds.has(r.id)
