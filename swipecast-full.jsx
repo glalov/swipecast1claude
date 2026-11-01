@@ -45997,6 +45997,9 @@ const ACG = (()=>{
       const sigs=(h.r10Sigs||[]).concat(res._r10Sigs||[]);
       const sigOk=s=>{if(v3IsBrief(s))return true;const sg=r10Sig(s.p);return !(sg.who.length&&sg.sit.length&&sigs.some(o=>r10SigClash(sg,o)));};
       let choices=pool.filter(seedUnused).filter(skelOk).filter(sigOk).filter(s=>!(res._seedFails&&res._seedFails[s.k]>=3));
+      // Round 14: an untold premise beats a told one, even when a similar story
+      // ran recently. The hand-written bank is spent, so these keep films coming.
+      if(!choices.length)choices=pool.filter(seedUnused).filter(s=>!(res._seedFails&&res._seedFails[s.k]>=3));
       const revived=!choices.length;
       // A premise the board has already told may come back only when this type
       // has nothing unused left, never while it is among the last 150 listings,
