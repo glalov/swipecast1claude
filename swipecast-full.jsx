@@ -14969,7 +14969,7 @@ Free submission used
 
     <section style={{marginBottom:40}}>
       <div className="section-label" style={{marginBottom:12}}>{t(isNarrativeProject(casting.type)?'casting.story':'casting.synopsis')}</div>
-      <p style={{color:"#3C4A52",fontSize:15,lineHeight:1.75,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
+      <p className="rl-desc" style={{margin:0,maxWidth:720}}>{c.synopsis?render(c.synopsis):c.desc}</p>
     </section>
 
     <section id="roles-section" style={{marginBottom:40,scrollMarginTop:90}}>
