@@ -184,7 +184,7 @@ const TRANSLATIONS = {
     'casting.pay':'Pay / Rate','casting.auditionFormat':'Audition Format',
     'casting.shoots':'Shoot Dates','casting.rehearsal':'Rehearsal',
     'casting.submissions':'Submissions','casting.director':'Director',
-    'casting.production':'Production','casting.roles':'Roles',
+    'casting.production':'Production','casting.roles':'Roles','casting.details':'Details','casting.hide':'Hide',
     'casting.synopsis':'About the Project','casting.story':'The Story',
     'casting.role.lead':'Lead','casting.role.supporting':'Supporting','casting.role.featured':'Featured',
     'casting.role.seriesRegular':'Series Regular','casting.role.recurring':'Recurring',
@@ -436,7 +436,7 @@ const TRANSLATIONS = {
     'casting.pay':'Pago / Tarifa','casting.auditionFormat':'Formato de audición',
     'casting.shoots':'Fechas de rodaje','casting.rehearsal':'Ensayo',
     'casting.submissions':'Postulaciones','casting.director':'Director',
-    'casting.production':'Producción','casting.roles':'Papeles',
+    'casting.production':'Producción','casting.roles':'Papeles','casting.details':'Detalles','casting.hide':'Ocultar',
     'casting.synopsis':'Sobre el proyecto','casting.story':'La historia',
     'casting.role.lead':'Protagonista','casting.role.supporting':'Secundario','casting.role.featured':'Destacado',
     'casting.role.seriesRegular':'Regular de serie','casting.role.recurring':'Recurrente',
@@ -5638,6 +5638,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-mt{font-size:14.5px;font-weight:500;color:#3D3E58;margin-top:6px;line-height:1.5;}
 .rl-mt .sep{color:#AFADBA;font-weight:500;margin:0 6px;}
 .rl-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.rl-detail{display:inline-flex;align-items:center;justify-content:flex-end;min-width:56px;margin-right:-6px;font-size:13px;font-weight:600;color:#206557;white-space:nowrap;}
 .rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid var(--bdr);background:var(--s1);color:#376A60;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
 .rl-row.rl-open .rl-chev{transform:rotate(180deg);background:#EAF4F2;border-color:#CFE0DC;}
 /* 0fr -> 1fr animates to the content's real height with no JS measuring, so a
@@ -15165,6 +15166,7 @@ Free submission used
                   onClick={(e)=>e.stopPropagation()} onKeyDown={(e)=>e.stopPropagation()}>
                   {applyCtl(r,i,hasInstructions)}
                 </span>}
+                {foldable&&<span className="rl-detail" aria-hidden="true">{t(open?'casting.hide':'casting.details')}</span>}
                 {foldable&&<span className="rl-chev" aria-hidden="true"><Ico n="chevron-down" s={16}/></span>}
               </div>
             </div>
