@@ -617,16 +617,16 @@ function withTri(label){
   return <>{label.replace(/\s*→$/,"")} <Tri/></>;
 }
 
-// ─── Type tag (owner pick "B", 2026-11-01) ───────────────────────────────────
-// Browse cards show the project type as a small flat tint: a line icon for the
-// type's family, then the name. Tint/ink follow the PROJECT_TYPE_* family.
+// ─── Type tag (owner pick "3", 2026-11-01) ───────────────────────────────────
+// Browse cards show the project type on one warm gray: near-black name, and a
+// line icon in a dark shade of the type's family colour.
 const PROJECT_TYPE_TAG_ICONS={film:"movie",series:"device-tv",comm:"speakerphone",corp:"briefcase",audio:"microphone",stage:"masks-theater",host:"presentation",print:"camera",dev:"bulb",phys:"run",other:"sparkles"};
+const PROJECT_TYPE_TAG_INKS={film:"#7A3514",series:"#134E50",comm:"#754207",corp:"#2B3343",audio:"#37296E",stage:"#6E1F38",host:"#114558",print:"#5A4120",dev:"#134F33",phys:"#762A16",other:"#44445A"};
 function TicketTypeTag({type,lang}){
   if(!type)return null;
   const t=canonicalProjectType(type);
   const fam=PROJECT_TYPE_GROUP[t]||"other";
-  const [tint,ink]=PROJECT_TYPE_TINTS[fam]||PROJECT_TYPE_TINTS.other;
-  return(<span className="b5-tag" style={{"--tk":ink,"--tt":tint}} title={t}>
+  return(<span className="b5-tag" style={{"--tk":PROJECT_TYPE_TAG_INKS[fam]||PROJECT_TYPE_TAG_INKS.other}} title={t}>
     <i className={"ti ti-"+(PROJECT_TYPE_TAG_ICONS[fam]||PROJECT_TYPE_TAG_ICONS.other)} aria-hidden="true"/>
     <span className="b5-tag-b">{translateCastingType(type,lang)}</span>
   </span>);
@@ -4136,8 +4136,8 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;}
-.b5-tag{--tk:#5A5A72;--tt:#EDEAE3;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:var(--tt);color:var(--tk);font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
-.b5-tag i{font-size:14px;line-height:1;}
+.b5-tag{--tk:#44445A;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E9E5DC;color:#241F19;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
+.b5-tag i{color:var(--tk);font-size:14px;line-height:1;}
 .b5-tag-b{letter-spacing:.01em;}
 .cs-idv{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E8F3EC;color:#17663F;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
 .cs-idv-a{display:flex;align-items:center;}
