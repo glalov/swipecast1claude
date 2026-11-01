@@ -2273,7 +2273,7 @@ const BLOG_POSTS = [
 const css = `
 *{margin:0;padding:0;box-sizing:border-box;}
 /* --bg #F7F5F0 since 2026-10-27 (was #FAF6EE, read yellow next to the white cards; owner chose shade A). */
-:root{--bg:#F7F5F0;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#3A322A;--t3:#433B32;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#2A8472;--teal-dk:#206557;--amber:#E8902A;--amber-dk:#C8761B;}
+:root{--bg:#F7F5F0;--s1:#FFFDF8;--s2:#F2ECE0;--s3:#E8E0D0;--bdr:#E4DCCB;--t1:#241F19;--t2:#3A322A;--t3:#433B32;--acc:#1A1A2E;--acc2:#2D2D44;--grn:#1B873E;--red:#D63B3B;--blu:#2563EB;--hero-bg:#1A1A2E;--teal:#33826A;--teal-dk:#276551;--amber:#E8902A;--amber-dk:#C8761B;}
 html,body{min-height:100vh;background:#0E0C0B;}
 *{box-sizing:border-box;}
 html{width:100%;max-width:100%;}
@@ -2421,7 +2421,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* Smallest phones: 15px so the long labels ("Create Free Account & Apply") stay on one line. */
 @media(max-width:360px){.social-btn-dark,.btn-p.auth-main{font-size:15px;padding-left:10px;padding-right:10px;}}
 .cg-page{background:var(--bg);padding-bottom:20px}
-.cg-from{background:#EAF3F0;color:#206557;font-size:13.5px;font-weight:600;text-align:center;padding:10px 16px}
+.cg-from{background:#EAF3F0;color:#276551;font-size:13.5px;font-weight:600;text-align:center;padding:10px 16px}
 .cg-main{max-width:1120px;margin:0 auto;padding:28px 24px 36px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
 .cg-cast{background:#fff;border:1px solid var(--bdr);border-radius:18px;overflow:hidden;min-width:0}
 .cg-hero{height:200px;background:#2a2622 center 40%/cover no-repeat;position:relative}
@@ -2442,7 +2442,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0;margin-bottom:22px;border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
 .cg-facts>div{background:#fff;padding:12px 14px;min-width:0;border-left:1px solid var(--bdr);margin-left:-1px}
 .cg-fk{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
-.cg-fpay{color:#206557!important}
+.cg-fpay{color:#276551!important}
 .cg-fsub{display:block;font-size:12.5px;color:#5A5B70;margin-top:3px;line-height:1.45}
 .cg-facts b{display:block;font-size:15.5px;font-weight:700;color:var(--t1);margin-top:3px;line-height:1.35}
 .cg-h{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;color:var(--t1)}
@@ -2453,18 +2453,18 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-role::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
 .cg-role:hover{background:#FBFAF7}
 .cg-role.on{background:#EAF4F2}
-.cg-role.on::before{background:#2A8472}
+.cg-role.on::before{background:#33826A}
 .cg-role:focus-visible{outline:2px solid #1A1A2E;outline-offset:-2px}
 .cg-dot{width:20px;height:20px;border-radius:50%;border:2px solid #BFB8A9;flex:none;display:grid;place-items:center}
-.cg-role.on .cg-dot{border-color:#2A8472;background:#2A8472}
+.cg-role.on .cg-dot{border-color:#33826A;background:#33826A}
 .cg-role.on .cg-dot::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
 .cg-rn,.cg-rm{display:block}
-.cg-rr{margin-left:auto;font-weight:700;color:#206557;font-size:14.5px;white-space:nowrap}
+.cg-rr{margin-left:auto;font-weight:700;color:#276551;font-size:14.5px;white-space:nowrap}
 .cg-rn{font-weight:800;font-size:16px;color:var(--t1)}.cg-rm{font-size:13px;color:var(--t3);margin-top:2px}
-.cg-ap{flex:none;font-size:13px;font-weight:700;color:#fff;background:#2A8472;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:inherit}
-.cg-ap:hover{background:#206557}
+.cg-ap{flex:none;font-size:13px;font-weight:700;color:#fff;background:#33826A;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-family:inherit}
+.cg-ap:hover{background:#276551}
 .cg-lock{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;color:var(--t1);margin-top:16px;line-height:1.5}
-.cg-lock>:first-child{color:#2A8472;flex:none;margin-top:1px}
+.cg-lock>:first-child{color:#33826A;flex:none;margin-top:1px}
 .cg-lock b{font-weight:700}
 .cg-side{position:sticky;top:96px;min-width:0;scroll-margin-top:90px}
 .cg-card{background:#fff;border:1px solid var(--bdr);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(36,31,25,.07)}
@@ -2475,11 +2475,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .cg-pick-chips{display:flex;flex-wrap:wrap;gap:8px}
 .cg-pchip{font:inherit;font-size:13.5px;font-weight:700;color:var(--t1);background:#fff;border:1.25px solid #CFE0DC;border-radius:999px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:baseline;gap:6px;max-width:100%;text-align:left}
 .cg-pchip span{font-size:12px;font-weight:600;color:var(--t3)}
-.cg-pchip:hover{border-color:#2A8472}
-.cg-pchip.on{background:#2A8472;border-color:#2A8472;color:#fff}
+.cg-pchip:hover{border-color:#33826A}
+.cg-pchip.on{background:#33826A;border-color:#33826A;color:#fff}
 .cg-pchip.on span{color:rgba(255,255,255,.8)}
-.cg-rpay{color:#206557;white-space:nowrap}
-.cg-rolepill{display:inline-block;background:#EAF3F0;color:#206557;font-size:12.5px;border-radius:999px;padding:5px 12px;margin-bottom:12px}
+.cg-rpay{color:#276551;white-space:nowrap}
+.cg-rolepill{display:inline-block;background:#EAF3F0;color:#276551;font-size:12.5px;border-radius:999px;padding:5px 12px;margin-bottom:12px}
 .cg-done .page,.cg-done{max-width:100%}
 .cg-how{max-width:1120px;margin:0 auto;padding:0 24px 40px}
 .cg-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -2585,7 +2585,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .page.fci .info-hero p{color:var(--t1);}
 .page.fci .info-hero h1{line-height:1.12;}
 .fci-stand{position:relative;overflow:hidden;width:100%;max-width:800px;margin:0 auto 80px;padding:44px 48px;border-radius:14px;background:#1A1A2E;text-align:center;}
-.fci-stand::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#2A8472 83.33% 100%);}
+.fci-stand::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#33826A 83.33% 100%);}
 .fci-stand .section-label{color:rgba(255,255,255,.7);margin-bottom:16px;}
 .fci-stand p{margin:0;font-weight:700;font-size:22px;line-height:1.55;letter-spacing:-.3px;color:#fff;}
 .fci-stand p+p{margin-top:16px;font-size:18px;font-weight:500;line-height:1.6;color:rgba(255,255,255,.9);}
@@ -2606,19 +2606,19 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .fci .card.fci-green{border-top:3px solid #2E8B57;}
 .fci .card.fci-coral{border-top:3px solid #DD6B3F;}
 .fci .card.fci-lilac{border-top:3px solid #7B5BB5;}
-.fci .card.fci-teal{border-top:3px solid #2A8472;}
+.fci .card.fci-teal{border-top:3px solid #33826A;}
 .fci .card.fci-zero{text-align:center;padding:28px 32px;}
 .fci-head h2.fci-zero-h{font-size:32px;}
 .fci-head h2.fci-belong-h{font-size:32px;}
 .fci-sec.fci-welcome{max-width:880px;padding:48px 40px 44px;border-radius:22px;background:linear-gradient(180deg,#FFF1EA 0%,#FFF8F1 55%,#FFFBF5 100%);border:1px solid #F3DCCF;box-shadow:0 10px 30px rgba(221,107,63,0.07);}
 .fci-welcome .section-label{color:#B5532E;margin-bottom:10px;}
-.fci-bar{width:132px;height:5px;margin:4px auto 18px;border-radius:3px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#2A8472 83.33% 100%);}
+.fci-bar{width:132px;height:5px;margin:4px auto 18px;border-radius:3px;background:linear-gradient(90deg,#E9B729 0 16.66%,#3E6FB8 16.66% 33.33%,#2E8B57 33.33% 50%,#DD6B3F 50% 66.66%,#7B5BB5 66.66% 83.33%,#33826A 83.33% 100%);}
 .fci .card.fci-zero,.fci .card.fci-zero:hover{border:2px solid #1A1A2E;box-shadow:none;}
 .fci .card.fci-zero p{font-size:16px;}
 .fci .card.fci-zero p.fci-big{font-size:17px;font-weight:700;line-height:1.6;margin-bottom:12px;}
 .fci .card.fci-zero p+p{margin-top:12px;}
 .fci-tag{display:inline-block;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
-.fci-ok{color:#206557;}
+.fci-ok{color:#276551;}
 .fci-no{color:#9A3B2C;}
 .fci-cta{text-align:center;margin-top:28px;}
 .fci a.fci-btn{display:inline-block;background:var(--teal);color:#fff;font-weight:700;font-size:15px;padding:13px 26px;border-radius:10px;text-decoration:none;}
@@ -2645,7 +2645,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .card.tm-card{margin:0;padding:clamp(24px,2.4vw,32px);display:flex;flex-direction:column;min-width:0;border-radius:20px;}
 .tm-qm{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:72px;line-height:.62;color:var(--teal);height:34px;margin:0 0 10px;}
 .tm-q{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:500;font-size:clamp(16.5px,1.45vw,19px);line-height:1.55;letter-spacing:-.1px;color:var(--t1);flex:1;text-wrap:pretty;}
-.tm-mark{background:none;color:inherit;font-weight:700;background-image:linear-gradient(transparent 62%,rgba(42,132,114,.26) 62%);}
+.tm-mark{background:none;color:inherit;font-weight:700;background-image:linear-gradient(transparent 62%,rgba(51,130,106,.26) 62%);}
 .tm-who{display:flex;align-items:center;gap:13px;margin-top:26px;padding-top:18px;border-top:1px solid var(--bdr);}
 .tm-av{position:relative;display:block;width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid var(--bdr);background:#E8E2D6;}
 .tm-av img{position:absolute;display:block;max-width:none;height:auto;}
@@ -2918,7 +2918,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 /* Travel & driving pills = option A (owner, 2026-10-26). */
 .pp-doc{display:inline-flex;align-items:center;gap:9px;font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.3;font-weight:500;padding:8px 15px 8px 12px;border-radius:999px;background:#FFFFFF;border:1px solid #E4DCCB;color:var(--t1);}
 .pp-doc svg{flex:none;}
-.pp-doc-ok{width:18px;height:18px;border-radius:50%;background:#2A8472;color:#fff;display:grid;place-items:center;margin-left:2px;}
+.pp-doc-ok{width:18px;height:18px;border-radius:50%;background:#33826A;color:#fff;display:grid;place-items:center;margin-left:2px;}
 .pp-doc.no{background:transparent;color:var(--t3);border-style:dashed;}
 .pl-cinematic .pp-doc{background:var(--s1);border-color:var(--bdr);}
 .pl-cinematic .pp-doc.no{background:transparent;}
@@ -2931,7 +2931,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .pp-uni .pp-1p .credit-meta{grid-area:co;font-family:'DM Sans',sans-serif;padding-top:1px;font-size:15px!important;letter-spacing:0!important;color:var(--t2)!important;}
 .pp-uni .pp-1p .pp-resume{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;color:var(--teal-dk)!important;font-weight:700;font-size:13px!important;}
 .pl-cinematic .pp-1p .pp-resume,.pl-cinematic .pp-1p .pp-cred-catlbl{color:#5FB3A2!important;}
-.pp-uni .pp-1p .pp-badge{display:inline-flex!important;align-items:center;gap:6px;font-family:'DM Sans',sans-serif!important;font-size:13px!important;font-weight:700!important;letter-spacing:0!important;padding:6px 11px!important;border-radius:7px!important;margin-right:0!important;background:rgba(42,132,114,.10)!important;color:var(--teal-dk)!important;}
+.pp-uni .pp-1p .pp-badge{display:inline-flex!important;align-items:center;gap:6px;font-family:'DM Sans',sans-serif!important;font-size:13px!important;font-weight:700!important;letter-spacing:0!important;padding:6px 11px!important;border-radius:7px!important;margin-right:0!important;background:rgba(51,130,106,.10)!important;color:var(--teal-dk)!important;}
 .pl-cinematic .pp-1p .pp-badge{background:rgba(95,179,162,.14)!important;color:#7CC7B6!important;}
 .pp-uni .pp-1p .pp-lang{display:grid!important;grid-template-columns:1fr 1fr;column-gap:28px;}
 .pp-uni .pp-1p .pp-logi{display:grid!important;grid-template-columns:1fr 1fr;column-gap:28px;}
@@ -2940,13 +2940,13 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .pp-uni .pp-1p .card>div[style*="repeat(auto-fill,minmax(110px"]{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:16px 18px!important;}
 .pp-act{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:9px;box-shadow:0 14px 34px -24px rgba(36,31,25,.35);font-family:'DM Sans',sans-serif;}
 .pp-act button{width:100%;justify-content:center;display:inline-flex;align-items:center;gap:7px;padding:11px 14px!important;font-size:14px!important;}
-.pp-uni .pp-act .btn-p{background:var(--pl-acc,#2A8472)!important;border-color:var(--pl-acc,#2A8472)!important;color:#fff!important;}
+.pp-uni .pp-act .btn-p{background:var(--pl-acc,#33826A)!important;border-color:var(--pl-acc,#33826A)!important;color:#fff!important;}
 .pp-uni.pl-acc-gold .pp-act .btn-p{color:#1A1A2E!important;}
 .pp-act-hint{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--t3);text-align:center;}
 .pl-cinematic .pp-act{border-color:transparent;box-shadow:none;}
 .pp-sb h3{margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
 .pp-sb-links a{display:flex;align-items:center;gap:10px;padding:7px 0;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:var(--t1);text-decoration:none;}
-.pp-sb-links a:hover{color:var(--pl-acc,#2A8472);}
+.pp-sb-links a:hover{color:var(--pl-acc,#33826A);}
 .pp-sb-links a svg{color:var(--t3);flex-shrink:0;}
 .pp-sb-fact{font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.5;color:var(--t1);}
 @media(max-width:900px){.pp-1p{margin-top:20px;}.pp-1p.has-side{grid-template-columns:minmax(0,1fr);gap:0;}.pp-1p-side{order:-1;margin-bottom:26px;}.pp-1p-stick{position:static;gap:24px;}.pp-uni .pp-1p .pp-stats,.pp-uni .pp-1p .card>div[style*="repeat(auto-fill,minmax(110px"]{grid-template-columns:repeat(3,minmax(0,1fr))!important;}.pp-uni .pp-1p .pp-lang,.pp-uni .pp-1p .pp-logi{grid-template-columns:1fr;row-gap:22px;}.pp-uni .pp-1p .pp-cred .credit-row{grid-template-columns:52px minmax(0,1fr);grid-template-areas:"yr pt" "yr rl" "yr co";column-gap:14px;padding:16px 0;}.pp-uni .pp-1p .credit-meta{margin-top:4px;}}
@@ -2971,11 +2971,11 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .pl-hero-line{font-size:17px;color:var(--t2);margin:0 0 6px;line-height:1.45;}
 .pl-hero-meta{font-size:14px;color:var(--t3);margin:0 0 22px;line-height:1.45;}
 .pl-hero-btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
-.pl-btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:10px;background:var(--pl-acc,#2A8472);color:#fff;border:0;cursor:pointer;text-decoration:none;white-space:nowrap;}
+.pl-btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:800;font-size:13.5px;padding:11px 18px;border-radius:10px;background:var(--pl-acc,#33826A);color:#fff;border:0;cursor:pointer;text-decoration:none;white-space:nowrap;}
 .pl-btn.ghost{background:transparent;color:var(--t1);border:1px solid var(--bdr);}
 .pl-acc-gold .pl-btn:not(.ghost){color:#1A1A2E;}
 .pl-soc{display:flex;flex-wrap:wrap;gap:16px;}
-.pl-soc a{color:var(--pl-acc,#2A8472);font-weight:700;font-size:14.5px;text-decoration:none;}
+.pl-soc a{color:var(--pl-acc,#33826A);font-weight:700;font-size:14.5px;text-decoration:none;}
 .pl-soc a:hover{text-decoration:underline;text-underline-offset:3px;}
 .pl-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
 .pl-strip-ph{position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:8px;background:#111;cursor:zoom-in;}
@@ -3376,9 +3376,9 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-intro p{margin:0;font-size:19px;line-height:1.7;color:var(--t1);max-width:820px;}
 .tad-x{position:absolute;top:18px;right:18px;height:38px;border-radius:20px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:0 16px;font-family:'DM Sans',sans-serif;font-size:14.5px;font-weight:700;}
 .tad-x:hover{background:rgba(255,255,255,.18);}
-.cdx-checked{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;font-size:14px;line-height:1.45;font-weight:700;background:#E6F2EF;color:#206557;padding:8px 15px;border-radius:20px;}
+.cdx-checked{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;font-size:14px;line-height:1.45;font-weight:700;background:#E6F2EF;color:#276551;padding:8px 15px;border-radius:20px;}
 .cdx-checked span{font-weight:500;color:#2A6B5E;}
-.tad-curated{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:15.5px;line-height:1.45;font-weight:700;background:#E6F2EF;color:#206557;padding:9px 16px;border-radius:20px;}
+.tad-curated{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:15.5px;line-height:1.45;font-weight:700;background:#E6F2EF;color:#276551;padding:9px 16px;border-radius:20px;}
 .tad-body{padding:18px 26px 34px;}
 .tad-tier{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:5px;}
 .tad-cityb{font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);border:1px solid var(--bdr);padding:3px 7px;border-radius:5px;}
@@ -3445,7 +3445,7 @@ body.sheet-push .b2t-cube{display:none;}
 .tad-step h4{margin:14px 0 8px;font-size:21px;line-height:1.3;font-weight:800;color:#1A1A2E;}
 .tad-step p{margin:0;font-size:19px;line-height:1.7;color:var(--t1);}
 .tad-why-more{margin:18px 0 0;font-size:18px;line-height:1.7;color:var(--t1);}
-.tad-why-more b{color:#206557;}
+.tad-why-more b{color:#276551;}
 
 .tad-tabs{display:flex;gap:6px;margin:18px 0 4px;border-bottom:1px solid var(--bdr);flex-wrap:wrap;}
 .tad-tabs button{background:none;border:0;border-bottom:3px solid transparent;font-family:inherit;font-size:16.5px;font-weight:800;color:var(--t3);padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
@@ -3963,7 +3963,7 @@ body.sheet-push .b2t-cube{display:none;}
 .cfoot-c:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 6px 18px -10px rgba(26,26,46,.3);}
 .cfoot-c:focus-visible{outline:2px solid var(--teal);outline-offset:3px;}
 .cfoot-c-mt{display:flex;gap:7px;align-items:center;margin-bottom:9px;flex-wrap:wrap;}
-.cfoot-pill{font-size:9.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(42,132,114,.11);color:var(--teal-dk);}
+.cfoot-pill{font-size:9.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(51,130,106,.11);color:var(--teal-dk);}
 .cfoot-pill.warm{background:rgba(232,144,42,.13);color:var(--amber-dk);}
 .cfoot-c h4{font-size:14.5px;font-weight:700;letter-spacing:-.2px;margin:0 0 5px;line-height:1.3;}
 .cfoot-c-meta{font-size:11.8px;color:var(--t2);line-height:1.55;}
@@ -3977,15 +3977,15 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-title-link{cursor:pointer;transition:color .15s ease,text-decoration-color .15s ease;}
 .cc-title-link:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
 @media (hover:hover) and (pointer:fine){
-  .cc-title-link:hover{color:#206557;text-decoration:underline;text-decoration-thickness:2px;
-    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2A8472;}
+  .cc-title-link:hover{color:#276551;text-decoration:underline;text-decoration-thickness:2px;
+    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#33826A;}
 }
 /* Featured Castings: only the CENTRED card opens a casting on click, so only its
    title gets the same answer. A side card recentres the slider instead, and a
    title that looked clickable there would be lying. */
 @media (hover:hover) and (pointer:fine){
-  .fcs-card-center:hover .cc-title{color:#206557;text-decoration:underline;text-decoration-thickness:2px;
-    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#2A8472;}
+  .fcs-card-center:hover .cc-title{color:#276551;text-decoration:underline;text-decoration-thickness:2px;
+    text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#33826A;}
 }
 .fcs-card-center .cc-title{transition:color .15s ease,text-decoration-color .15s ease;}
 /* The type badges sit on the title's baseline instead of owning a band above
@@ -4167,12 +4167,12 @@ body.sheet-push .b2t-cube{display:none;}
    the breakdown button is the calm secondary step, sized near Apply. */
 .b5-ghost{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:14px;background:transparent;color:#1A1A2E;border:1.25px solid #1A1A2E;border-radius:8px;padding:8px 15px;cursor:pointer;}
 .b5-ghost:hover{background:#1A1A2E;color:#fff;}
-.b5-save{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:14px;background:#E8F3EF;color:#206557;border:1.25px solid #E8F3EF;border-radius:8px;padding:8px 14px 8px 12px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
+.b5-save{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:14px;background:#E8F3EF;color:#276551;border:1.25px solid #E8F3EF;border-radius:8px;padding:8px 14px 8px 12px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
 .b5-save svg{width:18px;height:18px;flex:none;}
 .b5-save:hover{background:#DCEDE7;border-color:#DCEDE7;}
 /* Saved = solid teal (owner, 2026-10-28, demo save option 3). */
-.b5-save.on{background:#2A8472;border-color:#2A8472;color:#fff;}
-.b5-save.on:hover{background:#206557;border-color:#206557;}
+.b5-save.on{background:#33826A;border-color:#33826A;color:#fff;}
+.b5-save.on:hover{background:#276551;border-color:#276551;}
 .b5-save:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 /* Roles column: half-strength tint between the white card and the #F7F5F0 page, so no third hue
    (owner, 2026-10-27, demo "Half-strength"; replaced warm sage, then warm sand, the same evening). */
@@ -4186,7 +4186,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-role.sup .b5-bar{background:#EAC080;}
 .b5-rname{font-weight:700;font-size:16px;color:var(--t1);overflow-wrap:anywhere;}
 .b5-rspec{font-size:14px;color:var(--t2);min-width:0;overflow-wrap:normal;margin-top:2px;}
-.b5-rspec b{color:#206557;font-weight:700;}
+.b5-rspec b{color:#276551;font-weight:700;}
 .b5-pay{white-space:nowrap;}
 .b5-racts{grid-column:2;margin-top:7px;display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;gap:8px;}
 .b5-bm{display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center;border-radius:8px;border:0;background:transparent;color:var(--t3);cursor:pointer;padding:0;}
@@ -4194,7 +4194,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-bm:hover{background:var(--s2);}
 .b5-bm svg{width:17px;height:17px;}
 .b5-apply{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:14px;color:#fff;background:var(--teal);border:0;border-radius:7px;padding:7px 14px;cursor:pointer;white-space:nowrap;}
-.b5-apply:hover{background:#206557;}
+.b5-apply:hover{background:#276551;}
 /* My Profile → Résumé */
 .rsm-grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start;}
 .rsm-grid>*{min-width:0;}
@@ -4214,7 +4214,7 @@ body.sheet-push .b2t-cube{display:none;}
 .rsm-pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;max-height:300px;overflow:auto;padding:2px;}
 .rsm-pick-th{position:relative;aspect-ratio:4/5;padding:0;border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:#eee;}
 .rsm-pick-th img{width:100%;height:100%;object-fit:cover;display:block;}
-.rsm-pick-th.on{border-color:var(--teal);box-shadow:0 0 0 2px rgba(42,132,114,.25);}
+.rsm-pick-th.on{border-color:var(--teal);box-shadow:0 0 0 2px rgba(51,130,106,.25);}
 .rsm-pick-tag{position:absolute;left:4px;top:4px;background:#fff;color:#1A1A2E;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:999px;letter-spacing:.04em;}
 @media(max-width:560px){.rsm-pick-body{flex-direction:column;align-items:stretch;}.rsm-pick-ed{align-items:center;}}
 .rsm-seg{display:inline-flex;background:#F3EDE2;border:1px solid var(--bdr);border-radius:10px;padding:3px;gap:3px;}
@@ -4365,7 +4365,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .cd-top .cs-live-dot::after,.cd-top .cs-live-dot .core{background:#6F6658;}
 .cd-side .apply-cta{width:100%;}
 .cd-side .cd-side-sum{margin:0;font-size:13.5px;color:var(--t2);line-height:1.5;}
-.cd-side .cd-side-sum b{color:#206557;}
+.cd-side .cd-side-sum b{color:#276551;}
 .cd-side .cd-side-note{margin:0;font-size:12.5px;color:#5A5B70;}
 .cd-side h3{font-size:15px;font-weight:800;}
 .cd-side .apply-cta{margin-top:2px;}
@@ -5502,7 +5502,7 @@ a.news-card{text-decoration:none;color:inherit;}
 .trec-title b{font-weight:600;color:var(--t1);}
 .trec-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .trec-chip{font-size:10.5px;font-weight:700;letter-spacing:.2px;padding:3px 9px;border-radius:100px;display:inline-flex;align-items:center;gap:5px;line-height:1.4;white-space:nowrap;background:var(--s2);color:var(--t2);border:1px solid var(--bdr);}
-.trec-chip.match{background:rgba(42,132,114,.1);color:var(--teal-dk);border-color:rgba(42,132,114,.26);}
+.trec-chip.match{background:rgba(51,130,106,.1);color:var(--teal-dk);border-color:rgba(51,130,106,.26);}
 .trec-chip.match i{width:4px;height:4px;border-radius:50%;background:var(--teal);flex-shrink:0;}
 .trec-chip.urgent{background:rgba(214,59,59,.09);color:var(--red);border-color:rgba(214,59,59,.28);}
 .trec-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -5640,7 +5640,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-mt{font-size:14.5px;font-weight:500;color:#3D3E58;margin-top:6px;line-height:1.5;}
 .rl-mt .sep{color:#AFADBA;font-weight:500;margin:0 6px;}
 .rl-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.rl-detail{display:inline-flex;align-items:center;justify-content:flex-end;min-width:56px;margin-right:-6px;font-size:13px;font-weight:600;color:#206557;white-space:nowrap;}
+.rl-detail{display:inline-flex;align-items:center;justify-content:flex-end;min-width:56px;margin-right:-6px;font-size:13px;font-weight:600;color:#276551;white-space:nowrap;}
 .rl-chev{width:30px;height:30px;border-radius:50%;border:1px solid var(--bdr);background:var(--s1);color:#376A60;display:flex;align-items:center;justify-content:center;flex:none;transition:transform .38s cubic-bezier(.22,.9,.28,1),background .25s,border-color .25s;}
 .rl-row.rl-open .rl-chev{transform:rotate(180deg);background:#EAF4F2;border-color:#CFE0DC;}
 /* 0fr -> 1fr animates to the content's real height with no JS measuring, so a
@@ -6398,10 +6398,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-gk-nm{display:block;font-size:clamp(20px,2.3vw,26px);font-weight:800;letter-spacing:-.6px;line-height:1.02;margin:8px 0 5px;color:var(--t1);}
 .lh-gk-meta{font-size:9.5px;color:var(--t3);margin-bottom:10px;line-height:1.35;}
 .lh-gk-btns{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;}
-.lh-gk-btn{font-size:9.5px;font-weight:800;padding:6px 9px;border-radius:6px;background:#2A8472;color:#fff;white-space:nowrap;}
+.lh-gk-btn{font-size:9.5px;font-weight:800;padding:6px 9px;border-radius:6px;background:#33826A;color:#fff;white-space:nowrap;}
 .lh-gk-btn.ghost{background:transparent;color:var(--t1);border:1px solid var(--bdr);}
 .lh-gk-soc{display:flex;gap:9px;}
-.lh-gk-soc span{font-size:10px;font-weight:700;color:#2A8472;}
+.lh-gk-soc span{font-size:10px;font-weight:700;color:#33826A;}
 .lh-gk-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:6px;}
 .lh-gk-strip img,.lh-gk-reel{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:50% 25%;border-radius:5px;display:block;background:#EFE8DA;}
 .lh-gk-reel{background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
@@ -6653,12 +6653,12 @@ button:disabled:hover .cs-tri{transform:none;}
 .fsd-techs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%;}
 .fsd-techs span{font-size:12.5px;font-weight:800;color:var(--t2);margin-right:2px;}
 .fsd-techs button{border:1px solid var(--bdr);background:var(--bg);font:700 13px 'DM Sans',sans-serif;color:var(--t2);padding:6px 11px;border-radius:99px;cursor:pointer;}
-.fsd-techs button.on{background:#2A8472;border-color:#2A8472;color:#fff;}
+.fsd-techs button.on{background:#33826A;border-color:#33826A;color:#fff;}
 .fsd-chips{display:flex;flex-wrap:wrap;gap:5px;}
 .fsd-techs button b{font-weight:800;opacity:.55;margin-left:3px;}
 .fsd-techs button.on b{opacity:.85;}
 .fsd-techs button:disabled{opacity:.35;cursor:default;}
-.fsd-moretopics{border:0;background:none;color:#206557;font:800 13px 'DM Sans',sans-serif;cursor:pointer;padding:2px 0;}
+.fsd-moretopics{border:0;background:none;color:#276551;font:800 13px 'DM Sans',sans-serif;cursor:pointer;padding:2px 0;}
 .fsd-lockl{display:inline-flex;align-items:center;gap:6px;border:1px dashed rgba(200,118,27,.55);background:rgba(232,144,42,.08);color:#A55F0F;font:800 12.5px 'DM Sans',sans-serif;padding:6px 10px;border-radius:8px;cursor:pointer;}
 .fsd-locked{position:relative;border:1px solid var(--bdr);border-radius:11px;padding:10px 11px;background:var(--bg);cursor:pointer;overflow:hidden;}
 .fsd-lk-in{filter:blur(3.5px);opacity:.7;pointer-events:none;display:flex;flex-direction:column;gap:6px;}
@@ -6685,12 +6685,12 @@ button:disabled:hover .cs-tri{transform:none;}
 .fsd-mbox p{margin:0 0 12px;color:var(--t2);font-size:14px;}
 .fsd-mlist{list-style:none;padding:0;margin:0 0 16px;text-align:left;display:grid;gap:8px;}
 .fsd-mlist li{display:flex;gap:8px;font-size:13.5px;line-height:1.45;color:var(--t1);}
-.fsd-mlist i{color:#2A8472;font-size:16px;margin-top:1px;}
+.fsd-mlist i{color:#33826A;font-size:16px;margin-top:1px;}
 .fsd-mx{position:absolute;top:10px;right:10px;border:0;background:var(--s2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;}
 .fsd-msub{font-size:12px;color:var(--t3);margin-top:8px;}
 .fsd-rname{height:17px;vertical-align:middle;}
-.fsd-unl{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#206557;background:#E6F2EF;border-radius:6px;padding:3px 7px;}
-.tad-row.fsd-justopen{border-color:#2A8472;box-shadow:0 0 0 3px rgba(42,132,114,.12);}
+.fsd-unl{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#276551;background:#E6F2EF;border-radius:6px;padding:3px 7px;}
+.tad-row.fsd-justopen{border-color:#33826A;box-shadow:0 0 0 3px rgba(51,130,106,.12);}
 .fsd-unlockbtn{display:flex;align-items:center;gap:10px;width:100%;border:1.5px dashed rgba(200,118,27,.6);background:rgba(232,144,42,.07);border-radius:11px;padding:10px 12px;cursor:pointer;text-align:left;font-family:inherit;transition:background .15s;}
 .fsd-unlockbtn:hover{background:rgba(232,144,42,.14);}
 .fsd-unlockbtn>i{font-size:20px;color:#C8761B;flex:0 0 auto;}
@@ -6721,7 +6721,7 @@ button:disabled:hover .cs-tri{transform:none;}
 .agdc.fsdc .ftr{display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid #EEE7DA;padding-top:7px;}
 .agdc.fsdc .ftr span{font-size:9.5px;font-weight:700;color:#146B31;display:inline-flex;align-items:center;gap:3px;}
 .agdc.fsdc .ftr b{font-size:10.5px;font-weight:800;color:#1A1A2E;background:#EAC080;border-radius:6px;padding:3px 9px;}
-.fsd-chips span.hit{background:#2A8472;color:#fff;}
+.fsd-chips span.hit{background:#33826A;color:#fff;}
 .fsd-chips span{font-size:11.5px;font-weight:700;color:var(--t2);background:var(--s2);border-radius:6px;padding:3px 8px;}
 .fsd-pager{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;margin:26px 0 6px;}
 .fsd-pager>button,.fsd-pnums button{font:700 14px 'DM Sans',sans-serif;border:1px solid var(--bdr);background:var(--s1);color:var(--t1);border-radius:10px;min-width:42px;height:42px;padding:0 14px;cursor:pointer;transition:background .15s,border-color .15s;}
@@ -6733,12 +6733,12 @@ button:disabled:hover .cs-tri{transform:none;}
 .fsd-prange{flex-basis:100%;text-align:center;font:600 13px 'DM Sans',sans-serif;color:var(--t3);margin-top:4px;}
 .fsd-cont{font-size:.62em;font-weight:700;color:var(--t3);letter-spacing:.02em;margin-left:6px;}
 @media(max-width:560px){.fsd-pager>button{padding:0 10px;}.fsd-pnums button{min-width:36px;height:38px;padding:0 8px;}}
-.nav-added{position:relative;display:inline-block;vertical-align:2px;margin-left:7px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1;padding:3px 6px;border-radius:5px;background:#2A8472;color:#fff;}
-.nav-added::after{content:"";position:absolute;inset:0;border-radius:5px;pointer-events:none;box-shadow:0 0 0 0 rgba(42,132,114,.55);opacity:0;}
+.nav-added{position:relative;display:inline-block;vertical-align:2px;margin-left:7px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1;padding:3px 6px;border-radius:5px;background:#33826A;color:#fff;}
+.nav-added::after{content:"";position:absolute;inset:0;border-radius:5px;pointer-events:none;box-shadow:0 0 0 0 rgba(51,130,106,.55);opacity:0;}
 .nav-ddm .nav-added{animation:navAddIn .5s ease-out .15s both;}
 .nav-ddm .nav-added::after{animation:navAddRipple 1.1s ease-out .55s 1 both;}
 @keyframes navAddIn{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}
-@keyframes navAddRipple{0%{opacity:1;box-shadow:0 0 0 0 rgba(42,132,114,.55)}100%{opacity:0;box-shadow:0 0 0 10px rgba(42,132,114,0)}}
+@keyframes navAddRipple{0%{opacity:1;box-shadow:0 0 0 0 rgba(51,130,106,.55)}100%{opacity:0;box-shadow:0 0 0 10px rgba(51,130,106,0)}}
 @media (prefers-reduced-motion:reduce){.nav-ddm .nav-added,.nav-ddm .nav-added::after{animation:none!important;}}
 
 .srp-wrap{position:relative;max-width:520px;width:100%;justify-self:end;align-self:start;margin-top:30px;padding:0 0 28px;}
@@ -6834,7 +6834,7 @@ a.dsw-t:hover{background:var(--s1);color:var(--t1);}
 .fsd-k-uni{background:rgba(26,26,46,.08);color:#2E2E48;}
 .fsd-k-art{background:rgba(107,62,203,.11);color:#5B32AE;}
 .fsd-k-academy{background:rgba(232,144,42,.15);color:#A55F0F;}
-.fsd-k-cc{background:rgba(42,132,114,.13);color:#206557;}
+.fsd-k-cc{background:rgba(51,130,106,.13);color:#276551;}
 .fsd-k-ce{background:var(--s2);color:var(--t2);}
 .fsd-casts{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#146B31;}
 .fsd-nocast{font-size:12px;font-weight:600;color:var(--t3);}
@@ -6849,7 +6849,7 @@ a.dsw-t:hover{background:var(--s1);color:var(--t1);}
 .fsd-set .tag i{width:7px;height:7px;border-radius:50%;background:#E5484D;box-shadow:0 0 8px rgba(229,72,77,.8);animation:fsdRec 1.6s steps(1) infinite;}
 @keyframes fsdRec{50%{opacity:.15}}
 .fsd-set .cap{position:absolute;left:14px;right:14px;bottom:14px;background:rgba(255,253,248,.95);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;}
-.fsd-set .cap .ic{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:rgba(42,132,114,.12);color:var(--teal);font-size:18px;}
+.fsd-set .cap .ic{width:44px;height:44px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:rgba(51,130,106,.12);color:var(--teal);font-size:18px;}
 .fsd-set .cap .ic i{margin-left:2px;}
 .fsd-set .cap b{display:block;font-size:13.5px;color:var(--t1);}
 .fsd-set .cap span{font-size:12px;color:var(--t2);}
@@ -9061,7 +9061,7 @@ function RegisterTalent({onNavigate}){
           <h3>Get seen.<br/>Get booked.</h3>
           <p>Join over a thousand actors getting reviewed one profile at a time.</p>
           <div className="lh-checks">
-            {["Castings posted by casting directors","Every submission reviewed individually"].map(b=><div key={b}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A8472" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+            {["Castings posted by casting directors","Every submission reviewed individually"].map(b=><div key={b}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#33826A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
         </div>
       </div>
@@ -13321,14 +13321,14 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           {!c&&<p>Join over a thousand actors getting reviewed one profile at a time.</p>}
           {c?(
             <div className="lh-casting" style={{background:"#F3EEE4",borderRadius:10,padding:"12px 14px"}}>
-              <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#2A8472",marginBottom:5}}>You're applying to</div>
+              <div style={{fontSize:10.5,letterSpacing:1.4,textTransform:"uppercase",fontWeight:700,color:"#33826A",marginBottom:5}}>You're applying to</div>
               <div style={{fontWeight:700,fontSize:14.5,color:"#1A1A2E",marginBottom:2}}>{c.title}</div>
               <div style={{fontSize:12,color:"#3A322A"}}>{c.tagline} · {c.prod}</div>
               {r&&<div style={{fontSize:12,color:"#3A322A",marginTop:5}}>Role: <strong style={{color:"#1A1A2E"}}>{r.name}</strong></div>}
             </div>
           ):(
             <div className="lh-checks">
-              {["Castings posted by casting directors","Every submission reviewed individually"].map(b=><div key={b}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2A8472" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+              {["Castings posted by casting directors","Every submission reviewed individually"].map(b=><div key={b}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#33826A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
             </div>
           )}
         </div>
@@ -15807,7 +15807,7 @@ function PlaysChips({types}){
 // OWNER is Premium; if they cancel, the page falls back to Classic + photo grid and
 // the saved choice is kept for when they come back.
 const PL_THEMES=[["classic","Classic"],["cinematic","Cinematic dark"],["editorial","Editorial"]];
-const PL_ACCENTS={teal:"#2A8472",navy:"#464A73",gold:"#C9A24A",terracotta:"#B4574B"};
+const PL_ACCENTS={teal:"#33826A",navy:"#464A73",gold:"#C9A24A",terracotta:"#B4574B"};
 const PL_TAGLINE_MAX=90;
 function profileLook(p){
   const l=p&&p.profile_look&&typeof p.profile_look==="object"?p.profile_look:{};
@@ -18159,10 +18159,10 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
 
   if(!isPremium){
     return(
-      <div style={{background:"var(--s1)",border:"1.5px solid #2A8472",borderRadius:14,padding:20,position:"relative",overflow:"hidden"}}>
+      <div style={{background:"var(--s1)",border:"1.5px solid #33826A",borderRadius:14,padding:20,position:"relative",overflow:"hidden"}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
           <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Improve Your Profile</h3>
-          <span style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",padding:"3px 9px",borderRadius:999,background:"#206557",color:"#fff",textTransform:"uppercase"}}>Premium</span>
+          <span style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",padding:"3px 9px",borderRadius:999,background:"#276551",color:"#fff",textTransform:"uppercase"}}>Premium</span>
         </div>
         <p style={{fontSize:13,color:"var(--t1)",fontWeight:500,margin:"0 0 14px",lineHeight:1.55}}>Casting directors skim 40–60 profiles a session — Premium tells you exactly what's costing you a look, ranked by how much it matters.</p>
         <div style={{filter:"blur(2px)",pointerEvents:"none",userSelect:"none",marginBottom:12}}>
@@ -18173,7 +18173,7 @@ function ProfileImprovementCard({profile,isPremium,onNavigate,dbCredits,mediaIte
             </div>
           ))}
         </div>
-        <button onClick={()=>onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium to unlock suggestions <Tri/></button>
+        <button onClick={()=>onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium to unlock suggestions <Tri/></button>
       </div>
     );
   }
@@ -24925,7 +24925,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
       {!it.ok&&<button type="button" onClick={goProfile} style={{marginLeft:"auto",background:"none",border:0,fontFamily:"inherit",fontSize:13,fontWeight:700,color:"var(--teal-dk)",cursor:"pointer"}}>Add ▸</button>}
     </li>))}</ul>;
   const fitLine=(x)=>x.tier==="exact"
-    ?<div style={{margin:"10px 0",padding:"8px 10px",background:"rgba(42,132,114,.08)",borderRadius:8,fontSize:13,color:"var(--teal-dk)",display:"flex",gap:6,alignItems:"center"}}><Ico n="user-check" s={16}/><span>You fit: <b style={{color:"var(--t1)"}}>{x.r.name}</b>{x.r.role_type?` · ${x.r.role_type}`:""}{x.r.age_range?` · ${gmFmtRange(x.rr)}`:""}</span></div>
+    ?<div style={{margin:"10px 0",padding:"8px 10px",background:"rgba(51,130,106,.08)",borderRadius:8,fontSize:13,color:"var(--teal-dk)",display:"flex",gap:6,alignItems:"center"}}><Ico n="user-check" s={16}/><span>You fit: <b style={{color:"var(--t1)"}}>{x.r.name}</b>{x.r.role_type?` · ${x.r.role_type}`:""}{x.r.age_range?` · ${gmFmtRange(x.rr)}`:""}</span></div>
     :x.tier==="close"
     ?<div style={{margin:"10px 0",padding:"8px 10px",background:"rgba(232,144,42,.1)",borderRadius:8,fontSize:13,color:"#9A5B12",display:"flex",gap:6,alignItems:"center"}}><Ico n="arrows-horizontal" s={16}/><span><b>Close fit</b> · {x.r.name} is {gmFmtRange(x.rr)}, you play {min}–{max}</span></div>
     :<div style={{margin:"10px 0",padding:"8px 10px",background:"var(--s2)",borderRadius:8,fontSize:13,color:"var(--t2)",display:"flex",gap:6,alignItems:"center"}}><Ico n="users" s={16}/><span><b>Open to all ages</b> · {x.r.name}{x.r.role_type?` · ${x.r.role_type}`:""}</span></div>;
@@ -24933,7 +24933,7 @@ function GetMatchedFlow({session,myProfile,startMode,showMatches,onSaved,onApply
   if(mode==="basics"){
     body=<>
       <Dots n={1}/>
-      {(p.headshot_url||photoUrl)&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"rgba(42,132,114,.08)",borderRadius:10,marginBottom:18,fontSize:13.5,color:"var(--teal-dk)",fontWeight:600}}>
+      {(p.headshot_url||photoUrl)&&<div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:"rgba(51,130,106,.08)",borderRadius:10,marginBottom:18,fontSize:13.5,color:"var(--teal-dk)",fontWeight:600}}>
         <img src={p.headshot_url||photoUrl} alt="" style={{width:40,height:50,objectFit:"cover",borderRadius:7}}/><span style={{display:"flex",alignItems:"center",gap:6}}><Ico n="circle-check" s={16}/>Headshot uploaded</span></div>}
       <Kicker icon="target-arrow">Step 1 of 3 · 30 seconds</Kicker>
       <H>Now let's find roles you fit.</H>
@@ -25433,7 +25433,7 @@ function pvVideoSeconds(file){
 }
 function pvJump(id){try{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth",block:"center"});}catch(_){}}
 
-const pvBoxSt=(bad)=>({position:"relative",border:"1.5px solid "+(bad?"#c0392b":"var(--teal)"),boxShadow:bad?"0 0 0 3px rgba(192,57,43,0.12)":"none",background:"rgba(42,132,114,0.05)",borderRadius:14,padding:"20px 18px 16px",margin:"8px 0 22px",transition:"border-color .2s,box-shadow .2s"});
+const pvBoxSt=(bad)=>({position:"relative",border:"1.5px solid "+(bad?"#c0392b":"var(--teal)"),boxShadow:bad?"0 0 0 3px rgba(192,57,43,0.12)":"none",background:"rgba(51,130,106,0.05)",borderRadius:14,padding:"20px 18px 16px",margin:"8px 0 22px",transition:"border-color .2s,box-shadow .2s"});
 const pvTag=(bad)=><span style={{position:"absolute",top:-10,left:16,background:bad?"#c0392b":"var(--teal)",color:"#fff",fontSize:10,fontWeight:800,letterSpacing:1.2,padding:"3px 9px",borderRadius:99}}>REQUIRED</span>;
 const pvLead={fontSize:13,color:"var(--t2)",lineHeight:1.55,margin:"6px 0 14px"};
 const pvCard=(on)=>({display:"block",textAlign:"left",background:on?"#fff":"var(--s1)",border:"1px solid "+(on?"var(--teal)":"var(--bdr)"),boxShadow:on?"inset 0 0 0 1px var(--teal)":"none",borderRadius:12,padding:"13px 12px",cursor:"pointer",font:"inherit",fontSize:13,color:"var(--t1)",minWidth:0,width:"100%"});
@@ -25672,7 +25672,7 @@ function ProjectVerifyWho({uid,v,setV,track,missing}){
   const showStrongHl=v.hl&&pvNeedsStrong(v);
   return(<div id="pv-who" style={pvBoxSt(bad)}>{pvTag(bad)}
     {recFor&&<PvRecorder onClose={()=>setRecFor(null)} onUse={(file,secs)=>{const k=recFor;setRecFor(null);upload(k,file,true,secs);}}/>}
-    <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Who's making this project? <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"var(--teal-dk)",background:"rgba(42,132,114,0.1)",padding:"3px 9px",borderRadius:99,marginLeft:6,verticalAlign:2}}><Ico n="lock" s={13}/> Private, never shown to actors</span></h3>
+    <h3 style={{fontSize:16,fontWeight:700,margin:0}}>Who's making this project? <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,color:"var(--teal-dk)",background:"rgba(51,130,106,0.1)",padding:"3px 9px",borderRadius:99,marginLeft:6,verticalAlign:2}}><Ico n="lock" s={13}/> Private, never shown to actors</span></h3>
     <p style={pvLead}>Every casting is reviewed by a person before it goes live. You don't need a company, a school or any credits, and we'll never ask for your script. Just show us <b>one</b> thing that proves the project is real.</p>
     <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"repeat(3,1fr)",gap:8}}>
       {Object.entries(PV_PATHS).map(([k,P])=><button type="button" key={k} onClick={()=>pickPath(k)} style={pvCard(v.path===k)}>
@@ -25791,7 +25791,7 @@ function AdminCastingVerification({casting}){
   })();return()=>{dead=true;};},[casting.id,casting.cd_id]);
 
   if(rec===undefined)return <div style={{fontSize:13,color:"var(--t3)",marginBottom:16}}>Loading project verification…</div>;
-  const box={border:"1.5px solid var(--teal)",borderRadius:12,padding:16,marginBottom:16,background:"rgba(42,132,114,0.04)"};
+  const box={border:"1.5px solid var(--teal)",borderRadius:12,padding:16,marginBottom:16,background:"rgba(51,130,106,0.04)"};
   const sec={fontSize:11,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",margin:"16px 0 8px"};
   const flagSt={r:{background:"rgba(192,57,43,0.08)",color:"#a93226"},a:{background:"rgba(232,144,42,0.1)",color:"#8a5210"},g:{background:"rgba(29,123,68,0.08)",color:"#1d7b44"}};
   const text=[casting.title,casting.tagline,casting.synopsis,casting.type].join(" ");
@@ -28891,16 +28891,16 @@ function CastingFitDNAEditor({session,isPremium,onNavigate}){
 
   return(<div>
     {/* plan banner */}
-    <div style={{background:isPremium?"rgba(99,60,180,0.07)":"var(--s1)",border:isPremium?"1px solid var(--bdr)":"1.5px solid #2A8472",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+    <div style={{background:isPremium?"rgba(99,60,180,0.07)":"var(--s1)",border:isPremium?"1px solid var(--bdr)":"1.5px solid #33826A",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
       <span style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:"var(--t2)"}}>
         {isPremium
           ?<><Ico n="star" s={22}/> <strong>Premium:</strong> unlimited casting types · 1 mood clip + {PREMIUM_PLAN.castingSupportingPhotos} supporting photos per type</>
           :<>
-            <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#206557",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
+            <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#276551",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
             <span style={{color:"var(--t1)",fontWeight:600}}>Free plan: up to {FREE_PLAN.castingTypes} casting types, no clips or photos. Premium shows unlimited types with mood clips — the full range Casting Directors &amp; Agents see when they check your fit.</span>
           </>}
       </span>
-      {!isPremium&&<button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>}
+      {!isPremium&&<button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>}
     </div>
     {err&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:16}}>{err}</div>}
 
@@ -29246,10 +29246,10 @@ button.ph:hover .chg,button.ph:focus-visible .chg{opacity:1}
 .qrr .qr{width:calc(var(--pt)*82);height:calc(var(--pt)*82)}
 .qrr .cap{font-size:.62em;line-height:1.25;margin-top:.45em;text-align:center;-webkit-text-stroke:0}
 .slot{flex:none;width:calc(var(--pt)*86);height:calc(var(--pt)*108);border:1.5px dashed #B9A887;background:#F8F2E7;border-radius:calc(var(--pt)*3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--pt)*4);color:#7A6A50;font-family:Arial,Helvetica,sans-serif;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;padding:0;font-size:inherit;line-height:1.2}
-.slot:hover{background:#F1E8D6;border-color:#2A8472}
+.slot:hover{background:#F1E8D6;border-color:#33826A}
 .slot svg{width:calc(var(--pt)*26);height:calc(var(--pt)*26)}
 .slot .s1{font-size:.8em;font-weight:700;line-height:1.2;padding:0 .4em}
-.slot .s2{font-size:.76em;font-weight:700;color:#2A8472}
+.slot .s2{font-size:.76em;font-weight:700;color:#33826A}
 .hi{flex:1;min-width:0;text-align:center}
 .nm{white-space:nowrap;font-size:2.6em;font-weight:400;letter-spacing:0;margin:0;line-height:1.1;overflow-wrap:anywhere}
 .un{font-size:.95em;margin-top:.15em}
@@ -29585,7 +29585,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
     <div style={{display:"grid",gap:11,marginBottom:18}}>
       {[["The format casting directors expect","Industry-standard layout, one clean page, no design guesswork."],["Builds itself, stays up to date","Add a credit to your profile and it's on your résumé."],["Always fits one page","Your strongest credits first, the rest linked to your profile."],["Agent, QR code & contact done right","Your representation and your profile QR, laid out properly."]].map(([t,sub])=>(
         <div key={t} style={{display:"grid",gridTemplateColumns:"24px 1fr",gap:10,fontSize:14,lineHeight:1.45}}>
-          <span style={{width:24,height:24,borderRadius:7,background:"rgba(42,132,114,.12)",color:"#206557",display:"grid",placeItems:"center"}}><Ico n="check" s={14}/></span>
+          <span style={{width:24,height:24,borderRadius:7,background:"rgba(51,130,106,.12)",color:"#276551",display:"grid",placeItems:"center"}}><Ico n="check" s={14}/></span>
           <span><b style={{display:"block",color:"var(--t1)"}}>{t}</b><span style={{color:"var(--t3)",fontSize:12.5}}>{sub}</span></span>
         </div>))}
     </div>
@@ -29629,7 +29629,7 @@ function ResumeBuilder({profile,f,skills,accents,languages,credits,isPremium,onN
       {hasCommercials&&<div style={{fontSize:12,color:"var(--t3)",marginTop:2,lineHeight:1.45}}>Your commercial credits aren’t listed one by one — this line is the industry standard.</div>}
       {trainingLines.length>0&&<>{lab("Education & training")}{ck(trainOn,()=>toggleFlag(trainOn,setTrainOn,"train","training"),"Include training")}</>}
       {allSkills.length>0&&<>{lab("Special skills ("+skillList.length+" on)")}<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{allSkills.map(s=>{const on=!skillOff.includes(s);return(
-        <button key={s} type="button" onClick={()=>toggleSkill(s)} style={{border:"1px solid "+(on?"#2A8472":"var(--bdr)"),background:on?"rgba(42,132,114,.08)":"#fff",color:on?"#206557":"var(--t3)",borderRadius:999,padding:"4px 10px",fontSize:12.5,fontWeight:600,cursor:"pointer",textDecoration:on?"none":"line-through"}}>{s}</button>);})}</div></>}
+        <button key={s} type="button" onClick={()=>toggleSkill(s)} style={{border:"1px solid "+(on?"#33826A":"var(--bdr)"),background:on?"rgba(51,130,106,.08)":"#fff",color:on?"#276551":"var(--t3)",borderRadius:999,padding:"4px 10px",fontSize:12.5,fontWeight:600,cursor:"pointer",textDecoration:on?"none":"line-through"}}>{s}</button>);})}</div></>}
       {(accList.length>0||langList.length>0)&&<>{lab("Accents & languages")}
         {accList.length>0&&ck(accOn,()=>toggleFlag(accOn,setAccOn,"acc","accents"),<><b style={{color:"var(--t1)"}}>Accents</b> — {accList.join(", ")}</>)}
         {langList.length>0&&ck(langOn,()=>toggleFlag(langOn,setLangOn,"lang","languages"),<><b style={{color:"var(--t1)"}}>Languages</b> — {langList.join(", ")}</>)}</>}
@@ -29731,7 +29731,7 @@ function RepresentationCard({value,onChange}){
     {reps.map((r,i)=>(<div key={i} style={{border:"1px solid var(--bdr)",borderRadius:12,padding:"14px 14px 4px",marginBottom:10,background:"var(--s1)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,marginBottom:10,flexWrap:"wrap"}}>
         <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{REP_TYPES.map(t=>(<button key={t} type="button" onClick={()=>setRep(i,"type",t)}
-          style={{border:"1px solid "+(r.type===t?"#2A8472":"var(--bdr)"),background:r.type===t?"rgba(42,132,114,.1)":"#fff",color:r.type===t?"#206557":"var(--t2)",borderRadius:999,padding:"4px 11px",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{t}</button>))}</div>
+          style={{border:"1px solid "+(r.type===t?"#33826A":"var(--bdr)"),background:r.type===t?"rgba(51,130,106,.1)":"#fff",color:r.type===t?"#276551":"var(--t2)",borderRadius:999,padding:"4px 11px",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>{t}</button>))}</div>
         {reps.length>1&&<button type="button" onClick={()=>set({reps:reps.filter((_,j)=>j!==i)})} style={{background:"none",border:0,color:"#B3261E",fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Remove</button>}
       </div>
       <div className="form-row" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"0 12px"}}>
@@ -30359,10 +30359,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <label className="label">Instagram{!isPremium&&!isCD?" · Premium":""}</label>
             {(isPremium||isCD)
               ?<input className="input" placeholder="@handle" value={f.instagram} onChange={e=>up("instagram",e.target.value)}/>
-              :<div style={{display:"flex",alignItems:"center",gap:10,background:"var(--s1)",border:"1.5px solid #2A8472",borderRadius:8,padding:"10px 14px"}}>
-                  <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#206557",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
+              :<div style={{display:"flex",alignItems:"center",gap:10,background:"var(--s1)",border:"1.5px solid #33826A",borderRadius:8,padding:"10px 14px"}}>
+                  <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#276551",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
                   <span style={{fontSize:12.5,color:"var(--t1)",fontWeight:600,flexGrow:1}}>Casting Directors &amp; Agents check your socials before booking.</span>
-                  <button type="button" onClick={()=>onNavigate&&onNavigate("pricing")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>
+                  <button type="button" onClick={()=>onNavigate&&onNavigate("pricing")} style={{background:"#33826A",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>
                 </div>}
           </div>
         </div>
@@ -30494,7 +30494,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         {/* ── ACTOR SLATE VIDEO — Premium only ── */}
         <div className="card" style={{padding:24,marginBottom:16}}>
           <div style={{marginBottom:isPremium?16:0}}>
-            <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>Actor Slate Video <span style={{fontSize:9.5,fontWeight:800,background:"#206557",color:"#fff",padding:"3px 9px",borderRadius:999,letterSpacing:0.8,textTransform:"uppercase",marginLeft:6,verticalAlign:"middle"}}>Premium</span></h3>
+            <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>Actor Slate Video <span style={{fontSize:9.5,fontWeight:800,background:"#276551",color:"#fff",padding:"3px 9px",borderRadius:999,letterSpacing:0.8,textTransform:"uppercase",marginLeft:6,verticalAlign:"middle"}}>Premium</span></h3>
             <p style={{fontSize:13,color:"var(--t1)",lineHeight:1.65,marginBottom:8}}>
               Your slate is one of the most important first impressions casting directors receive. Before they decide to open your full profile or review the rest of your materials, this short video helps them quickly see your presence, voice, energy, and professionalism.
             </p>
@@ -30503,12 +30503,12 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             </p>
           </div>
           {!isPremium?(
-            <div style={{marginTop:14,background:"var(--s1)",border:"1.5px solid #2A8472",borderRadius:10,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+            <div style={{marginTop:14,background:"var(--s1)",border:"1.5px solid #33826A",borderRadius:10,padding:"16px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#206557",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
+                <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#276551",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
                 <span style={{fontSize:13,color:"var(--t1)",fontWeight:600}}>A 7-second slate is often the first thing a Casting Director or Agent sees, before they open the rest of your profile.</span>
               </div>
-              <button className="btn-s btn-sm" onClick={()=>onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+              <button className="btn-s btn-sm" onClick={()=>onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
             </div>
           ):(
             <>
@@ -30675,12 +30675,12 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
       {/* Free plan info + upgrade CTA */}
       {!isPremium&&(
-        <div style={{padding:"14px 18px",background:"var(--s1)",border:"1.5px solid #2A8472",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap"}}>
+        <div style={{padding:"14px 18px",background:"var(--s1)",border:"1.5px solid #33826A",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",flexWrap:"wrap"}}>
           <span style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#206557",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
+            <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#276551",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
             <span style={{fontSize:13,color:"var(--t1)",fontWeight:600}}>1 headshot on the free plan. Premium gives you unlimited gallery photos and videos.</span>
           </span>
-          <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade — {PREMIUM_PRICE}</button>
+          <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade — {PREMIUM_PRICE}</button>
         </div>
       )}
     </>}
@@ -30689,11 +30689,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
     {tab==="videos"&&!isCD&&<div className="card" style={{padding:24}}>
       <h3 style={{fontSize:15,fontWeight:700,marginBottom:4}}>Video Uploads</h3>
       {!isPremium?(
-        <div style={{textAlign:"center",padding:"32px 24px",border:"1.5px solid #2A8472",borderRadius:10,background:"var(--s1)"}}>
-          <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:40,height:40,borderRadius:999,background:"#206557",color:"#fff",marginBottom:12}}><Ico n="movie" s={19}/></span>
-          <div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#fff",background:"#206557",padding:"3px 9px",borderRadius:999,display:"inline-block",marginBottom:10}}>Premium</div>
+        <div style={{textAlign:"center",padding:"32px 24px",border:"1.5px solid #33826A",borderRadius:10,background:"var(--s1)"}}>
+          <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:40,height:40,borderRadius:999,background:"#276551",color:"#fff",marginBottom:12}}><Ico n="movie" s={19}/></span>
+          <div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#fff",background:"#276551",padding:"3px 9px",borderRadius:999,display:"inline-block",marginBottom:10}}>Premium</div>
           <p style={{color:"var(--t1)",fontWeight:500,fontSize:13,lineHeight:1.7,marginBottom:18,maxWidth:360,margin:"0 auto 18px"}}>Photos get you noticed. Motion gets you booked — show your range in a real clip, not just a headshot.</p>
-          <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+          <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
         </div>
       ):(
         <>
@@ -30777,7 +30777,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
           {isPremium
             ?"No gallery photos or videos yet. Upload some in the Photos and Videos tabs."
             :"Upgrade to Premium to upload gallery photos and videos, then arrange them here."}
-          {!isPremium&&<div style={{marginTop:14}}><button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button></div>}
+          {!isPremium&&<div style={{marginTop:14}}><button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button></div>}
         </div>
       ):(
         <>
@@ -30978,10 +30978,10 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
             <label className="label">Website {!isPremium&&<span style={{color:"var(--t3)",fontWeight:400}}>· Premium</span>}</label>
             {isPremium?
               <input className="input" placeholder="https://..." value={creditForm.website_url} onChange={e=>setCreditForm(x=>({...x,website_url:e.target.value}))}/>
-              :<div style={{display:"flex",alignItems:"center",gap:10,background:"var(--s1)",border:"1.5px solid #2A8472",borderRadius:8,padding:"10px 14px"}}>
-                <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#206557",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
+              :<div style={{display:"flex",alignItems:"center",gap:10,background:"var(--s1)",border:"1.5px solid #33826A",borderRadius:8,padding:"10px 14px"}}>
+                <span style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:999,background:"#276551",color:"#fff",flexShrink:0}}><Ico n="lock" s={14}/></span>
                 <span style={{fontSize:12.5,color:"var(--t1)",fontWeight:600,flexGrow:1}}>Link straight to its IMDb page, trailer, or listing.</span>
-                <button type="button" onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>
+                <button type="button" onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"7px 14px",borderRadius:8,fontWeight:700,fontSize:11.5,cursor:"pointer",whiteSpace:"nowrap"}}>Upgrade <Tri/></button>
               </div>}
           </div>
         </div>
@@ -31049,11 +31049,11 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── SOCIAL LINKS TAB ── (Premium only) */}
     {tab==="social"&&!isCD&&!isPremium&&<div className="card" style={{padding:24}}>
-      <div style={{textAlign:"center",padding:"32px 24px",border:"1.5px solid #2A8472",borderRadius:10,background:"var(--s1)"}}>
-        <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:40,height:40,borderRadius:999,background:"#206557",color:"#fff",marginBottom:12}}><Ico n="link" s={19}/></span>
-        <div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#fff",background:"#206557",padding:"3px 9px",borderRadius:999,display:"inline-block",marginBottom:10}}>Premium</div>
+      <div style={{textAlign:"center",padding:"32px 24px",border:"1.5px solid #33826A",borderRadius:10,background:"var(--s1)"}}>
+        <span style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:40,height:40,borderRadius:999,background:"#276551",color:"#fff",marginBottom:12}}><Ico n="link" s={19}/></span>
+        <div style={{fontSize:9.5,fontWeight:800,letterSpacing:"0.07em",textTransform:"uppercase",color:"#fff",background:"#276551",padding:"3px 9px",borderRadius:999,display:"inline-block",marginBottom:10}}>Premium</div>
         <p style={{color:"var(--t1)",fontWeight:500,fontSize:13,lineHeight:1.7,marginBottom:18,maxWidth:380,margin:"0 auto 18px"}}>Every place Casting Directors &amp; Agents can find you — Instagram, your site, your reel — in one spot on your public profile.</p>
-        <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#2A8472",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
+        <button onClick={()=>onNavigate&&onNavigate("membership")} style={{background:"#33826A",color:"#fff",border:"none",padding:"9px 18px",borderRadius:8,fontWeight:700,fontSize:12.5,cursor:"pointer"}}>Upgrade to Premium — {PREMIUM_PRICE}</button>
       </div>
     </div>}
     {tab==="social"&&!isCD&&isPremium&&<div className="card" style={{padding:24}}>
@@ -50092,7 +50092,7 @@ function AdminPage({session,profile,isSuperAdmin,onNavigate}){
 // which re-validates every row and files ordinary applications tagged
 // source='castslate'. CDs see them exactly like self-submissions; actors are NOT
 // emailed; it never uses an actor's free submission.
-const CSS_FIT={strong:{label:"Strong fit",bg:"#E4F2EE",fg:"#206557"},good:{label:"Good fit",bg:"#EEF0F8",fg:"#3A3C80"},possible:{label:"Possible",bg:"#FBF1DF",fg:"#8A6420"},unrated:{label:"Matches age & gender",bg:"var(--s2)",fg:"var(--t2)"},no:{label:"Not a fit",bg:"rgba(214,59,59,0.08)",fg:"#B03030"}};
+const CSS_FIT={strong:{label:"Strong fit",bg:"#E4F2EE",fg:"#276551"},good:{label:"Good fit",bg:"#EEF0F8",fg:"#3A3C80"},possible:{label:"Possible",bg:"#FBF1DF",fg:"#8A6420"},unrated:{label:"Matches age & gender",bg:"var(--s2)",fg:"var(--t2)"},no:{label:"Not a fit",bg:"rgba(214,59,59,0.08)",fg:"#B03030"}};
 // Deadlines are day-only strings; anchor at noon so no timezone shifts the day.
 const csDay=(d)=>{try{return new Date(String(d).slice(0,10)+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch(_){return d;}};
 // Admin → SEO Agent (2026-09-30). "Connect Google" uploads the Search Console
@@ -50264,7 +50264,7 @@ function AdminCastslateSubmit(){
       {r&&<>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",margin:"16px 0 12px"}}>
           {roles.map((x,k)=>{const c=Object.values(sel[x.id]||{}).filter(Boolean).length;return(
-            <button key={x.id} onClick={()=>setRoleIdx(k)} style={{textAlign:"left",padding:"8px 12px",borderRadius:10,border:"1px solid "+(k===roleIdx?"var(--teal)":"var(--bdr)"),boxShadow:k===roleIdx?"0 0 0 2px rgba(42,132,114,.15)":"none",background:"var(--s1)",cursor:"pointer",fontFamily:"inherit"}}>
+            <button key={x.id} onClick={()=>setRoleIdx(k)} style={{textAlign:"left",padding:"8px 12px",borderRadius:10,border:"1px solid "+(k===roleIdx?"var(--teal)":"var(--bdr)"),boxShadow:k===roleIdx?"0 0 0 2px rgba(51,130,106,.15)":"none",background:"var(--s1)",cursor:"pointer",fontFamily:"inherit"}}>
               <div style={{fontWeight:700,fontSize:13}}>{x.name}</div>
               <div style={{color:"var(--t3)",fontSize:11.5}}>{c} of {x.candidates.length} selected</div>
             </button>);})}
