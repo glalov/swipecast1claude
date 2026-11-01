@@ -41460,6 +41460,8 @@ const ACG = (()=>{
       if(!k)return;
       if(k.indexOf("skel|")===0){skelRows.push({key:k,row:typeof row==="string"?null:row});return;}
       if(/^seed r(9|9b|10) /.test(k)&&row&&row.created_at)composedSeedRows.push(row);
+      // Round 14: a premise is told once, ever. Only its wording is windowed.
+      if(/^seed /.test(k)){addUsed(h.traits,k);return;}
       {const bar0=k.indexOf("|");
        // Premise rows ("seed x", "story x y", "turn z") are windowed with the
        // phrasing rows: a story may be told again once 150 listings have gone
@@ -46011,7 +46013,8 @@ const ACG = (()=>{
       // Round 10: a premise outside the 150-listing window, with a twist it has
       // never carried, may come back without waiting for every type to die -
       // the skeleton window is what keeps it from feeling repeated.
-      if(revived&&!res._allowRevive&&!(R10_NARR_CATS.has(R8_CAT_OF[type]||"")&&Math.random()<0.85)){res._deadTypes.add(type);why('revived');continue;}
+      // Round 14: nothing comes back while the type still has an untold premise.
+      if(revived&&!res._allowRevive&&(pool.some(seedUnused)||!(R10_NARR_CATS.has(R8_CAT_OF[type]||"")&&Math.random()<0.85))){res._deadTypes.add(type);why('revived');continue;}
       attempt++;
       const strict=attempt<50;
       const famOk=!res.lastFamily&&((res.famCount||0)*4)<=(res.storyCount||0);
