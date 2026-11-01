@@ -160,8 +160,7 @@ check(1,"insulting","Words that could insult actors (regular-looking, plain, ave
 check(1,"tagline_metadata","Tagline is metadata, not a story hook",L=>{
   const t=String(L.tagline||"");
   const bad=!t||/\b\d+ (roles?|parts?|bookings?)\b|\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\s+\d/i.test(t)||/submissions close|\bdeadline (is )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d)|now casting|breakdown|local hire|non-union|sag-aftra|\baea\b|\b\d+ (shoot days?|sessions?)\b/i.test(t)
-    ||(L.shoot_location&&t.includes(String(L.shoot_location).split(" (")[0]))||t.includes(L.location)||/\b(\w+) \1\b/i.test(t)||t.split(/\s+/).length<5
-    ||clean(t).startsWith(clean(L.type));
+    ||(L.shoot_location&&t.includes(String(L.shoot_location).split(" (")[0]))||t.includes(L.location)||/\b(\w+) \1\b/i.test(t)||t.split(/\s+/).length<5;
   return bad?[{detail:t}]:[];
 });
 check(1,"role_name_tacked","Role description names the character/role at the end, not first",L=>{

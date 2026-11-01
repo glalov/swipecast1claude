@@ -35998,7 +35998,7 @@ const ACG = (()=>{
   const AGE_SOFT_LOCK=/\b(mother|father|mom|dad|parent|principal|judge|chief|surgeon|professor|senator|founder|owner|captain|superintendent|director of)\b/i;
   const AGE_DOWN={senior:"mature",mature:"midCareer",midCareer:"adult",adult:"youngAdult",youngAdult:"youngAdult",teen:"teen",child:"child"};
   function youngerGroup(group,slot){
-    if(group==="child"||group==="teen")return group;
+    if(group==="child"||group==="teen"||(slot&&slot._lock))return group;
     const blob=`${(slot&&slot.s)||""} ${(slot&&slot.x)||""}`;
     if(AGE_HARD_LOCK.test(blob))return group;
     if(AGE_SOFT_LOCK.test(blob))return Math.random()<0.42?(AGE_DOWN[group]||group):group;
@@ -37255,8 +37255,8 @@ const ACG = (()=>{
   // cast that way. The seeds pin most of these with `g`, but not all of them,
   // and the description now prints the character's NAME right next to the
   // label — so a miss reads as an outright mistake rather than a quirk.
-  const LABEL_F=/\b(daughter|mother|wife|sister|aunt|niece|grandmother|granddaughter|widow|girl|woman|actress|waitress|bride|mom|hostess|queen|businesswoman|saleswoman)\b/i;
-  const LABEL_M=/\b(son|father|husband|brother|uncle|nephew|grandfather|grandson|widower|boy|man|dad|groom|king|businessman|salesman|gentleman|fisherman|doorman|repairman|cameraman|deliveryman|foreman|chairman|policeman|fireman|workman|handyman|milkman|ferryman|lineman|mailman|watchman|nobleman|horseman)\b/i;
+  const LABEL_F=/\b(daughter|mother|wife|sister|aunt|niece|grandmother|granddaughter|widow|girl|woman|actress|waitress|bride|mom|hostess|queen|businesswoman|saleswoman|landlady|grandma|schoolgirl|mistress|nun|maid)\b/i;
+  const LABEL_M=/\b(son|father|husband|brother|uncle|nephew|grandfather|grandson|widower|boy|man|dad|groom|king|businessman|salesman|gentleman|fisherman|doorman|repairman|cameraman|deliveryman|foreman|chairman|policeman|fireman|workman|handyman|milkman|ferryman|lineman|mailman|watchman|nobleman|horseman|landlord|grandpa|schoolboy|priest|butler)\b/i;
   function labelGender(label){
     const t=String(label||"");
     if(/\bor\b/i.test(t))return null;
@@ -38891,6 +38891,319 @@ const ACG = (()=>{
     if(o.cat!==undefined)s.cat=o.cat;
   });
   NEW_SEEDS.forEach(s=>{if(!FILM_SEEDS.some(x=>x.k===s.k))FILM_SEEDS.push(s);});
+  // ── Round 14 (2026-11-01): new film premises ─────────────────────────────
+  // The hand-written bank was fully told by 11/1. Plain words, small real
+  // places, nothing a low-budget crew could not shoot.
+  const R14_SEEDS=[
+    {k:"r14-pool-liner-divorce",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Deep End","Above Ground","The Liner"],
+      p:"a divorced couple have to finish building the backyard pool they started before the split so they can sell the house",
+      h:"the buyers want it done by Labor Day and neither of them can afford to hire it out",h2:"digging up the last section turns up the time capsule they buried with their son",
+      w:["a torn-up backyard in the suburbs","a suburban house with a half-dug pool","a building supply yard"],
+      c:[{s:"the ex-husband",r:"Lead",a:"midCareer",g:"M",x:"Knows how to do all of it and has never once asked for help."},
+         {s:"the ex-wife",r:"Lead",a:"midCareer",g:"F",x:"Learned to pour concrete from videos and is better at it than he will admit."},
+         {s:"the son",r:"Supporting",a:"teen",g:"M",x:"Sixteen, hired at ten dollars an hour by both sides."},
+         {s:"the real estate agent",r:"Day Player",a:"mature",x:"Keeps showing up with a smile and a new date."}]},
+    {k:"r14-school-bus-sub",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Route 14","Substitute Driver","Last Stop Elm"],
+      p:"a laid-off bank manager takes a job driving a school bus and has no idea how to handle forty kids at seven in the morning",
+      h:"the kids on the back seat figure out what he used to do and start asking him for money advice",h2:"the district threatens to cut the route, and the kids organize before their parents do",
+      w:["a yellow school bus on its morning route","a school bus depot at dawn","a small town elementary school"],
+      c:[{s:"the new driver",r:"Lead",a:"mature",g:"M",x:"Wears a tie on his first day and regrets it by the first stop."},
+         {s:"the depot boss",r:"Supporting",a:"senior",g:"F",x:"Has driven every route in the county and has no patience left for anyone."},
+         {s:"the sixth grader",r:"Supporting",a:"child",x:"Sits right behind the driver and runs the bus without seeming to."},
+         {s:"the school principal",r:"Day Player",a:"mature",x:"Wants no calls from parents, ever."}]},
+    {k:"r14-ham-radio-widow",era:"1980s",genre:"drama",tracks:["film"],ttl:["Call Sign","Static on Forty","Over and Out"],
+      p:"a widow learns her late husband's ham radio so she can reach the stranger he talked to every night for thirty years",
+      h:"the stranger does not know he is dead, and she cannot bring herself to say it",h2:"the voice on the other end turns out to know things about her marriage that she did not",
+      w:["a farmhouse with a radio shed","a shed full of old radio gear","a small town hardware store"],
+      c:[{s:"the widow",r:"Lead",a:"senior",g:"F",x:"Has never touched the radio and is now up until two in the morning learning it."},
+         {s:"the voice on the radio",r:"Lead",a:"senior",g:"M",x:"Heard for most of the story before he is ever seen."},
+         {s:"the neighbor kid",r:"Supporting",a:"teen",x:"Knows electronics and is paid in pie."}]},
+    {k:"r14-hail-adjuster",era:"now",genre:"drama",tracks:["film"],ttl:["Hail Season","Total Loss","The Adjuster"],
+      p:"an insurance adjuster drives through a small town after a hail storm and has to tell people she grew up with what their claims will not cover",
+      h:"her own mother's roof is on the list",h2:"her company pays a bonus for every claim she turns down, and the town finds out",
+      w:["a small town main street with broken windows","a farmhouse with a damaged roof","a roadside motel"],
+      c:[{s:"the adjuster",r:"Lead",a:"midCareer",g:"F",x:"Good at her job and has stopped being welcome at the diner."},
+         {s:"her mother",r:"Supporting",a:"senior",g:"F",x:"Will not file the claim, because that would mean asking her daughter."},
+         {s:"the roofer",r:"Supporting",a:"midCareer",x:"Going door to door with a good price and a story that does not check out."},
+         {s:"the district manager",r:"Day Player",a:"mature",x:"Only ever heard on speakerphone, and always cheerful."}]},
+    {k:"r14-escape-room-staff",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Five Minutes Left","Hint Please","Locked Till Close"],
+      p:"the two employees of a failing escape room get locked in their own game by a broken door on the night the owner comes to shut it down",
+      h:"neither of them ever actually solved the last puzzle, and the answer sheet is on the other side of the door",h2:"the owner, watching on the camera, decides not to call anyone until they talk about the missing money",
+      w:["an escape room in a strip mall","a fake detective's office set","a strip mall parking lot at night"],
+      c:[{s:"the game master",r:"Lead",a:"youngAdult",x:"Has watched six hundred groups fail and thinks that makes them smart."},
+         {s:"the weekend employee",r:"Lead",a:"youngAdult",x:"Only took the job for the hours and is the first to panic."},
+         {s:"the owner",r:"Supporting",a:"mature",x:"Sunk a retirement fund into this place and talks through the speaker."}]},
+    {k:"r14-ice-road-nurse",era:"now",genre:"adventure",tracks:["film"],ttl:["Winter Road","Thin Ice","Forty Below"],
+      p:"a traveling nurse has one week to reach three remote patients before the frozen road back to town closes for the season",
+      h:"her ride is a teenager with a new license and an old truck",h2:"the third patient does not want to be found",
+      w:["an old pickup on a snowy road","a cabin in the woods in winter","a small town clinic"],
+      c:[{s:"the nurse",r:"Lead",a:"midCareer",g:"F",x:"Took this posting to get away from a city hospital and is finding out how far away is."},
+         {s:"the young driver",r:"Lead",a:"teen",x:"Knows every turn on the road and has told a few lies about the truck."},
+         {s:"the old trapper",r:"Supporting",a:"senior",g:"M",x:"Refuses treatment and will not stop making coffee."}]},
+    {k:"r14-court-reporter",era:"1990s",genre:"thriller",tracks:["film","tv"],ttl:["Off the Record","Read That Back","The Stenographer"],
+      p:"a court reporter notices the official transcript of a murder trial has been changed from what she typed",
+      h:"only the judge's clerk and her own supervisor could have touched it",h2:"the man on trial writes to her from prison and quotes the missing line",
+      w:["a county courthouse","a records room in a courthouse basement","a small apartment with a steno machine"],
+      c:[{s:"the court reporter",r:"Lead",a:"midCareer",g:"F",x:"Paid to be invisible in the room and has heard everything for twenty years."},
+         {s:"the judge's clerk",r:"Supporting",a:"adult",x:"Friendly, helpful and always one step ahead of her at the file room."},
+         {s:"her supervisor",r:"Supporting",a:"senior",x:"Two years from a pension and asks her to leave it alone."},
+         {s:"the defense lawyer",r:"Day Player",a:"mature",x:"Too tired to believe her at first."}]},
+    {k:"r14-sheep-shearing",era:"2000s",genre:"drama",tracks:["film"],ttl:["Shearing Week","Spring Wool","Home Pasture"],
+      p:"a daughter comes home to help with shearing week on the family sheep farm and finds out her father has already sold it",
+      h:"the crew she grew up with has one last week of work and nobody has told them",h2:"the buyer wants the land and not one of the animals",
+      w:["a sheep farm in the hills","a barn at shearing time","a farm kitchen"],
+      c:[{s:"the daughter",r:"Lead",a:"adult",g:"F",x:"Left for a desk job and can still shear faster than anyone on the crew."},
+         {s:"the father",r:"Lead",a:"senior",g:"M",x:"Made the deal alone because he could not stand to discuss it."},
+         {s:"the crew boss",r:"Supporting",a:"mature",x:"Has worked this barn for thirty springs and sees it coming first."}]},
+    {k:"r14-wedding-videographer",era:"2010s",genre:"romance",tracks:["film"],ttl:["Second Shooter","Save the Footage","Raw Files"],
+      p:"a wedding videographer finds the groom's confession to another guest on the footage while editing the film three weeks after the wedding",
+      h:"the bride has just emailed asking for one more copy for her parents",h2:"the other guest books him to shoot her own wedding",
+      w:["a small editing room above a shop","a wedding hall on a Saturday","a suburban coffee shop"],
+      c:[{s:"the videographer",r:"Lead",a:"adult",g:"M",x:"Has cut four hundred weddings and stopped believing the speeches a long time ago."},
+         {s:"the bride",r:"Supporting",a:"youngAdult",g:"F",x:"Very happy and very busy, and writes emails with too many exclamation points."},
+         {s:"the business partner",r:"Supporting",a:"adult",x:"Handles the money and says a client is a client."}]},
+    {k:"r14-minigolf-inheritance",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Hole Eighteen","Windmill Rules","Par for the Family"],
+      p:"three grown siblings inherit a rundown mini golf course and have to run it together for one summer before any of them can sell",
+      h:"their father's will makes them play a round together every Sunday, with a lawyer keeping score",h2:"the course turns out to be the only thing in town still making a profit",
+      w:["a rundown mini golf course","a snack shack at a mini golf course","a lawyer's small office"],
+      c:[{s:"the oldest sister",r:"Lead",a:"midCareer",g:"F",x:"Made a spreadsheet before the funeral was over."},
+         {s:"the middle brother",r:"Lead",a:"adult",g:"M",x:"Moved back in with nothing and has started repairing the windmill at night."},
+         {s:"the youngest sister",r:"Supporting",a:"youngAdult",g:"F",x:"Knew their father best and is not telling anyone what he said."},
+         {s:"the family lawyer",r:"Day Player",a:"senior",x:"Brings a clipboard, a tiny pencil and no sense of humor."}]},
+    {k:"r14-night-tollbooth",era:"1970s",genre:"mystery",tracks:["film"],ttl:["Exact Change","Toll Plaza","Lane Three"],
+      p:"a night toll collector starts keeping a list of the same car that crosses at three every morning and never pays with the same bill twice",
+      h:"the bills turn out to be from a bank job the papers stopped writing about",h2:"the car stops coming the same week his supervisor buys a new house",
+      w:["a highway toll plaza at night","a toll booth on a bridge","an all-night coffee shop near a highway"],
+      c:[{s:"the toll collector",r:"Lead",a:"mature",g:"M",x:"Reads paperback mysteries in the booth and finally has one of his own."},
+         {s:"the diner waitress",r:"Supporting",a:"adult",g:"F",x:"Hears his theories at four in the morning and starts checking them."},
+         {s:"the shift supervisor",r:"Supporting",a:"mature",x:"Everybody's friend, with a brand new car."},
+         {s:"the local detective",r:"Day Player",a:"senior",x:"Polite for exactly as long as it takes to finish a cup of coffee."}]},
+    {k:"r14-driving-range-coach",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Range Balls","Bucket of Fifty","The Short Game"],
+      p:"a golf pro who lost her tour card teaches lessons at a driving range and takes on a fifteen-year-old who picks up balls for a living",
+      h:"the kid has never played a real course and cannot afford to",h2:"her old caddie calls with one last spot at a qualifier, on the same day as the kid's first tournament",
+      w:["a driving range beside a highway","a public golf course","a pro shop at a driving range"],
+      c:[{s:"the golf pro",r:"Lead",a:"midCareer",g:"F",x:"Still swings like a champion and hasn't opened her mail in a month."},
+         {s:"the ball picker",r:"Lead",a:"teen",x:"Drives the range cart and has taught himself by watching strangers."},
+         {s:"the range owner",r:"Supporting",a:"senior",x:"Pays late, forgives everything and is thinking about selling to a storage company."}]},
+    {k:"r14-blood-drive-van",era:"now",genre:"comedy",tracks:["film"],ttl:["Type O","Mobile Unit","Cookie and Juice"],
+      p:"two rival phlebotomists are stuck sharing a blood drive van for a week of small town stops after their company cuts a route",
+      h:"the van is one good donor short of its goal at every stop and they begin to cheat in opposite directions",h2:"a donor's test comes back with news somebody has to deliver in person",
+      w:["a blood donation van in a church parking lot","a small town fire hall","a roadside motel"],
+      c:[{s:"the senior phlebotomist",r:"Lead",a:"mature",x:"Can find a vein in the dark and has opinions about everyone else's technique."},
+         {s:"the new phlebotomist",r:"Lead",a:"youngAdult",x:"Faints at horror movies but not at work, and wants to go to nursing school."},
+         {s:"the volunteer with the cookies",r:"Supporting",a:"senior",x:"Has given blood sixty-one times and knows the whole county's business."}]},
+    {k:"r14-cemetery-mower",era:"2000s",genre:"drama",tracks:["film","stage"],ttl:["Perpetual Care","The Mowing Crew","Section C"],
+      p:"a teenager sentenced to community service mows a cemetery and becomes friends with the old man who visits the same grave every day",
+      h:"the name on the grave belongs to somebody the old man has never met",h2:"the teen's own family is buried two rows over, and the old man has known it all along",
+      w:["a small town cemetery","a groundskeeper's shed","a quiet county road"],
+      c:[{s:"the teenager",r:"Lead",a:"teen",x:"Angry, funny and four months away from being free of all this."},
+         {s:"the old man",r:"Lead",a:"senior",g:"M",x:"Brings a folding chair and a sandwich and talks to the headstone."},
+         {s:"the groundskeeper",r:"Supporting",a:"mature",x:"Runs the crew with very few words and gives second chances."}]},
+    {k:"r14-pharmacy-tech-recall",era:"2010s",genre:"thriller",tracks:["film","tv"],ttl:["The Recall","Lot Number","Refill"],
+      p:"a pharmacy technician catches a bad batch of heart pills the chain has quietly told its stores to keep selling",
+      h:"her own manager signed the order, and he is the one who gave her a second chance",h2:"one of the customers on her list has already stopped answering the phone",
+      w:["a chain pharmacy after closing","a pharmacy back room","a parking lot behind a chain store"],
+      c:[{s:"the pharmacy technician",r:"Lead",a:"adult",g:"F",x:"Went back to school at thirty and checks everything twice."},
+         {s:"the store manager",r:"Lead",a:"mature",g:"M",x:"Decent, in debt and very good at finding reasons."},
+         {s:"the regular customer",r:"Supporting",a:"senior",x:"Picks up the same refill each month and always brings a joke."},
+         {s:"the regional rep",r:"Day Player",a:"adult",x:"Arrives with doughnuts and a form to sign."}]},
+    {k:"r14-bird-count",era:"now",genre:"romance",tracks:["film"],ttl:["The Count","Field Marks","Life List"],
+      p:"two birdwatchers who have competed for years in a county bird count are forced to share a car when one loses his license",
+      h:"she has been inventing a sighting for ten years, and he has known",h2:"the rare bird that could settle it shows up on the last morning, and only one of them sees it",
+      w:["a salt marsh at sunrise","a county road with a parked car","a small nature center"],
+      c:[{s:"the retired teacher",r:"Lead",a:"senior",g:"F",x:"Keeps her lists in pencil and will correct your grammar too."},
+         {s:"the retired mail carrier",r:"Lead",a:"senior",g:"M",x:"Walked the county for forty years and knows where everything nests."},
+         {s:"the nature center intern",r:"Supporting",a:"youngAdult",x:"Runs the official count and is frightened of both of them."}]},
+    {k:"r14-roller-derby-mom",era:"2010s",genre:"comedy",tracks:["film","tv"],ttl:["Jam Time","Hard Hit","Second Skate"],
+      p:"a suburban dentist joins a roller derby team at forty-four without telling her family and has to explain the bruises",
+      h:"her teenage daughter shows up to the first public bout on a date",h2:"the team's best skater turns out to be her most nervous patient",
+      w:["a roller rink in an old warehouse","a small dental office","a suburban kitchen"],
+      c:[{s:"the dentist",r:"Lead",a:"mature",g:"F",x:"Careful with her hands all day and has found out she likes hitting people."},
+         {s:"the team captain",r:"Supporting",a:"adult",g:"F",x:"Drives a forklift by day and takes the team very seriously."},
+         {s:"her daughter",r:"Supporting",a:"teen",g:"F",x:"Convinced her mother has no secrets worth knowing."},
+         {s:"her husband",r:"Supporting",a:"mature",g:"M",x:"Has noticed the bruises and come up with a much worse explanation."}]},
+    {k:"r14-farm-auction-caller",era:"1980s",genre:"drama",tracks:["film"],ttl:["Going Once","The Caller","Sold to the Neighbor"],
+      p:"a farm auctioneer sells off his neighbors one by one during the farm crisis and is hated for doing his job",
+      h:"the bank sends him his own brother's place next",h2:"the farmers agree to bid a penny and dare anyone to bid more, with him at the microphone",
+      w:["a farmyard on auction day","a small town grain elevator","a bank office on main street"],
+      c:[{s:"the auctioneer",r:"Lead",a:"mature",g:"M",x:"Fast talker, slow to anger, and eats lunch alone these days."},
+         {s:"his brother",r:"Supporting",a:"mature",g:"M",x:"Hasn't spoken to him since the first sale and has stopped opening letters."},
+         {s:"the bank officer",r:"Supporting",a:"adult",x:"New in town, follows the rules and sleeps badly."},
+         {s:"the auctioneer's wife",r:"Supporting",a:"mature",g:"F",x:"Does the books and knows to the dollar how much is left."}]},
+    {k:"r14-sign-language-interpreter",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Word for Word","Interpreter","Between Hands"],
+      p:"a sign language interpreter at a hospital has to tell a deaf father the exact words of a doctor who will not look at him",
+      h:"she softens one sentence and it changes the choice he makes",h2:"the father reads her face and asks her what the doctor really said",
+      w:["a hospital family room","a hospital hallway at night","a small apartment kitchen"],
+      c:[{s:"the interpreter",r:"Lead",a:"midCareer",g:"F",x:"Grew up signing for her own parents and has rules she never breaks. Sign language required."},
+         {s:"the father",r:"Lead",a:"mature",g:"M",x:"Sharp, proud and tired of people talking past him. Deaf or hard of hearing actors encouraged."},
+         {s:"the doctor",r:"Supporting",a:"adult",x:"Good at medicine and in a hurry."}]},
+    {k:"r14-ghost-tour-guide",era:"now",genre:"horror",tracks:["film"],ttl:["The Late Tour","Nine O'Clock Walk","Haunted by Appointment"],
+      p:"a ghost tour guide who makes up every story on his walk starts getting corrections from someone in the back of the group",
+      h:"the corrections are right, and they match no record anywhere",h2:"the person in the back stops appearing on the tour photos",
+      w:["an old town square at night","a row house with a closed cellar","a small tour office"],
+      c:[{s:"the tour guide",r:"Lead",a:"adult",g:"M",x:"Failed actor who loves a captive audience and has never believed a word of it."},
+         {s:"the town historian",r:"Supporting",a:"senior",g:"F",x:"Has hated the tours for years and is the only one who can check the facts."},
+         {s:"the new guide",r:"Supporting",a:"youngAdult",x:"Started last week and thinks the lantern is too much."}]},
+    {k:"r14-laundromat-landlord",era:"now",genre:"drama",tracks:["film"],ttl:["Quarters","Out of Order","Permanent Press"],
+      p:"a teenage girl takes over her family's laundromat while her mother is in the hospital and hides it from the landlord",
+      h:"the landlord's son comes in every week with one small load, and he has noticed",h2:"the machines start breaking one at a time, and the repair money is the rent money",
+      w:["a neighborhood laundromat","an apartment over a shop","a hospital visiting room"],
+      c:[{s:"the teenage girl",r:"Lead",a:"teen",g:"F",x:"Does homework on the folding table and can fix a dryer with a butter knife."},
+         {s:"her mother",r:"Supporting",a:"midCareer",g:"F",x:"Runs the place from a hospital bed by phone."},
+         {s:"the landlord",r:"Supporting",a:"senior",g:"M",x:"Knew her grandfather and won't say whether that helps."}]},
+    {k:"r14-astronomy-club",era:"1990s",genre:"drama",tracks:["film"],ttl:["First Light","Dark Sky","The Club Telescope"],
+      p:"a small town astronomy club fights to stop a new car dealership whose lights will end the only dark sky for a hundred miles",
+      h:"the dealership owner is the club's founding member and paid for the telescope",h2:"the town needs the jobs, and the club's youngest member needs one of them",
+      w:["a hilltop field at night","a town council room","a car lot under construction"],
+      c:[{s:"the club president",r:"Lead",a:"senior",g:"F",x:"Retired science teacher who has taught half the council and remembers every grade."},
+         {s:"the dealership owner",r:"Lead",a:"mature",g:"M",x:"Loved the stars first and has a payroll to meet."},
+         {s:"the youngest member",r:"Supporting",a:"teen",x:"Found a comet nobody has confirmed and needs a summer job."}]},
+    {k:"r14-sleep-lab-tech",era:"now",genre:"thriller",tracks:["film"],ttl:["Stage Four","Night Study","The Sleep Lab"],
+      p:"a night technician at a sleep clinic hears a patient say the same address in his sleep for three nights in a row",
+      h:"she drives by the address, and there is a missing person flyer on the door",h2:"the patient's study ends in one more night, and he has noticed her watching him",
+      w:["a sleep clinic at night","a quiet street of row houses","a clinic control room with monitors"],
+      c:[{s:"the night technician",r:"Lead",a:"adult",g:"F",x:"Works alone from nine to six and knows more about strangers than she should."},
+         {s:"the patient",r:"Lead",a:"mature",g:"M",x:"Pleasant, tidy and never late. Very still for long stretches."},
+         {s:"the clinic doctor",r:"Supporting",a:"mature",x:"Reminds her how privacy law works."}]},
+    {k:"r14-maple-syrup-rivals",era:"2000s",genre:"comedy",tracks:["film","tv"],ttl:["Sugar Season","Grade A","Tapped Out"],
+      p:"two neighbors who have fought over a property line for thirty years have to share a sugar house when one of theirs burns down",
+      h:"the county fair prize has gone to one of them nineteen years running",h2:"their kids have been secretly seeing each other since high school",
+      w:["a sugar house in the woods","a maple grove in late winter","a county fair hall"],
+      c:[{s:"the old farmer",r:"Lead",a:"senior",g:"M",x:"Does it the way his grandfather did and tells you so."},
+         {s:"the widow next door",r:"Lead",a:"senior",g:"F",x:"Has better syrup, better land and the last word."},
+         {s:"his daughter",r:"Supporting",a:"midCareer",g:"F",x:"Runs the farm's books and has been sneaking across the line for years."},
+         {s:"her son",r:"Supporting",a:"midCareer",g:"M",x:"Volunteer fire chief who did not get there in time and feels it."}]},
+    {k:"r14-ferris-wheel-repair",era:"1970s",genre:"drama",tracks:["film"],ttl:["The Wheel","Off Season Repairs","Top Car"],
+      p:"a carnival mechanic stays behind in a winter town to fix the old Ferris wheel and rents a room from a woman waiting on a husband who is not coming back",
+      h:"the town wants him gone by spring, and she has stopped asking when he is leaving",h2:"a letter from the husband arrives on the day the wheel finally turns",
+      w:["a closed fairground in winter","a boarding house kitchen","a small town machine shop"],
+      c:[{s:"the mechanic",r:"Lead",a:"mature",g:"M",x:"Quiet, good with his hands and carrying a past he doesn't bring up."},
+         {s:"the woman he rents from",r:"Lead",a:"adult",g:"F",x:"Cooks for two out of habit and watches the road."},
+         {s:"the sheriff",r:"Supporting",a:"mature",x:"Friendly with a warning in it."},
+         {s:"the machine shop kid",r:"Day Player",a:"teen",x:"Skips school to hand him tools."}]},
+    {k:"r14-spelling-tutor-prison",era:"now",genre:"drama",tracks:["film","stage"],ttl:["Reading Hour","Pen Pal Program","Visiting Days"],
+      p:"a retired English teacher answers a prison literacy program ad and teaches a grown man to read through the mail",
+      h:"the first letter he writes on his own is about the crime, and it involves someone she knows",h2:"he comes up for parole and asks her to read his statement out loud",
+      w:["a prison visiting room","a small house with a writing desk","a parole board hearing room"],
+      c:[{s:"the retired teacher",r:"Lead",a:"senior",g:"F",x:"Corrects everything in red and has never missed a day."},
+         {s:"the inmate",r:"Lead",a:"mature",g:"M",x:"Hid that he could not read for forty-one years and is getting faster."},
+         {s:"the program officer",r:"Supporting",a:"adult",x:"Warned her not to get attached, and does the same thing herself."}]},
+    {k:"r14-rural-vet-strike",era:"1990s",genre:"drama",tracks:["film","tv"],ttl:["Large Animal","House Call","Calving Season"],
+      p:"a young vet takes over a country practice from an old man who will not actually retire and keeps showing up at her calls",
+      h:"the farmers will only pay her if he says she got it right",h2:"his hands have started to shake, and she is the only one who has seen it",
+      w:["a country vet office","a dairy barn at night","a muddy farm road"],
+      c:[{s:"the young vet",r:"Lead",a:"youngAdult",g:"F",x:"Top of her class and still can't get anybody to open a gate for her."},
+         {s:"the old vet",r:"Lead",a:"senior",g:"M",x:"Knows every cow in the valley by family and hides his hands in his pockets."},
+         {s:"the dairy farmer",r:"Supporting",a:"mature",x:"Tests her with the worst calving of the spring."}]},
+    {k:"r14-paper-route-eighties",era:"1980s",genre:"mystery",tracks:["film"],ttl:["Paper Route","Morning Edition","Collection Day"],
+      p:"a twelve-year-old paper carrier notices one house on his route has stopped taking the paper in, but someone is still paying the bill",
+      h:"the money comes in an envelope with no stamp",h2:"his older sister works at the town police station and has been told to drop it",
+      w:["a suburban street at dawn","a newspaper drop-off corner","a small town police station"],
+      c:[{s:"the paper carrier",r:"Lead",a:"child",g:"M",x:"Keeps a neat route book and notices when porch lights change."},
+         {s:"his older sister",r:"Supporting",a:"youngAdult",g:"F",x:"Files reports and has started reading them closely."},
+         {s:"the circulation manager",r:"Supporting",a:"mature",x:"Runs the paper's small office and doesn't want complaints."},
+         {s:"the neighbor across the street",r:"Day Player",a:"senior",x:"Watches everything and offers cookies."}]},
+    {k:"r14-boxing-cutman",era:"1970s",genre:"drama",tracks:["film"],ttl:["Cut Man","Sixty Seconds","Between Rounds"],
+      p:"an aging cut man has sixty seconds between rounds to keep a young fighter's eye open and has to decide when to tell the truth",
+      h:"the fighter's manager has bet against him",h2:"the kid is the son of a fighter he once told to keep going",
+      w:["an old boxing gym","a small arena locker room","a corner diner"],
+      c:[{s:"the cut man",r:"Lead",a:"senior",g:"M",x:"Steady hands, a bag of old tricks and one bad night he never talks about."},
+         {s:"the young fighter",r:"Lead",a:"youngAdult",g:"M",x:"Quick, polite and sending his purse home. Boxing training a plus."},
+         {s:"the manager",r:"Supporting",a:"mature",x:"Talks about family and counts everything twice."}]},
+    {k:"r14-wind-farm-town",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Lease Rights","Turbine Road","Fair Market"],
+      p:"a land agent comes to a dying farm town offering wind turbine leases that will make half the families rich and the other half furious",
+      h:"she grew up two counties over and knows exactly what to say at church",h2:"the map shows the best site is the cemetery hill",
+      w:["a farm town diner","a wide-open wheat field","a small town church hall"],
+      c:[{s:"the land agent",r:"Lead",a:"adult",g:"F",x:"Friendly, fair and paid by the signature."},
+         {s:"the holdout farmer",r:"Lead",a:"senior",g:"M",x:"Has heard every offer since 1974 and keeps a list."},
+         {s:"the mayor",r:"Supporting",a:"mature",x:"Runs the feed store and already spent the money in his head."},
+         {s:"the farmer's granddaughter",r:"Supporting",a:"teen",g:"F",x:"Wants to study engineering, and would like the turbines to come."}]},
+    {k:"r14-piano-mover",era:"2000s",genre:"comedy",tracks:["film","tv"],ttl:["Third Floor, No Elevator","The Upright","Handle With Care"],
+      p:"two piano movers get a job taking a grand piano up five flights for an old woman who insists on playing it at every landing",
+      h:"she has not told them she's moving it to leave it to someone who does not know she exists",h2:"they get stuck with it on the third floor, and the neighbors begin to bring chairs",
+      w:["a narrow stairwell in an old walk-up","a moving truck on a city street","a top floor apartment"],
+      c:[{s:"the older mover",r:"Lead",a:"mature",g:"M",x:"Bad back, big heart, knows every stairwell in the city."},
+         {s:"the younger mover",r:"Lead",a:"youngAdult",g:"M",x:"Took the job for the week and has conservatory training he hides."},
+         {s:"the old woman",r:"Lead",a:"senior",g:"F",x:"Tiny and in charge. Must actually play the piano."}]},
+    {k:"r14-911-trainee",era:"now",genre:"thriller",tracks:["film"],ttl:["What Is Your Emergency","Dead Air","Line Six"],
+      p:"on her first solo night a rural 911 dispatcher takes a call from a child who will not say where he is",
+      h:"the only deputy on duty is ninety minutes away on the wrong side of the river",h2:"she recognizes a sound in the background from her own street",
+      w:["a small county dispatch room","a sheriff's office at night","a dark county road"],
+      c:[{s:"the new dispatcher",r:"Lead",a:"youngAdult",g:"F",x:"Passed every test and has never done this for real."},
+         {s:"the voice of the child",r:"Supporting",a:"child",x:"A voice role with a few scenes on camera at the end."},
+         {s:"the night deputy",r:"Supporting",a:"mature",x:"Heard only over the radio for most of the story."},
+         {s:"the retired dispatcher",r:"Supporting",a:"senior",g:"F",x:"Reachable by phone, against the rules, and stays on the line."}]},
+    {k:"r14-diner-pie-contest",era:"1950s",genre:"comedy",tracks:["film","stage"],ttl:["Blue Ribbon","Lard and Lies","County Pie"],
+      p:"a small town minister's wife has won the county pie contest eleven years running with a recipe she buys from a stranger by mail",
+      h:"the stranger writes to say this year's pie is the last one",h2:"the new girl at the diner enters a pie that tastes exactly the same",
+      w:["a 1950s church kitchen","a small town diner","a county fair tent"],
+      c:[{s:"the minister's wife",r:"Lead",a:"mature",g:"F",x:"Perfect manners, spotless apron and a post office box nobody knows about."},
+         {s:"the new diner waitress",r:"Lead",a:"youngAdult",g:"F",x:"Arrived on a bus with one suitcase and no explanation."},
+         {s:"the minister",r:"Supporting",a:"mature",g:"M",x:"Gentle, trusting and allergic to cinnamon."},
+         {s:"the fair judge",r:"Day Player",a:"senior",x:"Takes this more seriously than the war."}]},
+    {k:"r14-long-haul-daughter",era:"now",genre:"drama",tracks:["film"],ttl:["Deadhead Miles","Bill of Lading","Weigh Station"],
+      p:"a long-haul trucker takes the daughter she barely knows on a five-day run after the girl's father goes into rehab",
+      h:"the load is due in Tucson on the day of a court date she has not mentioned",h2:"the girl has been writing down every lie for the judge",
+      w:["a truck cab on a two-lane highway","a truck stop at night","a roadside weigh station"],
+      c:[{s:"the trucker",r:"Lead",a:"midCareer",g:"F",x:"Twenty years on the road, three million safe miles and two missed graduations."},
+         {s:"her daughter",r:"Lead",a:"teen",g:"F",x:"Fourteen, unimpressed and keeping careful notes."},
+         {s:"the truck stop cook",r:"Supporting",a:"senior",x:"Has seen the trucker through a lot of bad years and says so."}]},
+    {k:"r14-clock-tower-town",era:"2000s",genre:"comedy",tracks:["film","tv"],ttl:["Eleven Minutes Slow","Town Time","The Clock Keeper"],
+      p:"the man who winds a small town's clock tower retires, and nobody can get the clock to run on time without him",
+      h:"the town has quietly been eleven minutes behind for years, and the bank's closing time depends on it",h2:"the new keeper fixes it, and everything in town starts going wrong",
+      w:["a small town clock tower","a town hall meeting room","a main street barber shop"],
+      c:[{s:"the new clock keeper",r:"Lead",a:"youngAdult",x:"Took a summer job from the town and reads the manual."},
+         {s:"the old keeper",r:"Lead",a:"senior",g:"M",x:"Retired to the bench across the street and watches the hands."},
+         {s:"the mayor",r:"Supporting",a:"mature",g:"F",x:"Won by eleven votes after the polls were supposed to close."},
+         {s:"the bank teller",r:"Day Player",a:"adult",x:"Has been counting those eleven minutes for a long time."}]},
+    {k:"r14-tv-repair-seventies",era:"1970s",genre:"drama",tracks:["film"],ttl:["Tube Tester","House Calls","Vertical Hold"],
+      p:"a television repairman making house calls in a changing neighborhood starts carrying messages between two old friends who no longer speak",
+      h:"each of them keeps breaking the set on purpose so he'll come back",h2:"one of the sets he fixes has a tape behind the panel",
+      w:["a TV repair shop on a corner","a small apartment living room","a stairwell in a city walk-up"],
+      c:[{s:"the repairman",r:"Lead",a:"mature",g:"M",x:"Knows every family on the block by what they watch."},
+         {s:"the upstairs widow",r:"Supporting",a:"senior",g:"F",x:"Has a set that only breaks on Thursdays."},
+         {s:"the old friend across the street",r:"Supporting",a:"senior",g:"F",x:"Hasn't spoken to the widow since 1959 and asks about her every visit."},
+         {s:"the shop boy",r:"Day Player",a:"teen",x:"Sure that color TV will close the shop for good."}]},
+    {k:"r14-swim-instructor-seniors",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Shallow End","Water Aerobics","Lap Lane"],
+      p:"a college swimmer who washed out loses a scholarship and ends up teaching water aerobics at a senior center",
+      h:"her class signs up for a real open water race and won't tell her until the money is paid",h2:"the oldest swimmer used to hold the state record she never broke",
+      w:["a senior center swimming pool","a lake at dawn","a small locker room"],
+      c:[{s:"the college swimmer",r:"Lead",a:"youngAdult",g:"F",x:"Fast, angry and six credits short of anything. Must really swim."},
+         {s:"the oldest swimmer",r:"Lead",a:"senior",g:"F",x:"Has swum here since the place opened, with a very strong kick and no interest in being inspiring."},
+         {s:"the center director",r:"Supporting",a:"mature",x:"Has a tiny budget and keeps hiring people who need the job more than the job needs them."},
+         {s:"the retired plumber",r:"Supporting",a:"senior",g:"M",x:"Can't swim, joined for the company and says so on the first day."}]},
+    {k:"r14-small-town-newspaper-obit",era:"1990s",genre:"drama",tracks:["film","stage"],ttl:["Survived By","The Obit Desk","Page Eleven"],
+      p:"a small town obituary writer gets a request from a living woman who wants to read her own before she dies",
+      h:"every fact she gives turns out to be wrong in a way that protects somebody",h2:"the paper is closing the same week, so this will be the last one it prints",
+      w:["a small newspaper office","a nursing home sunroom","a town library archive"],
+      c:[{s:"the obituary writer",r:"Lead",a:"midCareer",x:"Wanted to be a war reporter and has written about every funeral in the county instead."},
+         {s:"the old woman",r:"Lead",a:"senior",g:"F",x:"Sharp, charming and lying about most of it, cheerfully."},
+         {s:"the editor",r:"Supporting",a:"senior",g:"M",x:"Knows she is lying and printed something once that he has regretted since."}]},
+    {k:"r14-theater-ghost-light",era:"2010s",genre:"horror",tracks:["film"],ttl:["Ghost Light","The Dark Week","Strike Night"],
+      p:"a stage manager stays overnight to close a small theater after its last show and finds the ghost light has been moved",
+      h:"each time she checks the sign-in book there is one more name in it",h2:"the names belong to the original company, and the last line has been left for her",
+      w:["a small empty theater at night","a basement dressing room","a stage with a single light"],
+      c:[{s:"the stage manager",r:"Lead",a:"midCareer",g:"F",x:"Twenty years of keeping other people on time, and now alone with a key."},
+         {s:"the old custodian",r:"Supporting",a:"senior",x:"Leaves at midnight and tells her not to count the seats."},
+         {s:"the young actor",r:"Supporting",a:"youngAdult",x:"Comes back for a phone he forgot and doesn't leave when he should."}]},
+    {k:"r14-garage-band-reunion",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["One More Gig","Reunion Tour of Ohio","Sound Check"],
+      p:"four middle-aged friends get their high school band back together to play one song at a wedding and find they have never agreed on how it goes",
+      h:"the drummer has a court date, and the singer has told the bride they are much better than they are",h2:"an old demo tape shows up, and the guitarist is not the one playing on it",
+      w:["a suburban garage with old amps","a small wedding hall","a music store"],
+      c:[{s:"the singer",r:"Lead",a:"mature",g:"M",x:"Sells insurance now and still warms up in the car."},
+         {s:"the guitarist",r:"Lead",a:"mature",g:"F",x:"The one with talent, who stayed anyway and has never been thanked."},
+         {s:"the drummer",r:"Supporting",a:"mature",g:"M",x:"Loud, broke and the only one having fun. Must really drum."},
+         {s:"the bass player",r:"Supporting",a:"mature",x:"Became a dentist and books the rehearsals."}]},
+    {k:"r14-lock-keeper-canal",era:"1950s",genre:"drama",tracks:["film"],ttl:["The Lock Keeper","Slack Water","Canal Season"],
+      p:"the keeper of a small canal lock learns the state will close it and spends the last season writing down every boat that passes",
+      h:"a boat comes through that has passed once a year since his son disappeared",h2:"a young state engineer sent to shut the lock asks to stay on until the first freeze",
+      w:["a stone canal lock in the country","a lock keeper's cottage","a small canal town"],
+      c:[{s:"the lock keeper",r:"Lead",a:"senior",g:"M",x:"Has logged every boat for thirty-four years and hasn't had a day off."},
+         {s:"the state engineer",r:"Lead",a:"youngAdult",g:"F",x:"First woman in her office and sent here because no one else wanted the job."},
+         {s:"the boat captain",r:"Supporting",a:"mature",x:"Comes through each October and never gets off the boat."}]}
+  ];
+  // Ages and genders here are written into the story, so they hold.
+  R14_SEEDS.forEach(s=>{(s.c||[]).forEach(z=>{z._lock=true;});if(!FILM_SEEDS.some(x=>x.k===s.k))FILM_SEEDS.push(s);});
 
   // ── Project types ────────────────────────────────────────────────────────
   // Every PROJECT_TYPE_OPTIONS value except "Other". `fam` decides what the
@@ -40959,7 +41272,7 @@ const ACG = (()=>{
     // Round 4: a side room is never the headline location when the seed
     // offers somewhere the story actually happens.
     const mainFits=fits.filter(p=>!V6_SIDE_ROOM.test(p)),mainPlaces=places.filter(p=>!V6_SIDE_ROOM.test(p));
-    const venue0=(mainFits.length?pick(mainFits):fits.length?pick(fits):mainPlaces.length&&!need?pick(mainPlaces):places.length&&!need?pick(places):fam==="photo"?"a daylight photo studio":r13Generic(need,story));
+    const venue0=(mainFits.length?pick(mainFits):fits.length?pick(fits):mainPlaces.length?pick(mainPlaces):places.length?pick(places):fam==="photo"?"a daylight photo studio":r13Generic(need,story));
     const venue=v3Scrub(venue0);
     if(!need)need=v3Need(venue);
     return {venue,need,placeNP:venue};
@@ -44872,6 +45185,36 @@ const ACG = (()=>{
     if(nonUnion&&type==="Public Service Announcement"&&top>1000)out.push("non-union PSA paying $"+top);
     if(/^Local\b/i.test(String(item.title||""))&&/Nationwide/i.test(item.talent_scope||""))out.push("local job with a nationwide search");
     if(type==="Off-Broadway Theater"&&rates.some(o=>o.x.rate_unit==="week"&&o.x.rate_amount<500))out.push("Off-Broadway weekly under $500");
+    // Who the story says vs who is cast.
+    const cast=roles.filter(r=>!/background/i.test(r.role_type||"")&&!r._group);
+    const gOf=g=>cast.filter(r=>r.gender===g).length;
+    if(/\b(a|the|one) (woman|girl|mother|daughter|sister|widow|landlady|waitress|grandmother)\b/i.test(syn)&&cast.length&&!gOf("Female")&&!cast.some(r=>/^(All genders|Any)/i.test(r.gender||"")))out.push("story names a woman, nobody female cast");
+    if(/\b(a|the|one) (man|boy|father|son|brother|widower|landlord|grandfather)\b/i.test(syn)&&cast.length&&!gOf("Male")&&!cast.some(r=>/^(All genders|Any)/i.test(r.gender||"")))out.push("story names a man, nobody male cast");
+    cast.forEach(r=>{const lg=labelGender(r._slot||r.name||"");if(lg&&r.gender&&/^(Male|Female)$/.test(r.gender)&&lg!==r.gender)out.push(`${r.gender} cast as ${String(r._slot||r.name).slice(0,24)}`);});
+    // A stated age in the story fits the part.
+    const sAge=syn.match(/\b(twelve|thirteen|fourteen|fifteen|sixteen|seventeen)-year-old\b/i);
+    if(sAge){const n={twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17}[sAge[1].toLowerCase()];const lead=cast.find(r=>/^(Lead|Principal)/i.test(r.role_type||""));const m=lead&&String(lead.age_range||"").match(/^(\d+)-(\d+)$/);if(m&&(n<+m[1]||n>+m[2]))out.push(`story says ${sAge[0]}, lead is ${lead.age_range}`);}
+    // A minor does not lead a long non-union job.
+    if(nonUnion&&cast.some(r=>{const m=String(r.age_range||"").match(/^(\d+)-(\d+)$/);return m&&+m[2]<18&&+r.est_days>=10;}))out.push("minor on a long non-union shoot");
+    // Major brands state their pay; a long job isn't a token flat fee.
+    if(/^Payment not specified/i.test(String(item.pay||""))&&/^(Major|National|Global)\b/i.test(String(item.title||"")))out.push("major brand with no stated pay");
+    if(/^Payment not specified/i.test(String(item.pay||""))&&/\b(brand|company)\b/i.test(String(item.title||"")))out.push("brand with no stated pay");
+    rates.forEach(o=>{const x=o.x,d=+o.r.est_days||1;if(x.rate_unit==="flat"&&d>=5&&x.rate_amount/d<75&&!/Student|Experimental/.test(type))out.push(`flat fee under $75 a day over ${d} days`);});
+    if(nonUnion&&/^(Corporate Video|Industrial \/ Training Video|Product Demo|Educational Video)$/.test(type)&&top>2000)out.push(`non-union ${type} paying $${top}`);
+    if(nonUnion&&/Documentary/.test(type)&&/reenactment/i.test(`${syn} ${tg}`)&&top>400)out.push("doc reenactment paying $"+top);
+    // Cut-off or generic places, and places the story cannot use.
+    const vh=venue.split(",")[0];
+    if(/\b(before|after|during|while|into|from|on a|for)$/i.test(vh.trim()))out.push("shoot location cut off: "+vh.slice(0,40));
+    if(/^(a|an) store$/i.test(vh.trim())&&/\b(record|book|hardware|grocery|shoe|video|music|thrift) store\b/i.test(syn))out.push("generic store for a specific one");
+    // A film has a lead, and an empty place has no customers.
+    if(/Film$/.test(type)&&cast.length&&!cast.some(r=>/^Lead/i.test(r.role_type||"")))out.push("film with no lead role");
+    if(/\b(empty|closed|abandoned|vacant)\b/i.test(vh)&&roles.some(r=>/background/i.test(r.role_type||"")&&/\b(customers?|shoppers?|diners?)\b/i.test(r.name||"")))out.push("customers in an empty place");
+    // A very short film doesn't take a week.
+    const mins=syn.match(/\b(\d{1,2})-minute\b/);
+    if(mins&&+mins[1]<=10&&maxDays>3&&/Film/.test(type))out.push(`${mins[0]} film on ${maxDays} days`);
+    // A one-day job has no gap between days.
+    if(maxDays===1&&/\b(gap between days|between days|turnaround)\b/i.test(String(item.schedule_note||"")))out.push("turnaround note on a one-day shoot");
+    if(/Vertical/.test(type)&&cast.length===1&&/\b(\d{2})-episode\b/.test(syn))out.push("long vertical series with one actor");
     // Wording.
     if(/\b(video|spot|piece) shows an? [^.]{0,40}\b(video|spot)\b/i.test(syn))out.push("video described as a video");
     if(type==="Video Game"&&/story-driven/i.test(syn)&&/\bsports game\b|play-by-play/i.test(syn))out.push("story-driven sports game");
