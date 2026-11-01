@@ -4353,8 +4353,8 @@ body.fbsp-open #castoria-root{display:none!important;}
 .cd-ico.good{color:#1d7b44;}
 .cd-ico.warn{color:#c0392b;}
 .cd-lab{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:3px;}
-.cd-val{font-size:14px;color:#453D34;font-weight:400;}
-.cd-val strong{font-weight:600;color:var(--t1);}
+.cd-val{font-size:16px;line-height:1.5;color:#0E1A22;font-weight:400;}
+.cd-val strong{font-weight:600;color:#0E1A22;}
 .cd-trust{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--t2);
   margin-top:16px;padding-top:14px;border-top:1px solid var(--bdr);}
 .cd-side{background:var(--s2);border-left:1px solid var(--bdr);padding:20px 22px;display:flex;
