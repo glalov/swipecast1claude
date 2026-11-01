@@ -4342,10 +4342,10 @@ body.fbsp-open #castoria-root{display:none!important;}
 .cd-stat .sub{color:var(--t2);font-weight:600;}
 /* The pay roll-up is a tinted stat, deliberately NOT a headline - at display
    size it read as a day rate, and roleTotalPay() returns a role TOTAL. */
-.cd-money{display:inline-flex;align-items:center;gap:7px;background:#F2F7F4;border:1px solid #D7E6DD;
-  border-radius:8px;padding:6px 12px;color:#2F6A52;}
-.cd-money .lb{font-size:13px;font-weight:600;color:#4E7D68;}
-.cd-money .vl{font-size:15px;font-weight:800;letter-spacing:-.2px;font-variant-numeric:tabular-nums;}
+.cd-money{display:inline-flex;align-items:center;gap:7px;background:#E9E5DC;border:1px solid #E9E5DC;
+  border-radius:8px;padding:6px 12px;color:#241F19;}
+.cd-money .lb{font-size:13px;font-weight:600;color:#241F19;}
+.cd-money .vl{color:#241F19;font-size:15px;font-weight:800;letter-spacing:-.2px;font-variant-numeric:tabular-nums;}
 .cd-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 26px;padding-top:16px;}
 .cd-row{display:flex;gap:11px;align-items:flex-start;min-width:0;}
 .cd-row.full{grid-column:1 / -1;}
@@ -4360,7 +4360,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 .cd-side{background:var(--s2);border-left:1px solid var(--bdr);padding:20px 22px;display:flex;
   flex-direction:column;justify-content:center;gap:10px;}
 /* Apply panel (owner, 2026-10-28, option A): pale teal tied to the Apply button, content at the top, Apply as wide as the role picker. */
-.cd-side{background:#F3F8F6;border-left-color:#DCEBE6;justify-content:flex-start;padding:28px 26px;gap:12px;}
+.cd-side{background:#FBF8F1;border-left-color:#E6E2D9;justify-content:flex-start;padding:28px 26px;gap:12px;}
+.cd-top .cs-live-badge{background:#E9E5DC;color:#241F19;}
+.cd-top .cs-live-dot::after,.cd-top .cs-live-dot .core{background:#6F6658;}
 .cd-side .apply-cta{width:100%;}
 .cd-side .cd-side-sum{margin:0;font-size:13.5px;color:var(--t2);line-height:1.5;}
 .cd-side .cd-side-sum b{color:#206557;}
@@ -14886,7 +14888,7 @@ Free submission used
         <div className={"cd-grid"+(canApply?"":" solo")}>
           <div className="cd-main">
             <div className="cd-top">
-              {live&&<LiveCastingBadge/>}
+              {live&&<LiveCastingBadge infoColor="#6F6658"/>}
               {/* A RATE, never a multi-day total: "up to $1,300" on a $50/day
                   job read as the fee. Totals live on each role row, labelled. */}
               {(()=>{const tr=roleTopRate(c.roles);return tr?<span className="cd-money">
@@ -25089,10 +25091,10 @@ function StatusInfoTip({status,label,color="var(--t2)",width=300}){
 // ─── LiveCastingBadge — the pulsing "Casting now" badge + an InfoTip explaining
 //     that an older post does NOT mean the role is filled. Used on Browse cards,
 //     the featured slider, and the casting detail page.
-function LiveCastingBadge({text="Casting now — apply today"}){
+function LiveCastingBadge({text="Casting now — apply today",infoColor="#0F6E56"}){
   return(<span style={{display:"inline-flex",alignItems:"center",gap:6}}>
     <span className="cs-live-badge"><span className="cs-live-dot"><span className="core"/></span>{text}</span>
-    <InfoTip color="#0F6E56" width={300} label="Why this casting is still active">
+    <InfoTip color={infoColor} width={300} label="Why this casting is still active">
       <strong style={{color:"var(--t1)"}}>Still actively casting.</strong> The team behind this project is still accepting new submissions and has not archived it yet — so they are actively looking for new actors, no matter whether the casting was posted a month ago or longer. Casting is a complex process and can sometimes take many months to find the right talent, so an older post does not mean the role is taken. For example, <em>Gone with the Wind</em> took around 2 years of casting before the right actors were found, and <em>Harry Potter and the Philosopher's Stone</em> took roughly 8 months to a year, with 40,000+ children considered.
     </InfoTip>
   </span>);
