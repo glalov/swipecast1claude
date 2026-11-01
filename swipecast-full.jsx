@@ -41190,7 +41190,7 @@ const ACG = (()=>{
   const V3_CAPS={film:650,tv:900,unscripted:650,stage:900,ad:1500,corp:1200,photo:2000,audio:900,anim:900,music:600,move:900,live:900,job:900};
   function v3Union(type,fam){
     const t=type;
-    if(fam==="stage")return /^(Off-Broadway Theater|Musical Theater)$/.test(t)?pick(["AEA","AEA","Non-Union"]):pick(["Non-Union","Non-Union","AEA Showcase Code"]);
+    if(fam==="stage")return t==="Off-Broadway Theater"?"AEA":t==="Musical Theater"?pick(["AEA","AEA","Non-Union"]):pick(["Non-Union","Non-Union","AEA Showcase Code"]);
     if(fam==="photo")return "Non-Union";
     if(fam==="ad")return /^(Commercial|Ad Campaign)$/.test(t)?pick(["Non-Union","Non-Union","SAG-AFTRA Commercial"]):"Non-Union";
     if(fam==="corp")return pick(["Non-Union","Non-Union","SAG-AFTRA Corporate/Educational"]);
@@ -41909,6 +41909,7 @@ const ACG = (()=>{
     r10Problems(item,c).forEach(x=>out.push("r10: "+x));
     r11Problems(item).forEach(x=>out.push("r11: "+x));
     r13Problems(item,c).forEach(x=>out.push("r13: "+x));
+    r14Problems(item).forEach(x=>out.push("r14: "+x));
     if(c.h&&c.res&&v3TooClose(v3StoryWords(syn),(c.h.storyWords||[]).concat(c.res.storyWords||[])))out.push("story too close to a saved listing");
     if(c.h&&c.res){const seenHere=new Set();v3ListingSentences(item,roles).forEach(x=>{const k=v3SentKey(x);if((seenHere.has(k)&&x!==item.tagline)||v3SentUsed(k,c.h,c.res))out.push("reused sentence: "+x.slice(0,60));if(x!==item.tagline)seenHere.add(k);});}
     return out;
@@ -42866,8 +42867,8 @@ const ACG = (()=>{
       const CONT={weekdays:0,sixday:0,consecutive:1,spread:0,one:0,flex1:0,saturdays:0,weekends:0};
       const mode=plan.mode||"consecutive";
       const PAT={
-        saturdays:[`on Saturdays`,`Saturdays only`,`on ${W} separate Saturdays`],
-        weekends:[`weekends only`,`across ${wks(d/2)} weekends`,`on Saturdays and Sundays`,`on weekend days only, starting on a ${wd}`],
+        saturdays:[`on Saturdays`,`on Saturdays only`,`on ${W} separate Saturdays`],
+        weekends:[`on weekends only`,`across ${wks(d/2)} weekends`,`on Saturdays and Sundays`,`on weekend days only, starting on a ${wd}`],
         flex1:[`inside a short window, with the day confirmed at booking`,`on a day we agree once you are booked`],
         one:[`on a ${wd}`,`start to finish in one go`,`in a single stretch`],
         spread:[`spread across the window, never two in a row`,`with gaps between them`,`not back to back`,`a few days apart, starting on a ${wd}`],
@@ -42907,8 +42908,15 @@ const ACG = (()=>{
   function v5Schedule(c,tier,h,res){
     const used=k=>(h.schedKeys&&h.schedKeys.has(k))||(res.schedKeys&&res.schedKeys.has(k));
     const openers=new Set([...(h.v5Openers||[]),...(res.v5Openers||[])]);
-    for(let i=0;i<80;i++){
-      const t=v8NoteVoice(tier==="minimal"?v5Minimal(c):tier==="some"?v5Some(c):v5Full(c),c.persona||{w:"plain"});
+    // Round 14: the "some" bank is a handful of sentences per shoot pattern and
+    // runs out inside the 150-listing window. Brand work may print no note but
+    // film and series may not, so every film type failed here and the picker
+    // moved on (no Feature, Short or Student Film after 10/15). Step to the
+    // other tiers instead of giving up.
+    const tiers=[tier].concat(["full","some","minimal"].filter(x=>x!==tier));
+    for(let i=0;i<tiers.length*80;i++){
+      const tn=tiers[Math.floor(i/80)];
+      const t=v8NoteVoice(tn==="minimal"?v5Minimal(c):tn==="some"?v5Some(c):v5Full(c),c.persona||{w:"plain"});
       const note=v5ColonCase(String(t||"").replace(/\s{2,}/g," ").trim());
       if(!note)continue;
       const topics=(note.match(/\b(fitting|wardrobe|sizes|travel|van|transport|parking|meals?|lunch|turnaround|call sheet|sides|scripts?|rehears\w*|weather|makeup|guardian|school|remote)\b/gi)||[]).map(x=>x.toLowerCase().replace(/^rehears.*/,"rehears").replace(/s$/,""));
@@ -44692,7 +44700,7 @@ const ACG = (()=>{
   // the terse board status line ("Shoot dates TBD.") are exempt - those are
   // field values, not prose.
   const R13_GRAM_MAX=2;
-  const R13_EXEMPT=/^(Body|Stunt|Lighting|Photo) double for the actor playing|guardian|child[- ]performer|child[- ]labor|work permit|studio teacher|^(Shoot|Session|Recording|Rehearsal and performance|Event) dates (TBD|TBC)|^Dates (TBD|TBC);|^Records remotely|^Shoots remotely;|^Self-shot at home;|^(Shoots|Records|Works|Reads) /;
+  const R13_EXEMPT=/^(Body|Stunt|Lighting|Photo) double for the actor playing|guardian|child[- ]performer|child[- ]labor|work permit|studio teacher|^(Shoot|Session|Recording|Rehearsal and performance|Event|Table read) dates (TBD|TBC)|^Dates (TBD|TBC);|^Records remotely|^Shoots remotely;|^Self-shot at home;|^(Shoots|Records|Works|Reads) /;
   function r13Grams(text){
     const out=new Set();
     v3Sentences(text).filter(s=>!R13_EXEMPT.test(s)).forEach(s=>{
@@ -44812,9 +44820,81 @@ const ACG = (()=>{
   }
   const R13_MATERIALS=/headshot|r[ée]sum[ée]|self-tape|footage|\breel\b|full-length|full-body|digitals|\bcredits\b|sizes|sample|\bdemo\b|photos?\b|materials|to submit|submissions? should/i;
   const R13_LOCAL=/\b(local hire|local talent|locals? only|local to|hiring locally|commuting distance|-area talent only|no travel|travel and lodging aren't)\b/i;
+  // ── Round 14 (2026-11-01): the 11/1 drafts' logic errors ─────────────────
+  function r14FixAges(roles){
+    const setAge=(r,lo,hi)=>{r.age_range=`${lo}-${hi}`;};
+    (roles||[]).forEach(r=>{
+      const own=`${r.name||""} ${r._slot||""}`;
+      if(/\b(baby|infant|newborn)\b/i.test(own)){setAge(r,0,1);r.description=String(r.description||"").replace(/,\s*with The\b[^.]*\./,".");return;}
+      if(/\btoddler\b/i.test(own)){setAge(r,2,3);return;}
+      const m=String(r.age_range||"").match(/^(\d+)-(\d+)$/);
+      if(m&&/\bcollege\b/i.test(own)&&+m[2]>26)setAge(r,18,24);
+    });
+    // Eldest is older than the middle child, who is older than the youngest.
+    const order=[/\b(eldest|oldest)\b/i,/\bmiddle\b/i,/\byoungest\b/i];
+    const sibs=order.map(re=>(roles||[]).find(r=>re.test(`${r.name||""} ${r._slot||""}`)&&/^\d+-\d+$/.test(r.age_range||""))).filter(Boolean);
+    if(sibs.length>1){
+      const ages=sibs.map(r=>r.age_range).sort((a,b)=>parseInt(b,10)-parseInt(a,10));
+      sibs.forEach((r,i)=>{r.age_range=ages[i];});
+    }
+  }
+  function r14Problems(item){
+    const out=[];
+    const roles=item._roles||[];
+    const type=String(item.type||""),syn=String(item.synopsis||""),tg=String(item.tagline||""),venue=String(item.shoot_location||""),union=String(item.union_status||"");
+    const people=roles.filter(r=>!/background/i.test(r.role_type||""));
+    const rates=roles.map(r=>({r,x:parseRoleRate(r.pay)})).filter(o=>o.x);
+    const top=Math.max(0,...rates.map(o=>o.x.rate_amount));
+    const maxDays=Math.max(0,...roles.map(r=>+r.est_days||0));
+    if(/\b(a|an|the|new|old|our|their|his|her)\s*[:—–]/i.test(tg))out.push("tagline cut off: "+tg.slice(0,50));
+    roles.forEach(r=>{
+      const d=String(r.description||""),own=`${r.name||""} ${r._slot||""}`;
+      if(/\bwith The [a-z]/.test(d))out.push("broken role sentence: "+String(r.name).slice(0,30));
+      if(/\b(new hire|new kid|first day|first week|new member|newcomer)\b/i.test(own)&&/\b(every corner|for years|without looking|knows everyone|knows everything|for decades)\b/i.test(d))out.push("new person written as a veteran: "+String(r.name).slice(0,30));
+    });
+    // A story that names a bigger group than the cast can play.
+    const grp=syn.match(/\b(seven|eight|nine|ten|eleven|twelve|\d{2}) (jurors|strangers|siblings|brothers|sisters|friends|students|people|men|women|guests|players|actors)\b/i);
+    if(grp&&!roles.some(r=>/ensemble/i.test(`${r.name} ${r.description}`))){const w={seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12}[grp[1].toLowerCase()]||+grp[1];if(people.length<w)out.push(`summary names ${grp[0]} but the cast has ${people.length}`);}
+    // Episodes the shoot could not cover.
+    const ep=syn.match(/\b(two|three|four|five|six|eight|ten|twelve|\d{1,2})-episode\b/i);
+    if(ep&&!/Vertical/.test(type)&&!/^(Theater|Musical)/.test(type)){const w={two:2,three:3,four:4,five:5,six:6,eight:8,ten:10,twelve:12}[ep[1].toLowerCase()]||+ep[1];const need=/Podcast|Voiceover|Audio/i.test(type)?Math.ceil(w/2):w;if(maxDays&&maxDays<need)out.push(`${ep[0]} series on ${maxDays} days`);}
+    // Places.
+    if(/^(a|an) (building|block|place|location|room|space|site|area)\b/i.test(venue))out.push("vague shoot location: "+venue.slice(0,40));
+    if(/\b(urgent care|clinic|hospital|pharmacy)\b/i.test(`${item.title} ${syn}`)&&/\b(shared office|coworking|office suite|warehouse)\b/i.test(venue))out.push("medical story in an office: "+venue.slice(0,40));
+    // Pay.
+    const nonUnion=/^Non-Union/i.test(union);
+    if(/^(Table Read|Workshop \/ Staged Reading)$/.test(type)&&top>250)out.push("reading paid $"+top);
+    if(nonUnion&&rates.some(o=>/background/i.test(o.r.role_type||"")&&o.x.rate_amount>300))out.push("non-union background above $300");
+    const localJob=/^Local\b/i.test(String(item.title||""))||/\blocal [a-z ]*(brand|business|shop)\b/i.test(syn);
+    if(nonUnion&&localJob&&top>1500)out.push("local job paying $"+top);
+    if(nonUnion&&type==="Public Service Announcement"&&top>1000)out.push("non-union PSA paying $"+top);
+    if(/^Local\b/i.test(String(item.title||""))&&/Nationwide/i.test(item.talent_scope||""))out.push("local job with a nationwide search");
+    if(type==="Off-Broadway Theater"&&rates.some(o=>o.x.rate_unit==="week"&&o.x.rate_amount<500))out.push("Off-Broadway weekly under $500");
+    // Wording.
+    if(/\b(video|spot|piece) shows an? [^.]{0,40}\b(video|spot)\b/i.test(syn))out.push("video described as a video");
+    if(type==="Video Game"&&/story-driven/i.test(syn)&&/\bsports game\b|play-by-play/i.test(syn))out.push("story-driven sports game");
+    return out;
+  }
   function r13Polish(item,h,res){
     const roles=item._roles||[];
     r13FixAges(roles);
+    r14FixAges(roles);
+    // Non-union background tops out around $300; a local job searches locally.
+    if(/^Non-Union/i.test(String(item.union_status||""))){
+      roles.forEach(r=>{
+        if(!/background/i.test(r.role_type||""))return;
+        const x=parseRoleRate(r.pay);if(!x||x.rate_amount<=300)return;
+        const old=`$${Number(x.rate_amount).toLocaleString("en-US")}`,now=`$${pick([200,225,250,275])}`;
+        r.pay=String(r.pay).split(old).join(now);
+        item.pay=String(item.pay||"").split(old).join(now);
+      });
+    }
+    if(/^Local\b/i.test(String(item.title||""))&&/Nationwide/i.test(item.talent_scope||""))item.talent_scope="Local + self-report (within driving distance)";
+    // A table read has one sitting: no performances and no run.
+    if(item.type==="Table Read"){
+      item.schedule_note=String(item.schedule_note||"").replace(/^Rehearsal and performance dates (TBD|TBC)/,"Table read dates $1");
+      roles.forEach(r=>{const ss=v3Sentences(r.description),keep=ss.filter(x=>!/\bperformances?\b|\bof the run\b/i.test(x));if(keep.length&&keep.length<ss.length)r.description=keep.join(" ");});
+    }
     // One minors note, naming the parts.
     const req=String(item.submission_requirements||"");
     const sents=v3Sentences(req);
