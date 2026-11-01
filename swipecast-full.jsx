@@ -88,7 +88,7 @@ const TRANSLATIONS = {
     'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
-    'footer.blurb':'The casting platform built for working actors. Built so every submission gets a real look.',
+    'footer.blurb':'The casting platform for working actors. Built so every submission gets a real look.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.successStories':'Success Stories',
@@ -102,7 +102,7 @@ const TRANSLATIONS = {
     'footer.privacy':'Privacy Policy','footer.accessibility':'Accessibility',
     'footer.fairCasting':'Fair Casting & Inclusion',
     'footer.trustSafety':'Casting Standards',
-    'footer.copyright':'© {year} CastSlate. All rights reserved. Casting, finally built for actors.',
+    'footer.copyright':'© {year} CastSlate. All rights reserved.',
     'footer.privacyLink':'Privacy','footer.termsLink':'Terms','footer.contactLink':'Contact',
     'footer.cookiePrefs':'Cookie Preferences',
     'footer.privacyChoices':'Your Privacy Choices',
@@ -341,7 +341,7 @@ const TRANSLATIONS = {
     'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
-    'footer.blurb':'La plataforma de casting diseñada para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
+    'footer.blurb':'La plataforma de casting para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
     'footer.talent':'Talento','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
     'footer.createProfile':'Crear perfil','footer.browse':'Convocatorias','footer.classes':'Clases',
     'footer.resources':'Recursos','footer.successStories':'Historias de éxito',
@@ -354,7 +354,7 @@ const TRANSLATIONS = {
     'footer.privacy':'Política de privacidad','footer.accessibility':'Accesibilidad',
     'footer.fairCasting':'Casting justo e inclusión',
     'footer.trustSafety':'Estándares de casting',
-    'footer.copyright':'© {year} CastSlate. Todos los derechos reservados. Casting, finalmente para actores.',
+    'footer.copyright':'© {year} CastSlate. Todos los derechos reservados.',
     'footer.privacyLink':'Privacidad','footer.termsLink':'Términos','footer.contactLink':'Contacto',
     'footer.cookiePrefs':'Preferencias de cookies',
     'footer.privacyChoices':'Tus opciones de privacidad',
@@ -4673,7 +4673,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-brand .logo .logo-i{width:38px;height:38px;border-radius:9px;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:16px;max-width:300px;}
-.site-footer-heading{font-family:inherit;color:#968B7F;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 16px;}
+.site-footer-heading{font-family:inherit;color:#D6D0C4;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 16px;}
 /* Apple-style hover (owner 2026-10-23): no slide, an underline appears under the words.
    width:fit-content keeps each link on its own line but limits the hover zone and the
    underline to the text itself, not the whole column. */
@@ -4702,12 +4702,12 @@ a.site-footer-link{text-decoration:none;}
 .site-footer.has-b2t .site-footer-social-row{margin-top:126px;}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#F3EBE0;background:none;border:1px solid rgba(243,235,224,.14);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#F3EBE0;background:rgba(243,235,224,.06);border-color:rgba(243,235,224,.32);transform:translateY(-2px);}
-.site-footer-bottom{border-top:1px solid rgba(243,235,224,.14);padding-top:22px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;flex-wrap:wrap;font-size:12px;line-height:24px;color:#968B7F;}
+.site-footer-bottom{border-top:1px solid rgba(243,235,224,.14);padding-top:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;flex-wrap:wrap;font-size:15px;line-height:24px;color:#B5AEA2;}
 /* One-colour warm near-black footer (owner 2026-10-23, one-color demo A, replacing the
    two-step version): #0E0C0B top to bottom, the divider above the copyright line is the
    only separation. html,body share this colour so overscroll below the footer matches. */
 .site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-left:0;}
-.site-footer-plain-links{display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
+.site-footer-plain-links{display:flex;gap:12px 28px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
 .site-footer-bottom-links span:hover{color:#F3EBE0;}
 .site-footer-plain-links a{color:#F3EBE0;font-weight:500;text-decoration:none;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;}
@@ -4719,11 +4719,11 @@ a.site-footer-link{text-decoration:none;}
 .site-footer-plain-links .footer-cookie-link:hover{color:#F3EBE0;text-decoration:underline;}
 /* Your Privacy Choices + California's official privacy-options toggle icon (as on Sony Pictures). */
 .site-footer-plain-links a.footer-privacy-choices{display:inline-flex;align-items:center;gap:7px;}
-.site-footer-plain-links a.footer-privacy-choices svg{width:30px;height:14px;flex:0 0 auto;}
-.footer-lang-pill{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border:1px solid rgba(243,235,224,.14);border-radius:999px;background:none;color:#F3EBE0;font-family:inherit;font-size:12px;font-weight:500;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.site-footer-plain-links a.footer-privacy-choices svg{flex-shrink:0;width:38px;height:18px;}
+.footer-lang-pill{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border:1px solid rgba(243,235,224,.14);border-radius:999px;background:none;color:#F3EBE0;font-family:inherit;font-size:15px;font-weight:500;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
 .footer-lang-pill:hover{border-color:rgba(243,235,224,.4);color:#F3EBE0;}
 .footer-lang-pill svg{flex-shrink:0;width:14px;height:14px;}
-.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:20px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
+.footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:24px;height:17px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
 /* ─── Cookie consent panel — "Amber Block": a cinematic bottom drawer that rises
       from the bottom edge on a dark espresso ground with a giant Anton headline.
       Committed single (dark) look on purpose — reads the same in light + dark. */
@@ -8759,8 +8759,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <h4 className="site-footer-heading">{t('footer.support')}</h4>
             <L to="faq">{t('footer.faq')}</L>
             <L to="contact">{t('footer.helpCenter')}</L>
-            <L to="terms">{t('footer.terms')}</L>
-            <L to="privacy">{t('footer.privacy')}</L>
             <L to="contact">{t('footer.accessibility')}</L>
           </div>
         </div>
@@ -8775,7 +8773,6 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <div className="site-footer-plain-links">
               <a href="/privacy" onClick={go("privacy")}>{t('footer.privacyLink')}</a>
               <a href="/terms" onClick={go("terms")}>{t('footer.termsLink')}</a>
-              <a href="/contact" onClick={go("contact")}>{t('footer.contactLink')}</a>
               <button className="footer-cookie-link" type="button" onClick={openCookies}>{t('footer.cookiePrefs')}</button>
               <a className="footer-privacy-choices" href="/privacy-choices" target="_blank" rel="noopener" title={t('footer.privacyChoices')+' (opens in a new window)'}>{t('footer.privacyChoices')}
                 <svg viewBox="0 0 30 14" aria-hidden="true"><rect x=".5" y=".5" width="29" height="13" rx="6.5" fill="#fff" stroke="#0066FF"/><path d="M7 .5h9.5L13 13.5H7a6.5 6.5 0 0 1 0-13z" fill="#0066FF"/><path d="M5.2 7.2l1.8 1.8 3.4-3.6" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M19.6 4.6l4.4 4.8M24 4.6l-4.4 4.8" stroke="#0066FF" strokeWidth="1.4" strokeLinecap="round"/></svg></a>
