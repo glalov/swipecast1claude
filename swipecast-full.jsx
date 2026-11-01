@@ -4324,8 +4324,16 @@ body.fbsp-open #castoria-root{display:none!important;}
   letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
 .cd-deadline.soon{color:#A8341C;}
 /* Casting page boxes white to match the white Browse cards (owner, 2026-10-27); the .cd-side apply panel is pale teal since 2026-10-28. */
-.cd-card{background:#FFFFFF;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
+.cd-one{background:#FFFFFF;border:1px solid var(--bdr);border-radius:14px;overflow:hidden;
   box-shadow:0 1px 4px rgba(26,26,46,.05);margin-bottom:24px;}
+.cd-card{background:#FFFFFF;}
+.cd-merged{border-top:1px solid var(--bdr);padding:24px 24px 26px;}
+.cd-merged>section{margin:0 !important;}
+.cd-merged>section+section{margin-top:26px !important;padding-top:24px;border-top:1px solid var(--bdr);}
+.cd-merged .rl-list{border:0;border-radius:0;overflow:visible;}
+.cd-merged .rl-top{padding-left:0;padding-right:0;}
+.cd-merged .rl-row::before{left:-24px;}
+@media(max-width:900px){.cd-merged{padding:18px 18px 20px;}.cd-merged .rl-row::before{left:-18px;}}
 .cd-grid{display:grid;grid-template-columns:1fr 288px;}
 .cd-grid.solo{grid-template-columns:1fr;}   /* no role picker: closed castings */
 .cd-main{padding:20px 24px 22px;min-width:0;}
@@ -14849,6 +14857,7 @@ Free submission used
            When stack. Pay always takes a row here: the previous layout only
            showed a rate in the status strip when it was <=42 characters, so a
            long rate was absent from the top of the page entirely. ── */}
+    <div className="cd-one">
     {(()=>{
       const payText=c.rate||c.pay;
       const sortedRoles=(c.roles||[]).slice().sort(compareRoles);
@@ -14951,6 +14960,8 @@ Free submission used
         </div>
       </div>);})()}
 
+    {/* One card (owner, 2026-11-01): the details, story and roles read as one piece. */}
+    <div className="cd-merged">
     {c.has_nudity&&<div style={{display:"flex",gap:12,padding:"14px 18px",marginBottom:24,background:"rgba(192,57,43,0.06)",border:"1px solid rgba(192,57,43,0.3)",borderRadius:12,alignItems:"flex-start"}}>
       <span style={{fontSize:18,lineHeight:1.2}}><Ico n="alert-triangle" s={22}/></span>
       <div style={{fontSize:13,color:"var(--t2)",lineHeight:1.6}}><strong style={{color:"#c0392b"}}>Contains nudity / intimate content.</strong>{c.nudity_details?<> {c.nudity_details}</>:<> This project involves nudity or intimate scenes. Please make sure you're comfortable with this before applying.</>}</div>
@@ -15176,6 +15187,8 @@ Free submission used
         </div>);
       })()}
     </section>
+    </div>
+    </div>
 
     {/* ── The block under the roles ──────────────────────────────────────────
         Two audiences, two different jobs, so it is two different blocks.
