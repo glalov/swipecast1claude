@@ -41787,7 +41787,7 @@ const ACG = (()=>{
     if(V3_INSULT.test(txt))out.push("insulting word");
     if(/\b(ad|spot|film|video|campaign|show|project) is for (people|anyone|those) who\b/i.test(txt))out.push("ambiguous sentence");
     const tg=String(item.tagline||"");
-    if(!tg||tg.split(/\s+/).length<5||/\b\d+ (roles?|parts?)\b|submissions close|\bdeadline (is )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d)|now casting|breakdown|non-union|sag-aftra|\baea\b/i.test(tg)||/\b(jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\s+\d/i.test(tg)||tg.indexOf(item.location)>-1||clean(tg).indexOf(clean(type))===0)out.push("tagline is metadata");
+    if(!tg||tg.split(/\s+/).length<5||/\b\d+ (roles?|parts?)\b|submissions close|\bdeadline (is )?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d)|now casting|breakdown|non-union|sag-aftra|\baea\b/i.test(tg)||/\b(jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\s+\d/i.test(tg)||tg.indexOf(item.location)>-1)out.push("tagline is metadata");
     roles.forEach(r=>{const d=String(r.description||"");if(/\bThat is (the|a|an)\b|^Looking for someone to play/.test(d))out.push("role named at the end");});
     // Step 2/3 fit
     roles.forEach(r=>{
@@ -45451,6 +45451,8 @@ const ACG = (()=>{
   function r10IsNarr(k){return R10_NARR_CATS.has(R8_CAT_OF[k]||R8_CAT_OF[r10Base(k)]||"other");}
   function r10IsComm(k){return R10_COMM_CATS.has(R8_CAT_OF[k]||R8_CAT_OF[r10Base(k)]||"other");}
   function r10IsFeat(k){return /^(Feature Film|Independent Film)$/.test(r10Base(k));}
+  // Round 14: at least three of every ten listings are films.
+  function r14IsFilm(k){return /^(Short Film|Feature Film|Independent Film|Student Film|Experimental Film)$/.test(r10Base(k));}
   function r8PickType(h,res,list){
     const alive=new Set(list);
     const seq=(res._r8Seq||[]).concat(h.r8Seq||[]);
@@ -45465,7 +45467,7 @@ const ACG = (()=>{
     const m=last9.length+1;
     // Thresholds scale with how much history there is: an empty board does
     // not have to open with three brand listings in a row.
-    const needNN=Math.floor(3*m/10),needComm=Math.floor(m/10),needNarr=Math.floor(4*m/10),needFeat=Math.floor(m/10);
+    const needNN=Math.floor(3*m/10),needComm=Math.floor(m/10),needNarr=Math.floor(4*m/10),needFeat=Math.floor(m/10),needFilm=Math.floor(3*m/10),film9=last9.filter(r14IsFilm).length;
     const nn9=last9.filter(k=>!r10IsNarr(k)).length,nar9=last9.length-nn9,com9=last9.filter(r10IsComm).length,fe9=last9.filter(r10IsFeat).length;
     const types9=new Set(last9.map(r10Base));
     // Graded by shortfall: coming off a board that broke a floor (all
@@ -45478,6 +45480,7 @@ const ACG = (()=>{
       v+=4*Math.max(0,needComm-(com9+(r10IsComm(o.k)?1:0)));
       v+=2*Math.max(0,needNarr-(nar9+(r10IsNarr(o.k)?1:0)));
       v+=2*Math.max(0,needFeat-(fe9+(r10IsFeat(o.k)?1:0)));
+      v+=3*Math.max(0,needFilm-(film9+(r14IsFilm(o.k)?1:0)));
       return v;
     };
     cands.forEach(o=>{o.v=viol(o);});
@@ -46335,7 +46338,7 @@ const ACG = (()=>{
       // about a print", "a live event about a their"), so brief headlines are
       // written without "about".
       for(let ti=0;ti<9&&!tagline;ti++)tagline=v7Tagline({...tagCtx(),np:brief?"":(subjOpts[ti%Math.max(1,subjOpts.length)]||v7TagSubject(seed,brief)),persona,skel20},h,res);
-      if(tagline)tagline=v5ColonCase(v7FormatNoun(tagline,type));
+      if(tagline)tagline=v5ColonCase(v7FormatNoun(tagline,type)).replace(/^Now casting\b/,"Casting");
       const tagSkel=tagline?v8TagSkeleton(tagline,{np:"",cast:"",days:""}):"";
       if(!tagline){why('no tagline '+type);res._tagFail.add(seed.k+"|"+turn);continue;}
       const synBucketFinal=synBucketUsed;
