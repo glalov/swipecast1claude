@@ -2499,7 +2499,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 /* Browse Castings runs narrower than page-wide: the cards were capped at 1080
    to kill the dead zone, and everything above them has to share that edge or
    the column reads misaligned. Beats .page-wide on specificity, not order. */
-.page.page-browse{max-width:1100px;} /* cards 1020px max (owner, 2026-10-28; was 1160 → 1080px cards) */
+.page.page-browse{max-width:1140px;} /* cards 1060px max (owner, 2026-11-01; was 1100 → 1020px cards) */
 .section-label{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin-bottom:12px;}
 .section-title{font-family:'Source Serif 4',serif;font-weight:700;font-size:38px;letter-spacing:-0.5px;margin-bottom:40px;line-height:1.1;}
 /* Legal hero (Terms + Privacy, 2026-10-22): full-bleed film still, title low so it never sits on a face. */
@@ -4099,8 +4099,8 @@ body.sheet-push .b2t-cube{display:none;}
    or dollar-brace in this CSS: it lives inside a JS template literal. */
 /* Pure white so each card stands off the cream page (owner, 2026-10-27, demo card-white option 1). */
 .b5-card{position:relative;overflow:hidden;border-radius:14px;background:#FFFFFF;border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
-.b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;}
-.b5-main{padding:24px 26px;display:grid;gap:10px;align-content:start;min-width:0;}
+.b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;}
+.b5-main{padding:30px 32px;display:grid;gap:13px;align-content:start;min-width:0;}
 .cs-pick{display:inline-flex;align-items:center;gap:7px;background:#FBF1DA;color:#5A3E0C;font-family:inherit;font-size:13px;line-height:16.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 20px 2px 18px;border:1px solid #E8D3A6;border-radius:999px;white-space:nowrap;}
 .cs-pick i{color:#C48F2C;font-size:12px;line-height:1;}
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
@@ -4125,17 +4125,17 @@ body.sheet-push .b2t-cube{display:none;}
    honey star, hanging from a 4px honey line over the story side only (stops at the
    roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
    gate and dashboard keep the PickBadge chip. */
-.b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:340px;height:4px;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);pointer-events:none;}
+.b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:300px;height:4px;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);pointer-events:none;}
 .b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 5px 10px;border-radius:0 0 8px 0;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);color:#FFF8EB;font-size:12px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
 .b5-ptab i{color:#FFE7B8;font-size:12px;line-height:1;}
 /* Dashboard upgrade banner button (C1, 2026-10-27): solid white on the coral gradient. */
 .dash-upg-btn{background:#fff;color:#1A1A2E;transition:background .15s;}
 .dash-upg-btn:hover{background:#FFF1EC;}
 .dash-upg-btn:focus-visible{outline:2px solid #fff;outline-offset:2px;}
-.b5-card.b5-pick .b5-main{padding-top:48px;}
+.b5-card.b5-pick .b5-main{padding-top:54px;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
-.b5-head .cc-title{margin:0;}
+.b5-head .cc-title{margin:0;font-size:26px;}
 .b5-tag{--tk:#44445A;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E9E5DC;color:#241F19;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
 .b5-tag i{color:var(--tk);font-size:14px;line-height:1;}
 .b5-tag-b{letter-spacing:.01em;}
@@ -4145,18 +4145,20 @@ body.sheet-push .b2t-cube{display:none;}
 .cs-idv-b{letter-spacing:.01em;}
 .cs-idv.xs{font-size:12px;}
 .b5-urgent{font-size:12.5px;font-weight:700;color:#B3261E;background:#FCE4E1;border-radius:6px;padding:3px 8px;white-space:nowrap;}
-.b5-meta{color:var(--t3);font-size:14px;display:flex;flex-wrap:wrap;row-gap:4px;}
+.b5-meta{color:var(--t3);font-size:15px;display:flex;flex-wrap:wrap;row-gap:4px;}
 .b5-meta span+span::before{content:"·";margin:0 8px;color:var(--bdr);}
 .b5-meta .pay{color:var(--teal);font-weight:600;}
-.b5-sum{margin:0;color:var(--t1);font-size:15px;line-height:1.5;max-width:68ch;}
-.b5-story-wrap{border-left:3px solid #EAC080;padding:2px 0 2px 12px;max-width:70ch;}
-.b5-story{margin:0;font-size:14.5px;line-height:1.55;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;}
-.b5-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px;}
+.b5-when{display:flex;flex-wrap:wrap;gap:4px 20px;font-size:14px;color:var(--t2);}
+.b5-when b{font-weight:700;color:var(--t1);margin-right:6px;}
+.b5-sum{margin:0;color:var(--t1);font-size:16.5px;line-height:1.5;}
+.b5-story-wrap{border-left:3px solid #EAC080;padding:2px 0 2px 14px;}
+.b5-story{margin:0;font-size:16px;line-height:1.6;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;}
+.b5-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:6px;}
 /* Ink, not teal (owner-approved 2026-09-26): green on the card means Apply only;
    the breakdown button is the calm secondary step, sized near Apply. */
-.b5-ghost{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;background:transparent;color:#1A1A2E;border:1.25px solid #1A1A2E;border-radius:8px;padding:6px 13px;cursor:pointer;}
+.b5-ghost{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:14px;background:transparent;color:#1A1A2E;border:1.25px solid #1A1A2E;border-radius:8px;padding:8px 15px;cursor:pointer;}
 .b5-ghost:hover{background:#1A1A2E;color:#fff;}
-.b5-save{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:13px;background:#E8F3EF;color:#206557;border:1.25px solid #E8F3EF;border-radius:8px;padding:6px 12px 6px 10px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
+.b5-save{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:14px;background:#E8F3EF;color:#206557;border:1.25px solid #E8F3EF;border-radius:8px;padding:8px 14px 8px 12px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
 .b5-save svg{width:18px;height:18px;flex:none;}
 .b5-save:hover{background:#DCEDE7;border-color:#DCEDE7;}
 /* Saved = solid teal (owner, 2026-10-28, demo save option 3). */
@@ -4165,16 +4167,17 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-save:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 /* Roles column: half-strength tint between the white card and the #F7F5F0 page, so no third hue
    (owner, 2026-10-27, demo "Half-strength"; replaced warm sage, then warm sand, the same evening). */
-.b5-side{border-left:1px solid #E6E2D9;padding:6px 22px;display:flex;flex-direction:column;justify-content:center;background:#FBFAF7;}
+.b5-side{border-left:1px solid #E6E2D9;padding:12px 24px;display:flex;flex-direction:column;justify-content:center;background:#FBFAF7;}
 .b5-side .b5-role+.b5-role{border-top-color:#EEEAE2;}
-.b5-role{display:grid;grid-template-columns:4px minmax(0,1fr);gap:0 12px;padding:10px 0;align-items:center;}
+.b5-role{display:grid;grid-template-columns:4px minmax(0,1fr);gap:0 12px;padding:14px 0;align-items:center;}
 .b5-role .b5-bar{grid-row:1 / span 2;}
 .b5-role+.b5-role{border-top:1px solid var(--bdr);}
 .b5-bar{align-self:stretch;border-radius:4px;background:var(--bdr);}
 .b5-role.lead .b5-bar{background:var(--teal);}
 .b5-role.sup .b5-bar{background:#EAC080;}
-.b5-rname{font-weight:700;font-size:14.5px;color:var(--t1);overflow-wrap:anywhere;}
-.b5-rspec{font-size:13px;color:var(--t2);min-width:0;overflow-wrap:normal;margin-top:2px;}
+.b5-rname{font-weight:700;font-size:16px;color:var(--t1);overflow-wrap:anywhere;}
+.b5-rspec{font-size:14px;color:var(--t2);min-width:0;overflow-wrap:normal;margin-top:2px;}
+.b5-rpay{font-size:14px;font-weight:700;color:#206557;margin-top:2px;}
 .b5-rspec b{color:#206557;font-weight:700;}
 .b5-pay{white-space:nowrap;}
 .b5-racts{grid-column:2;margin-top:7px;display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;gap:8px;}
@@ -4182,7 +4185,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-bm:hover,.b5-bm.on{color:var(--teal);}
 .b5-bm:hover{background:var(--s2);}
 .b5-bm svg{width:17px;height:17px;}
-.b5-apply{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:12.5px;color:#fff;background:var(--teal);border:0;border-radius:7px;padding:5px 12px;cursor:pointer;white-space:nowrap;}
+.b5-apply{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:14px;color:#fff;background:var(--teal);border:0;border-radius:7px;padding:7px 14px;cursor:pointer;white-space:nowrap;}
 .b5-apply:hover{background:#206557;}
 /* My Profile → Résumé */
 .rsm-grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start;}
@@ -4231,7 +4234,10 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-bm:focus-visible,.b5-apply:focus-visible,.b5-ghost:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 @media (max-width:900px){
   .b5-grid{grid-template-columns:minmax(0,1fr);}
-  .b5-main{padding:18px 18px 12px;}
+  .b5-main{padding:18px 18px 12px;gap:10px;}
+  .b5-head .cc-title{font-size:21px;}
+  .b5-meta,.b5-sum{font-size:15px;}
+  .b5-story{font-size:15px;line-height:1.55;}
   .b5-side{border-left:0;border-top:1px solid #E6E2D9;padding:4px 18px 10px;}
   .b5-card.b5-pick::before{right:0;}
   .b5-card.b5-pick .b5-main{padding-top:42px;}
@@ -17930,7 +17936,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             const rateLine=castingTopRate(c);
             const shootTxt=cardShootChip(c);
             const posted=castingPostedAt(c)?`Posted ${fmtPostedAgo(castingPostedAt(c),{dayOnly:castingPostedIsDayOnly(c)})}`:"";
-            const facts=[rateLine?rateLine.text:"",c.location||"",shootTxt||"",c.union||"",posted].filter(Boolean);
+            const facts=[rateLine?rateLine.text:"",c.union||"",posted].filter(Boolean);
+            const whereTxt=(shootLocationForLine(c)||c.location||"").trim();
             const roleCount=c.roles?.length||0;
             const isSaved=savedIds.has(c.id);
             const btnBase=pick.rest>0?`See all ${roleCount} roles`:roleCount>1?"Read the full breakdown":"Read the breakdown";
@@ -17971,6 +17978,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {story&&<div className="b5-story-wrap">
                     <p className="b5-story">{story}</p>
                   </div>}
+                  {(shootTxt||whereTxt)&&<div className="b5-when">
+                    {shootTxt&&<span><b>Shoots</b>{shootTxt.replace(/^Shoots\s+/,"")}</span>}
+                    {whereTxt&&<span><b>Where</b>{whereTxt}</span>}
+                  </div>}
                   <div className="b5-actions">
                     {isArchived||isExpiredCasting
                       ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
@@ -17997,6 +18008,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                             onClick={e=>{e.stopPropagation();openSheet(rawC,null,{focus:r});}}
                             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();openSheet(rawC,null,{focus:r});}}}>{r.name||label}</div>}
                         <div className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).map((x,k)=><React.Fragment key={k}>{k?" · ":""}<span className="b5-pay">{x}</span></React.Fragment>)}</div>
+                        {/^\$[\d,.]+(\/[a-z]+| flat| per [a-z]+)?$/i.test(String(r.pay||"").trim())&&<div className="b5-rpay">{String(r.pay).trim()}</div>}
                       </div>
                       {!isClosedCard&&<div className="b5-racts">
                         {r.id&&appliedRoleIds.has(r.id)
