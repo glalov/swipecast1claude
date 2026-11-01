@@ -14814,16 +14814,16 @@ Free submission used
         verification badges, then the crew credits. */}
     {(()=>{
       const who=String(c.prod||"").trim()||(!c.is_admin_created&&cdProfile?String(cdProfile.company_name||cdProfile.display_name||"").trim():"");
-      const crew=[c.director?`Director: ${c.director}`:"",String(casting.crew_credits||"").trim()].filter(Boolean).join(" · ");
+      const crew=[c.director?`Director: ${c.director}`:"",/[\p{L}\p{N}]/u.test(String(casting.crew_credits||""))?String(casting.crew_credits).trim():""].filter(Boolean).join(" · ");
       const badges=c.is_admin_created
         ? (adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge/>:null)
         : <>
             {cdProfile&&cdProfile.identity_verified===true&&cdProfile.can_post_castings===true&&cdProfile.verification_status==="verified"&&<IDVerifiedBadge/>}
             {cdProfile&&cdProfile.identity_verified===true&&cdProfile.background_check_status==="passed"&&<CastingVerifiedBadge/>}
           </>;
-      if(!who&&!crew)return <div style={{marginBottom:28}}/>;
+      if(!who&&!crew)return <div style={{marginBottom:getCastingImages(c).length?28:16}}/>;
       return(
-        <section style={{margin:"18px 0 28px"}}>
+        <section style={{margin:`18px 0 ${getCastingImages(c).length?28:16}px`}}>
           <div className="section-label" style={{marginBottom:8}}>Company Details</div>
           {who&&<div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
             <p style={{color:"var(--t1)",fontSize:15,margin:0,fontWeight:600}}>{who}</p>
