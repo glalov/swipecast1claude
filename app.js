@@ -1880,7 +1880,7 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-when b{font-weight:700;color:var(--t1);margin-right:6px;}
 .b5-sum{margin:0;color:var(--t1);font-size:16.5px;line-height:1.5;}
 .b5-story-wrap{border-left:3px solid #EAC080;padding:2px 0 2px 14px;}
-.b5-story{margin:0;font-size:16px;line-height:1.6;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;}
+.b5-story{margin:0;font-size:16px;line-height:1.6;color:var(--t2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
 .b5-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:6px;}
 /* Ink, not teal (owner-approved 2026-09-26): green on the card means Apply only;
    the breakdown button is the calm secondary step, sized near Apply. */
