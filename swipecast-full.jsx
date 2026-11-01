@@ -4103,7 +4103,6 @@ body.sheet-push .b2t-cube{display:none;}
   .b5-list{gap:36px;}
   .b5-card .b5-grid{min-height:440px;}
   .b5-card .b5-main{padding:42px 44px;gap:17px;}
-  .b5-card.b5-pick .b5-main{padding-top:62px;}
   .b5-card .b5-side{padding:22px 28px;}
   .b5-card .b5-role{padding:18px 0;}
   .b5-card .b5-actions{padding-top:10px;}
@@ -4142,7 +4141,7 @@ body.sheet-push .b2t-cube{display:none;}
 .dash-upg-btn{background:#fff;color:#1A1A2E;transition:background .15s;}
 .dash-upg-btn:hover{background:#FFF1EC;}
 .dash-upg-btn:focus-visible{outline:2px solid #fff;outline-offset:2px;}
-.b5-card.b5-pick .b5-main{padding-top:54px;}
+.b5-card.b5-pick .b5-main{padding-top:62px;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;font-size:26px;}
