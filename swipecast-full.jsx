@@ -617,16 +617,17 @@ function withTri(label){
   return <>{label.replace(/\s*→$/,"")} <Tri/></>;
 }
 
-// ─── Ticket type tag (owner pick "C", 2026-10-29) ────────────────────────────
-// Browse cards show the project type as a ticket stub: the type's glyph in a
-// stub, a perforated line, then the type name. Notched ends come from the CSS
-// mask on .b5-tag. Tint/ink and glyph follow the type's PROJECT_TYPE_* family.
+// ─── Type tag (owner pick "B", 2026-11-01) ───────────────────────────────────
+// Browse cards show the project type as a small flat tint: a line icon for the
+// type's family, then the name. Tint/ink follow the PROJECT_TYPE_* family.
+const PROJECT_TYPE_TAG_ICONS={film:"movie",series:"device-tv",comm:"speakerphone",corp:"briefcase",audio:"microphone",stage:"masks-theater",host:"presentation",print:"camera",dev:"bulb",phys:"run",other:"sparkles"};
 function TicketTypeTag({type,lang}){
   if(!type)return null;
   const t=canonicalProjectType(type);
-  const [tint,ink]=PROJECT_TYPE_TINTS[PROJECT_TYPE_GROUP[t]||"other"]||PROJECT_TYPE_TINTS.other;
-  return(<span className="b5-tag" style={{"--tk":ink,"--tt":tint,"--k":tint}} title={t}>
-    <span className="b5-tag-a"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" dangerouslySetInnerHTML={{__html:PROJECT_TYPE_GLYPHS[t]||PROJECT_TYPE_GLYPHS.Other}}/></span>
+  const fam=PROJECT_TYPE_GROUP[t]||"other";
+  const [tint,ink]=PROJECT_TYPE_TINTS[fam]||PROJECT_TYPE_TINTS.other;
+  return(<span className="b5-tag" style={{"--tk":ink,"--tt":tint}} title={t}>
+    <i className={"ti ti-"+(PROJECT_TYPE_TAG_ICONS[fam]||PROJECT_TYPE_TAG_ICONS.other)} aria-hidden="true"/>
     <span className="b5-tag-b">{translateCastingType(type,lang)}</span>
   </span>);
 }
@@ -4125,7 +4126,7 @@ body.sheet-push .b2t-cube{display:none;}
    roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
    gate and dashboard keep the PickBadge chip. */
 .b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:340px;height:4px;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);pointer-events:none;}
-.b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:5px 12px 6px 26px;border-radius:0 0 8px 0;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);color:#FFF8EB;font-size:12.5px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
+.b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 5px 10px;border-radius:0 0 8px 0;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);color:#FFF8EB;font-size:12px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
 .b5-ptab i{color:#FFE7B8;font-size:12px;line-height:1;}
 /* Dashboard upgrade banner button (C1, 2026-10-27): solid white on the coral gradient. */
 .dash-upg-btn{background:#fff;color:#1A1A2E;transition:background .15s;}
@@ -4135,16 +4136,13 @@ body.sheet-push .b2t-cube{display:none;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;}
-.b5-tag{--tk:#5A5A72;--tt:#EDEAE3;--n:5px;display:inline-flex;align-items:stretch;background:var(--tt);color:var(--tk);font-size:12.5px;line-height:1;font-weight:700;white-space:nowrap;
-  -webkit-mask:radial-gradient(circle var(--n) at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--n) at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat;
-  mask:radial-gradient(circle var(--n) at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle var(--n) at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat;}
-.b5-tag-a{display:flex;align-items:center;padding:5px 8px 5px 11px;border-right:1.5px dashed color-mix(in srgb,var(--tk) 40%,transparent);}
-.b5-tag-a svg{width:14px;height:14px;display:block;}
-.b5-tag-b{display:flex;align-items:center;padding:6px 12px 6px 9px;letter-spacing:.01em;}
-.cs-idv{--iv:#17663F;display:inline-flex;align-items:stretch;border:1.5px solid var(--iv);border-radius:6px;overflow:hidden;line-height:1;white-space:nowrap;font-size:12.5px;font-weight:700;}
-.cs-idv-a{background:var(--iv);color:#fff;display:flex;align-items:center;padding:0 6px;}
+.b5-tag{--tk:#5A5A72;--tt:#EDEAE3;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:var(--tt);color:var(--tk);font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
+.b5-tag i{font-size:14px;line-height:1;}
+.b5-tag-b{letter-spacing:.01em;}
+.cs-idv{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E8F3EC;color:#17663F;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
+.cs-idv-a{display:flex;align-items:center;}
 .cs-idv-a svg{width:14px;height:14px;display:block;}
-.cs-idv-b{color:var(--iv);background:#fff;padding:5px 9px 5px 8px;display:flex;align-items:center;letter-spacing:.01em;}
+.cs-idv-b{letter-spacing:.01em;}
 .cs-idv.xs{font-size:12px;}
 .b5-urgent{font-size:12.5px;font-weight:700;color:#B3261E;background:#FCE4E1;border-radius:6px;padding:3px 8px;white-space:nowrap;}
 .b5-meta{color:var(--t3);font-size:14px;display:flex;flex-wrap:wrap;row-gap:4px;}
@@ -4236,7 +4234,6 @@ body.sheet-push .b2t-cube{display:none;}
   .b5-main{padding:18px 18px 12px;}
   .b5-side{border-left:0;border-top:1px solid #E6E2D9;padding:4px 18px 10px;}
   .b5-card.b5-pick::before{right:0;}
-  .b5-ptab{padding-left:18px;}
   .b5-card.b5-pick .b5-main{padding-top:42px;}
 }
 
@@ -25104,10 +25101,9 @@ function CastingCountdown({deadline,emoji=false,baseColor="#0F6E56",showDate=tru
 //     Does NOT imply a criminal background check.
 function IDVerifiedBadge({size="sm"}){
   return(<span style={{display:"inline-flex",alignItems:"center",gap:4}}>
-    {/* Same build as the split type tag (2026-10-29): solid shield block + outlined label,
-        so it holds its own next to it instead of reading as a faint pill. */}
+    {/* Same flat tint as the Browse type tag (owner pick "B", 2026-11-01). */}
     <span className={"cs-idv"+(size==="xs"?" xs":"")}>
-      <span className="cs-idv-a" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.5 4 5.6v6.1c0 4.9 3.4 8.5 8 9.8 4.6-1.3 8-4.9 8-9.8V5.6z"/><path d="m8.4 12.1 2.5 2.5 4.8-5"/></svg></span>
+      <span className="cs-idv-a" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.5 4 5.6v6.1c0 4.9 3.4 8.5 8 9.8 4.6-1.3 8-4.9 8-9.8V5.6z"/><path d="m8.4 12.1 2.5 2.5 4.8-5"/></svg></span>
       <span className="cs-idv-b">ID Verified</span>
     </span>
     <InfoTip color="#17663F" width={300} label="ID verification disclaimer">
