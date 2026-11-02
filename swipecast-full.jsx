@@ -17607,13 +17607,17 @@ function clapperMode(authReady,session,myProfile,selfSubs){
   if(selfSubs===null||selfSubs===undefined)return null;
   return selfSubs>0?"used":"unused";
 }
+// The slide plays once per full page load (owner, 2026-11-02): a refresh or new visit
+// resets this, moving around inside the app does not, so later views show it at rest.
+let clapperPlayed=false;
 function ClapperBreak({mode,passed,onNavigate}){
   const ref=useRef(null);
-  const [state,setState]=useState("pre");
+  const [state,setState]=useState(()=>clapperPlayed?"done":"pre");
   useEffect(()=>{
+    if(clapperPlayed)return;
     const el=ref.current;
-    if(!el||!window.IntersectionObserver){setState("in");return;}
-    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){setState("in");io.disconnect();}},{threshold:.1});
+    if(!el||!window.IntersectionObserver){clapperPlayed=true;setState("in");return;}
+    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){clapperPlayed=true;setState("in");io.disconnect();}},{threshold:.1});
     io.observe(el);
     return()=>io.disconnect();
   },[]);
