@@ -1883,7 +1883,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-card.b5-pick .b5-main{padding-top:62px;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
-.b5-head .cc-title{margin:0;font-size:26px;}
+.b5-head .cc-title{margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;letter-spacing:-.4px;line-height:1.2;font-size:28px;}
 .b5-tag{--tk:#44445A;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E9E5DC;color:#241F19;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
 .b5-tag i{color:var(--tk);font-size:14px;line-height:1;}
 .b5-tag-b{letter-spacing:.01em;}
@@ -1982,7 +1982,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 @media (max-width:900px){
   .b5-grid{grid-template-columns:minmax(0,1fr);}
   .b5-main{padding:18px 18px 12px;gap:10px;}
-  .b5-head .cc-title{font-size:21px;}
+  .b5-head .cc-title{font-size:23px;}
   .b5-meta,.b5-sum{font-size:15px;}
   .b5-story{font-size:15px;line-height:1.55;}
   .b5-side{border-left:0;border-top:1px solid #E6E2D9;padding:4px 18px 10px;}
