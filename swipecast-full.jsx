@@ -3149,7 +3149,9 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .sw-hint-arrow .fc-face.front{background:linear-gradient(155deg,#2C2C48,#1A1A2E);box-shadow:0 1px 0 rgba(255,255,255,0.18) inset;}
 .sw-hint-arrow .fc-face.back{background:linear-gradient(155deg,#F0A544,var(--amber-dk));box-shadow:0 1px 0 rgba(255,255,255,0.24) inset;transform:rotateY(180deg);}
 .sw-hint-arrow .fc-face svg{display:block;width:14px;height:14px;}
-.sw-hint-arrow .fc-face svg path{fill:none;stroke:#FFF8EC;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;}
+/* Solid triangle: white on the navy face, black on the amber face (owner, 2026-11-02). */
+.sw-hint-arrow .fc-face.front svg path{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:1.6;stroke-linejoin:round;}
+.sw-hint-arrow .fc-face.back svg path{fill:#14110F;stroke:#14110F;stroke-width:1.6;stroke-linejoin:round;}
 @media(prefers-reduced-motion:reduce){.sw-hint-arrow .fc-travel,.sw-hint-arrow .fc-coin{animation:none;}}
 .sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
@@ -27447,8 +27449,8 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       </div>
       <div className="sw-hint-pill">
         <span className="sw-hint-arrow" aria-hidden="true"><span className="fc-travel"><span className="fc-coin">
-          <span className="fc-face front"><svg viewBox="0 0 24 24"><path d="M14 6 L8 12 L14 18"/></svg></span>
-          <span className="fc-face back"><svg viewBox="0 0 24 24"><path d="M10 6 L16 12 L10 18"/></svg></span>
+          <span className="fc-face front"><svg viewBox="0 0 24 24"><path d="M16.5 5.5 L6.5 12 L16.5 18.5 Z"/></svg></span>
+          <span className="fc-face back"><svg viewBox="0 0 24 24"><path d="M7.5 5.5 L17.5 12 L7.5 18.5 Z"/></svg></span>
         </span></span></span>
         <span className="sw-hint-text">Swipe or tap to review talent</span>
         <span className="sw-hint-text-mobile">Swipe the card or tap below</span>
