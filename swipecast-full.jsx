@@ -4136,6 +4136,49 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-pickpill{overflow:hidden;}
 .b5-card.b5-pick{border-color:#D8CEB8;}
 /* "All castings" label after the CastSlate Picks (2026-10-27): same look as the Classes page's "All Classes". */
+/* Clapper break on Browse (owner, 2026-11-02, demo "Whole clapper", Black). Slides in solid
+   from past the right edge, then the stick snaps shut. Transform only, no fades. */
+.clap-w{overflow-x:clip;width:100vw;margin:4px 0 4px calc(50% - 50vw);padding:0 16px;box-sizing:border-box;position:relative;z-index:1;}
+@supports not (overflow:clip){.clap-w{overflow:hidden;}}
+.clap{position:relative;max-width:760px;margin:0 auto;will-change:transform;}
+.clap-stick,.clap-low{position:relative;height:30px;background:repeating-linear-gradient(-55deg,#F5F1E8 0 26px,#111111 26px 52px);border-radius:6px 6px 2px 2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
+.clap-stick{transform-origin:14px 100%;z-index:2;margin-bottom:3px;}
+.clap-low{background:repeating-linear-gradient(55deg,#F5F1E8 0 26px,#111111 26px 52px);border-radius:2px 2px 0 0;}
+.clap-pin{position:absolute;z-index:3;left:5px;top:21px;width:24px;height:24px;border-radius:50%;background:#2A2622;box-shadow:inset 0 0 0 5px rgba(255,255,255,.14);}
+.clap-board{position:relative;background:#14110F;border-radius:0 0 12px 12px;padding:18px 26px 26px;color:#FFF8EB;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 14px 24px -8px rgba(26,18,8,.28);}
+.clap-cells{display:grid;grid-template-columns:2fr 1fr 1fr;border:1.5px solid rgba(255,248,235,.28);border-radius:4px;margin-bottom:18px;}
+.clap-cell{padding:7px 12px 8px;border-left:1.5px solid rgba(255,248,235,.28);min-width:0;}
+.clap-cell:first-child{border-left:0;}
+.clap-cell small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#D8CFC0;}
+.clap-cell b{display:block;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:20px;line-height:1.2;color:#FFF8EB;white-space:nowrap;}
+.clap-main{display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.clap-txt{min-width:0;}
+.clap-h{text-wrap:balance;margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:27px;line-height:1.16;letter-spacing:-.4px;color:#FFF8EB;}
+.clap-p{margin:7px 0 0;font-size:15.5px;line-height:1.45;color:#D8CFC0;}
+.clap-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:0 24px;margin-right:6px;border:0;border-radius:14px;background:#FFF6E6;color:#1A1A2E;font:800 15px 'DM Sans',sans-serif;letter-spacing:.2px;white-space:nowrap;cursor:pointer;box-shadow:0 0 0 6px rgba(255,246,230,.12);transition:box-shadow .15s;}
+.clap-btn:hover{box-shadow:0 0 0 8px rgba(255,246,230,.16);}
+.clap-btn:focus-visible{outline:2px solid #FFF6E6;outline-offset:8px;}
+.clap-btn .cs-tri{color:#8A5A12;}
+.clap-pre{transform:translateX(100vw);}
+.clap-pre .clap-stick{transform:rotate(-7deg);}
+.clap-in{animation:clapIn 1.15s cubic-bezier(.3,.15,.2,1) both;}
+.clap-in .clap-stick{animation:clapSnap .18s cubic-bezier(.6,0,1,.7) 1.2s both;}
+.clap-in .clap-board{animation:clapHit .2s ease-out 1.38s;}
+@keyframes clapIn{0%{transform:translateX(100vw) rotate(4deg);}100%{transform:none;}}
+@keyframes clapSnap{from{transform:rotate(-7deg);}to{transform:none;}}
+@keyframes clapHit{0%{transform:translateY(0);}35%{transform:translateY(3px);}100%{transform:none;}}
+@media(max-width:900px){
+  .clap-board{padding:14px 16px 18px;}
+  .clap-main{flex-direction:column;align-items:stretch;gap:14px;}
+  .clap-h{font-size:24px;}
+  .clap-btn{margin:6px;}
+  .clap-cells{grid-template-columns:1.3fr 1.3fr .6fr;}
+  .clap-cell{padding:6px 9px;}
+  .clap-cell b{font-size:15.5px;}
+  .clap-stick,.clap-low{height:24px;}
+  .clap-pin{top:16px;width:20px;height:20px;left:4px;}
+}
+@media(prefers-reduced-motion:reduce){.clap-pre,.clap-pre .clap-stick{transform:none;}.clap-in,.clap-in *{animation:none!important;}}
 .b5-allcast{display:flex;align-items:center;gap:10px;margin-top:16px;}
 .b5-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:32px;flex-wrap:wrap;}
 .b5-pg{min-width:38px;height:38px;padding:0 6px;border-radius:8px;border:1px solid var(--bdr);background:#FFFFFF;color:var(--t1);font:600 13.5px 'DM Sans',sans-serif;cursor:pointer;font-variant-numeric:tabular-nums;transition:border-color .15s;}
@@ -17550,7 +17593,56 @@ function urlToLandingKey(){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
-function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,onRequireLogin,castingsVersion=0,session,myProfile,active=true,restoreCasting=null,onRestoreConsumed,onPendingApply,onAuthComplete}){
+// Clapper break on Browse (owner, 2026-11-02): one per results page, after the 4th
+// casting. Who sees what: visitors = join, free talent with their one submission
+// unused = reminder with no button, free talent who used it = Premium. Premium,
+// casting directors and admins never see it. Returns null until auth, profile and
+// the applications read are all known, so a premium member never sees it flash.
+function clapperMode(authReady,session,myProfile,selfSubs){
+  if(!authReady)return null;
+  if(!session?.user)return "out";
+  if(!myProfile)return null;
+  if(!["talent","actor"].includes((myProfile.user_type||"").toLowerCase()))return null;
+  if((myProfile.membership_status||"free")==="active")return null;
+  if(selfSubs===null||selfSubs===undefined)return null;
+  return selfSubs>0?"used":"unused";
+}
+function ClapperBreak({mode,passed,onNavigate}){
+  const ref=useRef(null);
+  const [state,setState]=useState("pre");
+  useEffect(()=>{
+    const el=ref.current;
+    if(!el||!window.IntersectionObserver){setState("in");return;}
+    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){setState("in");io.disconnect();}},{threshold:.3});
+    io.observe(el);
+    return()=>io.disconnect();
+  },[]);
+  const roles=passed===1?"role":"roles";
+  const m=mode==="out"
+    ?{h:<>{passed>0&&<>You just passed {passed} {roles}.<br className="clap-br"/> </>}Your first submission is free.</>,p:"Set up your profile in about a minute and apply.",b:"Create My Free Profile",go:"register-talent",take:"1"}
+    :mode==="unused"
+    ?{h:"Your free submission is still waiting.",p:"Find a role that fits you and hit Apply.",take:"1"}
+    :{h:"Keep going. Submit to every role that fits.",p:"Premium includes unlimited submissions, from $10.75/mo billed yearly.",b:"See Premium",go:"membership",take:"2"};
+  return <div className="clap-w" ref={ref}>
+    <section className={"clap clap-"+state} aria-label="CastSlate">
+      <div className="clap-stick" aria-hidden="true"/>
+      <span className="clap-pin" aria-hidden="true"/>
+      <div className="clap-low" aria-hidden="true"/>
+      <div className="clap-board">
+        <div className="clap-cells" aria-hidden="true">
+          <div className="clap-cell"><small>Prod.</small><b>CastSlate</b></div>
+          <div className="clap-cell"><small>Scene</small><b>Your Move</b></div>
+          <div className="clap-cell"><small>Take</small><b>{m.take}</b></div>
+        </div>
+        <div className="clap-main">
+          <div className="clap-txt"><p className="clap-h">{m.h}</p><p className="clap-p">{m.p}</p></div>
+          {m.b&&<button type="button" className="clap-btn" onClick={()=>onNavigate(m.go)}>{m.b}<Tri/></button>}
+        </div>
+      </div>
+    </section>
+  </div>;
+}
+function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,onRequireLogin,castingsVersion=0,session,myProfile,active=true,authReady=true,restoreCasting=null,onRestoreConsumed,onPendingApply,onAuthComplete}){
   const t=useT();
   const {lang}=useLanguage();
   // openNycLanding() swaps the URL to /casting-calls/new-york; re-render so the
@@ -17621,6 +17713,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // so talent_id is filtered explicitly), and re-read whenever the sheet closes,
   // since a submission may have just happened inside it.
   const [appliedRoleIds,setAppliedRoleIds]=useState(()=>new Set());
+  const [selfSubs,setSelfSubs]=useState(null); // self-submissions on this account; null until read (Clapper break)
   // `replace` is set when one casting is opened from INSIDE another (the "More
   // roles" strip under the roles). Pushing there would stack /casting/A,
   // /casting/B… and the X — which pops exactly one entry — would land the reader
@@ -17671,11 +17764,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   },[restoreCasting]); // eslint-disable-line react-hooks/exhaustive-deps
   const sessionUid=session?.user?.id||null;
   useEffect(()=>{
-    if(!sessionUid||!active||sheetCasting){if(!sessionUid)setAppliedRoleIds(new Set());return;}
+    if(!sessionUid||!active||sheetCasting){if(!sessionUid){setAppliedRoleIds(new Set());setSelfSubs(null);}return;}
     let alive=true;
     (async()=>{try{
-      const{data}=await window.sb.from("applications").select("role_id").eq("talent_id",sessionUid);
-      if(alive&&data)setAppliedRoleIds(new Set(data.map(a=>a.role_id).filter(Boolean)));
+      const{data}=await window.sb.from("applications").select("role_id,source").eq("talent_id",sessionUid);
+      if(alive&&data){setAppliedRoleIds(new Set(data.map(a=>a.role_id).filter(Boolean)));setSelfSubs(data.filter(a=>a.source!=="castslate").length);}
     }catch(_){}})();
     return()=>{alive=false;};
   },[sessionUid,active,sheetCasting,refreshTick]);
@@ -17954,7 +18047,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
           </div>
-          <div className="b5-list">{fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div className="b5-list">{(clapMode=>fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick gets a compact bottom-right shadow (owner-approved
                2026-09-26): tight, one direction, no spread — grounded, not a glow. */
@@ -18062,7 +18155,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                   {pick.rest>0&&<span className="b5-more">+{pick.rest} more {pick.rest===1?"role":"roles"}</span>}
                 </div>}
               </div>
-            </div></React.Fragment>);})}</div>
+            </div>
+            {ci===3&&pageArr.length>4&&clapMode&&<ClapperBreak key={"clap-"+pg} mode={clapMode} passed={pageArr.slice(0,4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
+            </React.Fragment>);}))(clapperMode(authReady,session,myProfile,selfSubs))}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
             /* Short pagination (owner, 2026-10-27): first, last and the pages around the current one,
                with "…" gaps, instead of all 18 numbers in a row (wrapped into several rows on phones).
@@ -58474,7 +58569,7 @@ function App(){
         {(page==="home"||page==="search"||page==="casting-detail"||page==="casting-gate")&&
           <div style={{display:page==="search"?"flex":"none",flexDirection:"column",flex:"1 1 auto",minHeight:"calc(100vh - 80px)"}} aria-hidden={page!=="search"}>
             <ErrorBoundary label="Search" onReset={()=>navigate("home")}>
-              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onRequireLogin={requireLogin} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"} restoreCasting={sheetRestoreCasting} onRestoreConsumed={()=>setSheetRestoreCasting(null)} onPendingApply={setPendingApply} onAuthComplete={completeAuth}/>
+              <SearchPage onViewProfile={viewProfile} userType={userType} onNavigate={navigate} authReady={authReady} isLoggedIn={isLoggedIn} onRequireAuth={requireAuth} onRequireLogin={requireLogin} castingsVersion={castingsVersion} session={session} myProfile={myProfile} onViewCasting={(c)=>handleViewCasting(c,"search")} active={page==="search"} restoreCasting={sheetRestoreCasting} onRestoreConsumed={()=>setSheetRestoreCasting(null)} onPendingApply={setPendingApply} onAuthComplete={completeAuth}/>
             </ErrorBoundary>
           </div>}
         {/* Full casting detail renders ONLY for logged-in users with auth resolved.
