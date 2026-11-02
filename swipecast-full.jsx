@@ -28653,7 +28653,6 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <h2>It's time to get seen.</h2>
         <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Premium plans start at $10.75/mo when you want more.</p>
         <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
-        <p className="home-cta-reassure"><Ico n="bolt" s={15}/>Profiles are free forever.</p>
         <div className="home-cta-sub">
           <div className="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
           <button className="home-cta-outline" onClick={()=>onNavigate("register-cd")}>Post a Project</button>
