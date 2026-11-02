@@ -4160,6 +4160,19 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .clap-btn:hover{box-shadow:0 0 0 8px rgba(255,255,255,.18);}
 .clap-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:8px;}
 .clap-btn .cs-tri{color:#111111;}
+/* A different clapper for each stage (owner, 2026-11-02): black = visitors, white board = free
+   submission unused, white board + colour chevrons = free submission used. */
+.clap-m-unused .clap-board,.clap-m-used .clap-board{background:#FFFFFF;color:#14110F;box-shadow:inset 0 0 0 1px #DAD5CA,0 14px 24px -8px rgba(26,18,8,.28);}
+.clap-m-unused .clap-h,.clap-m-used .clap-h,.clap-m-unused .clap-cell b,.clap-m-used .clap-cell b{color:#14110F;}
+.clap-m-unused .clap-p,.clap-m-used .clap-p{color:#3A322A;}
+.clap-m-unused .clap-cell small,.clap-m-used .clap-cell small{color:#433B32;}
+.clap-m-unused .clap-cells,.clap-m-used .clap-cells,.clap-m-unused .clap-cell,.clap-m-used .clap-cell{border-color:rgba(20,17,15,.4);}
+.clap-m-used .clap-btn{background:#14110F;color:#FFFFFF;box-shadow:0 0 0 6px rgba(20,17,15,.1);}
+.clap-m-used .clap-btn:hover{box-shadow:0 0 0 8px rgba(20,17,15,.14);}
+.clap-m-used .clap-btn:focus-visible{outline-color:#14110F;}
+.clap-m-used .clap-btn .cs-tri{color:#FFFFFF;}
+.clap-m-used .clap-stick{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20760%2030%27%20preserveAspectRatio%3D%27none%27%3E%3Crect%20width%3D%27760%27%20height%3D%2730%27%20fill%3D%27%23111111%27%2F%3E%3Cpolygon%20points%3D%2796%2C0%20176%2C0%20200%2C30%20120%2C30%27%20fill%3D%27%232EA36A%27%2F%3E%3Cpolygon%20points%3D%27182%2C0%20262%2C0%20286%2C30%20206%2C30%27%20fill%3D%27%23E8C62E%27%2F%3E%3Cpolygon%20points%3D%27268%2C0%20348%2C0%20372%2C30%20292%2C30%27%20fill%3D%27%232F7FE0%27%2F%3E%3Cpolygon%20points%3D%27354%2C0%20434%2C0%20458%2C30%20378%2C30%27%20fill%3D%27%23E5483F%27%2F%3E%3Cpolygon%20points%3D%27440%2C0%20520%2C0%20544%2C30%20464%2C30%27%20fill%3D%27%23A3A3A8%27%2F%3E%3Cpolygon%20points%3D%27526%2C0%20606%2C0%20630%2C30%20550%2C30%27%20fill%3D%27%23F0F0F6%27%2F%3E%3Cpolygon%20points%3D%27612%2C0%20692%2C0%20716%2C30%20636%2C30%27%20fill%3D%27%2374747C%27%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;margin-bottom:0;}
+.clap-m-used .clap-low{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20760%2030%27%20preserveAspectRatio%3D%27none%27%3E%3Crect%20width%3D%27760%27%20height%3D%2730%27%20fill%3D%27%23111111%27%2F%3E%3Cpolygon%20points%3D%27120%2C0%20200%2C0%20176%2C30%2096%2C30%27%20fill%3D%27%232EA36A%27%2F%3E%3Cpolygon%20points%3D%27206%2C0%20286%2C0%20262%2C30%20182%2C30%27%20fill%3D%27%23E8C62E%27%2F%3E%3Cpolygon%20points%3D%27292%2C0%20372%2C0%20348%2C30%20268%2C30%27%20fill%3D%27%232F7FE0%27%2F%3E%3Cpolygon%20points%3D%27378%2C0%20458%2C0%20434%2C30%20354%2C30%27%20fill%3D%27%23E5483F%27%2F%3E%3Cpolygon%20points%3D%27464%2C0%20544%2C0%20520%2C30%20440%2C30%27%20fill%3D%27%23A3A3A8%27%2F%3E%3Cpolygon%20points%3D%27550%2C0%20630%2C0%20606%2C30%20526%2C30%27%20fill%3D%27%23F0F0F6%27%2F%3E%3Cpolygon%20points%3D%27636%2C0%20716%2C0%20692%2C30%20612%2C30%27%20fill%3D%27%2374747C%27%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;border-top:2px solid #2A2622;}
 .clap-pre{transform:translateX(100vw);}
 .clap-pre .clap-stick{transform:rotate(-7deg);}
 .clap-in{animation:clapIn .8s cubic-bezier(.3,.15,.2,1) both;}
@@ -17650,7 +17663,7 @@ function ClapperBreak({mode,passed,onNavigate}){
     ?{h:"Your free submission is still waiting.",p:"Find a role that fits you and hit Apply.",take:"1"}
     :{h:"Keep going. Submit to every role that fits.",p:"Premium includes unlimited submissions, from $10.75/mo billed yearly.",b:"See Premium",go:"membership",take:"2"};
   return <div className={"clap-w"+(state==="pre"?" clap-closed":"")} ref={ref}>
-    <section className={"clap clap-"+state} aria-label="CastSlate">
+    <section className={"clap clap-"+state+" clap-m-"+mode} aria-label="CastSlate">
       <div className="clap-stick" aria-hidden="true"/>
       <span className="clap-pin" aria-hidden="true"/>
       <div className="clap-low" aria-hidden="true"/>
