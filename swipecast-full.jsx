@@ -102,7 +102,7 @@ const TRANSLATIONS = {
     'footer.privacy':'Privacy Policy','footer.accessibility':'Accessibility',
     'footer.fairCasting':'Fair Casting & Inclusion',
     'footer.trustSafety':'Casting Standards',
-    'footer.copyright':'© {year} CastSlate. All rights reserved.',
+    'footer.copyright':'© {year} CastSlate. All rights reserved.','footer.trademarks':'All trademarks, logos, and brand names are the property of their respective owners.',
     'footer.privacyLink':'Privacy','footer.termsLink':'Terms','footer.contactLink':'Contact',
     'footer.cookiePrefs':'Cookie Preferences',
     'footer.privacyChoices':'Your Privacy Choices',
@@ -354,7 +354,7 @@ const TRANSLATIONS = {
     'footer.privacy':'Política de privacidad','footer.accessibility':'Accesibilidad',
     'footer.fairCasting':'Casting justo e inclusión',
     'footer.trustSafety':'Estándares de casting',
-    'footer.copyright':'© {year} CastSlate. Todos los derechos reservados.',
+    'footer.copyright':'© {year} CastSlate. Todos los derechos reservados.','footer.trademarks':'Todas las marcas, logotipos y nombres comerciales son propiedad de sus respectivos dueños.',
     'footer.privacyLink':'Privacidad','footer.termsLink':'Términos','footer.contactLink':'Contacto',
     'footer.cookiePrefs':'Preferencias de cookies',
     'footer.privacyChoices':'Tus opciones de privacidad',
@@ -4706,6 +4706,7 @@ a.site-footer-link{text-decoration:none;}
 /* One-colour warm near-black footer (owner 2026-10-23, one-color demo A, replacing the
    two-step version): #0E0C0B top to bottom, the divider above the copyright line is the
    only separation. html,body share this colour so overscroll below the footer matches. */
+.site-footer-tm{display:block;margin-top:-16px;max-width:100%;}
 .site-footer-bottom-links{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;margin-left:0;}
 .site-footer-plain-links{display:flex;gap:12px 28px;flex-wrap:wrap;align-items:center;justify-content:center;flex-basis:100%;}
 .site-footer-bottom-links span{cursor:pointer;transition:color .18s ease;}
@@ -8769,6 +8770,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         </div>
         <div className="site-footer-bottom">
           <span>{t('footer.copyright').replace('{year}', year)}</span>
+          <span className="site-footer-tm">{t('footer.trademarks')}</span>
           <div className="site-footer-bottom-links">
             <div className="site-footer-plain-links">
               <a href="/privacy" onClick={go("privacy")}>{t('footer.privacyLink')}</a>
