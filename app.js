@@ -1837,6 +1837,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fcs-compact-title{letter-spacing:-.2px!important;}
 :is(.btn-p,.btn-teal,.btn-s):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:44px!important;padding:0 20px!important;border-radius:10px!important;font-size:15px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
 :is(.btn-sm,.b5-apply,.b5-ghost):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:38px!important;padding:0 15px!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+/* Smaller Apply on Browse cards, desktop only; phones keep 38px for tapping (owner, 2026-11-01). */
+@media (min-width:901px){.b5-card .b5-apply{min-height:34px!important;padding:0 13px!important;font-size:13.5px!important;border-radius:9px!important;}}
 .b5-ghost{color:#1A1A2E;border:1px solid #1A1A2E;}
 @media(max-width:900px){.lh-hero-copy .lh-hero-ctas>button.btn-p,.lh-hero-copy .lh-hero-ctas>button.btn-s{padding:14px 8px!important;font-size:clamp(12px,3.5vw,14px)!important;}}
 :is(nav,header,.navbar,.nav) .btn-s{color:var(--t1);border-color:var(--bdr);}
