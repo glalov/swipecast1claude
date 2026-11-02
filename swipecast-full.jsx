@@ -4109,8 +4109,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fcs-compact-title{letter-spacing:-.2px!important;}
 :is(.btn-p,.btn-teal,.btn-s):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:44px!important;padding:0 20px!important;border-radius:10px!important;font-size:15px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
 :is(.btn-sm,.b5-apply,.b5-ghost):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:38px!important;padding:0 15px!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
-/* Smaller Apply on Browse cards, desktop only; phones keep 38px for tapping (owner, 2026-11-01). */
-@media (min-width:901px){.b5-card .b5-apply{min-height:34px!important;padding:0 13px!important;font-size:13.5px!important;border-radius:9px!important;}}
+/* Smaller Apply beside the role on Browse cards, desktop only; phones keep 38px for tapping (owner, 2026-11-01). */
+@media (min-width:901px){.b5-card .b5-apply{min-height:30px!important;padding:0 11px!important;font-size:13px!important;border-radius:8px!important;}}
 .b5-ghost{color:#1A1A2E;border:1px solid #1A1A2E;}
 @media(max-width:900px){.lh-hero-copy .lh-hero-ctas>button.btn-p,.lh-hero-copy .lh-hero-ctas>button.btn-s{padding:14px 8px!important;font-size:clamp(12px,3.5vw,14px)!important;}}
 :is(nav,header,.navbar,.nav) .btn-s{color:var(--t1);border-color:var(--bdr);}
@@ -4126,7 +4126,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
   .b5-card .b5-actions{padding-top:10px;}
 }
 .b5-card{position:relative;overflow:hidden;border-radius:14px;background:#FFFFFF;border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
-.b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;}
+.b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;}
 .b5-main{padding:30px 32px;display:grid;gap:13px;align-content:start;min-width:0;}
 .cs-pick{display:inline-flex;align-items:center;gap:7px;background:#FBF1DA;color:#5A3E0C;font-family:inherit;font-size:13px;line-height:16.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 20px 2px 18px;border:1px solid #E8D3A6;border-radius:999px;white-space:nowrap;}
 .cs-pick i{color:#C48F2C;font-size:12px;line-height:1;}
@@ -4152,7 +4152,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
    honey star, hanging from a 4px honey line over the story side only (stops at the
    roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
    gate and dashboard keep the PickBadge chip. */
-.b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:300px;height:4px;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);pointer-events:none;}
+.b5-card.b5-pick::before{content:"";position:absolute;z-index:1;top:0;left:0;right:330px;height:4px;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);pointer-events:none;}
 .b5-ptab{position:absolute;z-index:1;top:4px;left:0;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 5px 10px;border-radius:0 0 8px 0;background:linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%);color:#FFF8EB;font-size:12px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
 .b5-ptab i{color:#FFE7B8;font-size:12px;line-height:1;}
 /* Dashboard upgrade banner button (C1, 2026-10-27): solid white on the coral gradient. */
@@ -4196,8 +4196,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
    (owner, 2026-10-27, demo "Half-strength"; replaced warm sage, then warm sand, the same evening). */
 .b5-side{border-left:1px solid #E6E2D9;padding:12px 24px;display:flex;flex-direction:column;justify-content:center;background:#FBFAF7;}
 .b5-side .b5-role+.b5-role{border-top-color:#EEEAE2;}
-.b5-role{display:grid;grid-template-columns:4px minmax(0,1fr);gap:0 12px;padding:14px 0;align-items:center;}
-.b5-role .b5-bar{grid-row:1 / span 2;}
+.b5-role{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:0 12px;padding:14px 0;align-items:center;}
+.b5-role .b5-bar{grid-row:1;}
 .b5-role+.b5-role{border-top:1px solid var(--bdr);}
 .b5-bar{align-self:stretch;border-radius:4px;background:var(--bdr);}
 .b5-role.lead .b5-bar{background:var(--teal);}
@@ -4206,7 +4206,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-rspec{font-size:14px;color:var(--t2);min-width:0;overflow-wrap:normal;margin-top:2px;}
 .b5-rspec b{color:#276551;font-weight:700;}
 .b5-pay{white-space:nowrap;}
-.b5-racts{grid-column:2;margin-top:7px;display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;gap:8px;}
+.b5-racts{grid-column:3;grid-row:1;display:flex;flex-direction:row-reverse;justify-content:flex-end;align-items:center;gap:8px;}
 .b5-bm{display:inline-flex;width:32px;height:32px;align-items:center;justify-content:center;border-radius:8px;border:0;background:transparent;color:var(--t3);cursor:pointer;padding:0;}
 .b5-bm:hover,.b5-bm.on{color:var(--teal);}
 .b5-bm:hover{background:var(--s2);}
