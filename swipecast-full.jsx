@@ -4142,24 +4142,24 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .clap-w.clap-closed{height:0;margin-top:calc(var(--clap-gap,36px) * -1);margin-bottom:0;}
 @supports not (overflow:clip){.clap-w{overflow:hidden;}}
 .clap{position:relative;max-width:760px;margin:0 auto;will-change:transform;}
-.clap-stick,.clap-low{position:relative;height:30px;background:repeating-linear-gradient(-55deg,#F5F1E8 0 26px,#111111 26px 52px);border-radius:6px 6px 2px 2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
+.clap-stick,.clap-low{position:relative;height:30px;background:repeating-linear-gradient(-55deg,#FFFFFF 0 26px,#111111 26px 52px);border-radius:6px 6px 2px 2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
 .clap-stick{transform-origin:14px 100%;z-index:2;margin-bottom:3px;}
-.clap-low{background:repeating-linear-gradient(55deg,#F5F1E8 0 26px,#111111 26px 52px);border-radius:2px 2px 0 0;}
+.clap-low{background:repeating-linear-gradient(55deg,#FFFFFF 0 26px,#111111 26px 52px);border-radius:2px 2px 0 0;}
 .clap-pin{position:absolute;z-index:3;left:5px;top:21px;width:24px;height:24px;border-radius:50%;background:#2A2622;box-shadow:inset 0 0 0 5px rgba(255,255,255,.14);}
-.clap-board{position:relative;background:#14110F;border-radius:0 0 12px 12px;padding:18px 26px 26px;color:#FFF8EB;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 14px 24px -8px rgba(26,18,8,.28);}
-.clap-cells{display:grid;grid-template-columns:2fr 1fr 1fr;border:1.5px solid rgba(255,248,235,.28);border-radius:4px;margin-bottom:18px;}
-.clap-cell{padding:7px 12px 8px;border-left:1.5px solid rgba(255,248,235,.28);min-width:0;}
+.clap-board{position:relative;background:#14110F;border-radius:0 0 12px 12px;padding:18px 26px 26px;color:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 14px 24px -8px rgba(26,18,8,.28);}
+.clap-cells{display:grid;grid-template-columns:2fr 1fr 1fr;border:1.5px solid rgba(255,255,255,.3);border-radius:4px;margin-bottom:18px;}
+.clap-cell{padding:7px 12px 8px;border-left:1.5px solid rgba(255,255,255,.3);min-width:0;}
 .clap-cell:first-child{border-left:0;}
-.clap-cell small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#D8CFC0;}
-.clap-cell b{display:block;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:20px;line-height:1.2;color:#FFF8EB;white-space:nowrap;}
+.clap-cell small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#E8E8E8;}
+.clap-cell b{display:block;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:20px;line-height:1.2;color:#FFFFFF;white-space:nowrap;}
 .clap-main{display:flex;align-items:center;justify-content:space-between;gap:24px;}
 .clap-txt{min-width:0;}
-.clap-h{text-wrap:balance;margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:27px;line-height:1.16;letter-spacing:-.4px;color:#FFF8EB;}
-.clap-p{margin:7px 0 0;font-size:15.5px;line-height:1.45;color:#D8CFC0;}
-.clap-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:0 24px;margin-right:6px;border:0;border-radius:14px;background:#FFF6E6;color:#1A1A2E;font:800 15px 'DM Sans',sans-serif;letter-spacing:.2px;white-space:nowrap;cursor:pointer;box-shadow:0 0 0 6px rgba(255,246,230,.12);transition:box-shadow .15s;}
-.clap-btn:hover{box-shadow:0 0 0 8px rgba(255,246,230,.16);}
-.clap-btn:focus-visible{outline:2px solid #FFF6E6;outline-offset:8px;}
-.clap-btn .cs-tri{color:#8A5A12;}
+.clap-h{text-wrap:balance;margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:27px;line-height:1.16;letter-spacing:-.4px;color:#FFFFFF;}
+.clap-p{margin:7px 0 0;font-size:15.5px;line-height:1.45;color:#E8E8E8;}
+.clap-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:0 24px;margin-right:6px;border:0;border-radius:14px;background:#FFFFFF;color:#111111;font:800 15px 'DM Sans',sans-serif;letter-spacing:.2px;white-space:nowrap;cursor:pointer;box-shadow:0 0 0 6px rgba(255,255,255,.14);transition:box-shadow .15s;}
+.clap-btn:hover{box-shadow:0 0 0 8px rgba(255,255,255,.18);}
+.clap-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:8px;}
+.clap-btn .cs-tri{color:#111111;}
 .clap-pre{transform:translateX(100vw);}
 .clap-pre .clap-stick{transform:rotate(-7deg);}
 .clap-in{animation:clapIn .8s cubic-bezier(.3,.15,.2,1) both;}
