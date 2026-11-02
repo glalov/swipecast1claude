@@ -17639,7 +17639,7 @@ function ClapperBreak({mode,passed,onNavigate}){
       setState("in");
     };
     if(!window.IntersectionObserver){fire();return;}
-    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();fire();}},{threshold:0,rootMargin:"0px 0px -12% 0px"});
+    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();fire();}},{threshold:0,rootMargin:"0px 0px -40% 0px"}); // starts 60% down the screen, where people are looking
     io.observe(w);
     return()=>{io.disconnect();if(timer){clearTimeout(timer);clear();}};
   },[]);
