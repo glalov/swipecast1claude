@@ -9,7 +9,7 @@ BABEL_CACHE = os.path.expanduser("~/.castslate_babel_standalone.js")
 # shape late). Same files/axes Google served — no visual change. Other subsets in
 # this CSS still point at fonts.gstatic.com and only load if those characters appear.
 SELF_FONTS_CSS = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "vendor/fonts/fonts.css"), encoding="utf-8").read().strip()
-SELF_FONT_PRELOADS = ["/vendor/fonts/dmsans-latin-206ef647.woff2", "/vendor/fonts/serif-latin-0d04bb72.woff2"]
+SELF_FONT_PRELOADS = ["/vendor/fonts/dmsans-latin-206ef647.woff2", "/vendor/fonts/serif-latin-0d04bb72.woff2", "/vendor/fonts/fraunces-latin-9fe3e924.woff2"]
 SELF_FONT_PRELOAD_TAGS = "\n".join(f'  <link rel="preload" as="font" type="font/woff2" href="{u}" crossorigin/>' for u in SELF_FONT_PRELOADS)
 
 # ── Download Babel standalone if not cached ──────────────────────────────────

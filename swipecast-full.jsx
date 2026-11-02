@@ -2385,9 +2385,9 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes mb-shimmer{0%{transform:translateX(-130%) skewX(-20deg);}100%{transform:translateX(430%) skewX(-20deg);}}
 @keyframes mb-glint{0%,60%,100%{opacity:.65;transform:scale(1) rotate(0deg);}72%{opacity:1;transform:scale(1.45) rotate(8deg);}84%{opacity:.85;transform:scale(1.1) rotate(-4deg);}}
 @media(prefers-reduced-motion:reduce){.mb-cta::after,.mb-star,.mb-sheen{animation:none;}}
-.btn-p{background:var(--acc);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
-.btn-p:hover{background:var(--acc2);transform:translateY(-1px);}
-.btn-s{background:transparent;color:var(--t1);border:1px solid var(--bdr);padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-p{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-p:hover{background:var(--teal-dk);transform:translateY(-1px);}
+.btn-s{background:transparent;color:#1A1A2E;border:1px solid #1A1A2E;padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
 .cs-optin-tg{position:relative;flex:none;width:44px;height:26px;border-radius:99px;border:none;background:#CFC6B4;cursor:pointer;transition:background .2s;padding:0;}
 .cs-optin-tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s;}
@@ -4098,6 +4098,17 @@ body.sheet-push .b2t-cube{display:none;}
    homepage Featured cards (.fcs-card-v2, cc-*) are untouched. No backticks
    or dollar-brace in this CSS: it lives inside a JS template literal. */
 /* Pure white so each card stands off the cream page (owner, 2026-10-27, demo card-white option 1). */
+/* One headline font and one button system (owner pick, 2026-11-01). Inline styles
+   across the app set their own type and sizes, so these rules use !important.
+   Navigation and footer buttons keep their compact look. */
+h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!important;font-weight:500!important;letter-spacing:-.5px!important;}
+:is(.btn-p,.btn-teal,.btn-s):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:44px!important;padding:0 20px!important;border-radius:10px!important;font-size:15px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+:is(.btn-sm,.b5-apply,.b5-ghost):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:38px!important;padding:0 15px!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
+.b5-ghost{color:#1A1A2E;border:1px solid #1A1A2E;}
+@media(max-width:900px){.lh-hero-copy .lh-hero-ctas>button.btn-p,.lh-hero-copy .lh-hero-ctas>button.btn-s{padding:14px 8px!important;font-size:clamp(12px,3.5vw,14px)!important;}}
+:is(nav,header,.navbar,.nav) .btn-s{color:var(--t1);border-color:var(--bdr);}
+:is(nav,header,.navbar,.nav) .btn-p:not(.join-free-soft){background:var(--acc);}
+:is(nav,header,.navbar,.nav) .btn-p:not(.join-free-soft):hover{background:var(--acc2);}
 .b5-list{display:flex;flex-direction:column;gap:24px;}
 @media(min-width:901px){
   .b5-list{gap:36px;}
