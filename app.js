@@ -1849,9 +1849,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
   .b5-list{gap:36px;}
   .b5-card .b5-grid{min-height:440px;}
   .b5-card .b5-main{padding:42px 44px;gap:17px;}
-  /* Roles start level with the casting title, not centred (owner, 2026-11-01). */
-  .b5-card .b5-side{padding:28px 28px 22px;justify-content:flex-start;}
-  .b5-card.b5-pick .b5-side{padding-top:48px;}
+  .b5-card .b5-side{padding:22px 28px;}
   .b5-card .b5-role{padding:18px 0;}
   .b5-card .b5-actions{padding-top:10px;}
 }
