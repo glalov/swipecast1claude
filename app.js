@@ -1850,7 +1850,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
   .b5-card .b5-grid{min-height:440px;}
   .b5-card .b5-main{padding:42px 44px;gap:17px;}
   .b5-card .b5-side{padding:22px 28px;}
-  .b5-card .b5-role{padding:18px 0;}
+  .b5-card .b5-role{padding:26px 0;}
   .b5-card .b5-actions{padding-top:10px;}
 }
 .b5-card{position:relative;overflow:hidden;border-radius:14px;background:#FFFFFF;border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
@@ -1988,6 +1988,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-bm:focus-visible,.b5-apply:focus-visible,.b5-ghost:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 @media (max-width:900px){
   .b5-grid{grid-template-columns:minmax(0,1fr);}
+  .b5-card .b5-role{padding:19px 0;}
   .b5-main{padding:18px 18px 12px;gap:10px;}
   .b5-head .cc-title{font-size:23px;}
   .b5-meta,.b5-sum{font-size:15px;}
