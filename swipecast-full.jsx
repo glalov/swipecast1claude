@@ -4138,7 +4138,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 /* "All castings" label after the CastSlate Picks (2026-10-27): same look as the Classes page's "All Classes". */
 /* Clapper break on Browse (owner, 2026-11-02, demo "Whole clapper", Black). Slides in solid
    from past the right edge, then the stick snaps shut. Transform only, no fades. */
-.clap-w{overflow-x:clip;width:100vw;margin:4px 0 4px calc(50% - 50vw);padding:0 16px;box-sizing:border-box;position:relative;z-index:1;}
+.clap-w{overflow-x:clip;width:100vw;margin:4px 0 4px calc(50% - 50vw);padding:0 16px;box-sizing:border-box;position:relative;z-index:3;}
+.clap-w.clap-closed{height:0;margin-top:calc(var(--clap-gap,36px) * -1);margin-bottom:0;}
 @supports not (overflow:clip){.clap-w{overflow:hidden;}}
 .clap{position:relative;max-width:760px;margin:0 auto;will-change:transform;}
 .clap-stick,.clap-low{position:relative;height:30px;background:repeating-linear-gradient(-55deg,#F5F1E8 0 26px,#111111 26px 52px);border-radius:6px 6px 2px 2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
@@ -17612,14 +17613,35 @@ function clapperMode(authReady,session,myProfile,selfSubs){
 let clapperPlayed=false;
 function ClapperBreak({mode,passed,onNavigate}){
   const ref=useRef(null);
-  const [state,setState]=useState(()=>clapperPlayed?"done":"pre");
+  const [state,setState]=useState(()=>{
+    let calm=false;try{calm=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(_){}
+    return clapperPlayed||calm?"done":"pre";
+  });
   useEffect(()=>{
-    if(clapperPlayed)return;
-    const el=ref.current;
-    if(!el||!window.IntersectionObserver){clapperPlayed=true;setState("in");return;}
-    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){clapperPlayed=true;setState("in");io.disconnect();}},{threshold:.1});
-    io.observe(el);
-    return()=>io.disconnect();
+    const w=ref.current;
+    if(!w||state!=="pre")return;
+    const gap=parseFloat(getComputedStyle(w.parentElement).rowGap)||0;
+    w.style.setProperty("--clap-gap",gap+"px");
+    let timer=0,moved=[];
+    const clear=()=>moved.forEach(x=>{x.style.transition="";x.style.transform="";x.style.willChange="";});
+    // Cards part as the clapper arrives. The gap opens in one step and the cards below
+    // glide into it on transforms, so the page isn't laid out again on every frame.
+    const fire=()=>{
+      clapperPlayed=true;
+      for(let n=w.nextElementSibling;n;n=n.nextElementSibling)moved.push(n);
+      const top=moved.length?moved[0].getBoundingClientRect().top:0;
+      w.classList.remove("clap-closed");
+      const delta=moved.length?moved[0].getBoundingClientRect().top-top:0;
+      moved.forEach(x=>{x.style.willChange="transform";x.style.transition="none";x.style.transform="translateY("+(-delta)+"px)";});
+      void w.offsetWidth;
+      moved.forEach(x=>{x.style.transition="transform .62s cubic-bezier(.33,0,.15,1)";x.style.transform="translateY(0)";});
+      timer=setTimeout(clear,680);
+      setState("in");
+    };
+    if(!window.IntersectionObserver){fire();return;}
+    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();fire();}},{threshold:0,rootMargin:"0px 0px -12% 0px"});
+    io.observe(w);
+    return()=>{io.disconnect();if(timer){clearTimeout(timer);clear();}};
   },[]);
   const roles=passed===1?"role":"roles";
   const m=mode==="out"
@@ -17627,7 +17649,7 @@ function ClapperBreak({mode,passed,onNavigate}){
     :mode==="unused"
     ?{h:"Your free submission is still waiting.",p:"Find a role that fits you and hit Apply.",take:"1"}
     :{h:"Keep going. Submit to every role that fits.",p:"Premium includes unlimited submissions, from $10.75/mo billed yearly.",b:"See Premium",go:"membership",take:"2"};
-  return <div className="clap-w" ref={ref}>
+  return <div className={"clap-w"+(state==="pre"?" clap-closed":"")} ref={ref}>
     <section className={"clap clap-"+state} aria-label="CastSlate">
       <div className="clap-stick" aria-hidden="true"/>
       <span className="clap-pin" aria-hidden="true"/>
