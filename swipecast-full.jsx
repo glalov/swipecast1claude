@@ -4161,9 +4161,9 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .clap-btn .cs-tri{color:#8A5A12;}
 .clap-pre{transform:translateX(100vw);}
 .clap-pre .clap-stick{transform:rotate(-7deg);}
-.clap-in{animation:clapIn 1.15s cubic-bezier(.3,.15,.2,1) both;}
-.clap-in .clap-stick{animation:clapSnap .18s cubic-bezier(.6,0,1,.7) 1.2s both;}
-.clap-in .clap-board{animation:clapHit .2s ease-out 1.38s;}
+.clap-in{animation:clapIn .8s cubic-bezier(.3,.15,.2,1) both;}
+.clap-in .clap-stick{animation:clapSnap .18s cubic-bezier(.6,0,1,.7) .85s both;}
+.clap-in .clap-board{animation:clapHit .2s ease-out 1.03s;}
 @keyframes clapIn{0%{transform:translateX(100vw) rotate(4deg);}100%{transform:none;}}
 @keyframes clapSnap{from{transform:rotate(-7deg);}to{transform:none;}}
 @keyframes clapHit{0%{transform:translateY(0);}35%{transform:translateY(3px);}100%{transform:none;}}
@@ -17613,7 +17613,7 @@ function ClapperBreak({mode,passed,onNavigate}){
   useEffect(()=>{
     const el=ref.current;
     if(!el||!window.IntersectionObserver){setState("in");return;}
-    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){setState("in");io.disconnect();}},{threshold:.3});
+    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){setState("in");io.disconnect();}},{threshold:.1});
     io.observe(el);
     return()=>io.disconnect();
   },[]);
