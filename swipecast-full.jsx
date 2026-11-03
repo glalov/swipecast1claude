@@ -3156,16 +3156,14 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-btn.save{position:relative;isolation:isolate;color:var(--blu);}
+/* Homepage demo star: black and still, with only a faint ring pulse (owner, 2026-11-02). */
+.sw-btn.save.sw-still{color:#111111;}
+.sw-btn.save.sw-still::after{box-shadow:0 0 0 5px rgba(20,17,15,.1);}
+.sw-btn.save.sw-still:hover{border-color:#111111;background:rgba(20,17,15,.05);}
 .sw-btn.save::after{content:"";position:absolute;inset:-2px;border-radius:50%;box-shadow:0 0 0 10px rgba(99,91,255,0.22);z-index:-1;pointer-events:none;opacity:0;animation:sw-ring 2.8s ease-in-out infinite;}
 .sw-btn.save:hover::after{animation:none;opacity:0;}
 .sw-star-wrap{position:relative;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
-.sw-star-fill{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;animation:sw-star-fill 2.8s ease-in-out infinite;}
-.sw-star-glow{position:absolute;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle, rgba(99,91,255,.35) 0%, rgba(99,91,255,0) 72%);animation:sw-star-glow 2.8s ease-in-out infinite;pointer-events:none;}
-.sw-btn.save:hover .sw-star-fill,.sw-btn.save:hover .sw-star-glow{animation:none;}
-.sw-btn.save:hover .sw-star-fill{opacity:1;transform:scale(1);}
-.sw-btn.save:hover .sw-star-glow{opacity:0;}
-@keyframes sw-star-fill{0%,100%{opacity:1;transform:scale(1);}55%{opacity:0;transform:scale(.45);}}
-@keyframes sw-star-glow{0%,100%{opacity:1;transform:scale(1);}55%{opacity:0;transform:scale(.3);}}
+.sw-star-fill{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 @keyframes csAppStar{0%,100%{transform:scale(1);}50%{transform:scale(1.14);}}
 @keyframes csAppSheen{0%{background-position:-140% 0;}60%,100%{background-position:240% 0;}}
 .sw-tagline{margin-top:14px;font-size:11px;color:var(--t3);text-align:center;line-height:1.6;max-width:260px;}
@@ -27566,9 +27564,8 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           <span className="sw-btn-label">Skip</span>
         </div>
         <div className="sw-btn-wrap">
-          <button className="sw-btn save" title="Shortlist" disabled={animating} onClick={()=>shortlist()}>
+          <button className="sw-btn save sw-still" title="Shortlist" disabled={animating} onClick={()=>shortlist()}>
             <span className="sw-star-wrap" aria-hidden="true">
-              <span className="sw-star-glow"></span>
               <Ico n="star" s={24}/>
               <span className="sw-star-fill"><Ico n="star-filled" s={24}/></span>
             </span>
