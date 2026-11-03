@@ -27736,12 +27736,14 @@ function NewsArticlePage({slug,onNavigate}){
 // (ffmpeg vidstab, smoothing 40). Modeling is the owner-supplied 30s clip.
 // reel3 (2026-09-28): same clips, but each file's last 0.5-0.75s crossfades
 // into its opening frames, so the native loop restart is seamless, not a cut.
+// student2 (2026-11-03): owner-supplied Pexels 9810798, full 38s, crop y=240, 600x800
+// crf 21 (lite 360x480, 178 kbit/s), 0.6s crossfade, sRGB label like the rest of reel4.
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:"megaphone"},
-  {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student",icon:"cap"},
+  {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student2",icon:"cap"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:"mic"},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage",icon:"masks"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
