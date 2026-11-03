@@ -874,7 +874,7 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .sw-hint-arrow .fc-travel{animation:sw-flip-travel 2.8s cubic-bezier(.45,.05,.55,.95) infinite;}
 .sw-hint-arrow .fc-coin{position:relative;animation:sw-flip-turn 2.8s cubic-bezier(.55,0,.45,1) infinite;}
 .sw-hint-arrow .fc-face{position:absolute;inset:0;border-radius:8px;display:grid;place-items:center;backface-visibility:hidden;}
-.sw-hint-arrow .fc-face.front{background:linear-gradient(155deg,#2C2C48,#1A1A2E);box-shadow:0 1px 0 rgba(255,255,255,0.18) inset;}
+.sw-hint-arrow .fc-face.front{background:linear-gradient(155deg,#2F5597,#203F7A);box-shadow:0 1px 0 rgba(255,255,255,0.18) inset;}
 .sw-hint-arrow .fc-face.back{background:linear-gradient(155deg,#3F9379,#276551);box-shadow:0 1px 0 rgba(255,255,255,0.24) inset;transform:rotateY(180deg);}
 .sw-hint-arrow .fc-face svg{display:block;width:14px;height:14px;}
 /* Solid white triangle on both faces, navy and teal (owner, 2026-11-02). */
