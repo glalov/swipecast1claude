@@ -4107,7 +4107,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 /* Headlines that aren't h1/h2 tags (owner approved from a demo, 2026-11-01). */
 :is(.guarantee-title,.section-title,.fmt-title,.adx-h,.fcs-track .fcs-card .cc-title,.abt-two h3,.abt-item h3,.abt-three h4,.mm-pile h3,.news-block-head h3){font-family:'Fraunces',Georgia,serif!important;font-weight:500!important;letter-spacing:-.4px!important;}
 .fcs-ov-title,.fcs-compact-title{font-family:'Fraunces',Georgia,serif!important;font-weight:600!important;}
-.fcs-ov-title{letter-spacing:.3px!important;}
+.fcs-ov-title{letter-spacing:-.3px!important;}
 .fcs-compact-title{letter-spacing:-.2px!important;}
 :is(.btn-p,.btn-teal,.btn-s):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:44px!important;padding:0 20px!important;border-radius:10px!important;font-size:15px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
 :is(.btn-sm,.b5-apply,.b5-ghost):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:38px!important;padding:0 15px!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
@@ -5053,7 +5053,7 @@ a.site-footer-link{text-decoration:none;}
 .fcs-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:clamp(4px,0.7vw,10px);padding-left:clamp(28px,4.3vw,86px);padding-right:40px;pointer-events:none;}
 .fcs-overlay::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0c0a08 0%,#0c0a08 19%,rgba(12,10,8,0.92) 28%,rgba(12,10,8,0.55) 38%,rgba(12,10,8,0) 48%);}
 .fcs-ov-label{font-size:clamp(10px,0.83vw,14px);font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#FFD79A;line-height:1;}
-.fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;text-transform:uppercase;font-size:clamp(19px,2.52vw,43px);line-height:1.04;color:#fff;letter-spacing:.5px;}
+.fcs-ov-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:clamp(19px,2.52vw,43px);line-height:1.04;color:#fff;letter-spacing:.5px;}
 .fcs-ov-tag{font-size:clamp(10px,0.85vw,13px);line-height:1.35;color:#ECE8E0;max-width:32ch;}
 .fcs-ov-btn{pointer-events:auto;align-self:flex-start;margin-top:clamp(3px,0.57vw,9px);background:#F0B860;color:#231706;border:none;border-radius:8px;padding:clamp(7px,0.76vw,13px) clamp(15px,1.58vw,28px);font-size:clamp(11px,0.98vw,16px);font-weight:800;line-height:1;letter-spacing:.2px;cursor:pointer;white-space:nowrap;}
 /* Compact scrolled strip — own layout, not a crop of the full banner. */
