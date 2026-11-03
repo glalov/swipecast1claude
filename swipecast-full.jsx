@@ -3134,7 +3134,7 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .sw-btn.yes:hover{border-color:var(--grn);background:rgba(27,135,62,0.07);transform:scale(1.1);}
 @keyframes sw-ring{0%,100%{transform:scale(.9);opacity:0}55%{transform:scale(1);opacity:1}}
 /* Swipe-hint "travel flip" coin: glides left<->right while turning, and the face
-   colour changes with direction (navy going left, amber going right). Travel and
+   colour changes with direction (navy going left, teal going right). Travel and
    turn share one 2.8s clock so direction and colour never disagree. Both inner
    spans need display:block (inline ignores width/height) and preserve-3d (the
    travel transform would otherwise flatten the turn and kill the perspective). */
@@ -3147,11 +3147,11 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .sw-hint-arrow .fc-coin{position:relative;animation:sw-flip-turn 2.8s cubic-bezier(.55,0,.45,1) infinite;}
 .sw-hint-arrow .fc-face{position:absolute;inset:0;border-radius:8px;display:grid;place-items:center;backface-visibility:hidden;}
 .sw-hint-arrow .fc-face.front{background:linear-gradient(155deg,#2C2C48,#1A1A2E);box-shadow:0 1px 0 rgba(255,255,255,0.18) inset;}
-.sw-hint-arrow .fc-face.back{background:linear-gradient(155deg,#F0A544,var(--amber-dk));box-shadow:0 1px 0 rgba(255,255,255,0.24) inset;transform:rotateY(180deg);}
+.sw-hint-arrow .fc-face.back{background:linear-gradient(155deg,#3F9379,#276551);box-shadow:0 1px 0 rgba(255,255,255,0.24) inset;transform:rotateY(180deg);}
 .sw-hint-arrow .fc-face svg{display:block;width:14px;height:14px;}
-/* Solid triangle: white on the navy face, black on the amber face (owner, 2026-11-02). */
+/* Solid white triangle on both faces, navy and teal (owner, 2026-11-02). */
 .sw-hint-arrow .fc-face.front svg path{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:1.6;stroke-linejoin:round;}
-.sw-hint-arrow .fc-face.back svg path{fill:#14110F;stroke:#14110F;stroke-width:1.6;stroke-linejoin:round;}
+.sw-hint-arrow .fc-face.back svg path{fill:#FFFFFF;stroke:#FFFFFF;stroke-width:1.6;stroke-linejoin:round;}
 @media(prefers-reduced-motion:reduce){.sw-hint-arrow .fc-travel,.sw-hint-arrow .fc-coin{animation:none;}}
 .sw-hint-text{font-size:12px;font-weight:700;color:#1A1A2E;}
 .sw-hint-text-mobile{display:none;font-size:12px;font-weight:700;color:#1A1A2E;}
