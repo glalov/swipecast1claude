@@ -27740,6 +27740,8 @@ function NewsArticlePage({slug,onNavigate}){
 // crf 21 (lite 360x480, 178 kbit/s), 0.6s crossfade, sRGB label like the rest of reel4.
 // creators (2026-11-03): owner-supplied Pexels 3917704, first 13.4s (one bad frame removed),
 // slowed to 60% with minterpolate, crop y=200, 600x800 crf 21 (lite 165 kbit/s), 0.75s crossfade.
+// reel5 (2026-11-03): new Voiceover clip, owner-supplied Pexels 7599935, full 21s, crop y=720.
+// Every full-size clip re-encoded x264 veryslow to save about 23%; SSIM against the old file stayed 0.99.
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
@@ -27817,7 +27819,7 @@ function csVideoGoLite(){
   try{ window.dispatchEvent(new Event('cs:vid-lite')); }catch(_){}
 }
 function csLiteUrl(src){
-  return src.replace('/video-formats/reel4/','/video-formats/reel4-lite/').replace('/assets/video/','/assets/video/lite/');
+  return src.replace('/video-formats/reel5/','/video-formats/reel5-lite/').replace('/assets/video/','/assets/video/lite/');
 }
 // Whole-file fetch queue: at most 2 downloads at once, lowest prio first.
 const csVidQ={active:0,max:2,wait:[],jobs:{}};
@@ -28131,7 +28133,7 @@ function FormatReel(){
   // matching JPEG poster, so each card visibly "lit up" when its clip started; Chrome and
   // Firefox ignore the label, so nothing changes there. Landing clips: *-v3c / *-v4c.
   // New folder/names because /video-formats/ and /assets/video/ are cached immutable.
-  // Clips live in /video-formats/reel4/ (was reel3/, reel2/, loop/): pre-cropped to
+  // Clips live in /video-formats/reel5/ (was reel4/, reel3/, reel2/, loop/): pre-cropped to
   // the card's 3:4 frame at full source resolution. The old files were the same
   // 8s shot repeated to 60s at 16:9 (25MB total, most of it cropped away).
   // New folder = new URLs, so nobody is served the old immutable-cached files.
@@ -28139,9 +28141,9 @@ function FormatReel(){
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
         <div className="fmt-track">
-          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel4/'+c.file+'.mp4'; return (
+          {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel5/'+c.file+'.mp4'; return (
             <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
-              <img className="fmt-poster" src={'/video-formats/reel4/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+              <img className="fmt-poster" src={'/video-formats/reel5/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
               <video className="fmt-video" data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
