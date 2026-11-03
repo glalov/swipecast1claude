@@ -1833,7 +1833,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 /* Headlines that aren't h1/h2 tags (owner approved from a demo, 2026-11-01). */
 :is(.guarantee-title,.section-title,.fmt-title,.adx-h,.fcs-track .fcs-card .cc-title,.abt-two h3,.abt-item h3,.abt-three h4,.mm-pile h3,.news-block-head h3){font-family:'Fraunces',Georgia,serif!important;font-weight:500!important;letter-spacing:-.4px!important;}
 .fcs-ov-title,.fcs-compact-title{font-family:'Fraunces',Georgia,serif!important;font-weight:500!important;}
-.fcs-ov-title{letter-spacing:-.3px!important;}
+.fcs-ov-title{letter-spacing:-.5px!important;font-variation-settings:'opsz' 58!important;} /* same letter shapes as the 58px hero headline (owner, 2026-11-02) */
 .fcs-compact-title{letter-spacing:-.2px!important;}
 :is(.btn-p,.btn-teal,.btn-s):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:44px!important;padding:0 20px!important;border-radius:10px!important;font-size:15px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
 :is(.btn-sm,.b5-apply,.b5-ghost):not(nav *,header *,.navbar *,.nav *,footer *,.join-free-soft){min-height:38px!important;padding:0 15px!important;border-radius:10px!important;font-size:14px!important;font-weight:700!important;display:inline-flex;align-items:center;justify-content:center;gap:7px;}
