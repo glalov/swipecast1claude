@@ -4160,19 +4160,6 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .clap-btn:hover{box-shadow:0 0 0 8px rgba(255,255,255,.18);}
 .clap-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:8px;}
 .clap-btn .cs-tri{color:#111111;}
-/* A different clapper for each stage (owner, 2026-11-02): black = visitors, white board = free
-   submission unused, white board + colour chevrons = free submission used. */
-.clap-m-unused .clap-board,.clap-m-used .clap-board{background:#FFFFFF;color:#14110F;box-shadow:inset 0 0 0 1px #DAD5CA,0 14px 24px -8px rgba(26,18,8,.28);}
-.clap-m-unused .clap-h,.clap-m-used .clap-h,.clap-m-unused .clap-cell b,.clap-m-used .clap-cell b{color:#14110F;}
-.clap-m-unused .clap-p,.clap-m-used .clap-p{color:#3A322A;}
-.clap-m-unused .clap-cell small,.clap-m-used .clap-cell small{color:#433B32;}
-.clap-m-unused .clap-cells,.clap-m-used .clap-cells,.clap-m-unused .clap-cell,.clap-m-used .clap-cell{border-color:rgba(20,17,15,.4);}
-.clap-m-used .clap-btn{background:#14110F;color:#FFFFFF;box-shadow:0 0 0 6px rgba(20,17,15,.1);}
-.clap-m-used .clap-btn:hover{box-shadow:0 0 0 8px rgba(20,17,15,.14);}
-.clap-m-used .clap-btn:focus-visible{outline-color:#14110F;}
-.clap-m-used .clap-btn .cs-tri{color:#FFFFFF;}
-.clap-m-used .clap-stick{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20760%2030%27%20preserveAspectRatio%3D%27none%27%3E%3Crect%20width%3D%27760%27%20height%3D%2730%27%20fill%3D%27%23111111%27%2F%3E%3Cpolygon%20points%3D%2796%2C0%20176%2C0%20200%2C30%20120%2C30%27%20fill%3D%27%232EA36A%27%2F%3E%3Cpolygon%20points%3D%27182%2C0%20262%2C0%20286%2C30%20206%2C30%27%20fill%3D%27%23E8C62E%27%2F%3E%3Cpolygon%20points%3D%27268%2C0%20348%2C0%20372%2C30%20292%2C30%27%20fill%3D%27%232F7FE0%27%2F%3E%3Cpolygon%20points%3D%27354%2C0%20434%2C0%20458%2C30%20378%2C30%27%20fill%3D%27%23E5483F%27%2F%3E%3Cpolygon%20points%3D%27440%2C0%20520%2C0%20544%2C30%20464%2C30%27%20fill%3D%27%23A3A3A8%27%2F%3E%3Cpolygon%20points%3D%27526%2C0%20606%2C0%20630%2C30%20550%2C30%27%20fill%3D%27%23F0F0F6%27%2F%3E%3Cpolygon%20points%3D%27612%2C0%20692%2C0%20716%2C30%20636%2C30%27%20fill%3D%27%2374747C%27%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;margin-bottom:0;}
-.clap-m-used .clap-low{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20760%2030%27%20preserveAspectRatio%3D%27none%27%3E%3Crect%20width%3D%27760%27%20height%3D%2730%27%20fill%3D%27%23111111%27%2F%3E%3Cpolygon%20points%3D%27120%2C0%20200%2C0%20176%2C30%2096%2C30%27%20fill%3D%27%232EA36A%27%2F%3E%3Cpolygon%20points%3D%27206%2C0%20286%2C0%20262%2C30%20182%2C30%27%20fill%3D%27%23E8C62E%27%2F%3E%3Cpolygon%20points%3D%27292%2C0%20372%2C0%20348%2C30%20268%2C30%27%20fill%3D%27%232F7FE0%27%2F%3E%3Cpolygon%20points%3D%27378%2C0%20458%2C0%20434%2C30%20354%2C30%27%20fill%3D%27%23E5483F%27%2F%3E%3Cpolygon%20points%3D%27464%2C0%20544%2C0%20520%2C30%20440%2C30%27%20fill%3D%27%23A3A3A8%27%2F%3E%3Cpolygon%20points%3D%27550%2C0%20630%2C0%20606%2C30%20526%2C30%27%20fill%3D%27%23F0F0F6%27%2F%3E%3Cpolygon%20points%3D%27636%2C0%20716%2C0%20692%2C30%20612%2C30%27%20fill%3D%27%2374747C%27%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat;border-top:2px solid #2A2622;}
 .clap-pre{transform:translateX(100vw);}
 .clap-pre .clap-stick{transform:rotate(-7deg);}
 .clap-in{animation:clapIn .8s cubic-bezier(.3,.15,.2,1) both;}
@@ -17607,24 +17594,13 @@ function urlToLandingKey(){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
-// Clapper break on Browse (owner, 2026-11-02): one per results page, after the 4th
-// casting. Who sees what: visitors = join, free talent with their one submission
-// unused = reminder with no button, free talent who used it = Premium. Premium,
-// casting directors and admins never see it. Returns null until auth, profile and
-// the applications read are all known, so a premium member never sees it flash.
-function clapperMode(authReady,session,myProfile,selfSubs){
-  if(!authReady)return null;
-  if(!session?.user)return "out";
-  if(!myProfile)return null;
-  if(!["talent","actor"].includes((myProfile.user_type||"").toLowerCase()))return null;
-  if((myProfile.membership_status||"free")==="active")return null;
-  if(selfSubs===null||selfSubs===undefined)return null;
-  return selfSubs>0?"used":"unused";
-}
+// Clapper break on Browse (owner, 2026-11-02): logged-out visitors only, one per results
+// page, after the 4th casting. Signed-in members never see it; waits for authReady so
+// it can't flash for them while their session is still loading.
 // The slide plays once per full page load (owner, 2026-11-02): a refresh or new visit
 // resets this, moving around inside the app does not, so later views show it at rest.
 let clapperPlayed=false;
-function ClapperBreak({mode,passed,onNavigate}){
+function ClapperBreak({passed,onNavigate}){
   const ref=useRef(null);
   const [state,setState]=useState(()=>{
     let calm=false;try{calm=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(_){}
@@ -17657,13 +17633,8 @@ function ClapperBreak({mode,passed,onNavigate}){
     return()=>{io.disconnect();if(timer){clearTimeout(timer);clear();}};
   },[]);
   const roles=passed===1?"role":"roles";
-  const m=mode==="out"
-    ?{h:<>{passed>0&&<>You just passed {passed} {roles}.<br className="clap-br"/> </>}Your first submission is free.</>,p:"Set up your profile in about a minute and apply.",b:"Create My Free Profile",go:"register-talent",take:"1"}
-    :mode==="unused"
-    ?{h:"Your free submission is still waiting.",p:"Find a role that fits you and hit Apply.",take:"1"}
-    :{h:"Keep going. Submit to every role that fits.",p:"Premium includes unlimited submissions, from $10.75/mo billed yearly.",b:"See Premium",go:"membership",take:"2"};
   return <div className={"clap-w"+(state==="pre"?" clap-closed":"")} ref={ref}>
-    <section className={"clap clap-"+state+" clap-m-"+mode} aria-label="CastSlate">
+    <section className={"clap clap-"+state} aria-label="CastSlate">
       <div className="clap-stick" aria-hidden="true"/>
       <span className="clap-pin" aria-hidden="true"/>
       <div className="clap-low" aria-hidden="true"/>
@@ -17671,11 +17642,11 @@ function ClapperBreak({mode,passed,onNavigate}){
         <div className="clap-cells" aria-hidden="true">
           <div className="clap-cell"><small>Prod.</small><b>CastSlate</b></div>
           <div className="clap-cell"><small>Scene</small><b>Your Move</b></div>
-          <div className="clap-cell"><small>Take</small><b>{m.take}</b></div>
+          <div className="clap-cell"><small>Take</small><b>1</b></div>
         </div>
         <div className="clap-main">
-          <div className="clap-txt"><p className="clap-h">{m.h}</p><p className="clap-p">{m.p}</p></div>
-          {m.b&&<button type="button" className="clap-btn" onClick={()=>onNavigate(m.go)}>{m.b}<Tri/></button>}
+          <div className="clap-txt"><p className="clap-h">{passed>0&&<>You just passed {passed} {roles}.<br className="clap-br"/> </>}Your first submission is free.</p><p className="clap-p">Set up your profile in about a minute and apply.</p></div>
+          <button type="button" className="clap-btn" onClick={()=>onNavigate("register-talent")}>Create My Free Profile<Tri/></button>
         </div>
       </div>
     </section>
@@ -17752,7 +17723,6 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   // so talent_id is filtered explicitly), and re-read whenever the sheet closes,
   // since a submission may have just happened inside it.
   const [appliedRoleIds,setAppliedRoleIds]=useState(()=>new Set());
-  const [selfSubs,setSelfSubs]=useState(null); // self-submissions on this account; null until read (Clapper break)
   // `replace` is set when one casting is opened from INSIDE another (the "More
   // roles" strip under the roles). Pushing there would stack /casting/A,
   // /casting/B… and the X — which pops exactly one entry — would land the reader
@@ -17803,11 +17773,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   },[restoreCasting]); // eslint-disable-line react-hooks/exhaustive-deps
   const sessionUid=session?.user?.id||null;
   useEffect(()=>{
-    if(!sessionUid||!active||sheetCasting){if(!sessionUid){setAppliedRoleIds(new Set());setSelfSubs(null);}return;}
+    if(!sessionUid||!active||sheetCasting){if(!sessionUid)setAppliedRoleIds(new Set());return;}
     let alive=true;
     (async()=>{try{
-      const{data}=await window.sb.from("applications").select("role_id,source").eq("talent_id",sessionUid);
-      if(alive&&data){setAppliedRoleIds(new Set(data.map(a=>a.role_id).filter(Boolean)));setSelfSubs(data.filter(a=>a.source!=="castslate").length);}
+      const{data}=await window.sb.from("applications").select("role_id").eq("talent_id",sessionUid);
+      if(alive&&data)setAppliedRoleIds(new Set(data.map(a=>a.role_id).filter(Boolean)));
     }catch(_){}})();
     return()=>{alive=false;};
   },[sessionUid,active,sheetCasting,refreshTick]);
@@ -18086,7 +18056,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
           </div>
-          <div className="b5-list">{(clapMode=>fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
+          <div className="b5-list">{fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
                way out. A pick gets a compact bottom-right shadow (owner-approved
                2026-09-26): tight, one direction, no spread — grounded, not a glow. */
@@ -18195,8 +18165,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 </div>}
               </div>
             </div>
-            {ci===3&&pageArr.length>4&&clapMode&&<ClapperBreak key={"clap-"+pg} mode={clapMode} passed={pageArr.slice(0,4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
-            </React.Fragment>);}))(clapperMode(authReady,session,myProfile,selfSubs))}</div>
+            {ci===3&&pageArr.length>4&&authReady&&!session?.user&&<ClapperBreak key={"clap-"+pg} passed={pageArr.slice(0,4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
+            </React.Fragment>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
             /* Short pagination (owner, 2026-10-27): first, last and the pages around the current one,
                with "…" gaps, instead of all 18 numbers in a row (wrapped into several rows on phones).
