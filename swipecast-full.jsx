@@ -5451,7 +5451,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
 /* GPU-composited marquee: transform animation runs off the main thread, so the
    slide stays perfectly smooth while every video keeps decoding/playing. */
-.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 60.7s linear infinite;}
+.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 69.4s linear infinite;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;outline:none;}
 /* No hover lift. Moving the card re-layered the playing video and made it (and
@@ -27738,6 +27738,8 @@ function NewsArticlePage({slug,onNavigate}){
 // into its opening frames, so the native loop restart is seamless, not a cut.
 // student2 (2026-11-03): owner-supplied Pexels 9810798, full 38s, crop y=240, 600x800
 // crf 21 (lite 360x480, 178 kbit/s), 0.6s crossfade, sRGB label like the rest of reel4.
+// creators (2026-11-03): owner-supplied Pexels 3917704, first 13.4s (one bad frame removed),
+// slowed to 60% with minterpolate, crop y=200, 600x800 crf 21 (lite 165 kbit/s), 0.75s crossfade.
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
@@ -27746,6 +27748,7 @@ const FORMAT_CARDS=[
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student2",icon:"cap"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:"mic"},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage",icon:"masks"},
+  {cat:"Content Creators",desc:"Your camera. Your audience.",file:"creators",icon:"camera"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
 ];
 const FORMAT_ICONS={
