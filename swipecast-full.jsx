@@ -5451,7 +5451,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
 /* GPU-composited marquee: transform animation runs off the main thread, so the
    slide stays perfectly smooth while every video keeps decoding/playing. */
-.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 69.4s linear -3.675s infinite;}
+.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 60.725s linear -3.675s infinite;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;outline:none;}
 /* No hover lift. Moving the card re-layered the playing video and made it (and
@@ -27752,21 +27752,21 @@ function NewsArticlePage({slug,onNavigate}){
 // 0.4s eased crossfade. Lite 360x480.
 // student3 / stage2 (2026-11-03): same clips slowed to 80%. student3 from the original with a 0.4s eased
 // crossfade; stage2 from reel3/stage.mp4, so its built-in crossfade stretched to about 0.75s.
+// voiceover4 (2026-11-04): owner-supplied Pexels 7599377, original speed, stabilized, crop y=1040 of 4096.
 // commercials3 (2026-11-04): Coverr woman-taking-photos-9338 (owner download), original speed, full 18s,
 // stabilized, crop x=470, 0.4s eased crossfade. Card uses .fmt-card-light.
 // ═══════════════════════════════════════════
-// Loop order alternates camera and no-camera cards: Feature, Commercials, Voiceover, Student, Theater,
-// Creators, Musical Theater, Indie. The array starts two cards earlier so Commercials starts further right;
+// Loop order: Feature, Commercials, Voiceover, Student, Theater, Musical Theater, Indie. Each card adds
+// 8.675s to the slide. The array starts two cards earlier so Commercials starts further right;
 // with the -3.675s delay on .fmt-track, its time on screen is 5s longer at any card width.
 const FORMAT_CARDS=[
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials3",icon:"megaphone",light:true},
-  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover3",icon:"mic",light:true},
+  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover4",icon:"mic",light:true},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
-  {cat:"Content Creators",desc:"Your camera. Your audience.",file:"creators",icon:"camera"},
 ];
 const FORMAT_ICONS={
   clapper:'<path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/>',
