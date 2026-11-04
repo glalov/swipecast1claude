@@ -27750,6 +27750,8 @@ function NewsArticlePage({slug,onNavigate}){
 // voiceover3: same, with a quicker 0.4s eased crossfade at the loop point (was 0.75s linear).
 // commercials2 (2026-11-03): licensed Adobe Stock 547881984, crop y=100, slowed to 40%, 31s loop,
 // 0.4s eased crossfade. Lite 360x480.
+// student3 / stage2 (2026-11-03): same clips slowed to 80%. student3 from the original with a 0.4s eased
+// crossfade; stage2 from reel3/stage.mp4, so its built-in crossfade stretched to about 0.75s.
 // ═══════════════════════════════════════════
 // Indie is listed first (the loop order is unchanged) so Commercials starts further right. With the
 // -3.675s delay on .fmt-track, its time on screen is 5s longer at any card width.
@@ -27758,9 +27760,9 @@ const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials2",icon:"megaphone"},
-  {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student2",icon:"cap"},
+  {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover3",icon:"mic",light:true},
-  {cat:"Theater",desc:"Performance. Style. Story.",file:"stage",icon:"masks"},
+  {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
   {cat:"Content Creators",desc:"Your camera. Your audience.",file:"creators",icon:"camera"},
 ];
 const FORMAT_ICONS={
