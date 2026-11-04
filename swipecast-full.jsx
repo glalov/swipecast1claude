@@ -5451,7 +5451,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
 /* GPU-composited marquee: transform animation runs off the main thread, so the
    slide stays perfectly smooth while every video keeps decoding/playing. */
-.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 69.4s linear infinite;}
+.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 69.4s linear -3.675s infinite;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;outline:none;}
 /* No hover lift. Moving the card re-layered the playing video and made it (and
@@ -27751,7 +27751,10 @@ function NewsArticlePage({slug,onNavigate}){
 // commercials2 (2026-11-03): licensed Adobe Stock 547881984, crop y=100, slowed to 40%, 31s loop,
 // 0.4s eased crossfade. Lite 360x480.
 // ═══════════════════════════════════════════
+// Indie is listed first (the loop order is unchanged) so Commercials starts further right. With the
+// -3.675s delay on .fmt-track, its time on screen is 5s longer at any card width.
 const FORMAT_CARDS=[
+  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials2",icon:"megaphone"},
@@ -27759,7 +27762,6 @@ const FORMAT_CARDS=[
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover3",icon:"mic",light:true},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage",icon:"masks"},
   {cat:"Content Creators",desc:"Your camera. Your audience.",file:"creators",icon:"camera"},
-  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
 ];
 const FORMAT_ICONS={
   clapper:'<path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/>',
@@ -28589,7 +28591,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     {/* ───────── CASTING-FORMAT MARQUEE — cinematic Playfair serif words, infinite scroll ───────── */}
     <div style={{padding:"30px 0 30px",background:"var(--bg)"}}>
       <div style={{maxWidth:1200,margin:"0 auto",textAlign:"center",padding:"0 24px",marginBottom:22}}>
-        <p style={{fontSize:12,letterSpacing:1.6,textTransform:"uppercase",color:"var(--t2)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
+        <p style={{fontSize:"clamp(14px,1.5vw,17px)",letterSpacing:1.8,textTransform:"uppercase",color:"var(--t1)",fontWeight:700,margin:0}}>{tr('landing.trustedBy')}</p>
       </div>
       {/* Premium video-card carousel — replaces the old text marquee. */}
       <FormatReel/>
