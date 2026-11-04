@@ -27755,15 +27755,16 @@ function NewsArticlePage({slug,onNavigate}){
 // commercials3 (2026-11-04): Coverr woman-taking-photos-9338 (owner download), original speed, full 18s,
 // stabilized, crop x=470, 0.4s eased crossfade. Card uses .fmt-card-light.
 // ═══════════════════════════════════════════
-// Indie is listed first (the loop order is unchanged) so Commercials starts further right. With the
-// -3.675s delay on .fmt-track, its time on screen is 5s longer at any card width.
+// Loop order alternates camera and no-camera cards: Feature, Commercials, Voiceover, Student, Theater,
+// Creators, Musical Theater, Indie. The array starts two cards earlier so Commercials starts further right;
+// with the -3.675s delay on .fmt-track, its time on screen is 5s longer at any card width.
 const FORMAT_CARDS=[
+  {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
-  {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials3",icon:"megaphone",light:true},
-  {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover3",icon:"mic",light:true},
+  {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
   {cat:"Content Creators",desc:"Your camera. Your audience.",file:"creators",icon:"camera"},
 ];
