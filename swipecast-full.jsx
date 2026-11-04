@@ -5469,6 +5469,9 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    whose backdrop-filter already gave it a layer). Rounded bottom corners keep
    the overlay inside the card even when a composited layer escapes overflow. */
 .fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:3;transform:translateZ(0);-webkit-transform:translateZ(0);border-bottom-left-radius:18px;border-bottom-right-radius:18px;background:linear-gradient(180deg,rgba(8,8,16,0) 0%,rgba(8,8,16,.55) 55%,rgba(8,8,16,.88) 100%);}
+/* Voiceover only: lighter shade so the note-taking in the clip stays visible. */
+.fmt-card-light .fmt-shade{background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 60%,rgba(10,10,18,.14) 78%,rgba(10,10,18,.5) 100%);}
+.fmt-card-light .fmt-body{background:linear-gradient(90deg,rgba(8,8,16,.62) 0%,rgba(8,8,16,.42) 42%,rgba(8,8,16,0) 72%);-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 34%);mask-image:linear-gradient(180deg,transparent 0,#000 34%);}
 .fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.26);}
 .fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);color:#fff;}
 .fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
@@ -27742,13 +27745,15 @@ function NewsArticlePage({slug,onNavigate}){
 // slowed to 60% with minterpolate, crop y=200, 600x800 crf 21 (lite 165 kbit/s), 0.75s crossfade.
 // reel5 (2026-11-03): new Voiceover clip, owner-supplied Pexels 7599935, full 21s, crop y=720.
 // Every full-size clip re-encoded x264 veryslow to save about 23%; SSIM against the old file stayed 0.99.
+// voiceover2 (2026-11-03): same clip stabilized before cropping (vidstab smoothing 200), crop moved
+// down so the note-taking sits higher, slowed to 75%, 27s loop. Card uses .fmt-card-light.
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:"megaphone"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student2",icon:"cap"},
-  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover",icon:"mic"},
+  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover2",icon:"mic",light:true},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage",icon:"masks"},
   {cat:"Content Creators",desc:"Your camera. Your audience.",file:"creators",icon:"camera"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
@@ -28142,7 +28147,7 @@ function FormatReel(){
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
         <div className="fmt-track">
           {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel5/'+c.file+'.mp4'; return (
-            <article className="fmt-card" role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
+            <article className={'fmt-card'+(c.light?' fmt-card-light':'')} role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
               <img className="fmt-poster" src={'/video-formats/reel5/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
               <video className="fmt-video" data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
