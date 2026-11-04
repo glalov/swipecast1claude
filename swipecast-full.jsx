@@ -27747,13 +27747,14 @@ function NewsArticlePage({slug,onNavigate}){
 // Every full-size clip re-encoded x264 veryslow to save about 23%; SSIM against the old file stayed 0.99.
 // voiceover2 (2026-11-03): same clip stabilized before cropping (vidstab smoothing 200), crop moved
 // down so the note-taking sits higher, slowed to 75%, 27s loop. Card uses .fmt-card-light.
+// voiceover3: same, with a quicker 0.4s eased crossfade at the loop point (was 0.75s linear).
 // ═══════════════════════════════════════════
 const FORMAT_CARDS=[
   {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials",icon:"megaphone"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student2",icon:"cap"},
-  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover2",icon:"mic",light:true},
+  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover3",icon:"mic",light:true},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage",icon:"masks"},
   {cat:"Content Creators",desc:"Your camera. Your audience.",file:"creators",icon:"camera"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
