@@ -4195,10 +4195,10 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
    honey star, hanging from a 4px honey line over the story side only (stops at the
    roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
    gate and dashboard keep the PickBadge chip. */
-/* Quiet badges (owner, 2026-11-05): no top line. Pick = dark navy tab with a gold star;
+/* Quiet badges (owner, 2026-11-05): no top line. Pick = dark navy tab, white text and star;
    New = a small teal word above the title, no tab. */
-.b5-ptab{position:absolute;z-index:1;top:0;left:0;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 5px 10px;border-radius:12px 0 8px 0;background:#1A1A2E;color:#F7F5F0;font-size:12px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
-.b5-ptab i{color:#E8C77A;font-size:12px;line-height:1;}
+.b5-ptab{position:absolute;z-index:1;top:0;left:0;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 5px 10px;border-radius:12px 0 8px 0;background:#1A1A2E;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
+.b5-ptab i{color:#FFFFFF;font-size:12px;line-height:1;}
 .b5-new .b5-ptab{top:22px;left:44px;padding:0;border-radius:0;background:none;color:#33826A;font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
 /* Dashboard upgrade banner button (C1, 2026-10-27): solid white on the coral gradient. */
 .dash-upg-btn{background:#fff;color:#1A1A2E;transition:background .15s;}
