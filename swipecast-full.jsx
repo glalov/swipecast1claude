@@ -27752,6 +27752,8 @@ function NewsArticlePage({slug,onNavigate}){
 // 0.4s eased crossfade. Lite 360x480.
 // student3 / stage2 (2026-11-03): same clips slowed to 80%. student3 from the original with a 0.4s eased
 // crossfade; stage2 from reel3/stage.mp4, so its built-in crossfade stretched to about 0.75s.
+// indie2 (2026-11-05): full 13s original (owner-supplied 14888361), stabilized, slowed to 80%, 16s loop,
+// 0.4s eased crossfade.
 // feature3 (2026-11-05): Pexels 8089122, 4K, original speed, 39s, stabilized (smoothing 60), crop keeps the
 // monitor and actors (x=480 of 2048), 0.4s eased crossfade.
 // feature2 (2026-11-04): reel5/feature stabilized (vidstab smoothing 60, zoom 2) with a 0.4s eased crossfade.
@@ -27764,7 +27766,7 @@ function NewsArticlePage({slug,onNavigate}){
 // so Commercials starts further right; with the -3.675s delay on .fmt-track, its time on screen is 5s
 // longer at any card width. Keep Commercials at index 3.
 const FORMAT_CARDS=[
-  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
+  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie2",icon:"star"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover4",icon:"mic",light:true},
   {cat:"Feature Films",desc:"Big stories.",file:"feature3",icon:"clapper"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials3",icon:"megaphone",light:true},
