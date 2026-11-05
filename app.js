@@ -3454,7 +3454,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-picklist .rl-row{border:1px solid var(--bdr);border-radius:12px;background:#FFFFFF;transition:background .25s,border-color .25s,box-shadow .25s;}
 .rl-picklist .rl-row:last-child{border-bottom:1px solid var(--bdr);}
 .rl-picklist .rl-row::before{display:none;}
-.rl-picklist .rl-row.rl-open{background:#F4F9F7;border-color:#33826A;box-shadow:inset 3px 0 0 #33826A;}
+.rl-picklist .rl-row.rl-open{background:#FFFFFF;border-color:#CFE0DC;box-shadow:inset 3px 0 0 #33826A;}
 .rl-picklist .rl-top,.rl-picklist .rl-row.rl-open .rl-top,.rl-picklist .rl-row.rl-open .rl-top.rl-clickable:hover,.cd-merged .rl-picklist .rl-top{background:transparent;padding:18px 20px;}
 @media (hover:hover){.rl-picklist .rl-row:not(.rl-open):has(>.rl-top.rl-clickable:hover){border-color:#CFE0DC;background:#FBFDFC;}}
 .rl-radio{width:22px;height:22px;border-radius:50%;border:2px solid #B9B3A8;background:#FFFFFF;flex:none;margin-top:26px;display:flex;align-items:center;justify-content:center;color:#FFFFFF;transition:border-color .2s,background .2s;}
