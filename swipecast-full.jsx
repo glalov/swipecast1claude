@@ -27752,6 +27752,7 @@ function NewsArticlePage({slug,onNavigate}){
 // 0.4s eased crossfade. Lite 360x480.
 // student3 / stage2 (2026-11-03): same clips slowed to 80%. student3 from the original with a 0.4s eased
 // crossfade; stage2 from reel3/stage.mp4, so its built-in crossfade stretched to about 0.75s.
+// feature2 (2026-11-04): reel5/feature stabilized (vidstab smoothing 60, zoom 2) with a 0.4s eased crossfade.
 // voiceover4 (2026-11-04): owner-supplied Pexels 7599377, original speed, stabilized, crop y=1040 of 4096.
 // commercials3 (2026-11-04): Coverr woman-taking-photos-9338 (owner download), original speed, full 18s,
 // stabilized, crop x=470, 0.4s eased crossfade. Card uses .fmt-card-light.
@@ -27763,7 +27764,7 @@ function NewsArticlePage({slug,onNavigate}){
 const FORMAT_CARDS=[
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie",icon:"star"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover4",icon:"mic",light:true},
-  {cat:"Feature Films",desc:"Big stories.",file:"feature",icon:"clapper"},
+  {cat:"Feature Films",desc:"Big stories.",file:"feature2",icon:"clapper"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials3",icon:"megaphone",light:true},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
