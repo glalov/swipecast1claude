@@ -17424,6 +17424,12 @@ function castingRecencyCompare(a,b){
 // first, but Browse re-sorts client-side, and a sort that ignored `featured`
 // silently dropped the pinning — the picks fell to wherever their posted date
 // put them. Keep this ahead of the recency tiebreak.
+// Posted within the last 3 days, by the date the casting actually reached people.
+function castingIsRecent(casting){
+  const t=Date.parse(castingPostedAt(casting)||0)||0;
+  return t>0&&Date.now()-t<=3*864e5;
+}
+
 function castingFeaturedRank(casting){
   return castingIsPick(casting)?0:1;
 }
@@ -18036,6 +18042,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
+  // Top of the list: up to 3 of the newest open castings posted in the last 3 days, then the Picks, then
+  // everything else by date. A new casting gets a "New" tab; a new Pick keeps its Pick tab.
+  const newIds=new Set(fc.filter(c=>castingSortBucket(c)===0&&castingIsRecent(c)).sort(castingRecencyCompare).slice(0,3).map(c=>c.id));
+  const browseRank=c=>newIds.has(c.id)?0:castingIsPick(c)?1:2;
+  fc.sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(browseRank(a)-browseRank(b))||castingRecencyCompare(a,b));
   return(<div className="page page-wide page-browse">
     <div className="section-label">{landingKey?<>{landingDef(landingKey)?.label||t('search.title')}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:t('search.title')}</div>
     <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
@@ -18097,10 +18108,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                (owner, 2026-10-27, demo option 1: no label above, the card's Pick tab is enough).
                Follows the filters automatically, since it only appears when a Pick is in the
                filtered results and is followed by a regular casting. */
-            const afterPicks=ci>0&&castingIsPick(pageArr[ci-1])&&!isFeat;
+            const isNewCard=newIds.has(rawC.id)&&!isFeat;
+            const afterPicks=ci>0&&browseRank(pageArr[ci-1])<2&&browseRank(rawC)===2;
             return(<React.Fragment key={c.id}>
             {afterPicks&&<div className="b5-allcast" role="separator" aria-label="All castings"><span>All castings</span></div>}
-            <div className={"b5-card"+(isFeat?" b5-pick":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
+            <div className={"b5-card"+(isFeat||isNewCard?" b5-pick":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
               onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
@@ -18108,6 +18120,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               <div className={"b5-grid"+(isArchived?" cs-archived-dim":"")}>
                 <div className="b5-main">
                   {isFeat&&<span className="b5-ptab"><i className="ti ti-star-filled" aria-hidden="true"/>CastSlate Pick</span>}
+                  {isNewCard&&<span className="b5-ptab">{lang==='es'?'Nuevo':'New'}</span>}
                   <div className="b5-head">
                     {/* The title opens the sheet at every width (the card-level
                         click is off on phones so a scroll tap can't open one). */}
