@@ -184,7 +184,7 @@ const TRANSLATIONS = {
     'casting.pay':'Pay / Rate','casting.auditionFormat':'Audition Format',
     'casting.shoots':'Shoot Dates','casting.rehearsal':'Rehearsal',
     'casting.submissions':'Submissions','casting.director':'Director',
-    'casting.production':'Production','casting.roles':'Roles','casting.details':'Details','casting.hide':'Hide',
+    'casting.production':'Production','casting.roles':'Roles','casting.details':'Details','casting.hide':'Hide','casting.chooseRole':'Choose your role','casting.chooseSub':'{n} open · select the role you want to apply for.','casting.applyFor':'Apply for','casting.auditionFor':'Audition for',
     'casting.synopsis':'About the Project','casting.story':'The Story',
     'casting.role.lead':'Lead','casting.role.supporting':'Supporting','casting.role.featured':'Featured',
     'casting.role.seriesRegular':'Series Regular','casting.role.recurring':'Recurring',
@@ -436,7 +436,7 @@ const TRANSLATIONS = {
     'casting.pay':'Pago / Tarifa','casting.auditionFormat':'Formato de audición',
     'casting.shoots':'Fechas de rodaje','casting.rehearsal':'Ensayo',
     'casting.submissions':'Postulaciones','casting.director':'Director',
-    'casting.production':'Producción','casting.roles':'Papeles','casting.details':'Detalles','casting.hide':'Ocultar',
+    'casting.production':'Producción','casting.roles':'Papeles','casting.details':'Detalles','casting.hide':'Ocultar','casting.chooseRole':'Elige tu papel','casting.chooseSub':'{n} abiertos · selecciona el papel al que quieres postular.','casting.applyFor':'Postular a','casting.auditionFor':'Audicionar para',
     'casting.synopsis':'Sobre el proyecto','casting.story':'La historia',
     'casting.role.lead':'Protagonista','casting.role.supporting':'Secundario','casting.role.featured':'Destacado',
     'casting.role.seriesRegular':'Regular de serie','casting.role.recurring':'Recurrente',
@@ -5720,6 +5720,25 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-row.rl-open .rl-body{grid-template-rows:1fr;}
 .rl-body>.rl-clip{overflow:hidden;}
 .rl-inner{padding:0 20px 20px;}
+/* Choose-your-role ledger (owner, 2026-11-05): each role is an option in its own box with a selection
+   circle; the chosen one is tinted with a teal edge, and a solid triangle replaces the chevron circle. */
+.rl-list.rl-picklist{border:0;border-radius:0;background:none;overflow:visible;display:grid;gap:10px;}
+.rl-picklist .rl-row{border:1px solid var(--bdr);border-radius:12px;background:#FFFFFF;transition:background .25s,border-color .25s,box-shadow .25s;}
+.rl-picklist .rl-row:last-child{border-bottom:1px solid var(--bdr);}
+.rl-picklist .rl-row::before{display:none;}
+.rl-picklist .rl-row.rl-open{background:#F4F9F7;border-color:#33826A;box-shadow:inset 3px 0 0 #33826A;}
+.rl-picklist .rl-top,.rl-picklist .rl-row.rl-open .rl-top,.rl-picklist .rl-row.rl-open .rl-top.rl-clickable:hover,.cd-merged .rl-picklist .rl-top{background:transparent;padding:18px 20px;}
+@media (hover:hover){.rl-picklist .rl-row:not(.rl-open):has(>.rl-top.rl-clickable:hover){border-color:#CFE0DC;background:#FBFDFC;}}
+.rl-radio{width:22px;height:22px;border-radius:50%;border:2px solid #B9B3A8;background:#FFFFFF;flex:none;margin-top:26px;display:flex;align-items:center;justify-content:center;color:#FFFFFF;transition:border-color .2s,background .2s;}
+.rl-radio::after{content:"";width:10px;height:10px;border-radius:50%;background:#33826A;transform:scale(0);transition:transform .2s;}
+.rl-row.rl-open .rl-radio{border-color:#33826A;}
+.rl-row.rl-open .rl-radio::after{transform:scale(1);}
+.rl-radio.done{border-color:#33826A;background:#33826A;}
+.rl-radio.done::after{display:none;}
+.rl-picklist .rl-chev.rl-tri,.rl-picklist .rl-row.rl-open .rl-chev.rl-tri,.rl-picklist .rl-top.rl-clickable:hover .rl-chev.rl-tri{width:14px;height:14px;border:0;background:none;border-radius:0;color:#14141F;}
+.rl-picklist .rl-detail{min-width:0;margin-right:0;}
+.rl-picklist .rl-right{gap:8px;}
+.apply-cta.apply-named{width:auto;max-width:none;white-space:nowrap;gap:8px;}
 .rl-rule{height:1px;background:var(--bdr);margin-bottom:15px;}
 /* The lines arrive in sequence rather than all at once — a 60-word brief plus a
    row of chips landing in one frame reads as a dump. */
@@ -5846,6 +5865,11 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .rl-right .rl-applywrap{flex:1;display:flex;}
   .rl-right .rl-applywrap>*{flex:1;text-align:center;}
   .rl-inner{padding:0 16px 18px;}
+  .rl-picklist .rl-top,.rl-picklist .rl-row.rl-open .rl-top,.cd-merged .rl-picklist .rl-top{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px 14px;padding:16px 16px;}
+  .rl-picklist .rl-radio{margin-top:24px;}
+  .rl-picklist .rl-right{grid-column:2;width:auto;}
+  .rl-picklist .rl-right .rl-applywrap{flex:0 1 auto;}
+  .apply-cta.apply-named{white-space:normal;text-align:left;width:auto !important;max-width:100% !important;align-self:flex-start;justify-self:start;flex:0 0 auto;}
   .rl-nm{font-size:19px;}
   .rl-desc{font-size:16px;}
   /* Rate goes back to the left edge on a phone and the button takes the rest of
@@ -14484,7 +14508,7 @@ function CastingDetailPage({casting,onBack,onNavigate,isLoggedIn,onRequireAuth,m
     if(i<0&&focusRole.id)i=sorted.findIndex(x=>x&&x.id===focusRole.id);
     if(i<0)i=sorted.findIndex(x=>x&&x.name===focusRole.name);
     if(i<0)return;
-    setDescOpen(p=>({...p,[i]:true}));
+    setDescOpen({[i]:true});
     setTimeout(()=>{try{const el=document.querySelector('.rl-row[data-ri="'+i+'"]');if(el)el.scrollIntoView({behavior:"smooth",block:"center"});}catch(_){}},380);
   },[focusRole,isLoggedIn,rolesReady,realRoleIds]);// eslint-disable-line
   // A headshot added while this page is open (the "Add your headshot" step that
@@ -15046,7 +15070,11 @@ Free submission used
       <div className="flex-between" style={{marginBottom:16}}>
         <div>
           <div className="section-label">{t('casting.roles')}</div>
-          <h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginTop:4}}>{c.roles?.length||0} {(c.roles?.length||0)===1?t('search.role'):t('search.roles')} {applicationsClosed?"Listed":"Open"}</h2>
+          {/* Two or more open roles in the ledger: the roles are options to choose from (owner, 2026-11-05). */}
+          {(!applicationsClosed&&(c.roles?.length||0)>1&&(c.roles?.length||0)<ROLE_BOARD_MIN)
+            ?<><h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginTop:4}}>{t('casting.chooseRole')}</h2>
+              <p style={{margin:"4px 0 0",fontSize:14.5,color:"var(--t2)"}}>{t('casting.chooseSub').replace('{n}',c.roles.length)}</p></>
+            :<h2 style={{fontSize:26,fontWeight:800,letterSpacing:-0.5,marginTop:4}}>{c.roles?.length||0} {(c.roles?.length||0)===1?t('search.role'):t('search.roles')} {applicationsClosed?"Listed":"Open"}</h2>}
         </div>
       </div>
       {(()=>{
@@ -15058,12 +15086,14 @@ Free submission used
           return {instr,hasInstructions:instr&&(instr.sides_pdf_url||instr.direction_notes||instr.slate_instructions||instr.wardrobe_notes)};
         };
         const unitSfx=(u,long)=>u==="flat"?" flat":u==="week"?(long?" / week":"/wk"):u==="hour"?(long?" / hour":"/hr"):(long?" / day":"/day");
-        const applyCtl=(r,i,hasInstructions,big)=>applicationsClosed
+        const applyCtl=(r,i,hasInstructions,big,named)=>applicationsClosed
           ? <span className="tag" style={{fontSize:12,fontWeight:700,padding:"8px 14px",background:"rgba(192,57,43,0.08)",color:"#c0392b",border:"1px solid rgba(192,57,43,0.25)"}}>{castingArchived?"Filled":"Applications closed"}</span>
           : applied.has(i)
             ? <span className={"role-applied"+(big?" big":"")}>{hasInstructions?"Audition Submitted":"Applied"}<Ico n="check" s={big?16:14}/></span>
             : big
-              ? <button className="btn-teal apply-cta" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition now":"Apply now"}</button>
+              ? (named
+                ? <button className="btn-teal apply-cta apply-named" onClick={()=>handleApply(r,i)}>{t(hasInstructions?'casting.auditionFor':'casting.applyFor')} {r.name}<Tri/></button>
+                : <button className="btn-teal apply-cta" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition now":"Apply now"}</button>)
               : <button className="btn-teal btn-sm" onClick={()=>handleApply(r,i)}>{hasInstructions?"Audition":"Apply"}</button>;
         const submitChips=(r,hasInstructions)=>{
           const media=Array.isArray(r.required_media)?r.required_media.filter(Boolean):[];
@@ -15187,6 +15217,7 @@ Free submission used
         // résumé, self-tape" turned a part into a list of things to produce —
         // an actor reads the role, sees the money, and decides. What to attach
         // is the apply screen's job, where the fields ask for themselves.
+        const picking=!applicationsClosed;
         const ledgerRow=([r,i])=>{
           const {instr,hasInstructions}=metaFor(i);
           // A single-role casting opens by default: hiding the only brief on the
@@ -15204,7 +15235,8 @@ Free submission used
           // Written from the EFFECTIVE open state, not from descOpen[i]: on a
           // one-role casting the map starts empty while the row shows open, and
           // !undefined would have made the first click a no-op.
-          const toggle=()=>{if(foldable)setDescOpen(p=>({...p,[i]:!open}));};
+          // Choosing a role closes the others; choosing the open one again closes it.
+          const toggle=()=>{if(!foldable)return;if(picking)setDescOpen(open?{[i]:false}:Object.fromEntries(sorted.map((_,j)=>[j,j===i])));else setDescOpen(p=>({...p,[i]:!open}));};
           // Only a closed, foldable row shows it: open (or unfoldable) rows already
           // have the Applied button in view.
           const appliedClosed=applied.has(i)&&foldable&&!open;
@@ -15215,6 +15247,7 @@ Free submission used
                 "aria-label":(open?"Collapse ":"Expand ")+(r.name||"role")+" details",
                 onClick:toggle,
                 onKeyDown:(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle();}}}:{})}>
+              {picking&&foldable&&<span className={"rl-radio"+(applied.has(i)?" done":"")} aria-hidden="true">{applied.has(i)&&<Ico n="check" s={13}/>}</span>}
               <div style={{minWidth:0}}>
                 {(r.type||appliedClosed)&&<div className="rl-kind">{r.type}{appliedClosed&&<span className="rl-ap-tag">✓ Submitted</span>}</div>}
                 <div className="rl-nm">{r.name}</div>
@@ -15236,7 +15269,7 @@ Free submission used
                   {applyCtl(r,i,hasInstructions)}
                 </span>}
                 {foldable&&<span className="rl-detail" aria-hidden="true">{t(open?'casting.hide':'casting.details')}</span>}
-                {foldable&&<span className="rl-chev" aria-hidden="true"><Ico n="chevron-down" s={16}/></span>}
+                {foldable&&<span className={"rl-chev"+(picking?" rl-tri":"")} aria-hidden="true">{picking?<svg width="11" height="11" viewBox="0 0 12 12"><path d="M1.5 3.5h9L6 9.5z" fill="currentColor"/></svg>:<Ico n="chevron-down" s={16}/>}</span>}
               </div>
             </div>
             {foldable&&<div className="rl-body"><div className="rl-clip"><div className="rl-inner">
@@ -15244,7 +15277,7 @@ Free submission used
               <div className="rl-cols">
                 <div className="rl-desc">{r.desc}</div>
                 <div className="rl-side" onClick={(e)=>e.stopPropagation()} onKeyDown={(e)=>e.stopPropagation()}>
-                  {applyCtl(r,i,hasInstructions,true)}
+                  {applyCtl(r,i,hasInstructions,true,picking)}
                   {items}
                 </div>
               </div>
@@ -15253,7 +15286,7 @@ Free submission used
           </div>);
         };
         return(
-        <div ref={rolesWrapRef} className="rl-list">
+        <div ref={rolesWrapRef} className={"rl-list"+(picking?" rl-picklist":"")}>
           {indexed.map(ledgerRow)}
         </div>);
       })()}
