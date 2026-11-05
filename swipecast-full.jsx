@@ -4136,50 +4136,17 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-pickpill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8A5A12;background:#FBF1DE;border-radius:999px;padding:4px 11px;}
 .b5-pickpill{overflow:hidden;}
 /* "All castings" label after the CastSlate Picks (2026-10-27): same look as the Classes page's "All Classes". */
-/* Clapper break on Browse (owner, 2026-11-02, demo "Whole clapper", Black). Slides in solid
-   from past the right edge, then the stick snaps shut. Transform only, no fades. */
-.clap-w{overflow-x:clip;width:100vw;margin:4px 0 4px calc(50% - 50vw);padding:0 16px;box-sizing:border-box;position:relative;z-index:3;}
-.clap-w.clap-closed{height:0;margin-top:calc(var(--clap-gap,36px) * -1);margin-bottom:0;}
-@supports not (overflow:clip){.clap-w{overflow:hidden;}}
-.clap{position:relative;max-width:760px;margin:0 auto;will-change:transform;}
-.clap-stick,.clap-low{position:relative;height:30px;background:repeating-linear-gradient(-55deg,#FFFFFF 0 26px,#111111 26px 52px);border-radius:6px 6px 2px 2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
-.clap-stick{transform-origin:14px 100%;z-index:2;margin-bottom:3px;}
-.clap-low{background:repeating-linear-gradient(55deg,#FFFFFF 0 26px,#111111 26px 52px);border-radius:2px 2px 0 0;}
-.clap-pin{position:absolute;z-index:3;left:5px;top:21px;width:24px;height:24px;border-radius:50%;background:#2A2622;box-shadow:inset 0 0 0 5px rgba(255,255,255,.14);}
-.clap-board{position:relative;background:#14110F;border-radius:0 0 12px 12px;padding:18px 26px 26px;color:#FFFFFF;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 14px 24px -8px rgba(26,18,8,.28);}
-.clap-cells{display:grid;grid-template-columns:2fr 1fr 1fr;border:1.5px solid rgba(255,255,255,.3);border-radius:4px;margin-bottom:18px;}
-.clap-cell{padding:7px 12px 8px;border-left:1.5px solid rgba(255,255,255,.3);min-width:0;}
-.clap-cell:first-child{border-left:0;}
-.clap-cell small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#E8E8E8;}
-.clap-cell b{display:block;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:20px;line-height:1.2;color:#FFFFFF;white-space:nowrap;}
-.clap-main{display:flex;align-items:center;justify-content:space-between;gap:24px;}
-.clap-txt{min-width:0;}
-.clap-h{text-wrap:balance;margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:27px;line-height:1.16;letter-spacing:-.4px;color:#FFFFFF;}
-.clap-p{margin:7px 0 0;font-size:15.5px;line-height:1.45;color:#E8E8E8;}
-.clap-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:0 24px;margin-right:6px;border:0;border-radius:14px;background:#FFFFFF;color:#111111;font:800 15px 'DM Sans',sans-serif;letter-spacing:.2px;white-space:nowrap;cursor:pointer;box-shadow:0 0 0 6px rgba(255,255,255,.14);transition:box-shadow .15s;}
-.clap-btn:hover{box-shadow:0 0 0 8px rgba(255,255,255,.18);}
+/* Signup break on Browse (owner, 2026-11-05, demo "Brand navy"): replaces the animated
+   clapperboard. Still panel the width of the cards in the Manager Mode band style
+   (.mm-end): centered, soft gold glow, cream button with a ring, CastSlate brand navy. */
+.clap{position:relative;border-radius:14px;padding:56px 40px 60px;text-align:center;color:#FFFFFF;background:radial-gradient(ellipse 45% 60% at 88% 10%,rgba(240,184,96,.16) 0%,transparent 70%),linear-gradient(160deg,#26263F 0%,#1A1A2E 55%,#131322 100%);box-shadow:0 2px 3px -2px rgba(26,26,46,.42);}
+.clap-h{text-wrap:balance;margin:0 auto;max-width:760px;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.4px;color:#FFFFFF;}
+.clap-p{text-wrap:balance;margin:12px auto 0;font-size:15.5px;line-height:1.45;color:rgba(255,255,255,.88);}
+.clap-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;margin:32px 6px 6px;padding:17px 34px;border:0;border-radius:14px;background:#FFF6E6;color:#1A1A2E;font:800 15px 'DM Sans',sans-serif;letter-spacing:.2px;cursor:pointer;box-shadow:0 0 0 6px rgba(255,246,230,.12);transition:transform .15s,box-shadow .15s;}
+.clap-btn:hover{transform:translateY(-1px);box-shadow:0 0 0 8px rgba(255,246,230,.16);}
 .clap-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:8px;}
-.clap-btn .cs-tri{color:#111111;}
-.clap-pre{transform:translateX(100vw);}
-.clap-pre .clap-stick{transform:rotate(-7deg);}
-.clap-in{animation:clapIn .8s cubic-bezier(.3,.15,.2,1) both;}
-.clap-in .clap-stick{animation:clapSnap .18s cubic-bezier(.6,0,1,.7) .85s both;}
-.clap-in .clap-board{animation:clapHit .2s ease-out 1.03s;}
-@keyframes clapIn{0%{transform:translateX(100vw) rotate(4deg);}100%{transform:none;}}
-@keyframes clapSnap{from{transform:rotate(-7deg);}to{transform:none;}}
-@keyframes clapHit{0%{transform:translateY(0);}35%{transform:translateY(3px);}100%{transform:none;}}
-@media(max-width:900px){
-  .clap-board{padding:14px 16px 18px;}
-  .clap-main{flex-direction:column;align-items:stretch;gap:14px;}
-  .clap-h{font-size:24px;}
-  .clap-btn{margin:6px;}
-  .clap-cells{grid-template-columns:1.3fr 1.3fr .6fr;}
-  .clap-cell{padding:6px 9px;}
-  .clap-cell b{font-size:15.5px;}
-  .clap-stick,.clap-low{height:24px;}
-  .clap-pin{top:16px;width:20px;height:20px;left:4px;}
-}
-@media(prefers-reduced-motion:reduce){.clap-pre,.clap-pre .clap-stick{transform:none;}.clap-in,.clap-in *{animation:none!important;}}
+.clap-btn .cs-tri{color:#8A5A12;}
+@media(max-width:900px){.clap{padding:40px 22px 42px;}.clap-h{font-size:22.5px;}.clap-br{display:none;}}
 .b5-allcast{display:flex;align-items:center;gap:10px;margin-top:16px;}
 .b5-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:32px;flex-wrap:wrap;}
 .b5-pg{min-width:38px;height:38px;padding:0 6px;border-radius:8px;border:1px solid var(--bdr);background:#FFFFFF;color:var(--t1);font:600 13.5px 'DM Sans',sans-serif;cursor:pointer;font-variant-numeric:tabular-nums;transition:border-color .15s;}
@@ -17644,63 +17611,16 @@ function urlToLandingKey(){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
-// Clapper break on Browse (owner, 2026-11-02): logged-out visitors only, one per results
+// Signup break on Browse (owner, 2026-11-02; brand navy panel since 2026-11-05): logged-out visitors only, one per results
 // page, after the 4th casting. Signed-in members never see it; waits for authReady so
 // it can't flash for them while their session is still loading.
-// The slide plays once per full page load (owner, 2026-11-02): a refresh or new visit
-// resets this, moving around inside the app does not, so later views show it at rest.
-let clapperPlayed=false;
 function ClapperBreak({passed,onNavigate}){
-  const ref=useRef(null);
-  const [state,setState]=useState(()=>{
-    let calm=false;try{calm=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(_){}
-    return clapperPlayed||calm?"done":"pre";
-  });
-  useEffect(()=>{
-    const w=ref.current;
-    if(!w||state!=="pre")return;
-    const gap=parseFloat(getComputedStyle(w.parentElement).rowGap)||0;
-    w.style.setProperty("--clap-gap",gap+"px");
-    let timer=0,moved=[];
-    const clear=()=>moved.forEach(x=>{x.style.transition="";x.style.transform="";x.style.willChange="";});
-    // Cards part as the clapper arrives. The gap opens in one step and the cards below
-    // glide into it on transforms, so the page isn't laid out again on every frame.
-    const fire=()=>{
-      clapperPlayed=true;
-      for(let n=w.nextElementSibling;n;n=n.nextElementSibling)moved.push(n);
-      const top=moved.length?moved[0].getBoundingClientRect().top:0;
-      w.classList.remove("clap-closed");
-      const delta=moved.length?moved[0].getBoundingClientRect().top-top:0;
-      moved.forEach(x=>{x.style.willChange="transform";x.style.transition="none";x.style.transform="translateY("+(-delta)+"px)";});
-      void w.offsetWidth;
-      moved.forEach(x=>{x.style.transition="transform .62s cubic-bezier(.33,0,.15,1)";x.style.transform="translateY(0)";});
-      timer=setTimeout(clear,680);
-      setState("in");
-    };
-    if(!window.IntersectionObserver){fire();return;}
-    const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();fire();}},{threshold:0,rootMargin:"0px 0px -30% 0px"}); // starts 70% down the screen (owner, 2026-11-02)
-    io.observe(w);
-    return()=>{io.disconnect();if(timer){clearTimeout(timer);clear();}};
-  },[]);
   const roles=passed===1?"role":"roles";
-  return <div className={"clap-w"+(state==="pre"?" clap-closed":"")} ref={ref}>
-    <section className={"clap clap-"+state} aria-label="CastSlate">
-      <div className="clap-stick" aria-hidden="true"/>
-      <span className="clap-pin" aria-hidden="true"/>
-      <div className="clap-low" aria-hidden="true"/>
-      <div className="clap-board">
-        <div className="clap-cells" aria-hidden="true">
-          <div className="clap-cell"><small>Prod.</small><b>CastSlate</b></div>
-          <div className="clap-cell"><small>Scene</small><b>Your Move</b></div>
-          <div className="clap-cell"><small>Take</small><b>1</b></div>
-        </div>
-        <div className="clap-main">
-          <div className="clap-txt"><p className="clap-h">{passed>0&&<>You just passed {passed} {roles}.<br className="clap-br"/> </>}Your first submission is free.</p><p className="clap-p">Set up your profile in about a minute and apply.</p></div>
-          <button type="button" className="clap-btn" onClick={()=>onNavigate("register-talent")}>Create My Free Profile<Tri/></button>
-        </div>
-      </div>
-    </section>
-  </div>;
+  return <section className="clap" aria-label="Create your free profile">
+    <p className="clap-h">{passed>0&&<>You just passed {passed} {roles}.<br className="clap-br"/> </>}Your first submission is free.</p>
+    <p className="clap-p">Set up your profile in about a minute and apply.</p>
+    <button type="button" className="clap-btn" onClick={()=>onNavigate("register-talent")}>Create My Free Profile<Tri/></button>
+  </section>;
 }
 function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,onRequireAuth,onRequireLogin,castingsVersion=0,session,myProfile,active=true,authReady=true,restoreCasting=null,onRestoreConsumed,onPendingApply,onAuthComplete}){
   const t=useT();
