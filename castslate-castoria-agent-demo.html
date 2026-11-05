@@ -98,20 +98,19 @@ h1 span{color:var(--out2);}
    later. Once per visitor, never while the panel is open. */
 .nudge{position:fixed;right:96px;bottom:34px;z-index:61;pointer-events:none;display:none;}
 .nudge.on{display:block;}
+/* Quiet nudge (owner, 2026-11-05): plain pill that sits still, no comic bubble or wobble.
+   Phones show only the round launcher, so nothing covers the cards. */
 .nudge b{
-  position:relative;display:block;background:#fff;color:#12121C;border:2.5px solid #12121C;
-  border-radius:26px 26px 8px 26px;padding:11px 17px;
-  font-family:var(--sys);font-weight:700;font-size:15px;letter-spacing:-.2px;white-space:nowrap;
-  box-shadow:4px 5px 0 rgba(18,18,28,.92);
-  animation:nudgeIn .42s cubic-bezier(.2,1.6,.4,1) both,nudgeWobble 2.6s ease-in-out .5s infinite;
+  position:relative;display:block;background:#fff;color:#1A1A2E;border:1px solid #D9D3C7;
+  border-radius:999px;padding:8px 14px;
+  font-family:var(--sys);font-weight:600;font-size:14px;letter-spacing:-.1px;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(26,26,46,.10);
+  animation:nudgeIn .3s ease-out both;
 }
-.nudge b::after{content:"";position:absolute;right:-19px;bottom:11px;border:9px solid transparent;border-left-color:#12121C;border-left-width:16px;}
-.nudge b::before{content:"";position:absolute;right:-11px;bottom:14px;z-index:1;border:6px solid transparent;border-left-color:#fff;border-left-width:11px;}
 .nudge.out b{animation:nudgeOut .3s ease-in forwards;}
-@keyframes nudgeIn{0%{opacity:0;transform:scale(.3) rotate(-9deg)}60%{opacity:1;transform:scale(1.06) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(-1.5deg)}}
-@keyframes nudgeWobble{0%,100%{transform:scale(1) rotate(-1.5deg)}50%{transform:scale(1.025) rotate(1deg)}}
-@keyframes nudgeOut{to{opacity:0;transform:scale(.82) translateY(6px)}}
-@media(max-width:560px){.nudge{right:82px;bottom:26px;}.nudge b{font-size:14px;padding:9px 14px;}}
+@keyframes nudgeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes nudgeOut{to{opacity:0;transform:translateY(4px)}}
+@media(max-width:899px){.nudge,.nudge.on{display:none;}}
 @media(prefers-reduced-motion:reduce){.nudge b{animation:none}.nudge.out b{opacity:0}}
 
 /* ── thread panel ─────────────────────────────────────────── */
