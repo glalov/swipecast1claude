@@ -5451,7 +5451,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
 /* GPU-composited marquee: transform animation runs off the main thread, so the
    slide stays perfectly smooth while every video keeps decoding/playing. */
-.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 60.725s linear -3.675s infinite;}
+.fmt-track{display:flex;width:max-content;will-change:transform;animation:fmtSlide 60.725s linear infinite;}
+.fmt-track.fmt-wait{animation-play-state:paused;}
 @keyframes fmtSlide{from{transform:translate3d(0,0,0);}to{transform:translate3d(-50%,0,0);}}
 .fmt-card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;cursor:pointer;background:#15151f;outline:none;}
 /* No hover lift. Moving the card re-layered the playing video and made it (and
@@ -27754,6 +27755,7 @@ function NewsArticlePage({slug,onNavigate}){
 // crossfade; stage2 from reel3/stage.mp4, so its built-in crossfade stretched to about 0.75s.
 // indie2 (2026-11-05): full 13s original (owner-supplied 14888361), stabilized, slowed to 80%, 16s loop,
 // 0.4s eased crossfade.
+// feature4 (2026-11-05): feature3 with the clapperboard moment (first 4.6s of the source) slowed by 2.7s.
 // feature3 (2026-11-05): Pexels 8089122, 4K, original speed, 39s, stabilized (smoothing 60), crop keeps the
 // monitor and actors (x=480 of 2048), 0.4s eased crossfade.
 // feature2 (2026-11-04): reel5/feature stabilized (vidstab smoothing 60, zoom 2) with a 0.4s eased crossfade.
@@ -27762,17 +27764,16 @@ function NewsArticlePage({slug,onNavigate}){
 // stabilized, crop x=470, 0.4s eased crossfade. Card uses .fmt-card-light.
 // ═══════════════════════════════════════════
 // Loop order: Feature, Commercials, Theater, Student, Musical Theater, Indie, Voiceover, so the dark cards
-// and the camera cards stay apart. Each card adds 8.675s to the slide. The array starts two cards earlier
-// so Commercials starts further right; with the -3.675s delay on .fmt-track, its time on screen is 5s
-// longer at any card width. Keep Commercials at index 3.
+// and the camera cards stay apart. Each card adds 8.675s to the slide. FormatReel rotates this list at
+// first render so Feature Films starts at the right edge of the screen, at any screen width.
 const FORMAT_CARDS=[
-  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie2",icon:"star"},
-  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover4",icon:"mic",light:true},
-  {cat:"Feature Films",desc:"Big stories.",file:"feature3",icon:"clapper"},
+  {cat:"Feature Films",desc:"Big stories.",file:"feature4",icon:"clapper"},
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials3",icon:"megaphone",light:true},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
+  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie2",icon:"star"},
+  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover4",icon:"mic",light:true},
 ];
 const FORMAT_ICONS={
   clapper:'<path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/>',
@@ -28059,6 +28060,18 @@ function FormatReel(){
   // its transfer speed is known). Lite cards render with the lite file as src,
   // so no full-quality download ever starts on a slow connection.
   const[lite]=React.useState(function(){ return csVideoMode()==='lite'; });
+  // Put Feature Films (first in FORMAT_CARDS) fully on screen at the right edge. It sits at index k of
+  // the row, with the cards before it in the loop filling the screen to its left; the negative delay
+  // moves the row the rest of the way. Same card widths as the .fmt-card rules.
+  const[reelStart]=React.useState(function(){
+    const n=FORMAT_CARDS.length, vw=window.innerWidth||1200, phone=vw<=768;
+    const w=phone?Math.min(vw*0.8,300):Math.min(300,Math.max(236,vw*0.24)), step=w+(phone?14:20);
+    const x=Math.max(0,vw-w-(phone?18:40));
+    const k=Math.min(n-1,Math.ceil(x/step));
+    const cards=FORMAT_CARDS.map(function(_,i){ return FORMAT_CARDS[(i-k+n)%n]; });
+    const delay=k*step>x?((k*step-x)/step)*8.675:0;
+    return {cards:cards,delay:'-'+delay.toFixed(3)+'s'};
+  });
   React.useEffect(function(){
     const reel=reelRef.current; if(!reel) return;
     // Motion is pure CSS (GPU compositor) and never pauses. Every clip is a
@@ -28138,6 +28151,20 @@ function FormatReel(){
     // "Reel is rolling": every original card can play through (or 8s passed).
     // The two big landing clips wait for this on slow connections so they
     // don't steal the reel's bandwidth at load.
+    // The slide waits until the reel is on screen, so Feature Films is at the right edge when the visitor
+    // arrives, and its clip restarts then, so they see the clapperboard moment at the top of the clip.
+    const track=reel.querySelector('.fmt-track');
+    const firstCard=vids.slice(0,n).filter(function(v){ return /feature4/.test(v.getAttribute('src')||v.getAttribute('data-src')||''); })[0];
+    const goReel=function(){
+      if(!track||!track.classList.contains('fmt-wait')) return;
+      track.classList.remove('fmt-wait');
+      if(firstCard&&firstCard.readyState>=2&&firstCard.currentTime>0.3){ try{ firstCard.currentTime=0; }catch(_){} }
+    };
+    if(typeof IntersectionObserver!=='undefined'){
+      const seeIo=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })){ seeIo.disconnect(); goReel(); } },{threshold:0.15});
+      seeIo.observe(wrap);
+      unhooks.push(function(){ seeIo.disconnect(); });
+    } else goReel();
     const firsts=vids.slice(0,n);
     const checkReady=function(){
       if(window.__csReelReady||gone) return;
@@ -28148,7 +28175,7 @@ function FormatReel(){
     checkReady();
     return function(){ gone=true; if(nearIo) nearIo.disconnect(); csVidQueueStop(); window.removeEventListener('cs:vid-lite',liteAll); offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
-  const doubled=[...FORMAT_CARDS,...FORMAT_CARDS];
+  const doubled=[...reelStart.cards,...reelStart.cards];
   // reel4/ (2026-10-20) = reel3's exact pixels with the colour label switched from BT.709
   // to sRGB (h264_metadata, no re-encode). Safari draws BT.709 video lighter than the
   // matching JPEG poster, so each card visibly "lit up" when its clip started; Chrome and
@@ -28161,7 +28188,7 @@ function FormatReel(){
   return (
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
-        <div className="fmt-track">
+        <div className="fmt-track fmt-wait" style={{animationDelay:reelStart.delay}}>
           {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel5/'+c.file+'.mp4'; return (
             <article className={'fmt-card'+(c.light?' fmt-card-light':'')} role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
               <img className="fmt-poster" src={'/video-formats/reel5/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
