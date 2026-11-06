@@ -1869,7 +1869,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
    (.mm-end): centered, cream button with a ring, CastSlate brand navy.
    No gold glow and shorter on desktop since 2026-11-05 (owner, demo option 3). */
 .clap{position:relative;border-radius:14px;padding:40px 40px 44px;text-align:center;color:#FFFFFF;background:linear-gradient(160deg,#26263F 0%,#1A1A2E 55%,#131322 100%);box-shadow:0 2px 3px -2px rgba(26,26,46,.42);}
-.clap-h{text-wrap:balance;margin:0 auto;max-width:760px;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.4px;color:#FFFFFF;}
+.clap-h{text-wrap:balance;margin:0 auto;max-width:760px;font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.4px;color:#FFFFFF;}
 .clap-p{text-wrap:balance;margin:12px auto 0;font-size:15.5px;line-height:1.45;color:rgba(255,255,255,.88);}
 .clap-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;margin:24px 6px 6px;padding:17px 34px;border:0;border-radius:14px;background:#FFF6E6;color:#1A1A2E;font:800 15px 'DM Sans',sans-serif;letter-spacing:.2px;cursor:pointer;box-shadow:0 0 0 6px rgba(255,246,230,.12);transition:transform .15s,box-shadow .15s;}
 .clap-btn:hover{transform:translateY(-1px);box-shadow:0 0 0 8px rgba(255,246,230,.16);}
