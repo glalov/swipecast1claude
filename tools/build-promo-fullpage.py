@@ -60,15 +60,15 @@ COPY = {
         lede="Quiet dread, long takes, one unbearable close-up &mdash; it&rsquo;s the mode everything is shot in right now. These paid projects opened on CastSlate this week. All of them are free to submit to, and a real person reads every profile that comes in.",
     ),
     "backrooms": dict(
-        title="Something strange just started casting",
-        preheader="Three paid projects are open right now. Free to join, free to submit.",
+        title="Stuck in the audition loop? Here&rsquo;s the way out",
+        preheader="New paid roles opened this week. Submitting takes two minutes.",
         slot="Now casting",
         still="https://image.tmdb.org/t/p/w1280/1nIid8bKdfMBilvDtOy2vIdiSKo.jpg",
         alt="Fluorescent-lit showroom interior",
         film="Backrooms", year="A24, 2026",
-        kicker="Open this week",
-        headline="The strange ones <br/>are casting now",
-        lede="Unsettling stories need actors who can hold a quiet moment. These are the newest paid projects open on CastSlate, all still live when this email went out. Your submission is how you get in.",
+        kicker="New paid roles &middot; Casting now",
+        headline="Stuck in the loop? <br/>Here&rsquo;s the way out.",
+        lede="Same open calls. Same silence. Same endless scroll. These are the newest paid projects on CastSlate, every one still open when this email went out. Pick a role, submit in two minutes, and put your work in front of the people casting it.",
     ),
 }
 
@@ -164,8 +164,8 @@ def marquee(p):
 # ringed check + serif promise + a short line under each. On phones the
 # columns stack into centred rows split by hairlines (.tB rules below).
 TRUST = [("Free to join", "Set up in two minutes"),
-         ("Free to submit", "Straight to the casting team"),
-         ("Every profile reviewed", "Read by a real person")]
+         ("First submission free", "Straight to the casting team"),
+         ("A real look", "Built so every submission gets one")]
 
 
 def trust(p):
@@ -259,11 +259,11 @@ def template(key):
     </td></tr>
 
     <tr><td class="prem-pad" style="background:{p['darkFlat']};background:{p['darkBg']};padding:48px 40px;text-align:center;">
-      <div style="font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:{p['darkAccent']};margin-bottom:14px;">The CastSlate guarantee</div>
-      <h2 class="hl2" style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:700;color:{p['darkInk']};line-height:1.15;">Every actor gets seen.</h2>
-      <p style="margin:0 auto 28px;max-width:520px;font-size:15.5px;line-height:1.7;color:{p['darkBody']};">Casting directors review profiles one at a time &mdash; no grids, no endless scrolling, no skipping. No paywall on submitting. Every single submission is reviewed.</p>
+      <div style="font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:{p['darkAccent']};margin-bottom:14px;">How CastSlate works</div>
+      <h2 class="hl2" style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:700;color:{p['darkInk']};line-height:1.15;">Built so every submission <br/>gets a real look.</h2>
+      <p style="margin:0 auto 28px;max-width:520px;font-size:15.5px;line-height:1.7;color:{p['darkBody']};">Pick a role and your profile goes straight to the casting team behind it. Your first submission is free, and setting up takes two minutes.</p>
       <a href="{APP}/signup" style="display:inline-block;background:{p['darkCtaFlat']};background:{p['darkCta']};color:{p['darkCtaInk']};text-decoration:none;padding:17px 50px;border-radius:{p['radius']};font-size:16px;font-weight:800;letter-spacing:.3px;">Create your free profile &rarr;</a>
-      <div style="margin-top:16px;font-size:12.5px;letter-spacing:1px;color:{p['darkBody']};">FREE TO JOIN &nbsp;&middot;&nbsp; FREE TO SUBMIT &nbsp;&middot;&nbsp; TAKES 2 MINUTES</div>
+      <div style="margin-top:16px;font-size:12.5px;letter-spacing:1px;color:{p['darkBody']};">FREE TO JOIN &nbsp;&middot;&nbsp; FIRST SUBMISSION FREE &nbsp;&middot;&nbsp; TAKES 2 MINUTES</div>
     </td></tr>
 
     <tr><td class="row-pad" style="background:{p['foot']};padding:34px 40px;text-align:center;">
