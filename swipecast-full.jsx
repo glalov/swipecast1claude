@@ -2372,19 +2372,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes mm-event-card-float{0%,100%{transform:translate3d(0,0,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 34px -28px rgba(74,69,129,.42);}33%{transform:translate3d(0,-2px,0);}66%{transform:translate3d(0,-4px,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 24px 38px -30px rgba(74,69,129,.47);}}
 @keyframes mm-event-icon-shine{0%{transform:translateX(0) skewX(-16deg);}100%{transform:translateX(584%) skewX(-16deg);}}
 @media(prefers-reduced-motion:reduce){.mm-event-card,.mm-event-card::before,.mm-event-icon::after{animation:none!important;}}
-/* Free-plan upgrade stripe (ActivateMembershipBanner) — darker purple, centered full-width text, ghost CTA (fills black on hover) w/ shimmer, twinkling star */
-.mb-msg{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;text-align:center;font-size:12px;font-weight:800;color:#fff8eb;letter-spacing:0.1px;padding:0 16px;}
-.mb-sheen{position:absolute;top:0;left:0;width:32%;height:100%;background:rgba(255,255,255,.22);filter:blur(2px);animation:mb-shimmer 9s ease-in-out infinite;pointer-events:none;z-index:1;}
-.mb-text-short{display:none;}
-.mb-star{display:inline-block;color:#FFD77A;font-size:15px;line-height:1;transform-origin:center;animation:mb-glint 3.6s ease-in-out infinite;flex-shrink:0;filter:drop-shadow(0 0 7px rgba(255,215,122,.78));}
-.mb-cta{position:absolute;right:14px;top:50%;transform:translateY(-50%);overflow:hidden;border:1px solid rgba(255,255,255,.5);border-radius:8px;padding:6px 15px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;background:transparent;color:#fff;transition:background .2s,border-color .2s,color .2s;}
-.mb-cta .mb-arr{display:inline-block;transition:transform .25s;}
-.mb-cta:hover{background:#15162B;border-color:#15162B;color:#fff;}
-.mb-cta:hover .mb-arr{transform:translateX(4px);}
-.mb-cta::after{content:"";position:absolute;top:0;left:0;width:35%;height:100%;background:rgba(255,255,255,.30);filter:blur(2px);animation:mb-shimmer 10s ease-in-out infinite;pointer-events:none;}
-@keyframes mb-shimmer{0%{transform:translateX(-130%) skewX(-20deg);}100%{transform:translateX(430%) skewX(-20deg);}}
-@keyframes mb-glint{0%,60%,100%{opacity:.65;transform:scale(1) rotate(0deg);}72%{opacity:1;transform:scale(1.45) rotate(8deg);}84%{opacity:.85;transform:scale(1.1) rotate(-4deg);}}
-@media(prefers-reduced-motion:reduce){.mb-cta::after,.mb-star,.mb-sheen{animation:none;}}
+/* Free-member upgrade bar (owner, 2026-11-05, demo "Navy, one plain sentence"): still, brand navy,
+   one honest line + cream See Premium link. Replaced the coral gradient with a sweeping shine and glinting star. */
+.member-banner{display:flex;align-items:center;justify-content:center;gap:14px;height:34px;padding:0 16px;box-sizing:border-box;background:#1A1A2E;color:rgba(255,255,255,.88);font:500 13px 'DM Sans',sans-serif;cursor:pointer;}
+.member-banner .mb-short{display:none;}
+.member-banner .mb-link{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#FFF6E6;white-space:nowrap;}
+.member-banner .mb-link .cs-tri{color:#FFF6E6;}
+.member-banner:hover .mb-link{text-decoration:underline;text-underline-offset:3px;}
+.member-banner:focus-visible{outline:2px solid #FFF6E6;outline-offset:-4px;}
 .btn-p{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--teal-dk);transform:translateY(-1px);}
 .btn-s{background:transparent;color:#1A1A2E;border:1px solid #1A1A2E;padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
@@ -5152,13 +5147,8 @@ a.mq-item:hover .mq-go{animation:none;transform:translateX(3px);}
 .mq-stripe.is-collapsed{height:0;border-top-width:0;border-bottom-width:0;}
 @media (prefers-reduced-motion:reduce){.mq-track{animation:none;}}
 @media (max-width:768px){
-  .member-banner{padding:8px 12px !important;justify-content:space-between !important;gap:10px;}
-  .member-banner .mb-msg{position:static;width:auto;flex:1 1 auto;min-width:0;justify-content:flex-start;text-align:left;padding:0;font-size:12px;gap:7px;letter-spacing:0;overflow:hidden;}
-  .member-banner .mb-text-full{display:none;}
-  .member-banner .mb-text-short{display:inline;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .member-banner .mb-star{font-size:13px;}
-  .member-banner .mb-cta{position:static;transform:none;flex-shrink:0;padding:6px 12px;font-size:11px;}
-  .member-banner .mb-cta-price{display:none;}
+  .member-banner .mb-full{display:none;}
+  .member-banner .mb-short{display:inline;white-space:nowrap;}
   .mq-stripe{height:28px;}
   .mq-item{font-size:10.5px;letter-spacing:1.2px;}
   .mq-go{width:8px;height:10px;margin-left:7px;}
@@ -7823,21 +7813,11 @@ function ActivateMembershipBanner({myProfile,session,page,onNavigate}){
     onClick={()=>onNavigate&&onNavigate("membership")}
     className="member-banner"
     role="button" tabIndex={0}
-    aria-label="Upgrade to Premium"
-    onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate&&onNavigate("membership");}}}
-    style={{
-      position:"relative",width:"100%",cursor:"pointer",
-      background:"linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%)",color:"#fff8eb",fontFamily:"'DM Sans',sans-serif",
-      padding:"0 18px",minHeight:24,height:24,
-      display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",
-      boxShadow:"0 1px 0 rgba(0,0,0,0.15)"
-    }}>
-    <span className="mb-sheen" aria-hidden="true"></span>
-    <span className="mb-msg">
-      <span className="mb-star" aria-hidden="true"><Ico n="star" s={17}/></span>
-      <span className="mb-text-full">Get seen more — unlock unlimited submissions, Slate Video, Business Card, Manager Mode &amp; the agency, casting &amp; school directories</span>
-      <span className="mb-text-short">Unlock unlimited submissions</span>
-    </span>
+    aria-label="See Premium"
+    onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate&&onNavigate("membership");}}}>
+    <span className="mb-full">Free accounts include one submission. Premium members apply to every role.</span>
+    <span className="mb-short">Premium: apply to every role.</span>
+    <span className="mb-link">See Premium<Tri/></span>
   </div>);
 }
 
