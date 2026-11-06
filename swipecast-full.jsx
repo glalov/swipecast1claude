@@ -50622,12 +50622,12 @@ function AdminMemberAnnounce({session,SUPA}){
 // you can still edit it before creating the campaign.
 const PROMO_TEMPLATES=[
   {id:"fullpage-obsession",file:"/email/promo-fullpage-obsession.html",name:"Full Page · Obsession",
-   blurb:"Upsell-style full width, Navy Dawn. Obsession bed still, wide casting rows, dark guarantee band.",
+   blurb:"Upsell-style full width, Navy Dawn. Obsession bed still, wide casting rows, dark closing band.",
    subject:"Can you do quiet dread? These paid roles need it.",
    bg:"#33355A",fg:"#EAC080",mark:"CASTSLATE"},
   {id:"fullpage-backrooms",file:"/email/promo-fullpage-backrooms.html",name:"Full Page · Backrooms",
-   blurb:"Upsell-style full width, Sage & Clay. Backrooms still, wide casting rows, dark guarantee band.",
-   subject:"Something strange just started casting",
+   blurb:"Upsell-style full width, Sage & Clay. Backrooms still, wide casting rows, dark closing band.",
+   subject:"Stuck in the audition loop? Here's the way out",
    bg:"#2F5B52",fg:"#E8A87C",mark:"CASTSLATE"},
   {id:"classic",file:"/email/promo-castings-campaign.html",name:"Classic Cards",
    blurb:"White shell, hero banner, three full casting cards with role tables.",
