@@ -50685,8 +50685,12 @@ function AdminEmailCampaigns({session}){
   },[SUPA]);
 
   const loadCampaigns=useCallback(async()=>{
-    try{ const d=await fnCall("list_campaigns"); setCampaigns(d.campaigns||[]); }
-    catch(e){ setErr(e.message); }
+    try{ const d=await fnCall("list_campaigns"); setCampaigns(d.campaigns||[]); setErr(""); }
+    catch(e){
+      // Stop the spinner on failure; an expired login (e.g. signed out in another browser) is the usual cause.
+      setErr(/unauthor/i.test(e.message)?"Your login has expired. Click Sign out, sign back in, then open Email Campaigns again.":e.message);
+      setCampaigns(c=>c??[]);
+    }
   },[fnCall]);
   useEffect(()=>{ loadCampaigns(); },[loadCampaigns]);
 
