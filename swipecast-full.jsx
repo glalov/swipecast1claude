@@ -2384,6 +2384,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .btn-p{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--teal-dk);transform:translateY(-1px);}
 .btn-s{background:transparent;color:#1A1A2E;border:1px solid #1A1A2E;padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
+/* My Profile hero: the headshot button sits under a 160–200px photo, so it gets less side padding than the site-wide 20px to stay on one line. */
+.my-profile-hero-photo .btn-s.mp-hs-btn{padding:0 8px!important;font-size:14px!important;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
 .cs-optin-tg{position:relative;flex:none;width:44px;height:26px;border-radius:99px;border:none;background:#CFC6B4;cursor:pointer;transition:background .2s;padding:0;}
 .cs-optin-tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s;}
@@ -30423,7 +30425,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         {profile.headshot_url
           ?<img src={profile.headshot_url} style={{width:"100%",aspectRatio:"3/4",objectFit:"cover",borderRadius:10}}/>
           :<div style={{width:"100%",aspectRatio:"3/4",background:"var(--s2)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",color:"var(--t3)",fontSize:12,textAlign:"center",padding:12}}>No headshot yet</div>}
-        <label className="btn-s" style={{width:"100%",display:"block",textAlign:"center",cursor:"pointer",marginTop:8,fontSize:11}}>{uploading?"Uploading…":"Change Headshot"}<input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/></label>
+        <label className="btn-s mp-hs-btn" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",cursor:"pointer",marginTop:8,whiteSpace:"nowrap"}}>{uploading?"Uploading…":profile.headshot_url?"Change Headshot":"Add Headshot"}<input data-hs-upload="1" type="file" accept="image/*" style={{display:"none"}} onChange={e=>{const file=e.target.files?.[0];if(file)setCropState({file,target:"headshot",aspect:0.8,label:"Crop Your Headshot"});e.target.value="";}}/></label>
         {profile.headshot_url&&<button type="button" onClick={removeHeadshot} disabled={uploading}
           style={{width:"100%",marginTop:6,background:"none",border:"none",color:"var(--t3)",fontSize:11,fontWeight:600,cursor:uploading?"default":"pointer",textDecoration:"underline",padding:4,fontFamily:"inherit"}}>Remove headshot</button>}
       </div>
