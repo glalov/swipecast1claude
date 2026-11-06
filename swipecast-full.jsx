@@ -4167,10 +4167,29 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-ptab{position:absolute;z-index:1;top:0;left:0;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 5px 10px;border-radius:12px 0 8px 0;background:#1A1A2E;color:#FFFFFF;font-size:12px;line-height:16px;font-weight:700;white-space:nowrap;pointer-events:none;}
 .b5-ptab i{color:#FFFFFF;font-size:12px;line-height:1;}
 .b5-new .b5-ptab{top:22px;left:44px;padding:0;border-radius:0;background:none;color:#33826A;font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
-/* Dashboard upgrade banner button (C1, 2026-10-27): solid white on the coral gradient. */
-.dash-upg-btn{background:#fff;color:#1A1A2E;transition:background .15s;}
-.dash-upg-btn:hover{background:#FFF1EC;}
-.dash-upg-btn:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+/* Talent dashboard welcome card + Premium note (owner, 2026-11-05). Replaced the coral upgrade banner. */
+.td-start{background:#fff;border:1px solid #E6E2D9;border-radius:14px;padding:22px 24px;margin-bottom:22px;}
+.td-steps{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.td-step{display:flex;gap:14px;align-items:flex-start;padding:16px;border:1px solid #EEEAE2;border-radius:12px;background:#FCFBF8;min-width:0;}
+.td-step b{display:block;font-size:16px;color:var(--t1);}
+.td-step small{display:block;color:#5A5046;font-size:14px;margin:3px 0 12px;line-height:1.4;}
+.td-step.done small{margin-bottom:0;}
+.td-num{flex:none;width:30px;height:30px;border-radius:50%;background:#EAF4F0;color:#276551;font-weight:800;font-size:14px;display:grid;place-items:center;}
+.td-step.done .td-num{background:#33826A;color:#fff;}
+.td-btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;border:0;background:#33826A;color:#fff;font:700 14px 'DM Sans',sans-serif;cursor:pointer;}
+.td-btn:hover{background:#276551;}
+.td-btn.o{background:#fff;color:#1A1A2E;border:1px solid #1A1A2E;}
+.td-btn.o:hover{background:#F7F5F0;}
+.td-note{margin:14px 0 0;color:#5A5046;font-size:14px;}
+.td-prem{background:#EFE3CC;border:1px solid #E0D0B2;border-radius:14px;padding:20px 24px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.td-prem h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;letter-spacing:-.2px;margin:0 0 6px;color:var(--t1);}
+.td-prem p{margin:0;color:#3A322A;font-size:15px;line-height:1.5;max-width:62ch;}
+.td-prem-acts{flex:none;display:flex;align-items:center;gap:22px;}
+.td-no,.td-go{background:none;border:0;padding:6px 0;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.td-no{font-weight:600;font-size:14.5px;color:#5A5046;}
+.td-go{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:15px;color:#1A1A2E;white-space:nowrap;}
+.td-no:hover,.td-go:hover{text-decoration:underline;text-underline-offset:3px;}
+@media(max-width:700px){.td-steps{grid-template-columns:1fr;}.td-start{padding:18px;}.td-prem{flex-direction:column;align-items:flex-start;gap:12px;padding:18px;}}
 .b5-card.b5-pick .b5-main{padding-top:62px;}
 .b5-card.b5-pick.b5-new .b5-main{padding-top:52px;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
@@ -20535,6 +20554,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   const [applications,setApplications]=useState([]);
   const [appsLoading,setAppsLoading]=useState(true);
+  const noAppsYet=!appsLoading&&applications.length===0;
+  // "Not now" on the Premium note hides it for 7 days in this browser.
+  const premNoteKey="cs_prem_note_snooze_"+(uid||"");
+  const [premNoteHidden,setPremNoteHidden]=useState(()=>{try{return Date.now()-(+localStorage.getItem(premNoteKey)||0)<7*864e5;}catch(_){return false;}});
+  const hidePremNote=()=>{try{localStorage.setItem(premNoteKey,String(Date.now()));}catch(_){}setPremNoteHidden(true);};
   const [appsTab,setAppsTab]=useState("all");
   const [appsErr,setAppsErr]=useState("");
   const [threads,setThreads]=useState([]);
@@ -20922,7 +20946,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
   const profileChecks=[
     {label:"Add your name",done:!!(myProfile?.display_name?.trim())},
-    {label:"Upload headshot",done:!!myProfile?.headshot_url},
+    {label:"Add a photo",done:!!myProfile?.headshot_url},
     {label:"Add bio",done:!!(myProfile?.bio?.trim())},
     {label:"Add location",done:!!myProfile?.location},
     {label:"Add type range",done:(Array.isArray(myProfile?.casting_types)&&myProfile.casting_types.length>0)||!!(myProfile?.casting_type_other||"").trim()},
@@ -21204,48 +21228,13 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         );
       })()}
 
-      {/* ── Upgrade banner — non-premium talent only. Prominent, top-of-dashboard
-           nudge that pairs with the first-login pricing redirect (see
-           talentLandingPage in App). Returning free users land here (not on a
-           repeat pricing wall), so this banner carries the upgrade ask. ── */}
-      {!isPremium&&(
-        <div style={{
-          // "C1" (owner pick 2026-10-27): the landing upgrade stripe's own coral
-          // gradient (ActivateMembershipBanner, #FF7A5C → #F0456E) so landing and
-          // dashboard read as one design. White text, solid white button. Replaces
-          // the Material error-container pink, which read as an error message.
-          background:"linear-gradient(90deg,#FF7A5C 0%,#F0456E 100%)",
-          // Sizes/layout match the C1 demo (castslate-dashboard-banner-restyle-demos.html): one row on
-          // desktop with the button on the right; it only wraps under the text on phones.
-          borderRadius:14,padding:isMobile?"16px 18px":"20px 24px",marginBottom:28,
-          display:"flex",alignItems:"center",justifyContent:"space-between",gap:18,flexWrap:isMobile?"wrap":"nowrap",
-          boxShadow:"none"
-        }}>
-          <div style={{display:"flex",alignItems:"center",gap:18,minWidth:0,flex:"1 1 auto"}}>
-            <span style={{flexShrink:0,width:44,height:44,borderRadius:12,background:"rgba(255,255,255,0.2)",color:"#FFD77A",display:"grid",placeItems:"center"}}><Ico n="bolt" s={22}/></span>
-            <div style={{minWidth:0}}>
-              <div style={{fontWeight:800,fontSize:isMobile?16:18,lineHeight:1.3,color:"#fff",marginBottom:3}}>Unlock your full casting potential</div>
-              <div style={{fontSize:isMobile?13.5:15,fontWeight:500,color:"#FFF8EB",lineHeight:1.45}}>
-                Go Premium for unlimited submissions, Manager Mode, the agency, casting &amp; school directories, video reels &amp; your QR business card — {PREMIUM_PRICE}.
-              </div>
-            </div>
-          </div>
-          <button
-            className="dash-upg-btn"
-            onClick={()=>onNavigate("pricing")}
-            style={{fontWeight:700,fontSize:15,padding:"11px 18px",
-              borderRadius:9,border:"none",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",
-              boxShadow:"none",flexShrink:0}}
-          >See Premium Plans <Tri/></button>
-        </div>
-      )}
 
       {/* ── Welcome header ── */}
       <div style={{marginBottom:28,display:"flex",alignItems:isMobile?"stretch":"center",justifyContent:"space-between",gap:20,flexDirection:isMobile?"column":"row"}}>
         <div style={{minWidth:0}}>
           <div className="section-label">{t('td.title')}</div>
-          <h1 style={{fontWeight:800,fontSize:isMobile?22:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px",wordBreak:"break-word"}}>Welcome back, {firstName}.</h1>
-          <p style={{color:"var(--t2)",fontSize:15,margin:0}}>Here are the latest updates for your acting profile.</p>
+          <h1 style={{fontWeight:800,fontSize:isMobile?22:30,letterSpacing:-0.8,color:"var(--t1)",marginBottom:6,margin:"0 0 6px",wordBreak:"break-word"}}>{noAppsYet?(firstName==="there"?"Glad you're here.":`Glad you're here, ${firstName}.`):`Welcome back, ${firstName}.`}</h1>
+          <p style={{color:"var(--t2)",fontSize:15,margin:0}}>{noAppsYet?"Here's the easiest way to start.":"Here are the latest updates for your acting profile."}</p>
         </div>
         {isPremium&&(
           <div className="cs-procard" aria-label="Premium member card">
@@ -21259,6 +21248,48 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           </div>
         )}
       </div>
+
+      {/* ── Welcome card / Premium note (owner, 2026-11-05: "safe, accepted, not forced").
+           Replaces the coral "Unlock your full casting potential" banner that sat above the
+           welcome. No application yet → two gentle steps toward the free submission.
+           Free member who has applied → good news first, then Premium as an option, with a
+           "Not now" that hides it for 7 days (per browser). ── */}
+      {noAppsYet&&(
+        <div className="td-start">
+          <div className="td-steps">
+            <div className={"td-step"+(myProfile?.headshot_url?" done":"")}>
+              <span className="td-num">{myProfile?.headshot_url?<Ico n="check" s={16}/>:"1"}</span>
+              <div>
+                <b>{myProfile?.headshot_url?"Photo added":"Add a photo"}</b>
+                <small>{myProfile?.headshot_url?"You can change it any time.":"Any clear, recent photo works to begin with."}</small>
+                {!myProfile?.headshot_url&&<button className="td-btn" onClick={slideToEditor}>Add a photo<Tri/></button>}
+              </div>
+            </div>
+            <div className="td-step">
+              <span className="td-num">2</span>
+              <div>
+                <b>Find a role that fits you</b>
+                <small>{isPremium?"Apply to any role that fits you.":"Your first submission is free."}</small>
+                <button className="td-btn o" onClick={()=>onNavigate("search")}>Browse Castings<Tri/></button>
+              </div>
+            </div>
+          </div>
+          <p className="td-note">You can change anything later.</p>
+        </div>
+      )}
+      {!isPremium&&!appsLoading&&applications.length>0&&!premNoteHidden&&(()=>{
+        const latest=applications[0];const title=latest?.castings?.title;
+        return(<div className="td-prem">
+          <div style={{minWidth:0}}>
+            <h2>{applications.length===1?"Your first submission is in.":"Your submissions are in."}</h2>
+            <p>{title?`${title}'s casting team has your profile.`:"The casting team has your profile."} If you'd like to keep applying, Premium lets you apply to every role, {PREMIUM_PRICE}.</p>
+          </div>
+          <div className="td-prem-acts">
+            <button className="td-no" onClick={hidePremNote}>Not now</button>
+            <button className="td-go" onClick={()=>onNavigate("membership")}>See Premium<Tri/></button>
+          </div>
+        </div>);
+      })()}
 
       {/* ── Quick stats row ── */}
       {(()=>{
@@ -21316,11 +21347,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               the removed notifications view. Wins live in Applications only. */}
           <div className="td-stats">
             {!isPremium?(
-              <div onClick={()=>onNavigate&&onNavigate("membership")} style={box({bd:"#e6d8f7",bg:"linear-gradient(180deg,#faf7ff,#fff 62%)",click:true})}>
-                {lab("Role matcher","#6b3ecb")}
-                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>🔒 A fresh role daily</div>
-                <div style={{fontSize:11.5,color:"var(--t3)"}}>Hand-matched to your profile</div>
-                {cta("Unlock with Premium →","#6b3ecb")}
+              <div onClick={()=>onNavigate&&onNavigate("membership")} style={box({click:true})}>
+                {lab("Role matcher · Premium")}
+                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>A fresh role, matched daily</div>
+                <div style={{fontSize:11.5,color:"var(--t3)"}}>Picked for your age and type</div>
+                {cta("See how it works →","var(--t1)")}
               </div>
             ):rmLoading?(
               <div style={box({bd:"#CFE3DF"})}>{lab("Role matcher","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding today's match…</div></div>
@@ -21353,7 +21384,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               <div onClick={slideToEditor} style={box({bd:"#CFE3DF",click:true})}>
                 {lab("Your next step","var(--teal)")}
                 <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{nextStep.label}{nextStep.premium&&!isPremium?" (Premium)":""}</div>
-                <div style={{fontSize:11.5,color:"var(--t3)"}}>a quick win for your profile</div>
+                <div style={{fontSize:11.5,color:"var(--t3)"}}>{nextStep.label==="Add a photo"?"any clear, recent photo":"a quick win for your profile"}</div>
                 {cta(nextStep.premium&&!isPremium?"Upgrade →":"Add now →")}
               </div>
             ):(
@@ -21365,7 +21396,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             <div style={box()}>
               {lab("Profile strength")}
               <div style={{fontSize:26,fontWeight:800,color:"var(--t1)",letterSpacing:-0.5,lineHeight:1,marginTop:2}}>{isProfileComplete?"Live":`${profilePct}%`}</div>
-              <div style={{fontSize:11,color:"var(--t3)"}}>{isProfileComplete?"visible to CDs":"finish to get seen"}</div>
+              <div style={{fontSize:11,color:"var(--t3)"}}>{isProfileComplete?"visible to CDs":profilePct<50?"a good start":"nice progress"}</div>
             </div>
           </div>
         </>);
@@ -21826,10 +21857,10 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <div style={{marginBottom:14}}>
                   <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"var(--t2)",marginBottom:6}}>
                     <span>{completedCount} of {profileChecks.length} complete</span>
-                    <span style={{color:"var(--acc)",fontWeight:700}}>{profilePct}%</span>
+                    <span style={{color:"var(--t2)",fontWeight:700}}>{profilePct}%</span>
                   </div>
                   <div style={{height:6,background:"var(--s2)",borderRadius:3,overflow:"hidden"}}>
-                    <div style={{width:`${profilePct}%`,height:"100%",background:profilePct<50?"var(--red)":profilePct<80?"#d97706":"var(--grn)",borderRadius:3,transition:"width .4s"}}/>
+                    <div style={{width:`${profilePct}%`,height:"100%",background:"#33826A",borderRadius:3,transition:"width .4s"}}/>
                   </div>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:9,marginBottom:16}}>
