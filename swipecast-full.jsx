@@ -3851,7 +3851,7 @@ body.sheet-push .b2t-cube{display:none;}
    as one card. Same timing and curve as .cs-slide-out / .cs-slide-in. */
 .cs-slide-out-vw{animation:cs-slide-out-vw .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-out-vw{from{transform:translateX(0);}to{transform:translateX(100vw);}}
-.cs-slide-in-vw{animation:cs-slide-in-vw .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.cs-slide-in-vw{animation:cs-slide-in-vw .25s cubic-bezier(.16,1,.3,1) backwards;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-in-vw{from{transform:translateX(-100vw);}to{transform:translateX(0);}}
 .cs-out-dim{animation:csDimOut .25s ease both;}
 @media(prefers-reduced-motion:reduce){.cs-back-dim,.cs-out-dim,.cs-slide-out-vw,.cs-slide-in-vw{animation:none;}}
@@ -4903,7 +4903,10 @@ a.site-footer-link{text-decoration:none;}
 /* Public-profile preview → editor "slide back" page transition */
 .cs-slide-out{animation:cs-slide-out-r .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-out-r{from{transform:translateX(0);}to{transform:translateX(100%);}}
-.cs-slide-in{animation:cs-slide-in-l .25s cubic-bezier(.16,1,.3,1) both;will-change:transform;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+/* backwards, not both, and no will-change: a transform (or will-change:transform) left on the page after the
+   slide makes it the containing block for position:fixed children, so the headshot crop modal opened at the
+   top of the long My Profile page instead of over the viewport (bug 2026-11-06). */
+.cs-slide-in{animation:cs-slide-in-l .25s cubic-bezier(.16,1,.3,1) backwards;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 @keyframes cs-slide-in-l{from{transform:translateX(-100%);}to{transform:translateX(0);}}
 @media(prefers-reduced-motion:reduce){.cs-slide-out,.cs-slide-in{animation:none;}}
 /* Free-actor submission-cap upgrade modal — premium dark treatment (fires at 3/3) */
@@ -24576,12 +24579,14 @@ function ImageCropModal({file,aspect=0.8,label="Crop Image",onClose,onConfirm,pl
       <p style={{color:"var(--t2)",fontSize:12,marginBottom:14}}>Drag the image to reposition. Use the slider to zoom. The visible frame is exactly what casting directors will see.</p>
       {!loaded&&<p style={{color:"var(--t3)",fontSize:13,padding:"40px 0",textAlign:"center"}}>Loading image…</p>}
       {loaded&&imgEl&&<>
+        {/* Frame is capped by height (85vh modal minus ~290px of title, zoom, tip and buttons)
+            so Save & Upload is on screen without scrolling on short laptop screens. */}
         <div ref={containerRef}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          style={{position:"relative",width:"100%",paddingBottom:`${100/aspect}%`,background:"#000",overflow:"hidden",borderRadius:10,border:"2px dashed var(--acc)",cursor:dragRef.current?"grabbing":"grab",userSelect:"none",touchAction:"none"}}>
+          style={{position:"relative",width:`min(100%, calc((85vh - 290px) * ${aspect}))`,margin:"0 auto",paddingBottom:`min(${100/aspect}%, calc(85vh - 290px))`,background:"#000",overflow:"hidden",borderRadius:10,border:"2px dashed var(--acc)",cursor:dragRef.current?"grabbing":"grab",userSelect:"none",touchAction:"none"}}>
           <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
             <img src={imgUrl} alt="Preview" draggable={false} style={{
               maxWidth:"100%",maxHeight:"100%",
