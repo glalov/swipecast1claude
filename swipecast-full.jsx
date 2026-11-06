@@ -10156,7 +10156,7 @@ function ClassesPage({onNavigate,session,myProfile,isLoggedIn,openClassId,onClas
       };
       fetchReq();
       // Poll every 15s so the payment banner appears if admin approves while this page is open
-      const tid=setInterval(fetchReq,15000);
+      const tid=setInterval(()=>{if(!document.hidden)fetchReq();},15000);
       return()=>{cancelled=true;clearInterval(tid);};
     }
   },[viewing?.id,session?.user?.id]);
@@ -17962,7 +17962,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
     const onVis=()=>{if(document.visibilityState==="visible")setRefreshTick(t=>t+1);};
     window.addEventListener("focus",onFocus);
     document.addEventListener("visibilitychange",onVis);
-    const tid=setInterval(()=>{fetchCastings();fetchTalent();},60000);
+    const tid=setInterval(()=>{if(document.hidden)return;fetchCastings();fetchTalent();},60000);
     return()=>{
       window.removeEventListener("focus",onFocus);
       document.removeEventListener("visibilitychange",onVis);
@@ -20936,7 +20936,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   // Poll invitations + notifications every 30s so approved status appears without a page reload
   useEffect(()=>{
     if(!uid)return;
-    const tid=setInterval(()=>{loadClassInvitations();loadSysNotifications();},30000);
+    const tid=setInterval(()=>{if(document.hidden)return;loadClassInvitations();loadSysNotifications();},30000);
     return()=>clearInterval(tid);
   },[uid,loadClassInvitations,loadSysNotifications]);
 
@@ -22276,7 +22276,7 @@ function CDDashboard({onViewProfile,onNavigate,session,myProfile,castingsVersion
     const onVis=()=>{if(document.visibilityState==="visible")setReloadTick(t=>t+1);};
     window.addEventListener("focus",onFocus);
     document.addEventListener("visibilitychange",onVis);
-    const tid=setInterval(()=>loadCdCastings(),60000);
+    const tid=setInterval(()=>{if(!document.hidden)loadCdCastings();},60000);
     return()=>{
       window.removeEventListener("focus",onFocus);
       document.removeEventListener("visibilitychange",onVis);
@@ -24006,7 +24006,7 @@ function InboxPage({session,profile,onNavigate,onViewProfile,onViewCastingById})
         .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`from_id=eq.${uid}`},()=>{if(!cancelled)load();})
         .subscribe();
     }catch(_){/* realtime optional */}
-    const tid=setInterval(()=>{if(!cancelled)load();},30000);
+    const tid=setInterval(()=>{if(!cancelled&&!document.hidden)load();},30000);
     const onFocus=()=>{if(!cancelled)load();};
     window.addEventListener("focus",onFocus);
     document.addEventListener("visibilitychange",onFocus);
@@ -26987,12 +26987,10 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
     let cancelled=false;
     let ch=null;
     try{
-      ch=window.sb.channel("featured-castings-realtime")
-        .on("postgres_changes",{event:"*",schema:"public",table:"castings"},()=>{if(!cancelled)fetchCastings();})
-        .on("postgres_changes",{event:"*",schema:"public",table:"roles"},()=>{if(!cancelled)fetchCastings();})
-        .subscribe();
-    }catch(_){/* realtime optional */}
-    const tid=setInterval(()=>{if(!cancelled)fetchCastings();},60000);
+      // Realtime channel removed 2026-11-06: every public visitor held one open, which kept
+      // Supabase Realtime polling the WAL nonstop (main Disk IO cost). 60s poll + focus is enough.
+    }catch(_){}
+    const tid=setInterval(()=>{if(!cancelled&&!document.hidden)fetchCastings();},60000);
     const onFocus=()=>{if(!cancelled)fetchCastings();};
     window.addEventListener("focus",onFocus);
     document.addEventListener("visibilitychange",onFocus);
@@ -30113,7 +30111,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
         .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`from_id=eq.${session.user.id}`},()=>{if(!cancelled)fetchInbox();})
         .subscribe();
     }catch(_){/* realtime optional */}
-    const tid=setInterval(()=>{if(!cancelled)fetchInbox();},45000);
+    const tid=setInterval(()=>{if(!cancelled&&!document.hidden)fetchInbox();},45000);
     const onFocus=()=>{if(!cancelled)fetchInbox();};
     window.addEventListener("focus",onFocus);
     document.addEventListener("visibilitychange",onFocus);
@@ -52089,7 +52087,7 @@ function AdminHeadshotCatalog({session,myProfile}){
         .on("postgres_changes",{event:"*",schema:"public",table:"applications"},()=>{if(!cancelled)load();})
         .subscribe();
     }catch(_){/* realtime optional */}
-    const tid=setInterval(()=>{if(!cancelled)load();},45000);
+    const tid=setInterval(()=>{if(!cancelled&&!document.hidden)load();},45000);
     const onFocus=()=>{if(!cancelled)load();};
     window.addEventListener("focus",onFocus);
     return()=>{cancelled=true;clearInterval(tid);window.removeEventListener("focus",onFocus);if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
@@ -57669,21 +57667,10 @@ function App(){
   // write that doesn't run through our modal. If realtime is not
   // enabled on the table, the subscribe just never fires — harmless.
   // ───────────────────────────────────────────────────────────────
-  useEffect(()=>{
-    if(!window.sb?.channel)return;
-    let ch;
-    try{
-      ch=window.sb.channel("castings-realtime")
-        .on("postgres_changes",{event:"*",schema:"public",table:"castings"},()=>{
-          setCastingsVersion(v=>v+1);
-        })
-        .on("postgres_changes",{event:"*",schema:"public",table:"roles"},()=>{
-          setCastingsVersion(v=>v+1);
-        })
-        .subscribe();
-    }catch(e){/* realtime not available — silent */}
-    return()=>{if(ch){try{window.sb.removeChannel(ch);}catch(_){}}};
-  },[]);
+  // (Removed 2026-11-06) The global "castings-realtime" channel opened a Supabase Realtime
+  // connection for EVERY visitor on every page, which kept the database polling its change log
+  // nonstop and drained the Disk IO budget. Views already refetch on a 60s timer and on focus,
+  // and bumpCastings() covers the poster's own edits instantly.
 
   // ───────────────────────────────────────────────────────────────
   // Global unread-message counter — drives the Inbox nav badge for every
@@ -57712,7 +57699,7 @@ function App(){
         .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:`to_id=eq.${uid}`},fetchCount)
         .subscribe();
     }catch(_){/* realtime optional */}
-    const tid=setInterval(fetchCount,30000);
+    const tid=setInterval(()=>{if(!document.hidden)fetchCount();},30000);
     const onFocus=()=>fetchCount();
     window.addEventListener("focus",onFocus);
     document.addEventListener("visibilitychange",onFocus);
@@ -57736,7 +57723,7 @@ function App(){
       }catch(_){}
     };
     fetch();
-    const tid=setInterval(fetch,60000);
+    const tid=setInterval(()=>{if(!document.hidden)fetch();},60000);
     return()=>{cancelled=true;clearInterval(tid);};
   },[isAdmin,session?.user?.id]);
 
