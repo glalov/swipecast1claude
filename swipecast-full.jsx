@@ -4146,7 +4146,6 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .clap-btn:focus-visible{outline:2px solid #FFFFFF;outline-offset:8px;}
 .clap-btn .cs-tri{color:#8A5A12;}
 @media(max-width:900px){.clap{padding:40px 22px 42px;}.clap-btn{margin-top:32px;}.clap-h{font-size:22.5px;}.clap-br{display:none;}}
-.b5-allcast{display:flex;align-items:center;gap:10px;margin-top:16px;}
 .b5-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:32px;flex-wrap:wrap;}
 .b5-pg{min-width:38px;height:38px;padding:0 6px;border-radius:8px;border:1px solid var(--bdr);background:#FFFFFF;color:var(--t1);font:600 13.5px 'DM Sans',sans-serif;cursor:pointer;font-variant-numeric:tabular-nums;transition:border-color .15s;}
 .b5-pg:hover{border-color:#1A1A2E;}
@@ -4158,8 +4157,6 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-pg:focus-visible,.b5-pg-step:focus-visible{outline:2px solid #1A1A2E;outline-offset:2px;}
 .b5-pg-short{display:none;}
 @media(max-width:480px){.b5-pg.nb{display:none;}.b5-pg-long{display:none;}.b5-pg-short{display:inline;}.b5-pg-step{padding:0;width:44px;font-size:16px;}.b5-pager{gap:5px;}}
-.b5-allcast span{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);white-space:nowrap;}
-.b5-allcast::after{content:"";flex:1;height:1px;background:var(--bdr);}
 /* Browse Pick card = "M4" (owner pick 2026-10-27): navy tab with cream text and a
    honey star, hanging from a 4px honey line over the story side only (stops at the
    roles divider). One mark, flat colours, no tint/glow. Browse only: casting page,
@@ -18067,15 +18064,11 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             const isSaved=savedIds.has(c.id);
             const btnBase=pick.rest>0?`See all ${roleCount} roles`:roleCount>1?"Read the full breakdown":"Read the breakdown";
             const btnLabel=(cdn&&!cdn.expired&&cdn.days<=3?"Closing soon · ":"")+btnBase;
-            /* Picks sort first (castingFeaturedRank). Right after the last Pick, a gap and an
-               "All castings" label in the Classes page's "All Classes" style set them apart
-               (owner, 2026-10-27, demo option 1: no label above, the card's Pick tab is enough).
-               Follows the filters automatically, since it only appears when a Pick is in the
-               filtered results and is followed by a regular casting. */
+            /* Picks sort first (castingFeaturedRank). The "All castings" label that used to sit
+               after the last Pick was removed (owner, 2026-11-06): it made the castings below it
+               look older than the ones above. */
             const isNewCard=newIds.has(rawC.id)&&!isFeat;
-            const afterPicks=ci>0&&browseRank(pageArr[ci-1])<2&&browseRank(rawC)===2;
             return(<React.Fragment key={c.id}>
-            {afterPicks&&<div className="b5-allcast" role="separator" aria-label="All castings"><span>All castings</span></div>}
             <div className={"b5-card"+(isFeat||isNewCard?" b5-pick":"")+(isNewCard?" b5-new":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
               onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
