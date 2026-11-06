@@ -4182,13 +4182,17 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .td-btn.o{background:#fff;color:#1A1A2E;border:1px solid #1A1A2E;}
 .td-btn.o:hover{background:#F7F5F0;}
 .td-note{margin:14px 0 0;color:#5A5046;font-size:14px;}
-.td-prem{background:#EFE3CC;border:1px solid #E0D0B2;border-radius:14px;padding:20px 24px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
-.td-prem h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;letter-spacing:-.2px;margin:0 0 6px;color:var(--t1);}
-.td-prem p{margin:0;color:#3A322A;font-size:15px;line-height:1.5;max-width:62ch;}
+/* Premium note: the class invitation card's soft gradient, in light blue fading into warm cream (owner pick, 2026-11-06). */
+.td-prem{background:linear-gradient(135deg,#eef3f8 0%,#dce7f1 50%,#f5ead8 100%);border:1px solid rgba(40,70,100,0.18);border-radius:14px;padding:20px 24px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.td-prem h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;letter-spacing:-.2px;margin:0 0 6px;color:#14223A;}
+.td-prem p{margin:0;color:#2f4560;font-size:15px;line-height:1.5;max-width:62ch;}
 .td-prem-acts{flex:none;display:flex;align-items:center;gap:22px;}
 .td-no,.td-go{background:none;border:0;padding:6px 0;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.td-no{font-weight:600;font-size:14.5px;color:#5A5046;}
-.td-go{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:15px;color:#1A1A2E;white-space:nowrap;}
+.td-no{font-weight:600;font-size:14.5px;color:#3a5070;}
+.td-go{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:15px;color:#1b3553;white-space:nowrap;}
+/* Edit My Profile on the dashboard is CastSlate navy (owner, 2026-11-06). */
+.btn-p.td-edit{background:#1A1A2E;}
+.btn-p.td-edit:hover{background:#2D2D44;}
 .td-no:hover,.td-go:hover{text-decoration:underline;text-underline-offset:3px;}
 @media(max-width:700px){.td-h{font-size:21px;margin-bottom:14px;}.td-steps{grid-template-columns:1fr;}.td-start{padding:18px;}.td-prem{flex-direction:column;align-items:flex-start;gap:12px;padding:18px;}}
 .b5-card.b5-pick .b5-main{padding-top:62px;}
@@ -21884,7 +21888,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <p style={{fontSize:13,color:"var(--t2)",margin:0}}>Your profile is visible to casting directors browsing talent.</p>
               </div>
             )}
-            <button className="btn-p btn-sm" style={{width:"100%"}} onClick={slideToEditor}>{isProfileComplete?<>View My Profile <Tri/></>:<>Edit My Profile <Tri/></>}</button>
+            <button className="btn-p btn-sm td-edit" style={{width:"100%"}} onClick={slideToEditor}>{isProfileComplete?<>View My Profile <Tri/></>:<>Edit My Profile <Tri/></>}</button>
           </div>
 
           {/* Media Locker card removed 2026-08-06 — it duplicated the Profile Checklist
