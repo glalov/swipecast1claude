@@ -4169,6 +4169,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-new .b5-ptab{top:22px;left:44px;padding:0;border-radius:0;background:none;color:#33826A;font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
 /* Talent dashboard welcome card + Premium note (owner, 2026-11-05). Replaced the coral upgrade banner. */
 .td-start{background:#fff;border:1px solid #E6E2D9;border-radius:14px;padding:22px 24px;margin-bottom:22px;}
+.td-lab{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#276551;}
+.td-h{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:24px;letter-spacing:-.2px;line-height:1.2;color:var(--t1);margin:6px 0 18px;}
 .td-steps{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .td-step{display:flex;gap:14px;align-items:flex-start;padding:16px;border:1px solid #EEEAE2;border-radius:12px;background:#FCFBF8;min-width:0;}
 .td-step b{display:block;font-size:16px;color:var(--t1);}
@@ -4189,7 +4191,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .td-no{font-weight:600;font-size:14.5px;color:#5A5046;}
 .td-go{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:15px;color:#1A1A2E;white-space:nowrap;}
 .td-no:hover,.td-go:hover{text-decoration:underline;text-underline-offset:3px;}
-@media(max-width:700px){.td-steps{grid-template-columns:1fr;}.td-start{padding:18px;}.td-prem{flex-direction:column;align-items:flex-start;gap:12px;padding:18px;}}
+@media(max-width:700px){.td-h{font-size:21px;margin-bottom:14px;}.td-steps{grid-template-columns:1fr;}.td-start{padding:18px;}.td-prem{flex-direction:column;align-items:flex-start;gap:12px;padding:18px;}}
 .b5-card.b5-pick .b5-main{padding-top:62px;}
 .b5-card.b5-pick.b5-new .b5-main{padding-top:52px;}
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
@@ -21256,6 +21258,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
            "Not now" that hides it for 7 days (per browser). ── */}
       {noAppsYet&&(
         <div className="td-start">
+          <div className="td-lab">Getting started</div>
+          <h2 className="td-h">Two steps to your first submission.</h2>
           <div className="td-steps">
             <div className={"td-step"+(myProfile?.headshot_url?" done":"")}>
               <span className="td-num">{myProfile?.headshot_url?<Ico n="check" s={16}/>:"1"}</span>
