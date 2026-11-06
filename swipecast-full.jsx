@@ -2311,7 +2311,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    Photo width = height x its real shape (3.0 desktop, 2.35 phone) so it is never
    squashed. On phones the words box is exactly as wide as the words, and the
    free space is split evenly: edge to words, words to button, button to photo. */
-.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#1A1A2E;font-family:'DM Sans',sans-serif;background:#EBC282;}
+/* Soft cream since 2026-11-05 (owner, demo "Soft cream" + photo): calm fact + plain link, was honey + bold "Get Found" button. */
+.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#3A322A;font-family:'DM Sans',sans-serif;background:#FBF6EC;box-shadow:inset 0 -1px 0 #EADFCB;}
 .bjs-l{display:flex;align-items:center;gap:20px;min-width:0;}
 /* Arrives 7s after Browse Castings opens: parked above the top edge (the nav sits where it
    would without it), then slides down. BJS_DELAY_MS / BJS_SLIDE_MS in BrowseJoinStripe. */
@@ -2319,11 +2320,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .bjs.bjs-anim{transition:margin-top .9s cubic-bezier(.25,.8,.3,1);}
 .bjs-glide .app{transition:padding-top .9s cubic-bezier(.25,.8,.3,1);}
 @media(prefers-reduced-motion:reduce){.bjs.bjs-anim{transition:none;}.bjs-glide .app{transition:none;}}
-.bjs-txt{font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
-.bjs-txt em{font-style:normal;color:#7A3F06;}
+.bjs-txt{font-size:15.5px;font-weight:500;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
+.bjs-txt em{font-style:normal;}
 .bjs-short{display:none;}
-.bjs-go{order:-1;flex:none;font:800 13.5px 'DM Sans',sans-serif;background:#1A1A2E;color:#fff;border:0;border-radius:9px;padding:7px 16px;cursor:pointer;white-space:nowrap;}
-.bjs-go:hover{background:#2D2D44;}
+.bjs-go{flex:none;display:inline-flex;align-items:center;gap:7px;font:700 15px 'DM Sans',sans-serif;background:none;color:#276551;border:0;padding:0;cursor:pointer;white-space:nowrap;}
+.bjs-go:hover{text-decoration:underline;text-underline-offset:3px;}
 .bjs-ph{margin-left:36px;flex:none;align-self:stretch;width:168px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
 .bjs-x{position:absolute;top:5px;right:5px;width:26px;height:26px;border:0;border-radius:50%;background:#fff;color:#1A1A2E;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.35);}
 .bjs-x:hover{background:#F2ECE0;}
@@ -2332,8 +2333,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
   .bjs-l{flex:1 1 auto;gap:0;justify-content:space-evenly;}
   .bjs-full{display:none;}
   .bjs-short{display:inline;}
-  .bjs-txt{font-size:13px;white-space:nowrap;line-height:1.15;flex:none;}
-  .bjs-go{order:0;font-size:12.5px;padding:6px 10px;}
+  .bjs-txt{font-size:13.5px;white-space:nowrap;line-height:1.15;flex:none;}
+  .bjs-go{font-size:13.5px;gap:6px;}
   .bjs-ph{margin-left:0;width:132px;background-image:url(/assets/banner/casting-team-stripe-m.jpg);}
   .bjs-x{top:4px;right:4px;width:24px;height:24px;}
 }
@@ -7747,9 +7748,9 @@ function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
   return <BjsReveal>{(cls,hide)=>(<div className={"bjs"+cls}>
     <div className="bjs-l">
       {mode==="join"
-        ?<div className="bjs-txt"><span className="bjs-full">Casting teams are looking. <em>Make sure they find you.</em></span><span className="bjs-short">Casting teams<br/>are looking.</span></div>
+        ?<div className="bjs-txt"><span className="bjs-full">New roles are posted every day. A free profile lets you apply.</span><span className="bjs-short">Free to join.</span></div>
         :<div className="bjs-txt"><span className="bjs-full">Free accounts get one submission. <em>Premium members apply to every role.</em></span><span className="bjs-short">Apply to every<br/>role you fit.</span></div>}
-      <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Get Found":"Go Premium"}</button>
+      <button className="bjs-go" onClick={()=>onNavigate(mode==="join"?"register-talent":"membership")}>{mode==="join"?"Create free profile":"Go Premium"}<Tri/></button>
     </div>
     <div className="bjs-ph" role="img" aria-label="A casting team watching an actor through a camera"></div>
     <button className="bjs-x" aria-label="Close" onClick={()=>hide(close)}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
