@@ -2311,8 +2311,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    Photo width = height x its real shape (3.0 desktop, 2.35 phone) so it is never
    squashed. On phones the words box is exactly as wide as the words, and the
    free space is split evenly: edge to words, words to button, button to photo. */
-/* Soft cream since 2026-11-05 (owner, demo "Soft cream" + photo): calm fact + plain link, was honey + bold "Get Found" button. */
-.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#3A322A;font-family:'DM Sans',sans-serif;background:#FBF6EC;box-shadow:inset 0 -1px 0 #EADFCB;}
+/* Warm sand since 2026-11-05 (owner: same sand as the free-member bar): calm fact + plain navy link, was honey + bold "Get Found" button. */
+.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#3A322A;font-family:'DM Sans',sans-serif;background:#EFE3CC;box-shadow:inset 0 -1px 0 #E0D0B2;}
 .bjs-l{display:flex;align-items:center;gap:20px;min-width:0;}
 /* Arrives 7s after Browse Castings opens: parked above the top edge (the nav sits where it
    would without it), then slides down. BJS_DELAY_MS / BJS_SLIDE_MS in BrowseJoinStripe. */
@@ -2323,7 +2323,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .bjs-txt{font-size:15.5px;font-weight:500;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
 .bjs-txt em{font-style:normal;}
 .bjs-short{display:none;}
-.bjs-go{flex:none;display:inline-flex;align-items:center;gap:7px;font:700 15px 'DM Sans',sans-serif;background:none;color:#276551;border:0;padding:0;cursor:pointer;white-space:nowrap;}
+.bjs-go{flex:none;display:inline-flex;align-items:center;gap:7px;font:700 15px 'DM Sans',sans-serif;background:none;color:#1A1A2E;border:0;padding:0;cursor:pointer;white-space:nowrap;}
 .bjs-go:hover{text-decoration:underline;text-underline-offset:3px;}
 .bjs-ph{margin-left:36px;flex:none;align-self:stretch;width:168px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
 .bjs-x{position:absolute;top:5px;right:5px;width:26px;height:26px;border:0;border-radius:50%;background:#fff;color:#1A1A2E;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.35);}
@@ -2373,14 +2373,14 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @keyframes mm-event-card-float{0%,100%{transform:translate3d(0,0,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 18px 34px -28px rgba(74,69,129,.42);}33%{transform:translate3d(0,-2px,0);}66%{transform:translate3d(0,-4px,0);box-shadow:inset 0 1px 0 rgba(255,255,255,.78),0 24px 38px -30px rgba(74,69,129,.47);}}
 @keyframes mm-event-icon-shine{0%{transform:translateX(0) skewX(-16deg);}100%{transform:translateX(584%) skewX(-16deg);}}
 @media(prefers-reduced-motion:reduce){.mm-event-card,.mm-event-card::before,.mm-event-icon::after{animation:none!important;}}
-/* Free-member upgrade bar (owner, 2026-11-05, demo "Navy, one plain sentence"): still, brand navy,
-   one honest line + cream See Premium link. Replaced the coral gradient with a sweeping shine and glinting star. */
-.member-banner{display:flex;align-items:center;justify-content:center;gap:14px;height:34px;padding:0 16px;box-sizing:border-box;background:#1A1A2E;color:rgba(255,255,255,.88);font:500 13px 'DM Sans',sans-serif;cursor:pointer;}
+/* Free-member upgrade bar (owner, 2026-11-05): still, warm sand (navy blended into the dark site-top video),
+   one honest line + navy See Premium link. Same sand as the Browse stripe (.bjs). Replaced the coral gradient with a sweeping shine and glinting star. */
+.member-banner{display:flex;align-items:center;justify-content:center;gap:14px;height:34px;padding:0 16px;box-sizing:border-box;background:#EFE3CC;box-shadow:inset 0 -1px 0 #E0D0B2;color:#3A322A;font:500 13px 'DM Sans',sans-serif;cursor:pointer;}
 .member-banner .mb-short{display:none;}
-.member-banner .mb-link{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#FFF6E6;white-space:nowrap;}
-.member-banner .mb-link .cs-tri{color:#FFF6E6;}
+.member-banner .mb-link{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:#1A1A2E;white-space:nowrap;}
+.member-banner .mb-link .cs-tri{color:#1A1A2E;}
 .member-banner:hover .mb-link{text-decoration:underline;text-underline-offset:3px;}
-.member-banner:focus-visible{outline:2px solid #FFF6E6;outline-offset:-4px;}
+.member-banner:focus-visible{outline:2px solid #1A1A2E;outline-offset:-4px;}
 .btn-p{background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-p:hover{background:var(--teal-dk);transform:translateY(-1px);}
 .btn-s{background:transparent;color:#1A1A2E;border:1px solid #1A1A2E;padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;}
