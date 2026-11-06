@@ -2311,8 +2311,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    Photo width = height x its real shape (3.0 desktop, 2.35 phone) so it is never
    squashed. On phones the words box is exactly as wide as the words, and the
    free space is split evenly: edge to words, words to button, button to photo. */
-/* Warm sand since 2026-11-05 (owner: same sand as the free-member bar): calm fact + plain navy link, was honey + bold "Get Found" button. */
-.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#3A322A;font-family:'DM Sans',sans-serif;background:#EFE3CC;box-shadow:inset 0 -1px 0 #E0D0B2;}
+/* Earth Blue #2979BF since 2026-11-06 (owner pick from blue demos; was warm sand): calm fact + plain white link, was honey + bold "Get Found" button. */
+.bjs{position:relative;height:56px;display:flex;align-items:center;gap:20px;padding:0 0 0 28px;justify-content:flex-end;overflow:hidden;color:#FFFFFF;font-family:'DM Sans',sans-serif;background:#2979BF;}
 .bjs-l{display:flex;align-items:center;gap:20px;min-width:0;}
 /* Arrives 7s after Browse Castings opens: parked above the top edge (the nav sits where it
    would without it), then slides down. BJS_DELAY_MS / BJS_SLIDE_MS in BrowseJoinStripe. */
@@ -2323,7 +2323,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .bjs-txt{font-size:15.5px;font-weight:500;letter-spacing:-.01em;line-height:1;white-space:nowrap;min-width:0;}
 .bjs-txt em{font-style:normal;}
 .bjs-short{display:none;}
-.bjs-go{flex:none;display:inline-flex;align-items:center;gap:7px;font:700 15px 'DM Sans',sans-serif;background:none;color:#1A1A2E;border:0;padding:0;cursor:pointer;white-space:nowrap;}
+.bjs-go{flex:none;display:inline-flex;align-items:center;gap:7px;font:700 15px 'DM Sans',sans-serif;background:none;color:#FFFFFF;border:0;padding:0;cursor:pointer;white-space:nowrap;}
 .bjs-go:hover{text-decoration:underline;text-underline-offset:3px;}
 .bjs-ph{margin-left:36px;flex:none;align-self:stretch;width:168px;background:url(/assets/banner/casting-team-stripe.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%);}
 .bjs-x{position:absolute;top:5px;right:5px;width:26px;height:26px;border:0;border-radius:50%;background:#fff;color:#1A1A2E;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.35);}
