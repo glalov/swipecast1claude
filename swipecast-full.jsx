@@ -2355,11 +2355,8 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav-links span.act{background:#F1F1F3;color:#000;font-weight:700;}
 /* Nav attention sweep — a faint amber highlight that breathes. Sits on ONE nav
    link at a time; currently Agencies Directory (it was Manager Mode). */
-.nav-links span.nav-attn{position:relative;color:#A25E10;font-weight:700;background:rgba(232,144,42,.12);animation:mm-breathe 2.6s ease-in-out infinite;}
-.nav-links span.nav-attn:hover{background:rgba(232,144,42,.16);animation:none;}
-.nav-links span.nav-attn.act{background:rgba(232,144,42,.16);color:#A25E10;}
 @keyframes mm-breathe{0%,100%{box-shadow:0 0 0 0 rgba(232,144,42,0);background:rgba(232,144,42,.08);}50%{box-shadow:0 0 16px 1px rgba(232,144,42,.50);background:rgba(232,144,42,.16);}}
-@media(prefers-reduced-motion:reduce){.nav-links span.nav-attn{animation:none;}.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
+@media(prefers-reduced-motion:reduce){.mm-live-hero *,.mm-live-hero *::before,.mm-live-hero *::after{animation:none!important;}.mm-live-preview{width:auto;}.mm-live-message{clip-path:none;}.mm-live-card,.mm-live-task{opacity:1;transform:none;}.mm-live-cursor,.mm-restart-cursor,.mm-click-ring,.mm-logo-click-ring,.mm-spark{display:none!important;}}
 
 .mm-event-card{isolation:isolate;animation:mm-event-card-float 10.5s cubic-bezier(.45,0,.2,1) infinite;}
 .mm-event-card:nth-child(2){animation-delay:-5.25s;}
@@ -58919,7 +58916,7 @@ function App(){
           {/* One "Directories" item instead of two gold links side by side. Opens on hover,
               and on focus for touch/keyboard (a tap focuses the item). Items are buttons,
               not spans — .nav-links span styles would otherwise reach inside the menu. */}
-          <span ref={dirRef} className={"nav-attn nav-dd"+(page==="agency-directory"||page==="casting-directory"||page==="school-directory"?" act":"")+(dirOpen?" open":"")}
+          <span ref={dirRef} className={"nav-dd"+(page==="agency-directory"||page==="casting-directory"||page==="school-directory"?" act":"")+(dirOpen?" open":"")}
             role="button" tabIndex={0} aria-haspopup="true" aria-expanded={dirOpen}
             onClick={()=>setDirOpen(o=>!o)}
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setDirOpen(o=>!o);}}}
