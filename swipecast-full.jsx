@@ -4205,8 +4205,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;letter-spacing:-.4px;line-height:1.2;font-size:28px;}
-.b5-tag{--tk:#44445A;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E9E5DC;color:#241F19;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
-.b5-tag i{color:var(--tk);font-size:14px;line-height:1;}
+.b5-tag{--tk:#44445A;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px 0 9px;border-radius:6px;background:#E9E5DC;color:#15110D;font-size:13.5px;line-height:1;font-weight:700;letter-spacing:.005em;white-space:nowrap;}
+.b5-tag i{color:var(--tk);font-size:17px;line-height:1;}
 .b5-tag-b{letter-spacing:.01em;}
 .cs-idv{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E8F3EC;color:#17663F;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
 .cs-idv-a{display:flex;align-items:center;}
@@ -18103,7 +18103,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     <TicketTypeTag type={c.type} lang={lang}/>
                     {soon&&<span className="b5-urgent">{cdn.label}</span>}
                     {isExpiredCasting&&!isArchived&&<span className="b5-urgent">Expired</span>}
-                    {c.is_admin_created?(adminBadgeState(c.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(c.admin_verified)===false?<UnverifiedBadge size="xs"/>:null):(c.creator_verified&&<IDVerifiedBadge size="xs"/>)}
+                    {/* Verification badges live inside the casting (owner, 2026-11-07), not on the card. */}
                   </div>
                   {facts.length>0&&<div className="b5-meta">{facts.map((x,i)=><span key={i} className={i===0&&rateLine&&rateLine.money?"pay":undefined}>{x}</span>)}</div>}
                   {(c.tagline&&c.tagline!==c.prod)?<p className="b5-sum">{c.tagline}</p>:null}
@@ -27212,14 +27212,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                     <span className="cc-badge">{castingTypeLabel(sc.type||"Film")}</span>
                     {sc.union&&<span className="cc-badge">{sc.union}</span>}
                     {(!sCdn||!sCdn.expired)&&<LiveCastingBadge/>}
-                    {/* Verification with the chips; names live in Company Details on the casting page. */}
-                    {sc.is_admin_created
-                      ? (adminBadgeState(sc.admin_verified)===true?<IDVerifiedBadge size="xs"/>:adminBadgeState(sc.admin_verified)===false?<UnverifiedBadge size="xs"/>:null)
-                      : <>
-                          {(sCd.identity_verified===true&&sCd.can_post_castings===true&&sCd.verification_status==="verified")&&<IDVerifiedBadge size="xs"/>}
-                          {(sCd.identity_verified===true&&sCd.background_check_status==="passed")&&<CastingVerifiedBadge/>}
-                          {!(sCd.identity_verified===true&&sCd.can_post_castings===true)&&sCdName&&<UnverifiedBadge size="xs"/>}
-                        </>}
+                    {/* Verification badges live inside the casting (owner, 2026-11-07), not on the card. */}
                   </div>
                 </div>
                 {sc.tagline&&<p className="cc-tagline">{sc.tagline}</p>}
