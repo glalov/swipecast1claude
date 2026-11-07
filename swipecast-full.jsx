@@ -622,12 +622,16 @@ function withTri(label){
 // line icon in a dark shade of the type's family colour.
 const PROJECT_TYPE_TAG_ICONS={film:"movie",series:"device-tv",comm:"speakerphone",corp:"briefcase",audio:"microphone",stage:"masks-theater",host:"presentation",print:"camera",dev:"bulb",phys:"run",other:"sparkles"};
 const PROJECT_TYPE_TAG_INKS={film:"#7A3514",series:"#134E50",comm:"#754207",corp:"#2B3343",audio:"#37296E",stage:"#6E1F38",host:"#114558",print:"#5A4120",dev:"#134F33",phys:"#762A16",other:"#44445A"};
+// Owner pick "B2 softer pastel" (2026-11-07): the icon sits in its own square,
+// a faint tint of the type's family colour, with the icon in a gentle shade of it.
+const PROJECT_TYPE_TAG_SOFT={film:["#F1E6DF","#9A5A3E"],series:["#E2ECEA","#3D6E6A"],comm:["#F1EADB","#8E6A2E"],corp:["#E5E8EE","#4A5568"],audio:["#E8E4F1","#5E5290"],stage:["#EFE4E7","#8A4A60"],host:["#E0EBEF","#3E6B7C"],print:["#EFE8DF","#7A6248"],dev:["#E2EDE5","#3F6E52"],phys:["#F1E4DE","#9A5136"],other:["#EAE8EE","#5E5E74"]};
 function TicketTypeTag({type,lang}){
   if(!type)return null;
   const t=canonicalProjectType(type);
   const fam=PROJECT_TYPE_GROUP[t]||"other";
-  return(<span className="b5-tag" style={{"--tk":PROJECT_TYPE_TAG_INKS[fam]||PROJECT_TYPE_TAG_INKS.other}} title={t}>
-    <i className={"ti ti-"+(PROJECT_TYPE_TAG_ICONS[fam]||PROJECT_TYPE_TAG_ICONS.other)} aria-hidden="true"/>
+  const soft=PROJECT_TYPE_TAG_SOFT[fam]||PROJECT_TYPE_TAG_SOFT.other;
+  return(<span className="b5-tag" style={{"--tbg":soft[0],"--tic":soft[1]}} title={t}>
+    <span className="b5-tag-ic" aria-hidden="true"><i className={"ti ti-"+(PROJECT_TYPE_TAG_ICONS[fam]||PROJECT_TYPE_TAG_ICONS.other)}/></span>
     <span className="b5-tag-b">{translateCastingType(type,lang)}</span>
   </span>);
 }
@@ -4205,9 +4209,10 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-clap{align-self:stretch;width:30px;margin:-4px 2px -4px -11px;background:repeating-linear-gradient(-45deg,#3B3B4A 0 5px,#FBF1DE 5px 10px);border-right:1px solid #E6D2A8;}
 .b5-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
 .b5-head .cc-title{margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;letter-spacing:-.4px;line-height:1.2;font-size:28px;}
-.b5-tag{--tk:#44445A;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px 0 9px;border-radius:6px;background:#E9E5DC;color:#15110D;font-size:13.5px;line-height:1;font-weight:700;letter-spacing:.005em;white-space:nowrap;}
-.b5-tag i{color:var(--tk);font-size:17px;line-height:1;}
-.b5-tag-b{letter-spacing:.01em;}
+.b5-tag{--tbg:#EAE8EE;--tic:#5E5E74;display:inline-flex;align-items:stretch;height:28px;border-radius:6px;overflow:hidden;background:#F3F0E9;color:#15110D;font-size:13.5px;line-height:1;font-weight:700;letter-spacing:.005em;white-space:nowrap;}
+.b5-tag-ic{display:flex;align-items:center;justify-content:center;width:28px;flex:none;background:var(--tbg);color:var(--tic);}
+.b5-tag-ic i{font-size:16px;line-height:1;}
+.b5-tag-b{display:flex;align-items:center;padding:0 11px 0 9px;letter-spacing:.01em;}
 .cs-idv{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:4px;background:#E8F3EC;color:#17663F;font-size:12px;line-height:1;font-weight:600;white-space:nowrap;}
 .cs-idv-a{display:flex;align-items:center;}
 .cs-idv-a svg{width:14px;height:14px;display:block;}
