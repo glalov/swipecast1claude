@@ -3573,6 +3573,11 @@ body.sheet-push .b2t-cube{display:none;}
 /* ── Nav "Directories" dropdown ── */
 .nav-links span.nav-dd{position:relative;display:inline-flex;align-items:center;}
 .nav-links span.nav-dd:focus{outline:none;}
+/* Solid rounded triangle (same shape as the CTA <Tri/>): points down, turns up while the menu is open. */
+.nav-dd-tri{display:inline-flex;align-items:center;margin-left:6px;font-size:12px;color:#111114;transform:rotate(90deg);transition:transform .22s ease;}
+.nav-dd-tri .cs-tri{vertical-align:0;}
+.nav-links span.nav-dd.open .nav-dd-tri{transform:rotate(-90deg);}
+@media (prefers-reduced-motion:reduce){.nav-dd-tri{transition:none;}}
 .nav-ddm{display:block;position:absolute;top:100%;left:50%;transform:translateX(-50%);padding-top:10px;z-index:60;width:330px;}
 .nav-ddm::before{content:"";position:absolute;top:10px;left:0;right:0;bottom:0;background:#fff;border:1px solid var(--bdr);border-radius:14px;box-shadow:0 18px 40px -14px rgba(26,26,46,.35);}
 .nav-ddm button{position:relative;display:grid;grid-template-columns:34px 1fr;column-gap:11px;align-items:center;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:10px 12px;margin:0;cursor:pointer;font-family:inherit;color:var(--t1);}
@@ -58922,7 +58927,7 @@ function App(){
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setDirOpen(o=>!o);}}}
             onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);setDirOpen(true);}}}
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);dirTimer.current=setTimeout(()=>setDirOpen(false),180);}}}>
-            {navT('nav.directories')}<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft:5,verticalAlign:"middle"}}><path d="M6 9l6 6 6-6"/></svg>
+            {navT('nav.directories')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
               <button role="menuitem" className={page==="agency-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("agency-directory");}}>
                 <i className="ic"><Ico n="building-bank" s={17}/></i><b>{navT('nav.agencyDirectory')}</b><small>650+ talent agencies &amp; managers · LA + NY</small></button>
