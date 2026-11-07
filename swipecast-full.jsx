@@ -2875,6 +2875,9 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .pp-1p-main{min-width:0;}
 .pp-1p-side{min-width:0;}
 .pp-1p-stick{position:sticky;top:96px;display:flex;flex-direction:column;gap:30px;}
+/* The last main section ends in 38px of padding; end the sidebar column there too so the
+   sticky panel stops level with the last row of content, not inside that padding (owner, 2026-11-07). */
+@media(min-width:901px){.pp-1p.has-side>.pp-1p-side{margin-bottom:38px;}}
 .pp-uni .pp-1p-main>.card,.pp-uni .pp-1p-main>.card:hover{background:transparent!important;border:0!important;border-top:1px solid var(--bdr)!important;border-radius:0!important;box-shadow:none!important;padding:34px 0 38px!important;margin:0!important;transform:none!important;font-family:'DM Sans',sans-serif!important;}
 .pp-uni .pp-1p-main>.card:first-child{border-top:0!important;padding-top:4px!important;}
 .pp-uni .pp-1p-main>.card.pp-info:empty{display:none;}
