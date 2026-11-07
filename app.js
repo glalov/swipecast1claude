@@ -1304,8 +1304,11 @@ body.sheet-push .b2t-cube{display:none;}
 /* Solid rounded triangle (same shape as the CTA <Tri/>): points down, turns up while the menu is open. */
 .nav-dd-tri{display:inline-flex;align-items:center;margin-left:6px;font-size:12px;color:#111114;transform:rotate(90deg);transition:transform .45s cubic-bezier(.45,0,.2,1);will-change:transform;}
 .nav-dd-tri .cs-tri{vertical-align:0;}
-.nav-links span.nav-dd.open .nav-dd-tri{transform:rotate(-90deg);}
-@media (prefers-reduced-motion:reduce){.nav-dd-tri{transition:none;}}
+/* .nav-links span (padding, hover fill, colour-only transition) also matches this inner span; undo it here. */
+.nav-links span.nav-dd span.nav-dd-tri{padding:0;margin-left:5px;border-radius:0;background:none;font-size:12px;transition:transform .45s cubic-bezier(.45,0,.2,1);}
+.nav-links span.nav-dd span.nav-dd-tri:hover{background:none;}
+.nav-links span.nav-dd.open span.nav-dd-tri{transform:rotate(-90deg);}
+@media (prefers-reduced-motion:reduce){.nav-links span.nav-dd span.nav-dd-tri{transition:none;}}
 .nav-ddm{display:block;position:absolute;top:100%;left:50%;transform:translateX(-50%);padding-top:10px;z-index:60;width:330px;}
 .nav-ddm::before{content:"";position:absolute;top:10px;left:0;right:0;bottom:0;background:#fff;border:1px solid var(--bdr);border-radius:14px;box-shadow:0 18px 40px -14px rgba(26,26,46,.35);}
 .nav-ddm button{position:relative;display:grid;grid-template-columns:34px 1fr;column-gap:11px;align-items:center;width:100%;text-align:left;background:none;border:0;border-radius:10px;padding:10px 12px;margin:0;cursor:pointer;font-family:inherit;color:var(--t1);}
