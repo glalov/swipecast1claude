@@ -1302,7 +1302,7 @@ body.sheet-push .b2t-cube{display:none;}
 .nav-links span.nav-dd{position:relative;display:inline-flex;align-items:center;}
 .nav-links span.nav-dd:focus{outline:none;}
 /* Solid rounded triangle (same shape as the CTA <Tri/>): points down, turns up while the menu is open. */
-.nav-dd-tri{display:inline-flex;align-items:center;margin-left:6px;font-size:12px;color:#111114;transform:rotate(90deg);transition:transform .22s ease;}
+.nav-dd-tri{display:inline-flex;align-items:center;margin-left:6px;font-size:12px;color:#111114;transform:rotate(90deg);transition:transform .45s cubic-bezier(.45,0,.2,1);will-change:transform;}
 .nav-dd-tri .cs-tri{vertical-align:0;}
 .nav-links span.nav-dd.open .nav-dd-tri{transform:rotate(-90deg);}
 @media (prefers-reduced-motion:reduce){.nav-dd-tri{transition:none;}}
