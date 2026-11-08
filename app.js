@@ -3482,7 +3482,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-picklist .rl-chev.rl-tri,.rl-picklist .rl-row.rl-open .rl-chev.rl-tri,.rl-picklist .rl-top.rl-clickable:hover .rl-chev.rl-tri{width:14px;height:14px;border:0;background:none;border-radius:0;color:#14141F;}
 .rl-picklist .rl-detail{min-width:0;margin-right:0;}
 .rl-picklist .rl-right{gap:8px;}
-.apply-cta.apply-named{width:auto;max-width:none;white-space:nowrap;gap:8px;}
+.apply-cta.apply-named{width:auto;max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;gap:8px;}
 .rl-rule{height:1px;background:var(--bdr);margin-bottom:15px;}
 /* The lines arrive in sequence rather than all at once — a 60-word brief plus a
    row of chips landing in one frame reads as a dump. */
@@ -3511,7 +3511,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .rl-side .tag{display:block;text-align:center;}
 /* Long role names wrap inside the column instead of running past the card edge (2026-11-07). */
 .rl-side{min-width:0;}
-.rl-side .apply-cta.apply-named{max-width:100%;white-space:normal;text-align:left;justify-content:flex-start;line-height:1.3;}
+.rl-side .apply-cta.apply-named{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;text-align:left;justify-content:flex-start;line-height:1.3;}
 .rl-side .apply-cta.apply-named svg{flex:none;}
 /* What accompanies the role, as objects rather than a sentence: four pills read
    in a glance where a line of prose has to be read to the end to find the
