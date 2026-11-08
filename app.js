@@ -1853,7 +1853,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-list{display:flex;flex-direction:column;gap:24px;}
 @media(min-width:901px){
   .b5-list{gap:36px;}
-  .b5-card .b5-grid{min-height:440px;}
+  /* No fixed card height (owner, 2026-11-07): cards hug their content, so one-role castings no longer carry an empty band. */
   .b5-card .b5-main{padding:42px 44px;gap:17px;}
   /* Roles start at the top, level with the title (owner, 2026-11-05), not centred in the column. */
   .b5-card .b5-side{padding:26px 28px 22px;justify-content:flex-start;}
