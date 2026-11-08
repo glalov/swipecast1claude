@@ -95,22 +95,33 @@ async function fetchText(url: string): Promise<{ ok: boolean; html: string; fina
   } catch (_) { return { ok: false, html: "", finalUrl: url }; }
 }
 
+// The event's own artwork: the page's share image first, then the large images on the page.
 async function artFor(pageHtml: string, pageUrl: string): Promise<{ image_url: string | null; art_style: "logo" | "cover" | "marquee" }> {
-  const m = pageHtml.match(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)(?::url)?["'][^>]*content=["']([^"']+)["']/i)
-    || pageHtml.match(/<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["'](?:og:image|twitter:image)["']/i);
-  if (!m) return { image_url: null, art_style: "marquee" };
-  let img = m[1].replace(/&amp;/g, "&");
-  try { img = new URL(img, pageUrl).href; } catch (_) { return { image_url: null, art_style: "marquee" }; }
-  img = img.replace(/^http:\/\//i, "https://");
-  try {
-    const r = await fetch(img, { headers: { "User-Agent": UA, Range: "bytes=0-65535" }, signal: AbortSignal.timeout(12000) });
-    if (!(r.ok || r.status === 206) || !/^image\//i.test(r.headers.get("content-type") || "")) return { image_url: null, art_style: "marquee" };
-    const size = imageSize(new Uint8Array(await r.arrayBuffer()));
-    if (!size || size.w < 200 || size.h < 100) return { image_url: null, art_style: "marquee" };
-    // Generic site icons (square, small) say nothing about the event.
-    if (size.w === size.h && size.w <= 600) return { image_url: null, art_style: "marquee" };
-    return { image_url: img, art_style: size.w / size.h >= 1.6 ? "cover" : "logo" };
-  } catch (_) { return { image_url: null, art_style: "marquee" }; }
+  const found: string[] = [];
+  for (const m of pageHtml.matchAll(/<meta[^>]+(?:og:image|twitter:image)[^>]*>/gi)) {
+    const c = m[0].match(/content=["']([^"']+)/i);
+    if (c) found.push(c[1]);
+  }
+  for (const m of pageHtml.matchAll(/<img[^>]+>/gi)) {
+    const set = m[0].match(/srcset=["']([^"']+)/i);
+    const last = set ? set[1].split(",").map((x) => x.trim().split(/\s+/)[0]).filter(Boolean).pop() : null;
+    const src = last || (m[0].match(/(?:data-src|data-lazy-src|src)=["']([^"']+)/i) || [])[1];
+    if (src) found.push(src);
+  }
+  const urls = [...new Set(found.map((u) => {
+    try { return new URL(u.replace(/&amp;/g, "&"), pageUrl).href.replace(/^http:\/\//i, "https://"); } catch (_) { return ""; }
+  }))].filter((u) => u && !/\.(svg|gif)(\?|$)|logo|icon|sprite|spacer|pixel|badge|laurel|facebook|avatar/i.test(u)).slice(0, 10);
+  for (const img of urls) {
+    try {
+      const r = await fetch(img, { headers: { "User-Agent": UA, Range: "bytes=0-65535" }, signal: AbortSignal.timeout(8000) });
+      if (!(r.ok || r.status === 206) || !/^image\//i.test(r.headers.get("content-type") || "")) continue;
+      const size = imageSize(new Uint8Array(await r.arrayBuffer()));
+      if (!size || size.w < 500 || size.h < 200) continue;
+      if (size.w === size.h && size.w <= 600) continue;
+      return { image_url: img, art_style: size.w / size.h >= 1.25 ? "cover" : "logo" };
+    } catch (_) { /* try the next image */ }
+  }
+  return { image_url: null, art_style: "marquee" };
 }
 
 type Found = { title: string; kicker: string; why: string; starts_on: string; ends_on: string; when_lines: [string, string][]; url: string; palette: string; marquee_word?: string };

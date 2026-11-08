@@ -4208,20 +4208,25 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
-.fes{display:flex;align-items:center;gap:16px;border-radius:12px;overflow:hidden;margin:0 0 16px;color:#FFFFFF;text-decoration:none;min-height:64px;box-shadow:0 1px 2px rgba(26,26,46,.12);}
-.fes-tx{flex:1;min-width:0;padding:10px 0 10px 18px;display:flex;flex-direction:column;gap:2px;}
-.fes-k{font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.85;}
-.fes-t{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:500;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#FFFFFF;}
-.fes-w{font-family:"DM Sans",sans-serif;font-size:13.5px;font-weight:600;opacity:.9;margin-left:10px;}
-.fes-go{flex:none;background:#FFFFFF;color:#141414;font-size:13px;font-weight:800;border-radius:9px;padding:8px 12px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap;transition:background-color .18s ease;}
-.fes:hover .fes-go{background:#F4F1EA;}
-.fes-ph{flex:none;width:170px;align-self:stretch;position:relative;display:flex;align-items:center;justify-content:center;}
-.fes-art-cover .fes-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
-.fes-art-cover .fes-ph::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(0,0,0,.35),transparent 50%);}
-.fes-logo{background:#FFFFFF;border-radius:8px;padding:5px 8px;height:44px;display:flex;align-items:center;}
-.fes-logo img{max-height:34px;max-width:130px;display:block;}
-.fes-marq{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#FFD896;border:1.5px solid rgba(255,214,150,.75);border-radius:8px;padding:6px 12px;letter-spacing:.04em;}
-@media(max-width:760px){.fes{min-height:72px;gap:10px;}.fes-go{display:none;}.fes-ph{width:96px;}.fes-tx{padding:10px 0 10px 14px;}.fes-t{white-space:normal;font-size:15.5px;line-height:1.2;}.fes-w{display:block;margin:3px 0 0;font-size:12.5px;}.fes-logo img{max-width:72px;}}
+.evs{display:flex;align-items:stretch;min-height:136px;border-radius:14px;overflow:hidden;margin:0 0 16px;color:#FFFFFF;text-decoration:none;box-shadow:0 1px 2px rgba(26,26,46,.14);}
+.evs-tx{flex:1;min-width:0;padding:20px 8px 20px 26px;display:flex;flex-direction:column;justify-content:center;gap:6px;}
+.evs-k{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.88;}
+.evs-t{font-family:Fraunces,Georgia,serif;font-size:27px;font-weight:500;line-height:1.14;letter-spacing:-.3px;color:#FFFFFF;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.evs-w{font-size:15px;font-weight:600;opacity:.93;}
+.evs-go{flex:none;align-self:center;margin:0 22px 0 14px;background:#FFFFFF;color:#141414;font-size:14px;font-weight:800;border-radius:10px;padding:11px 15px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap;transition:background-color .18s ease;}
+.evs:hover .evs-go{background:#F4F1EA;}
+.evs-art{flex:none;width:clamp(230px,32%,400px);position:relative;overflow:hidden;display:block;}
+.evs-cov{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 30%);mask-image:linear-gradient(90deg,transparent 0,#000 30%);}
+.evs-bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);max-width:none;object-fit:cover;filter:blur(20px) brightness(.72) saturate(1.15);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 30%);mask-image:linear-gradient(90deg,transparent 0,#000 30%);}
+.evs-fg{position:absolute;top:10px;right:44px;height:calc(100% - 20px);max-width:280px;object-fit:contain;border-radius:5px;box-shadow:0 10px 24px -8px rgba(0,0,0,.65);}
+.evs-chip{position:absolute;top:50%;right:34px;transform:translateY(-50%);background:#FFFFFF;border-radius:10px;padding:12px 16px;}
+.evs-chip.dk{background:none;}
+.evs-chip img{display:block;max-width:220px;max-height:76px;}
+.evs-row{position:absolute;top:10px;bottom:10px;right:24px;display:flex;gap:8px;}
+.evs-row img{height:100%;width:auto;border-radius:4px;box-shadow:0 8px 18px -6px rgba(0,0,0,.6);}
+.evs-word{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:38px;color:#FFE3B5;}
+@media(max-width:1100px){.evs-row img:nth-child(n+3){display:none;}.evs-t{font-size:23px;}}
+@media(max-width:760px){.evs{flex-direction:column;}.evs-art{order:-1;width:100%;height:150px;}.evs-cov,.evs-bg{-webkit-mask-image:none;mask-image:none;}.evs-fg{left:0;right:0;margin:0 auto;}.evs-chip{right:auto;left:50%;transform:translate(-50%,-50%);}.evs-row{left:0;right:0;justify-content:center;}.evs-tx{padding:16px 16px 6px;}.evs-t{font-size:22px;}.evs-go{align-self:flex-start;margin:6px 16px 16px;}}
 /* Industry Events: dashboard card and /events (2026-11-08) */
 .ievc{background:#fff;border:1px solid var(--bdr);border-radius:18px;box-shadow:0 2px 6px rgba(26,26,46,.07);}
 .ievc-top{position:relative;height:124px;background:#0E2628 center/cover no-repeat;border-radius:17px 17px 0 0;}
@@ -17864,29 +17869,36 @@ function FilmEventCard({ev,compact}){
 function FilmEventBanner(){
   const list=useAllEvents();
   const ev=(list||[]).find(e=>e.city==="los-angeles");
-  return ev?<FilmEventCard ev={ev}/>:null;
+  return ev?<EventStripe ev={ev}/>:null;
 }
-// Slim event strip at the top of Browse page 1 (owner pick "B · colour", 2026-11-08):
-// the top event (real photo first, then soonest) in its own palette, photo on the right.
+// Top of Browse page 1: the New York event, in the same stripe as the Los Angeles one.
 function FilmEventStrip(){
   const list=useAllEvents();
-  const [imgBad,setImgBad]=useState(false);
   const ev=(list||[]).find(e=>e.city==="new-york");
-  if(!ev)return null;
+  return ev?<EventStripe ev={ev}/>:null;
+}
+// Event stripe (owner, 2026-11-08): 136px tall, the event's own website image on the right.
+// Wide images fill and fade into the colour; posters show whole on a blur of themselves.
+function EventStripe({ev}){
+  const [bad,setBad]=useState(false);
+  const [poster,setPoster]=useState(false);
+  useEffect(()=>{setBad(false);setPoster(false);},[ev.id]);
+  const a=ev.art||{};
   const when=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,2).map(w=>w&&w[1]).filter(Boolean).join(" · "):"";
-  const art=imgBad||!ev.image_url?"marquee":ev.art_style;
-  const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
-  const place=String(ev.kicker||"").split("·").pop().trim();
-  return(<a className={"fes fev-"+(ev.palette||"navy")+" fes-art-"+art} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
-    <span className="fes-tx">
-      <span className="fes-k">{ev._on?"Film event · on now":(Date.parse(ev.starts_on+"T12:00:00Z")-Date.now()<7*86400000?"Film event this week":"Film event · coming up")}{place?" · "+place:""}</span>
-      <span className="fes-t">{ev.title}{when&&<span className="fes-w">{when}</span>}</span>
+  const word=(ev.marquee_word||ev.title.split(/\s+/)[0]).toUpperCase();
+  const noArt=bad||(!ev.image_url&&!(a.row&&a.row.length));
+  return(<a className={"evs fev-"+(ev.palette||"navy")} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
+    <span className="evs-tx">
+      <span className="evs-k">Film event · {ev.kicker}</span>
+      <span className="evs-t">{ev.title}</span>
+      {when&&<span className="evs-w">{when}</span>}
     </span>
-    <span className="fes-go">See the event<i className="ti ti-external-link" aria-hidden="true"/></span>
-    <span className="fes-ph" aria-hidden="true">
-      {art==="marquee"?<span className="fes-marq">{word}</span>
-        :art==="cover"?<img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setImgBad(true)}/>
-        :<span className="fes-logo"><img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setImgBad(true)}/></span>}
+    <span className="evs-go">See the event<i className="ti ti-external-link" aria-hidden="true"/></span>
+    <span className="evs-art" aria-hidden="true">
+      {noArt?<span className="evs-word">{word}</span>
+        :a.row?<span className="evs-row">{a.row.map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.style.display="none";}}/>)}</span>
+        :a.logo?<span className={"evs-chip"+(a.dark?" dk":"")}><img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)}/></span>
+        :<>{poster&&<img className="evs-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"evs-fg":"evs-cov"} src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget;if(t.naturalWidth/t.naturalHeight<1.25)setPoster(true);}}/></>}
     </span>
   </a>);
 }
@@ -17934,10 +17946,10 @@ function loadAllEvents(){
       try{
         if(!window.sb)throw new Error("no client yet");
         const today=ievToday();
-        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette,city,category").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(300);
+        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette,city,category,art,featured_rank").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(300);
         if(error)throw error;
         const rows=(data||[]).filter(e=>e&&e.title&&e.url).map(e=>({...e,_on:e.starts_on<=today,_photo:e.art_style==="cover"&&/\.(jpe?g|webp)(\?|$)/i.test(String(e.image_url||""))}));
-        rows.sort((a,b)=>(b._photo-a._photo)||((b._on?1:0)-(a._on?1:0))||String(a.starts_on).localeCompare(String(b.starts_on)));
+        rows.sort((a,b)=>((a.featured_rank??99)-(b.featured_rank??99))||(b._photo-a._photo)||((b._on?1:0)-(a._on?1:0))||String(a.starts_on).localeCompare(String(b.starts_on)));
         if(rows.length){_allEventsCache=rows;_allEventsAt=Date.now();break;}
       }catch(_){}
       await new Promise(r=>setTimeout(r,1200*(attempt+1)));
