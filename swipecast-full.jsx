@@ -3566,7 +3566,8 @@ body.sheet-push .b2t-cube{display:none;}
 .dirc-ic::before,.dirc-ic::after{content:"";position:absolute;inset:-6px;border-radius:15px;border:1px solid rgba(var(--na,240,184,96),.55);animation:tad-ring 3s ease-out infinite;}
 .dirc-ic::after{animation-delay:1.5s;}
 .dirc h3{font-weight:800;font-size:15.5px;color:#FFFFFF;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;line-height:1.3;}
-.dirc-info{margin-left:auto;}
+.dirc-info{margin-left:5px;vertical-align:-2px;}
+.dirc-ca .tad-info{border-color:rgba(255,255,255,.75);color:#FFFFFF;background:rgba(255,255,255,.16);}
 .dirc-beam{position:absolute;inset:-20% -40%;z-index:1;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.09) 48%,rgba(255,255,255,.03) 54%,transparent 62%);animation:dirc-beam 9s ease-in-out infinite;}
 @keyframes dirc-beam{0%,100%{transform:translateX(-22%);}50%{transform:translateX(22%);}}
 .dirc-body{padding:16px 20px 20px;}
@@ -19797,8 +19798,7 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
         <p className="dirc-kick"><span className="dirc-dot"/>{isPremium?"Unlocked":"Premium Feature"}</p>
         <div className="dirc-hd">
           <span className="dirc-ic"><span className="tad-dial2"/><span className="tad-dial"/><Ico n="building-bank" s={22}/></span>
-          <h3>Talent Agency &amp; Management Directory<br/>+ Tips &amp; Tricks</h3>
-          <i className="tad-info dirc-info" tabIndex={0} aria-label="What this directory is">i</i>
+          <h3>Talent Agency &amp; Management Directory<br/>+ Tips &amp; Tricks <i className="tad-info dirc-info" tabIndex={0} aria-label="What this directory is" onClick={e=>e.stopPropagation()}>i</i></h3>
         </div>
       </div>
       <div className="dirc-body">
@@ -20374,7 +20374,7 @@ function CastingDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
         <p className="dirc-kick"><span className="dirc-rec"/>{isPremium?"Unlocked · Rolling":"Premium Feature · Rolling"}</p>
         <div className="dirc-hd">
           <span className="dirc-ic"><span className="tad-dial2"/><span className="tad-dial"/><Ico n="movie" s={21}/></span>
-          <h3>Casting Companies Directory<br/>+ Tips &amp; Tricks</h3>
+          <h3>Casting Companies Directory<br/>+ Tips &amp; Tricks <i className="tad-info dirc-info" tabIndex={0} aria-label="What this directory is" onClick={e=>e.stopPropagation()}>i</i></h3>
         </div>
       </div>
       <div className="dirc-body">
@@ -20388,6 +20388,8 @@ function CastingDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
           {isPremium?<>Open the Directory <Tri/></>:<>Unlock the Directory <Tri/></>}
         </button>
       </div>
+      {/* LAST child on purpose — anything after it would paint over the panel. */}
+      <span className="tad-tip"><b>Know which doors are open</b>The casting offices of New York and Los Angeles in one place: <em>which ones accept headshots</em>, each office's website, address and submission policy, plus tips on how to approach them. The open doors come first, so you stop sending headshots to offices that will never look at them.</span>
     </div>
 
     {open&&ReactDOM.createPortal(<>
