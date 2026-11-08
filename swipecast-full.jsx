@@ -4208,6 +4208,20 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
+.fes{display:flex;align-items:center;gap:16px;border-radius:12px;overflow:hidden;margin:0 0 16px;color:#FFFFFF;text-decoration:none;min-height:64px;box-shadow:0 1px 2px rgba(26,26,46,.12);}
+.fes-tx{flex:1;min-width:0;padding:10px 0 10px 18px;display:flex;flex-direction:column;gap:2px;}
+.fes-k{font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.85;}
+.fes-t{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:500;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#FFFFFF;}
+.fes-w{font-family:"DM Sans",sans-serif;font-size:13.5px;font-weight:600;opacity:.9;margin-left:10px;}
+.fes-go{flex:none;background:#FFFFFF;color:#141414;font-size:13px;font-weight:800;border-radius:9px;padding:8px 12px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap;transition:background-color .18s ease;}
+.fes:hover .fes-go{background:#F4F1EA;}
+.fes-ph{flex:none;width:170px;align-self:stretch;position:relative;display:flex;align-items:center;justify-content:center;}
+.fes-art-cover .fes-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.fes-art-cover .fes-ph::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(0,0,0,.35),transparent 50%);}
+.fes-logo{background:#FFFFFF;border-radius:8px;padding:5px 8px;height:44px;display:flex;align-items:center;}
+.fes-logo img{max-height:34px;max-width:130px;display:block;}
+.fes-marq{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#FFD896;border:1.5px solid rgba(255,214,150,.75);border-radius:8px;padding:6px 12px;letter-spacing:.04em;}
+@media(max-width:760px){.fes{min-height:72px;gap:10px;}.fes-go{display:none;}.fes-ph{width:96px;}.fes-tx{padding:10px 0 10px 14px;}.fes-t{white-space:normal;font-size:15.5px;line-height:1.2;}.fes-w{display:block;margin:3px 0 0;font-size:12.5px;}.fes-logo img{max-width:72px;}}
 .fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
 .fev-compact .fev-art{order:-1;height:176px;padding:36px 16px 16px;box-sizing:border-box;}
 .fev-compact.fev-art-cover .fev-art{padding:36px 16px 16px;}
@@ -17770,8 +17784,36 @@ function FilmEventBanner({page}){
   const [list,setList]=useState(_filmEventsCache);
   useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
   if(!list||!list.length)return null;
-  // Page 1 shows the top event, page 2 the next, and so on.
-  return <FilmEventCard ev={list[Math.max(0,(page||1)-1)%list.length]}/>;
+  // Page 1's top strip shows event 0, so the in-list banner shows event `page`
+  // (page 1 → event 1, page 2 → event 2 …) and never repeats the strip.
+  const p=Math.max(1,page||1);
+  if(p===1&&list.length<2)return null;
+  return <FilmEventCard ev={list[p%list.length]}/>;
+}
+// Slim event strip at the top of Browse page 1 (owner pick "B · colour", 2026-11-08):
+// the top event (real photo first, then soonest) in its own palette, photo on the right.
+function FilmEventStrip(){
+  const [list,setList]=useState(_filmEventsCache);
+  const [imgBad,setImgBad]=useState(false);
+  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
+  if(!list||!list.length)return null;
+  const ev=list[0];
+  const when=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,2).map(w=>w&&w[1]).filter(Boolean).join(" · "):"";
+  const art=imgBad||!ev.image_url?"marquee":ev.art_style;
+  const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
+  const place=String(ev.kicker||"").split("·").pop().trim();
+  return(<a className={"fes fev-"+(ev.palette||"navy")+" fes-art-"+art} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
+    <span className="fes-tx">
+      <span className="fes-k">{ev._on?"Film event · on now":(Date.parse(ev.starts_on+"T12:00:00Z")-Date.now()<7*86400000?"Film event this week":"Film event · coming up")}{place?" · "+place:""}</span>
+      <span className="fes-t">{ev.title}{when&&<span className="fes-w">{when}</span>}</span>
+    </span>
+    <span className="fes-go">See the event<i className="ti ti-external-link" aria-hidden="true"/></span>
+    <span className="fes-ph" aria-hidden="true">
+      {art==="marquee"?<span className="fes-marq">{word}</span>
+        :art==="cover"?<img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setImgBad(true)}/>
+        :<span className="fes-logo"><img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setImgBad(true)}/></span>}
+    </span>
+  </a>);
 }
 // Manager Mode events list (owner, 2026-11-08): Premium members see every upcoming NYC film
 // event from film_events, grouped by when; everyone else sees the first two and one quiet line.
@@ -18217,6 +18259,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             <span>{t('search.refreshErr')} {fetchErr}{dbCastings.length>0?" "+t('search.showingCached'):""}</span>
             <button className="btn-s btn-sm" onClick={()=>{setFetchErr("");setRefreshTick(tk=>tk+1);}}>{t('search.retryShort')}</button>
           </div>}
+          {pg===1&&fc.length>0&&<FilmEventStrip/>}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
             <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
           </div>
