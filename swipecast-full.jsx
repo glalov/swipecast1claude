@@ -21126,7 +21126,6 @@ function ThreeScroll({style,children,rows=3}){
   React.useLayoutEffect(()=>{
     const el=ref.current;if(!el)return;
     const k=el.children;
-    el.style.maxHeight=""; // measure rows at full size, never while squeezed by a previous limit
     if(k.length>rows){const e=k[rows-1];el.style.maxHeight=(e.offsetTop+e.offsetHeight-k[0].offsetTop)+"px";el.classList.add("td-three");}
     else{el.style.maxHeight="";el.classList.remove("td-three");}
   });
@@ -22178,7 +22177,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               ):(
                 <>
                   <ThreeScroll rows={2} style={{display:"flex",flexDirection:"column",gap:12}}>
-                    {applications.map(app=>{
+                    {[...applications].sort((a,b)=>{
+                      // Shortlisted and selected first, most recent decision on top (owner, 2026-11-08).
+                      const won=x=>(APP_CARD_UI[x.status]||{}).tier==="win"?1:0;
+                      return won(b)-won(a)||(won(a)?new Date(b.reviewed_at||b.created_at||0)-new Date(a.reviewed_at||a.created_at||0):0);
+                    }).map(app=>{
                       const ui=APP_CARD_UI[app.status]||APP_CARD_UI.pending;
                       const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;
                       const win=ui.tier==="win",warm=ui.tier==="warm",faded=ui.tier==="faded";
