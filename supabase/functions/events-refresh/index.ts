@@ -21,7 +21,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 // One pass = every city x type below, a few per run, so no run times out.
-const SLICES_PER_RUN = 3;
+const SLICES_PER_RUN = 1;
 const CITIES = [
   { id: "new-york", name: "New York City (all five boroughs)", sources: "Film at Lincoln Center, IFC Center, Metrograph, Anthology Film Archives, BAM, Museum of the Moving Image, The Gotham, SAGindie, Eventbrite, FilmFreeway" },
   { id: "los-angeles", name: "Los Angeles (including Hollywood, Burbank, Santa Monica, Long Beach)", sources: "Film Independent, American Cinematheque, NewFilmmakers LA, Academy Museum, Laemmle, SAGindie, Eventbrite, FilmFreeway" },
@@ -230,6 +230,10 @@ async function run(sb: ReturnType<typeof createClient>) {
   const added: string[] = [], held: string[] = [], errors: string[] = [];
   let found = 0;
   const count = Math.min(SLICES_PER_RUN, SLICES.length - start);
+  // Move the cursor first: a run cut off by the time limit must not repeat the same search forever.
+  const next = start + count;
+  const done = next >= SLICES.length;
+  await sb.from("site_settings").update(done ? { events_slice: 0, events_last_run: new Date().toISOString() } : { events_slice: next }).eq("id", 1);
   for (let n = 0; n < count; n++) {
     const { city, cat } = SLICES[start + n];
     const known = rows.filter((e) => e.city === city.id).map((e) => e.title).slice(0, 120);
@@ -238,13 +242,15 @@ async function run(sb: ReturnType<typeof createClient>) {
     try { list = ANTHROPIC_API_KEY ? await askClaude(prompt) : await askGemini(gemini, prompt); }
     catch (e) { errors.push(`${city.id}/${cat.id}: ${String(e).slice(0, 160)}`); continue; }
     found += list.length;
+    const pages = new Map<string, Awaited<ReturnType<typeof fetchText>>>();
+    await Promise.all([...new Set(list.map((f) => f?.url).filter((u) => /^https?:\/\//i.test(u || "")))].map(async (u) => { pages.set(u, await fetchText(u)); }));
     for (const f of list) {
       if (!f?.title || !f?.url || !/^https?:\/\//i.test(f.url)) continue;
       if (!/^\d{4}-\d{2}-\d{2}$/.test(f.starts_on || "") || !/^\d{4}-\d{2}-\d{2}$/.test(f.ends_on || "")) continue;
       if (f.ends_on < today || f.starts_on > horizon || f.ends_on < f.starts_on) continue;
       const ekey = `${slug(f.title)}-${f.starts_on.slice(0, 7)}`;
       if (knownKeys.has(ekey) || knownUrls.has(normUrl(f.url)) || knownNames.has(normTitle(f.title))) continue;
-      const page = await fetchText(f.url);
+      const page = pages.get(f.url) || await fetchText(f.url);
       const words = f.title.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3).slice(0, 4);
       const low = page.html.toLowerCase();
       const named = words.length === 0 || words.filter((w) => low.includes(w)).length >= Math.min(2, words.length);
@@ -267,9 +273,6 @@ async function run(sb: ReturnType<typeof createClient>) {
       }
     }
   }
-  const next = start + count;
-  const done = next >= SLICES.length;
-  await sb.from("site_settings").update(done ? { events_slice: 0, events_last_run: new Date().toISOString() } : { events_slice: next }).eq("id", 1);
   Object.assign(report, { slices: `${start}-${next}/${SLICES.length}`, found, added, heldForReview: held, errors });
   console.log("[events-refresh]", JSON.stringify(report));
   return report;
