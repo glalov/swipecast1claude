@@ -1916,8 +1916,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-when i{font-size:16px;}
 .fev-cta{align-self:flex-start;margin-top:6px;background:#FFFFFF;color:#141414;font-weight:800;font-size:13.5px;border-radius:10px;padding:9px 14px;display:inline-flex;gap:6px;align-items:center;transition:background-color .18s ease;}
 .fev-art{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:20px;min-width:0;}
-.fev-art-cover .fev-art{padding:0;}
-.fev-art-cover .fev-art img{width:100%;height:100%;object-fit:cover;display:block;}
+.fev-art-cover .fev-art{padding:18px;}
+.fev-art-cover .fev-art img{width:100%;height:100%;max-height:170px;object-fit:contain;display:block;border-radius:8px;}
 .fev-logo{background:#FFFFFF;border-radius:12px;padding:14px 16px;max-width:250px;width:100%;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);}
 .fev-logo img{display:block;width:100%;height:auto;max-height:150px;object-fit:contain;}
 .fev-marq{font-family:Fraunces,Georgia,serif;text-align:center;border:2px solid rgba(255,214,150,.75);border-radius:10px;padding:14px 20px;color:#FFD896;box-shadow:0 0 0 6px rgba(255,214,150,.12) inset;}
