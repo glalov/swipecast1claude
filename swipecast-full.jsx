@@ -3585,6 +3585,18 @@ body.sheet-push .b2t-cube{display:none;}
 .dirc-cta.open:hover{background:rgba(26,26,46,.04);}
 .dirc:has(.tad-info:hover) .tad-tip,.dirc:has(.tad-info:focus) .tad-tip{display:block;}
 @media(prefers-reduced-motion:reduce){.dirc-dot,.dirc-rec,.dirc-ic,.dirc-ic::before,.dirc-ic::after,.dirc-beam{animation:none!important;}.dirc,.dirc:hover{transform:none;}}
+/* Actor Card Studio card (Version A "Matched set", 2026-11-07): teal member of the .dirc family.
+   No dial/rings/constellation here: its motion is a breathing amber glow, a pulsing amber dot
+   and one slow sheen across the band every 12s. */
+.dirc-st{--band:linear-gradient(140deg,#3E9479 0%,#33826A 55%,#296A56 100%);--acc:#FFE2B8;--deep:#2B7058;--deep2:#245E4A;}
+.dirc-st .dirc-ic{animation:none;}
+.dirc-st .dirc-dot{background:var(--amber);box-shadow:0 0 8px var(--amber);animation:abc-pulse 2.2s ease-in-out infinite;}
+.dirc-glow{position:absolute;z-index:1;border-radius:50%;pointer-events:none;width:170px;height:170px;top:-70px;right:-40px;background:radial-gradient(circle,rgba(232,144,42,.30),transparent 70%);animation:abc-breathe 5s ease-in-out infinite;}
+.dirc-sheen::after{content:"";position:absolute;inset:-40%;z-index:3;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.16) 47%,rgba(255,255,255,.32) 50%,rgba(255,255,255,.16) 53%,transparent 65%);transform:translateX(-120%);animation:dirc-sheen 12s ease-in-out infinite;}
+@keyframes dirc-sheen{0%{transform:translateX(-120%);}10%,100%{transform:translateX(120%);}}
+.dirc-cta.outline{background:transparent;color:var(--deep);border:1.5px solid var(--deep);box-shadow:none;}
+.dirc-cta.outline:hover{background:rgba(51,130,106,.07);}
+@media(prefers-reduced-motion:reduce){.dirc-st .dirc-dot,.dirc-glow,.dirc-sheen::after{animation:none!important;}}
 /* ── Casting Companies Directory additions (reuses the .tad-* sheet) ── */
 .cdx-nosub{background:rgba(214,59,59,.08);color:#9B2C2C;}
 .tad-row.cdx-dim{opacity:.72;}
@@ -21979,19 +21991,30 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           </div>
           )}
 
-          {/* Actor Business Card shortcut — teal/amber treatment to match the landing-page CTA */}
-          <div className="abc-prem" style={{position:'relative',overflow:'hidden',borderRadius:16,padding:20,background:'linear-gradient(135deg,#5CA092 0%,#4F8B7F 45%,#3B6F65 100%)',color:'#fff'}}>
-            <span className="abc-glow-o" style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:180,height:180,background:'radial-gradient(circle,rgba(232,144,42,.32),transparent 70%)',top:-60,right:-40}}/>
-            <span style={{position:'absolute',borderRadius:'50%',pointerEvents:'none',width:140,height:140,background:'radial-gradient(circle,rgba(255,255,255,.14),transparent 70%)',bottom:-50,left:-30}}/>
-            <p style={{position:'relative',display:'inline-flex',alignItems:'center',gap:6,fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:'uppercase',color:'#FFE6C2',margin:'0 0 8px',fontFamily:"'DM Sans',sans-serif"}}>
-              <span className="abc-dot" style={{width:6,height:6,borderRadius:'50%',background:'var(--amber)',boxShadow:'0 0 8px var(--amber)'}}/>{isPremium?'Premium Feature':'Free Preview'}
-            </p>
-            <div style={{position:'relative',display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-              <span style={{fontSize:20,display:'flex',alignItems:'center',justifyContent:'center',width:36,height:36,borderRadius:10,background:'rgba(255,255,255,0.14)'}}><Ico n="credit-card" s={22}/></span>
-              <h3 style={{fontWeight:800,fontSize:15.5,color:'#fff',margin:0,fontFamily:"'DM Sans',sans-serif",letterSpacing:-0.2}}>Actor Card Studio</h3>
+          {/* Actor Card Studio — Version A "Matched set" (owner's pick, 2026-11-07, demo
+              castslate-actor-card-studio-card-demo.html): same white card + colour band as the
+              two directory cards below, in site teal. No float (owner: it read like an ad),
+              one slow sheen every 12s, outline button so this free preview stays quieter than
+              the paid directory buttons. No pictures or mini cards (owner: looked childish). */}
+          <div className="dirc dirc-st" onClick={()=>onNavigate('actor-business-card')} role="button" tabIndex={0}
+               onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onNavigate('actor-business-card');}}}>
+            <div className="dirc-band dirc-sheen">
+              <span className="dirc-glow" aria-hidden="true"/>
+              <p className="dirc-kick"><span className="dirc-dot"/>{isPremium?'Premium Feature':'Free Preview'}</p>
+              <div className="dirc-hd">
+                <span className="dirc-ic"><Ico n="id" s={22}/></span>
+                <h3>Actor Card Studio</h3>
+              </div>
             </div>
-            <p style={{position:'relative',fontSize:13,color:'rgba(255,255,255,.85)',margin:'0 0 16px',lineHeight:1.55}}>Build your business card, mailing postcard, or agent promo card — each with your headshot and a QR code linking to your CastSlate profile.</p>
-            <button className="abc-cta" style={{position:'relative',width:'100%',fontSize:13,fontWeight:800,fontFamily:"'DM Sans',sans-serif",padding:'12px 14px',borderRadius:10,border:'1.5px solid rgba(255,255,255,.55)',cursor:'pointer',background:'transparent',color:'#fff',boxShadow:'none'}} onClick={()=>onNavigate('actor-business-card')}>{isPremium?<>Build My Actor Card <Tri/></>:<>Preview Actor Card <Tri/></>}</button>
+            <div className="dirc-body">
+              <p className="dirc-sub">Build your <b>business card, mailing postcard, or agent promo card</b> — each with your headshot and a QR code linking to your CastSlate profile.</p>
+              <div className="dirc-mini">
+                <div><b>3</b><span>Card formats</span></div>
+                <div><b>QR</b><span>Links to your profile</span></div>
+                <div><b>Print</b><span>Ready to post</span></div>
+              </div>
+              <button className="dirc-cta outline" onClick={e=>{e.stopPropagation();onNavigate('actor-business-card');}}>{isPremium?<>Build My Actor Card <Tri/></>:<>Preview Actor Card <Tri/></>}</button>
+            </div>
           </div>
 
           {/* Talent Agency Directory — premium-gated; sits next to the business card on purpose
