@@ -3509,6 +3509,10 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    text, no padded-out width (owner 2026-10-21). Full width again on phones, below. */
 .rl-side .btn-teal{width:auto;max-width:none;display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;font-size:15px;letter-spacing:-.2px;line-height:1;border-radius:10px;border:1px solid transparent;}
 .rl-side .tag{display:block;text-align:center;}
+/* Long role names wrap inside the column instead of running past the card edge (2026-11-07). */
+.rl-side{min-width:0;}
+.rl-side .apply-cta.apply-named{max-width:100%;white-space:normal;text-align:left;justify-content:flex-start;line-height:1.3;}
+.rl-side .apply-cta.apply-named svg{flex:none;}
 /* What accompanies the role, as objects rather than a sentence: four pills read
    in a glance where a line of prose has to be read to the end to find the
    self-tape. Described, never demanded — no "submit", no "required", no "you". */
