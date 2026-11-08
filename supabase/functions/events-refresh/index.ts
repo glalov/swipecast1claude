@@ -120,12 +120,13 @@ function buildPrompt(today: string, horizon: string, known: string[], city: type
 
 Rules:
 - Only include an event if you found its own official page or official listing page, and that page states the date. Skip anything you cannot confirm. Never guess a date.
+- In-person events only, at a physical venue in the city. Skip anything online, virtual, streamed, or hybrid.
 - Skip these, which we already have: ${known.join("; ") || "none"}.
 - For a recurring series, give one entry with the first upcoming date as starts_on and the last known date as ends_on.
 - "url" must be the event's own page, as specific as possible, not a search page or a general news article.
 - "why" is ONE plain sentence (under 30 words) on why an actor should go. Plain everyday words, no hype, no exclamation marks. Only say there is a Q&A or panel if the page says so.
 - "kicker" is like "Documentary festival · Manhattan" or "Screening series · Burbank".
-- "when_lines": 1 to 3 short pairs [tablerIcon, text]. Icons: calendar-event, map-pin, device-tv, trophy, ticket, users.
+- "when_lines": 1 to 3 short pairs [tablerIcon, text]. Icons: calendar-event, map-pin, trophy, ticket, users.
 - "palette": one of ${PALETTES.join(", ")} that suits the event's mood.
 - "marquee_word": a short all-caps word or acronym (max 10 characters).
 
@@ -263,7 +264,7 @@ async function run(sb: ReturnType<typeof createClient>) {
         url: page.finalUrl || f.url, image_url: art.image_url, art_style: art.art_style,
         marquee_word: String(f.marquee_word || "").toUpperCase().slice(0, 10) || null,
         palette: PALETTES.includes(f.palette) ? f.palette : "navy",
-        status: verified && f.why ? "published" : "review", source: "agent", city: city.id, category: cat.id,
+        status: verified && f.why && !/\b(hybrid event|via zoom|on zoom|online only|virtual event|webinar)\b/i.test(page.html) ? "published" : "review", source: "agent", city: city.id, category: cat.id,
       };
       const { error } = await sb.from("film_events").insert(row);
       if (!error) {
