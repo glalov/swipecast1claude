@@ -21508,8 +21508,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   // 2026-11-08): 3 stories if they fit, 2 if space is tighter, none if the columns are level.
   const [newsRows,setNewsRows]=useState(0);
   useEffect(()=>{
-    let raf=0;
-    const measure=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{
+    let timer=0;
+    const measure=()=>{clearTimeout(timer);timer=setTimeout(()=>{
       const left=document.querySelector(".td-left"),right=document.querySelector(".td-right");
       if(!left||!right||window.innerWidth<=900){setNewsRows(0);return;}
       const parts=[...left.children].filter(c=>!c.classList.contains("td-news-w")&&c.getBoundingClientRect().height>0);
@@ -21517,13 +21517,13 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       if(!last)return;
       const free=right.getBoundingClientRect().bottom-last.getBoundingClientRect().bottom;
       setNewsRows(free>=370?3:free>=280?2:0);
-    });};
+    },60);};
     measure();
     const ro=new ResizeObserver(measure);
     const watch=()=>{const left=document.querySelector(".td-left"),right=document.querySelector(".td-right");if(right)ro.observe(right);if(left)[...left.children].filter(c=>!c.classList.contains("td-news-w")).forEach(c=>ro.observe(c));};
     watch();
     window.addEventListener("resize",measure);
-    return()=>{cancelAnimationFrame(raf);ro.disconnect();window.removeEventListener("resize",measure);};
+    return()=>{clearTimeout(timer);ro.disconnect();window.removeEventListener("resize",measure);};
   },[dashView,dashV2,rvLoading,recentlyViewed.length,savedCastings.length,applications.length,recommended.length]);
   useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
   // Poll invitations + notifications every 30s so approved status appears without a page reload
