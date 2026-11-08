@@ -3469,16 +3469,16 @@ a.news-card{text-decoration:none;color:inherit;}
 .td-left{align-self:stretch;}
 @media(min-width:901px){.td-news-w{flex:1 1 auto;display:flex;min-height:0;}}
 .td-news{flex:1;display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;min-width:0;}
-.td-news-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 24px;border-bottom:1px solid var(--bdr);}
+.td-news-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;border-bottom:1px solid var(--bdr);}
 .td-news-hd h2{font-weight:700;font-size:17px;color:var(--t1);margin:0;}
 .td-news-hd small{display:block;font-size:13px;color:var(--t2);margin-top:2px;}
-.td-news-row{flex:1;display:flex;align-items:center;gap:16px;width:100%;padding:14px 24px;border:0;border-bottom:1px solid #EEEAE2;background:none;font:inherit;text-align:left;color:inherit;text-decoration:none;cursor:pointer;box-sizing:border-box;}
+.td-news-row{flex:1;display:flex;align-items:center;gap:14px;width:100%;padding:8px 24px;border:0;border-bottom:1px solid #EEEAE2;background:none;font:inherit;text-align:left;color:inherit;text-decoration:none;cursor:pointer;box-sizing:border-box;}
 .td-news-row:last-child{border-bottom:0;}
 .td-news-row:hover b{text-decoration:underline;}
-.td-news-row img{flex:none;width:104px;height:66px;object-fit:cover;border-radius:8px;background:#E8E2D6;}
+.td-news-row img{flex:none;width:92px;height:58px;object-fit:cover;border-radius:8px;background:#E8E2D6;}
 .td-news-row div{min-width:0;}
 .td-news-row small{display:block;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;}
-.td-news-row b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:16px;line-height:1.28;font-weight:700;color:var(--t1);}
+.td-news-row b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:15px;line-height:1.25;font-weight:700;color:var(--t1);}
 .td-news-row span{display:block;font-size:13px;color:var(--t3);margin-top:3px;}
 .td-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;padding:24px;}
 .td-empty b{font-size:18px;font-weight:700;color:var(--t1);margin:12px 0 5px;}
