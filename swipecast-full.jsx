@@ -21113,12 +21113,12 @@ function DashNews({onNavigate,maxRows=3}){
   </div>);
 }
 // Shows the first 3 rows; anything more scrolls inside the box (owner, 2026-11-08).
-function ThreeScroll({style,children}){
+function ThreeScroll({style,children,rows=3}){
   const ref=React.useRef(null);
   React.useLayoutEffect(()=>{
     const el=ref.current;if(!el)return;
     const k=el.children;
-    if(k.length>3){el.style.maxHeight=(k[2].offsetTop+k[2].offsetHeight-k[0].offsetTop)+"px";el.classList.add("td-three");}
+    if(k.length>rows){const e=k[rows-1];el.style.maxHeight=(e.offsetTop+e.offsetHeight-k[0].offsetTop)+"px";el.classList.add("td-three");}
     else{el.style.maxHeight="";el.classList.remove("td-three");}
   });
   return <div ref={ref} style={style}>{children}</div>;
@@ -22181,8 +22181,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 </div>
               ):(
                 <>
-                  <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                    {applications.slice(0,3).map(app=>{
+                  <ThreeScroll rows={2} style={{display:"flex",flexDirection:"column",gap:12}}>
+                    {applications.map(app=>{
                       const ui=APP_CARD_UI[app.status]||APP_CARD_UI.pending;
                       const dl=app.castings?.deadline?fmtDeadline(app.castings.deadline):null;
                       const win=ui.tier==="win",warm=ui.tier==="warm",faded=ui.tier==="faded";
@@ -22215,7 +22215,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         </div>
                       );
                     })}
-                  </div>
+                  </ThreeScroll>
                   <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <span style={{fontSize:12,color:"var(--t3)"}}>{applications.length} total application{applications.length!==1?"s":""}</span>
                     <button className="btn-s btn-sm" onClick={()=>{setAppsTab("all");setDashView("applications");}}>View All Applications <Tri/></button>
