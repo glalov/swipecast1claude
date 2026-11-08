@@ -22454,16 +22454,9 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               casting offices cast you. One shared mailing list across both. */}
           <CastingDirectoryCard isPremium={isPremium} onNavigate={onNavigate}/>
 
-          {/* Industry Events (2026-11-08): replaces the blurred upsell for free members; Premium
-              keeps its real profile suggestions underneath. */}
+          {/* Industry Events (2026-11-08): replaces Improve Your Profile on the dashboard for everyone;
+              that card still lives on My Profile. */}
           <IndustryEventsCard isPremium={isPremium} onNavigate={onNavigate}/>
-          {isPremium&&<ProfileImprovementCard
-            profile={myProfile}
-            isPremium={isPremium}
-            onNavigate={onNavigate}
-            dbCredits={dashDbCredits}
-            mediaItems={null}
-          />}
 
           {/* Recently Viewed Castings — on desktop (>900px) this renders in the LEFT
               column under Saved Castings instead (2026-10-04: the right rail had grown
