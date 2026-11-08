@@ -187,7 +187,10 @@ async function run(sb: ReturnType<typeof createClient>) {
   report.retired = retired?.length ?? 0;
 
   // 2. Ask the agent.
-  const { data: existing } = await sb.from("film_events").select("ekey,title").gte("ends_on", today);
+  const { data: existing } = await sb.from("film_events").select("ekey,title,url").gte("ends_on", today);
+  // Same page = same event, whatever name the agent gives it this time.
+  const normUrl = (u: string) => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, "") + x.pathname.replace(/\/+$/, "")).toLowerCase(); } catch (_) { return String(u || "").toLowerCase(); } };
+  const knownUrls = new Set((existing || []).map((e: { url: string }) => normUrl(e.url)));
   const knownTitles = (existing || []).map((e: { title: string }) => e.title);
   const knownKeys = new Set((existing || []).map((e: { ekey: string }) => e.ekey));
   let found: Found[] = [];
@@ -210,7 +213,7 @@ async function run(sb: ReturnType<typeof createClient>) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(f.starts_on || "") || !/^\d{4}-\d{2}-\d{2}$/.test(f.ends_on || "")) continue;
     if (f.ends_on < today || f.starts_on > horizon || f.ends_on < f.starts_on) continue;
     const ekey = `${slug(f.title)}-${f.starts_on.slice(0, 7)}`;
-    if (knownKeys.has(ekey) || knownTitles.some((t) => t.toLowerCase() === f.title.toLowerCase())) continue;
+    if (knownKeys.has(ekey) || knownUrls.has(normUrl(f.url)) || knownTitles.some((t) => t.toLowerCase() === f.title.toLowerCase())) continue;
     const page = await fetchText(f.url);
     // The page must load and name the event (any 2 of its first 4 long words).
     const words = f.title.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3).slice(0, 4);
@@ -228,7 +231,7 @@ async function run(sb: ReturnType<typeof createClient>) {
       status: verified && f.why ? "published" : "review", source: "agent",
     };
     const { error } = await sb.from("film_events").insert(row);
-    if (!error) { (row.status === "published" ? added : held).push(row.title); knownKeys.add(ekey); }
+    if (!error) { (row.status === "published" ? added : held).push(row.title); knownKeys.add(ekey); knownUrls.add(normUrl(row.url)); knownUrls.add(normUrl(f.url)); }
   }
   report.added = added; report.heldForReview = held;
   await sb.from("site_settings").update({ events_last_run: new Date().toISOString() }).eq("id", 1);
