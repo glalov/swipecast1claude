@@ -4269,7 +4269,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-pop b{display:block;font-family:inherit;font-size:14px;font-weight:700;color:var(--t1);margin-bottom:4px;letter-spacing:0;}
 .iev-tip:hover .iev-pop,.iev-tip:focus .iev-pop,.iev-tip.is-open .iev-pop{opacity:1;visibility:visible;}
 .ievc .iev-pop{left:auto;right:-60px;transform:none;width:300px;}
-.iev-page{max-width:1140px;margin:0 auto;}
+.iev-page{max-width:1140px;margin:0 auto;padding-bottom:64px;}
 .iev-lab{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t1);margin-bottom:8px;}
 .iev-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .iev-hd h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(28px,3.4vw,38px);letter-spacing:-.5px;line-height:1.12;margin:0;}
@@ -4325,7 +4325,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-more button:hover{background:#F4F1EA;}
 @media(max-width:760px){.iev-more{flex-direction:column;align-items:stretch;padding:22px 18px;text-align:center;}.iev-more b{font-size:24px;}.iev-more button{width:100%;}}
 @media(max-width:820px){.iev-past{grid-template-columns:repeat(2,minmax(0,1fr));}}
-@media(max-width:720px){.iev-art{height:210px;}.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-tip{position:static;}.iev-hd,.ievc-ttl{position:relative;}.iev-pop,.ievc .iev-pop{left:0;right:0;top:100%;width:auto;transform:none;}}
+@media(max-width:720px){.iev-page{padding-bottom:44px;}.iev-art{height:210px;}.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-tip{position:static;}.iev-hd,.ievc-ttl{position:relative;}.iev-pop,.ievc .iev-pop{left:0;right:0;top:100%;width:auto;transform:none;}}
 .fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
 .fev-compact .fev-art{order:-1;height:176px;padding:36px 16px 16px;box-sizing:border-box;}
 .fev-compact.fev-art-cover .fev-art{padding:36px 16px 16px;}
@@ -18077,7 +18077,7 @@ function IndustryEventsPage({onNavigate,session,myProfile}){
   const done=shown.filter(e=>e._ended).sort((a,b)=>String(b.ends_on).localeCompare(String(a.ends_on)));
   const free=[ny.find(e=>!e._ended),la.find(e=>!e._ended)].filter(Boolean);
   const chips=IEV_TYPES.map(x=>[x,x[2]?all.filter(e=>x[2].includes(e.category)).length:all.length]).filter(x=>x[1]>0);
-  return(<div className="page iev-page">
+  return(<div><div className="page iev-page">
     <div className="iev-lab">CastSlate Industry Events</div>
     <div className="iev-hd"><h1>Industry events for actors</h1><IevInfo label="About Industry Events"/></div>
     <p className="iev-lead">Film festivals, screenings, panels and mixers in New York and Los Angeles, curated every month to help actors and filmmakers meet in person.</p>
@@ -18094,7 +18094,7 @@ function IndustryEventsPage({onNavigate,session,myProfile}){
       {free.length>0&&<><h2 className="iev-mon iev-mon-f">{mon}</h2><p className="iev-free"><span>Free preview</span>{free.length} of this month's {month.length} {month.length===1?"event":"events"}{free.length===2?", one from each city":""}</p><div className="iev-grid">{free.map(ev=><IevCard key={ev.id} ev={ev}/>)}</div></>}
       {month.length>free.length&&<div className="iev-more"><div><b>Premium members see all {month.length} events this {mName}</b><span>{ny.length} in New York and {la.length} in Los Angeles, with a new list every month</span></div><button type="button" onClick={()=>onNavigate(session?"membership":"pricing")}>See Premium plans<Tri/></button></div>}
     </>}
-  </div>);
+  </div><Footer onNavigate={onNavigate}/></div>);
 }
 // Signup break on Browse (owner, 2026-11-02; brand navy panel since 2026-11-05): logged-out visitors only, one per results
 // page, after the 4th casting. Signed-in members never see it; waits for authReady so
