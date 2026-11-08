@@ -3573,7 +3573,9 @@ body.sheet-push .b2t-cube{display:none;}
 .dirc p.dirc-sub{font-size:13px;color:var(--t2);margin:0 0 14px;line-height:1.55;}
 .dirc p.dirc-sub b{color:var(--t1);}
 .dirc-mini{display:flex;gap:14px;margin:0 0 15px;padding:11px 0;border-top:1px solid #ECE7DD;border-bottom:1px solid #ECE7DD;}
-.dirc-mini>div{flex:1;min-width:0;}
+/* Columns size to their labels (no min-width:0): equal shrink let "Open to submissions" run into "Insider tips". */
+.dirc-mini{justify-content:space-between;}
+.dirc-mini>div{flex:0 1 auto;}
 .dirc-mini b{display:block;font-size:17px;font-weight:800;line-height:1.1;color:var(--deep);}
 .dirc-mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#6B6258;white-space:nowrap;}
 /* Flat fill + small neutral shadow: never the glossy gradient/bevel recipe (see rail CTA note). */
