@@ -4285,10 +4285,26 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-mon{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:24px;margin:26px 0 12px;}
 .iev-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
 .iev{position:relative;display:flex;flex-direction:column;min-width:0;border-radius:14px;overflow:hidden;color:#fff;text-decoration:none;box-shadow:2px 3px 3px -2px rgba(26,26,46,.42);}
-.iev-art{position:relative;height:210px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
-.iev-ph{width:100%;height:100%;object-fit:cover;display:block;}
+.iev-art{position:relative;height:250px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.iev-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .iev-bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(20px) brightness(.72) saturate(1.15);}
-.iev-fg{position:relative;max-width:82%;max-height:82%;object-fit:contain;display:block;border-radius:6px;box-shadow:0 12px 30px -10px rgba(0,0,0,.6);}
+.iev-fg{position:relative;height:100%;max-width:100%;object-fit:contain;display:block;box-shadow:0 12px 30px -10px rgba(0,0,0,.6);}
+.iev-chip{position:relative;background:#FFFFFF;border-radius:10px;padding:14px 20px;}
+.iev-chip.dk{background:none;}
+.iev-chip img{display:block;max-width:300px;max-height:120px;}
+.iev-row{position:relative;display:flex;gap:10px;height:100%;padding:14px 0;}
+.iev-row img{height:100%;width:auto;border-radius:4px;}
+.iev-past{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.iev-p{background:#FFFFFF;border:1px solid var(--bdr);border-radius:12px;overflow:hidden;opacity:.86;min-width:0;}
+.iev-pa{height:96px;position:relative;overflow:hidden;background:#D8D2C6;display:flex;align-items:center;justify-content:center;}
+.iev-pa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(.85);}
+.iev-pa span{font-family:Fraunces,Georgia,serif;font-size:21px;color:#6B6458;}
+.iev-pt{padding:10px 12px 12px;}
+.iev-end{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:#ECE7DD;color:var(--t3);border-radius:999px;padding:2px 8px;margin-bottom:5px;}
+.iev-pt b{display:block;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:15.5px;line-height:1.2;}
+.iev-pt small{display:block;font-size:12.5px;color:var(--t3);margin-top:3px;}
+.iev-next{margin-top:26px;background:#FFFFFF;border:1px solid var(--bdr);border-radius:12px;padding:16px 20px;text-align:center;font-weight:700;font-size:15.5px;}
+.iev-none{color:var(--t2);font-size:15.5px;}
 .iev-word{text-align:center;font-family:Fraunces,Georgia,serif;color:#FFE3B5;padding:0 18px;min-width:0;}
 .iev-word small{display:block;font-family:"DM Sans",sans-serif;font-size:11px;font-weight:800;letter-spacing:.26em;color:#FFE9C6;opacity:.85;}
 .iev-word b{display:block;font-size:clamp(34px,4.6vw,54px);font-weight:600;line-height:1.02;margin:10px 0;overflow-wrap:anywhere;}
@@ -4301,7 +4317,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-src{position:absolute;right:10px;top:10px;z-index:2;font-size:11px;background:rgba(0,0,0,.5);border-radius:999px;padding:3px 9px;}
 .iev-more{margin-top:20px;background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:15px;color:var(--t2);}
 .iev-more button{height:40px;padding:0 18px;border:0;border-radius:10px;background:#33826A;color:#fff;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-@media(max-width:720px){.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-tip{position:static;}.iev-hd,.ievc-ttl{position:relative;}.iev-pop,.ievc .iev-pop{left:0;right:0;top:100%;width:auto;transform:none;}}
+@media(max-width:820px){.iev-past{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:720px){.iev-art{height:210px;}.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-tip{position:static;}.iev-hd,.ievc-ttl{position:relative;}.iev-pop,.ievc .iev-pop{left:0;right:0;top:100%;width:auto;transform:none;}}
 .fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
 .fev-compact .fev-art{order:-1;height:176px;padding:36px 16px 16px;box-sizing:border-box;}
 .fev-compact.fev-art-cover .fev-art{padding:36px 16px 16px;}
@@ -17884,13 +17901,13 @@ function FilmEventCard({ev,compact}){
 // the top strip, Los Angeles here at the bottom. Pages 2+ show castings only.
 function FilmEventBanner(){
   const list=useAllEvents();
-  const ev=(list||[]).find(e=>e.city==="los-angeles");
+  const ev=(list||[]).find(e=>e.city==="los-angeles"&&!e._ended);
   return ev?<EventStripe ev={ev}/>:null;
 }
 // Top of Browse page 1: the New York event, in the same stripe as the Los Angeles one.
 function FilmEventStrip(){
   const list=useAllEvents();
-  const ev=(list||[]).find(e=>e.city==="new-york");
+  const ev=(list||[]).find(e=>e.city==="new-york"&&!e._ended);
   return ev?<EventStripe ev={ev}/>:null;
 }
 // Event stripe (owner, 2026-11-08): 136px tall, the event's own website image on the right.
@@ -17924,9 +17941,9 @@ function ManagerModeEvents({isPremium,onNavigate}){
   const list=useAllEvents();
   if(!list||!list.length)return null;
   const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
-  const inMonth=c=>list.filter(e=>e.city===c&&ievMonths(e,today).includes(thisM)).length;
+  const inMonth=c=>list.filter(e=>e.city===c&&ievInMonth(e,thisM)).length;
   // One wide photo per city, first in list order; each moves on when its event ends.
-  const photo=c=>list.find(e=>e.city===c&&e.image_url&&e.art_style==="cover");
+  const photo=c=>list.find(e=>e.city===c&&!e._ended&&e.image_url&&e.art_style==="cover");
   const ny=photo("new-york"),la=photo("los-angeles");
   return(<section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}><div className="iemb" style={{maxWidth:1140,margin:"0 auto"}}>
     {ny&&<img className="iemb-l" src={ny.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/>}
@@ -17948,8 +17965,8 @@ const IEV_TEXT=<><b>Curated by the CastSlate team</b>Nobody is going to come kno
 const IEV_TYPES=[["all","All types",null],["fest","Festivals",["festival"]],["screen","Screenings & shorts",["screening","shorts","school"]],["cast","Meet casting directors",["casting"]],["work","Workshops",["workshop"]],["net","Networking",["networking","union"]],["awards","Awards nights",["awards"]]];
 const ievToday=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
 const ievMonthName=m=>new Date(m+"-15T12:00:00Z").toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"});
-// The months an event still touches, from the current month on.
-function ievMonths(e,today){const out=[];const d=new Date((e.starts_on<today?today:e.starts_on).slice(0,7)+"-15T12:00:00Z");const end=String(e.ends_on).slice(0,7);while(d.toISOString().slice(0,7)<=end&&out.length<4){out.push(d.toISOString().slice(0,7));d.setUTCMonth(d.getUTCMonth()+1);}return out;}
+// Does an event touch this month ("2026-11")? Finished events still count until the month ends.
+const ievInMonth=(e,m)=>String(e.starts_on).slice(0,7)<=m&&String(e.ends_on).slice(0,7)>=m;
 function loadAllEvents(){
   if(_allEventsCache&&_allEventsCache.length&&Date.now()-_allEventsAt<15*60000)return Promise.resolve(_allEventsCache);
   if(_allEventsLoad)return _allEventsLoad;
@@ -17958,9 +17975,9 @@ function loadAllEvents(){
       try{
         if(!window.sb)throw new Error("no client yet");
         const today=ievToday();
-        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette,city,category,art,featured_rank").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(300);
+        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette,city,category,art,featured_rank").eq("status","published").gte("ends_on",today.slice(0,7)+"-01").order("starts_on",{ascending:true}).limit(300);
         if(error)throw error;
-        const rows=(data||[]).filter(e=>e&&e.title&&e.url).map(e=>({...e,_on:e.starts_on<=today,_photo:e.art_style==="cover"&&/\.(jpe?g|webp)(\?|$)/i.test(String(e.image_url||""))}));
+        const rows=(data||[]).filter(e=>e&&e.title&&e.url).map(e=>({...e,_ended:e.ends_on<today,_on:e.starts_on<=today&&e.ends_on>=today,_photo:e.art_style==="cover"&&/\.(jpe?g|webp)(\?|$)/i.test(String(e.image_url||""))}));
         rows.sort((a,b)=>((a.featured_rank??99)-(b.featured_rank??99))||(b._photo-a._photo)||((b._on?1:0)-(a._on?1:0))||String(a.starts_on).localeCompare(String(b.starts_on)));
         if(rows.length){_allEventsCache=rows;_allEventsAt=Date.now();break;}
       }catch(_){}
@@ -17984,8 +18001,8 @@ function IndustryEventsCard({isPremium,onNavigate}){
   const list=useAllEvents();
   if(!list||!list.length)return null;
   const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
-  const inMonth=c=>list.filter(e=>e.city===c&&ievMonths(e,today).includes(thisM)).length;
-  const hero=list.find(e=>e._photo);
+  const inMonth=c=>list.filter(e=>e.city===c&&ievInMonth(e,thisM)).length;
+  const hero=list.find(e=>e._photo&&!e._ended);
   return(<div className="ievc">
     <div className="ievc-top" style={hero?{backgroundImage:"url(\""+hero.image_url+"\")"}:undefined}>
       <div className="ievc-tt"><small>{isPremium?mon:"Premium feature · "+mon}</small><div className="ievc-ttl"><b>Industry Events</b><IevInfo label="About Industry Events" light/></div></div>
@@ -18001,15 +18018,18 @@ function IndustryEventsCard({isPremium,onNavigate}){
 }
 function IevCard({ev}){
   const [bad,setBad]=useState(false);
+  const [poster,setPoster]=useState(false);
   const lines=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,3):[];
-  const kind=bad||!ev.image_url||ev.art_style==="marquee"?"type":ev._photo?"photo":"fill";
+  const a=ev.art||{};
   const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
   let host="";try{host=new URL(ev.url).hostname.replace(/^www\./,"");}catch(_){}
   return(<a className={"iev fev-"+(ev.palette||"navy")} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
-    <div className={"iev-art iev-"+kind} aria-hidden="true">
-      {kind==="photo"&&<img className="iev-ph" src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/>}
-      {kind==="fill"&&<><img className="iev-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/><img className="iev-fg" src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/></>}
-      {kind==="type"&&<div className="iev-word"><small>NOW SHOWING</small><b>{word}</b><i>{ev.city==="los-angeles"?"LOS ANGELES":"NEW YORK"}</i></div>}
+    <div className="iev-art" aria-hidden="true">
+      {bad||!ev.image_url
+        ?<div className="iev-word"><small>NOW SHOWING</small><b>{word}</b><i>{ev.city==="los-angeles"?"LOS ANGELES":"NEW YORK"}</i></div>
+        :a.row?<div className="iev-row">{a.row.slice(0,4).map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" loading="lazy"/>)}</div>
+        :a.logo?<div className={"iev-chip"+(a.dark?" dk":"")}><img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/></div>
+        :<>{poster&&<img className="iev-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"iev-fg":"iev-ph"} src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget;if(t.naturalWidth/t.naturalHeight<1.25)setPoster(true);}}/></>}
     </div>
     <div className="iev-tx">
       <div className="iev-k">{ev._on&&<span className="fev-on">On now</span>}<span>{ev.kicker}</span></div>
@@ -18021,17 +18041,34 @@ function IevCard({ev}){
     {host&&<span className="iev-src">{host}</span>}
   </a>);
 }
+function IevEnded({ev}){
+  const [bad,setBad]=useState(false);
+  const date=Array.isArray(ev.when_lines)&&ev.when_lines[0]?ev.when_lines[0][1]:"";
+  const word=ev.marquee_word||ev.title.split(/\s+/)[0];
+  const showImg=ev.image_url&&!bad&&!(ev.art&&ev.art.logo);
+  return(<div className="iev-p">
+    <div className="iev-pa" aria-hidden="true">{showImg?<img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/>:<span>{word}</span>}</div>
+    <div className="iev-pt"><span className="iev-end">Ended</span><b>{ev.title}</b>{date&&<small>{date}</small>}</div>
+  </div>);
+}
+// One month at a time (owner, 2026-11-08): the whole current month stays listed so the counts hold;
+// finished events drop to a quiet section at the bottom until the month rolls over.
 function IndustryEventsPage({onNavigate,session,myProfile}){
   const isPremium=myProfile?.membership_status==="active";
   const list=useAllEvents();
   const [city,setCity]=useState("new-york");
   const [type,setType]=useState("all");
-  const today=ievToday();
-  const all=(list||[]).filter(e=>e.city===city);
-  const ny=(list||[]).filter(e=>e.city==="new-york"),la=(list||[]).filter(e=>e.city==="los-angeles");
+  const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
+  const nextD=new Date(thisM+"-15T12:00:00Z");nextD.setUTCMonth(nextD.getUTCMonth()+1);
+  const nextName=nextD.toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
+  const month=(list||[]).filter(e=>ievInMonth(e,thisM));
+  const ny=month.filter(e=>e.city==="new-york"),la=month.filter(e=>e.city==="los-angeles");
+  const all=city==="new-york"?ny:la;
   const T=IEV_TYPES.find(x=>x[0]===type)||IEV_TYPES[0];
-  const shown=isPremium?all.filter(e=>!T[2]||T[2].includes(e.category)):[ny[0],la[0]].filter(Boolean);
-  const months=[...new Set(shown.flatMap(e=>ievMonths(e,today)))].sort();
+  const shown=all.filter(e=>!T[2]||T[2].includes(e.category));
+  const up=shown.filter(e=>!e._ended).sort((a,b)=>((b._on?1:0)-(a._on?1:0))||String(a.starts_on).localeCompare(String(b.starts_on)));
+  const done=shown.filter(e=>e._ended).sort((a,b)=>String(b.ends_on).localeCompare(String(a.ends_on)));
+  const free=[ny.find(e=>!e._ended),la.find(e=>!e._ended)].filter(Boolean);
   const chips=IEV_TYPES.map(x=>[x,x[2]?all.filter(e=>x[2].includes(e.category)).length:all.length]).filter(x=>x[1]>0);
   return(<div className="page iev-page">
     <div className="iev-lab">CastSlate Industry Events</div>
@@ -18041,9 +18078,15 @@ function IndustryEventsPage({onNavigate,session,myProfile}){
     {isPremium&&list&&<>
       <div className="iev-seg">{[["new-york","New York",ny.length],["los-angeles","Los Angeles",la.length]].map(([id,n,c])=><button key={id} type="button" className={city===id?"on":""} onClick={()=>{setCity(id);setType("all");}}>{n}<small>{c}</small></button>)}</div>
       <div className="iev-chips">{chips.map(([x,n])=><button key={x[0]} type="button" className={type===x[0]?"on":""} onClick={()=>setType(x[0])}>{x[1]}<small>{n}</small></button>)}</div>
+      <h2 className="iev-mon">Still to come in {mName}</h2>
+      {up.length>0?<div className="iev-grid">{up.map(ev=><IevCard key={ev.id} ev={ev}/>)}</div>:<p className="iev-none">Everything here has already happened this month.</p>}
+      {done.length>0&&<><h2 className="iev-mon">Already happened in {mName}</h2><div className="iev-past">{done.map(ev=><IevEnded key={ev.id} ev={ev}/>)}</div></>}
+      <div className="iev-next">{nextName}'s events arrive {nextName} 1</div>
     </>}
-    {months.map(m=><div key={m}><h2 className="iev-mon">{ievMonthName(m)}</h2><div className="iev-grid">{shown.filter(e=>ievMonths(e,today).includes(m)).map(ev=><IevCard key={ev.id} ev={ev}/>)}</div></div>)}
-    {!isPremium&&list&&list.length>shown.length&&<div className="iev-more"><span>Premium members see all {list.length} events in New York and Los Angeles.</span><button type="button" onClick={()=>onNavigate(session?"membership":"pricing")}>See Premium plans<Tri/></button></div>}
+    {!isPremium&&list&&<>
+      {free.length>0&&<><h2 className="iev-mon">{mon}</h2><div className="iev-grid">{free.map(ev=><IevCard key={ev.id} ev={ev}/>)}</div></>}
+      {month.length>free.length&&<div className="iev-more"><span>Premium members see all {month.length} events in New York and Los Angeles.</span><button type="button" onClick={()=>onNavigate(session?"membership":"pricing")}>See Premium plans<Tri/></button></div>}
+    </>}
   </div>);
 }
 // Signup break on Browse (owner, 2026-11-02; brand navy panel since 2026-11-05): logged-out visitors only, one per results

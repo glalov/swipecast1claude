@@ -113,9 +113,20 @@ async function artFor(pageHtml: string, pageUrl: string): Promise<{ image_url: s
   }))].filter((u) => u && !/\.(svg|gif)(\?|$)|logo|icon|sprite|spacer|pixel|badge|laurel|facebook|avatar/i.test(u)).slice(0, 10);
   for (const img of urls) {
     try {
-      const r = await fetch(img, { headers: { "User-Agent": UA, Range: "bytes=0-65535" }, signal: AbortSignal.timeout(8000) });
-      if (!(r.ok || r.status === 206) || !/^image\//i.test(r.headers.get("content-type") || "")) continue;
-      const size = imageSize(new Uint8Array(await r.arrayBuffer()));
+      // No Range header: some image servers cache the partial response and then serve a cut-off image.
+      const r = await fetch(img, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(8000) });
+      if (!r.ok || !r.body || !/^image\//i.test(r.headers.get("content-type") || "")) continue;
+      const reader = r.body.getReader();
+      const head = new Uint8Array(65536);
+      let got = 0;
+      while (got < head.length) {
+        const { done, value } = await reader.read();
+        if (done || !value) break;
+        head.set(value.subarray(0, head.length - got), got);
+        got += value.length;
+      }
+      reader.cancel().catch(() => {});
+      const size = imageSize(head.subarray(0, Math.min(got, head.length)));
       if (!size || size.w < 500 || size.h < 200) continue;
       if (size.w === size.h && size.w <= 600) continue;
       return { image_url: img, art_style: size.w / size.h >= 1.25 ? "cover" : "logo" };
@@ -226,7 +237,7 @@ async function run(sb: ReturnType<typeof createClient>) {
   const report: Record<string, unknown> = { today };
 
   const { data: retired } = await sb.from("film_events").update({ status: "retired", updated_at: new Date().toISOString() })
-    .lt("ends_on", today).neq("status", "retired").select("id");
+    .lt("ends_on", today.slice(0, 7) + "-01").neq("status", "retired").select("id"); // finished events stay listed until the month ends
   report.retired = retired?.length ?? 0;
 
   const { data: st } = await sb.from("site_settings").select("events_slice").eq("id", 1).maybeSingle();
