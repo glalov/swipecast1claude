@@ -17738,21 +17738,40 @@ let _castingsCache=null,_talentCache=null;
 // filled every 3 days by the events-refresh agent (own-page check, own og:image art).
 // The banner changes daily; each page shows a different event; events starting within
 // two weeks (or on now) come first. Clicking opens the organiser's site, like News.
-let _filmEventsCache=null,_filmEventsLoad=null;
+let _filmEventsCache=null,_filmEventsLoad=null,_filmEventsAt=0;
+// Load once and share, but never remember a failure: a slow or failed fetch used to leave an
+// empty list for the whole visit, so the strip and banners vanished until a full reload.
+// Failed or empty loads retry (3 tries with a pause); a good list is reused for 15 minutes.
 function loadFilmEvents(){
-  if(_filmEventsCache)return Promise.resolve(_filmEventsCache);
+  if(_filmEventsCache&&_filmEventsCache.length&&Date.now()-_filmEventsAt<15*60000)return Promise.resolve(_filmEventsCache);
   if(_filmEventsLoad)return _filmEventsLoad;
-  _filmEventsLoad=(async()=>{try{
-    const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
-    const {data}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(30);
-    // Order (owner, 2026-11-08): events whose artwork is a real photo first (a wide JPEG/WebP;
-    // logos and text graphics are PNG or narrower), then everything else; each group soonest
-    // first, with events already running at the top.
-    const rows=(data||[]).filter(e=>e&&e.title&&e.url).map(e=>({...e,_on:e.starts_on<=today,_photo:e.art_style==="cover"&&/\.(jpe?g|webp)(\?|$)/i.test(String(e.image_url||""))}));
-    const byDate=(a,b)=>(a._on===b._on?0:a._on?-1:1)||String(a.starts_on).localeCompare(String(b.starts_on));
-    _filmEventsCache=rows.filter(e=>e._photo).sort(byDate).concat(rows.filter(e=>!e._photo).sort(byDate));
-  }catch(_){_filmEventsCache=[];}return _filmEventsCache;})();
+  _filmEventsLoad=(async()=>{
+    for(let attempt=0;attempt<3;attempt++){
+      try{
+        if(!window.sb)throw new Error("no client yet");
+        const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
+        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(30);
+        if(error)throw error;
+        // Order (owner, 2026-11-08): events whose artwork is a real photo first (a wide JPEG/WebP;
+        // logos and text graphics are PNG or narrower), then everything else; each group soonest
+        // first, with events already running at the top.
+        const rows=(data||[]).filter(e=>e&&e.title&&e.url).map(e=>({...e,_on:e.starts_on<=today,_photo:e.art_style==="cover"&&/\.(jpe?g|webp)(\?|$)/i.test(String(e.image_url||""))}));
+        const byDate=(a,b)=>(a._on===b._on?0:a._on?-1:1)||String(a.starts_on).localeCompare(String(b.starts_on));
+        const list=rows.filter(e=>e._photo).sort(byDate).concat(rows.filter(e=>!e._photo).sort(byDate));
+        if(list.length){_filmEventsCache=list;_filmEventsAt=Date.now();break;}
+      }catch(_){}
+      await new Promise(r=>setTimeout(r,1200*(attempt+1)));
+    }
+    _filmEventsLoad=null;
+    return _filmEventsCache||[];
+  })();
   return _filmEventsLoad;
+}
+// Hook used by every events component: shows the cached list at once, then (re)loads.
+function useFilmEvents(){
+  const [list,setList]=useState(_filmEventsCache);
+  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live&&l&&l.length)setList(l);});return()=>{live=false;};},[]);
+  return list;
 }
 function FilmEventCard({ev,compact}){
   const [imgBad,setImgBad]=useState(false);
@@ -17781,8 +17800,7 @@ function FilmEventCard({ev,compact}){
   </a>);
 }
 function FilmEventBanner({page}){
-  const [list,setList]=useState(_filmEventsCache);
-  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
+  const list=useFilmEvents();
   if(!list||!list.length)return null;
   // Page 1's top strip shows event 0, so the in-list banner shows event `page`
   // (page 1 → event 1, page 2 → event 2 …) and never repeats the strip.
@@ -17793,9 +17811,8 @@ function FilmEventBanner({page}){
 // Slim event strip at the top of Browse page 1 (owner pick "B · colour", 2026-11-08):
 // the top event (real photo first, then soonest) in its own palette, photo on the right.
 function FilmEventStrip(){
-  const [list,setList]=useState(_filmEventsCache);
+  const list=useFilmEvents();
   const [imgBad,setImgBad]=useState(false);
-  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
   if(!list||!list.length)return null;
   const ev=list[0];
   const when=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,2).map(w=>w&&w[1]).filter(Boolean).join(" · "):"";
@@ -17818,8 +17835,7 @@ function FilmEventStrip(){
 // Manager Mode events list (owner, 2026-11-08): Premium members see every upcoming NYC film
 // event from film_events, grouped by when; everyone else sees the first two and one quiet line.
 function ManagerModeEvents({isPremium,isLoggedIn,onNavigate}){
-  const [list,setList]=useState(_filmEventsCache);
-  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
+  const list=useFilmEvents();
   if(!list||!list.length)return null;
   const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
   const plus=n=>new Date(Date.parse(today+"T12:00:00Z")+n*86400000).toISOString().slice(0,10);
