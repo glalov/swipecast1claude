@@ -4223,10 +4223,10 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .evs-chip.dk{background:none;}
 .evs-chip img{display:block;max-width:220px;max-height:76px;}
 .evs-row{position:absolute;top:10px;bottom:10px;right:24px;display:flex;gap:8px;}
-.evs-row img:nth-child(n+4){display:none;}
 .evs-row img{height:100%;width:auto;border-radius:4px;box-shadow:0 8px 18px -6px rgba(0,0,0,.6);}
 .evs-word{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:38px;color:#FFE3B5;}
-@media(max-width:1100px){.evs-row img:nth-child(n+3){display:none;}.evs-t{font-size:23px;}}
+@media(min-width:761px) and (max-width:1100px){.evs-row img:nth-child(n+3){display:none!important;}}
+@media(max-width:1100px){.evs-t{font-size:23px;}}
 @media(max-width:760px){.evs{flex-direction:column;}.evs-art{order:-1;width:100%;height:150px;}.evs-cov,.evs-bg{-webkit-mask-image:none;mask-image:none;}.evs-fg{left:0;right:0;margin:0 auto;}.evs-chip{right:auto;left:50%;transform:translate(-50%,-50%);}.evs-row{left:0;right:0;justify-content:center;}.evs-tx{padding:16px 16px 6px;}.evs-t{font-size:22px;}.evs-go{align-self:flex-start;margin:6px 16px 16px;}}
 /* Industry Events: dashboard card and /events (2026-11-08) */
 .ievc{background:#fff;border:1px solid var(--bdr);border-radius:18px;box-shadow:0 2px 6px rgba(26,26,46,.07);}
@@ -17897,7 +17897,7 @@ function EventStripe({ev}){
     <span className="evs-go">See the event<i className="ti ti-external-link" aria-hidden="true"/></span>
     <span className="evs-art" aria-hidden="true">
       {noArt?<span className="evs-word">{word}</span>
-        :a.row?<span className="evs-row">{a.row.map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.style.display="none";}}/>)}</span>
+        :a.row?<span className="evs-row">{a.row.slice(0,3).map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.style.display="none";}}/>)}</span>
         :a.logo?<span className={"evs-chip"+(a.dark?" dk":"")}><img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)}/></span>
         :<>{poster&&<img className="evs-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"evs-fg":"evs-cov"} src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget;if(t.naturalWidth/t.naturalHeight<1.25)setPoster(true);}}/></>}
     </span>
