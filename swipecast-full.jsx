@@ -5743,6 +5743,10 @@ a.news-card{text-decoration:none;color:inherit;}
 @media(max-width:900px){.td-rv-desk{display:none;}.td-rv-mob{display:block;}}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
 .td-left{align-self:stretch;}
+.td-three{overflow-y:auto;padding-right:8px;scrollbar-width:thin;scrollbar-color:#B9AE99 transparent;}
+.td-three::-webkit-scrollbar{width:7px;}
+.td-three::-webkit-scrollbar-thumb{background:#B9AE99;border-radius:7px;}
+.td-three::-webkit-scrollbar-track{background:transparent;}
 @media(min-width:901px){.td-news-w{flex:1 1 auto;display:flex;min-height:0;}}
 .td-news{flex:1;display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;min-width:0;}
 .td-news-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;border-bottom:1px solid var(--bdr);}
@@ -21108,6 +21112,17 @@ function DashNews({onNavigate,maxRows=3}){
       :<button key={a.slug} type="button" className="td-news-row" onClick={()=>onNavigate("news-article",{slug:a.slug})}>{body(a)}</button>)}
   </div>);
 }
+// Shows the first 3 rows; anything more scrolls inside the box (owner, 2026-11-08).
+function ThreeScroll({style,children}){
+  const ref=React.useRef(null);
+  React.useLayoutEffect(()=>{
+    const el=ref.current;if(!el)return;
+    const k=el.children;
+    if(k.length>3){el.style.maxHeight=(k[2].offsetTop+k[2].offsetHeight-k[0].offsetTop)+"px";el.classList.add("td-three");}
+    else{el.style.maxHeight="";el.classList.remove("td-three");}
+  });
+  return <div ref={ref} style={style}>{children}</div>;
+}
 // Matching empty state for Saved Castings and Recently Viewed (owner, 2026-11-08).
 function DashEmpty({icon,title,text,minH,onBrowse}){
   return(<div className="td-empty" style={{minHeight:minH}}>
@@ -21418,7 +21433,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         .select("casting_id,viewed_at,castings(id,title,type,location,deadline)")
         .eq("user_id",uid)
         .order("viewed_at",{ascending:false})
-        .limit(5);
+        .limit(30);
       if(error)throw error;
       setRecentlyViewed((data||[]).filter(r=>r.castings));
     }catch(e){console.warn("[talent-dashboard] recently-viewed:",e);}
@@ -21504,8 +21519,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  // Industry News shows whenever the left column has room under its last section (owner,
-  // 2026-11-08): 3 stories if they fit, 2 if space is tighter, none if the columns are level.
+  // Industry News always shows on desktop (owner, 2026-11-08): 3 stories when they fit, 2 when
+  // space is tight. Saved and Recently Viewed scroll past 3 rows so they can't crowd it out.
   const [newsRows,setNewsRows]=useState(0);
   useEffect(()=>{
     let timer=0;
@@ -21516,7 +21531,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       const last=parts[parts.length-1];
       if(!last)return;
       const free=right.getBoundingClientRect().bottom-last.getBoundingClientRect().bottom;
-      setNewsRows(free>=370?3:free>=280?2:0);
+      setNewsRows(free>=370?3:2);
     },60);};
     measure();
     const ro=new ResizeObserver(measure);
@@ -21773,7 +21788,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
       {rvLoading?(
         <CastSlateLoader size="inline" text="Loading…"/>
       ):(
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+        <ThreeScroll style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
           {recentlyViewed.map(r=>{
             const c=r.castings;
             return(
@@ -21787,7 +21802,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               </div>
             );
           })}
-        </div>
+        </ThreeScroll>
       )}
     </div>
   );
@@ -22322,8 +22337,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 <DashEmpty icon="bookmark" title="Nothing saved yet" text="Tap the bookmark on any role to keep it here, with its deadline." minH={204} onBrowse={()=>onNavigate("search")}/>
               ):(
                 <>
-                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                    {savedCastings.slice(0,3).map(s=>{
+                  <ThreeScroll style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {savedCastings.map(s=>{
                       const c=s.castings;
                       const dl=c?.deadline?fmtDeadline(c.deadline):null;
                       return(
@@ -22339,7 +22354,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                         </div>
                       );
                     })}
-                  </div>
+                  </ThreeScroll>
                   <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <span style={{fontSize:12,color:"var(--t3)"}}>{savedCastings.length} saved casting{savedCastings.length!==1?"s":""}</span>
                     <button className="btn-s btn-sm" onClick={()=>setDashView("saved")}>View All Saved Castings <Tri/></button>
