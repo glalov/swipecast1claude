@@ -2005,7 +2005,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-src{position:absolute;right:10px;top:10px;z-index:2;font-size:11px;background:rgba(0,0,0,.5);border-radius:999px;padding:3px 9px;}
 .iev-more{margin-top:20px;background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:15px;color:var(--t2);}
 .iev-more button{height:40px;padding:0 18px;border:0;border-radius:10px;background:#33826A;color:#fff;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-@media(max-width:720px){.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-pop{left:auto;right:-90px;transform:none;width:280px;}}
+@media(max-width:720px){.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-tip{position:static;}.iev-hd,.ievc-ttl{position:relative;}.iev-pop,.ievc .iev-pop{left:0;right:0;top:100%;width:auto;transform:none;}}
 .fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
 .fev-compact .fev-art{order:-1;height:176px;padding:36px 16px 16px;box-sizing:border-box;}
 .fev-compact.fev-art-cover .fev-art{padding:36px 16px 16px;}
