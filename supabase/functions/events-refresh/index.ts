@@ -123,8 +123,24 @@ function parseList(text: string): Found[] {
 }
 
 // Gemini with Google Search grounding: the same key the News section uses.
+// Google retires model versions, so pick the newest stable "gemini-X-flash" this key can use.
+async function geminiModel(key: string): Promise<string> {
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${encodeURIComponent(key)}`, { signal: AbortSignal.timeout(15000) });
+    const d = await r.json();
+    const names = (d?.models || [])
+      .filter((m: { name: string; supportedGenerationMethods?: string[] }) => /^models\/gemini-\d+(\.\d+)?-flash$/.test(m.name) && (m.supportedGenerationMethods || []).includes("generateContent"))
+      .map((m: { name: string }) => m.name.replace(/^models\//, ""));
+    const ver = (n: string) => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || "0");
+    names.sort((x: string, y: string) => ver(y) - ver(x));
+    if (names[0]) return names[0];
+  } catch (_) { /* fall through */ }
+  return "gemini-flash-latest";
+}
+
 async function askGemini(key: string, prompt: string): Promise<Found[]> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+  const model = await geminiModel(key);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
   const r = await fetch(url, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], tools: [{ google_search: {} }], generationConfig: { temperature: 0.2 } }),
