@@ -21190,7 +21190,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   const [rmMatch,setRmMatch]=useState(undefined);
   const [rmDone,setRmDone]=useState(false);
   useEffect(()=>{
-    if(!dashV2||!isPremium||!uid){setRmMatch(null);setRmDone(false);return;}
+    if(true||!dashV2||!isPremium||!uid){setRmMatch(null);setRmDone(false);return;} // bar removed 2026-11-08, skip its daily lookup
     if(recsLoading||appsLoading)return; // wait for BOTH the matching pool AND the
     // actor's applications — otherwise the "already applied" filter runs on an
     // empty list and can pick (and lock in for the day) a role they already
@@ -21938,34 +21938,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         </div>
         );
         }
-        // ── v2 zero-proof cards (Admin → Toggles → "Talent dashboard cards"). ──
-        // Everything below is computed live from data already loaded — no writes,
-        // no per-profile changes. Each card has a graceful fallback / "done" state.
-        // Role matcher's pick comes from the DB-backed daily effect (rmMatch/rmDone)
-        // — the SAME across every device the user signs into, and a STRICT
-        // age+gender match (computed in that effect).
-        const dailyMatch=(rmMatch&&typeof rmMatch==="object")?rmMatch:null;
-        const rmLoading=(rmMatch===undefined);
-        const matchedToday=rmDone;
-        const dmRole=dailyMatch&&(dailyMatch._matchRole||(dailyMatch.roles||[])[0]);
-        const dmTitle=dailyMatch?((dailyMatch.type?dailyMatch.type+" · ":"")+((dmRole&&dmRole.name)||dailyMatch.title||"Open role")):"";
-        const dmMeta=dailyMatch?[dailyMatch.location,(fmtDeadline(dailyMatch.deadline)||{}).label].filter(Boolean).join(" · "):"";
-        const slim=(label,color,title,meta,cta,click,ctaColor)=>(<div className="td-match" onClick={click||undefined} style={{cursor:click?"pointer":"default"}}>
-          <div className="td-match-tx"><small style={{color}}>{label}</small><div><b>{title}</b>{meta&&<span>{meta}</span>}</div></div>
-          {cta&&<span className="td-match-go" style={{color:ctaColor||"var(--teal)"}}>{cta}<Tri/></span>}
-        </div>);
-        return(<>
-          {/* No celebration banner: a shortlist already shows in the Applications
-              section below — surfacing it here too was a duplicate and linked to
-              the removed notifications view. Wins live in Applications only. */}
-          {/* One slim bar (owner, 2026-11-08): Applications, next step and profile strength
-              repeated the sections below, so only the role matcher stays up here. */}
-          {!isPremium?slim("Role matcher · Premium","var(--t3)","A fresh role, matched daily","Picked for your age and type","See how it works",()=>onNavigate&&onNavigate("membership"),"var(--t1)")
-          :rmLoading?slim("Role matcher","var(--teal)","Finding today's match…","",null,null)
-          :dailyMatch?slim("Role matcher","var(--teal)",dmTitle,dmMeta||"Open now","View & apply",()=>onViewCastingById&&onViewCastingById(dailyMatch.id))
-          :matchedToday?slim("Role matcher","#1a6b42","Today's match, done","Your next match arrives tomorrow","Browse all",()=>onNavigate&&onNavigate("search"))
-          :slim("Role matcher","#1a6b42","All caught up","We'll match you when new roles post","Browse all",()=>onNavigate&&onNavigate("search"))}
-        </>);
+        // Role matcher bar removed for everyone (owner, 2026-11-08): it repeated Recommended for You.
+        return null;
       })()}
 
       {/* ── Recommended Classes hero (class invitations) ── */}
