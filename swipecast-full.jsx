@@ -18372,7 +18372,9 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             </div>
             {/* Breaks only on pages that are mostly live (owner, 2026-11-08): expired castings sort last,
                 so later pages fill with them; neither card belongs there. */}
-            {ci===3&&pageArr.length>4&&authReady&&!session?.user&&pageArr.slice(0,4).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=3&&<ClapperBreak key={"clap-"+pg} passed={pageArr.slice(0,4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
+            {/* Pages 1 and 3 only (owner, 2026-11-08): the same pitch on every page reads as nagging.
+                The count is a running total of every role passed so far, earlier pages included. */}
+            {ci===3&&(pg===1||pg===3)&&pageArr.length>4&&authReady&&!session?.user&&pageArr.slice(0,4).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=3&&<ClapperBreak key={"clap-"+pg} passed={fc.slice(0,(pg-1)*10+4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
             {ci===7&&pageArr.length>=9&&pageArr.slice(0,8).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=6&&<FilmEventBanner key={"fev-"+pg} page={pg}/>}
             </React.Fragment>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
