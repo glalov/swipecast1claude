@@ -1947,6 +1947,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .evs-chip.dk{background:none;}
 .evs-chip img{display:block;max-width:220px;max-height:76px;}
 .evs-row{position:absolute;top:10px;bottom:10px;right:24px;display:flex;gap:8px;}
+.evs-row img:nth-child(n+4){display:none;}
 .evs-row img{height:100%;width:auto;border-radius:4px;box-shadow:0 8px 18px -6px rgba(0,0,0,.6);}
 .evs-word{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:38px;color:#FFE3B5;}
 @media(max-width:1100px){.evs-row img:nth-child(n+3){display:none;}.evs-t{font-size:23px;}}
