@@ -3250,8 +3250,8 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
    page's Open the directory button and then closed: shows where the directory lives. */
 @keyframes dir-glow{0%{box-shadow:0 0 0 0 rgba(234,192,128,0);}20%{box-shadow:0 0 0 5px rgba(234,192,128,.95),0 0 36px 8px rgba(200,153,46,.5);}100%{box-shadow:0 0 0 0 rgba(234,192,128,0);}}
 .tad-seal.dir-glow{animation:tad-edgeflow 7s ease-in-out infinite,dir-glow 1.6s ease-out;}
-.cdxs.dir-glow{animation:dir-glow 1.6s ease-out;}
-@media(prefers-reduced-motion:reduce){.tad-seal.dir-glow,.cdxs.dir-glow{animation:none;}}
+.dirc.dir-glow{animation:dir-glow 1.6s ease-out;}
+@media(prefers-reduced-motion:reduce){.tad-seal.dir-glow,.dirc.dir-glow{animation:none;}}
 /* the network itself.
    The card's content is position:relative with z-index AUTO, which loses to any
    positive z-index — so the network and its scrim have to sit at 0 and the content
@@ -3261,17 +3261,17 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .tad-card>.tad-kick,.tad-card>.tad-hd,.tad-card>.tad-sub,
 .tad-card>.tad-mini,.tad-card>.tad-cta{position:relative;z-index:3;}
 .tad-net svg{position:absolute;inset:0;width:100%;height:100%;}
-.tad-net .e{stroke:rgba(240,184,96,.22);stroke-width:.8;fill:none;}
-.tad-net .n{fill:rgba(240,184,96,.5);animation:tad-twink 4.6s ease-in-out infinite;}
+.tad-net .e{stroke:rgba(var(--na,240,184,96),.22);stroke-width:.8;fill:none;}
+.tad-net .n{fill:rgba(var(--na,240,184,96),.5);animation:tad-twink 4.6s ease-in-out infinite;}
 @keyframes tad-twink{0%,100%{opacity:.2;r:1.5px;}50%{opacity:.85;r:2.5px;}}
-.tad-net .p{stroke:#FFF0D2;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-dasharray:40 900;stroke-dashoffset:40;
-  filter:drop-shadow(0 0 4px rgba(240,184,96,.95));animation:tad-run 4.2s cubic-bezier(.5,0,.35,1) infinite;}
+.tad-net .p{stroke:var(--np,#FFF0D2);stroke-width:1.7;fill:none;stroke-linecap:round;stroke-dasharray:40 900;stroke-dashoffset:40;
+  filter:drop-shadow(0 0 4px rgba(var(--na,240,184,96),.95));animation:tad-run 4.2s cubic-bezier(.5,0,.35,1) infinite;}
 .tad-net .p2{animation-delay:2.1s;stroke-width:1.3;opacity:.75;}
 @keyframes tad-run{0%{stroke-dashoffset:40;opacity:0;}8%{opacity:1;}92%{opacity:1;}100%{stroke-dashoffset:-900;opacity:0;}}
 /* scrim: holds the constellation BEHIND the copy so it reads as depth, never as clutter */
 .tad-net::after{content:"";position:absolute;inset:0;z-index:4;
-  background:radial-gradient(86% 60% at 32% 44%,rgba(20,20,42,.94) 0%,rgba(20,20,42,.7) 44%,rgba(20,20,42,.1) 76%,transparent 100%),
-             linear-gradient(180deg,transparent 52%,rgba(17,17,36,.58) 74%,rgba(17,17,36,.92) 100%);}
+  background:var(--scrim,radial-gradient(86% 60% at 32% 44%,rgba(20,20,42,.94) 0%,rgba(20,20,42,.7) 44%,rgba(20,20,42,.1) 76%,transparent 100%),
+             linear-gradient(180deg,transparent 52%,rgba(17,17,36,.58) 74%,rgba(17,17,36,.92) 100%));}
 /* the icon: a dial that ticks in 24 discrete steps, a dashed ring counter-turning
    outside it, rings breathing outward, and a glow that swells every few seconds */
 .tad-card .tad-ic{position:relative;animation:tad-icglow 4.5s ease-in-out infinite;}
@@ -3281,11 +3281,11 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
   border:1px solid rgba(240,184,96,.55);animation:tad-ring 3s ease-out infinite;}
 .tad-card .tad-ic::after{animation-delay:1.5s;}
 @keyframes tad-ring{0%{transform:scale(.8);opacity:.9;}70%{opacity:0;}100%{transform:scale(1.55);opacity:0;}}
-.tad-dial{position:absolute;inset:0;border-radius:10px;border:1.5px solid rgba(240,184,96,.45);z-index:2;animation:tad-tick 12s steps(24) infinite;}
-.tad-dial:before,.tad-dial:after{content:"";position:absolute;left:50%;width:1.5px;height:5px;background:#F0B860;margin-left:-.75px;border-radius:2px;}
+.tad-dial{position:absolute;inset:0;border-radius:10px;border:1.5px solid rgba(var(--na,240,184,96),.45);z-index:2;animation:tad-tick 12s steps(24) infinite;}
+.tad-dial:before,.tad-dial:after{content:"";position:absolute;left:50%;width:1.5px;height:5px;background:var(--dialt,#F0B860);margin-left:-.75px;border-radius:2px;}
 .tad-dial:before{top:2px;}.tad-dial:after{bottom:2px;}
 @keyframes tad-tick{to{transform:rotate(360deg);}}
-.tad-dial2{position:absolute;inset:-4px;border-radius:13px;border:1px dashed rgba(240,184,96,.24);z-index:2;animation:tad-tick2 26s linear infinite;}
+.tad-dial2{position:absolute;inset:-4px;border-radius:13px;border:1px dashed rgba(var(--na,240,184,96),.24);z-index:2;animation:tad-tick2 26s linear infinite;}
 @keyframes tad-tick2{to{transform:rotate(-360deg);}}
 .tad-dot{animation:tad-beat 2.4s ease-in-out infinite;}
 @keyframes tad-beat{0%,100%{box-shadow:0 0 5px #F0B860;opacity:.75;}50%{box-shadow:0 0 13px 2px #F0B860;opacity:1;}}
@@ -3537,37 +3537,52 @@ body.sheet-push .b2t-cube{display:none;}
   .tad-donts{grid-template-columns:1fr;}
   .tad-mlitem{grid-template-columns:26px 1fr;}
 }
-/* ── Casting Companies Directory dashboard card: "The Slate", Paper White ──
-   (owner, 2026-10-15: board went Chalk White → Paper White so it lifts off the cream page.)
-   A clapperboard: cream board, black clapper stripes, chalk-ruled PROD / ROLL /
-   TAKE board. Owner's call 2026-10-04: chalk white, and the clapper does NOT
-   animate (it is a still image of a slate). Only the hover lift and the
-   blinking "rolling" dot move. */
-.cdxs{position:relative;overflow:hidden;border-radius:16px;cursor:pointer;background:#FFFFFF;border:1.5px solid #D9CFBC;color:#1A1A1F;box-shadow:0 2px 10px -4px rgba(26,26,31,.12);transition:transform .3s,box-shadow .3s;}
-.cdxs:hover{transform:translateY(-3px);box-shadow:0 24px 48px -20px rgba(26,26,31,.35);}
-.cdxs:focus-visible{outline:2px solid #1A1A1F;outline-offset:3px;}
-.cdxs-clap{position:relative;height:30px;background:repeating-linear-gradient(-45deg,#1A1A1F 0 16px,#FFFFFF 16px 32px);border-bottom:2px solid #1A1A1F;}
-.cdxs-hinge{position:absolute;left:6px;top:24px;width:12px;height:12px;border-radius:50%;background:#FFFFFF;border:2px solid #1A1A1F;z-index:4;}
-.cdxs-in{position:relative;z-index:3;padding:18px 20px 20px;}
-.cdxs-kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#1A1A1F;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
-.cdxs-rec{width:7px;height:7px;border-radius:50%;background:#E5484D;box-shadow:0 0 6px rgba(229,72,77,.7);animation:cdxsRec 1.6s steps(1) infinite;}
-@keyframes cdxsRec{50%{opacity:.25;}}
-.cdxs-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.cdxs-ic{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:#1A1A1F;color:#FFFFFF;}
-.cdxs h3{font-weight:800;font-size:15.5px;color:#1A1A1F;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;line-height:1.3;}
-.cdxs p.cdxs-sub{font-size:13px;color:#4A4238;margin:0 0 14px;line-height:1.55;}
-.cdxs-board{display:grid;grid-template-columns:1.25fr 1fr 1.15fr;border:1.5px solid rgba(26,26,31,.55);border-radius:6px;margin:0 0 14px;font-family:'Courier New',ui-monospace,monospace;}
-.cdxs-board div{padding:7px 9px;border-right:1.5px solid rgba(26,26,31,.55);min-width:0;display:flex;flex-direction:column;justify-content:space-between;}
-.cdxs-board div:last-child{border-right:0;}
-/* Labels in the site font, dark and bold: the old 7.5px light-grey Courier was unreadable, and 'TAKE · HEADSHOTS' overflowed its box. Labels may wrap to two lines. */
-.cdxs-board i{display:block;font-style:normal;font-family:'DM Sans',sans-serif;font-size:9px;font-weight:800;letter-spacing:.06em;line-height:1.25;color:#2B2622;}
-.cdxs-board b{display:block;font-size:18px;font-weight:700;color:#1A1A1F;margin-top:3px;}
-.cdxs-board b.w{font-size:12px;}
-.cdxs-cta{width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:#1A1A1F;color:#F0B860;box-shadow:0 2px 10px -3px rgba(0,0,0,.35);transition:background .18s;}
-.cdxs-cta:hover{background:#2C2C33;}
-.cdxs-cta.open{background:transparent;color:#1A1A1F;box-shadow:none;border:1.5px solid rgba(26,26,31,.35);}
-.cdxs-cta.open:hover{background:rgba(26,26,31,.05);}
-@media(prefers-reduced-motion:reduce){.cdxs-rec{animation:none!important;}.cdxs,.cdxs:hover{transform:none;}}
+/* ── Dashboard directory cards: Version C "Light editorial" (owner's pick, 2026-11-07,
+   demo castslate-dashboard-directory-cards-demo.html). A matched pair: white card,
+   colour header band where the motion lives (ink navy for agencies, Earth Blue for
+   casting), numbers and button in the band colour. Replaced the navy night-sky card
+   and the clapper slate. Owner: the clapper stripes read unprofessional, so no
+   stripes, no red dot, no typewriter board. Motion kept and recoloured: constellation
+   (.tad-net, colours via --na/--np/--scrim), ticking dial, breathing rings, pulsing dot,
+   plus a slow projector-light sweep on the casting band. ── */
+.dirc{position:relative;overflow:hidden;border-radius:16px;background:#FFFFFF;border:1px solid #E4DED2;color:var(--t1);cursor:pointer;box-shadow:0 2px 10px -4px rgba(26,26,46,.12);transition:transform .3s,box-shadow .3s;}
+.dirc:hover{transform:translateY(-3px);box-shadow:0 24px 48px -20px rgba(26,26,46,.35);}
+.dirc:focus-visible{outline:2px solid var(--deep);outline-offset:3px;}
+.dirc-ag{--band:linear-gradient(140deg,#25264A 0%,#1A1A2E 60%,#121226 100%);--acc:#F0B860;--deep:#1E2140;--deep2:#2D3160;
+  --scrim:radial-gradient(90% 75% at 30% 50%,rgba(26,26,46,.92) 0%,rgba(26,26,46,.6) 50%,transparent 85%);}
+.dirc-ca{--band:linear-gradient(140deg,#2E7FC4 0%,#2369A6 55%,#1C5689 100%);--acc:#DCEBF8;--deep:#22649E;--deep2:#2A73B3;
+  --na:220,235,248;--np:#FFFFFF;--dialt:#DCEBF8;
+  --scrim:radial-gradient(90% 75% at 30% 50%,rgba(36,104,165,.9) 0%,rgba(36,104,165,.55) 50%,transparent 85%);}
+.dirc-band{position:relative;overflow:hidden;padding:18px 20px 16px;color:#FFFFFF;background:var(--band);}
+.dirc-band>.dirc-kick,.dirc-band>.dirc-hd{position:relative;z-index:5;}
+.dirc-kick{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--acc);margin:0 0 8px;font-family:'DM Sans',sans-serif;}
+.dirc-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc);animation:dirc-beat 2.4s ease-in-out infinite;}
+@keyframes dirc-beat{0%,100%{opacity:.75;}50%{opacity:1;box-shadow:0 0 13px 2px var(--acc);}}
+.dirc-rec{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 7px var(--acc);animation:dirc-rec 1.6s steps(1) infinite;}
+@keyframes dirc-rec{50%{opacity:.25;}}
+.dirc-hd{display:flex;align-items:center;gap:10px;}
+.dirc-ic{position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:rgba(255,255,255,.12);color:#FFFFFF;animation:dirc-icglow 4.5s ease-in-out infinite;}
+@keyframes dirc-icglow{0%,64%,100%{box-shadow:0 0 0 0 rgba(var(--na,240,184,96),0);}82%{box-shadow:0 0 0 3px rgba(var(--na,240,184,96),.15),0 0 24px rgba(var(--na,240,184,96),.45);}}
+.dirc-ic::before,.dirc-ic::after{content:"";position:absolute;inset:-6px;border-radius:15px;border:1px solid rgba(var(--na,240,184,96),.55);animation:tad-ring 3s ease-out infinite;}
+.dirc-ic::after{animation-delay:1.5s;}
+.dirc h3{font-weight:800;font-size:15.5px;color:#FFFFFF;margin:0;font-family:'DM Sans',sans-serif;letter-spacing:-.2px;line-height:1.3;}
+.dirc-info{margin-left:auto;}
+.dirc-beam{position:absolute;inset:-20% -40%;z-index:1;pointer-events:none;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.09) 48%,rgba(255,255,255,.03) 54%,transparent 62%);animation:dirc-beam 9s ease-in-out infinite;}
+@keyframes dirc-beam{0%,100%{transform:translateX(-22%);}50%{transform:translateX(22%);}}
+.dirc-body{padding:16px 20px 20px;}
+.dirc p.dirc-sub{font-size:13px;color:var(--t2);margin:0 0 14px;line-height:1.55;}
+.dirc p.dirc-sub b{color:var(--t1);}
+.dirc-mini{display:flex;gap:14px;margin:0 0 15px;padding:11px 0;border-top:1px solid #ECE7DD;border-bottom:1px solid #ECE7DD;}
+.dirc-mini>div{flex:1;min-width:0;}
+.dirc-mini b{display:block;font-size:17px;font-weight:800;line-height:1.1;color:var(--deep);}
+.dirc-mini span{display:block;font-size:8.6px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#6B6258;white-space:nowrap;}
+/* Flat fill + small neutral shadow: never the glossy gradient/bevel recipe (see rail CTA note). */
+.dirc-cta{width:100%;font-size:13px;font-weight:800;font-family:'DM Sans',sans-serif;padding:12px 14px;border-radius:10px;border:none;cursor:pointer;background:var(--deep);color:#FFFFFF;box-shadow:0 2px 8px -3px rgba(26,26,46,.35);transition:background .18s;}
+.dirc-cta:hover{background:var(--deep2);}
+.dirc-cta.open{background:transparent;color:var(--deep);box-shadow:none;border:1.5px solid var(--deep);}
+.dirc-cta.open:hover{background:rgba(26,26,46,.04);}
+.dirc:has(.tad-info:hover) .tad-tip,.dirc:has(.tad-info:focus) .tad-tip{display:block;}
+@media(prefers-reduced-motion:reduce){.dirc-dot,.dirc-rec,.dirc-ic,.dirc-ic::before,.dirc-ic::after,.dirc-beam{animation:none!important;}.dirc,.dirc:hover{transform:none;}}
 /* ── Casting Companies Directory additions (reuses the .tad-* sheet) ── */
 .cdx-nosub{background:rgba(214,59,59,.08);color:#9B2C2C;}
 .tad-row.cdx-dim{opacity:.72;}
@@ -19092,15 +19107,19 @@ const TAD_EDGES=[[0,1],[1,2],[2,3],[3,4],[0,5],[1,6],[2,6],[3,7],[4,8],[5,6],[6,
 const TAD_ROUTE=[14,10,6,2,3,7,11,15,16,13,4];
 const TAD_ROUTE2=[0,5,6,7,8,12,17];
 const tadPts=(r)=>r.map(i=>TAD_NODES[i].join(",")).join(" ");
-function TadNetwork(){
+// mirror: the Casting Companies card uses a point-reflected copy so the two cards never move in step.
+const TAD_NODES_M=TAD_NODES.map(([x,y])=>[340-x,300-y]);
+function TadNetwork({mirror}){
+  const N=mirror?TAD_NODES_M:TAD_NODES;
+  const pts=(r)=>r.map(i=>N[i].join(",")).join(" ");
   return(
     <span className="tad-net" aria-hidden="true">
       <svg viewBox="0 0 340 300" preserveAspectRatio="none">
         {TAD_EDGES.map(([a,b])=>
-          <line key={a+"-"+b} className="e" x1={TAD_NODES[a][0]} y1={TAD_NODES[a][1]} x2={TAD_NODES[b][0]} y2={TAD_NODES[b][1]}/>)}
-        <polyline className="p" points={tadPts(TAD_ROUTE)}/>
-        <polyline className="p p2" points={tadPts(TAD_ROUTE2)}/>
-        {TAD_NODES.map(([x,y],i)=>
+          <line key={a+"-"+b} className="e" x1={N[a][0]} y1={N[a][1]} x2={N[b][0]} y2={N[b][1]}/>)}
+        <polyline className="p" points={pts(TAD_ROUTE)}/>
+        <polyline className="p p2" points={pts(TAD_ROUTE2)}/>
+        {N.map(([x,y],i)=>
           <circle key={i} className="n" cx={x} cy={y} r="2" style={{animationDelay:(i*0.26).toFixed(2)+"s"}}/>)}
       </svg>
     </span>
@@ -19314,28 +19333,33 @@ function TalentAgencyDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
   );
 
   return(<>
-    <div className="tad-seal" ref={cardRef} style={sheetOnly?{display:"none"}:undefined}>
-    <div className="tad-card" onClick={openSheet} role="button" tabIndex={0}
+    {/* Version C "Light editorial" (owner's pick, 2026-11-07): white card, navy header
+        band where the constellation lives, numbers and button in the band colour.
+        Matched pair with the Casting Companies card below. */}
+    <div className="dirc dirc-ag" ref={cardRef} style={sheetOnly?{display:"none"}:undefined} onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
-      <TadNetwork/>
-      <p className="tad-kick"><span className="tad-dot"/>{isPremium?"Unlocked":"Premium Feature"}</p>
-      <div className="tad-hd">
-        <span className="tad-ic"><span className="tad-dial2"/><span className="tad-dial"/><Ico n="building-bank" s={22}/></span>
-        <h3>Talent Agency &amp; Management Directory<br/>+ Tips &amp; Tricks</h3>
-        <i className="tad-info" tabIndex={0} aria-label="What this directory is">i</i>
+      <div className="dirc-band">
+        <TadNetwork/>
+        <p className="dirc-kick"><span className="dirc-dot"/>{isPremium?"Unlocked":"Premium Feature"}</p>
+        <div className="dirc-hd">
+          <span className="dirc-ic"><span className="tad-dial2"/><span className="tad-dial"/><Ico n="building-bank" s={22}/></span>
+          <h3>Talent Agency &amp; Management Directory<br/>+ Tips &amp; Tricks</h3>
+          <i className="tad-info dirc-info" tabIndex={0} aria-label="What this directory is">i</i>
+        </div>
       </div>
-      <p className="tad-sub"><b>Talent agencies and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for years.</p>
-      <div className="tad-mini">
-        <div><b>{counts.all}</b><span>Companies</span></div>
-        <div><b>{counts.open}</b><span>Open to submissions</span></div>
-        <div><b>{counts.tips}</b><span>Insider tips</span></div>
+      <div className="dirc-body">
+        <p className="dirc-sub"><b>Talent agencies and management companies</b> in LA &amp; New York open to new talent right now — plus how to actually approach them, from people who have done it for years.</p>
+        <div className="dirc-mini">
+          <div><b>{counts.all}</b><span>Companies</span></div>
+          <div><b>{counts.open}</b><span>Open to submissions</span></div>
+          <div><b>{counts.tips}</b><span>Insider tips</span></div>
+        </div>
+        <button className={"dirc-cta"+(isPremium?" open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
+          {isPremium?<>Open the Directory <Tri/></>:<>Unlock the Directory <Tri/></>}
+        </button>
       </div>
-      <button className={"tad-cta"+(isPremium?" tad-open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
-        {isPremium?<>Open the Directory <Tri/></>:<>Unlock the Directory <Tri/></>}
-      </button>
       {/* LAST child on purpose — anything after it would paint over the panel. */}
       <span className="tad-tip"><b>A powerful knowledge tool</b>Access to roughly <em>90% of Hollywood's agents and managers</em> — who they are, where they sit, and exactly how each one wants to be approached. Connections and knowledge that took other actors years to gather, in your hands in minutes. Learn who really runs film and television in New York and Los Angeles.</span>
-    </div>
     </div>
 
     {/* Portalled to <body> — see the note on the casting sheet. The sheet is fixed and
@@ -19885,26 +19909,28 @@ function CastingDirectoryCard({isPremium,onNavigate,sheetOnly=false}){
   const listCount=picked.size+agPicked.size;
 
   return(<>
-    {/* "The Slate", Chalk White (owner's pick, 2026-10-04, replacing Clapper Red).
-        Cream board, black clapper stripes, deliberately unlike the navy agency card
-        above it. The clapper is still, not animated (owner's call). */}
-    <div className="cdxs" ref={cardRef} style={sheetOnly?{display:"none"}:undefined} onClick={openSheet} role="button" tabIndex={0}
+    {/* Version C "Light editorial" (owner's pick, 2026-11-07): replaced the clapper slate.
+        Earth Blue header band with a mirrored constellation and a slow projector-light
+        sweep; same layout as the agency card above. No clapper stripes, no red dot. */}
+    <div className="dirc dirc-ca" ref={cardRef} style={sheetOnly?{display:"none"}:undefined} onClick={openSheet} role="button" tabIndex={0}
          onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSheet();}}}>
-      <div className="cdxs-clap" aria-hidden="true"/>
-      <span className="cdxs-hinge" aria-hidden="true"/>
-      <div className="cdxs-in">
-        <p className="cdxs-kick"><span className="cdxs-rec"/>{isPremium?"Unlocked · Rolling":"Premium Feature · Rolling"}</p>
-        <div className="cdxs-hd">
-          <span className="cdxs-ic"><Ico n="movie" s={21}/></span>
+      <div className="dirc-band">
+        <TadNetwork mirror/>
+        <span className="dirc-beam" aria-hidden="true"/>
+        <p className="dirc-kick"><span className="dirc-rec"/>{isPremium?"Unlocked · Rolling":"Premium Feature · Rolling"}</p>
+        <div className="dirc-hd">
+          <span className="dirc-ic"><span className="tad-dial2"/><span className="tad-dial"/><Ico n="movie" s={21}/></span>
           <h3>Casting Companies Directory<br/>+ Tips &amp; Tricks</h3>
         </div>
-        <p className="cdxs-sub"><b>Casting offices</b> in LA &amp; New York — which ones accept headshots, and where to send your CastSlate card.</p>
-        <div className="cdxs-board">
-          <div><i>PROD.</i><b className="w">CASTING DIR.</b></div>
-          <div><i>OFFICES</i><b>{counts.all}</b></div>
-          <div><i>ACCEPT HEADSHOTS</i><b>{counts.acc}</b></div>
+      </div>
+      <div className="dirc-body">
+        <p className="dirc-sub"><b>Casting offices</b> in LA &amp; New York — which ones accept headshots, and where to send your CastSlate card.</p>
+        <div className="dirc-mini">
+          <div><b>{counts.all}</b><span>Casting offices</span></div>
+          <div><b>{counts.acc}</b><span>Accept headshots</span></div>
+          <div><b>LA · NY</b><span>Cities</span></div>
         </div>
-        <button className={"cdxs-cta"+(isPremium?" open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
+        <button className={"dirc-cta"+(isPremium?" open":"")} onClick={e=>{e.stopPropagation();openSheet();}}>
           {isPremium?<>Open the Directory <Tri/></>:<>Unlock the Directory <Tri/></>}
         </button>
       </div>
