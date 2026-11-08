@@ -5742,6 +5742,20 @@ a.news-card{text-decoration:none;color:inherit;}
 .td-rv-mob{display:none;}
 @media(max-width:900px){.td-rv-desk{display:none;}.td-rv-mob{display:block;}}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+.td-left{align-self:stretch;}
+@media(min-width:901px){.td-news-w{flex:1 1 auto;display:flex;min-height:0;}}
+.td-news{flex:1;display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;min-width:0;}
+.td-news-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 24px;border-bottom:1px solid var(--bdr);}
+.td-news-hd h2{font-weight:700;font-size:17px;color:var(--t1);margin:0;}
+.td-news-hd small{display:block;font-size:13px;color:var(--t2);margin-top:2px;}
+.td-news-row{flex:1;display:flex;align-items:center;gap:16px;width:100%;padding:14px 24px;border:0;border-bottom:1px solid #EEEAE2;background:none;font:inherit;text-align:left;color:inherit;text-decoration:none;cursor:pointer;box-sizing:border-box;}
+.td-news-row:last-child{border-bottom:0;}
+.td-news-row:hover b{text-decoration:underline;}
+.td-news-row img{flex:none;width:104px;height:66px;object-fit:cover;border-radius:8px;background:#E8E2D6;}
+.td-news-row div{min-width:0;}
+.td-news-row small{display:block;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;}
+.td-news-row b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:16px;line-height:1.28;font-weight:700;color:var(--t1);}
+.td-news-row span{display:block;font-size:13px;color:var(--t3);margin-top:3px;}
 .td-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;padding:24px;}
 .td-empty b{font-size:18px;font-weight:700;color:var(--t1);margin:12px 0 5px;}
 .td-empty p{font-size:15.5px;line-height:1.5;color:var(--t2);margin:0 0 18px;max-width:420px;}
@@ -21054,6 +21068,46 @@ function SchoolDirectoryPage({onNavigate,session}){
   </div>);
 }
 
+// Industry News for members who haven't browsed yet (owner, 2026-11-08). Same feed, links and
+// broken-image handling as the main page's NewsSection, but starts after its 8 stories so
+// nothing repeats, and leaves out upsetting stories and AI stories on a member's own dashboard.
+const DASH_NEWS_SKIP=/\b(shoot|shooting|shot dead|kill|killed|killing|murder|murdered|dead|dies|died|death|suicide|rape|assault|abuse|massacre|war|terror|bomb|whiteface|blackface|AI|artificial intelligence)\b/i;
+function DashNews({onNavigate}){
+  const[items,setItems]=React.useState(null);
+  const[bad,setBad]=React.useState(()=>new Set());
+  React.useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const{data:ss}=await window.sb.from("site_settings").select("news_section_enabled").eq("id",1).maybeSingle();
+        if(ss&&ss.news_section_enabled===false){if(alive)setItems([]);return;}
+        const{data}=await window.sb.from("news_articles")
+          .select("slug,headline,category,image_url,source_name,source_url,original_headline,original_image_url,written_at")
+          .eq("published",true).eq("status","published")
+          .order("written_at",{ascending:false}).limit(40);
+        const seen=new Set();
+        const list=(data||[]).filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;});
+        if(alive)setItems(list.slice(8).filter(a=>!DASH_NEWS_SKIP.test(a.original_headline||a.headline||"")));
+      }catch(_){if(alive)setItems([]);}
+    })();
+    return()=>{alive=false;};
+  },[]);
+  const shown=(items||[]).filter(a=>!bad.has(a.slug)).slice(0,3);
+  if(!shown.length)return null;
+  const drop=slug=>setBad(prev=>{const n=new Set(prev);n.add(slug);return n;});
+  // The full list lives on the main page: go there and bring it into view.
+  const seeAll=()=>{onNavigate("home");let n=0;const t=setInterval(()=>{const el=document.querySelector(".news-sec");if(el||++n>40){clearInterval(t);if(el)el.scrollIntoView({block:"start"});}},150);};
+  const body=a=>{const img=a.original_image_url||a.image_url;return(<>
+    {img&&<img src={img} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>drop(a.slug)}/>}
+    <div><small style={{color:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</small><b>{a.original_headline||a.headline}</b><span>{a.source_name?a.source_name+" ↗ · ":""}{newsDate(a.written_at)}</span></div>
+  </>);};
+  return(<div className="td-news">
+    <div className="td-news-hd"><div><h2>Industry News</h2><small>What's happening in film, TV and theater</small></div><button type="button" className="btn-s btn-sm" onClick={seeAll}>See All News <Tri/></button></div>
+    {shown.map(a=>a.source_url
+      ?<a key={a.slug} className="td-news-row" href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">{body(a)}</a>
+      :<button key={a.slug} type="button" className="td-news-row" onClick={()=>onNavigate("news-article",{slug:a.slug})}>{body(a)}</button>)}
+  </div>);
+}
 // Matching empty state for Saved Castings and Recently Viewed (owner, 2026-11-08).
 function DashEmpty({icon,title,text,minH,onBrowse}){
   return(<div className="td-empty" style={{minHeight:minH}}>
@@ -22082,8 +22136,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
 
       {/* ── Two-column grid ── */}
       <div className="td-grid">
-        {/* ── LEFT COLUMN ── */}
-        <div style={{display:"flex",flexDirection:"column",gap:24,minWidth:0}}>
+        {/* ── LEFT COLUMN ── (stretches so the news card can end level with the right column) */}
+        <div className="td-left" style={{display:"flex",flexDirection:"column",gap:24,minWidth:0}}>
 
           {/* Messages only appear when something is unread (owner, 2026-11-08); Inbox is in the nav. */}
           {globalUnreadCount>0&&(()=>{const t=threads.find(x=>x.unread>0);return(
@@ -22274,6 +22328,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
           </div>
           <div className="td-rv-desk">{recentlyViewedCard}</div>
+          {!rvLoading&&recentlyViewed.length===0&&<div className="td-rv-desk td-news-w"><DashNews onNavigate={onNavigate}/></div>}
         </div>
 
         {/* ── RIGHT COLUMN ── */}
