@@ -4208,17 +4208,20 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
-.iemb{display:flex;align-items:stretch;min-height:176px;border-radius:14px;overflow:hidden;color:#FFFFFF;background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);box-shadow:0 1px 2px rgba(26,26,46,.14);}
-.iemb-tx{flex:1;min-width:0;padding:26px 8px 26px 30px;display:flex;flex-direction:column;justify-content:center;gap:7px;}
+.iemb{position:relative;min-height:290px;border-radius:14px;overflow:hidden;color:#FFFFFF;background:#102E31;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 1px 2px rgba(26,26,46,.14);}
+.iemb-l,.iemb-r{position:absolute;top:0;width:36%;height:100%;object-fit:cover;}
+.iemb-l{left:0;-webkit-mask-image:linear-gradient(270deg,transparent 0,#000 62%);mask-image:linear-gradient(270deg,transparent 0,#000 62%);}
+.iemb-r{right:0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 62%);mask-image:linear-gradient(90deg,transparent 0,#000 62%);}
+.iemb-c{position:relative;z-index:1;width:56%;padding:30px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;}
 .iemb-k{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.9;}
-.iemb-t{font-family:Fraunces,Georgia,serif;font-size:29px;font-weight:500;line-height:1.12;letter-spacing:-.4px;margin:0;color:#FFFFFF;}
-.iemb-s{font-size:16px;font-weight:600;opacity:.95;margin:0;}
+.iemb-t{font-family:Fraunces,Georgia,serif;font-size:30px;font-weight:500;line-height:1.14;letter-spacing:-.4px;margin:0;color:#FFFFFF;}
+.iemb-t span{display:block;white-space:nowrap;}
+.iemb-s{font-size:15.5px;font-weight:600;line-height:1.4;opacity:.95;margin:0;}
 .iemb-y{font-size:14px;opacity:.86;margin:0;}
-.iemb-go{flex:none;align-self:center;margin:0 24px 0 14px;height:44px;padding:0 18px;border:0;border-radius:10px;background:#FFFFFF;color:#141414;font:inherit;font-size:14.5px;font-weight:800;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;}
+.iemb-go{margin-top:8px;height:46px;padding:0 22px;border:0;border-radius:10px;background:#FFFFFF;color:#141414;font:inherit;font-size:15px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;cursor:pointer;}
 .iemb-go:hover{background:#F4F1EA;}
-.iemb-art{flex:none;width:clamp(200px,28%,340px);position:relative;overflow:hidden;}
-.iemb-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 32%);mask-image:linear-gradient(90deg,transparent 0,#000 32%);}
-@media(max-width:760px){.iemb{flex-direction:column;}.iemb-art{order:-1;width:100%;height:140px;}.iemb-art img{-webkit-mask-image:none;mask-image:none;}.iemb-tx{padding:18px 18px 6px;}.iemb-t{font-size:25px;}.iemb-go{align-self:stretch;justify-content:center;margin:10px 18px 18px;}}
+@media(max-width:860px){.iemb-c{width:64%;}.iemb-t{font-size:25px;}}
+@media(max-width:760px){.iemb{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.iemb-l,.iemb-r{position:relative;width:100%;height:130px;-webkit-mask-image:none;mask-image:none;}.iemb-c{grid-column:1/-1;width:100%;padding:24px 16px;}.iemb-t{font-size:26px;}.iemb-go{width:100%;}}
 .evs{display:flex;align-items:stretch;min-height:136px;border-radius:14px;overflow:hidden;margin:0 0 16px;color:#FFFFFF;text-decoration:none;box-shadow:0 1px 2px rgba(26,26,46,.14);}
 .evs-tx{flex:1;min-width:0;padding:20px 8px 20px 26px;display:flex;flex-direction:column;justify-content:center;gap:6px;}
 .evs-k{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.88;}
@@ -17922,16 +17925,19 @@ function ManagerModeEvents({isPremium,onNavigate}){
   if(!list||!list.length)return null;
   const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
   const inMonth=c=>list.filter(e=>e.city===c&&ievMonths(e,today).includes(thisM)).length;
-  const hero=list.find(e=>e._photo);
+  // One wide photo per city, first in list order; each moves on when its event ends.
+  const photo=c=>list.find(e=>e.city===c&&e.image_url&&e.art_style==="cover");
+  const ny=photo("new-york"),la=photo("los-angeles");
   return(<section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}><div className="iemb" style={{maxWidth:1140,margin:"0 auto"}}>
-    <div className="iemb-tx">
+    {ny&&<img className="iemb-l" src={ny.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/>}
+    {la&&<img className="iemb-r" src={la.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/>}
+    <div className="iemb-c">
       <div className="iemb-k">{isPremium?"CastSlate Industry Events":"Premium feature"} · {mon}</div>
-      <h2 className="iemb-t">{inMonth("new-york")} events in New York, {inMonth("los-angeles")} in Los Angeles</h2>
+      <h2 className="iemb-t"><span>{inMonth("new-york")} events in New York</span><span>{inMonth("los-angeles")} events in Los Angeles</span></h2>
       <p className="iemb-s">Festivals, screenings, panels and mixers to meet filmmakers in person.</p>
       <p className="iemb-y">New events every month, 12 months a year</p>
+      <button type="button" className="iemb-go" onClick={()=>onNavigate("events")}>{isPremium?"See":"Unlock"} {mName}'s Events<Tri/></button>
     </div>
-    <button type="button" className="iemb-go" onClick={()=>onNavigate("events")}>{isPremium?"See":"Unlock"} {mName}'s Events<Tri/></button>
-    {hero&&<div className="iemb-art" aria-hidden="true"><img src={hero.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/></div>}
   </div></section>);
 }
 // Industry Events (owner, 2026-11-08): dashboard card + /events. New York and Los Angeles from
