@@ -5743,6 +5743,13 @@ a.news-card{text-decoration:none;color:inherit;}
 @media(max-width:900px){.td-rv-desk{display:none;}.td-rv-mob{display:block;}}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
 .td-left{align-self:stretch;}
+@media(min-width:901px){
+  .td-right{align-self:stretch;}
+  .td-right>*{flex:1 1 auto;}
+  .td-right>.dirc,.td-right>.ievc{display:flex;flex-direction:column;}
+  .td-right .dirc-body,.td-right .ievc-b{flex:1;display:flex;flex-direction:column;}
+  .td-right .dirc-cta,.td-right .ievc-btn{margin-top:auto;}
+}
 .td-three{overflow-y:auto;padding-right:8px;scrollbar-width:thin;scrollbar-color:#B9AE99 transparent;}
 .td-three::-webkit-scrollbar{width:7px;}
 .td-three::-webkit-scrollbar-thumb{background:#B9AE99;border-radius:7px;}
@@ -21519,27 +21526,14 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  // Industry News always shows on desktop (owner, 2026-11-08): 3 stories when they fit, 2 when
-  // space is tight. Saved and Recently Viewed scroll past 3 rows so they can't crowd it out.
-  const [newsRows,setNewsRows]=useState(0);
+  // Industry News: 3 stories for every member on desktop (owner, 2026-11-08). The columns end
+  // level because whichever is shorter stretches (.td-left news card / .td-right cards).
+  const [newsRows,setNewsRows]=useState(()=>window.innerWidth>900?3:0);
   useEffect(()=>{
-    let timer=0;
-    const measure=()=>{clearTimeout(timer);timer=setTimeout(()=>{
-      const left=document.querySelector(".td-left"),right=document.querySelector(".td-right");
-      if(!left||!right||window.innerWidth<=900){setNewsRows(0);return;}
-      const parts=[...left.children].filter(c=>!c.classList.contains("td-news-w")&&c.getBoundingClientRect().height>0);
-      const last=parts[parts.length-1];
-      if(!last)return;
-      const free=right.getBoundingClientRect().bottom-last.getBoundingClientRect().bottom;
-      setNewsRows(free>=370?3:2);
-    },60);};
-    measure();
-    const ro=new ResizeObserver(measure);
-    const watch=()=>{const left=document.querySelector(".td-left"),right=document.querySelector(".td-right");if(right)ro.observe(right);if(left)[...left.children].filter(c=>!c.classList.contains("td-news-w")).forEach(c=>ro.observe(c));};
-    watch();
-    window.addEventListener("resize",measure);
-    return()=>{clearTimeout(timer);ro.disconnect();window.removeEventListener("resize",measure);};
-  },[dashView,dashV2,rvLoading,recentlyViewed.length,savedCastings.length,applications.length,recommended.length]);
+    const onResize=()=>setNewsRows(window.innerWidth>900?3:0);
+    window.addEventListener("resize",onResize);
+    return()=>window.removeEventListener("resize",onResize);
+  },[]);
   useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
   // Poll invitations + notifications every 30s so approved status appears without a page reload
   useEffect(()=>{
