@@ -4208,16 +4208,15 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
-.iemb-wrap{max-width:1140px;margin:0 auto;padding:0 clamp(16px,5vw,40px) clamp(52px,7.2vw,80px);box-sizing:border-box;}
 .iemb{display:flex;align-items:stretch;min-height:176px;border-radius:14px;overflow:hidden;color:#FFFFFF;background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);box-shadow:0 1px 2px rgba(26,26,46,.14);}
 .iemb-tx{flex:1;min-width:0;padding:26px 8px 26px 30px;display:flex;flex-direction:column;justify-content:center;gap:7px;}
 .iemb-k{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.9;}
-.iemb-t{font-family:Fraunces,Georgia,serif;font-size:32px;font-weight:500;line-height:1.12;letter-spacing:-.4px;margin:0;color:#FFFFFF;}
+.iemb-t{font-family:Fraunces,Georgia,serif;font-size:29px;font-weight:500;line-height:1.12;letter-spacing:-.4px;margin:0;color:#FFFFFF;}
 .iemb-s{font-size:16px;font-weight:600;opacity:.95;margin:0;}
 .iemb-y{font-size:14px;opacity:.86;margin:0;}
 .iemb-go{flex:none;align-self:center;margin:0 24px 0 14px;height:44px;padding:0 18px;border:0;border-radius:10px;background:#FFFFFF;color:#141414;font:inherit;font-size:14.5px;font-weight:800;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;}
 .iemb-go:hover{background:#F4F1EA;}
-.iemb-art{flex:none;width:clamp(230px,34%,400px);position:relative;overflow:hidden;}
+.iemb-art{flex:none;width:clamp(200px,28%,340px);position:relative;overflow:hidden;}
 .iemb-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 32%);mask-image:linear-gradient(90deg,transparent 0,#000 32%);}
 @media(max-width:760px){.iemb{flex-direction:column;}.iemb-art{order:-1;width:100%;height:140px;}.iemb-art img{-webkit-mask-image:none;mask-image:none;}.iemb-tx{padding:18px 18px 6px;}.iemb-t{font-size:25px;}.iemb-go{align-self:stretch;justify-content:center;margin:10px 18px 18px;}}
 .evs{display:flex;align-items:stretch;min-height:136px;border-radius:14px;overflow:hidden;margin:0 0 16px;color:#FFFFFF;text-decoration:none;box-shadow:0 1px 2px rgba(26,26,46,.14);}
@@ -17923,7 +17922,7 @@ function ManagerModeEvents({isPremium,onNavigate}){
   const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
   const inMonth=c=>list.filter(e=>e.city===c&&ievMonths(e,today).includes(thisM)).length;
   const hero=list.find(e=>e._photo);
-  return(<section className="iemb-wrap"><div className="iemb">
+  return(<section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}><div className="iemb" style={{maxWidth:1140,margin:"0 auto"}}>
     <div className="iemb-tx">
       <div className="iemb-k">{isPremium?"CastSlate Industry Events":"Premium feature"} · {mon}</div>
       <h2 className="iemb-t">{inMonth("new-york")} events in New York, {inMonth("los-angeles")} in Los Angeles</h2>
