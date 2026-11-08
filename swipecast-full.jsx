@@ -4208,6 +4208,18 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
+.iemb-wrap{max-width:1140px;margin:0 auto;padding:0 clamp(16px,5vw,40px) clamp(52px,7.2vw,80px);box-sizing:border-box;}
+.iemb{display:flex;align-items:stretch;min-height:176px;border-radius:14px;overflow:hidden;color:#FFFFFF;background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);box-shadow:0 1px 2px rgba(26,26,46,.14);}
+.iemb-tx{flex:1;min-width:0;padding:26px 8px 26px 30px;display:flex;flex-direction:column;justify-content:center;gap:7px;}
+.iemb-k{font-size:11.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.9;}
+.iemb-t{font-family:Fraunces,Georgia,serif;font-size:32px;font-weight:500;line-height:1.12;letter-spacing:-.4px;margin:0;color:#FFFFFF;}
+.iemb-s{font-size:16px;font-weight:600;opacity:.95;margin:0;}
+.iemb-y{font-size:14px;opacity:.86;margin:0;}
+.iemb-go{flex:none;align-self:center;margin:0 24px 0 14px;height:44px;padding:0 18px;border:0;border-radius:10px;background:#FFFFFF;color:#141414;font:inherit;font-size:14.5px;font-weight:800;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;cursor:pointer;}
+.iemb-go:hover{background:#F4F1EA;}
+.iemb-art{flex:none;width:clamp(230px,34%,400px);position:relative;overflow:hidden;}
+.iemb-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 32%);mask-image:linear-gradient(90deg,transparent 0,#000 32%);}
+@media(max-width:760px){.iemb{flex-direction:column;}.iemb-art{order:-1;width:100%;height:140px;}.iemb-art img{-webkit-mask-image:none;mask-image:none;}.iemb-tx{padding:18px 18px 6px;}.iemb-t{font-size:25px;}.iemb-go{align-self:stretch;justify-content:center;margin:10px 18px 18px;}}
 .evs{display:flex;align-items:stretch;min-height:136px;border-radius:14px;overflow:hidden;margin:0 0 16px;color:#FFFFFF;text-decoration:none;box-shadow:0 1px 2px rgba(26,26,46,.14);}
 .evs-tx{flex:1;min-width:0;padding:20px 8px 20px 26px;display:flex;flex-direction:column;justify-content:center;gap:6px;}
 .evs-k{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.88;}
@@ -11870,7 +11882,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
     </section>
 
-    <ManagerModeEvents isPremium={isPremium} isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>
+    <ManagerModeEvents isPremium={isPremium} onNavigate={onNavigate}/>
 
     {/* ══════ ACTOR BUSINESS CARD ══════ */}
     {/* Compact split (approved 2026-09-13, demo "1" in Soft navy). About half the old height:
@@ -17903,31 +17915,24 @@ function EventStripe({ev}){
     </span>
   </a>);
 }
-// Manager Mode events list (owner, 2026-11-08): Premium members see every upcoming NYC film
-// event from film_events, grouped by when; everyone else sees the first two and one quiet line.
-function ManagerModeEvents({isPremium,isLoggedIn,onNavigate}){
-  const list=useFilmEvents();
+// Manager Mode events band (owner, 2026-11-08): one link to /events instead of a second list.
+// Counts, month and photo all come from the live list, so nothing needs updating by hand.
+function ManagerModeEvents({isPremium,onNavigate}){
+  const list=useAllEvents();
   if(!list||!list.length)return null;
-  const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
-  const plus=n=>new Date(Date.parse(today+"T12:00:00Z")+n*86400000).toISOString().slice(0,10);
-  const wk=plus(7),mo=plus(31);
-  const all=list.slice().sort((a,b)=>(a._on===b._on?0:a._on?-1:1)||String(a.starts_on).localeCompare(String(b.starts_on)));
-  const shown=isPremium?all:all.slice(0,2);
-  const groups=[["This week",shown.filter(e=>e.starts_on<=wk)],["This month",shown.filter(e=>e.starts_on>wk&&e.starts_on<=mo)],["Coming up",shown.filter(e=>e.starts_on>mo)]].filter(g=>g[1].length);
-  const more=all.length-shown.length;
-  const month=new Date(today+"T12:00:00Z").toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
-  return(<section className="mm-evl">
-    <div className="mm-evl-head">
-      <div className="section-label">This month in New York film</div>
-      <h2>Film events for actors, {month}</h2>
-      <p>Festivals, screenings with filmmaker Q&amp;As, panels and workshops, checked on each organiser's own site and updated every few days. Each one opens the event's website.</p>
+  const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
+  const inMonth=c=>list.filter(e=>e.city===c&&ievMonths(e,today).includes(thisM)).length;
+  const hero=list.find(e=>e._photo);
+  return(<section className="iemb-wrap"><div className="iemb">
+    <div className="iemb-tx">
+      <div className="iemb-k">{isPremium?"CastSlate Industry Events":"Premium feature"} · {mon}</div>
+      <h2 className="iemb-t">{inMonth("new-york")} events in New York, {inMonth("los-angeles")} in Los Angeles</h2>
+      <p className="iemb-s">Festivals, screenings, panels and mixers to meet filmmakers in person.</p>
+      <p className="iemb-y">New events every month, 12 months a year</p>
     </div>
-    {groups.map(([label,evs])=>(<div key={label} className="mm-evl-group">
-      <h3 className="mm-evl-gl">{label}</h3>
-      <div className="mm-evl-grid">{evs.map(ev=><FilmEventCard key={ev.id} ev={ev} compact/>)}</div>
-    </div>))}
-    {!isPremium&&more>0&&<p className="mm-evl-more">Premium members see all {all.length} events this month, updated every few days. <button type="button" onClick={()=>onNavigate(isLoggedIn?"membership":"pricing")}>See Premium plans<Tri/></button></p>}
-  </section>);
+    <button type="button" className="iemb-go" onClick={()=>onNavigate("events")}>{isPremium?"See":"Unlock"} {mName}'s Events<Tri/></button>
+    {hero&&<div className="iemb-art" aria-hidden="true"><img src={hero.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/></div>}
+  </div></section>);
 }
 // Industry Events (owner, 2026-11-08): dashboard card + /events. New York and Los Angeles from
 // film_events (filled by the events-refresh agent). Premium sees everything; everyone else
