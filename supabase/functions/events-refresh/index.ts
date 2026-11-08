@@ -20,7 +20,24 @@ import Anthropic from "npm:@anthropic-ai/sdk";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
-const MAX_NEW = 4;
+// One pass = every city x type below, a few per run, so no run times out.
+const SLICES_PER_RUN = 3;
+const CITIES = [
+  { id: "new-york", name: "New York City (all five boroughs)", sources: "Film at Lincoln Center, IFC Center, Metrograph, Anthology Film Archives, BAM, Museum of the Moving Image, The Gotham, SAGindie, Eventbrite, FilmFreeway" },
+  { id: "los-angeles", name: "Los Angeles (including Hollywood, Burbank, Santa Monica, Long Beach)", sources: "Film Independent, American Cinematheque, NewFilmmakers LA, Academy Museum, Laemmle, SAGindie, Eventbrite, FilmFreeway" },
+];
+const CATEGORIES = [
+  { id: "festival", what: "film festivals of any size" },
+  { id: "shorts", what: "short film nights and short film showcases" },
+  { id: "screening", what: "film screenings with a filmmaker or cast Q&A" },
+  { id: "casting", what: "public panels, talks or workshops with casting directors, agents or managers" },
+  { id: "workshop", what: "acting-for-camera, audition and self-tape workshops open to the public" },
+  { id: "networking", what: "film industry mixers and networking nights open to actors and filmmakers" },
+  { id: "union", what: "SAG-AFTRA, SAG-AFTRA Foundation or Actors' Equity events that are open to attend" },
+  { id: "school", what: "film school thesis screenings and student film showcases open to the public" },
+  { id: "awards", what: "film awards nights and major industry events worth following" },
+];
+const SLICES = CITIES.flatMap((c) => CATEGORIES.map((k) => ({ city: c, cat: k })));
 const PALETTES = ["blue", "red", "green", "navy", "plum", "amber", "teal"];
 const UA = "Mozilla/5.0 (compatible; CastSlateEvents/1.0; +https://www.castslate.com)";
 
@@ -98,20 +115,21 @@ async function artFor(pageHtml: string, pageUrl: string): Promise<{ image_url: s
 
 type Found = { title: string; kicker: string; why: string; starts_on: string; ends_on: string; when_lines: [string, string][]; url: string; palette: string; marquee_word?: string };
 
-function buildPrompt(today: string, horizon: string, known: string[]): string {
-  return `Today is ${today} in New York. Find up to 8 real, upcoming film events in New York City (all five boroughs) that take place between ${today} and ${horizon}, which working and aspiring actors would find worth attending: film festivals, short film nights, screenings with filmmaker Q&As, industry panels, and acting-for-camera workshops open to the public.
+function buildPrompt(today: string, horizon: string, known: string[], city: typeof CITIES[number], cat: typeof CATEGORIES[number]): string {
+  return `Today is ${today}. List as many real, upcoming ${cat.what} as you can find in ${city.name}, taking place between ${today} and ${horizon}, that working and aspiring actors or filmmakers could benefit from attending. Places worth checking include: ${city.sources}. Search more than once with different wording.
 
 Rules:
-- Only include an event if you found its own official page (the festival's or organiser's site, or its official listing page) and that page states the dates. Skip anything you cannot confirm. Do not guess dates.
+- Only include an event if you found its own official page or official listing page, and that page states the date. Skip anything you cannot confirm. Never guess a date.
 - Skip these, which we already have: ${known.join("; ") || "none"}.
-- Skip private, invite-only, or members-only events unless they are big industry nights worth following (mark those in the kicker).
-- "why" is ONE plain sentence (under 30 words) on why an actor should go. Plain everyday words, no hype, no exclamation marks.
-- "kicker" is like "Documentary festival · Manhattan" or "Screening series · Brooklyn".
-- "when_lines": 1 to 3 short pairs [tablerIcon, text]. Icons: calendar-event, map-pin, device-tv, trophy, ticket, users. Example: [["calendar-event","Nov 11–19"],["map-pin","IFC Center, Manhattan"]].
-- "palette": one of ${PALETTES.join(", ")} that suits the event's mood or its own brand colour.
-- "marquee_word": a short all-caps word or acronym (max 10 characters) for a text-only banner, e.g. "DOC NYC".
+- For a recurring series, give one entry with the first upcoming date as starts_on and the last known date as ends_on.
+- "url" must be the event's own page, as specific as possible, not a search page or a general news article.
+- "why" is ONE plain sentence (under 30 words) on why an actor should go. Plain everyday words, no hype, no exclamation marks. Only say there is a Q&A or panel if the page says so.
+- "kicker" is like "Documentary festival · Manhattan" or "Screening series · Burbank".
+- "when_lines": 1 to 3 short pairs [tablerIcon, text]. Icons: calendar-event, map-pin, device-tv, trophy, ticket, users.
+- "palette": one of ${PALETTES.join(", ")} that suits the event's mood.
+- "marquee_word": a short all-caps word or acronym (max 10 characters).
 
-Answer with ONLY a JSON array, no other text, in this shape:
+Answer with ONLY a JSON array, no other text:
 [{"title":"","kicker":"","why":"","starts_on":"YYYY-MM-DD","ends_on":"YYYY-MM-DD","when_lines":[["calendar-event",""]],"url":"https://...","palette":"","marquee_word":""}]
 Return [] if you cannot confirm any.`;
 }
@@ -176,65 +194,83 @@ async function askClaude(prompt: string): Promise<Found[]> {
   return parseList(text);
 }
 
+const normUrl = (u: string) => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, "") + x.pathname.replace(/\/+$/, "")).toLowerCase(); } catch (_) { return String(u || "").toLowerCase(); } };
+const normTitle = (t: string) => t.toLowerCase().replace(/\b(19|20)\d{2}\b|\b\d+(st|nd|rd|th)\b|\bannual\b|\bthe\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+
+// The page must state the event's start date: its month plus day, or a numeric date.
+function pageHasDate(low: string, iso: string): boolean {
+  const [y, m, d] = iso.split("-").map(Number);
+  const name = MONTHS[m - 1], ab = name.slice(0, 3);
+  if (new RegExp(`\\b(${name}|${ab})\\.?\\s+${d}(st|nd|rd|th)?\\b`).test(low)) return true;
+  if (new RegExp(`\\b${d}(st|nd|rd|th)?\\s+(of\\s+)?(${name}|${ab})\\b`).test(low)) return true;
+  const mm = String(m).padStart(2, "0"), dd = String(d).padStart(2, "0");
+  return low.includes(`${y}-${mm}-${dd}`) || new RegExp(`\\b0?${m}[/.]0?${d}([/.]|\\b)`).test(low);
+}
+
 async function run(sb: ReturnType<typeof createClient>) {
   const today = nyToday();
-  const horizon = addDays(today, 45);
+  const horizon = addDays(today, 60);
   const report: Record<string, unknown> = { today };
 
-  // 1. Retire ended events.
   const { data: retired } = await sb.from("film_events").update({ status: "retired", updated_at: new Date().toISOString() })
     .lt("ends_on", today).neq("status", "retired").select("id");
   report.retired = retired?.length ?? 0;
 
-  // 2. Ask the agent.
-  const { data: existing } = await sb.from("film_events").select("ekey,title,url").gte("ends_on", today);
-  // Same page = same event, whatever name the agent gives it this time.
-  const normUrl = (u: string) => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, "") + x.pathname.replace(/\/+$/, "")).toLowerCase(); } catch (_) { return String(u || "").toLowerCase(); } };
-  const knownUrls = new Set((existing || []).map((e: { url: string }) => normUrl(e.url)));
-  const knownTitles = (existing || []).map((e: { title: string }) => e.title);
-  const knownKeys = new Set((existing || []).map((e: { ekey: string }) => e.ekey));
-  let found: Found[] = [];
-  const prompt = buildPrompt(today, horizon, knownTitles);
-  try {
-    if (ANTHROPIC_API_KEY) { found = await askClaude(prompt); report.model = "claude"; }
-    else {
-      const { data: gk } = await sb.rpc("news_get_gemini_key");
-      if (typeof gk !== "string" || !gk) throw new Error("no AI key available");
-      found = await askGemini(gk, prompt); report.model = "gemini";
-    }
-  } catch (e) { report.agentError = String(e).slice(0, 300); }
-  report.found = found.length;
+  const { data: st } = await sb.from("site_settings").select("events_slice").eq("id", 1).maybeSingle();
+  const start = Math.max(0, Number((st as { events_slice?: number } | null)?.events_slice) || 0) % SLICES.length;
+  const { data: existing } = await sb.from("film_events").select("ekey,title,url,city").gte("ends_on", today);
+  const rows = (existing || []) as { ekey: string; title: string; url: string; city: string }[];
+  const knownKeys = new Set(rows.map((e) => e.ekey));
+  const knownUrls = new Set(rows.map((e) => normUrl(e.url)));
+  const knownNames = new Set(rows.map((e) => normTitle(e.title)));
+  let gemini = "";
+  if (!ANTHROPIC_API_KEY) { const { data: gk } = await sb.rpc("news_get_gemini_key"); gemini = typeof gk === "string" ? gk : ""; }
 
-  // 3–4. Verify each against its own page, add artwork, save.
-  const added: string[] = [], held: string[] = [];
-  for (const f of found) {
-    if (added.length >= MAX_NEW) break;
-    if (!f?.title || !f?.url || !/^https?:\/\//i.test(f.url)) continue;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(f.starts_on || "") || !/^\d{4}-\d{2}-\d{2}$/.test(f.ends_on || "")) continue;
-    if (f.ends_on < today || f.starts_on > horizon || f.ends_on < f.starts_on) continue;
-    const ekey = `${slug(f.title)}-${f.starts_on.slice(0, 7)}`;
-    if (knownKeys.has(ekey) || knownUrls.has(normUrl(f.url)) || knownTitles.some((t) => t.toLowerCase() === f.title.toLowerCase())) continue;
-    const page = await fetchText(f.url);
-    // The page must load and name the event (any 2 of its first 4 long words).
-    const words = f.title.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3).slice(0, 4);
-    const low = page.html.toLowerCase();
-    const named = words.length === 0 || words.filter((w) => low.includes(w)).length >= Math.min(2, words.length);
-    const verified = page.ok && named;
-    const art = verified ? await artFor(page.html, page.finalUrl) : { image_url: null, art_style: "marquee" as const };
-    const row = {
-      ekey, title: f.title.slice(0, 120), kicker: String(f.kicker || "Film event · New York").slice(0, 80),
-      why: String(f.why || "").slice(0, 240), starts_on: f.starts_on, ends_on: f.ends_on,
-      when_lines: (Array.isArray(f.when_lines) ? f.when_lines : []).slice(0, 3).map((p) => [String(p?.[0] || "calendar-event").slice(0, 30), String(p?.[1] || "").slice(0, 80)]),
-      url: page.finalUrl || f.url, image_url: art.image_url, art_style: art.art_style,
-      marquee_word: String(f.marquee_word || "").toUpperCase().slice(0, 10) || null,
-      palette: PALETTES.includes(f.palette) ? f.palette : "navy",
-      status: verified && f.why ? "published" : "review", source: "agent",
-    };
-    const { error } = await sb.from("film_events").insert(row);
-    if (!error) { (row.status === "published" ? added : held).push(row.title); knownKeys.add(ekey); knownUrls.add(normUrl(row.url)); knownUrls.add(normUrl(f.url)); }
+  const added: string[] = [], held: string[] = [], errors: string[] = [];
+  let found = 0;
+  const count = Math.min(SLICES_PER_RUN, SLICES.length - start);
+  for (let n = 0; n < count; n++) {
+    const { city, cat } = SLICES[start + n];
+    const known = rows.filter((e) => e.city === city.id).map((e) => e.title).slice(0, 120);
+    const prompt = buildPrompt(today, horizon, known, city, cat);
+    let list: Found[] = [];
+    try { list = ANTHROPIC_API_KEY ? await askClaude(prompt) : await askGemini(gemini, prompt); }
+    catch (e) { errors.push(`${city.id}/${cat.id}: ${String(e).slice(0, 160)}`); continue; }
+    found += list.length;
+    for (const f of list) {
+      if (!f?.title || !f?.url || !/^https?:\/\//i.test(f.url)) continue;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(f.starts_on || "") || !/^\d{4}-\d{2}-\d{2}$/.test(f.ends_on || "")) continue;
+      if (f.ends_on < today || f.starts_on > horizon || f.ends_on < f.starts_on) continue;
+      const ekey = `${slug(f.title)}-${f.starts_on.slice(0, 7)}`;
+      if (knownKeys.has(ekey) || knownUrls.has(normUrl(f.url)) || knownNames.has(normTitle(f.title))) continue;
+      const page = await fetchText(f.url);
+      const words = f.title.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3).slice(0, 4);
+      const low = page.html.toLowerCase();
+      const named = words.length === 0 || words.filter((w) => low.includes(w)).length >= Math.min(2, words.length);
+      const verified = page.ok && named && pageHasDate(low, f.starts_on);
+      const art = verified ? await artFor(page.html, page.finalUrl) : { image_url: null, art_style: "marquee" as const };
+      const row = {
+        ekey, title: f.title.slice(0, 120), kicker: String(f.kicker || "Film event").slice(0, 80),
+        why: String(f.why || "").slice(0, 240), starts_on: f.starts_on, ends_on: f.ends_on,
+        when_lines: (Array.isArray(f.when_lines) ? f.when_lines : []).slice(0, 3).map((p) => [String(p?.[0] || "calendar-event").slice(0, 30), String(p?.[1] || "").slice(0, 80)]),
+        url: page.finalUrl || f.url, image_url: art.image_url, art_style: art.art_style,
+        marquee_word: String(f.marquee_word || "").toUpperCase().slice(0, 10) || null,
+        palette: PALETTES.includes(f.palette) ? f.palette : "navy",
+        status: verified && f.why ? "published" : "review", source: "agent", city: city.id, category: cat.id,
+      };
+      const { error } = await sb.from("film_events").insert(row);
+      if (!error) {
+        (row.status === "published" ? added : held).push(`${city.id}: ${row.title}`);
+        knownKeys.add(ekey); knownUrls.add(normUrl(f.url)); knownUrls.add(normUrl(row.url)); knownNames.add(normTitle(f.title));
+        rows.push({ ekey, title: row.title, url: row.url, city: city.id });
+      }
+    }
   }
-  report.added = added; report.heldForReview = held;
-  await sb.from("site_settings").update({ events_last_run: new Date().toISOString() }).eq("id", 1);
+  const next = start + count;
+  const done = next >= SLICES.length;
+  await sb.from("site_settings").update(done ? { events_slice: 0, events_last_run: new Date().toISOString() } : { events_slice: next }).eq("id", 1);
+  Object.assign(report, { slices: `${start}-${next}/${SLICES.length}`, found, added, heldForReview: held, errors });
   console.log("[events-refresh]", JSON.stringify(report));
   return report;
 }

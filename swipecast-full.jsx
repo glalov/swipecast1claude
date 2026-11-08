@@ -17750,7 +17750,7 @@ function loadFilmEvents(){
       try{
         if(!window.sb)throw new Error("no client yet");
         const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
-        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(30);
+        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette").eq("status","published").eq("city","new-york").gte("ends_on",today).order("starts_on",{ascending:true}).limit(60);
         if(error)throw error;
         // Order (owner, 2026-11-08): events whose artwork is a real photo first (a wide JPEG/WebP;
         // logos and text graphics are PNG or narrower), then everything else; each group soonest
