@@ -4208,6 +4208,23 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
+.fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
+.fev-compact .fev-art{order:-1;height:150px;padding:14px;}
+.fev-compact.fev-art-cover .fev-art{padding:14px;}
+.fev-compact .fev-tx{padding:18px 20px 20px;}
+.fev-compact .fev-h{font-size:23px;}
+.fev-compact .fev-why{font-size:14.5px;}
+.fev-compact .fev-src{top:10px;bottom:auto;}
+.mm-evl{max-width:1140px;margin:0 auto;padding:0 clamp(16px,5vw,40px) clamp(52px,7.2vw,80px);box-sizing:border-box;}
+.mm-evl-head{max-width:720px;margin-bottom:22px;}
+.mm-evl-head h2{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:clamp(24px,2.8vw,34px);letter-spacing:-.5px;line-height:1.12;margin:0 0 10px;}
+.mm-evl-head p{margin:0;color:var(--t2);font-size:15px;line-height:1.6;}
+.mm-evl-group{margin-top:22px;}
+.mm-evl-gl{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8A5A12;margin:0 0 12px;}
+.mm-evl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.mm-evl-more{margin:20px 0 0;font-size:14.5px;color:var(--t2);display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;}
+.mm-evl-more button{background:none;border:0;padding:0;font:inherit;font-weight:800;color:#1A1A2E;text-decoration:underline;text-underline-offset:3px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+@media(max-width:760px){.mm-evl-grid{grid-template-columns:minmax(0,1fr);}}
 @media(max-width:760px){.fev{grid-template-columns:minmax(0,1fr);}.fev-art{order:-1;height:150px;padding:14px;}.fev-tx{padding:18px 18px 22px;}.fev-h{font-size:24px;}.fev-src{top:10px;bottom:auto;}}
 .clap{position:relative;border-radius:14px;padding:40px 40px 44px;text-align:center;color:#FFFFFF;background:linear-gradient(160deg,#26263F 0%,#1A1A2E 55%,#131322 100%);box-shadow:0 2px 3px -2px rgba(26,26,46,.42);}
 .clap-h{text-wrap:balance;margin:0 auto;max-width:760px;font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.4px;color:#FFFFFF;}
@@ -11769,6 +11786,8 @@ function ManagerModePage({onNavigate,session,myProfile}){
       </div>
     </section>
 
+    <ManagerModeEvents isPremium={isPremium} isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>
+
     {/* ══════ ACTOR BUSINESS CARD ══════ */}
     {/* Compact split (approved 2026-09-13, demo "1" in Soft navy). About half the old height:
         the four features are a 2x2 grid of icon tiles, and the example is the REAL landscape
@@ -17714,21 +17733,17 @@ function loadFilmEvents(){
   }catch(_){_filmEventsCache=[];}return _filmEventsCache;})();
   return _filmEventsLoad;
 }
-function FilmEventBanner({page}){
-  const [list,setList]=useState(_filmEventsCache);
+function FilmEventCard({ev,compact}){
   const [imgBad,setImgBad]=useState(false);
-  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
-  useEffect(()=>{setImgBad(false);},[page]);
-  if(!list||!list.length)return null;
-  const day=Math.floor(Date.now()/86400000);
-  const ev=list[(day+Math.max(0,(page||1)-1))%list.length];
+  useEffect(()=>{setImgBad(false);},[ev&&ev.id]);
+  if(!ev)return null;
   const lines=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,3):[];
   const style=imgBad||!ev.image_url?"marquee":ev.art_style;
   const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
   let host="";try{host=new URL(ev.url).hostname.replace(/^www\./,"");}catch(_){}
-  return(<a className={"fev fev-"+(ev.palette||"navy")+" fev-art-"+style} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
+  return(<a className={"fev fev-"+(ev.palette||"navy")+" fev-art-"+style+(compact?" fev-compact":"")} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
     <div className="fev-tx">
-      <div className="fev-k">{ev._on&&<span className="fev-on">On now</span>}<span>Film event · {ev.kicker}</span></div>
+      <div className="fev-k">{ev._on&&<span className="fev-on">On now</span>}<span>{compact?ev.kicker:"Film event · "+ev.kicker}</span></div>
       <h3 className="fev-h">{ev.title}</h3>
       {ev.why&&<p className="fev-why">{ev.why}</p>}
       {lines.length>0&&<div className="fev-when">{lines.map((w,i)=><span key={i}><i className={"ti ti-"+String((w&&w[0])||"calendar-event").replace(/[^a-z0-9-]/g,"")} aria-hidden="true"/>{w&&w[1]}</span>)}</div>}
@@ -17743,6 +17758,40 @@ function FilmEventBanner({page}){
     </div>
     {host&&<span className="fev-src">{host}</span>}
   </a>);
+}
+function FilmEventBanner({page}){
+  const [list,setList]=useState(_filmEventsCache);
+  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
+  if(!list||!list.length)return null;
+  const day=Math.floor(Date.now()/86400000);
+  return <FilmEventCard ev={list[(day+Math.max(0,(page||1)-1))%list.length]}/>;
+}
+// Manager Mode events list (owner, 2026-11-08): Premium members see every upcoming NYC film
+// event from film_events, grouped by when; everyone else sees the first two and one quiet line.
+function ManagerModeEvents({isPremium,isLoggedIn,onNavigate}){
+  const [list,setList]=useState(_filmEventsCache);
+  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
+  if(!list||!list.length)return null;
+  const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
+  const plus=n=>new Date(Date.parse(today+"T12:00:00Z")+n*86400000).toISOString().slice(0,10);
+  const wk=plus(7),mo=plus(31);
+  const all=list.slice().sort((a,b)=>(a._on===b._on?0:a._on?-1:1)||String(a.starts_on).localeCompare(String(b.starts_on)));
+  const shown=isPremium?all:all.slice(0,2);
+  const groups=[["This week",shown.filter(e=>e.starts_on<=wk)],["This month",shown.filter(e=>e.starts_on>wk&&e.starts_on<=mo)],["Coming up",shown.filter(e=>e.starts_on>mo)]].filter(g=>g[1].length);
+  const more=all.length-shown.length;
+  const month=new Date(today+"T12:00:00Z").toLocaleDateString("en-US",{month:"long",timeZone:"UTC"});
+  return(<section className="mm-evl">
+    <div className="mm-evl-head">
+      <div className="section-label">This month in New York film</div>
+      <h2>Film events for actors, {month}</h2>
+      <p>Festivals, screenings with filmmaker Q&amp;As, panels and workshops, checked on each organiser's own site and updated every few days. Each one opens the event's website.</p>
+    </div>
+    {groups.map(([label,evs])=>(<div key={label} className="mm-evl-group">
+      <h3 className="mm-evl-gl">{label}</h3>
+      <div className="mm-evl-grid">{evs.map(ev=><FilmEventCard key={ev.id} ev={ev} compact/>)}</div>
+    </div>))}
+    {!isPremium&&more>0&&<p className="mm-evl-more">Premium members see all {all.length} events this month, updated every few days. <button type="button" onClick={()=>onNavigate(isLoggedIn?"membership":"pricing")}>See Premium plans<Tri/></button></p>}
+  </section>);
 }
 // Signup break on Browse (owner, 2026-11-02; brand navy panel since 2026-11-05): logged-out visitors only, one per results
 // page, after the 4th casting. Signed-in members never see it; waits for authReady so
@@ -18271,8 +18320,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 </div>}
               </div>
             </div>
-            {ci===3&&pageArr.length>4&&authReady&&!session?.user&&<ClapperBreak key={"clap-"+pg} passed={pageArr.slice(0,4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
-            {ci===7&&pageArr.length>=9&&<FilmEventBanner key={"fev-"+pg} page={pg}/>}
+            {/* Breaks only on pages that are mostly live (owner, 2026-11-08): expired castings sort last,
+                so later pages fill with them; neither card belongs there. */}
+            {ci===3&&pageArr.length>4&&authReady&&!session?.user&&pageArr.slice(0,4).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=3&&<ClapperBreak key={"clap-"+pg} passed={pageArr.slice(0,4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
+            {ci===7&&pageArr.length>=9&&pageArr.slice(0,8).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=6&&<FilmEventBanner key={"fev-"+pg} page={pg}/>}
             </React.Fragment>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
             /* Short pagination (owner, 2026-10-27): first, last and the pages around the current one,
