@@ -4209,8 +4209,12 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
 .fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
-.fev-compact .fev-art{order:-1;height:150px;padding:14px;}
-.fev-compact.fev-art-cover .fev-art{padding:14px;}
+.fev-compact .fev-art{order:-1;height:176px;padding:36px 16px 16px;box-sizing:border-box;}
+.fev-compact.fev-art-cover .fev-art{padding:36px 16px 16px;}
+.fev-compact .fev-logo{max-width:62%;max-height:100%;padding:10px 12px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;}
+.fev-compact .fev-logo img{max-height:104px;width:auto;max-width:100%;}
+.fev-compact .fev-marq{padding:10px 18px;}
+.fev-compact .fev-marq b{font-size:26px;}
 .fev-compact .fev-tx{padding:18px 20px 20px;}
 .fev-compact .fev-h{font-size:23px;}
 .fev-compact .fev-why{font-size:14.5px;}
@@ -4225,7 +4229,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .mm-evl-more{margin:20px 0 0;font-size:14.5px;color:var(--t2);display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;}
 .mm-evl-more button{background:none;border:0;padding:0;font:inherit;font-weight:800;color:#1A1A2E;text-decoration:underline;text-underline-offset:3px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
 @media(max-width:760px){.mm-evl-grid{grid-template-columns:minmax(0,1fr);}}
-@media(max-width:760px){.fev{grid-template-columns:minmax(0,1fr);}.fev-art{order:-1;height:150px;padding:14px;}.fev-tx{padding:18px 18px 22px;}.fev-h{font-size:24px;}.fev-src{top:10px;bottom:auto;}}
+@media(max-width:760px){.fev{grid-template-columns:minmax(0,1fr);}.fev-art,.fev-art-cover .fev-art{order:-1;height:176px;padding:36px 16px 16px;box-sizing:border-box;}.fev-logo{max-width:62%;max-height:100%;padding:10px 12px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;}.fev-logo img{max-height:104px;width:auto;max-width:100%;}.fev-tx{padding:18px 18px 22px;}.fev-h{font-size:24px;}.fev-src{top:10px;bottom:auto;}}
 .clap{position:relative;border-radius:14px;padding:40px 40px 44px;text-align:center;color:#FFFFFF;background:linear-gradient(160deg,#26263F 0%,#1A1A2E 55%,#131322 100%);box-shadow:0 2px 3px -2px rgba(26,26,46,.42);}
 .clap-h{text-wrap:balance;margin:0 auto;max-width:760px;font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.4px;color:#FFFFFF;}
 .clap-p{text-wrap:balance;margin:12px auto 0;font-size:15.5px;line-height:1.45;color:rgba(255,255,255,.88);}
@@ -17727,9 +17731,12 @@ function loadFilmEvents(){
   _filmEventsLoad=(async()=>{try{
     const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
     const {data}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(30);
-    const soon=new Date(Date.parse(today+"T12:00:00Z")+14*86400000).toISOString().slice(0,10);
-    const rows=(data||[]).filter(e=>e&&e.title&&e.url);
-    _filmEventsCache=rows.filter(e=>e.starts_on<=soon).concat(rows.filter(e=>e.starts_on>soon)).map(e=>({...e,_on:e.starts_on<=today}));
+    // Order (owner, 2026-11-08): events whose artwork is a real photo first (a wide JPEG/WebP;
+    // logos and text graphics are PNG or narrower), then everything else; each group soonest
+    // first, with events already running at the top.
+    const rows=(data||[]).filter(e=>e&&e.title&&e.url).map(e=>({...e,_on:e.starts_on<=today,_photo:e.art_style==="cover"&&/\.(jpe?g|webp)(\?|$)/i.test(String(e.image_url||""))}));
+    const byDate=(a,b)=>(a._on===b._on?0:a._on?-1:1)||String(a.starts_on).localeCompare(String(b.starts_on));
+    _filmEventsCache=rows.filter(e=>e._photo).sort(byDate).concat(rows.filter(e=>!e._photo).sort(byDate));
   }catch(_){_filmEventsCache=[];}return _filmEventsCache;})();
   return _filmEventsLoad;
 }
@@ -17763,8 +17770,8 @@ function FilmEventBanner({page}){
   const [list,setList]=useState(_filmEventsCache);
   useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
   if(!list||!list.length)return null;
-  const day=Math.floor(Date.now()/86400000);
-  return <FilmEventCard ev={list[(day+Math.max(0,(page||1)-1))%list.length]}/>;
+  // Page 1 shows the top event, page 2 the next, and so on.
+  return <FilmEventCard ev={list[Math.max(0,(page||1)-1)%list.length]}/>;
 }
 // Manager Mode events list (owner, 2026-11-08): Premium members see every upcoming NYC film
 // event from film_events, grouped by when; everyone else sees the first two and one quiet line.
