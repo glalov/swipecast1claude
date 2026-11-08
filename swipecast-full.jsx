@@ -4315,8 +4315,15 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-why{font-size:14.5px;line-height:1.48;opacity:.94;margin:0;}
 .iev-cta{align-self:flex-start;margin-top:auto;background:#fff;color:#141414;font-weight:800;font-size:13.5px;border-radius:10px;padding:9px 14px;display:inline-flex;gap:6px;align-items:center;}
 .iev-src{position:absolute;right:10px;top:10px;z-index:2;font-size:11px;background:rgba(0,0,0,.5);border-radius:999px;padding:3px 9px;}
-.iev-more{margin-top:20px;background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:15px;color:var(--t2);}
-.iev-more button{height:40px;padding:0 18px;border:0;border-radius:10px;background:#33826A;color:#fff;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+.iev-mon-f{margin-bottom:5px;}
+.iev-free{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:17px;font-weight:700;color:var(--t1);margin:0 0 16px;}
+.iev-free span{background:#1A1A2E;color:#FFFFFF;font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:5px 11px;}
+.iev-more{margin-top:20px;background:#1A1A2E;color:#FFFFFF;border-radius:14px;padding:26px 30px;display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.iev-more b{display:block;font-family:Fraunces,Georgia,serif;font-weight:700;font-size:27px;line-height:1.18;letter-spacing:-.3px;color:#FFFFFF;}
+.iev-more span{display:block;font-size:16px;font-weight:700;margin-top:5px;color:#FFFFFF;}
+.iev-more button{flex:none;height:50px;padding:0 24px;border:0;border-radius:10px;background:#FFFFFF;color:#141414;font:inherit;font-size:16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;white-space:nowrap;}
+.iev-more button:hover{background:#F4F1EA;}
+@media(max-width:760px){.iev-more{flex-direction:column;align-items:stretch;padding:22px 18px;text-align:center;}.iev-more b{font-size:24px;}.iev-more button{width:100%;}}
 @media(max-width:820px){.iev-past{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:720px){.iev-art{height:210px;}.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-tip{position:static;}.iev-hd,.ievc-ttl{position:relative;}.iev-pop,.ievc .iev-pop{left:0;right:0;top:100%;width:auto;transform:none;}}
 .fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
@@ -18027,7 +18034,7 @@ function IevCard({ev}){
     <div className="iev-art" aria-hidden="true">
       {bad||!ev.image_url
         ?<div className="iev-word"><small>NOW SHOWING</small><b>{word}</b><i>{ev.city==="los-angeles"?"LOS ANGELES":"NEW YORK"}</i></div>
-        :a.row?<div className="iev-row">{a.row.slice(0,4).map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" loading="lazy"/>)}</div>
+        :a.row?<div className="iev-row">{a.row.slice(0,3).map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" loading="lazy"/>)}</div>
         :a.logo?<div className={"iev-chip"+(a.dark?" dk":"")}><img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/></div>
         :<>{poster&&<img className="iev-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"iev-fg":"iev-ph"} src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget,r=t.naturalWidth/t.naturalHeight;if(r<1.25||r>2.6)setPoster(true);}}/></>}
     </div>
@@ -18084,8 +18091,8 @@ function IndustryEventsPage({onNavigate,session,myProfile}){
       <div className="iev-next">{nextName}'s events arrive {nextName} 1</div>
     </>}
     {!isPremium&&list&&<>
-      {free.length>0&&<><h2 className="iev-mon">{mon}</h2><div className="iev-grid">{free.map(ev=><IevCard key={ev.id} ev={ev}/>)}</div></>}
-      {month.length>free.length&&<div className="iev-more"><span>Premium members see all {month.length} events in New York and Los Angeles.</span><button type="button" onClick={()=>onNavigate(session?"membership":"pricing")}>See Premium plans<Tri/></button></div>}
+      {free.length>0&&<><h2 className="iev-mon iev-mon-f">{mon}</h2><p className="iev-free"><span>Free preview</span>{free.length} of this month's {month.length} {month.length===1?"event":"events"}{free.length===2?", one from each city":""}</p><div className="iev-grid">{free.map(ev=><IevCard key={ev.id} ev={ev}/>)}</div></>}
+      {month.length>free.length&&<div className="iev-more"><div><b>Premium members see all {month.length} events this {mName}</b><span>{ny.length} in New York and {la.length} in Los Angeles, with a new list every month</span></div><button type="button" onClick={()=>onNavigate(session?"membership":"pricing")}>See Premium plans<Tri/></button></div>}
     </>}
   </div>);
 }
