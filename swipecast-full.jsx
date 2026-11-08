@@ -21438,7 +21438,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
+  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
   // Poll invitations + notifications every 30s so approved status appears without a page reload
   useEffect(()=>{
     if(!uid)return;
@@ -22168,7 +22168,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 </div>
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                  {recommended.slice(0,5).map(c=>{
+                  {recommended.slice(0,3).map(c=>{
                     const dl=fmtDeadlineChip(c.deadline);
                     const isSaved=savedIds.has(c.id);
                     const isSaving=savingId===c.id;
@@ -22265,6 +22265,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               )}
             </div>
           </div>
+          <div className="td-rv-desk">{recentlyViewedCard}</div>
         </div>
 
         {/* ── RIGHT COLUMN ── */}
@@ -22392,6 +22393,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               a card taller than the left after the Casting Directory card was added).
               At <=900px the columns stack and it stays here, so the phone order is
               unchanged. Same element, rendered in whichever slot is visible. */}
+          <div className="td-rv-mob">{recentlyViewedCard}</div>
         </div>
       </div>
     </div>
