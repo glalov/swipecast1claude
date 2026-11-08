@@ -5742,6 +5742,16 @@ a.news-card{text-decoration:none;color:inherit;}
 .td-rv-mob{display:none;}
 @media(max-width:900px){.td-rv-desk{display:none;}.td-rv-mob{display:block;}}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+.td-match{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:14px 20px;margin-bottom:24px;}
+.td-match-tx{min-width:0;}
+.td-match-tx small{display:block;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;}
+.td-match-tx b{font-size:16.5px;font-weight:800;color:var(--t1);}
+.td-match-tx span{font-size:14px;color:var(--t2);margin-left:9px;}
+.td-match-go{flex:none;display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:800;white-space:nowrap;}
+.td-unread{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#FFF8E8;border:1px solid #E8D29C;border-radius:14px;padding:16px 20px;cursor:pointer;}
+.td-unread b{display:block;font-size:16px;color:var(--t1);}
+.td-unread span:not(.btn-s){display:block;font-size:14px;color:var(--t2);}
+@media(max-width:600px){.td-match{flex-direction:column;align-items:flex-start;gap:8px;}.td-match-tx span{display:block;margin:2px 0 0;}.td-unread{flex-direction:column;align-items:stretch;}}
 @media(max-width:900px){
   .td-grid{grid-template-columns:1fr;}
   .td-grid>*{min-width:0;max-width:100%;}
@@ -21428,7 +21438,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
-  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
+  useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
   // Poll invitations + notifications every 30s so approved status appears without a page reload
   useEffect(()=>{
     if(!uid)return;
@@ -21838,69 +21848,21 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         const dmRole=dailyMatch&&(dailyMatch._matchRole||(dailyMatch.roles||[])[0]);
         const dmTitle=dailyMatch?((dailyMatch.type?dailyMatch.type+" · ":"")+((dmRole&&dmRole.name)||dailyMatch.title||"Open role")):"";
         const dmMeta=dailyMatch?[dailyMatch.location,(fmtDeadline(dailyMatch.deadline)||{}).label].filter(Boolean).join(" · "):"";
-        const nextStep=(profileChecks||[]).find(c=>!c.done)||null;
-        const box=(o)=>({background:o&&o.bg?o.bg:"var(--s1)",border:`1px solid ${o&&o.bd?o.bd:"var(--bdr)"}`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",gap:4,minHeight:120,cursor:o&&o.click?"pointer":"default"});
-        const lab=(txt,color)=>(<div style={{fontSize:11,fontWeight:600,color:color||"var(--t3)",textTransform:"uppercase",letterSpacing:0.6}}>{txt}</div>);
-        const cta=(txt,color)=>(<div style={{fontSize:12,fontWeight:800,color:color||"var(--teal)",marginTop:"auto",paddingTop:8}}>{txt}</div>);
-        const doneMark=(txt,sub)=>(<><div style={{fontSize:15,fontWeight:800,color:"#1a6b42",marginTop:4,display:"flex",alignItems:"center",gap:7}}><span style={{width:20,height:20,borderRadius:"50%",background:"#1a6b42",color:"#fff",fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",flex:"none"}}>✓</span>{txt}</div><div style={{fontSize:11.5,color:"#3f7a5b",marginTop:3}}>{sub}</div></>);
+        const slim=(label,color,title,meta,cta,click,ctaColor)=>(<div className="td-match" onClick={click||undefined} style={{cursor:click?"pointer":"default"}}>
+          <div className="td-match-tx"><small style={{color}}>{label}</small><div><b>{title}</b>{meta&&<span>{meta}</span>}</div></div>
+          {cta&&<span className="td-match-go" style={{color:ctaColor||"var(--teal)"}}>{cta}<Tri/></span>}
+        </div>);
         return(<>
           {/* No celebration banner: a shortlist already shows in the Applications
               section below — surfacing it here too was a duplicate and linked to
               the removed notifications view. Wins live in Applications only. */}
-          <div className="td-stats">
-            {!isPremium?(
-              <div onClick={()=>onNavigate&&onNavigate("membership")} style={box({click:true})}>
-                {lab("Role matcher · Premium")}
-                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>A fresh role, matched daily</div>
-                <div style={{fontSize:11.5,color:"var(--t3)"}}>Picked for your age and type</div>
-                {cta("See how it works →","var(--t1)")}
-              </div>
-            ):rmLoading?(
-              <div style={box({bd:"#CFE3DF"})}>{lab("Role matcher","var(--teal)")}<div style={{fontSize:13,color:"var(--t3)",marginTop:6}}>Finding today's match…</div></div>
-            ):dailyMatch?(
-              <div onClick={()=>onViewCastingById&&onViewCastingById(dailyMatch.id)} style={box({bd:"#CFE3DF",click:true})}>
-                {lab("Role matcher","var(--teal)")}
-                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{dmTitle}</div>
-                <div style={{fontSize:11.5,color:"var(--t3)"}}>{dmMeta||"Open now"}</div>
-                {cta("View & apply →")}
-              </div>
-            ):matchedToday?(
-              <div onClick={()=>onNavigate&&onNavigate("search")} style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)",click:true})}>
-                {lab("Role matcher","#1a6b42")}
-                {doneMark("Today's match, done","Your next match arrives tomorrow.")}
-                {cta("Browse all →")}
-              </div>
-            ):(
-              <div onClick={()=>onNavigate&&onNavigate("search")} style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)",click:true})}>
-                {lab("Role matcher","#1a6b42")}
-                {doneMark("All caught up","We'll match you when new roles post.")}
-                {cta("Browse all →")}
-              </div>
-            )}
-            <div style={box()}>
-              {lab("Applications")}
-              <div style={{fontSize:26,fontWeight:800,color:"var(--t1)",letterSpacing:-0.5,lineHeight:1,marginTop:2}}>{appsLoading?"…":applications.length}</div>
-              <div style={{fontSize:11,color:"var(--t3)"}}>in casting directors' hands</div>
-            </div>
-            {nextStep?(
-              <div onClick={slideToEditor} style={box({bd:"#CFE3DF",click:true})}>
-                {lab("Your next step","var(--teal)")}
-                <div style={{fontSize:14.5,fontWeight:800,color:"var(--t1)",lineHeight:1.2,marginTop:2}}>{nextStep.label}{nextStep.premium&&!isPremium?" (Premium)":""}</div>
-                <div style={{fontSize:11.5,color:"var(--t3)"}}>{nextStep.label==="Add a photo"?"any clear, recent photo":"a quick win for your profile"}</div>
-                {cta(nextStep.premium&&!isPremium?"Upgrade →":"Add now →")}
-              </div>
-            ):(
-              <div style={box({bd:"#bfe0cd",bg:"linear-gradient(180deg,#f4fbf7,#fff 62%)"})}>
-                {lab("Your next step","#1a6b42")}
-                {doneMark("Profile complete","You're fully visible to casting.")}
-              </div>
-            )}
-            <div style={box()}>
-              {lab("Profile strength")}
-              <div style={{fontSize:26,fontWeight:800,color:"var(--t1)",letterSpacing:-0.5,lineHeight:1,marginTop:2}}>{isProfileComplete?"Live":`${profilePct}%`}</div>
-              <div style={{fontSize:11,color:"var(--t3)"}}>{isProfileComplete?"visible to CDs":profilePct<50?"a good start":"nice progress"}</div>
-            </div>
-          </div>
+          {/* One slim bar (owner, 2026-11-08): Applications, next step and profile strength
+              repeated the sections below, so only the role matcher stays up here. */}
+          {!isPremium?slim("Role matcher · Premium","var(--t3)","A fresh role, matched daily","Picked for your age and type","See how it works",()=>onNavigate&&onNavigate("membership"),"var(--t1)")
+          :rmLoading?slim("Role matcher","var(--teal)","Finding today's match…","",null,null)
+          :dailyMatch?slim("Role matcher","var(--teal)",dmTitle,dmMeta||"Open now","View & apply",()=>onViewCastingById&&onViewCastingById(dailyMatch.id))
+          :matchedToday?slim("Role matcher","#1a6b42","Today's match, done","Your next match arrives tomorrow","Browse all",()=>onNavigate&&onNavigate("search"))
+          :slim("Role matcher","#1a6b42","All caught up","We'll match you when new roles post","Browse all",()=>onNavigate&&onNavigate("search"))}
         </>);
       })()}
 
@@ -22111,6 +22073,13 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
         {/* ── LEFT COLUMN ── */}
         <div style={{display:"flex",flexDirection:"column",gap:24,minWidth:0}}>
 
+          {/* Messages only appear when something is unread (owner, 2026-11-08); Inbox is in the nav. */}
+          {globalUnreadCount>0&&(()=>{const t=threads.find(x=>x.unread>0);return(
+            <div className="td-unread" onClick={()=>onNavigate("inbox")} role="button" tabIndex={0} onKeyDown={e=>{if(e.key==="Enter"){onNavigate("inbox");}}}>
+              <div><b>{globalUnreadCount>1?globalUnreadCount+" new messages":t?"New message from "+posterDisplayName(t.profile,t.casting,"CastSlate"):"You have a new message"}</b><span>Open your inbox to read and reply</span></div>
+              <span className="btn-s btn-sm">Open Inbox <Tri/></span>
+            </div>);})()}
+
           {/* Applications panel — dashboard preview (3 most recent) */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -22180,55 +22149,6 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
           </div>
 
-          {/* Messages Inbox preview */}
-          <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
-            <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Messages Inbox</h2>
-                {globalUnreadCount>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 8px",fontSize:11,fontWeight:800}}>{globalUnreadCount}</span>}
-              </div>
-              <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>Open Inbox <Tri/></button>
-            </div>
-            <div style={{padding:24}}>
-              {msgsLoading?(
-                <CastSlateLoader size="inline" text="Loading messages…"/>
-              ):threads.length===0?(
-                <div style={{textAlign:"center",padding:"28px 0"}}>
-                  <div style={{fontSize:32,marginBottom:8}}><Ico n="mail" s={22}/></div>
-                  <p style={{color:"var(--t2)",fontSize:14,margin:0}}>No messages yet.</p>
-                  <p style={{color:"var(--t3)",fontSize:12,margin:"6px 0 0"}}>When a casting director reaches out, it'll appear here.</p>
-                </div>
-              ):(
-                <>
-                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                    {threads.slice(0,3).map(t=>(
-                      <div key={t.key} onClick={()=>onNavigate("inbox")} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:10,border:t.unread>0?"1px solid var(--acc)":"1px solid var(--bdr)",background:t.unread>0?"rgba(99,60,180,0.02)":"var(--bg)",cursor:"pointer",borderLeft:t.unread>0?"3px solid var(--acc)":"3px solid transparent",transition:"border-color .15s",width:"100%",boxSizing:"border-box",overflow:"hidden"}}>
-                        <div style={{width:40,height:40,borderRadius:"50%",flexShrink:0,background:"var(--s2)",overflow:"hidden",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"var(--t2)"}}>
-                          {t.profile?.headshot_url?<img src={t.profile.headshot_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>:posterDisplayName(t.profile,t.casting,"?")[0]?.toUpperCase()}
-                        </div>
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
-                            <span style={{fontWeight:t.unread>0?700:500,fontSize:13,color:"var(--t1)"}}>{posterDisplayName(t.profile,t.casting,"Unknown")}</span>
-                            {t.castingTitle&&<span style={{fontSize:10,color:"var(--t3)",background:"var(--s2)",padding:"1px 6px",borderRadius:4,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:160}}>{t.castingTitle}</span>}
-                          </div>
-                          <div style={{fontSize:12,color:"var(--t2)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{(()=>{const raw=t.latest?.body||"";let txt=raw;if(/^\s*\{/.test(raw)){try{const c=JSON.parse(raw);txt=(c.note||c.task||"Your weekly CastSlate career note is ready.").toString();}catch(_){}}return txt.slice(0,72)+(txt.length>72?"…":"");})()}</div>
-                        </div>
-                        <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
-                          <span style={{fontSize:11,color:"var(--t3)",whiteSpace:"nowrap"}}>{fmtDate(t.latest?.created_at)}</span>
-                          {t.unread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800}}>{t.unread}</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <span style={{fontSize:12,color:"var(--t3)"}}>{threads.length} conversation{threads.length!==1?"s":""}</span>
-                    <button className="btn-s btn-sm" onClick={()=>onNavigate("inbox")}>View All Messages <Tri/></button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
           {/* Recommended Castings */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
             <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -22248,7 +22168,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
                 </div>
               ):(
                 <div style={{display:"flex",flexDirection:"column",gap:12}}>
-                  {recommended.slice(0,3).map(c=>{
+                  {recommended.slice(0,5).map(c=>{
                     const dl=fmtDeadlineChip(c.deadline);
                     const isSaved=savedIds.has(c.id);
                     const isSaving=savingId===c.id;
@@ -22345,7 +22265,6 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               )}
             </div>
           </div>
-          <div className="td-rv-desk">{recentlyViewedCard}</div>
         </div>
 
         {/* ── RIGHT COLUMN ── */}
@@ -22473,7 +22392,6 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               a card taller than the left after the Casting Directory card was added).
               At <=900px the columns stack and it stays here, so the phone order is
               unchanged. Same element, rendered in whichever slot is visible. */}
-          <div className="td-rv-mob">{recentlyViewedCard}</div>
         </div>
       </div>
     </div>
