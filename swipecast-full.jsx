@@ -4179,6 +4179,36 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
    clapperboard. Still panel the width of the cards in the Manager Mode band style
    (.mm-end): centered, cream button with a ring, CastSlate brand navy.
    No gold glow and shorter on desktop since 2026-11-05 (owner, demo option 3). */
+/* Film event banner on Browse (2026-11-07) */
+.fev{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:196px;border-radius:14px;overflow:hidden;color:#FFFFFF;text-decoration:none;box-shadow:2px 3px 3px -2px rgba(26,26,46,.42),1px 1px 0 rgba(26,26,46,.06);}
+.fev:hover .fev-cta{background:#F4F1EA;}
+.fev-tx{position:relative;z-index:2;padding:26px 32px;display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0;}
+.fev-k{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.88;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.fev-on{background:#FFFFFF;color:#141414;border-radius:999px;padding:3px 8px;letter-spacing:.08em;}
+.fev-h{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:30px;line-height:1.1;letter-spacing:-.5px;color:#FFFFFF;margin:0;}
+.fev-why{font-size:15px;line-height:1.5;opacity:.93;max-width:560px;margin:0;}
+.fev-when{font-size:13.5px;font-weight:700;display:flex;gap:6px 16px;flex-wrap:wrap;opacity:.95;margin-top:2px;}
+.fev-when span{display:inline-flex;align-items:center;gap:6px;}
+.fev-when i{font-size:16px;}
+.fev-cta{align-self:flex-start;margin-top:6px;background:#FFFFFF;color:#141414;font-weight:800;font-size:13.5px;border-radius:10px;padding:9px 14px;display:inline-flex;gap:6px;align-items:center;transition:background-color .18s ease;}
+.fev-art{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:20px;min-width:0;}
+.fev-art-cover .fev-art{padding:0;}
+.fev-art-cover .fev-art img{width:100%;height:100%;object-fit:cover;display:block;}
+.fev-logo{background:#FFFFFF;border-radius:12px;padding:14px 16px;max-width:250px;width:100%;box-shadow:0 10px 30px -10px rgba(0,0,0,.5);}
+.fev-logo img{display:block;width:100%;height:auto;max-height:150px;object-fit:contain;}
+.fev-marq{font-family:Fraunces,Georgia,serif;text-align:center;border:2px solid rgba(255,214,150,.75);border-radius:10px;padding:14px 20px;color:#FFD896;box-shadow:0 0 0 6px rgba(255,214,150,.12) inset;}
+.fev-marq small{display:block;font-family:"DM Sans",sans-serif;font-size:10px;font-weight:800;letter-spacing:.22em;color:#FFE9C6;}
+.fev-marq b{display:block;font-size:30px;font-weight:600;line-height:1;margin:6px 0;}
+.fev-marq i{font-style:normal;font-size:12px;letter-spacing:.14em;color:#FFE9C6;}
+.fev-src{position:absolute;right:12px;bottom:10px;z-index:3;font-size:11px;opacity:.72;}
+.fev-blue{background:radial-gradient(ellipse 70% 120% at 85% 50%,rgba(64,140,255,.45),transparent 70%),linear-gradient(120deg,#0B1530 0%,#11285A 60%,#1C3F8C 100%);}
+.fev-red{background:linear-gradient(120deg,#2A0E12 0%,#5A1A1F 55%,#8C2A22 100%);}
+.fev-green{background:linear-gradient(120deg,#132A24 0%,#1E4A3E 60%,#2E6B58 100%);}
+.fev-navy{background:linear-gradient(120deg,#0E1B3A 0%,#13306B 100%);}
+.fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
+.fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
+.fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
+@media(max-width:760px){.fev{grid-template-columns:minmax(0,1fr);}.fev-art{order:-1;height:150px;padding:14px;}.fev-tx{padding:18px 18px 22px;}.fev-h{font-size:24px;}.fev-src{top:10px;bottom:auto;}}
 .clap{position:relative;border-radius:14px;padding:40px 40px 44px;text-align:center;color:#FFFFFF;background:linear-gradient(160deg,#26263F 0%,#1A1A2E 55%,#131322 100%);box-shadow:0 2px 3px -2px rgba(26,26,46,.42);}
 .clap-h{text-wrap:balance;margin:0 auto;max-width:760px;font-family:'Fraunces',Georgia,serif;font-weight:400;font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.4px;color:#FFFFFF;}
 .clap-p{text-wrap:balance;margin:12px auto 0;font-size:15.5px;line-height:1.45;color:rgba(255,255,255,.88);}
@@ -17666,6 +17696,54 @@ function urlToLandingKey(){
 // Module-level cache so Browse Castings shows instantly from any entry point
 // (seeded from the last successful fetch) and revalidates silently — no flash.
 let _castingsCache=null,_talentCache=null;
+// Film event banner on Browse (owner, 2026-11-07): one per results page, after the 8th
+// casting, only when the page shows 9+ castings. Events come from public.film_events,
+// filled every 3 days by the events-refresh agent (own-page check, own og:image art).
+// The banner changes daily; each page shows a different event; events starting within
+// two weeks (or on now) come first. Clicking opens the organiser's site, like News.
+let _filmEventsCache=null,_filmEventsLoad=null;
+function loadFilmEvents(){
+  if(_filmEventsCache)return Promise.resolve(_filmEventsCache);
+  if(_filmEventsLoad)return _filmEventsLoad;
+  _filmEventsLoad=(async()=>{try{
+    const today=new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
+    const {data}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(30);
+    const soon=new Date(Date.parse(today+"T12:00:00Z")+14*86400000).toISOString().slice(0,10);
+    const rows=(data||[]).filter(e=>e&&e.title&&e.url);
+    _filmEventsCache=rows.filter(e=>e.starts_on<=soon).concat(rows.filter(e=>e.starts_on>soon)).map(e=>({...e,_on:e.starts_on<=today}));
+  }catch(_){_filmEventsCache=[];}return _filmEventsCache;})();
+  return _filmEventsLoad;
+}
+function FilmEventBanner({page}){
+  const [list,setList]=useState(_filmEventsCache);
+  const [imgBad,setImgBad]=useState(false);
+  useEffect(()=>{let live=true;loadFilmEvents().then(l=>{if(live)setList(l);});return()=>{live=false;};},[]);
+  useEffect(()=>{setImgBad(false);},[page]);
+  if(!list||!list.length)return null;
+  const day=Math.floor(Date.now()/86400000);
+  const ev=list[(day+Math.max(0,(page||1)-1))%list.length];
+  const lines=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,3):[];
+  const style=imgBad||!ev.image_url?"marquee":ev.art_style;
+  const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
+  let host="";try{host=new URL(ev.url).hostname.replace(/^www\./,"");}catch(_){}
+  return(<a className={"fev fev-"+(ev.palette||"navy")+" fev-art-"+style} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
+    <div className="fev-tx">
+      <div className="fev-k">{ev._on&&<span className="fev-on">On now</span>}<span>Film event · {ev.kicker}</span></div>
+      <h3 className="fev-h">{ev.title}</h3>
+      {ev.why&&<p className="fev-why">{ev.why}</p>}
+      {lines.length>0&&<div className="fev-when">{lines.map((w,i)=><span key={i}><i className={"ti ti-"+String((w&&w[0])||"calendar-event").replace(/[^a-z0-9-]/g,"")} aria-hidden="true"/>{w&&w[1]}</span>)}</div>}
+      <span className="fev-cta">See the event<i className="ti ti-external-link" aria-hidden="true"/></span>
+    </div>
+    <div className="fev-art" aria-hidden="true">
+      {style==="marquee"
+        ?<div className="fev-marq"><small>NOW SHOWING</small><b>{word}</b><i>NEW YORK</i></div>
+        :style==="cover"
+          ?<img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setImgBad(true)}/>
+          :<div className="fev-logo"><img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setImgBad(true)}/></div>}
+    </div>
+    {host&&<span className="fev-src">{host}</span>}
+  </a>);
+}
 // Signup break on Browse (owner, 2026-11-02; brand navy panel since 2026-11-05): logged-out visitors only, one per results
 // page, after the 4th casting. Signed-in members never see it; waits for authReady so
 // it can't flash for them while their session is still loading.
@@ -18194,6 +18272,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
               </div>
             </div>
             {ci===3&&pageArr.length>4&&authReady&&!session?.user&&<ClapperBreak key={"clap-"+pg} passed={pageArr.slice(0,4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
+            {ci===7&&pageArr.length>=9&&<FilmEventBanner key={"fev-"+pg} page={pg}/>}
             </React.Fragment>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
             /* Short pagination (owner, 2026-10-27): first, last and the pages around the current one,
