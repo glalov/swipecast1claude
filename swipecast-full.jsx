@@ -155,7 +155,7 @@ const TRANSLATIONS = {
     'reg.cd.createAccount':'Create Account','reg.cd.creating':'Creating Account…',
     // Search
     'search.title':'Browse Castings','search.allTypes':'All Types','search.allLocations':'All Locations',
-    'search.allGenders':'All Genders','search.allEthnicities':'All Ethnicities','search.allUnion':'All',
+    'search.allGenders':'All Genders','search.allEthnicities':'All Ethnicities','search.allUnion':'All Unions','search.typeShort':'Type','search.locationShort':'Location','search.unionShort':'Union','search.castingCalls':'casting calls','search.castingCall':'casting call','search.showingShort':'Showing {from}–{to}',
     'search.filterType':'Type','search.filterLocation':'Location','search.filterGender':'Gender',
     'search.filterEthnicity':'Ethnicity','search.filterUnion':'Union',
     'search.noResults':'No castings match your filters.','search.clearFilters':'Clear filters',
@@ -407,7 +407,7 @@ const TRANSLATIONS = {
     'reg.cd.createAccount':'Crear cuenta','reg.cd.creating':'Creando cuenta…',
     // Search
     'search.title':'Convocatorias de casting','search.allTypes':'Todos los tipos','search.allLocations':'Todas las ciudades',
-    'search.allGenders':'Todos los géneros','search.allEthnicities':'Todos los orígenes','search.allUnion':'Todos',
+    'search.allGenders':'Todos los géneros','search.allEthnicities':'Todos los orígenes','search.allUnion':'Todos los sindicatos','search.typeShort':'Tipo','search.locationShort':'Ubicación','search.unionShort':'Sindicato','search.castingCalls':'convocatorias','search.castingCall':'convocatoria','search.showingShort':'Mostrando {from}–{to}',
     'search.filterType':'Tipo','search.filterLocation':'Ubicación','search.filterGender':'Género',
     'search.filterEthnicity':'Origen étnico','search.filterUnion':'Sindicato',
     'search.noResults':'Ninguna convocatoria coincide con tus filtros.','search.clearFilters':'Borrar filtros',
@@ -3205,6 +3205,18 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .cb-item-info h4{font-size:13px;font-weight:600;}
 .cb-item-info p{font-size:11px;color:var(--t2);}
 .cb-empty{color:var(--t3);font-size:13px;text-align:center;padding:40px 20px;font-style:italic;}
+.brw-h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:38px;letter-spacing:-.6px;line-height:1.1;margin:0 0 16px;color:var(--t1);}
+.brw-bar{display:flex;align-items:stretch;background:#FFFFFF;border:1px solid var(--bdr);border-radius:14px;box-shadow:0 2px 8px rgba(26,26,46,.06);padding:6px;min-height:62px;margin-bottom:20px;box-sizing:border-box;}
+.brw-q{flex:1 1 300px;min-width:0;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:text;}
+.brw-q .ti{font-size:20px;color:var(--t3);}
+.brw-q input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:16px;color:var(--t1);}
+.brw-q input::placeholder{color:#6F675B;}
+.brw-f{position:relative;display:flex;align-items:center;border-left:1px solid #EEEAE2;}
+.brw-f select{appearance:none;-webkit-appearance:none;border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--t1);padding:0 34px 0 16px;height:100%;min-height:48px;max-width:190px;cursor:pointer;outline:0;}
+.brw-f:after{content:"";position:absolute;right:15px;top:50%;margin-top:-2px;border:5px solid transparent;border-top-color:var(--t3);pointer-events:none;}
+.brw-go{flex:none;margin-left:8px;border:0;border-radius:10px;background:#33826A;color:#FFFFFF;font:inherit;font-weight:800;font-size:16px;padding:0 26px;cursor:pointer;}
+.brw-go:hover{background:#276551;}
+@media(max-width:760px){.brw-h1{font-size:30px;}.brw-bar{flex-wrap:wrap;padding:8px;}.brw-q{flex:1 1 100%;height:46px;border-bottom:1px solid #EEEAE2;padding:0 8px;}.brw-f{flex:1 1 30%;min-width:0;height:46px;border-left:0;}.brw-f+.brw-f{border-left:1px solid #EEEAE2;}.brw-f select{width:100%;max-width:none;min-height:46px;font-size:14px;padding:0 24px 0 8px;}.brw-f:after{right:8px;}.brw-go{flex:1 1 100%;margin:6px 0 0;height:46px;}}
 .search-bar{display:flex;gap:12px;margin-bottom:32px;}
 .search-bar .input{flex:1;}
 .filter-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}
@@ -18532,9 +18544,19 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const newIds=new Set(fc.filter(c=>castingSortBucket(c)===0&&castingIsRecent(c)).sort(castingRecencyCompare).slice(0,3).map(c=>c.id));
   const browseRank=c=>newIds.has(c.id)?0:castingIsPick(c)?1:2;
   fc.sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(browseRank(a)-browseRank(b))||castingRecencyCompare(a,b));
+  const brwPhone=typeof window!=="undefined"&&window.innerWidth<=760;
   return(<div className="page page-wide page-browse">
-    <div className="section-label">{landingKey?<>{landingDef(landingKey)?.label||t('search.title')}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:t('search.title')}</div>
-    <div className="search-bar"><input className="input" placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/><button className="btn-teal">{t('search.searchBtn')}</button></div>
+    {landingKey
+      ?<div className="section-label">{landingKey?<>{landingDef(landingKey)?.label||t('search.title')}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:null}</div>
+      :<h1 className="brw-h1">{loading&&fc.length===0?t('search.title'):fc.length+" "+t(fc.length===1?'search.castingCall':'search.castingCalls')}</h1>}
+    {/* One bar for search and filters (owner, 2026-11-08). */}
+    <div className="brw-bar">
+      <label className="brw-q"><i className="ti ti-search" aria-hidden="true"/><input placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/></label>
+      <div className="brw-f"><select aria-label="Type" value={f.type} onChange={e=>setF(x=>({...x,type:e.target.value}))}><option value="">{brwPhone?t('search.typeShort'):t('search.allTypes')}</option><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select></div>
+      <div className="brw-f"><select aria-label="Location" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">{brwPhone?t('search.locationShort'):t('search.allLocations')}</option>{locOptions.map(([city])=><option key={city} value={city}>{city}</option>)}</select></div>
+      <div className="brw-f"><select aria-label="Union" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">{brwPhone?t('search.unionShort'):t('search.allUnion')}</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
+      <button className="brw-go">{t('search.searchBtn')}</button>
+    </div>
     <>
       {/* Full-height loading placeholder — only during initial load (no cached data).
           Keeps the footer pinned to the bottom so it never flashes upward. */}
@@ -18549,14 +18571,13 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
           </div>
         /* Normal state — castings loaded, or background-refreshing with cached list showing */
         :<>
-          <div className="filter-row"><select className="select" value={f.type} onChange={e=>setF(x=>({...x,type:e.target.value}))}><option value="">{t('search.allTypes')}</option><option>Film</option><option>TV</option><option>Theater</option><option>Commercial</option><option>Modeling</option></select><select className="select" value={f.location} onChange={e=>setF(x=>({...x,location:e.target.value}))}><option value="">{t('search.allLocations')}</option>{locOptions.map(([city])=><option key={city} value={city}>{city}</option>)}</select><select className="select" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">{t('search.allUnion')}</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
           {fetchErr&&<div style={{background:"rgba(255,100,100,0.1)",border:"1px solid rgba(255,100,100,0.3)",color:"#c0392b",padding:"10px 14px",borderRadius:8,fontSize:13,marginBottom:12,display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
             <span>{t('search.refreshErr')} {fetchErr}{dbCastings.length>0?" "+t('search.showingCached'):""}</span>
             <button className="btn-s btn-sm" onClick={()=>{setFetchErr("");setRefreshTick(tk=>tk+1);}}>{t('search.retryShort')}</button>
           </div>}
           {pg===1&&fc.length>0&&<FilmEventStrip/>}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,gap:10,flexWrap:"wrap"}}>
-            <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t('search.showing').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
+            <p style={{color:"var(--t2)",fontSize:13,margin:0}}>{t(landingKey?'search.showing':'search.showingShort').replace('{from}',fc.length===0?0:(pg-1)*10+1).replace('{to}',Math.min(pg*10,fc.length)).replace('{total}',fc.length)}{lastFetchAt?<span style={{color:"var(--t3)",marginLeft:10,fontSize:11}}>· {t('search.updated')} {new Date(lastFetchAt).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}</span>:null}</p>
           </div>
           <div className="b5-list">{fc.slice((pg-1)*10,pg*10).map((rawC,ci,pageArr)=>{const c=getTranslatedCasting(rawC,lang);const isExpiredCasting=castingIsExpired(c);const isArchived=c.status==="archived";const isClosedCard=isArchived||isExpiredCasting;const isFeat=castingIsPick(c);const cdn=castingCountdown(c.deadline);const isLive=!isClosedCard;
             /* Kept in a variable because the hover handlers restore it on the
