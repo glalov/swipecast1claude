@@ -4254,7 +4254,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .iev-hd h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(28px,3.4vw,38px);letter-spacing:-.5px;line-height:1.12;margin:0;}
 .iev-lead{font-size:16px;line-height:1.55;color:var(--t2);max-width:700px;margin:9px 0 20px;}
-.iev-seg{display:inline-flex;background:#ECE7DD;border-radius:10px;padding:3px;}
+.iev-seg{display:flex;width:fit-content;max-width:100%;background:#ECE7DD;border-radius:10px;padding:3px;}
 .iev-seg button{border:0;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--t2);padding:8px 16px;border-radius:8px;cursor:pointer;}
 .iev-seg button.on{background:#fff;color:var(--t1);box-shadow:0 1px 2px rgba(26,26,46,.14);}
 .iev-seg small,.iev-chips small{font-size:12px;font-weight:600;color:var(--t3);margin-left:5px;}
