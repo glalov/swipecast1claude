@@ -5742,6 +5742,9 @@ a.news-card{text-decoration:none;color:inherit;}
 .td-rv-mob{display:none;}
 @media(max-width:900px){.td-rv-desk{display:none;}.td-rv-mob{display:block;}}
 .td-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+.td-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;padding:24px;}
+.td-empty b{font-size:18px;font-weight:700;color:var(--t1);margin:12px 0 5px;}
+.td-empty p{font-size:15.5px;line-height:1.5;color:var(--t2);margin:0 0 18px;max-width:420px;}
 .td-match{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:14px 20px;margin-bottom:24px;}
 .td-match-tx{min-width:0;}
 .td-match-tx small{display:block;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;}
@@ -21051,6 +21054,15 @@ function SchoolDirectoryPage({onNavigate,session}){
   </div>);
 }
 
+// Matching empty state for Saved Castings and Recently Viewed (owner, 2026-11-08).
+function DashEmpty({icon,title,text,minH,onBrowse}){
+  return(<div className="td-empty" style={{minHeight:minH}}>
+    <Ico n={icon} s={28}/>
+    <b>{title}</b>
+    <p>{text}</p>
+    <button type="button" className="btn-s btn-sm" onClick={onBrowse}>Browse Castings <Tri/></button>
+  </div>);
+}
 function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,castingsVersion=0}){
   const t=useT();
   const {lang}=useLanguage();
@@ -21675,16 +21687,16 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
   }
 
   // Recently Viewed card — placed by CSS (.td-rv-desk / .td-rv-mob), see the right column.
-  const recentlyViewedCard=(
+  const recentlyViewedCard=(!rvLoading&&recentlyViewed.length===0)?(
+    <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,overflow:"hidden"}}>
+      <div style={{padding:"18px 24px",borderBottom:"1px solid var(--bdr)"}}><h2 style={{fontWeight:700,fontSize:17,color:"var(--t1)",margin:0}}>Recently Viewed</h2></div>
+      <DashEmpty icon="eye" title="Nothing viewed yet" text="Roles you open will show up here, so you can find them again." minH={252} onBrowse={()=>onNavigate("search")}/>
+    </div>
+  ):(
     <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
       <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:"0 0 12px 0"}}>Recently Viewed</h3>
       {rvLoading?(
         <CastSlateLoader size="inline" text="Loading…"/>
-      ):recentlyViewed.length===0?(
-        <>
-          <p style={{color:"var(--t3)",fontSize:13,margin:"0 0 14px"}}>You haven't viewed any casting calls yet.</p>
-          <button className="btn-s btn-sm" style={{width:"100%",fontSize:12}} onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
-        </>
       ):(
         <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
           {recentlyViewed.map(r=>{
@@ -22232,11 +22244,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               {savedLoading?(
                 <CastSlateLoader size="inline" text="Loading saved castings…"/>
               ):savedCastings.length===0?(
-                <div style={{textAlign:"center",padding:"28px 0"}}>
-                  <div style={{fontSize:28,marginBottom:8}}><Ico n="bookmark" s={22}/></div>
-                  <p style={{color:"var(--t2)",fontSize:14,marginBottom:14,margin:"0 0 14px"}}>You haven't saved any castings yet.</p>
-                  <button className="btn-s btn-sm" onClick={()=>onNavigate("search")}>Browse Castings</button>
-                </div>
+                <DashEmpty icon="bookmark" title="Nothing saved yet" text="Tap the bookmark on any role to keep it here, with its deadline." minH={204} onBrowse={()=>onNavigate("search")}/>
               ):(
                 <>
                   <div style={{display:"flex",flexDirection:"column",gap:10}}>
