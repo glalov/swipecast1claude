@@ -5750,6 +5750,7 @@ a.news-card{text-decoration:none;color:inherit;}
   .td-right .dirc-body,.td-right .ievc-b{flex:1;display:flex;flex-direction:column;}
   .td-right .dirc-cta,.td-right .ievc-btn{margin-top:auto;}
 }
+.td-three>*{flex-shrink:0;}
 .td-three{overflow-y:auto;padding-right:8px;scrollbar-width:thin;scrollbar-color:#B9AE99 transparent;}
 .td-three::-webkit-scrollbar{width:7px;}
 .td-three::-webkit-scrollbar-thumb{background:#B9AE99;border-radius:7px;}
@@ -21125,6 +21126,7 @@ function ThreeScroll({style,children,rows=3}){
   React.useLayoutEffect(()=>{
     const el=ref.current;if(!el)return;
     const k=el.children;
+    el.style.maxHeight=""; // measure rows at full size, never while squeezed by a previous limit
     if(k.length>rows){const e=k[rows-1];el.style.maxHeight=(e.offsetTop+e.offsetHeight-k[0].offsetTop)+"px";el.classList.add("td-three");}
     else{el.style.maxHeight="";el.classList.remove("td-three");}
   });
