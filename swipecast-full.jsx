@@ -22312,43 +22312,6 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               my-profile screen, so it only pushed the Actor Card Studio and the
               Agency Directory further down the column. */}
 
-          {/* Plan Status card — FREE ACCOUNTS ONLY.
-              For premium actors this was a static list of features they had already
-              paid for; it is hidden for them so the Actor Card Studio and the Agency
-              Directory sit higher. Keep rendering it for free accounts: this card is
-              where the plan limits and the "Upgrade to Premium" button live. */}
-          {!isPremium&&(
-          <div style={{background:isPremium?"linear-gradient(135deg,rgba(99,60,180,0.06),rgba(99,60,180,0.02))":"var(--s1)",border:isPremium?"1px solid rgba(99,60,180,0.2)":"1px solid var(--bdr)",borderRadius:14,padding:20}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-              <h3 style={{fontWeight:700,fontSize:15,color:"var(--t1)",margin:0}}>Your Plan</h3>
-              <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:isPremium?"rgba(99,60,180,0.12)":"var(--s2)",color:isPremium?"var(--acc)":"var(--t2)",textTransform:"uppercase",letterSpacing:0.6}}>{isPremium?"Premium":"Free"}</span>
-            </div>
-            {isPremium?(
-              <>
-                <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Actor Premium</p>
-                <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:4}}>
-                  {["Unlimited submissions","Unlimited photos, videos & Cast Me As","Actor Slate Video","Actor Business Card","Manager Mode","Agency, Casting & School Directories"].map((f,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
-                      <span style={{color:"var(--grn)",fontWeight:700}}><Ico n="check" s={24}/></span>{f}
-                    </div>
-                  ))}
-                </div>
-              </>
-            ):(
-              <>
-                <p style={{fontSize:13,color:"var(--t2)",margin:"0 0 12px",fontWeight:500}}>Free Actor Account</p>
-                <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:16}}>
-                  {[`${FREE_PLAN.headshotsTotal} headshot`,`First submission free`,"No video uploads"].map((f,i)=>(
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:7,fontSize:12,color:"var(--t2)"}}>
-                      <span style={{color:"var(--t3)"}}>—</span>{f}
-                    </div>
-                  ))}
-                </div>
-                <button className="trec-plan-cta" onClick={()=>onNavigate("membership")}>See what Premium adds <Tri/></button>
-              </>
-            )}
-          </div>
-          )}
 
           {/* Actor Card Studio — Version A "Matched set" (owner's pick, 2026-11-07, demo
               castslate-actor-card-studio-card-demo.html): same white card + colour band as the
