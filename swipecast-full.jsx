@@ -17851,7 +17851,7 @@ function FilmEventCard({ev,compact}){
     </div>
     <div className="fev-art" aria-hidden="true">
       {style==="marquee"
-        ?<div className="fev-marq"><small>NOW SHOWING</small><b>{word}</b><i>NEW YORK</i></div>
+        ?<div className="fev-marq"><small>NOW SHOWING</small><b>{word}</b><i>{ev.city==="los-angeles"?"LOS ANGELES":"NEW YORK"}</i></div>
         :style==="cover"
           ?<img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setImgBad(true)}/>
           :<div className="fev-logo"><img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setImgBad(true)}/></div>}
@@ -17859,22 +17859,20 @@ function FilmEventCard({ev,compact}){
     {host&&<span className="fev-src">{host}</span>}
   </a>);
 }
-function FilmEventBanner({page}){
-  const list=useFilmEvents();
-  if(!list||!list.length)return null;
-  // Page 1's top strip shows event 0, so the in-list banner shows event `page`
-  // (page 1 → event 1, page 2 → event 2 …) and never repeats the strip.
-  const p=Math.max(1,page||1);
-  if(p===1&&list.length<2)return null;
-  return <FilmEventCard ev={list[p%list.length]}/>;
+// Browse shows only the two events free members get, on page 1 (owner, 2026-11-08): New York in
+// the top strip, Los Angeles here at the bottom. Pages 2+ show castings only.
+function FilmEventBanner(){
+  const list=useAllEvents();
+  const ev=(list||[]).find(e=>e.city==="los-angeles");
+  return ev?<FilmEventCard ev={ev}/>:null;
 }
 // Slim event strip at the top of Browse page 1 (owner pick "B · colour", 2026-11-08):
 // the top event (real photo first, then soonest) in its own palette, photo on the right.
 function FilmEventStrip(){
-  const list=useFilmEvents();
+  const list=useAllEvents();
   const [imgBad,setImgBad]=useState(false);
-  if(!list||!list.length)return null;
-  const ev=list[0];
+  const ev=(list||[]).find(e=>e.city==="new-york");
+  if(!ev)return null;
   const when=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,2).map(w=>w&&w[1]).filter(Boolean).join(" · "):"";
   const art=imgBad||!ev.image_url?"marquee":ev.art_style;
   const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
@@ -18557,7 +18555,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             {/* Pages 1 and 3 only (owner, 2026-11-08): the same pitch on every page reads as nagging.
                 The count is a running total of every role passed so far, earlier pages included. */}
             {ci===3&&(pg===1||pg===3)&&pageArr.length>4&&authReady&&!session?.user&&pageArr.slice(0,4).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=3&&<ClapperBreak key={"clap-"+pg} passed={fc.slice(0,(pg-1)*10+4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
-            {ci===7&&pageArr.length>=9&&pageArr.slice(0,8).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=6&&<FilmEventBanner key={"fev-"+pg} page={pg}/>}
+            {pg===1&&ci===7&&pageArr.length>=9&&pageArr.slice(0,8).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=6&&<FilmEventBanner/>}
             </React.Fragment>);})}</div>
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
             /* Short pagination (owner, 2026-10-27): first, last and the pages around the current one,

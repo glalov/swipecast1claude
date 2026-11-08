@@ -278,11 +278,39 @@ async function run(sb: ReturnType<typeof createClient>) {
   return report;
 }
 
+// Daily sold-out sweep (owner, 2026-11-08). One-day events only: a festival with one sold-out
+// showing is still worth listing. Listing pages are skipped, since "sold out" there can be
+// about a different event.
+async function soldOutCheck(sb: ReturnType<typeof createClient>) {
+  const { data } = await sb.from("film_events").select("id,title,url,starts_on,ends_on")
+    .eq("status", "published").gte("ends_on", nyToday());
+  const rows = ((data || []) as { id: string; title: string; url: string; starts_on: string; ends_on: string }[])
+    .filter((e) => e.starts_on === e.ends_on && !/\/(events?|calendar)\/?$/i.test(new URL(e.url).pathname) && new URL(e.url).pathname !== "/");
+  const soldOut: string[] = [];
+  for (let i = 0; i < rows.length; i += 6) {
+    await Promise.all(rows.slice(i, i + 6).map(async (e) => {
+      const page = await fetchText(e.url);
+      if (!page.ok) return;
+      const text = page.html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]+>/g, " ");
+      if (!/\bsold[\s-]?out\b/i.test(text)) return;
+      await sb.from("film_events").update({ status: "sold_out", updated_at: new Date().toISOString() }).eq("id", e.id);
+      soldOut.push(e.title);
+    }));
+  }
+  return { checked: rows.length, soldOut };
+}
+
 Deno.serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY);
   try { if (!(await authorized(req, sb))) return json({ ok: false, error: "unauthorized" }, 401); }
   catch (_) { return json({ ok: false, error: "unauthorized" }, 401); }
   const url = new URL(req.url);
+  if (url.searchParams.get("mode") === "soldout") {
+    if (url.searchParams.get("wait") === "1") return json({ ok: true, ...(await soldOutCheck(sb)) });
+    // deno-lint-ignore no-explicit-any
+    (globalThis as any).EdgeRuntime?.waitUntil(soldOutCheck(sb).catch((e) => console.error("[events-refresh] soldout failed", e)));
+    return json({ ok: true, started: true }, 202);
+  }
   if (url.searchParams.get("wait") === "1") return json({ ok: true, ...(await run(sb)) });
   // Web search runs can take a while: answer now, keep working in the background.
   // deno-lint-ignore no-explicit-any
