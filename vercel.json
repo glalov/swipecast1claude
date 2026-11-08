@@ -32,6 +32,7 @@
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/fair-casting", "destination": "/fair-casting.html" },
     { "source": "/manager-mode", "destination": "/manager-mode.html" },
+    { "source": "/events", "destination": "/events.html" },
     { "source": "/tapelink", "destination": "/tapelink.html" },
     { "source": "/agency-directory", "destination": "/agency-directory.html" },
     { "source": "/casting-directory", "destination": "/casting-directory.html" },

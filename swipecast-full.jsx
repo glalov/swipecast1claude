@@ -4222,6 +4222,66 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fes-logo img{max-height:34px;max-width:130px;display:block;}
 .fes-marq{font-family:Fraunces,Georgia,serif;font-size:18px;font-weight:600;color:#FFD896;border:1.5px solid rgba(255,214,150,.75);border-radius:8px;padding:6px 12px;letter-spacing:.04em;}
 @media(max-width:760px){.fes{min-height:72px;gap:10px;}.fes-go{display:none;}.fes-ph{width:96px;}.fes-tx{padding:10px 0 10px 14px;}.fes-t{white-space:normal;font-size:15.5px;line-height:1.2;}.fes-w{display:block;margin:3px 0 0;font-size:12.5px;}.fes-logo img{max-width:72px;}}
+/* Industry Events: dashboard card and /events (2026-11-08) */
+.ievc{background:#fff;border:1px solid var(--bdr);border-radius:18px;box-shadow:0 2px 6px rgba(26,26,46,.07);}
+.ievc-top{position:relative;height:124px;background:#0E2628 center/cover no-repeat;border-radius:17px 17px 0 0;}
+.ievc-top::after{content:"";position:absolute;inset:0;border-radius:17px 17px 0 0;background:linear-gradient(0deg,rgba(10,22,24,.86),rgba(10,22,24,.12) 75%);}
+.ievc-tt{position:absolute;left:20px;right:20px;bottom:13px;z-index:1;color:#fff;}
+.ievc-tt small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.9;margin-bottom:3px;}
+.ievc-ttl{display:flex;align-items:center;gap:6px;}
+.ievc-ttl b{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:23px;letter-spacing:-.2px;}
+.ievc-b{padding:16px 20px 20px;}
+.ievc-p{font-size:14.5px;line-height:1.5;color:var(--t2);margin:0 0 14px;}
+.ievc-m{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#33826A;padding-top:12px;border-top:1px solid #EEEAE2;}
+.ievc-stats{display:flex;gap:30px;padding:8px 0 13px;border-bottom:1px solid #EEEAE2;margin-bottom:12px;}
+.ievc-stats b{display:block;font-size:21px;color:#1A1A2E;line-height:1.1;}
+.ievc-stats span{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);}
+.ievc-y{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--t1);margin:0 0 15px;}
+.ievc-y .ti{color:#33826A;}
+.ievc-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;height:44px;border:0;border-radius:10px;background:#33826A;color:#fff;font:inherit;font-weight:800;font-size:14.5px;cursor:pointer;}
+.ievc-btn:hover{background:#276551;}
+.ievc-btn.nv{background:#1A1A2E;}
+.ievc-btn.nv:hover{background:#2A2A44;}
+.iev-tip{position:relative;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;color:var(--t3);cursor:help;}
+.iev-tip:hover,.iev-tip:focus,.iev-tip.is-open{color:var(--t1);outline:none;}
+.iev-tip-l,.iev-tip-l:hover,.iev-tip-l:focus,.iev-tip-l.is-open{color:#fff;}
+.iev-pop{position:absolute;left:50%;top:calc(100% + 9px);transform:translateX(-50%);width:320px;background:#FFFDF8;border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;font-size:13.5px;font-weight:500;line-height:1.55;letter-spacing:0;text-transform:none;color:var(--t2);text-align:left;box-shadow:0 14px 32px -12px rgba(26,26,46,.35);opacity:0;visibility:hidden;transition:opacity .16s ease;z-index:30;}
+.iev-pop b{display:block;font-family:inherit;font-size:14px;font-weight:700;color:var(--t1);margin-bottom:4px;letter-spacing:0;}
+.iev-tip:hover .iev-pop,.iev-tip:focus .iev-pop,.iev-tip.is-open .iev-pop{opacity:1;visibility:visible;}
+.ievc .iev-pop{left:auto;right:-60px;transform:none;width:300px;}
+.iev-page{max-width:1140px;margin:0 auto;}
+.iev-lab{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t1);margin-bottom:8px;}
+.iev-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.iev-hd h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(28px,3.4vw,38px);letter-spacing:-.5px;line-height:1.12;margin:0;}
+.iev-lead{font-size:16px;line-height:1.55;color:var(--t2);max-width:700px;margin:9px 0 20px;}
+.iev-seg{display:inline-flex;background:#ECE7DD;border-radius:10px;padding:3px;}
+.iev-seg button{border:0;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--t2);padding:8px 16px;border-radius:8px;cursor:pointer;}
+.iev-seg button.on{background:#fff;color:var(--t1);box-shadow:0 1px 2px rgba(26,26,46,.14);}
+.iev-seg small,.iev-chips small{font-size:12px;font-weight:600;color:var(--t3);margin-left:5px;}
+.iev-chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 2px;}
+.iev-chips button{border:1px solid var(--bdr);background:#fff;color:var(--t2);font:inherit;font-weight:700;font-size:13.5px;border-radius:999px;padding:7px 13px;cursor:pointer;}
+.iev-chips button.on{background:#1A1A2E;border-color:#1A1A2E;color:#fff;}
+.iev-chips button.on small{color:#D9D6E4;}
+.iev-mon{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:24px;margin:26px 0 12px;}
+.iev-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.iev{position:relative;display:flex;flex-direction:column;min-width:0;border-radius:14px;overflow:hidden;color:#fff;text-decoration:none;box-shadow:2px 3px 3px -2px rgba(26,26,46,.42);}
+.iev-art{position:relative;height:210px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.iev-ph{width:100%;height:100%;object-fit:cover;display:block;}
+.iev-bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(20px) brightness(.72) saturate(1.15);}
+.iev-fg{position:relative;max-width:82%;max-height:82%;object-fit:contain;display:block;border-radius:6px;box-shadow:0 12px 30px -10px rgba(0,0,0,.6);}
+.iev-word{text-align:center;font-family:Fraunces,Georgia,serif;color:#FFE3B5;padding:0 18px;min-width:0;}
+.iev-word small{display:block;font-family:"DM Sans",sans-serif;font-size:11px;font-weight:800;letter-spacing:.26em;color:#FFE9C6;opacity:.85;}
+.iev-word b{display:block;font-size:clamp(34px,4.6vw,54px);font-weight:600;line-height:1.02;margin:10px 0;overflow-wrap:anywhere;}
+.iev-word i{font-style:normal;font-size:12.5px;letter-spacing:.18em;color:#FFE9C6;opacity:.85;}
+.iev-tx{padding:17px 20px 20px;display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;}
+.iev-k{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.92;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.iev-h{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:23px;line-height:1.12;letter-spacing:-.3px;color:#fff;margin:0;}
+.iev-why{font-size:14.5px;line-height:1.48;opacity:.94;margin:0;}
+.iev-cta{align-self:flex-start;margin-top:auto;background:#fff;color:#141414;font-weight:800;font-size:13.5px;border-radius:10px;padding:9px 14px;display:inline-flex;gap:6px;align-items:center;}
+.iev-src{position:absolute;right:10px;top:10px;z-index:2;font-size:11px;background:rgba(0,0,0,.5);border-radius:999px;padding:3px 9px;}
+.iev-more{margin-top:20px;background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:15px;color:var(--t2);}
+.iev-more button{height:40px;padding:0 18px;border:0;border-radius:10px;background:#33826A;color:#fff;font:inherit;font-weight:800;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+@media(max-width:720px){.iev-grid{grid-template-columns:minmax(0,1fr);}.iev-pop{left:auto;right:-90px;transform:none;width:280px;}}
 .fev-compact{grid-template-columns:minmax(0,1fr);min-height:0;}
 .fev-compact .fev-art{order:-1;height:176px;padding:36px 16px 16px;box-sizing:border-box;}
 .fev-compact.fev-art-cover .fev-art{padding:36px 16px 16px;}
@@ -17858,6 +17918,112 @@ function ManagerModeEvents({isPremium,isLoggedIn,onNavigate}){
     {!isPremium&&more>0&&<p className="mm-evl-more">Premium members see all {all.length} events this month, updated every few days. <button type="button" onClick={()=>onNavigate(isLoggedIn?"membership":"pricing")}>See Premium plans<Tri/></button></p>}
   </section>);
 }
+// Industry Events (owner, 2026-11-08): dashboard card + /events. New York and Los Angeles from
+// film_events (filled by the events-refresh agent). Premium sees everything; everyone else
+// sees one event per city. Browse and Manager Mode stay New York only via loadFilmEvents.
+let _allEventsCache=null,_allEventsAt=0,_allEventsLoad=null;
+const IEV_TEXT=<><b>Curated by the CastSlate team</b>Nobody is going to come knocking on your door. Real working relationships start in person: going out, having a conversation, meeting the people who make films. So every month, 12 months a year, the CastSlate team curates film festivals, screenings, panels and mixers in New York and Los Angeles, including many you may never have heard about, to help you meet filmmakers face to face.</>;
+const IEV_TYPES=[["all","All types",null],["fest","Festivals",["festival"]],["screen","Screenings & shorts",["screening","shorts","school"]],["cast","Meet casting directors",["casting"]],["work","Workshops",["workshop"]],["net","Networking",["networking","union"]],["awards","Awards nights",["awards"]]];
+const ievToday=()=>new Date().toLocaleDateString("en-CA",{timeZone:"America/New_York"});
+const ievMonthName=m=>new Date(m+"-15T12:00:00Z").toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"});
+// The months an event still touches, from the current month on.
+function ievMonths(e,today){const out=[];const d=new Date((e.starts_on<today?today:e.starts_on).slice(0,7)+"-15T12:00:00Z");const end=String(e.ends_on).slice(0,7);while(d.toISOString().slice(0,7)<=end&&out.length<4){out.push(d.toISOString().slice(0,7));d.setUTCMonth(d.getUTCMonth()+1);}return out;}
+function loadAllEvents(){
+  if(_allEventsCache&&_allEventsCache.length&&Date.now()-_allEventsAt<15*60000)return Promise.resolve(_allEventsCache);
+  if(_allEventsLoad)return _allEventsLoad;
+  _allEventsLoad=(async()=>{
+    for(let attempt=0;attempt<3;attempt++){
+      try{
+        if(!window.sb)throw new Error("no client yet");
+        const today=ievToday();
+        const {data,error}=await window.sb.from("film_events").select("id,title,kicker,why,starts_on,ends_on,when_lines,url,image_url,art_style,marquee_word,palette,city,category").eq("status","published").gte("ends_on",today).order("starts_on",{ascending:true}).limit(300);
+        if(error)throw error;
+        const rows=(data||[]).filter(e=>e&&e.title&&e.url).map(e=>({...e,_on:e.starts_on<=today,_photo:e.art_style==="cover"&&/\.(jpe?g|webp)(\?|$)/i.test(String(e.image_url||""))}));
+        rows.sort((a,b)=>(b._photo-a._photo)||((b._on?1:0)-(a._on?1:0))||String(a.starts_on).localeCompare(String(b.starts_on)));
+        if(rows.length){_allEventsCache=rows;_allEventsAt=Date.now();break;}
+      }catch(_){}
+      await new Promise(r=>setTimeout(r,1200*(attempt+1)));
+    }
+    _allEventsLoad=null;
+    return _allEventsCache||[];
+  })();
+  return _allEventsLoad;
+}
+function useAllEvents(){
+  const [list,setList]=useState(_allEventsCache);
+  useEffect(()=>{let live=true;loadAllEvents().then(l=>{if(live&&l&&l.length)setList(l);});return()=>{live=false;};},[]);
+  return list;
+}
+function IevInfo({label,light}){
+  const [open,setOpen]=useState(false);
+  return <span className={"iev-tip"+(light?" iev-tip-l":"")+(open?" is-open":"")} tabIndex={0} role="button" aria-label={label} onClick={e=>{e.stopPropagation();setOpen(v=>!v);}} onBlur={()=>setOpen(false)}><Ico n="info-circle" s={19}/><span className="iev-pop">{IEV_TEXT}</span></span>;
+}
+function IndustryEventsCard({isPremium,onNavigate}){
+  const list=useAllEvents();
+  if(!list||!list.length)return null;
+  const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
+  const inMonth=c=>list.filter(e=>e.city===c&&ievMonths(e,today).includes(thisM)).length;
+  const hero=list.find(e=>e._photo);
+  return(<div className="ievc">
+    <div className="ievc-top" style={hero?{backgroundImage:"url(\""+hero.image_url+"\")"}:undefined}>
+      <div className="ievc-tt"><small>{isPremium?mon:"Premium feature · "+mon}</small><div className="ievc-ttl"><b>Industry Events</b><IevInfo label="About Industry Events" light/></div></div>
+    </div>
+    <div className="ievc-b">
+      <p className="ievc-p">{isPremium?"This month's festivals, screenings, panels and mixers in New York and LA.":"Festivals, screenings, panels and mixers where actors and filmmakers meet in person."}</p>
+      <div className="ievc-m">Happening in {mon}</div>
+      <div className="ievc-stats"><div><b>{inMonth("new-york")}</b><span>Events in New York</span></div><div><b>{inMonth("los-angeles")}</b><span>Events in Los Angeles</span></div></div>
+      <p className="ievc-y"><Ico n="calendar-repeat" s={18}/>New events every month, 12 months a year</p>
+      <button type="button" className={"ievc-btn"+(isPremium?"":" nv")} onClick={()=>onNavigate("events")}>{isPremium?"See":"Unlock"} {mName}'s Events<Tri/></button>
+    </div>
+  </div>);
+}
+function IevCard({ev}){
+  const [bad,setBad]=useState(false);
+  const lines=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,3):[];
+  const kind=bad||!ev.image_url||ev.art_style==="marquee"?"type":ev._photo?"photo":"fill";
+  const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
+  let host="";try{host=new URL(ev.url).hostname.replace(/^www\./,"");}catch(_){}
+  return(<a className={"iev fev-"+(ev.palette||"navy")} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
+    <div className={"iev-art iev-"+kind} aria-hidden="true">
+      {kind==="photo"&&<img className="iev-ph" src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/>}
+      {kind==="fill"&&<><img className="iev-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/><img className="iev-fg" src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/></>}
+      {kind==="type"&&<div className="iev-word"><small>NOW SHOWING</small><b>{word}</b><i>{ev.city==="los-angeles"?"LOS ANGELES":"NEW YORK"}</i></div>}
+    </div>
+    <div className="iev-tx">
+      <div className="iev-k">{ev._on&&<span className="fev-on">On now</span>}<span>{ev.kicker}</span></div>
+      <h3 className="iev-h">{ev.title}</h3>
+      {ev.why&&<p className="iev-why">{ev.why}</p>}
+      {lines.length>0&&<div className="fev-when">{lines.map((w,i)=><span key={i}><i className={"ti ti-"+String((w&&w[0])||"calendar-event").replace(/[^a-z0-9-]/g,"")} aria-hidden="true"/>{w&&w[1]}</span>)}</div>}
+      <span className="iev-cta">See the event<i className="ti ti-external-link" aria-hidden="true"/></span>
+    </div>
+    {host&&<span className="iev-src">{host}</span>}
+  </a>);
+}
+function IndustryEventsPage({onNavigate,session,myProfile}){
+  const isPremium=myProfile?.membership_status==="active";
+  const list=useAllEvents();
+  const [city,setCity]=useState("new-york");
+  const [type,setType]=useState("all");
+  const today=ievToday();
+  const all=(list||[]).filter(e=>e.city===city);
+  const ny=(list||[]).filter(e=>e.city==="new-york"),la=(list||[]).filter(e=>e.city==="los-angeles");
+  const T=IEV_TYPES.find(x=>x[0]===type)||IEV_TYPES[0];
+  const shown=isPremium?all.filter(e=>!T[2]||T[2].includes(e.category)):[ny[0],la[0]].filter(Boolean);
+  const months=[...new Set(shown.flatMap(e=>ievMonths(e,today)))].sort();
+  const chips=IEV_TYPES.map(x=>[x,x[2]?all.filter(e=>x[2].includes(e.category)).length:all.length]).filter(x=>x[1]>0);
+  return(<div className="page iev-page">
+    <div className="iev-lab">CastSlate Industry Events</div>
+    <div className="iev-hd"><h1>Industry events for actors</h1><IevInfo label="About Industry Events"/></div>
+    <p className="iev-lead">Film festivals, screenings, panels and mixers in New York and Los Angeles, curated every month to help actors and filmmakers meet in person.</p>
+    {list===null&&<CastSlateLoader size="inline" text="Loading events…"/>}
+    {isPremium&&list&&<>
+      <div className="iev-seg">{[["new-york","New York",ny.length],["los-angeles","Los Angeles",la.length]].map(([id,n,c])=><button key={id} type="button" className={city===id?"on":""} onClick={()=>{setCity(id);setType("all");}}>{n}<small>{c}</small></button>)}</div>
+      <div className="iev-chips">{chips.map(([x,n])=><button key={x[0]} type="button" className={type===x[0]?"on":""} onClick={()=>setType(x[0])}>{x[1]}<small>{n}</small></button>)}</div>
+    </>}
+    {months.map(m=><div key={m}><h2 className="iev-mon">{ievMonthName(m)}</h2><div className="iev-grid">{shown.filter(e=>ievMonths(e,today).includes(m)).map(ev=><IevCard key={ev.id} ev={ev}/>)}</div></div>)}
+    {!isPremium&&list&&list.length>shown.length&&<div className="iev-more"><span>Premium members see all {list.length} events in New York and Los Angeles.</span><button type="button" onClick={()=>onNavigate(session?"membership":"pricing")}>See Premium plans<Tri/></button></div>}
+  </div>);
+}
 // Signup break on Browse (owner, 2026-11-02; brand navy panel since 2026-11-05): logged-out visitors only, one per results
 // page, after the 4th casting. Signed-in members never see it; waits for authReady so
 // it can't flash for them while their session is still loading.
@@ -22223,14 +22389,16 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
               casting offices cast you. One shared mailing list across both. */}
           <CastingDirectoryCard isPremium={isPremium} onNavigate={onNavigate}/>
 
-          {/* Profile Improvement Suggestions (Premium feature) */}
-          <ProfileImprovementCard
+          {/* Industry Events (2026-11-08): replaces the blurred upsell for free members; Premium
+              keeps its real profile suggestions underneath. */}
+          <IndustryEventsCard isPremium={isPremium} onNavigate={onNavigate}/>
+          {isPremium&&<ProfileImprovementCard
             profile={myProfile}
             isPremium={isPremium}
             onNavigate={onNavigate}
             dbCredits={dashDbCredits}
             mediaItems={null}
-          />
+          />}
 
           {/* Recently Viewed Castings — on desktop (>900px) this renders in the LEFT
               column under Saved Castings instead (2026-10-04: the right rail had grown
@@ -57564,6 +57732,7 @@ const PAGE_PATH={
   "pay-talent":"/pay-talent",
   "actor-toolkit":"/actor-toolkit",
   "manager-mode":"/manager-mode",
+  "events":"/events",
   "tapelink":"/tapelink",
   "agency-directory":"/agency-directory",
   "casting-directory":"/casting-directory",
@@ -57594,6 +57763,7 @@ const PAGE_SEO={
   "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "fair-casting":{title:"Fair Casting & Inclusion | CastSlate",desc:"CastSlate has zero tolerance for discrimination and harassment. How role requirements work, how your personal details stay private, and how to report a problem."},
   "studios":{title:"For Studios & Production Companies | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
+  "events":{title:"Industry Events for Actors in New York and Los Angeles | CastSlate",desc:"Film festivals, screenings, panels and mixers in New York and Los Angeles, curated every month to help actors and filmmakers meet in person."},
   "manager-mode":{title:"Manager Mode — Career Check-ins for Actors | CastSlate",desc:"CastSlate Manager Mode is a premium monthly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each month to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
   "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
@@ -59398,6 +59568,7 @@ function App(){
         {page==="faq"&&<FaqPage onNavigate={navigate}/>}
         {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"pricing")}/>}
         {page==="manager-mode"&&<ManagerModePage onNavigate={navigate} session={session} myProfile={myProfile}/>}
+        {page==="events"&&<IndustryEventsPage onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}
         {page==="agency-directory"&&<AgencyDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
         {page==="casting-directory"&&<CastingDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
