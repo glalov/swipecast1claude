@@ -4288,7 +4288,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .iev-art{position:relative;height:250px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
 .iev-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .iev-bg{position:absolute;inset:-24px;width:calc(100% + 48px);height:calc(100% + 48px);object-fit:cover;filter:blur(20px) brightness(.72) saturate(1.15);}
-.iev-fg{position:relative;height:100%;max-width:100%;object-fit:contain;display:block;box-shadow:0 12px 30px -10px rgba(0,0,0,.6);}
+.iev-fg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 10px 22px rgba(0,0,0,.55));}
 .iev-chip{position:relative;background:#FFFFFF;border-radius:10px;padding:14px 20px;}
 .iev-chip.dk{background:none;}
 .iev-chip img{display:block;max-width:300px;max-height:120px;}
@@ -17914,9 +17914,9 @@ function FilmEventStrip(){
 // Wide images fill and fade into the colour; posters show whole on a blur of themselves.
 function EventStripe({ev}){
   const [bad,setBad]=useState(false);
-  const [poster,setPoster]=useState(false);
-  useEffect(()=>{setBad(false);setPoster(false);},[ev.id]);
   const a=ev.art||{};
+  const [poster,setPoster]=useState(!!a.whole);
+  useEffect(()=>{setBad(false);setPoster(!!(ev.art&&ev.art.whole));},[ev.id]);
   const when=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,2).map(w=>w&&w[1]).filter(Boolean).join(" · "):"";
   const word=(ev.marquee_word||ev.title.split(/\s+/)[0]).toUpperCase();
   const noArt=bad||(!ev.image_url&&!(a.row&&a.row.length));
@@ -17931,7 +17931,7 @@ function EventStripe({ev}){
       {noArt?<span className="evs-word">{word}</span>
         :a.row?<span className="evs-row">{a.row.slice(0,3).map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.style.display="none";}}/>)}</span>
         :a.logo?<span className={"evs-chip"+(a.dark?" dk":"")}><img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)}/></span>
-        :<>{poster&&<img className="evs-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"evs-fg":"evs-cov"} src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget;if(t.naturalWidth/t.naturalHeight<1.25)setPoster(true);}}/></>}
+        :<>{poster&&<img className="evs-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"evs-fg":"evs-cov"} src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget,r=t.naturalWidth/t.naturalHeight;if(r<1.25||r>2.6)setPoster(true);}}/></>}
     </span>
   </a>);
 }
@@ -17943,7 +17943,7 @@ function ManagerModeEvents({isPremium,onNavigate}){
   const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
   const inMonth=c=>list.filter(e=>e.city===c&&ievInMonth(e,thisM)).length;
   // One wide photo per city, first in list order; each moves on when its event ends.
-  const photo=c=>list.find(e=>e.city===c&&!e._ended&&e.image_url&&e.art_style==="cover");
+  const photo=c=>list.find(e=>e.city===c&&!e._ended&&e.image_url&&e.art_style==="cover"&&!(e.art&&e.art.whole));
   const ny=photo("new-york"),la=photo("los-angeles");
   return(<section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}><div className="iemb" style={{maxWidth:1140,margin:"0 auto"}}>
     {ny&&<img className="iemb-l" src={ny.image_url} alt="" referrerPolicy="no-referrer" loading="lazy"/>}
@@ -18002,7 +18002,7 @@ function IndustryEventsCard({isPremium,onNavigate}){
   if(!list||!list.length)return null;
   const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
   const inMonth=c=>list.filter(e=>e.city===c&&ievInMonth(e,thisM)).length;
-  const hero=list.find(e=>e._photo&&!e._ended);
+  const hero=list.find(e=>e._photo&&!e._ended&&!(e.art&&e.art.whole));
   return(<div className="ievc">
     <div className="ievc-top" style={hero?{backgroundImage:"url(\""+hero.image_url+"\")"}:undefined}>
       <div className="ievc-tt"><small>{isPremium?mon:"Premium feature · "+mon}</small><div className="ievc-ttl"><b>Industry Events</b><IevInfo label="About Industry Events" light/></div></div>
@@ -18018,9 +18018,9 @@ function IndustryEventsCard({isPremium,onNavigate}){
 }
 function IevCard({ev}){
   const [bad,setBad]=useState(false);
-  const [poster,setPoster]=useState(false);
-  const lines=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,3):[];
   const a=ev.art||{};
+  const [poster,setPoster]=useState(!!a.whole);
+  const lines=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,3):[];
   const word=(ev.marquee_word||ev.title.split(/\s+/).filter(w=>/^[A-Za-z]/.test(w)).map(w=>w[0]).join("").slice(0,6)).toUpperCase();
   let host="";try{host=new URL(ev.url).hostname.replace(/^www\./,"");}catch(_){}
   return(<a className={"iev fev-"+(ev.palette||"navy")} href={ev.url} target="_blank" rel="noopener noreferrer" aria-label={ev.title+" (opens the event's website)"}>
@@ -18029,7 +18029,7 @@ function IevCard({ev}){
         ?<div className="iev-word"><small>NOW SHOWING</small><b>{word}</b><i>{ev.city==="los-angeles"?"LOS ANGELES":"NEW YORK"}</i></div>
         :a.row?<div className="iev-row">{a.row.slice(0,4).map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" loading="lazy"/>)}</div>
         :a.logo?<div className={"iev-chip"+(a.dark?" dk":"")}><img src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)}/></div>
-        :<>{poster&&<img className="iev-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"iev-fg":"iev-ph"} src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget;if(t.naturalWidth/t.naturalHeight<1.25)setPoster(true);}}/></>}
+        :<>{poster&&<img className="iev-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"iev-fg":"iev-ph"} src={ev.image_url} alt="" referrerPolicy="no-referrer" loading="lazy" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget,r=t.naturalWidth/t.naturalHeight;if(r<1.25||r>2.6)setPoster(true);}}/></>}
     </div>
     <div className="iev-tx">
       <div className="iev-k">{ev._on&&<span className="fev-on">On now</span>}<span>{ev.kicker}</span></div>

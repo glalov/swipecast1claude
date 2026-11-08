@@ -179,6 +179,31 @@ async function geminiModel(key: string): Promise<string> {
   return "gemini-flash-latest";
 }
 
+// Looks at the actual image. Posters, banners and anything with words get shown whole on the
+// site; only plain photos may be cropped to fill the frame. null means the check itself failed.
+async function hasTextArt(key: string, model: string, img: string): Promise<boolean | null> {
+  try {
+    const r = await fetch(img, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) });
+    const mime = (r.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+    if (!r.ok || !["image/jpeg", "image/png", "image/webp"].includes(mime)) return null;
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    if (bytes.length > 4000000) return null;
+    let bin = "";
+    for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
+    const prompt = 'This image goes in a wide frame and may have its edges cropped. Does it have words, a title, a logo or dates designed into it, or is it a designed poster or graphic? Words that are simply part of a real scene in a photograph, like a theatre sign, do not count. Ordinary film stills and photographs are false. Reply with only JSON: {"text":true} or {"text":false}.';
+    const g = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: mime, data: btoa(bin) } }] }], generationConfig: { temperature: 0 } }),
+      signal: AbortSignal.timeout(45000),
+    });
+    if (!g.ok) return null;
+    const d = await g.json();
+    const out = (d?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join(" ");
+    const m = out.match(/"text"\s*:\s*(true|false)/i);
+    return m ? m[1].toLowerCase() === "true" : null;
+  } catch (_) { return null; }
+}
+
 async function askGemini(key: string, prompt: string): Promise<Found[]> {
   const model = await geminiModel(key);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
@@ -279,11 +304,14 @@ async function run(sb: ReturnType<typeof createClient>) {
       const named = words.length === 0 || words.filter((w) => low.includes(w)).length >= Math.min(2, words.length);
       const verified = page.ok && named && pageHasDate(low, f.starts_on);
       const art = verified ? await artFor(page.html, page.finalUrl) : { image_url: null, art_style: "marquee" as const };
+      // If the check fails, show the image whole: an uncropped image is always the safe choice.
+      const artText = art.image_url && gemini ? await hasTextArt(gemini, await geminiModel(gemini), art.image_url) : null;
       const row = {
         ekey, title: f.title.slice(0, 120), kicker: String(f.kicker || "Film event").slice(0, 80),
         why: String(f.why || "").slice(0, 240), starts_on: f.starts_on, ends_on: f.ends_on,
         when_lines: (Array.isArray(f.when_lines) ? f.when_lines : []).slice(0, 3).map((p) => [String(p?.[0] || "calendar-event").slice(0, 30), String(p?.[1] || "").slice(0, 80)]),
         url: page.finalUrl || f.url, image_url: art.image_url, art_style: art.art_style,
+        art: art.image_url && gemini ? { whole: artText !== false, checked: artText !== null } : null,
         marquee_word: String(f.marquee_word || "").toUpperCase().slice(0, 10) || null,
         palette: PALETTES.includes(f.palette) ? f.palette : "navy",
         status: verified && f.why && !/\b(hybrid event|via zoom|on zoom|online only|virtual event|webinar)\b/i.test(page.html) ? "published" : "review", source: "agent", city: city.id, category: cat.id,
@@ -299,6 +327,26 @@ async function run(sb: ReturnType<typeof createClient>) {
   Object.assign(report, { slices: `${start}-${next}/${SLICES.length}`, found, added, heldForReview: held, errors });
   console.log("[events-refresh]", JSON.stringify(report));
   return report;
+}
+
+// Backfill for events saved before the image check existed. Only touches images not checked yet.
+async function artCheck(sb: ReturnType<typeof createClient>) {
+  const { data: gk } = await sb.rpc("news_get_gemini_key");
+  const key = typeof gk === "string" ? gk : "";
+  if (!key) return { error: "no key" };
+  const model = await geminiModel(key);
+  const { data } = await sb.from("film_events").select("id,title,image_url,art").eq("status", "published").gte("ends_on", nyToday().slice(0, 7) + "-01").not("image_url", "is", null);
+  const rows = ((data || []) as { id: string; title: string; image_url: string; art: Record<string, unknown> | null }[]).filter((e) => !e.art?.row && !e.art?.logo && !e.art?.checked);
+  const whole: string[] = [], photo: string[] = [], failed: string[] = [];
+  for (let i = 0; i < rows.length; i += 4) {
+    await Promise.all(rows.slice(i, i + 4).map(async (e) => {
+      const t = await hasTextArt(key, model, e.image_url);
+      if (t === null) { failed.push(e.title); return; }
+      (t ? whole : photo).push(e.title);
+      await sb.from("film_events").update({ art: { ...(e.art || {}), whole: t, checked: true } }).eq("id", e.id);
+    }));
+  }
+  return { whole, photo, failed };
 }
 
 // Daily sold-out sweep (owner, 2026-11-08). One-day events only: a festival with one sold-out
@@ -328,6 +376,7 @@ Deno.serve(async (req) => {
   try { if (!(await authorized(req, sb))) return json({ ok: false, error: "unauthorized" }, 401); }
   catch (_) { return json({ ok: false, error: "unauthorized" }, 401); }
   const url = new URL(req.url);
+  if (url.searchParams.get("mode") === "artcheck") return json({ ok: true, ...(await artCheck(sb)) });
   if (url.searchParams.get("mode") === "soldout") {
     if (url.searchParams.get("wait") === "1") return json({ ok: true, ...(await soldOutCheck(sb)) });
     // deno-lint-ignore no-explicit-any
