@@ -98,9 +98,8 @@ async function artFor(pageHtml: string, pageUrl: string): Promise<{ image_url: s
 
 type Found = { title: string; kicker: string; why: string; starts_on: string; ends_on: string; when_lines: [string, string][]; url: string; palette: string; marquee_word?: string };
 
-async function askClaude(today: string, horizon: string, known: string[]): Promise<Found[]> {
-  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
-  const prompt = `Today is ${today} in New York. Find up to 8 real, upcoming film events in New York City (all five boroughs) that take place between ${today} and ${horizon}, which working and aspiring actors would find worth attending: film festivals, short film nights, screenings with filmmaker Q&As, industry panels, and acting-for-camera workshops open to the public.
+function buildPrompt(today: string, horizon: string, known: string[]): string {
+  return `Today is ${today} in New York. Find up to 8 real, upcoming film events in New York City (all five boroughs) that take place between ${today} and ${horizon}, which working and aspiring actors would find worth attending: film festivals, short film nights, screenings with filmmaker Q&As, industry panels, and acting-for-camera workshops open to the public.
 
 Rules:
 - Only include an event if you found its own official page (the festival's or organiser's site, or its official listing page) and that page states the dates. Skip anything you cannot confirm. Do not guess dates.
@@ -115,7 +114,30 @@ Rules:
 Answer with ONLY a JSON array, no other text, in this shape:
 [{"title":"","kicker":"","why":"","starts_on":"YYYY-MM-DD","ends_on":"YYYY-MM-DD","when_lines":[["calendar-event",""]],"url":"https://...","palette":"","marquee_word":""}]
 Return [] if you cannot confirm any.`;
+}
 
+function parseList(text: string): Found[] {
+  const m = (text || "").match(/\[[\s\S]*\]/);
+  if (!m) return [];
+  try { const arr = JSON.parse(m[0]); return Array.isArray(arr) ? arr : []; } catch (_) { return []; }
+}
+
+// Gemini with Google Search grounding: the same key the News section uses.
+async function askGemini(key: string, prompt: string): Promise<Found[]> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`;
+  const r = await fetch(url, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], tools: [{ google_search: {} }], generationConfig: { temperature: 0.2 } }),
+    signal: AbortSignal.timeout(120000),
+  });
+  if (!r.ok) throw new Error(`gemini ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  const d = await r.json();
+  const text = (d?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join("\n");
+  return parseList(text);
+}
+
+async function askClaude(prompt: string): Promise<Found[]> {
+  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
   const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: prompt }];
   let text = "";
   for (let turn = 0; turn < 4; turn++) {
@@ -135,9 +157,7 @@ Return [] if you cannot confirm any.`;
     if (res.stop_reason !== "pause_turn") break;
     messages.push({ role: "assistant", content: res.content });
   }
-  const m = text.match(/\[[\s\S]*\]/);
-  if (!m) return [];
-  try { const arr = JSON.parse(m[0]); return Array.isArray(arr) ? arr : []; } catch (_) { return []; }
+  return parseList(text);
 }
 
 async function run(sb: ReturnType<typeof createClient>) {
@@ -155,7 +175,15 @@ async function run(sb: ReturnType<typeof createClient>) {
   const knownTitles = (existing || []).map((e: { title: string }) => e.title);
   const knownKeys = new Set((existing || []).map((e: { ekey: string }) => e.ekey));
   let found: Found[] = [];
-  try { found = await askClaude(today, horizon, knownTitles); } catch (e) { report.agentError = String(e).slice(0, 300); }
+  const prompt = buildPrompt(today, horizon, knownTitles);
+  try {
+    if (ANTHROPIC_API_KEY) { found = await askClaude(prompt); report.model = "claude"; }
+    else {
+      const { data: gk } = await sb.rpc("news_get_gemini_key");
+      if (typeof gk !== "string" || !gk) throw new Error("no AI key available");
+      found = await askGemini(gk, prompt); report.model = "gemini";
+    }
+  } catch (e) { report.agentError = String(e).slice(0, 300); }
   report.found = found.length;
 
   // 3–4. Verify each against its own page, add artwork, save.
@@ -196,7 +224,6 @@ Deno.serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY);
   try { if (!(await authorized(req, sb))) return json({ ok: false, error: "unauthorized" }, 401); }
   catch (_) { return json({ ok: false, error: "unauthorized" }, 401); }
-  if (!ANTHROPIC_API_KEY) return json({ ok: false, error: "ANTHROPIC_API_KEY not set" }, 500);
   const url = new URL(req.url);
   if (url.searchParams.get("wait") === "1") return json({ ok: true, ...(await run(sb)) });
   // Web search runs can take a while: answer now, keep working in the background.
