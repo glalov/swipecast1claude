@@ -21072,7 +21072,7 @@ function SchoolDirectoryPage({onNavigate,session}){
 // broken-image handling as the main page's NewsSection, but starts after its 8 stories so
 // nothing repeats, and leaves out upsetting stories and AI stories on a member's own dashboard.
 const DASH_NEWS_SKIP=/\b(shoot|shooting|shot dead|kill|killed|killing|murder|murdered|dead|dies|died|death|suicide|rape|assault|abuse|massacre|war|terror|bomb|whiteface|blackface|AI|artificial intelligence)\b/i;
-function DashNews({onNavigate}){
+function DashNews({onNavigate,maxRows=3}){
   const[items,setItems]=React.useState(null);
   const[bad,setBad]=React.useState(()=>new Set());
   React.useEffect(()=>{
@@ -21092,7 +21092,7 @@ function DashNews({onNavigate}){
     })();
     return()=>{alive=false;};
   },[]);
-  const shown=(items||[]).filter(a=>!bad.has(a.slug)).slice(0,3);
+  const shown=(items||[]).filter(a=>!bad.has(a.slug)).slice(0,maxRows);
   if(!shown.length)return null;
   const drop=slug=>setBad(prev=>{const n=new Set(prev);n.add(slug);return n;});
   // The full list lives on the main page: go there and bring it into view.
@@ -21504,6 +21504,27 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     finally{setSavingId(null);}
   },[uid,savedIds,savingId]);
 
+  // Industry News shows whenever the left column has room under its last section (owner,
+  // 2026-11-08): 3 stories if they fit, 2 if space is tighter, none if the columns are level.
+  const [newsRows,setNewsRows]=useState(0);
+  useEffect(()=>{
+    let raf=0;
+    const measure=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{
+      const left=document.querySelector(".td-left"),right=document.querySelector(".td-right");
+      if(!left||!right||window.innerWidth<=900){setNewsRows(0);return;}
+      const parts=[...left.children].filter(c=>!c.classList.contains("td-news-w")&&c.getBoundingClientRect().height>0);
+      const last=parts[parts.length-1];
+      if(!last)return;
+      const free=right.getBoundingClientRect().bottom-last.getBoundingClientRect().bottom;
+      setNewsRows(free>=370?3:free>=280?2:0);
+    });};
+    measure();
+    const ro=new ResizeObserver(measure);
+    const watch=()=>{const left=document.querySelector(".td-left"),right=document.querySelector(".td-right");if(right)ro.observe(right);if(left)[...left.children].filter(c=>!c.classList.contains("td-news-w")).forEach(c=>ro.observe(c));};
+    watch();
+    window.addEventListener("resize",measure);
+    return()=>{cancelAnimationFrame(raf);ro.disconnect();window.removeEventListener("resize",measure);};
+  },[dashView,dashV2,rvLoading,recentlyViewed.length,savedCastings.length,applications.length,recommended.length]);
   useEffect(()=>{loadApps();loadMessages();loadRecommended();loadSaved();loadRecentlyViewed();loadClassInvitations();loadSysNotifications();loadDashCredits();loadDashMedia();},[loadApps,loadMessages,loadRecommended,loadSaved,loadRecentlyViewed,loadClassInvitations,loadSysNotifications,loadDashCredits,loadDashMedia]);
   // Poll invitations + notifications every 30s so approved status appears without a page reload
   useEffect(()=>{
@@ -22328,11 +22349,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
             </div>
           </div>
           <div className="td-rv-desk">{recentlyViewedCard}</div>
-          {!rvLoading&&recentlyViewed.length===0&&<div className="td-rv-desk td-news-w"><DashNews onNavigate={onNavigate}/></div>}
+          {newsRows>0&&<div className="td-rv-desk td-news-w"><DashNews onNavigate={onNavigate} maxRows={newsRows}/></div>}
         </div>
 
         {/* ── RIGHT COLUMN ── */}
-        <div style={{display:"flex",flexDirection:"column",gap:18}}>
+        <div className="td-right" style={{display:"flex",flexDirection:"column",gap:18}}>
 
           {/* Profile Completion card */}
           <div style={{background:"var(--s1)",border:"1px solid var(--bdr)",borderRadius:14,padding:20}}>
