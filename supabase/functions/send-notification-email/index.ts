@@ -464,6 +464,7 @@ function premiumWelcomeHtml(firstName: string): string {
           ${row("pw-message", 4, "Message casting directors", "Send video messages directly to CDs, right from the platform.")}
           ${row("pw-directory", 5, "Agency, Casting &amp; School Directories", "<strong>650+</strong> agencies and managers and <strong>131</strong> active casting offices, with how each one takes submissions, plus all <strong>351</strong> acting schools &amp; film programs, in LA &amp; NY.")}
           ${row("pw-bizcard", 6, "Actor Business Card + QR code", "One scan opens your full profile, reels, slate and stats for any industry pro.")}
+          ${row("pw-ticket", 7, "Monthly industry events", "Every vetted, in-person event in New York and LA this month, waiting at <a href=\"${APP_URL}/events\" style=\"color:#9A4127;font-weight:700;text-decoration:none\">castslate.com/events</a>.")}
         </table>
       </td></tr>
       <!-- "How to waste your membership" note -->

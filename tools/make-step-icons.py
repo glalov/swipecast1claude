@@ -163,6 +163,22 @@ def bizcard(d):
     rrect(d, 16.0, 11.1, 16.9, 12.0, 0.1, INK)
 
 
+def ticket(d):
+    """Monthly industry events: an admission ticket with side notches and a star."""
+    rrect(d, 1.8, 5.2, 22.2, 18.8, 2.4, INK)
+    circle(d, 1.8, 12, 2.3, TINT)
+    circle(d, 22.2, 12, 2.3, TINT)
+    for y in (7.4, 10.0, 12.6, 15.2):
+        rrect(d, 15.6, y, 16.6, y + 1.5, 0.3, TINT)
+    import math
+    pts = []
+    for i in range(10):
+        r = 3.6 if i % 2 == 0 else 1.5
+        a = -math.pi / 2 + i * math.pi / 5
+        pts.append((px(8.9 + r * math.cos(a)), px(12.3 + r * math.sin(a))))
+    d.polygon(pts, fill=TINT)
+
+
 PREMIUM_ICONS = {
     "pw-calendar":  calendar,
     "pw-upload":    upload,
@@ -170,6 +186,7 @@ PREMIUM_ICONS = {
     "pw-message":   message,
     "pw-directory": directory,
     "pw-bizcard":   bizcard,
+    "pw-ticket":    ticket,
 }
 
 
