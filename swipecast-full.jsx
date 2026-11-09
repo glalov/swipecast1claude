@@ -8239,7 +8239,7 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
 </p>
     {/* Shared value band. Every plan carries the same features, so they are
         stated once here instead of three times inside the cards. */}
-    <div className="card" style={{maxWidth:1100,margin:"0 auto 20px",padding:"20px 26px"}}>
+    <div className="card" style={{maxWidth:1100,margin:"0 auto 20px",padding:"20px 26px",background:"#FFFFFF"}}>
       <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",flexWrap:"wrap",gap:8,paddingBottom:13,marginBottom:16,borderBottom:"1px solid var(--bdr)"}}>
         <h2 style={{margin:0,fontSize:16,fontWeight:800,letterSpacing:-0.3}}>Everything in CastSlate Premium</h2>
         <div style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:BRASS_ON_LIGHT}}>Included on every plan</div>
