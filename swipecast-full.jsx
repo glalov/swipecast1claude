@@ -59429,7 +59429,7 @@ function App(){
             {mmOpen&&<div className="nav-ddm nav-mm" role="menu" onClick={e=>e.stopPropagation()}>
               <h4>{navT('nav.mmHead')}</h4>
               <button role="menuitem" onClick={()=>{setMmOpen(false);navigate("events");}}><i className="ic"><Ico n="map-pin" s={17}/></i><b>{navT('nav.mmEvents')}</b></button>
-              <button role="menuitem" onClick={()=>{setMmOpen(false);navigate("actor-business-card");}}><i className="ic"><Ico n="qrcode" s={17}/></i><b>{navT('nav.mmCard')}</b></button>
+              <button role="menuitem" onClick={()=>{setMmOpen(false);navigate(isLoggedIn?"actor-business-card":"manager-mode");}}><i className="ic"><Ico n="qrcode" s={17}/></i><b>{navT('nav.mmCard')}</b></button>
               <button role="menuitem" className="nav-mm-cta" onClick={()=>{setMmOpen(false);navigate("manager-mode");}}>{navT('nav.mmCta')}<Tri/></button>
             </div>}
           </span>
