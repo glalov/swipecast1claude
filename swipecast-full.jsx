@@ -7266,7 +7266,7 @@ const PREMIUM_SHARED_FEATURES=[
   ["Actor Slate Video","— 7-sec intro"],
   ["Actor cards with QR","business, postcard & agent promo"],
   ["Manager Mode","monthly check-ins"],
-  ["Monthly industry events","New York & LA, new every month"],
+  ["Monthly industry events","New York & LA, vetted by our team"],
   ["Talent Agency & Manager Directory","650+ in LA, Beverly Hills & NYC"],
   ["Casting Companies Directory","131 active casting offices"],
   ["Acting & Film School Directory","351 schools & film programs"]
@@ -8234,8 +8234,8 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
   return(<div className={"page page-wide"+(slideIn?" cs-slide-in":"")}>
     <div className="section-label">Membership</div>
     <h1 style={{fontWeight:800,fontSize:34,letterSpacing:-1.2,marginBottom:8}}>Pick your plan.</h1>
-    <p style={{color:"var(--t2)",fontSize:14,marginBottom:32,maxWidth:640}}>
-      Free actors get their first casting submission free and can upload {FREE_PLAN.headshotsTotal} headshot. Upgrade to Premium ({PREMIUM_PRICE}) for unlimited submissions, unlimited photos, unlimited videos, Actor Slate Video, Actor Business Card with QR code, Manager Mode monthly career check-ins, monthly industry events in New York and LA, and the Talent Agency &amp; Manager Directory — 650+ talent agencies and management companies in LA &amp; New York — plus the Casting Companies Directory (131 active casting offices) and the Acting &amp; Film School Directory (351 schools and film programs).
+    <p style={{color:"var(--t1)",fontSize:17,lineHeight:1.6,marginBottom:32,maxWidth:640}}>
+      Free actors get their first casting submission free and can upload {FREE_PLAN.headshotsTotal} headshot. Premium unlocks everything below, {PREMIUM_PRICE}.
 </p>
     {/* Shared value band. Every plan carries the same features, so they are
         stated once here instead of three times inside the cards. */}
