@@ -91,7 +91,7 @@ const TRANSLATIONS = {
     'footer.blurb':'The casting platform for working actors. Built so every submission gets a real look.',
     'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
-    'footer.resources':'Resources','footer.successStories':'Success Stories',
+    'footer.resources':'Resources','footer.events':'Monthly Industry Events','footer.successStories':'Success Stories',
     'footer.postCasting':'Post a Casting','footer.pricing':'Pricing','footer.manageMembership':'Manage membership',
     'footer.payTalent':'Pay Talent',
     'footer.actorToolkit':'Actor Toolkit',
@@ -344,7 +344,7 @@ const TRANSLATIONS = {
     'footer.blurb':'La plataforma de casting para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
     'footer.talent':'Talento','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
     'footer.createProfile':'Crear perfil','footer.browse':'Convocatorias','footer.classes':'Clases',
-    'footer.resources':'Recursos','footer.successStories':'Historias de éxito',
+    'footer.resources':'Recursos','footer.events':'Eventos mensuales de la industria','footer.successStories':'Historias de éxito',
     'footer.postCasting':'Publicar convocatoria','footer.pricing':'Precios','footer.manageMembership':'Gestionar membresía',
     'footer.payTalent':'Pagar Talento',
     'footer.actorToolkit':'Kit del Actor',
@@ -9100,6 +9100,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="casting-directory">Casting Directory</L>
             <L to="school-directory">School Directory</L>
             {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
+            <L to="events">{t('footer.events')}</L>
             <L to="resources">{t('footer.resources')}</L>
           </div>
           <div>
