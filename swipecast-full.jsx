@@ -42391,7 +42391,10 @@ const ACG = (()=>{
     // Round 4: a side room is never the headline location when the seed
     // offers somewhere the story actually happens.
     const mainFits=fits.filter(p=>!V6_SIDE_ROOM.test(p)),mainPlaces=places.filter(p=>!V6_SIDE_ROOM.test(p));
-    const venue0=(mainFits.length?pick(mainFits):fits.length?pick(fits):mainPlaces.length?pick(mainPlaces):places.length?pick(places):fam==="photo"?"a daylight photo studio":r13Generic(need,story));
+    // Round 17: where the premise says it happens beats any other place on the
+    // seed ("a sign spinner on a busy corner" is not shot in a convention hall).
+    const inPremise=a=>{const pr=clean(seed.p||"");const m=a.filter(p=>{const w=clean(p).split(" ").filter(x=>x.length>3);return w.length&&pr.indexOf(w[w.length-1])>-1;});return m.length?m:a;};
+    const venue0=(mainFits.length?pick(inPremise(mainFits)):fits.length?pick(fits):mainPlaces.length?pick(inPremise(mainPlaces)):places.length?pick(places):fam==="photo"?"a daylight photo studio":r13Generic(need,story));
     const venue=v3Scrub(venue0);
     if(!need)need=v3Need(venue);
     return {venue,need,placeNP:venue};
@@ -45300,7 +45303,7 @@ const ACG = (()=>{
         return [`${sz}: ${units(days)}, ${dl}.`,`${sz}: ${units(days)}, with ${dl}.`,`It's ${sz[0].toLowerCase()+sz.slice(1)} with ${dl}, over ${units(days)}.`];},
       // Round 11: only a plain job noun reads well here ("a plow driver"); the
       // "know the X's world / what a X's day looks like" lines are retired.
-      prep:()=>/^[a-z-]+( [a-z-]+)?$/.test(lab)&&!/\b(one|who|that|other|new|old|young|older|younger|first|second)\b/.test(lab)?[`Come in knowing how ${v3Aa(lab)} ${pick(["talks","moves","works"])}.`,`Before the read, think about what ${v3Aa(lab)} notices first.`]:null,
+      prep:()=>/^[a-z-]+( [a-z-]+)?$/.test(lab)&&!/\b(one|who|that|other|new|old|young|older|younger|first|second)\b/.test(lab)?[`Before the read, think about what ${v3Aa(lab)} notices first.`]:null,
       sharewith:()=>P&&!lead?[`Most of ${F}'s scenes are with ${PF}, the ${PL}.`,`${F} mostly plays against ${PF} (the ${PL}).`,`You'll be working opposite ${PF}, the ${PL}, most of the time.`,`Chemistry with whoever plays ${PF} matters.`,`Every scene ${F} has, ${PF} is in it too.`,`Wherever ${F} goes, ${PF} is never far away.`]:null,
       partner:()=>P&&lead?[`${F}'s scenes are almost all with ${PF}, the ${PL}.`,`${PF}, the ${PL}, is the person ${F} deals with most.`,`The story keeps putting ${F} and ${PF} together.`,`${F} and ${PF} (the ${PL}) share most of the story.`,`Callbacks will pair ${F} with ${PF}.`,`Nearly every scene has ${PF} as the other half.`]:null
     })[move];
@@ -46048,6 +46051,8 @@ const ACG = (()=>{
     if(type==="Public Service Announcement")return pick(["Public Health","City","Statewide","Nonprofit","Community"]);
     if(/^(Corporate Video|Industrial \/ Training Video|Educational Video)$/.test(type))return pick(["National","Regional","Global","Major",""]);
     const c=String(cat||"").toLowerCase();
+    // Round 17: "National Barbershop" is not a thing.
+    if(/shop|bakery|restaurant|diner|repair|deli|pizza|hardware|florist|salon|barber|laundromat|cafe|butcher/.test(c))return pick(["Local","Family-Owned","Neighborhood",""]);
     const o=["Well-Known","National","Regional","Local","Major","","",""];
     if(/app|tech|software|delivery|subscription|drink|snack|skin|meal|bank|phone|online|smart/.test(c))o.push("Startup","Startup");
     if(/shop|bakery|restaurant|diner|repair|market|grocery|pizza|deli|hardware|florist|salon|barber|garden|plant|cafe|coffee/.test(c))o.push("Family-Owned","Local");
@@ -46506,6 +46511,95 @@ const ACG = (()=>{
       roles.forEach(r=>{r.description=String(r.description||"").replace(/\b([A-Z]{3,})\b(?=\s+[a-z])/g,(m,w)=>words.has(w.toLowerCase())?w.toLowerCase():m);});
     }
     if(item.shoot_location)item.shoot_location=String(item.shoot_location).replace(/^([^,(]+)/,m=>{const t=r13TrimVenue(m.trim());return t.charAt(0).toUpperCase()+t.slice(1)+(m.endsWith(" ")?" ":"");});
+    r17Teach(item);
+  }
+  // Round 17 (2026-11-09): the mistakes the owner's review of ten drafts found,
+  // written down as rules so new listings cannot repeat them.
+  const R17_SHOPLIKE=/store|shop|diner|restaurant|cafe|café|\bbar\b|market|bakery|laundromat|bodega|salon|counter|pharmacy|mall|arcade|bank|gym|deli|pizzeria|hotel|lobby/i;
+  const R17_GATHER=/hall|church|club|pub|park|barbershop|stoop|square/i;
+  const R17_WAITING=/hospital|clinic|ward|office|terminal|lobby|agency|court|airport|train station|bus station/i;
+  const R17_OUTDOOR=/ranger|trail|ridge|mountain|forest|campground|lookout|lake|farm|ranch|field/i;
+  // Places that exist only in certain parts of New York.
+  const R17_PLACES=[
+    [/courthouse|courtroom|city hall/i,["Downtown Brooklyn, Brooklyn","the Civic Center, Manhattan","Kew Gardens, Queens","the Grand Concourse, the Bronx"]],
+    [/convention (hall|center)|expo hall/i,["Hell's Kitchen, Manhattan","Midtown West, Manhattan"]],
+    [/seminar|lecture hall|business school|university|college campus/i,["Midtown, Manhattan","Morningside Heights, Manhattan","Greenwich Village, Manhattan"]]
+  ];
+  const R17_NOT_WHEN_DATED=/(schedule|calendar|details) (is|are) (shared|sent)|Nothing is locked|No fixed days|Flexible on timing|Days to be set|\b(are flexible|still loose|aren't locked yet|depend on who we cast|get set once|open to some changes|still being worked out|isn't final)\b|Once we cast|After callbacks|When the cast is set|pick days together/i;
+  const R17_NOT_ONE_DAY=/days you can't do|blackout days|any conflicts|your conflicts|Conflicts are fine|Some conflicts|A conflict or two|plan around them|work around/i;
+  const R17_LOGISTICS_QUOTE=/\s*[A-Z][\w'’-]*(?: [A-Z][\w'’-]*)* states: "[^"]*\b(availability|available|submit|submission|submissions|local|cover note|callbacks?|selects?|agent|reviewed|rolling)\b[^"]*"\.?/g;
+  function r17Teach(item){
+    const roles=item._roles||[];
+    const type=String(item.type||"");
+    const m=String(item.shoot_location||"").match(/^([^,]+), (.+) \(([^()]+)\)$/);
+    // 1. A courthouse or convention hall sits where those things really are.
+    if(m){
+      const rule=R17_PLACES.find(([re])=>re.test(m[1]));
+      if(rule&&m[3]!=="New York, NY")item.shoot_location=`${m[1]} (${m[3]})`;
+      else if(rule&&rule[1].indexOf(m[2])<0){
+        const a=pick(rule[1]),oldShort=m[2].split(",")[0],newShort=a.split(",")[0];
+        item.shoot_location=`${m[1]}, ${a} (${m[3]})`;item._areaName=a;
+        ["synopsis","tagline","schedule_note"].forEach(k=>{if(item[k])item[k]=String(item[k]).split(oldShort).join(newShort);});
+      }
+    }
+    // 2. Background belongs at the location it is written for.
+    const venueRaw=m?m[1]:String(item.shoot_location||"").split("(")[0].trim();
+    const venue=venueRaw.replace(/^(A|An|The)\s/,x=>x.toLowerCase());
+    if(venue){
+      const V=titleCase(stripArticle(venue));
+      const place=V.split(/\s+/).length>5?"Main Location":V;
+      const taken=new Set(roles.map(r=>r.name));
+      roles.forEach(r=>{
+        if(!/background/i.test(r.role_type||""))return;
+        const n=String(r.name||"");
+        const wrong=(/\bCustomers\b|\bShoppers\b/i.test(n)&&!R17_SHOPLIKE.test(venue))||(/\bRegulars\b/i.test(n)&&!R17_SHOPLIKE.test(venue)&&!R17_GATHER.test(venue))||(/Waiting Room/i.test(n)&&(!R17_WAITING.test(venue)||R17_OUTDOOR.test(venue)));
+        if(!wrong)return;
+        const crowds=R17_OUTDOOR.test(venue)?["Visitors","Hikers","Day-Trippers"]:["Townspeople","Locals","Neighbors","Visitors"];
+        const nm=cgShuffle(crowds).map(c=>`${c} Around the ${place} (Background)`).find(x=>!taken.has(x));
+        if(!nm)return;
+        taken.delete(n);taken.add(nm);r.name=nm;
+        r.description=pick([`People passing by ${venue} in the wide shots; natural pace, no looking at the camera.`,`Locals going about their day around ${venue}; expect to repeat the same walk between takes.`,`The everyday crowd near ${venue} while the main scenes play; small, natural movement only.`]);
+      });
+    }
+    // 3. Company credit matches the format.
+    {const p=String(item.prod||"");
+     if(/^(Independent|Privately|Self-financed)/.test(p)){
+       let q=p;
+       if(/\bfeature\b/i.test(q)&&!R10_FEATURE.test(type))q=q.replace(/\bfeature\b/i,"film");
+       if(/\bshort\b/i.test(q)&&!/Short|Student/.test(type))q=q.replace(/\bshort\b/i,"film");
+       if(/\bpilot\b/i.test(q)&&!/Pilot/.test(type))q=q.replace(/\bpilot\b/i,"series");
+       item.prod=q;
+     }}
+    // 4. A note cannot contradict the dates on the same listing.
+    if(item.shoot_start&&item.schedule_note){
+      const one=!item.shoot_end||item.shoot_end===item.shoot_start;
+      const S=v3Sentences(item.schedule_note);
+      const keep=S.filter(x=>!R17_NOT_WHEN_DATED.test(x)&&!(one&&R17_NOT_ONE_DAY.test(x)));
+      if(keep.length<S.length)item.schedule_note=keep.join(" ")||(one?"Note: Please confirm you can make the shoot date.":"Note: Please confirm you can make the shoot dates.");
+    }
+    // 5. The summary is story: no submission logistics quoted inside it, and
+    // a brand summary does not say the same thing twice.
+    if(item.synopsis){
+      let syn=String(item.synopsis).replace(R17_LOGISTICS_QUOTE,"").replace(/\s{2,}/g," ").trim();
+      if(r8Kind(type)==="brand"){
+        const words=t=>clean(t).split(" ").filter(w=>w.length>3).map(w=>w.replace(/s$/,""));
+        const S=v3Sentences(syn),out=[];const seen=new Set();
+        S.forEach((x,i)=>{const w=words(x);const dup=i>0&&w.length>=3&&w.filter(z=>seen.has(z)).length/w.length>=0.5;if(!dup){out.push(x);w.forEach(z=>seen.add(z));}});
+        syn=out.join(" ");
+      }
+      item.synopsis=syn;
+    }
+    // 6. Models have no "lead".
+    if(/^(Modeling|Photo Shoot|Print Campaign)$/.test(type)&&item.pay)item.pay=String(item.pay).replace(/\bthe lead\b/g,"the main model");
+    // 7. A sketch cannot point at a detail the listing never mentioned.
+    const said=clean(item.synopsis||"");
+    roles.forEach(r=>{
+      if(r._group)return;
+      const S=v3Sentences(r.description);
+      if(S.length<2)return;
+      const k=S.filter(x=>{const g=x.match(/\bthose (?:\w+ )?(minutes|hours|days|weeks|months|years|nights)\b/i);return !g||said.indexOf(clean(g[0]).replace(/^those /,""))>-1;});
+      if(k.length&&k.length<S.length)r.description=k.join(" ");
+    });
   }
   // ── Round 13 validators ──────────────────────────────────────────────────
   const R13_FEW=/\b(steps in once|in one scene|one scene only|just two scenes|two scenes\b|appears only at the very end|last (three|few) seconds|a one-day part|just one day for|is in one day only)\b/i;
@@ -46681,7 +46775,7 @@ const ACG = (()=>{
         formatplace:()=>where?[`${pick(["This is ","It's ","",""])}${art}${where}.`.replace(/^(a|an) /,"").replace(/^./,m=>m.toUpperCase()),`Open roles: ${who}.`]:null,
         production:()=>[`Our ${group} is ${making} ${art} and needs ${who}.`],
         question:()=>[pick(r11Question("brand")),`We're casting ${who} for ${art}${placeIn}.`],
-        people:()=>[`The ${noun} centers on ${who}.`,`It's ${art}${where}.`],
+        people:()=>abOk?[`The ${noun} centers on ${who}.`,`It's ${art}${where}.`]:null,
         role:()=>[`We're looking for ${who} for ${art}.`],
         titlefirst:null,inthis:null,
         coming:()=>[`Production starts soon on ${art}${where}.`,`Open roles: ${who}.`],
@@ -47961,7 +48055,7 @@ const ACG = (()=>{
         expires_at:expires,deadline:v5Iso(DT.deadline),_postedAt:v5Iso(acgNow()),shoot_start:startS,shoot_end:endS,
         shoot_location:`${capFirst(V.venue)}, ${area} (${city.name})`,
         schedule_note:schedule,
-        talent_scope:fam==="stage"?"Local — shoot city only":/^(ad|photo|audio|anim|corp)$/.test(fam)?"United States — Nationwide":"Local + self-report (within driving distance)",
+        talent_scope:fam==="stage"?"Local — shoot city only":/^(audio|anim)$/.test(fam)?"United States — Nationwide":"Local + self-report (within driving distance)",
         // Round 9 step 4: the board's order, biggest part first inside a rank.
         _roles:r9MergeBackground(named).slice().sort(compareRoles),_brandCat:brandCat||null,_areaName:area,_voiceKey:voice,_shootDays:plan.days,
         _v8:{persona:persona.k,warmth:persona.w,structs:res._v8StructsHere||[],tagSkel,weave},_brief:brief,_v5:{plan,tier:payTier,noteTier,castBucket:fam==="job"?v5CastBucket(named.length):castBucket,structure:PAY.structure,monthKey:DT.monthKey},_synBucket:synBucketFinal,
