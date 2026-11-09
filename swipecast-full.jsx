@@ -43027,6 +43027,10 @@ const ACG = (()=>{
     const v8rows=(h._v8Rows||[]).slice().sort((a,b)=>(b.t-a.t)||(b.i-a.i));
     h.v8Recent=v8rows.slice(0,50).map(r=>r.m);
     h.v8LastPersona=(h.v8Recent[0]||{}).persona||"";
+    // Round 16: which tagline models and role openings the board used lately, newest first.
+    {const newest=(existing||[]).slice().sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));
+     h.r16Tags=newest.slice(0,60).map(c=>r16TagMark(c.tagline));
+     h.r16Opens={};newest.slice(0,60).forEach(c=>(c.roles||[]).forEach(r=>{const k=r16OpenId(r&&r.description,r&&r.name);if(k)h.r16Opens[k]=(h.r16Opens[k]||0)+1;}));}
     h.v5=h.v5||{};h.v5.warmth={};
     h.v8Recent.forEach(m=>{if(m.warmth)h.v5.warmth[m.warmth]=(h.v5.warmth[m.warmth]||0)+1;});
     // v4 name cooldown: every first name and surname from the 50 most recent
@@ -43490,22 +43494,20 @@ const ACG = (()=>{
     "SAG-AFTRA":{min:1283,unit:"day",bg:231,standin:270,why:"SAG-AFTRA scale"},
     "SAG-AFTRA Low Budget":{min:834,unit:"day",why:"SAG-AFTRA Low Budget scale"},
     "SAG-AFTRA Moderate Low Budget":{min:449.05,unit:"day",why:"SAG-AFTRA Moderate Low Budget scale"},
-    "SAG-AFTRA Ultra Low Budget":{min:257,unit:"day",why:"SAG-AFTRA Ultra Low Budget scale"},
+    "SAG-AFTRA Ultra Low Budget":{min:257,unit:"day",bg:175,standin:200,why:"SAG-AFTRA Ultra Low Budget scale"},
     "SAG-AFTRA New Media":{min:257,unit:"day",why:"SAG-AFTRA New Media rates"},
     "SAG-AFTRA Short Project Agreement":{min:257,unit:"day",why:"the SAG-AFTRA Short Project Agreement rate"},
     "SAG-AFTRA Commercial":{min:822.30,unit:"session",why:"SAG-AFTRA Commercials scale"},
     "SAG-AFTRA Corporate/Educational":{min:673,unit:"day",why:"SAG-AFTRA Corporate/Educational scale"},
     "SAG-AFTRA Interactive":{min:1134.95,unit:"session",why:"SAG-AFTRA Interactive scale"}
   };
+  // Round 16 (2026-11-09): owner's rule. Union work on this board is ultra-low
+  // budget scale only, nothing near $1,000 a day. Full-scale contracts
+  // (Basic, Low Budget, Commercials, Corporate, Interactive) are not generated.
   function v5UnionFor(type){
-    if(/^(Feature Film|Independent Film)$/.test(type))return pick(["SAG-AFTRA Ultra Low Budget","SAG-AFTRA Moderate Low Budget","SAG-AFTRA Low Budget","SAG-AFTRA"]);
-    if(/^(TV Series|Streaming Series|Limited Series|Miniseries|TV Pilot)$/.test(type))return "SAG-AFTRA";
-    if(/^(Web Series|Vertical Series|Pitch Trailer|Sizzle Reel|Pilot Presentation)$/.test(type))return "SAG-AFTRA New Media";
+    if(/^(Feature Film|Independent Film|Background \/ Extras|Stand-In|Stunts)$/.test(type))return "SAG-AFTRA Ultra Low Budget";
+    if(/^(TV Series|Streaming Series|Limited Series|Miniseries|TV Pilot|Web Series|Vertical Series|Pitch Trailer|Sizzle Reel|Pilot Presentation)$/.test(type))return "SAG-AFTRA New Media";
     if(/^(Short Film|Proof of Concept)$/.test(type))return "SAG-AFTRA Short Project Agreement";
-    if(/^(Commercial|Ad Campaign)$/.test(type))return "SAG-AFTRA Commercial";
-    if(/^(Corporate Video|Industrial \/ Training Video|Educational Video)$/.test(type))return "SAG-AFTRA Corporate/Educational";
-    if(/^(Video Game|Motion Capture)$/.test(type))return "SAG-AFTRA Interactive";
-    if(/^(Background \/ Extras|Stand-In|Stunts)$/.test(type))return "SAG-AFTRA";
     return null;
   }
   function v5Cents(n){return Math.round(n*100)%100?"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):money(n);}
@@ -43557,11 +43559,11 @@ const ACG = (()=>{
   // ── Money ladders: believable round numbers, by rank ─────────────────────
   const V5_LADDER={
     stipendDay:[25,40,50,60,75],stipendFlat:[100,150,200,250],
-    lowDay:[50,75,100,125,150],midDay:[175,200,250,300,350],highDay:[400,450,500,600,750,800,1000,1200,1500],
+    lowDay:[50,75,100,125,150],midDay:[175,200,250,300,350],highDay:[300,350,400,450],
     lowFlat:[100,150,200,250,300],midFlat:[350,400,500,600,750],
     lowHour:[15,20,25],midHour:[30,35,40,45,50],
     lowEp:[75,100,125,150],midEp:[200,250,300,350],
-    lowSession:[75,100,125,150],midSession:[175,200,250,300,400],highSession:[450,500,600,750],
+    lowSession:[75,100,125,150],midSession:[175,200,250,300,400],highSession:[300,350,400],
     lowWeek:[150,200,250,300],midWeek:[400,450,500,600,700]
   };
   const V5_RANKS=["Lead","Supporting","Day Player","Background"];
@@ -43648,7 +43650,7 @@ const ACG = (()=>{
     if(floor&&(st==="day"||st==="buyout")){const kept=list.filter(v=>v>=floor);list=kept.length?kept:[floor,Math.round(floor*1.5),floor*2];}
     // Set bookings (stand-ins, doubles, background) have a real-world floor.
     if(fam==="job"&&band==="low"&&st==="day")list=[100,125,150];
-    if(type==="Stunts"&&band==="high")list=[450,500,600,750,800];
+    if(type==="Stunts"&&band==="high")list=[300,350,400,450];
     // Round 4: one rate for everyone is the exception — short shoots, tiny
     // casts and background-heavy calls, not a 20-day scripted shoot.
     P.flatAll=roles.length>1&&v6FlatAllowed(type,fam,plan.days,roles)&&Math.random()<0.07;
@@ -43679,7 +43681,7 @@ const ACG = (()=>{
       }
     }
     setAll((r,rk)=>fmt(rungs[rk]||rungs.Lead));
-    if(st==="buyout"){P.buyout=pick([500,750,1000,1200,1500,2000]);P.usage=pick([6,12]);}
+    if(st==="buyout"){P.buyout=pick([150,200,250,300]);P.usage=pick([6,12]);}
     P.rungs=rungs;
     return P;
   }
@@ -44590,7 +44592,7 @@ const ACG = (()=>{
     return 0;
   }
   // Minimum believable budget for the whole cast, by format.
-  const V6_MIN_BUDGET={"Miniseries":6000,"Limited Series":6000,"TV Series":6000,"Streaming Series":6000,"TV Pilot":3000,"Pilot Presentation":2000,"Feature Film":6000,"Independent Film":4000,"Commercial":1200,"Ad Campaign":1200,"Branded Content":1200,"Corporate Video":1200,"Industrial / Training Video":1000,"Print Campaign":1000,"Modeling":800};
+  const V6_MIN_BUDGET={"Miniseries":6000,"Limited Series":6000,"TV Series":6000,"Streaming Series":6000,"TV Pilot":3000,"Pilot Presentation":2000,"Feature Film":6000,"Independent Film":4000,"Commercial":200,"Ad Campaign":200,"Branded Content":200,"Corporate Video":200,"Industrial / Training Video":200,"Print Campaign":200,"Modeling":200};
   function v6RoleTotal(r){
     const x=parseRoleRate(r&&r.pay);if(!x)return 0;
     const days=Math.max(1,+r.est_days||1),t=String(r.pay).toLowerCase();
@@ -44855,6 +44857,8 @@ const ACG = (()=>{
     if(!/^(a|an|the|two|three|four|five|six|one|some|his|her|their)\b/i.test(np)&&!plural)np=v3Aa(np);
     return np;
   }
+  const R16_TAG_MARKS=["at its center","carries this","Everything in this","the heart of our","one rough stretch","What would you do as","Ever thought about","Story first","takes center stage","Join the cast of","front and center","This one has","ever rooted for","told as","Filming soon","On deck","belongs to","Set work on","Trouble finds","big problem for","Life gets complicated","over their head","Nothing goes to plan","what happens next","Set almost entirely","Most of this","Step inside","Pull up a chair","We're taking this","Natural on camera","Real people wanted","friendly types","Lights up soon","Be the face of","in front of a lens","in the works","to make and need","easy to work with","friendly crew","fresh faces","Next up for","Shooting "];
+  function r16TagMark(t){const x=String(t||"");return R16_TAG_MARKS.find(m=>x.indexOf(m)>-1)||"";}
   function v7Tagline(c,h,res){
     const {fmt,np,cast,days,cat,doc,brand}=c;
     let venue=String(c.venue||"").replace(/^(A|An|The)\s/,m=>m.toLowerCase());
@@ -44862,34 +44866,33 @@ const ACG = (()=>{
     // Round 12 (2026-10-27): no headline opens on "A"/"An". The format leads
     // bare, the way a board headline reads ("Short film set at a diner: ...").
     const art=x=>capFirst(stripArticle(String(x)));
+    // Round 16 (2026-11-09): owner's rule. A tagline is a hook, each with its
+    // own model. Never "<format> about <x>: <cast count>, <days>"; the cast
+    // and the schedule have their own fields. Every model carries one fixed
+    // phrase (R16_TAG_MARKS) so its use can be read back from the board.
+    const f=stripArticle(String(fmt));
+    const a=v3Aa(f);
     const cands=[];
-    if(doc){
-      cands.push(`${art(fmt)} about ${np} — casting ${cast}.`,`${art(fmt)} about ${np}: ${cast}, ${days}.`);
-    }else if(brand&&cat){
-      const who=pick(["brand","company","business"]);
-      const f0=String(fmt).replace(new RegExp("^"+String(cat).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\s+","i"),"");
-      cands.push(`${art(f0)} for ${v3Aa(cat.toLowerCase())} ${who}: ${cast}, ${days}.`,`${art(f0)} for ${v3Aa(cat.toLowerCase())} ${who} — casting ${cast}, ${days}.`);
-      if(venue)cands.push(`${art(fmt)} shot ${placePrep(venue)} ${venue} — casting ${cast}, ${days}.`);
-    }else{
-      cands.push(`${art(fmt)} about ${np} — casting ${cast}, ${days}.`,`${art(fmt)} about ${np}: ${cast}, ${days}.`);
-      if(venue&&!/studio|booth|stage|theater|soundstage|rehearsal|conference|writers/i.test(venue))cands.push(`${art(fmt)} shot ${placePrep(venue)} ${venue} — casting ${cast}, ${days}.`,`${art(fmt)} set ${placePrep(venue)} ${venue}: ${cast}, ${days}.`);
+    const hasVenue=venue&&!/studio|booth|stage|theater|soundstage|rehearsal|conference|writers/i.test(venue);
+    const at=hasVenue?`${placePrep(venue)} ${venue}`:"";
+    if(np){
+      const N=capFirst(np);
+      cands.push(`${art(f)} with ${np} at its center.`,`${N} carries this ${f}.`,`Everything in this ${f} turns on ${np}.`,`Meet ${np}, the heart of our ${f}.`,`Follow ${np} through one rough stretch in this ${f}.`,`What would you do as ${np}? This ${f} asks.`,`Ever thought about ${np}? Our ${f} has.`,`Story first: ${a} built around ${np}.`,`${N} takes center stage in our ${f}.`,`Join the cast of ${a} built on ${np}.`,`Here's ${a} with ${np} front and center.`,`Love a good ${f}? This one has ${np}.`,`${art(f)} for anyone who has ever rooted for ${np}.`,`The story of ${np}, told as ${a}.`,`Filming soon: ${a} following ${np}.`,`On deck: ${a} centered on ${np}.`,`Our next ${f} belongs to ${np}.`,`Set work on ${a} with ${np} in the spotlight.`);
+      if(!doc)cands.push(`Trouble finds ${np} in this ${f}.`,`Small ${f}, big problem for ${np}.`,`Life gets complicated for ${np} in this ${f}.`,`${N} is in over their head in this ${f}.`,`Nothing goes to plan for ${np} in this ${f}.`,`${art(f)} in the making: ${np} and what happens next.`);
+      if(at)cands.push(`Set almost entirely ${at}: ${a} with ${np} in the middle of it.`);
     }
-    cands.push(`${art(fmt)} about ${np}, ${days} — casting ${cast}.`,`Casting ${cast} for ${v3Aa(fmt)} about ${np}, ${days}.`,`${art(fmt)} about ${np} (${days}): casting ${cast}.`);
-    // Round 12: headlines that lead on the call or the schedule, not the format.
-    if(np&&Math.random()<0.3)cands.push(pick([`Now casting ${v3Aa(fmt)} about ${np}: ${cast}, ${days}.`,`Looking for ${cast} — ${stripArticle(String(fmt))} about ${np}, ${days}.`]));
-    if(np&&!/^(a|an)\s/i.test(String(days)))cands.push(`${capFirst(days)} on ${v3Aa(fmt)} about ${np}. Casting ${cast}.`);
-    // Round 6: the persona's own headline habits.
-    const Pn=c.persona||{};
-    if(!doc){
-      if(Pn.voice==="we"&&Pn.w==="warm")cands.push(`We're casting ${cast} for ${v3Aa(fmt)} about ${np} — ${days}.`,`Our ${fmt} about ${np} needs ${cast}, ${days}.`);
-      if(Pn.voice==="i")cands.push(`I'm casting ${cast} for ${v3Aa(fmt)} about ${np}, ${days}.`,`My ${fmt} about ${np} needs ${cast} for ${days}.`);
-      if(Pn.k==="student")cands.push(`${art(fmt)} for my thesis, about ${np}: ${cast}, ${days}.`);
-      if(Pn.w==="brisk")cands.push(`${capFirst(fmt)}: ${np}. ${capFirst(cast)}, ${days}.`,`${capFirst(fmt)} — ${np}. Casting ${cast}; ${days}.`,`${capFirst(fmt)}, ${days}. Roles: ${cast}.`);
-      if(Pn.voice==="prod"&&Pn.w!=="brisk")cands.push(`The production needs ${cast} for ${v3Aa(fmt)} about ${np}, ${days}.`);
+    if(at&&!doc)cands.push(`Most of this ${f} happens ${at}.`,`Step inside ${venue} for this ${f}.`,`Pull up a chair ${at}. This ${f} starts there.`,`We're taking this ${f} to ${venue}.`);
+    if(!np||(brand&&cat)){
+      const lc=String(cat||"").toLowerCase();
+      const f0=(lc?String(fmt).replace(new RegExp("^(a |an )?"+lc.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\s+","i"),""):f)||f;
+      const B=lc?`${lc} ${stripArticle(f0)}`:f;
+      const aB=v3Aa(B);
+      cands.push(`Natural on camera? This ${B} needs you.`,`Real people wanted for ${aB}.`,`Easygoing, friendly types welcome on this ${B}.`,`Lights up soon on ${aB}.`,`Be the face of ${aB}.`,`Comfortable in front of a lens? Try this ${B}.`,`${capFirst(B)} in the works, and the right look matters.`,`We've got ${aB} to make and need the right people.`,`Good on camera and easy to work with? This ${B} is for you.`,`New ${B}, friendly crew.`);
+      if(lc)cands.push(`${capFirst(lc)} ${pick(["brand","company","business"])} seeks fresh faces for its next ${stripArticle(f0)}.`,`Next up for ${v3Aa(lc)} ${pick(["brand","company","business"])}: a new ${stripArticle(f0)}.`);
+      if(at)cands.push(`Shooting ${at}: ${aB}.`);
     }
-    // Round 10: a brief with no sound subject is headlined without "about".
-    if(!np){for(let i=cands.length-1;i>=0;i--)if(/\babout\b/.test(cands[i])||/[—:]\s*\.|[—:]\s*[—:]|\s\.\s/.test(cands[i]))cands.splice(i,1);
-      cands.push(`${art(fmt)} — casting ${cast}, ${days}.`,`${capFirst(fmt)}: ${cast}, ${days}.`,`Casting ${cast} for ${v3Aa(fmt)}, ${days}.`);}
+    const tagWindow=c.tagWindow==null?40:c.tagWindow;
+    const tagRecent=new Set(((res._v8Recent||[]).map(r=>r&&r.tagSkel)).concat(h.r16Tags||[]).slice(0,tagWindow).filter(Boolean));
     const dbg=typeof window!=="undefined"&&window.__acgTagDebug?[]:null;
     const no=(x,why)=>{if(dbg)dbg.push(why+": "+x);return false;};
     const ok=cgShuffle(cands).map(x=>v7Art(x.replace(/\s{2,}/g," ").replace(/ ,/g,","))).filter(x=>{
@@ -44905,7 +44908,7 @@ const ACG = (()=>{
       if(!b8&&!v6TagShares(x,c.synopsis))return no(x,"shares nothing");
       // Round 6: no echoed phrase, and a headline shape used at most twice per 20 listings.
       if(v8SharedPhrase(x,c.synopsis,c.type,c.cat).length)return no(x,"echo "+v8SharedPhrase(x,c.synopsis,c.type,c.cat)[0]);
-      if(c.skel20&&(c.skel20[v8TagSkeleton(x,{np,cast,days,fmt,cat})]||0)>=3)return no(x,"skel20");
+      if(tagRecent.has(r16TagMark(x)))return no(x,"model used recently");
       return true;
     });
     if(dbg&&!ok.length)(window.__acgTagDebug.log=window.__acgTagDebug.log||[]).push({type:c.type,syn:c.synopsis,why:dbg});
@@ -45279,7 +45282,7 @@ const ACG = (()=>{
       contrast:()=>{if(!P)return null;const a=v8Adjs(sk.join(" "))[0],b=v8Adjs((c.partnerSk||[]).join(" "))[0];if(!a||!b||a===b)return null;
         return [`Where ${PF} is ${b}, ${F} is ${a}.`,`${PF} is ${b}; ${F} is ${a}.`,`Next to ${PF}, who is ${b}, ${F} reads as ${a}.`];},
       camera:()=>screen&&lead?[`The camera spends a lot of time on ${F}'s face.`,`Expect close-ups on ${F} in the quiet scenes.`,`The camera often stays on ${F} while others talk.`,`${F}'s reactions carry many of the shots.`]:null,
-      lookingfor:()=>{if(c.voice==="prod")return null;const a=v8Adjs(sk.join(" "));if(a.length<2)return null;
+      lookingfor:()=>{return null;const a=v8Adjs(sk.join(" "));if(a.length<2)return null;
         return [`We're looking for someone who can be ${a[0]} and ${a[1]} at once.`,`We want an actor who is ${a[0]} without losing ${a[1]}.`.replace(/losing (\w+)/,(m,w)=>`being ${w}`),`We'd love someone ${a[0]} and ${a[1]}.`,`${c.voice==="i"?"I'm":"We're"} after someone ${a[0]}, with a ${a[1]} side.`];},
       question:()=>{const q=low?"hold a scene with almost no lines":skill?`do real ${skill}`:/comedy/.test(G)?"be funny without winking at the audience":lead&&days>=5?`keep the part alive across ${units(days)}`:null;
         return q?[`Can you ${q}?`,`Can you ${q}? Then this is yours to read for.`,`Question for you: can you ${q}?`]:null;},
@@ -45332,7 +45335,7 @@ const ACG = (()=>{
         if(own===p.r)x=x.replace(new RegExp("\\bAs (?:the|our) "+esc(p.lab)+", "+esc(p.F)+"\\b","g"),"The "+p.LAB);
         x=x.replace(new RegExp("\\b"+esc(p.F)+"\\b","g"),ref(p));
       });
-      return x.replace(/\b(the|our|a) the\b/gi,"$1").replace(/\bthe the\b/gi,"the").replace(/(^|[.!?:]\s+)the (?=[A-Z]{2})/g,(m,a)=>a+"The ").replace(/\s{2,}/g," ").trim();
+      return x.replace(/\b(the [A-Z][A-Z ()]*), is\b/gi,(m,a)=>/[A-Z]{2}/.test(a)?`${a} is`:m).replace(/\b(the|our|a) the\b/gi,"$1").replace(/\bthe the\b/gi,"the").replace(/(^|[.!?:]\s+)the (?=[A-Z]{2})/g,(m,a)=>a+"The ").replace(/\s{2,}/g," ").trim();
     };
     ["synopsis","tagline","schedule_note","pay","submission_requirements"].forEach(k=>{if(item[k])item[k]=fix(item[k],null);});
     people.forEach(r=>{r.description=fix(r.description,r).replace(/^([a-z])/,m=>m.toUpperCase());});
@@ -45358,6 +45361,81 @@ const ACG = (()=>{
   // reason drafts were thrown away (409 of them in one batch of ten). It now
   // relaxes a step at a time: twice per window, then three times, then only
   // "not twice in this listing". A little more repetition beats no listing.
+  // Round 16 (2026-11-09): owner's rule. A role never opens "Peter is the
+  // owner / Amanda, the second owner / Jenny — the thief". Once a listing's
+  // roles are written, each opening is rebuilt so no two in the listing share
+  // a shape and the shapes least used on the board come first.
+  const R16_VERB=/^(Has|Had|Took|Won|Knows|Knew|Sees|Saw|Runs|Ran|Keeps|Kept|Wants|Wanted|Needs|Needed|Thinks|Thought|Works|Worked|Lives|Lived|Owns|Owned|Spends|Spent|Holds|Held|Left|Came|Comes|Goes|Went|Gets|Got|Dreams|Talks|Watches|Sells|Retired|Moved|Started|Stopped|Found|Lost|Never|Always|Still)\b/;
+  const R16_OPENS=[
+    {id:"meet",re:/^Meet N\b/,make:(F,b)=>`Meet ${F}, ${b}.`},
+    {id:"our",re:/^Our /,the:true,make:(F,b)=>`Our ${b.replace(/^the /i,"")} is ${F}.`},
+    {id:"seek",re:/^Seeking N\b/,make:(F,b)=>`Seeking ${F}, ${b}.`},
+    {id:"need",re:/^Needed: /,make:(F,b)=>`Needed: ${F}, ${b}.`},
+    {id:"play",re:/^You'd play /,make:(F,b)=>`You'd play ${F}, ${b}.`},
+    {id:"who",re:/^Who is N\?/,make:(F,b)=>`Who is ${F}? ${capFirst(b)}.`},
+    {id:"this",re:/^This is N\b/,make:(F,b)=>`This is ${F}, ${b}.`},
+    {id:"know",re:/^Everybody here knows /,make:(F,b)=>`Everybody here knows ${F} as ${b}.`},
+    {id:"story",re:/^In this story, /,make:(F,b)=>`In this story, ${F} is ${b}.`},
+    {id:"part",re:/^The part: /,make:(F,b)=>`The part: ${F}, ${b}.`},
+    {id:"cast",re:/^Casting N\b/,make:(F,b)=>`Casting ${F}, ${b}.`},
+    {id:"place",re:/^N's place in all this/,make:(F,b)=>`${F}'s place in all this: ${b}.`},
+    {id:"page",re:/^On the page, /,make:(F,b)=>`On the page, ${F} is ${b}.`},
+    {id:"goesby",re:/ goes by N here\./,the:true,make:(F,b)=>`${capFirst(b)} goes by ${F} here.`},
+    {id:"as",re:/^As [^.]*, N /,verb:true},
+    {id:"sk1",sketch:1},{id:"sk2",sketch:2}
+  ];
+  function r16OpenId(desc,name){
+    const F=String(name||"").split(" ")[0];if(!F)return "";
+    const t=String(desc||"").split(F).join("N");
+    const o=R16_OPENS.find(x=>x.re&&x.re.test(t));
+    return o?o.id:"";
+  }
+  function r16Split(r){
+    const F=String(r.name||"").split(" ")[0];if(!F)return null;
+    const S=v3Sentences(r.description);if(!S.length)return null;
+    const s=S[0].replace(/[.!?]+$/,"");
+    const eF=F.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    const lb=String(r._slot||"").trim();
+    const b0=/^[A-Z][a-z]+'s\s/.test(lb)||/^(the|a|an)\s/i.test(lb)?lb:`the ${lb}`;
+    const out=(b,tail)=>({F,bare:b.replace(/^our /i,"the "),rest:(tail?[`${capFirst(tail.replace(/[.!?]+$/,""))}.`]:[]).concat(S.slice(1))});
+    let m=s.match(new RegExp("^"+eF+", who (.+), is (.+)$"));
+    if(m)return out(m[2],m[1]);
+    if(lb)for(const j of [`, `,` is `,` — `]){
+      const head=F+j+b0;
+      if(s===head)return out(b0,"");
+      if(s.indexOf(head+", ")===0||s.indexOf(head+": ")===0)return out(b0,s.slice(head.length+2));
+    }
+    m=s.match(new RegExp("^"+eF+"(?:,| is| —) ((?:the|our|a|an|[A-Z][a-z]+'s) [^,:]+)$"));
+    if(m&&m[1].split(/\s+/).length<=7)return out(m[1],"");
+    return null;
+  }
+  function r16Reopen(people,c){
+    const res=c.res||{},h=c.h||{};
+    const here=new Set();
+    const runCounts=res._r16Opens||(res._r16Opens={});
+    people.forEach(r=>{
+      if(c.fn)return;
+      const p=r16Split(r);if(!p)return;
+      const {F,bare,rest}=p;
+      const first=rest[0]||"";
+      const ranked=R16_OPENS.map(o=>({o,n:((h.r16Opens||{})[o.id]||0)+(runCounts[o.id]||0)+Math.random()*2})).sort((a,b)=>a.n-b.n).map(x=>x.o);
+      for(const o of ranked){
+        if(here.has(o.id))continue;
+        if(o.the&&!/^the /i.test(bare))continue;
+        let text=null;
+        if(o.sketch){
+          if(!first||first.indexOf(F)>-1||/\?$/.test(first)||first.split(/\s+/).length>14)continue;
+          text=o.sketch===1?`${first} ${F} is ${bare}.${rest.length>1?" "+rest.slice(1).join(" "):""}`:`${first.replace(/[.!?]+$/,"")}: that's ${F}, ${bare}.${rest.length>1?" "+rest.slice(1).join(" "):""}`;
+        }else if(o.verb){
+          if(!R16_VERB.test(first))continue;
+          text=`As ${bare}, ${F} ${v5LowerFirst(first)}${rest.length>1?" "+rest.slice(1).join(" "):""}`;
+        }else text=`${o.make(F,bare)}${rest.length?" "+rest.join(" "):""}`;
+        here.add(o.id);runCounts[o.id]=(runCounts[o.id]||0)+1;
+        r.description=v4Pronouns(text,r.gender).replace(/\s{2,}/g," ").trim();
+        break;
+      }
+    });
+  }
   function v8ApplyStructures(named,c){
     for(let cap=2;cap<=4;cap++){
       const got=v8ApplyStructuresAt(named,c,cap);
@@ -45453,6 +45531,7 @@ const ACG = (()=>{
       const line=pick([`The ${w} in question is ${o}.`,`${o} is that ${w}.`,`That ${w} is ${o}.`]);
       r.description+=` ${line}`;
     }
+    r16Reopen(people,c);
     return out;
   }
   // The four mirrored slot-filled patterns from round 5, gone for good.
@@ -45812,7 +45891,8 @@ const ACG = (()=>{
 
   // ── 5. Pay bands ─────────────────────────────────────────────────────────
   // What "Roles paying up to $X" says, measured on the top per-unit rate.
-  const R8_PAY_MIX={u200:0.10,b200:0.30,b500:0.25,b1000:0.20,b2500:0.08,ns:0.07};
+  // Round 16: nothing above the $200-$475 band. Non-union work stays small and a real share pays nothing.
+  const R8_PAY_MIX={u200:0.38,b200:0.55,b500:0,b1000:0,b2500:0,ns:0.07};
   const R8_BAND_RANGE={u200:[50,175],b200:[200,475],b500:[500,950],b1000:[1000,2400],b2500:[2500,5000]};
   const R8_HIGH_TYPES=/^(Commercial|Branded Content|Ad Campaign|Print Campaign|Modeling|Corporate Video|Industrial \/ Training Video|Product Demo|Promo Video)$/;
   const R8_LOW_TYPES=/^(Short Film|Student Film|Experimental Film|Proof of Concept|Pitch Trailer|Sizzle Reel|Web Series|Vertical Series|Theater|Off-Off-Broadway Theater|Off-Broadway Theater|Musical Theater|Workshop \/ Staged Reading|Table Read|Podcast \/ Audio Drama|Dance Project|Performance Art|Music Video|Animation)$/;
@@ -45828,7 +45908,8 @@ const ACG = (()=>{
     const top=Math.max(0,...(c.roles||[]).map(r=>{const x=parseRoleRate(r.pay);return x?x.rate_amount:0;}));
     return top?r8BandOfAmount(top):"u200";
   }
-  function r8Bands(type,fam,tiers,days){
+  function r8Bands(type,fam,tiers,days){return r8BandsAll(type,fam,tiers,days).filter(b=>!/^(b500|b1000|b2500)$/.test(b));}
+  function r8BandsAll(type,fam,tiers,days){
     const out=[];
     const low=R8_LOW_TYPES.test(type),high=R8_HIGH_TYPES.test(type)||(type==="Commercial");
     if(tiers.some(t=>/unpaid|deferred|low/.test(t))&&!V6_BRAND_WORK.test(type)&&(!R8_BRAND.test(type)||/^(Photo Shoot|Spec Commercial)$/.test(type)))out.push("u200");
@@ -45851,12 +45932,15 @@ const ACG = (()=>{
     return low?out.filter(b=>!/b1000|b2500/.test(b)):out;
   }
   function r8TierFor(band,tiers,type){
-    const want={u200:["unpaid","deferred","low"],b200:["low","mid"],b500:["mid","high"],b1000:["high","union"],b2500:["high"],ns:["mid"]}[band]||["mid"];
+    const want={u200:["unpaid","deferred","low"],b200:["low","mid","union"],b500:["mid","high"],b1000:["high","union"],b2500:["high"],ns:["mid"]}[band]||["mid"];
     let ok=want.filter(t=>tiers.indexOf(t)>-1);
     // Round 10: above $350 a day a feature or series is a SAG-AFTRA job.
     if(r10NonUnionCap(type)&&/^(b500|b1000|b2500)$/.test(band))return tiers.indexOf("union")>-1?"union":null;
     // Unpaid and deferred stay with student, short, spec and passion formats.
     if(band==="u200")ok=ok.filter(t=>t==="low"||V5_UNPAID_OK.test(type)||V5_DEFER_OK.test(type));
+    // Round 16: unpaid-for-credit is a normal outcome where the format allows it; union stays occasional.
+    if(band==="u200"&&ok.indexOf("unpaid")>-1&&Math.random()<0.5)return "unpaid";
+    if(band==="b200"&&ok.indexOf("union")>-1&&Math.random()<0.8)ok=ok.filter(t=>t!=="union");
     if(band==="b1000"&&ok.indexOf("union")>-1&&R8_HIGH_TYPES.test(type)&&Math.random()<0.75)ok=ok.filter(t=>t!=="union");
     return ok.length?pick(ok):null;
   }
@@ -47098,12 +47182,8 @@ const ACG = (()=>{
   // The agreement that actually lands a feature in a pay band (published
   // minimums from 7/1/2026: ULB $257, MLB $449, LB $834, SAG-AFTRA $1,283).
   function r10UnionFor(type,band){
-    if(R10_FEATURE.test(type)){
-      if(band==="b1000"||band==="b2500")return pick(["SAG-AFTRA","SAG-AFTRA Low Budget"]);
-      if(band==="b500")return pick(["SAG-AFTRA Low Budget","SAG-AFTRA Moderate Low Budget"]);
-      return pick(["SAG-AFTRA Ultra Low Budget","SAG-AFTRA Moderate Low Budget"]);
-    }
-    if(R10_SERIES.test(type))return "SAG-AFTRA";
+    if(R10_FEATURE.test(type))return "SAG-AFTRA Ultra Low Budget";
+    if(R10_SERIES.test(type))return "SAG-AFTRA New Media";
     return null;
   }
   // The listing's rate set, by rank: no two listings in 100 share one.
@@ -47200,8 +47280,9 @@ const ACG = (()=>{
     const L=[];
     if(/SAG-AFTRA/.test(u)&&st==="union"){
       const U=V5_UNION[u]||{min:top,unit:"day"};
-      const sc=`${r8Amt(Math.round(U.min*100)/100)}${U.unit==="session"?" per session":"/day"}`;
-      const above=lead>U.min;
+      const baseAmt=item.type==="Stand-In"&&U.standin?U.standin:item.type==="Background / Extras"&&U.bg?U.bg:U.min;
+      const sc=`${r8Amt(Math.round(baseAmt*100)/100)}${U.unit==="session"?" per session":"/day"}`;
+      const above=lead>baseAmt;
       L.push(
         ()=>above?`${u} scale is ${sc}; the lead is paid ${M(lead)}.`:`${u} scale for every role (${sc}).`,
         ()=>above?`Of Note: ${u} agreement. Lead at ${M(lead)}, everyone else at scale (${sc}).`:`Of Note: all roles at ${u} scale, ${sc}.`,
@@ -47257,6 +47338,14 @@ const ACG = (()=>{
     }
     return L;
   }
+  // Round 16: some jobs get people to set, some do not, and the listing says so.
+  function r16Transport(pay,fam){
+    if(/^Payment not specified/.test(pay)||/^(audio|anim)$/.test(fam)||/\b(transit|travel|gas|parking|mileage|transportation)\b/i.test(pay))return pay;
+    const r=Math.random();
+    if(r<0.3)return `${pay} ${pick(["Transportation to set is provided.","Round-trip transit is covered.","Parking is covered.","A shuttle runs from the nearest train stop."])}`;
+    if(r<0.6)return `${pay} ${pick(["Transportation is not provided.","Getting to set is on you.","No travel or parking covered.","Actors arrange their own travel."])}`;
+    return pay;
+  }
   function r10UnpaidText(roles,item,noun){
     const u=String(item.union_status||"");
     const gas=roles.some(r=>/gas money/i.test(r.pay)),def=roles.some(r=>/deferred/i.test(r.pay));
@@ -47267,6 +47356,7 @@ const ACG = (()=>{
     if(/Student Film/.test(u))return pick([`Unpaid (deferred). SAG-AFTRA Student Film Agreement; ${perk} and ${cred}.`,`Unpaid (deferred pay under the SAG-AFTRA Student Film Agreement). ${capFirst(perk)} and ${copy}.`]);
     if(gas)return pick([`Unpaid. Gas money and ${perk}, plus ${copy}.`,`Unpaid. We cover gas and ${perk}; ${cred} too.`]);
     if(def)return pick([`Unpaid (deferred pay). ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid up front; pay is deferred until the ${noun} sells. ${capFirst(perk)} and ${cred}.`,`Unpaid (deferred). ${capFirst(copy)} and ${perk} guaranteed.`]);
+    if(!/^(play|musical|reading|read|performance)$/.test(noun)&&Math.random()<0.6)return pick([`Unpaid. In exchange: ${cred}, demo footage and on-set experience.`,`Unpaid, in exchange for ${cred}, demo footage and on-set experience. ${capFirst(perk)} provided.`,`No pay. You leave with demo material, ${cred} and real on-set experience.`,`Unpaid. Copy, credit and on-set experience in exchange for your time. ${capFirst(perk)} too.`]);
     return pick([`Unpaid. ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid. In return: ${perk}, ${copy} and ${cred}.`,`Unpaid. ${capFirst(copy)}, ${perk} and ${cred} for everyone.`,`Unpaid. ${capFirst(cred)}, ${copy}, and ${perk} on every day.`]);
   }
 
@@ -47825,9 +47915,9 @@ const ACG = (()=>{
       // Round 10: a brief's concept is a phrase, not a subject ("a commercial
       // about a print", "a live event about a their"), so brief headlines are
       // written without "about".
-      for(let ti=0;ti<9&&!tagline;ti++)tagline=v7Tagline({...tagCtx(),np:brief?"":(subjOpts[ti%Math.max(1,subjOpts.length)]||v7TagSubject(seed,brief)),persona,skel20},h,res);
+      for(let ti=0;ti<9&&!tagline;ti++)tagline=v7Tagline({...tagCtx(),np:brief?"":(subjOpts[ti%Math.max(1,subjOpts.length)]||v7TagSubject(seed,brief)),persona,skel20,tagWindow:ti<5?40:ti<7?20:8},h,res);
       if(tagline)tagline=v5ColonCase(v7FormatNoun(tagline,type)).replace(/^Now casting\b/,"Casting");
-      const tagSkel=tagline?v8TagSkeleton(tagline,{np:"",cast:"",days:""}):"";
+      const tagSkel=r16TagMark(tagline);
       if(!tagline){why('no tagline '+type);res._tagFail.add(seed.k+"|"+turn);continue;}
       const synBucketFinal=synBucketUsed;
       let schedule=v5Schedule({plan,start:DT.start,end:DT.end,startWeekday:V3_WEEKDAY[DT.start.getUTCDay()],stage:!!plan.stage&&!plan.read,read:!!plan.read,noun:v5Noun(type),minors,leadRehearse:plan.leadRehearse,persona},noteTier,h,res);
@@ -47846,7 +47936,7 @@ const ACG = (()=>{
          schedule=`${schedule} ${add}`;}}
       const payStr=v5PayText(named,PAY,{noun:v5Noun(type),fam,type,union,days:plan.days,weekend:/^(weekends|saturdays)$/.test(plan.mode||""),dayWord:plan.stage?"rehearsal":plan.sessions?"session":"day",leadWord:"lead"},h,res);
       if(!payStr){why('pay text used');continue;}
-      const payVoiced=v8PayVoice(payStr,{...PAY,tier:payTier,h,res},persona,PAY.structure==="unpaid");
+      const payVoiced=r16Transport(v8PayVoice(payStr,{...PAY,tier:payTier,h,res},persona,PAY.structure==="unpaid"),fam);
       // v4: the listing only asks for what at least one role requires.
       const needReel=named.some(r=>(r.required_media||[]).indexOf("reel")>-1),needSelf=named.some(r=>r.prescreen==="selftape"),needResume=named.some(r=>(r.required_media||[]).indexOf("resume")>-1),needFull=named.some(r=>(r.required_media||[]).indexOf("fullbody")>-1);
       const extras=(V3_REQ_EXTRA[type==="Table Read"?"read":fam]||V3_REQ_EXTRA.film).filter(x=>!(/self-tape/i.test(x)&&!needSelf)&&!(/\breel\b|recent footage|shot recently|demo/i.test(x)&&!needReel)&&!(/résumé|resume|\bCV\b|credit list/i.test(x)&&!needResume)&&!(/full-body|full-length/i.test(x)&&!needFull));
