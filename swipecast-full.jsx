@@ -2557,6 +2557,10 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .abt-item h3{margin:10px 0 14px;font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--acc);}
 .abt-item p{margin:0;font-size:17px;line-height:1.8;color:var(--t2);}
 .abt-item p strong{color:var(--acc);font-weight:700;}
+.abt-item p+p{margin-top:16px;}
+.abt-link{display:inline-flex;align-items:center;gap:8px;margin-top:18px;font-size:15px;font-weight:700;color:var(--teal);text-decoration:none;}
+.abt-link:hover{color:var(--teal-dk);text-decoration:underline;text-underline-offset:4px;}
+.abt-link .cs-tri{width:9px;height:10px;}
 .abt-card-fig{margin:44px 0 0;max-width:390px;}
 .abt-card-fig figcaption{font-size:12px;color:#7A7064;margin-top:14px;padding-left:6px;}
 .abt-coll{padding:84px 0 96px;border-top:1px solid var(--bdr);}
@@ -9958,6 +9962,7 @@ function AboutPage({onNavigate}){
         <div>
           <div className="abt-item"><div className="abt-lbl">An industry first</div><h3>The QR Talent Card</h3><p>CastSlate is the first and only casting platform to give every actor a downloadable, printable QR business card. Take it to a networking event and hand it to an agent, casting director, filmmaker, or producer — they scan it and, in seconds, land directly on your full CastSlate profile: every headshot, every reel, all your media, in one place. No fumbling for links, no paper resumes. A decision-maker can scan, watch, and make a call on the spot. <strong>No other casting platform offers this.</strong></p></div>
           <div className="abt-item"><div className="abt-lbl">Also a first</div><h3>Manager Mode</h3><p>We're also the first platform to offer Manager Mode — individual, hands-on managing for each member. Most sites take your subscription and forget you exist. We do the opposite: personalized guidance to help you sharpen your craft, strengthen your profile, and make smarter career moves over time. Real support for your growth, not just a place to park a headshot.</p></div>
+          <div className="abt-item"><div className="abt-lbl">One more first</div><h3>Live Industry Events, Every Month</h3><p>CastSlate is also the first casting platform to connect its actors with live, in-person industry events every month, where they meet filmmakers face to face. This business runs on relationships, and you can't build them from behind a screen. Most platforms are content to leave you at home, waiting on an inbox. We'd rather see you in the room: talking with a director after a screening, learning how productions really come together, and leaving with a contact who might call you for the next one.</p><p>Every month, our team searches every corner of New York and Los Angeles, in detail, for the film events happening across both cities. We don't just list whatever turns up. Only the most high-profile events make the cut, and every one is vetted and approved before it goes on the monthly list. <strong>A casting platform that wants you off the screen and in the room.</strong></p><a className="abt-link" href="/events" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("events");}}>See this month's events <Tri/></a></div>
         </div>
       </section>
       <section className="abt-coll">
