@@ -2596,17 +2596,17 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Manager Mode industry events: editorial split (approved 2026-09-13). */
 .mm-ev{padding:clamp(8px,1.2vw,16px) clamp(16px,5vw,40px) clamp(52px,7.2vw,80px);max-width:1140px;margin:0 auto;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,5vw,64px);align-items:center;}
 .mm-ev-lead h2{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:clamp(28px,3.4vw,42px);letter-spacing:-.6px;line-height:1.08;margin:0 0 12px;}
-.mm-ev-lead p{margin:0 0 16px;color:var(--t2);font-size:15px;line-height:1.6;}
-.mm-ev-fine{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.55;color:var(--t3);}
+.mm-ev-lead p{margin:0 0 16px;color:var(--t1);font-size:19px;line-height:1.55;font-weight:500;}
+.mm-ev-fine{display:flex;align-items:flex-start;gap:8px;font-size:16px;line-height:1.55;font-weight:500;color:var(--t1);}
 .mm-ev-fine .ti{color:#8A5A12;flex-shrink:0;margin-top:1px;}
-.mm-ev-fine b{color:var(--t1);font-weight:700;}
+.mm-ev-fine b{color:var(--t1);font-weight:800;}
 .mm-ev-rows{border-top:1px solid #E3D9C8;min-width:0;}
-.mm-ev-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;padding:18px 0;border-bottom:1px solid #E3D9C8;}
+.mm-ev-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;padding:22px 0;border-bottom:1px solid #E3D9C8;}
 .mm-ev-ic{width:40px;height:40px;border-radius:11px;background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mm-ev-ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;display:block;}
-.mm-ev-row h3{font-weight:800;font-size:16.5px;margin:0 0 4px;}
-.mm-ev-row p{margin:0;font-size:14.5px;line-height:1.6;color:var(--t2);}
-@media (max-width:860px){.mm-ev{grid-template-columns:1fr;}}
+.mm-ev-row h3{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:24px;margin:0 0 6px;}
+.mm-ev-row p{margin:0;font-size:18px;line-height:1.5;font-weight:500;color:var(--t1);}
+@media (max-width:860px){.mm-ev{grid-template-columns:1fr;}.mm-ev-lead p{font-size:18px;}.mm-ev-row h3{font-size:22px;}.mm-ev-row p{font-size:17px;}}
 /* Homepage Manager Mode teaser button: squared cream outline (approved 2026-09-13, option C). */
 .mm-teaser-btn{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#FFE6C2;padding:14px 24px;border:none;border-radius:8px;box-shadow:inset 0 0 0 1.5px rgba(255,230,194,.6);font-family:inherit;font-size:15px;font-weight:800;letter-spacing:.2px;cursor:pointer;white-space:nowrap;transition:background .15s,box-shadow .15s,transform .15s;}
 .mm-teaser-btn .ti{color:#F0B860;}
