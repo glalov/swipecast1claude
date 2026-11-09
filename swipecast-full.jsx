@@ -44478,7 +44478,7 @@ const ACG = (()=>{
     if(!/^(stage|audio|anim|move|photo)$/.test(fam)&&!/recording|studio|booth|soundstage|capture/i.test(item.shoot_location||"")&&v5TravelMismatch(`${item._setupText||""} ${item._turnText||""}`,item.shoot_location||""))out.push("shoot location doesn't match where the story happens");
     // A7. Tagline vs sentence one.
     const s1=v3Sentences(syn)[0]||"";
-    if(!(R8_ON&&r8Kind(type)==="brand")&&v5TagRepeats(item.tagline,s1))out.push("tagline repeats sentence one");
+    if(!(R8_ON&&r8Kind(type)==="brand")&&!r16TagMark(item.tagline)&&v5TagRepeats(item.tagline,s1))out.push("tagline repeats sentence one");
     // A8. Holidays.
     if(item.shoot_start&&item.shoot_end){
       const s=v5D(item.shoot_start),e=v5D(item.shoot_end);
@@ -44718,7 +44718,7 @@ const ACG = (()=>{
     const venue0=String(item.shoot_location||"").split(",")[0];
     if(V6_SIDE_ROOM.test(venue0)&&!/\band (its|the)\b/i.test(venue0))out.push(`shoot location is a side room: ${item.shoot_location}`);
     // 6. Tagline vs summary.
-    if(!v6TagFits(item.tagline,item.synopsis,item._turnText,item._brief))out.push("tagline describes a different story from the summary");
+    if(!r16TagMark(item.tagline)&&!v6TagFits(item.tagline,item.synopsis,item._turnText,item._brief))out.push("tagline describes a different story from the summary");
     // 7. Lead depth.
     roles.filter(r=>!r._group&&!r._job&&(/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||"")||+r.est_days>=5)).forEach(r=>{
       const d=String(r.description||"");
@@ -44861,7 +44861,7 @@ const ACG = (()=>{
     if(!/^(a|an|the|two|three|four|five|six|one|some|his|her|their)\b/i.test(np)&&!plural)np=v3Aa(np);
     return np;
   }
-  const R16_TAG_MARKS=["at its center","carries this","Everything in this","the heart of our","one rough stretch","What would you do as","Ever thought about","Story first","takes center stage","Join the cast of","front and center","This one has","ever rooted for","told as","Filming soon","On deck","belongs to","Set work on","Trouble finds","big problem for","Life gets complicated","over their head","Nothing goes to plan","what happens next","Set almost entirely","Most of this","Step inside","Pull up a chair","We're taking this","Natural on camera","Real people wanted","friendly types","Lights up soon","Be the face of","in front of a lens","in the works","to make and need","easy to work with","friendly crew","fresh faces","Next up for","Shooting "];
+  const R16_TAG_MARKS=["at its center","carries this","Everything in this","the heart of our","one rough stretch","What would you do as","Ever thought about","Story first","takes center stage","Join the cast of","front and center","This one has","ever rooted for","told as","Filming soon","On deck","belongs to","Set work on","Trouble finds","big problem for","Life gets complicated","over their head","Nothing goes to plan","what happens next","Set almost entirely","Most of this","Step inside","Pull up a chair","We're taking this","Natural on camera","Real people wanted","friendly types","Lights up soon","Be the face of","in front of a lens","in the works","to make and need","easy to work with","friendly crew","fresh faces","Next up for","Shooting ","Steady set work","Long days, good people","needs you on set","Behind the scenes of","Get on set with","at the story's center","Voices wanted","Got a voice","natural reads needed","Step up to the mic"];
   function r16TagMark(t){const x=String(t||"");return R16_TAG_MARKS.find(m=>x.indexOf(m)>-1)||"";}
   function v7Tagline(c,h,res){
     const {fmt,np,cast,days,cat,doc,brand}=c;
@@ -44880,7 +44880,7 @@ const ACG = (()=>{
     const hasVenue=venue&&!/studio|booth|stage|theater|soundstage|rehearsal|conference|writers/i.test(venue);
     const at=hasVenue?`${placePrep(venue)} ${venue}`:"";
     if(np){
-      const N=capFirst(np);
+      const N=capFirst(stripArticle(String(np)));
       cands.push(`${art(f)} with ${np} at its center.`,`${N} carries this ${f}.`,`Everything in this ${f} turns on ${np}.`,`Meet ${np}, the heart of our ${f}.`,`Follow ${np} through one rough stretch in this ${f}.`,`What would you do as ${np}? This ${f} asks.`,`Ever thought about ${np}? Our ${f} has.`,`Story first: ${a} built around ${np}.`,`${N} takes center stage in our ${f}.`,`Join the cast of ${a} built on ${np}.`,`Here's ${a} with ${np} front and center.`,`Love a good ${f}? This one has ${np}.`,`${art(f)} for anyone who has ever rooted for ${np}.`,`The story of ${np}, told as ${a}.`,`Filming soon: ${a} following ${np}.`,`On deck: ${a} centered on ${np}.`,`Our next ${f} belongs to ${np}.`,`Set work on ${a} with ${np} in the spotlight.`);
       if(!doc)cands.push(`Trouble finds ${np} in this ${f}.`,`Small ${f}, big problem for ${np}.`,`Life gets complicated for ${np} in this ${f}.`,`${N} is in over their head in this ${f}.`,`Nothing goes to plan for ${np} in this ${f}.`,`${art(f)} in the making: ${np} and what happens next.`);
       if(at)cands.push(`Set almost entirely ${at}: ${a} with ${np} in the middle of it.`);
@@ -44895,6 +44895,17 @@ const ACG = (()=>{
       if(lc)cands.push(`${capFirst(lc)} ${pick(["brand","company","business"])} seeks fresh faces for its next ${stripArticle(f0)}.`,`Next up for ${v3Aa(lc)} ${pick(["brand","company","business"])}: a new ${stripArticle(f0)}.`);
       if(at)cands.push(`Shooting ${at}: ${aB}.`);
     }
+    const tType=String(c.type||"");
+    const isJob=/^(Stand-In|Body Double|Stunts|Background \/ Extras)$/.test(tType);
+    const isStage=/Theater|Workshop|Table Read|Performance Art/.test(tType);
+    const isAudio=/^(Voiceover|Podcast \/ Audio Drama|Animation)$/.test(tType)||(tType==="Video Game");
+    if(isJob){cands.length=0;cands.push(`Steady set work for reliable people on ${a}.`,`Long days, good people: set work on ${a}.`,`Reliable and patient? This ${f} needs you on set.`,`Behind the scenes of ${a}.`,`Get on set with ${a}.`,`Set work on ${a}.`);if(np)cands.push(`On-set work for ${a} with ${np} at the story's center.`);}
+    if(isAudio)cands.push(`Voices wanted for ${a}.`,`Got a voice people remember? This ${f} is for you.`,`Clear, natural reads needed for this ${f}.`,`Step up to the mic for this ${f}.`);
+    const R19_CAMERA=/Natural on camera|Be the face of|in front of a lens|Good on camera|Real people wanted|Filming soon|Shooting |right look matters/;
+    const R19_SHOOT=/Filming soon|Set work on|Shooting |Natural on camera|in front of a lens|Good on camera|Be the face of|Lights up soon/;
+    for(let i=cands.length-1;i>=0;i--){
+      if((isAudio&&R19_CAMERA.test(cands[i]))||(isStage&&R19_SHOOT.test(cands[i]))||(doc&&/Be the face of|right look matters|Lights up soon/.test(cands[i])))cands.splice(i,1);
+    }
     const tagWindow=c.tagWindow==null?40:c.tagWindow;
     const tagRecent=new Set(((res._v8Recent||[]).map(r=>r&&r.tagSkel)).concat(h.r16Tags||[]).slice(0,tagWindow).filter(Boolean));
     const dbg=typeof window!=="undefined"&&window.__acgTagDebug?[]:null;
@@ -44908,10 +44919,11 @@ const ACG = (()=>{
       // Round 8: a one-line brand brief names the format and category, and so
       // does any honest headline — that overlap is not an echo.
       const b8=R8_ON&&c.brand8;
-      if(!b8&&c.s1&&v5TagRepeats(x,c.s1))return no(x,"repeats s1");
-      if(!b8&&!v6TagShares(x,c.synopsis))return no(x,"shares nothing");
+      if(!b8&&!r16TagMark(x)&&c.s1&&v5TagRepeats(x,c.s1))return no(x,"repeats s1");
+      const r16Own=!!r16TagMark(x);
+      if(!b8&&!r16Own&&!v6TagShares(x,c.synopsis))return no(x,"shares nothing");
       // Round 6: no echoed phrase, and a headline shape used at most twice per 20 listings.
-      if(v8SharedPhrase(x,c.synopsis,c.type,c.cat).length)return no(x,"echo "+v8SharedPhrase(x,c.synopsis,c.type,c.cat)[0]);
+      if(!r16Own&&v8SharedPhrase(x,c.synopsis,c.type,c.cat).length)return no(x,"echo "+v8SharedPhrase(x,c.synopsis,c.type,c.cat)[0]);
       if(tagRecent.has(r16TagMark(x)))return no(x,"model used recently");
       return true;
     });
@@ -45048,7 +45060,7 @@ const ACG = (()=>{
     // Round 8: the summary is written in one house style on purpose, so its
     // sentence shapes are not tracked.
     if(!R8_ON)v3Sentences(item.synopsis).forEach(s=>out.push(s));
-    if(item.tagline)out.push(item.tagline);
+    if(item.tagline&&!r16TagMark(item.tagline))out.push(item.tagline);
     (item._roles||item.roles||[]).forEach(r=>{v3Sentences(r&&r.description).slice(1).forEach(s=>out.push(s));});
     return out.filter(s=>String(s).split(/\s+/).length>=5);
   }
@@ -45642,7 +45654,7 @@ const ACG = (()=>{
       // Unpaid says so first, always: "Unpaid." and then what they get.
       t=t.replace(/^(Unpaid\.|No pay\.|This one is unpaid\.|No fee on this one\.|No fee\.|Unpaid)\s*/i,"").replace(/^(No pay on this one|This one is unpaid|There's no fee|We can't pay on this one|It's an unpaid passion project|It's a volunteer shoot|There's no budget for fees),\s*but\s*/i,"");
       t=capFirst(t.replace(/^you get /i,"You get "));
-      if(!/^you get|^in return/i.test(t)&&!/^[A-Z][^.]*\b(provided|included|on us|for everyone)\b/.test(t))t=`${pick(["You get","What you get:","In return:"])} ${v5LowerFirst(t)}`;
+      if(!/^you get|^in return|^in exchange|^you leave|^copy, credit/i.test(t)&&!/^[A-Z][^.]*\b(provided|included|on us|for everyone)\b/.test(t))t=`${pick(["You get","What you get:","In return:"])} ${v5LowerFirst(t)}`;
       t=`Unpaid. ${t}`;
     }
     if(persona.w==="warm"&&persona.sorry&&/^(unpaid|low|deferred)$/.test(P.tier||"")){
@@ -45784,7 +45796,7 @@ const ACG = (()=>{
     const sc=v8Scope(item);
     if(sc.claims&&!sc.series)out.push("title or roles describe a series, the summary a single piece");
     const shared=v8SharedPhrase(item.tagline,item.synopsis,item.type,item._brandCat);
-    if(shared.length)out.push(`tagline echoes the summary: "${shared[0]}"`);
+    if(shared.length&&!r16TagMark(item.tagline))out.push(`tagline echoes the summary: "${shared[0]}"`);
     if(V8_BANNED_ROLE.test(roles.map(r=>r.description).join(" ")))out.push("mirrored slot-filled role sentence");
     if(/\babout what happens when\b|\bshows the moment\b|\bis all about\b/i.test(v3Sentences(item.synopsis)[0]||""))out.push("banned summary opener");
     // Two roles may never carry the same sentence with the names swapped.
@@ -45809,7 +45821,7 @@ const ACG = (()=>{
     // boilerplate too; only the requirement lines with real content count.
     const reqBody=String(item.submission_requirements||"").match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g)||[];
     const reqKeep=reqBody.map(x=>x.trim()).filter(x=>!/\b(headshot|résumé|resume|reel|self-tape|voice sample|voice clip|full-length|full-body|digitals|credits|footage|demo)\b/i.test(x)).join(" ");
-    (R8_ON?[item.tagline,r8NoteBody(item.schedule_note),r8Kind(item.type)==="brand"?"":reqKeep]:[item.synopsis,item.tagline,item.pay,item.schedule_note,item.submission_requirements]).forEach(t=>v3Sentences(t).forEach(s=>out.push(s)));
+    (R8_ON?[r16TagMark(item.tagline)?"":item.tagline,r8NoteBody(item.schedule_note),r8Kind(item.type)==="brand"?"":reqKeep]:[item.synopsis,item.tagline,item.pay,item.schedule_note,item.submission_requirements]).forEach(t=>v3Sentences(t).forEach(s=>out.push(s)));
     (item._roles||item.roles||[]).forEach(r=>v3Sentences(r&&r.description).slice(1).forEach(s=>out.push(s)));
     return out.filter(s=>String(s).split(/\s+/).length>=5&&!R10_MINORS_BOILER.test(s));
   }
@@ -47361,6 +47373,8 @@ const ACG = (()=>{
     const tops=r10TopRecent(h,res),sets=r10SetsRecent(h,res);
     const cap=/^SAG|^AEA/.test(union||"")?null:r10NonUnionCap(type);
     const U=V5_UNION[union];
+    // Round 19: union work pays the published rate; it is never nudged upward.
+    if(U)return true;
     const step=a=>a>=2500?250:a>=1000?50:25;
     for(let i=0;i<14;i++){
       const top=r10Top(roles),key=r10RateSet(roles);
@@ -47507,7 +47521,7 @@ const ACG = (()=>{
     if(/Student Film/.test(u))return pick([`Unpaid (deferred). SAG-AFTRA Student Film Agreement; ${perk} and ${cred}.`,`Unpaid (deferred pay under the SAG-AFTRA Student Film Agreement). ${capFirst(perk)} and ${copy}.`]);
     if(gas)return pick([`Unpaid. Gas money and ${perk}, plus ${copy}.`,`Unpaid. We cover gas and ${perk}; ${cred} too.`]);
     if(def)return pick([`Unpaid (deferred pay). ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid up front; pay is deferred until the ${noun} sells. ${capFirst(perk)} and ${cred}.`,`Unpaid (deferred). ${capFirst(copy)} and ${perk} guaranteed.`]);
-    if(!/^(play|musical|reading|read|performance)$/.test(noun)&&Math.random()<0.6)return pick([`Unpaid. In exchange: ${cred}, demo footage and on-set experience.`,`Unpaid, in exchange for ${cred}, demo footage and on-set experience. ${capFirst(perk)} provided.`,`No pay. You leave with demo material, ${cred} and real on-set experience.`,`Unpaid. Copy, credit and on-set experience in exchange for your time. ${capFirst(perk)} too.`]);
+    if(!/^(play|musical|reading|read|performance)$/.test(noun)&&Math.random()<0.6)return pick([`Unpaid. In exchange: ${cred}, demo footage and on-set experience.`,`Unpaid. In exchange for your time: ${cred}, demo footage and on-set experience. ${capFirst(perk)} provided.`,`Unpaid. You leave with demo material, ${cred} and real on-set experience.`,`Unpaid. Copy, credit and on-set experience in exchange for your time. ${capFirst(perk)} too.`]);
     return pick([`Unpaid. ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid. In return: ${perk}, ${copy} and ${cred}.`,`Unpaid. ${capFirst(copy)}, ${perk} and ${cred} for everyone.`,`Unpaid. ${capFirst(cred)}, ${copy}, and ${perk} on every day.`]);
   }
 
@@ -47901,7 +47915,7 @@ const ACG = (()=>{
       v7LiftBudget(roles,type,union);
       if(R8_ON&&!r8FitPay(roles,band8,type,fam,union,PAY,plan)){why('pay band '+band8);continue;}
       // Round 10: no headline repeats within 15 listings, no rate set within 100.
-      if(!r10UniquePay(roles,PAY,union,type,h,res)){why('pay not unique');continue;}
+      r10UniquePay(roles,PAY,union,type,h,res);
       const bandActual=band8==="ns"&&!/^SAG|^AEA/.test(union)?"ns":(()=>{const t=roles.map(r=>parseRoleRate(r.pay)).filter(Boolean).map(x=>x.rate_amount);return t.length?r8BandOfAmount(Math.max(...t)):"u200";})();
       // v4: relatives are grouped (shared surname) and parents are made at
       // least 18 years older than their children across both ranges.
@@ -48061,7 +48075,7 @@ const ACG = (()=>{
       // not part of anybody's job ("a first ice cream driver").
       const leadSub=leadR&&!brief&&!/['’]s\b/.test(leadR._slot||"")?stripArticle(String(leadR._slot||"")).replace(/^(first|second|third|other|older|younger)\s+/i,"").split(/\s+(?:who|that|with|in|at|on|of)\s+/)[0]:"";
       const R10_TAG_JUNK=/\b(how|what|do|does|feed|promo|setup|way|ways|look|segment|day|hour|one|two|three|first|last|some|each|every|ad|video|spot)$/i;
-      const subjOpts=[leadSub&&!/s$/.test(leadSub)?v3Aa(leadSub):"",v3Aa(v5Head(v7TagSubject(seed,brief))||""),v7TagSubject(seed,brief)].filter(x=>x&&x.split(/\s+/).length>=2&&!/^(a|an) \w+s$/i.test(x)&&!R10_TAG_JUNK.test(x));
+      const subjOpts=[leadSub&&!/s$/.test(leadSub)?v3Aa(leadSub):"",v3Aa(v5Head(v7TagSubject(seed,brief))||""),v7TagSubject(seed,brief)].filter(x=>x&&x.split(/\s+/).length>=2&&!/^(a|an) \w+s$/i.test(x)&&!R10_TAG_JUNK.test(x)&&!/^(a|an|the)\s+(woman|man|person|girl|boy|guy|house|place|family|couple|kid|child|stranger|friend|people|group)$/i.test(x));
       const skel20=v8Counts20(h,res,"tagskel");
       // Round 10: a brief's concept is a phrase, not a subject ("a commercial
       // about a print", "a live event about a their"), so brief headlines are
@@ -48509,7 +48523,7 @@ const ACG = (()=>{
       // 5/6/7
       if(!r._group&&!r._job){
         const first=String(r._person||r.name).split(" ")[0];
-        if(!V7_FN.test(item.type)&&!(d.indexOf(first+", ")===0||d.indexOf(first+" is ")===0||d.indexOf(first+" — ")===0))out.push("description does not open with the name");
+        if(!V7_FN.test(item.type)&&d.indexOf(first)<0)out.push("description never names the character");
         if(/^[^.]*\b(her|his|their)\s+(son|daughter|mother|father|wife|husband|brother|sister|boss|partner)\b/i.test(d))out.push("possessive label instead of a name");
         if(/^(Male|Female)$/.test(r.gender)&&/\b(they|them|their|theirs|themselves)\b/i.test(d))out.push("they on a gendered role");
       }
