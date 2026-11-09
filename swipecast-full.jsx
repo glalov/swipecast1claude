@@ -3657,6 +3657,7 @@ body.sheet-push .b2t-cube{display:none;}
 @keyframes navNewTw{0%{opacity:0;transform:scale(0) rotate(0)}40%{opacity:1;transform:scale(1.15) rotate(45deg)}100%{opacity:0;transform:scale(.2) rotate(110deg)}}
 @keyframes navNewRow{0%,100%{background:transparent}35%{background:rgba(240,184,96,.18)}}
 @media (prefers-reduced-motion:reduce){.nav-ddm .nav-new,.nav-ddm .nav-new .gl::after,.nav-ddm .nav-new .sp,.nav-ddm button.nav-dd-new{animation:none!important;}}
+#mm-events,#mm-card{scroll-margin-top:100px;}
 .nav-ddm.nav-mm{left:auto;right:0;transform:none;width:340px;animation:navMmIn .16s ease both;}
 @keyframes navMmIn{from{opacity:0;}to{opacity:1;}}
 .nav-ddm.nav-mm h4{position:relative;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:22px;line-height:1.15;color:var(--t1);margin:16px 20px 6px;}
@@ -11941,7 +11942,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
     {/* Editorial split (approved 2026-09-13, round-2 demo "3"): serif headline + honest note on the
         left, two ruled city rows on the right. No pills/tags. The note says plainly that events are
         only suggested when a good one exists and are not guaranteed. Styles: .mm-ev* next to .mm-bc. */}
-    <section className="mm-ev">
+    <section className="mm-ev" id="mm-events">
       <div className="mm-ev-lead">
         <div className="section-label">Industry Events</div>
         <h2>Get out of your apartment. Get in the room.</h2>
@@ -11977,7 +11978,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
         the four features are a 2x2 grid of icon tiles, and the example is the REAL landscape
         Actor Business Card (AgdCard, same as the Agency Directory / ActorCardPreview), not the
         old square mockup. Styles: .mm-bc* next to .lh-mm in the global CSS. */}
-    <section style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}>
+    <section id="mm-card" style={{padding:"0 clamp(16px,5vw,40px) clamp(56px,8vw,88px)"}}>
       <div style={{maxWidth:1140,margin:"0 auto"}}>
         <div className="mm-bc">
           <div className="mm-bc-text">
@@ -59130,6 +59131,8 @@ function App(){
   const [dirOpen,setDirOpen]=useState(false);
   const [mmOpen,setMmOpen]=useState(false);
   const mmTimer=useRef(null);
+  // Menu rows land on the matching section of Manager Mode, so nobody skips the page (owner, 2026-11-09).
+  const goMmSection=(id)=>{setMmOpen(false);navigate("manager-mode");let n=0;const t=setInterval(()=>{const el=document.getElementById(id);if(el||++n>40){clearInterval(t);if(el)setTimeout(()=>el.scrollIntoView({block:"start"}),120);}},100);};
   const dirRef=useRef(null);
   const dirTimer=useRef(0);
   useEffect(()=>{
@@ -59428,8 +59431,8 @@ function App(){
             {navT('nav.managerMode')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {mmOpen&&<div className="nav-ddm nav-mm" role="menu" onClick={e=>e.stopPropagation()}>
               <h4>{navT('nav.mmHead')}</h4>
-              <button role="menuitem" onClick={()=>{setMmOpen(false);navigate("events");}}><i className="ic"><Ico n="map-pin" s={17}/></i><b>{navT('nav.mmEvents')}</b></button>
-              <button role="menuitem" onClick={()=>{setMmOpen(false);navigate(isLoggedIn?"actor-business-card":"manager-mode");}}><i className="ic"><Ico n="qrcode" s={17}/></i><b>{navT('nav.mmCard')}</b></button>
+              <button role="menuitem" onClick={()=>goMmSection("mm-events")}><i className="ic"><Ico n="map-pin" s={17}/></i><b>{navT('nav.mmEvents')}</b></button>
+              <button role="menuitem" onClick={()=>goMmSection("mm-card")}><i className="ic"><Ico n="qrcode" s={17}/></i><b>{navT('nav.mmCard')}</b></button>
               <button role="menuitem" className="nav-mm-cta" onClick={()=>{setMmOpen(false);navigate("manager-mode");}}>{navT('nav.mmCta')}<Tri/></button>
             </div>}
           </span>
