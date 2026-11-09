@@ -155,7 +155,7 @@ const TRANSLATIONS = {
     'reg.cd.createAccount':'Create Account','reg.cd.creating':'Creating Account…',
     // Search
     'search.title':'Browse Castings','search.allTypes':'All Types','search.allLocations':'All Locations',
-    'search.allGenders':'All Genders','search.allEthnicities':'All Ethnicities','search.allUnion':'All Unions','search.typeShort':'Type','search.locationShort':'Location','search.unionShort':'Union','search.castingCalls':'casting calls','search.castingCall':'casting call','search.showingShort':'Showing {from}–{to}',
+    'search.allGenders':'All Genders','search.allEthnicities':'All Ethnicities','search.allUnion':'All Unions','search.typeShort':'Type','search.locationShort':'Location','search.unionShort':'Union','search.callsPosted':'{n} casting calls posted','search.callsIn':'Casting calls in {city}','search.callsPlain':'Casting calls','search.noExact':'No exact matches open right now. Here are the closest open roles.','search.closeMore':'More open roles close to what you picked','search.matches':'Matches','search.closedTag':'Closed','search.similar':'See similar roles','search.past':'See past castings','search.backOpen':'Back to open roles','search.showingShort':'Showing {from}–{to}',
     'search.filterType':'Type','search.filterLocation':'Location','search.filterGender':'Gender',
     'search.filterEthnicity':'Ethnicity','search.filterUnion':'Union',
     'search.noResults':'No castings match your filters.','search.clearFilters':'Clear filters',
@@ -407,7 +407,7 @@ const TRANSLATIONS = {
     'reg.cd.createAccount':'Crear cuenta','reg.cd.creating':'Creando cuenta…',
     // Search
     'search.title':'Convocatorias de casting','search.allTypes':'Todos los tipos','search.allLocations':'Todas las ciudades',
-    'search.allGenders':'Todos los géneros','search.allEthnicities':'Todos los orígenes','search.allUnion':'Todos los sindicatos','search.typeShort':'Tipo','search.locationShort':'Ubicación','search.unionShort':'Sindicato','search.castingCalls':'convocatorias','search.castingCall':'convocatoria','search.showingShort':'Mostrando {from}–{to}',
+    'search.allGenders':'Todos los géneros','search.allEthnicities':'Todos los orígenes','search.allUnion':'Todos los sindicatos','search.typeShort':'Tipo','search.locationShort':'Ubicación','search.unionShort':'Sindicato','search.callsPosted':'{n} convocatorias publicadas','search.callsIn':'Convocatorias en {city}','search.callsPlain':'Convocatorias','search.noExact':'No hay coincidencias exactas abiertas ahora. Estos son los papeles abiertos más cercanos.','search.closeMore':'Más papeles abiertos cercanos a lo que elegiste','search.matches':'Coincide','search.closedTag':'Cerrada','search.similar':'Ver papeles similares','search.past':'Ver convocatorias pasadas','search.backOpen':'Volver a los papeles abiertos','search.showingShort':'Mostrando {from}–{to}',
     'search.filterType':'Tipo','search.filterLocation':'Ubicación','search.filterGender':'Género',
     'search.filterEthnicity':'Origen étnico','search.filterUnion':'Sindicato',
     'search.noResults':'Ninguna convocatoria coincide con tus filtros.','search.clearFilters':'Borrar filtros',
@@ -3216,6 +3216,11 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .brw-f:after{content:"";position:absolute;right:15px;top:50%;margin-top:-2px;border:5px solid transparent;border-top-color:var(--t3);pointer-events:none;}
 .brw-go{flex:none;margin-left:8px;border:0;border-radius:10px;background:#33826A;color:#FFFFFF;font:inherit;font-weight:800;font-size:16px;padding:0 26px;cursor:pointer;}
 .brw-go:hover{background:#276551;}
+.brw-note{background:#FFF8E8;border:1px solid #E8D29C;border-radius:10px;padding:12px 16px;font-weight:700;font-size:15px;color:var(--t1);margin:0 0 14px;}
+.brw-match{display:inline-block;margin:0 0 10px;background:#E5F0EA;color:#276551;font-size:12.5px;font-weight:800;border-radius:999px;padding:4px 10px;}
+.brw-closed{display:inline-flex;align-items:center;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#ECE7DD;color:#5A5348;border-radius:999px;padding:5px 11px;}
+.brw-past{text-align:center;margin:18px 0 0;}
+.brw-past button{border:0;background:none;font:inherit;font-weight:700;font-size:14.5px;color:var(--t2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 @media(max-width:760px){.brw-h1{font-size:30px;}.brw-bar{flex-wrap:wrap;padding:8px;}.brw-q{flex:1 1 100%;height:46px;border-bottom:1px solid #EEEAE2;padding:0 8px;}.brw-f{flex:1 1 30%;min-width:0;height:46px;border-left:0;}.brw-f+.brw-f{border-left:1px solid #EEEAE2;}.brw-f select{width:100%;max-width:none;min-height:46px;font-size:14px;padding:0 24px 0 8px;}.brw-f:after{right:8px;}.brw-go{flex:1 1 100%;margin:6px 0 0;height:46px;}}
 .search-bar{display:flex;gap:12px;margin-bottom:32px;}
 .search-bar .input{flex:1;}
@@ -18328,7 +18333,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   },[sheetCasting,closeSheet,animateClose]);
   const [fetchErr,setFetchErr]=useState("");          // surfaced castings fetch error
   const [lastFetchAt,setLastFetchAt]=useState(0);     // timestamp of last successful fetch
-  useEffect(()=>{setPg(1);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,f.castingType,mode]);
+  const [showPast,setShowPast]=useState(false);       // "See past castings" on a filtered view
+  useEffect(()=>{setPg(1);setShowPast(false);},[q,f.type,f.location,f.union,f.gender,f.ethnicity,f.castingType,mode]);
 
   // ── Load Cast Me As filter IDs when castingType filter changes ─────────────
   useEffect(()=>{
@@ -18544,7 +18550,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   if(f.location&&!locCounts[f.location])locOptions.push([f.location,0]);
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!String(t.union||"").split("/").map(x=>x.trim()).includes(f.union))return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
   const landingKey=urlToLandingKey();
-  const fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(landingKey&&!landingMatches(c,landingKey))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&canonCastingCity(c.location)!==f.location)return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
+  let fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(landingKey&&!landingMatches(c,landingKey))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&canonCastingCity(c.location)!==f.location)return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
@@ -18553,11 +18559,32 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const newIds=new Set(fc.filter(c=>castingSortBucket(c)===0&&castingIsRecent(c)).sort(castingRecencyCompare).slice(0,3).map(c=>c.id));
   const browseRank=c=>newIds.has(c.id)?0:castingIsPick(c)?1:2;
   fc.sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(browseRank(a)-browseRank(b))||castingRecencyCompare(a,b));
+  // Filters show open roles only (owner, 2026-11-09). When too few match exactly, the closest open
+  // roles fill in, ranked union > location > type, each tagged with what it matches. Closed castings
+  // stay in the unfiltered list and behind "See past castings".
+  const postedTotal=fc.length;
+  const hasDrop=!landingKey&&!!(f.type||f.location||f.union);
+  let exactN=-1;const closeTags=new Map();
+  if(hasDrop){
+    if(showPast){fc=fc.filter(c=>castingSortBucket(c)!==0);}
+    else{
+      const exact=fc.filter(c=>castingSortBucket(c)===0);
+      const ids=new Set(exact.map(c=>c.id));
+      const need=Math.max(0,8-exact.length);
+      const near=need===0?[]:allCastings.filter(c=>!castingIsScheduled(c)&&castingSortBucket(c)===0&&!ids.has(c.id)&&(!q||c.title.toLowerCase().includes(q.toLowerCase())||(c.desc||"").toLowerCase().includes(q.toLowerCase())))
+        .map(c=>{const m=[];let n=0;if(f.union&&(c.union||"").includes(f.union)){n+=4;m.push(f.union);}if(f.location&&canonCastingCity(c.location)===f.location){n+=3;m.push(f.location);}if(f.type&&castingTypeMatches(c.type,f.type)){n+=2;m.push(f.type);}return{c,n,m};})
+        .sort((a,b)=>(b.n-a.n)||castingRecencyCompare(a.c,b.c)).slice(0,need);
+      near.forEach(x=>closeTags.set(x.c.id,x.m));
+      exactN=exact.length;
+      fc=[...exact,...near.map(x=>x.c)];
+    }
+  }
+  const seeSimilar=(c)=>{const fam=["Film","TV","Theater","Commercial","Modeling"].find(x=>castingTypeMatches(c.type,x))||"";setF(x=>({...x,type:fam,location:canonCastingCity(c.location)||"",union:""}));window.scrollTo(0,0);};
   const brwPhone=typeof window!=="undefined"&&window.innerWidth<=760;
   return(<div className="page page-wide page-browse">
     {landingKey
       ?<div className="section-label">{landingKey?<>{landingDef(landingKey)?.label||t('search.title')}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:null}</div>
-      :<h1 className="brw-h1">{loading&&fc.length===0?t('search.title'):fc.length+" "+t(fc.length===1?'search.castingCall':'search.castingCalls')}</h1>}
+      :<h1 className="brw-h1">{loading&&fc.length===0?t('search.title'):hasDrop?(f.location?t('search.callsIn').replace('{city}',f.location):t('search.callsPlain')):q?t('search.callsPlain'):t('search.callsPosted').replace('{n}',postedTotal)}</h1>}
     {/* One bar for search and filters (owner, 2026-11-08). */}
     <div className="brw-bar">
       <label className="brw-q"><i className="ti ti-search" aria-hidden="true"/><input placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/></label>
@@ -18624,6 +18651,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                look older than the ones above. */
             const isNewCard=newIds.has(rawC.id)&&!isFeat;
             return(<React.Fragment key={c.id}>
+            {exactN>=0&&closeTags.size>0&&(pg-1)*10+ci===exactN&&<p className="brw-note">{t(exactN===0?'search.noExact':'search.closeMore')}</p>}
             <div className={"b5-card"+(isFeat||isNewCard?" b5-pick":"")+(isNewCard?" b5-new":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
               onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
               onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
@@ -18657,9 +18685,10 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     {shootTxt&&<span><b>Shoots</b>{shootTxt.replace(/^Shoots\s+/,"")}</span>}
                     {whereTxt&&<span><b>Where</b>{whereTxt}</span>}
                   </div>}
+                  {closeTags.get(rawC.id)&&closeTags.get(rawC.id).length>0&&<span className="brw-match">{t('search.matches')}: {closeTags.get(rawC.id).join(", ")}</span>}
                   <div className="b5-actions">
                     {isArchived||isExpiredCasting
-                      ?<span className="badge" style={{background:"rgba(192,57,43,0.08)",color:"#c0392b",fontWeight:700,border:"1px solid rgba(192,57,43,0.25)"}}>{isArchived?"Position filled":"Applications closed"}</span>
+                      ?<><span className="brw-closed">{isArchived?"Position filled":t('search.closedTag')}</span><button type="button" className="b5-ghost" onClick={e=>{e.stopPropagation();seeSimilar(rawC);}}>{withTri(t('search.similar'))}</button></>
                       :<button type="button" className="b5-ghost" onClick={e=>{e.stopPropagation();openSheet(rawC);}}>{withTri(btnLabel)}</button>}
                     {/* One Save per casting (owner, 2026-10-27): saved_castings is per casting, so the old
                         per-role bookmarks all lit up together and looked broken. */}
@@ -18702,6 +18731,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             {ci===3&&(pg===1||pg===3)&&pageArr.length>4&&authReady&&!session?.user&&pageArr.slice(0,4).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=3&&<ClapperBreak key={"clap-"+pg} passed={fc.slice(0,(pg-1)*10+4).reduce((n,x)=>n+((x&&x.roles)||[]).filter(Boolean).length,0)} onNavigate={onNavigate}/>}
             {pg===1&&ci===7&&pageArr.length>=9&&pageArr.slice(0,8).filter(x=>x&&x.status!=="archived"&&!castingIsExpired(x)).length>=6&&<FilmEventBanner/>}
             </React.Fragment>);})}</div>
+          {hasDrop&&<p className="brw-past"><button type="button" onClick={()=>{setShowPast(v=>!v);setPg(1);window.scrollTo(0,0);}}>{t(showPast?'search.backOpen':'search.past')}</button></p>}
           {fc.length>10&&(()=>{const tp=Math.ceil(fc.length/10);
             /* Short pagination (owner, 2026-10-27): first, last and the pages around the current one,
                with "…" gaps, instead of all 18 numbers in a row (wrapped into several rows on phones).
