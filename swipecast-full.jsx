@@ -44882,7 +44882,7 @@ const ACG = (()=>{
     if(np){
       const N=capFirst(stripArticle(String(np)));
       cands.push(`${art(f)} with ${np} at its center.`,`${N} carries this ${f}.`,`Everything in this ${f} turns on ${np}.`,`Meet ${np}, the heart of our ${f}.`,`Follow ${np} through one rough stretch in this ${f}.`,`What would you do as ${np}? This ${f} asks.`,`Ever thought about ${np}? Our ${f} has.`,`Story first: ${a} built around ${np}.`,`${N} takes center stage in our ${f}.`,`Join the cast of ${a} built on ${np}.`,`Here's ${a} with ${np} front and center.`,`Love a good ${f}? This one has ${np}.`,`${art(f)} for anyone who has ever rooted for ${np}.`,`The story of ${np}, told as ${a}.`,`Filming soon: ${a} following ${np}.`,`On deck: ${a} centered on ${np}.`,`Our next ${f} belongs to ${np}.`,`Set work on ${a} with ${np} in the spotlight.`);
-      if(!doc)cands.push(`Trouble finds ${np} in this ${f}.`,`Small ${f}, big problem for ${np}.`,`Life gets complicated for ${np} in this ${f}.`,`${N} is in over their head in this ${f}.`,`Nothing goes to plan for ${np} in this ${f}.`,`${art(f)} in the making: ${np} and what happens next.`);
+      if(!doc)cands.push(`Trouble finds ${np} in this ${f}.`,`Small ${f}, big problem for ${np}.`,`Life gets complicated for ${np} in this ${f}.`,`${N} is in over their head in this ${f}.`,`Nothing goes to plan for ${np} in this ${f}.`);
       if(at)cands.push(`Set almost entirely ${at}: ${a} with ${np} in the middle of it.`);
     }
     if(at&&!doc)cands.push(`Most of this ${f} happens ${at}.`,`Step inside ${venue} for this ${f}.`,`Pull up a chair ${at}. This ${f} starts there.`,`We're taking this ${f} to ${venue}.`);
@@ -45300,7 +45300,7 @@ const ACG = (()=>{
       camera:()=>screen&&lead?[`The camera spends a lot of time on ${F}'s face.`,`Expect close-ups on ${F} in the quiet scenes.`,`The camera often stays on ${F} while others talk.`,`${F}'s reactions carry many of the shots.`]:null,
       lookingfor:()=>{return null;const a=v8Adjs(sk.join(" "));if(a.length<2)return null;
         return [`We're looking for someone who can be ${a[0]} and ${a[1]} at once.`,`We want an actor who is ${a[0]} without losing ${a[1]}.`.replace(/losing (\w+)/,(m,w)=>`being ${w}`),`We'd love someone ${a[0]} and ${a[1]}.`,`${c.voice==="i"?"I'm":"We're"} after someone ${a[0]}, with a ${a[1]} side.`];},
-      question:()=>{const q=low?"hold a scene with almost no lines":skill?`do real ${skill}`:/comedy/.test(G)?"be funny without winking at the audience":lead&&days>=5?`keep the part alive across ${units(days)}`:null;
+      question:()=>{const q=low?"hold a scene with almost no lines":skill?`do real ${skill}`:/comedy/.test(G)?"be funny without winking at the audience":null;
         return q?[`Can you ${q}?`,`Can you ${q}? Then this is yours to read for.`,`Question for you: can you ${q}?`]:null;},
       detail:()=>{const d=sk.filter(z=>z.split(/\s+/).length<=9).sort((a,b)=>a.length-b.length)[0];return d?[`__DETAIL__${d}`]:null;},
       tone:()=>/comedy/.test(G)?[`It's a comedy, but ${F} doesn't know that.`,`${F} is played for laughs, never for winks.`,`Funny because ${F} means it.`]:/thriller|crime|horror|mystery/.test(G)?[`Tense and quiet; ${F} never shouts.`,`With ${F}, the fear stays below the lines.`,`${F} is scared the whole time and hides it well.`,`Menace without volume from ${F}.`]:/romantic/.test(G)?[`Warm, with real affection in how ${F} is played.`,`${F} is tender, never sappy.`]:/drama|family|period/.test(G)?[`Grounded and real; ${F} does nothing big.`,`Small and honest: ${F} is never showy.`,`Nothing big is asked of ${F}; the camera finds it.`,`Play ${F} low. The story does the work.`,`${F} shouldn't look like acting.`,`Keep ${F} quiet and let the scenes land.`,`No speeches, no tears on cue, just ${F} getting through the day.`]:[`Play it straight: ${F} believes every word.`,`${F} works best underplayed.`,`Don't push ${F}; the situation is enough.`],
@@ -45698,7 +45698,15 @@ const ACG = (()=>{
       let s=`${opener} ${list(all)}.`.replace(/:\s+(\w)/,(m,a)=>": "+a.toLowerCase());
       if(some.length){
         const who=need.length===1?`${String(need[0].name).split(" ")[0]} also ${B?"needs":"sends"}`:need.every(r=>/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||""))?`The lead${need.length>1?"s":""} also ${need.length>1?(B?"need":"send"):(B?"needs":"sends")}`:`${capFirst(v3Words(need.length))} of the roles also ask for`;
-        s+=` ${who} ${list(some)}.`;
+        // Round 20: when parts ask for different things, say who sends what.
+        const wants=r=>some.filter(m=>m==="selftape"?r.prescreen==="selftape":m==="voice"?r.prescreen==="voice":has(r,m));
+        const groups=[];need.forEach(r=>{const w=wants(r),k=w.join("+");let g=groups.find(x=>x.k===k);if(!g){g={k,w,rs:[]};groups.push(g);}g.rs.push(r);});
+        if(groups.length<2)s+=` ${who} ${list(some)}.`;
+        else{
+          const nm=r=>String(r.name).split(" ")[0].replace(/,$/,"");
+          const gName=rs=>rs.length===1?nm(rs[0]):rs.every(r=>/^(Lead|Principal|Principal Voice)$/i.test(r.role_type||""))?"the leads":rs.length<=3?rs.slice(0,-1).map(nm).join(", ")+" and "+nm(rs[rs.length-1]):`${v3Words(rs.length)} of the roles`;
+          s+=" "+groups.map((g,i)=>`${capFirst(gName(g.rs))} ${i===0?"also ":""}${g.rs.length===1?(B?"needs":"sends"):(B?"need":"send")} ${list(g.w)}.`).join(" ");
+        }
       }
       // Round 8: brand work's "what to send" line is board boilerplate and may
       // repeat; it was starving commercials out of the type mix.
@@ -46016,7 +46024,27 @@ const ACG = (()=>{
   }
   function r8Amt(a){return Math.round(a)===a?money(a):"$"+a.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,",");}
   // The pay box: headline, then an "Of Note" line on about 30% of paid work.
+  // Round 20: a one-line speaking part never tapes while a bigger part doesn't,
+  // and background is never paid the same as a speaking part.
+  function r20Tapes(named){
+    const sp=named.filter(r=>!r._group&&!r._job);
+    const big=/^(Lead|Supporting|Principal)$/i;
+    if(!sp.some(r=>!big.test(r.role_type||"")&&r.prescreen==="selftape"))return;
+    sp.forEach(r=>{if(big.test(r.role_type||"")&&!r.prescreen)r.prescreen="selftape";});
+  }
+  function r20BackgroundBelow(roles,P,item){
+    if(P.flatAll||/^SAG|^AEA/.test(String(item.union_status||"")))return;
+    const amt=r=>{const x=parseRoleRate(r.pay);return x?x.rate_amount:0;};
+    const bg=roles.filter(r=>v3RankOf(r)==="Background"&&amt(r)),sp=roles.filter(r=>v3RankOf(r)!=="Background"&&amt(r));
+    if(!bg.length||!sp.length)return;
+    const top=Math.max(...bg.map(amt)),lead=Math.max(...sp.map(amt)),least=Math.min(...sp.map(amt));
+    if(least>top)return;
+    const set=(r,a)=>{r.pay=String(r.pay).replace(/\$[\d,]+(\.\d+)?/,money(a));};
+    if(top+25<lead)sp.filter(r=>amt(r)<=top).forEach(r=>set(r,top+25));
+    else bg.forEach(r=>set(r,Math.max(25,least-25)));
+  }
   function r8PayText(roles,P,item,noun,cx){
+    r20BackgroundBelow(roles,P,item);
     const rates=roles.map(r=>({r,x:parseRoleRate(r.pay)})).filter(o=>o.x);
     const u=String(item.union_status||"");
     const C=cx||{};
@@ -46596,7 +46624,7 @@ const ACG = (()=>{
   ];
   const R17_NOT_WHEN_DATED=/(schedule|calendar|details) (is|are) (shared|sent)|Nothing is locked|No fixed days|Flexible on timing|Days to be set|\b(are flexible|still loose|aren't locked yet|depend on who we cast|get set once|open to some changes|still being worked out|isn't final)\b|Once we cast|After callbacks|When the cast is set|pick days together/i;
   const R17_NOT_ONE_DAY=/days you can't do|blackout days|any conflicts|your conflicts|Conflicts are fine|Some conflicts|A conflict or two|plan around them|work around/i;
-  const R17_LOGISTICS_QUOTE=/\s*[A-Z][\w'’-]*(?: [A-Z][\w'’-]*)* states: "[^"]*\b(availability|available|submit|submission|submissions|local|cover note|callbacks?|selects?|agent|reviewed|rolling)\b[^"]*"\.?/g;
+  const R17_LOGISTICS_QUOTE=/\s*[A-Z][\w'’-]*(?: [A-Z][\w'’-]*)* states: "[^"]*"\.?/g;
   function r17Teach(item){
     const roles=item._roles||[];
     const type=String(item.type||"");
@@ -46621,7 +46649,7 @@ const ACG = (()=>{
       roles.forEach(r=>{
         if(!/background/i.test(r.role_type||""))return;
         const n=String(r.name||"");
-        const wrong=(/\bCustomers\b|\bShoppers\b/i.test(n)&&!R17_SHOPLIKE.test(venue))||(/\bRegulars\b/i.test(n)&&!R17_SHOPLIKE.test(venue)&&!R17_GATHER.test(venue))||(/Waiting Room/i.test(n)&&(!R17_WAITING.test(venue)||R17_OUTDOOR.test(venue)));
+        const wrong=(/\bCustomers\b|\bShoppers\b/i.test(n)&&(!R17_SHOPLIKE.test(venue)||/taxidermy|funeral|morgue|mortuary/i.test(venue)))||(/\bRegulars\b/i.test(n)&&!R17_SHOPLIKE.test(venue)&&!R17_GATHER.test(venue))||(/Waiting Room/i.test(n)&&(!R17_WAITING.test(venue)||R17_OUTDOOR.test(venue)));
         if(!wrong)return;
         const crowds=R17_OUTDOOR.test(venue)?["Visitors","Hikers","Day-Trippers"]:["Townspeople","Locals","Neighbors","Visitors"];
         const nm=cgShuffle(crowds).map(c=>`${c} Around the ${place} (Background)`).find(x=>!taken.has(x));
@@ -46630,6 +46658,8 @@ const ACG = (()=>{
         r.description=pick([`People passing by ${venue} in the wide shots; natural pace, no looking at the camera.`,`Locals going about their day around ${venue}; expect to repeat the same walk between takes.`,`The everyday crowd near ${venue} while the main scenes play; small, natural movement only.`]);
       });
     }
+    roles.forEach(r=>{if(/background/i.test(r.role_type||"")&&!String(r.age_range||"").trim())r.age_range="21-65";});
+    ["tagline","synopsis","pay","schedule_note","submission_requirements"].forEach(k=>{if(item[k])item[k]=String(item[k]).replace(/\s*,\s*\./g,".").replace(/\.\.(?!\.)/g,".");});
     // 3. Company credit matches the format.
     {const p=String(item.prod||"");
      if(/^(Independent|Privately|Self-financed)/.test(p)){
@@ -47936,6 +47966,7 @@ const ACG = (()=>{
       // named copies before labels like "his sister" become "Victor's sister".
       named.forEach(r=>{if(r._refRole){const i=roles.indexOf(r._refRole);if(i>-1)r._refRole=named[i];}});
       v4ResolveLabels(named);
+      r20Tapes(named);
       named.forEach(r=>{
         // "The audience should keep liking them…": a "they" that points at a
         // group cannot be turned into he/she, so that sentence goes.
