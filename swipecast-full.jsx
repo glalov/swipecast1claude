@@ -2677,7 +2677,7 @@ button,a,[role="button"],.mm-link{touch-action:manipulation;}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
 /* Shared "Everything in Premium" band above the plan cards. */
-.premium-feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px 24px;}
+.premium-feature-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px 22px;}
 @media(max-width:980px){.premium-feature-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:560px){.premium-feature-grid{grid-template-columns:1fr;}}
 .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
@@ -8239,20 +8239,20 @@ function MembershipPage({session,myProfile,onNavigate,onPickPlan,onViewCasting})
 </p>
     {/* Shared value band. Every plan carries the same features, so they are
         stated once here instead of three times inside the cards. */}
-    <div className="card" style={{maxWidth:1100,margin:"0 auto 20px",padding:"17px 22px"}}>
-      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",flexWrap:"wrap",gap:8,paddingBottom:11,marginBottom:12,borderBottom:"1px solid var(--bdr)"}}>
+    <div className="card" style={{maxWidth:1100,margin:"0 auto 20px",padding:"20px 26px"}}>
+      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",flexWrap:"wrap",gap:8,paddingBottom:13,marginBottom:16,borderBottom:"1px solid var(--bdr)"}}>
         <h2 style={{margin:0,fontSize:16,fontWeight:800,letterSpacing:-0.3}}>Everything in CastSlate Premium</h2>
         <div style={{fontSize:10,fontWeight:800,letterSpacing:1.4,textTransform:"uppercase",color:BRASS_ON_LIGHT}}>Included on every plan</div>
       </div>
       <div className="premium-feature-grid">
         {PREMIUM_SHARED_FEATURES.map(([lead,rest])=>(
-          <div key={lead+rest} style={{display:"flex",gap:9,fontSize:13,color:"var(--t2)",lineHeight:1.45}}>
+          <div key={lead+rest} style={{display:"flex",gap:9,fontSize:13.5,color:"var(--t2)",lineHeight:1.45,minWidth:0}}>
             <span style={{color:"var(--grn)",fontWeight:800,flex:"none",marginTop:1}}><Ico n="check" s={24}/></span>
             <span><strong style={{color:"var(--t1)",fontWeight:700}}>{lead}</strong> {rest}</span>
           </div>
         ))}
       </div>
-      <div style={{marginTop:11,paddingTop:10,borderTop:"1px solid var(--bdr)",fontSize:11.5,color:"var(--t3)"}}>
+      <div style={{marginTop:15,paddingTop:12,borderTop:"1px solid var(--bdr)",fontSize:12,color:"var(--t3)",textAlign:"center"}}>
         Every plan includes the same features. The only difference is how long you're in — and how much you save.
       </div>
     </div>
