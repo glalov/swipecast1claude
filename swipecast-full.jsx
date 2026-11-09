@@ -43019,7 +43019,7 @@ const ACG = (()=>{
     r10HistorySkels(h,skelRows,composedSeedRows,ordered);
     h.r10Tops=[];h.r10Sets=[];h.r10CoShapes=[];h.r10PayShapes=new Set();h.r10Sigs=[];
     ordered.forEach((c,i)=>{
-      if(i<15&&/^Roles paying up to/.test(String(c.pay||""))){const t=r10Top(c.roles);if(t)h.r10Tops.push(t);}
+      if(i<15&&/\$/.test(String(c.pay||""))){const t=r10Top(c.roles);if(t)h.r10Tops.push(t);}
       if(i<100)h.r10Sets.push(r10RateSet(c.roles));
       if(i<20&&c.is_admin_created!==false)h.r10CoShapes.push(r10CoShape(c.prod||c.posted_by_label));
       if(i<R10_PAY_SHAPE_WINDOW&&c.pay)h.r10PayShapes.add(r10PayShape(c.pay));
@@ -43033,6 +43033,7 @@ const ACG = (()=>{
     // Round 16: which tagline models and role openings the board used lately, newest first.
     {const newest=(existing||[]).slice().sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));
      h.r16Tags=newest.slice(0,60).map(c=>r16TagMark(c.tagline));
+     h.r18Pay=newest.slice(0,120).map(c=>r18PayMark(c.pay)).filter(Boolean);
      h.r16Opens={};newest.slice(0,60).forEach(c=>(c.roles||[]).forEach(r=>{const k=r16OpenId(r&&r.description,r&&r.name);if(k)h.r16Opens[k]=(h.r16Opens[k]||0)+1;}));}
     h.v5=h.v5||{};h.v5.warmth={};
     h.v8Recent.forEach(m=>{if(m.warmth)h.v5.warmth[m.warmth]=(h.v5.warmth[m.warmth]||0)+1;});
@@ -46016,12 +46017,68 @@ const ACG = (()=>{
       return r10UnpaidText(roles,item,noun);
     }
     const top=Math.max(...rates.map(o=>o.x.rate_amount));
-    const head=`Roles paying up to ${r8Amt(top)}.`;
-    // Most paid listings say how the money works; a few stop at the headline.
-    if(Math.random()<0.12&&!shapeUsed(head))return head;
-    const L=cgShuffle(r10PayNote(roles,P,item,{noun,days:C.days,unit:C.unit,medium:C.medium,voice:C.voice}));
-    for(const f of L){const t=`${head} ${f()}`.replace(/\s{2,}/g," ").trim();if(!shapeUsed(t))return t;}
-    return `${head} ${L[0]()}`.trim();
+    return r18PayWords(rates.map(o=>o.x.rate_amount),top,rates,P,item,noun,C);
+  }
+  // Round 18 (2026-11-09): owner's rule. Every pay box says the money its own
+  // way. No shared "Roles paying up to..." headline and no stock second line.
+  // Each model has a fixed phrase (the mark); the one used longest ago wins.
+  const R18_PAY_MODELS=[
+    {m:"The top rate here is",f:x=>`The top rate here is ${x.A} ${x.per}.`},
+    {m:"Budget tops out at",f:x=>`Budget tops out at ${x.A} ${x.per}.`},
+    {m:"is the most any part",any:1,f:x=>`${x.A} ${x.per} is the most any part on this ${x.noun} earns.`},
+    {m:"You'd earn",f:x=>`You'd earn ${x.R} ${x.per}${x.wide?", depending on the part":""}.`},
+    {m:"Expect ",f:x=>`Expect ${x.R} ${x.per}.`},
+    {m:"We can offer",f:x=>`We can offer ${x.R} ${x.per}.`},
+    {m:"Our rate:",f:x=>`Our rate: ${x.A} ${x.per} at the high end.`},
+    {m:"Compensation:",f:x=>`Compensation: ${x.R} ${x.per}.`},
+    {m:"Money first:",f:x=>`Money first: ${x.A} ${x.per} at most.`},
+    {m:"On the money side",f:x=>`On the money side, it's ${x.R} ${x.per}.`},
+    {m:"The job pays",f:x=>`The job pays ${x.R} ${x.per}.`},
+    {m:"Budget is modest",f:x=>`Budget is modest: ${x.A} ${x.per} at most.`},
+    {m:"Small budget, honest rate",f:x=>`Small budget, honest rate: ${x.R} ${x.per}.`},
+    {m:"Fee:",f:x=>`Fee: ${x.R} ${x.per}.`},
+    {m:"Paid work,",f:x=>`Paid work, ${x.R} ${x.per}.`},
+    {m:"Nobody here earns more than",f:x=>`Nobody here earns more than ${x.A} ${x.per}.`},
+    {m:"Looking at",f:x=>`Looking at ${x.A} ${x.per} for the biggest part.`},
+    {m:"for the largest part",f:x=>`${x.A} ${x.per} for the largest part, and less for the smaller ones.`,diff:1},
+    {m:"Rates start at",f:x=>`Rates start at ${x.L} and reach ${x.A} ${x.per}.`,wide:1},
+    {m:"Pay lands between",f:x=>`Pay lands between ${x.L} and ${x.A} ${x.per}.`,wide:1},
+    {m:"Pay runs",f:x=>`Pay runs ${x.L} to ${x.A} ${x.per}.`,wide:1},
+    {m:"the smallest part earns",f:x=>`Leads earn ${x.Lead} ${x.per}, and the smallest part earns ${x.L}.`,lead:1,wide:1},
+    {m:"Lead money is",f:x=>`Lead money is ${x.Lead} ${x.per}; smaller parts get ${x.L}.`,lead:1,wide:1},
+    {m:"Biggest role gets",f:x=>`Biggest role gets ${x.A} ${x.per}, with smaller parts scaled down from there.`,diff:1},
+    {m:"Same rate for all",f:x=>`Same rate for all: ${x.A} ${x.per}.`,same:1},
+    {m:"One rate for the whole cast",f:x=>`One rate for the whole cast: ${x.A} ${x.per}.`,same:1},
+    {m:"Everyone earns",f:x=>`Everyone earns ${x.A} ${x.per}.`,same:1},
+    {m:"No tiers here",f:x=>`No tiers here: ${x.A} ${x.per} regardless of the part.`,same:1}
+  ];
+  function r18PayMark(t){const x=String(t||"");const o=R18_PAY_MODELS.find(z=>x.indexOf(z.m)>-1);return o?o.m:(/^Roles paying up to/.test(x)?"Roles paying up to":"");}
+  function r18PayWords(amts,top,rates,P,item,noun,C){
+    const low=Math.min(...amts);
+    const same=low===top,wide=top/low>=1.4;
+    const type=String(item.type||""),u=String(item.union_status||"");
+    const st=P.structure;
+    const per={buyout:"a day",session:"per session",hour:"an hour",ep:"per episode",week:"a week",flat:"flat for the job",stipendDay:"a day as a stipend",stipendFlat:"as a stipend for the whole job"}[st]||"a day";
+    const leadRow=rates.find(o=>v3RankOf(o.r)==="Lead");
+    const lead=leadRow?leadRow.x.rate_amount:0;
+    const x={A:r8Amt(top),L:r8Amt(low),Lead:r8Amt(lead||top),R:wide?`${r8Amt(low)} to ${r8Amt(top)}`:r8Amt(top),per,noun,wide};
+    const canLead=lead>0&&!V7_FN.test(type);
+    const fit=R18_PAY_MODELS.filter(o=>(!o.wide||wide)&&(!o.lead||canLead)&&(!o.same||same)&&(!o.diff||!same));
+    const recent=((C.res&&C.res._r18Pay)||[]).concat((C.h&&C.h.r18Pay)||[]);
+    const age=o=>{const i=recent.indexOf(o.m);return i<0?9999:i;};
+    const chosen=cgShuffle(fit).sort((p,q)=>age(q)-age(p))[0];
+    const line=chosen.f(x);
+    const stage=/^(Theater|Off-Broadway Theater|Off-Off-Broadway Theater|Musical Theater)$/.test(type);
+    const extra=[];
+    if(/SAG-AFTRA/.test(u)&&st==="union")extra.push(pick([`Covered by the ${u} agreement.`,`This one falls under ${u}.`,`Booked on ${u} terms.`,`A ${u} job.`]));
+    if(st==="buyout"&&P.buyout)extra.push(pick([`Usage is bought out for ${money(P.buyout)}.`,`A ${money(P.buyout)} buyout covers usage.`]));
+    if(st==="session")extra.push(pick(["Sessions run about four hours.","Plan on roughly four hours a session.","Each booking is around four hours."]));
+    if(st==="hour")extra.push(pick(["Four-hour minimum.","Calls are booked in four-hour blocks.","Minimum call is four hours."]));
+    const r=Math.random();
+    if(r<0.35)extra.push(stage?pick(["Paid weekly.","Checks go out every Friday.","Paid at the end of each week."]):pick(["Paid within two weeks of wrap.","Payroll runs the Friday after wrap.","Direct deposit within 30 days.","You'll be paid at the end of the shoot.","Payment goes out within ten days."]));
+    else if(r<0.7&&!/^(audio|anim)$/.test(v3Fam(type))&&st!=="stipendFlat")extra.push(pick(["Meals on set.","Lunch is on us.","Credit and a hot lunch included.","Snacks all day and a real lunch.","Footage for your reel as well.","A copy of the final cut comes with it."]));
+    (item._r18Mark=chosen.m);
+    return [line].concat(extra).join(" ").replace(/\s{2,}/g," ").trim();
   }
 
   // ── 1. Titles ────────────────────────────────────────────────────────────
@@ -47079,7 +47136,7 @@ const ACG = (()=>{
     if(!R8_DATES_RE.test(dl))out.push("dates line not in board format: "+dl);
     // 5. Pay headline.
     const pay=String(item.pay||"");
-    if(!/^(Roles paying up to \$[\d,]+(\.\d\d)?\.|Unpaid\b|Payment not specified\.)/.test(pay))out.push("pay box doesn't lead with the headline");
+    if(!/\$|^Unpaid\b|^Payment not specified\./.test(pay))out.push("pay box doesn't state the pay");
     return out;
   }
   const ROLE_TYPES_R8=new Set(["Lead","Supporting","Principal","Featured","Day Player","Background","Real People","Content Creators","Models","Voiceover","Host","Co-Star","Series Regular","Recurring","Guest Star","Stand-In","Body Double","Stunt Performer","Photo Double","Featured Background","Dancer","Singer","Ensemble","Understudy","Swing"]);
@@ -49820,10 +49877,11 @@ const ACG = (()=>{
       // Round 10 windows: skeleton, headline, rate set, company shape, pay wording.
       (res._skels=res._skels||new Set()).add(item._skel);
       if(item._r10Sig)(res._r10Sigs=res._r10Sigs||[]).push(item._r10Sig);
-      {const tp=r10Top(item._roles);if(tp&&/^Roles paying up to/.test(item.pay||""))(res._r10Tops=res._r10Tops||[]).unshift(tp);}
+      {const tp=r10Top(item._roles);if(tp&&/\$/.test(item.pay||""))(res._r10Tops=res._r10Tops||[]).unshift(tp);}
       (res._r10Sets=res._r10Sets||[]).unshift(r10RateSet(item._roles));
       (res._r10CoShapes=res._r10CoShapes||[]).unshift(r10CoShape(item.prod));
       (res._r10PayShapes=res._r10PayShapes||[]).unshift(r10PayShape(item.pay));
+      {const pm=r18PayMark(item.pay);if(pm)(res._r18Pay=res._r18Pay||[]).unshift(pm);}
       res.lastFamily=familySeed(built.seed);
       if(res.lastFamily)res.famCount=(res.famCount||0)+1;
       out.push(item);
