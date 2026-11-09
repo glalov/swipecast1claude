@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.mmHead':'Your monthly check-ins','nav.mmEvents':'Industry events in New York and LA','nav.mmCard':'Your actor card with a QR code','nav.mmCta':'See how it works','nav.mmSub':'Industry events and your QR actor card','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform for working actors. Built so every submission gets a real look.',
@@ -338,7 +338,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.mmHead':'Tus revisiones mensuales','nav.mmEvents':'Eventos de la industria en Nueva York y LA','nav.mmCard':'Tu tarjeta de actor con código QR','nav.mmCta':'Cómo funciona','nav.mmSub':'Eventos de la industria y tu tarjeta QR','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
@@ -3657,6 +3657,14 @@ body.sheet-push .b2t-cube{display:none;}
 @keyframes navNewTw{0%{opacity:0;transform:scale(0) rotate(0)}40%{opacity:1;transform:scale(1.15) rotate(45deg)}100%{opacity:0;transform:scale(.2) rotate(110deg)}}
 @keyframes navNewRow{0%,100%{background:transparent}35%{background:rgba(240,184,96,.18)}}
 @media (prefers-reduced-motion:reduce){.nav-ddm .nav-new,.nav-ddm .nav-new .gl::after,.nav-ddm .nav-new .sp,.nav-ddm button.nav-dd-new{animation:none!important;}}
+.nav-ddm.nav-mm{left:auto;right:0;transform:none;width:340px;animation:navMmIn .16s ease both;}
+@keyframes navMmIn{from{opacity:0;}to{opacity:1;}}
+.nav-ddm.nav-mm h4{position:relative;font-family:Fraunces,Georgia,serif;font-weight:500;font-size:22px;line-height:1.15;color:var(--t1);margin:16px 20px 6px;}
+.nav-ddm.nav-mm button{width:calc(100% - 16px);margin-left:8px;margin-right:8px;}
+.nav-ddm.nav-mm .ic{grid-row:auto;}
+.nav-ddm.nav-mm button.nav-mm-cta{display:flex;align-items:center;justify-content:center;gap:8px;height:44px;width:calc(100% - 32px);margin:8px 16px 16px;padding:0;background:#33826A;color:#FFFFFF;font-weight:800;font-size:15px;}
+.nav-ddm.nav-mm button.nav-mm-cta:hover{background:#276551;}
+.mm-link-sub{display:block;font-size:12.5px;font-weight:500;color:var(--t3);margin-top:2px;}
 .nav-ddm small{font-size:11.5px;font-weight:500;color:var(--t3);margin-top:1px;}
 .success-msg .check{width:64px;height:64px;border-radius:50%;background:rgba(27,135,62,0.08);color:var(--grn);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
 .success-msg h3{font-size:22px;font-weight:800;margin-bottom:8px;}
@@ -59120,6 +59128,8 @@ function App(){
   // on iPad (no hover) and in Safari (buttons don't take focus on click) a focus-driven
   // menu closes on pointerdown, before the click lands, so the item tap would do nothing.
   const [dirOpen,setDirOpen]=useState(false);
+  const [mmOpen,setMmOpen]=useState(false);
+  const mmTimer=useRef(null);
   const dirRef=useRef(null);
   const dirTimer=useRef(0);
   useEffect(()=>{
@@ -59130,7 +59140,8 @@ function App(){
     document.addEventListener("keydown",esc);
     return()=>{document.removeEventListener("pointerdown",away);document.removeEventListener("keydown",esc);};
   },[dirOpen]);
-  useEffect(()=>{setDirOpen(false);},[page]);
+  useEffect(()=>{setDirOpen(false);setMmOpen(false);},[page]);
+  useEffect(()=>{if(!mmOpen)return;const esc=e=>{if(e.key==="Escape")setMmOpen(false);};document.addEventListener("keydown",esc);return()=>document.removeEventListener("keydown",esc);},[mmOpen]);
   const [menuClosing,setMenuClosing]=useState(false);
   // 400ms must stay in step with the .4s mmDropUp exit on .mobile-menu-inner —
   // if this is longer the drawer sits finished-but-mounted before it disappears.
@@ -59396,7 +59407,7 @@ function App(){
             role="button" tabIndex={0} aria-haspopup="true" aria-expanded={dirOpen}
             onClick={()=>setDirOpen(o=>!o)}
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setDirOpen(o=>!o);}}}
-            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);setDirOpen(true);}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);clearTimeout(mmTimer.current);setMmOpen(false);setDirOpen(true);}}}
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);dirTimer.current=setTimeout(()=>setDirOpen(false),180);}}}>
             {navT('nav.directories')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
@@ -59408,7 +59419,20 @@ function App(){
                 <i className="ic"><Ico n="school" s={17}/></i><b>{navT('nav.schoolDirectory')}<em className="nav-added">Just added</em></b><small>351 schools &amp; film programs · LA + NY</small></button>
             </div>}
           </span>
-          <span className={page==="manager-mode"?"act":""} onClick={()=>navigate("manager-mode")}>{navT('nav.managerMode')}</span>
+          {/* Hover menu (owner, 2026-11-08): opens left of the button so the homepage actor card stays clear; the button itself still goes to the page. */}
+          <span className={"nav-dd"+(page==="manager-mode"?" act":"")+(mmOpen?" open":"")} role="button" tabIndex={0}
+            onClick={()=>{setMmOpen(false);navigate("manager-mode");}}
+            onKeyDown={e=>{if(e.key==="Enter"){setMmOpen(false);navigate("manager-mode");}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>{setDirOpen(false);setMmOpen(true);},150);}}}
+            onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>setMmOpen(false),180);}}}>
+            {navT('nav.managerMode')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
+            {mmOpen&&<div className="nav-ddm nav-mm" role="menu" onClick={e=>e.stopPropagation()}>
+              <h4>{navT('nav.mmHead')}</h4>
+              <button role="menuitem" onClick={()=>{setMmOpen(false);navigate("events");}}><i className="ic"><Ico n="map-pin" s={17}/></i><b>{navT('nav.mmEvents')}</b></button>
+              <button role="menuitem" onClick={()=>{setMmOpen(false);navigate("actor-business-card");}}><i className="ic"><Ico n="qrcode" s={17}/></i><b>{navT('nav.mmCard')}</b></button>
+              <button role="menuitem" className="nav-mm-cta" onClick={()=>{setMmOpen(false);navigate("manager-mode");}}>{navT('nav.mmCta')}<Tri/></button>
+            </div>}
+          </span>
         </div>
         <div className="nav-actions" style={{display:"flex",gap:12,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
@@ -59474,7 +59498,7 @@ function App(){
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("casting-directory")}>{navT('nav.castingDirectory')}<em className="nav-new">New</em></button>
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("school-directory")}>{navT('nav.schoolDirectory')}<em className="nav-added">Just added</em></button>
-            <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}</button>
+            <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}<small className="mm-link-sub">{navT('nav.mmSub')}</small></button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
           </div>
