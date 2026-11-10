@@ -4718,7 +4718,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .b2t-gl canvas{display:block;width:100%!important;height:100%!important;}
 .b2t-cube.gl .b2t-gl{display:block;}
 .b2t-cube.gl .b2t-box{display:none;}
-.b2t-cube.gl.show::after{opacity:.8;}
+.b2t-cube.gl::after{display:none;}
 .b2t-cube.dropping .b2t-box,.b2t-cube.leaving .b2t-box,.b2t-cube.dropping .b2t-core,.b2t-cube.leaving .b2t-core{transform-style:preserve-3d;-webkit-transform-style:preserve-3d;}
 /* iPhone fix (2026-11-10): Safari cut and blurred the cube when the perspective() and the
    3D spin sat in the SAME transform as the fall. Now the button only falls (flat 2D move +
@@ -9016,6 +9016,11 @@ function b2tSpinAt(kind,ms){
   return[0,0,0];
 }
 function makeB2tGL(lib,host,label){
+  // Owner-approved "solid" version (2026-11-10, demo cube-webgl-demo/index.html): ONE 3D object
+  // from drop to rest to rise (no swap to HTML, so no shift on landing); every side fully its
+  // own colour; the three-colour triangle is a small 3D piece on the front with the same idle
+  // steps as the old CSS pyramid; camera calibrated so the resting FRONT face is exactly the
+  // button's size; no floor shadow.
   const {THREE,RoundedBoxGeometry}=lib;
   const probe=document.createElement('canvas');
   if(!(probe.getContext('webgl2')||probe.getContext('webgl')))throw new Error('no webgl');
@@ -9024,38 +9029,58 @@ function makeB2tGL(lib,host,label){
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   host.appendChild(renderer.domElement);
   const scene=new THREE.Scene();
-  // cube = 1 unit; canvas is 2.2 cubes wide so the spin never clips
-  const cam=new THREE.PerspectiveCamera(30,1,.1,50);cam.position.set(0,0,2.2/(2*Math.tan(15*Math.PI/180)));
-  scene.add(new THREE.HemisphereLight(0xffffff,0x3a3330,1.35));
-  const key=new THREE.DirectionalLight(0xffffff,2.1);key.position.set(-2.2,3,3.5);scene.add(key);
-  const rim=new THREE.DirectionalLight(0xffe9c8,.6);rim.position.set(3,-1,-2);scene.add(rim);
+  const FOV=18;
+  const cam=new THREE.PerspectiveCamera(FOV,1,.1,80);
+  cam.position.set(0,0,2.2/(2*Math.tan(FOV/2*Math.PI/180))+.5);
+  scene.add(new THREE.AmbientLight(0xffffff,2.4));
+  const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-2,3,4);scene.add(key);
+  const geo=new RoundedBoxGeometry(1,1,1,6,.12);
+  const n=geo.attributes.normal,cols=new Float32Array(n.count*3),C=new THREE.Color();
+  for(let i=0;i<n.count;i++){
+    const x=n.getX(i),y=n.getY(i),z=n.getZ(i),ax=Math.abs(x),ay=Math.abs(y),az=Math.abs(z);
+    if(az>=Math.max(ax,ay)*.78)C.set(z>0?0xFFFFFF:0xF4F1EC);
+    else if(ax>=ay)C.set(x>0?0xF2C21E:0xDD3C53);
+    else C.set(y>0?0x4FA386:0x24604D);
+    C.convertSRGBToLinear();cols[i*3]=C.r;cols[i*3+1]=C.g;cols[i*3+2]=C.b;
+  }
+  geo.setAttribute('color',new THREE.BufferAttribute(cols,3));
   const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');
   g.fillStyle='#FFFFFF';g.fillRect(0,0,512,512);
-  g.fillStyle='#F5C518';g.beginPath();g.moveTo(256,150);g.lineTo(310,240);g.lineTo(202,240);g.closePath();g.fill();
   const txt=String(label||'Back to top').toUpperCase();
   let fs=56;g.fillStyle='#1A1A2E';g.textAlign='center';g.textBaseline='middle';
   try{if('letterSpacing' in g)g.letterSpacing='4px';}catch(_){}
   do{g.font=`800 ${fs}px 'DM Sans',-apple-system,Helvetica,Arial,sans-serif`;fs-=2;}while(g.measureText(txt).width>400&&fs>24);
-  g.fillText(txt,256,310);
+  g.fillText(txt,256,330);
   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;
-  const M=(col,o)=>new THREE.MeshStandardMaterial(Object.assign({color:col,roughness:.42,metalness:0},o||{}));
-  // BoxGeometry groups: +x right, -x left, +y top, -y bottom, +z front, -z back
-  const mats=[M(0xF2C21E),M(0xDD3C53),M(0x4FA386),M(0x24604D),M(0xffffff,{map:tex}),M(0xffffff,{map:tex})];
-  const geo=new RoundedBoxGeometry(1,1,1,6,.17);
-  const mesh=new THREE.Mesh(geo,mats);scene.add(mesh);
-  let raf=0;
+  const plain=new THREE.MeshLambertMaterial({vertexColors:true});
+  const face=new THREE.MeshLambertMaterial({vertexColors:true,map:tex});
+  const mesh=new THREE.Mesh(geo,[plain,plain,plain,plain,face,face]);scene.add(mesh);
+  const tri=new THREE.Shape();tri.moveTo(0,.111);tri.lineTo(.133,-.111);tri.lineTo(-.133,-.111);tri.closePath();
+  const tg=new THREE.ShapeGeometry(tri),pyr=new THREE.Group(),triMats=[];
+  [[0x1A1A2E,0],[0xF5C518,120],[0xE2394D,240]].forEach(([col,a])=>{const m=new THREE.MeshBasicMaterial({color:col});triMats.push(m);const tm=new THREE.Mesh(tg,m);tm.position.z=.078;const h=new THREE.Group();h.rotation.y=a*Math.PI/180;h.add(tm);pyr.add(h);});
+  pyr.position.set(0,.094,.51);mesh.add(pyr);
+  const IDLE=b2tBezier(.65,0,.35,1);
+  const SEG=[[0,.34,0,0],[.34,.42,0,-120],[.42,.58,-120,-120],[.58,.66,-120,-240],[.66,.82,-240,-240],[.82,.90,-240,-360],[.90,1,-360,-360]];
+  const pyrAngle=ms=>{const p=(ms%6400)/6400;for(const[a,b,f,t]of SEG){if(p<=b)return f+(t-f)*IDLE((p-a)/(b-a));}return 0;};
+  let raf=0,kind=null,t0=0,active=false;
   const size=()=>{const px=Math.max(40,Math.round(host.offsetWidth||200));renderer.setSize(px,px,false);};
-  const pose=(rx,ry,rz)=>{const d=Math.PI/180;mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');renderer.render(scene,cam);};
-  const play=(kind)=>{
-    cancelAnimationFrame(raf);size();
-    if(kind!=='in'&&kind!=='out'){pose(0,0,0);return;}
-    const t0=performance.now(),dur=kind==='in'?B2T_IN_MS:B2T_OUT_MS;
-    const step=(now)=>{const ms=now-t0;const [x,y,z]=b2tSpinAt(kind,ms);pose(x,y,z);if(ms<dur)raf=requestAnimationFrame(step);};
-    raf=requestAnimationFrame(step);
+  const frame=(now)=>{
+    raf=0;
+    const ms=now-t0,dur=kind==='in'?B2T_IN_MS:kind==='out'?B2T_OUT_MS:0;
+    const [rx,ry,rz]=(kind&&ms<dur)?b2tSpinAt(kind,ms):(kind==='out'?b2tSpinAt('out',B2T_OUT_MS):[0,0,0]);
+    const d=Math.PI/180;
+    pyr.rotation.y=pyrAngle(now)*d;
+    mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');
+    renderer.render(scene,cam);
+    if(active||(kind&&ms<dur))raf=requestAnimationFrame(frame);
   };
-  const dispose=()=>{cancelAnimationFrame(raf);try{geo.dispose();mats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}}; 
-  size();pose(0,0,0);
-  return{play,dispose,size};
+  const kick=()=>{if(!raf)raf=requestAnimationFrame(frame);};
+  // kind: 'in' | 'out' | null; on: is the cube on screen (drives the idle triangle loop)
+  const play=(k,on)=>{size();kind=k;t0=performance.now();active=!!on;kick();};
+  const setActive=(on)=>{active=!!on;kick();};
+  const dispose=()=>{cancelAnimationFrame(raf);try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
+  size();kick();
+  return{play,setActive,dispose,size};
 }
 
 function Footer({onNavigate,noSpacer,backToTop=false}){
@@ -9175,15 +9200,16 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     if(el&&'IntersectionObserver' in window){io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))start();},{rootMargin:'1500px 0px'});io.observe(el);}
     else start();
     const mq=window.matchMedia?window.matchMedia('(max-width:640px)'):null;
-    const onMq=()=>{if(b2tGL.current)b2tGL.current.play(b2tAnimRef.current);};
+    const onMq=()=>{if(b2tGL.current)b2tGL.current.size();};
     try{mq&&mq.addEventListener('change',onMq);}catch(_){}
     return()=>{dead=true;if(io)io.disconnect();try{mq&&mq.removeEventListener('change',onMq);}catch(_){}if(b2tGL.current){b2tGL.current.dispose();b2tGL.current=null;}};
   },[backToTop]);
   React.useEffect(()=>{
     if(!b2tGL.current)return;
     if(!b2tAnim&&!b2tGLOn){setB2tGLOn(true);return;}
-    if(b2tGLOn)b2tGL.current.play(b2tAnim);
+    if(b2tGLOn)b2tGL.current.play(b2tAnim,b2tShow||b2tAnim==='in');
   },[b2tAnim,b2tGLOn]);
+  React.useEffect(()=>{if(b2tGL.current&&b2tGLOn)b2tGL.current.setActive(b2tShow||b2tAnim==='in');},[b2tShow]);
   const b2tShownRef=React.useRef(false);
   const glideRef=React.useRef(false); // true while the back-to-top glide runs — mutes check() so its DOM measuring can't jank the ascent
   React.useEffect(()=>{
