@@ -9068,7 +9068,8 @@ function makeB2tGL(lib,host,label,btn,onDone){
   const SEG=[[0,.34,0,0],[.34,.42,0,-120],[.42,.58,-120,-120],[.58,.66,-120,-240],[.66,.82,-240,-240],[.82,.90,-240,-360],[.90,1,-360,-360]];
   const pyrAngle=ms=>{const p=(ms%6400)/6400;for(const[a,b,f,t]of SEG){if(p<=b)return f+(t-f)*IDLE((p-a)/(b-a));}return 0;};
   let raf=0,kind=null,t0=0,active=false;
-  const size=()=>{const px=Math.max(40,Math.round(host.offsetWidth||200));renderer.setSize(px,px,false);};
+  let lastPx=0;
+  const size=()=>{const px=Math.max(40,Math.round(host.offsetWidth||200));if(px!==lastPx){lastPx=px;renderer.setSize(px,px,false);}};
   // ONE clock for the fall AND the spin (iPhone fix, 2026-11-10): Safari ran the CSS fall at
   // up to 120fps but painted the WebGL spin at 60 (30 in Low Power Mode), so the two drifted
   // apart. In .gl mode the CSS fall is switched off and this frame sets the button's
@@ -9083,23 +9084,48 @@ function makeB2tGL(lib,host,label,btn,onDone){
       return[L(0,away,e),L(1,.88,e),p<.62?1:Math.max(0,1-(p-.62)/.3)];}
     return[0,1,1];
   };
-  let doneFor=null,outMs=B2T_OUT_MS;
+  let doneFor=null,outMs=B2T_OUT_MS,blend=null;
+  // Where the cube is right now (position, scale, opacity, rotation). Fast up-and-down
+  // scrolling used to restart the drop/rise from its first frame, so the cube snapped;
+  // a flip mid-animation now glides on from this pose instead (iPhone, 2026-11-10).
+  const last={y:0,s:1,op:1,rx:0,ry:0,rz:0};
+  const curDur=()=>blend?blend.dur:kind==='in'?B2T_IN_MS:kind==='out'?outMs:0;
   const frame=(now)=>{
     raf=0;
-    const ms=now-t0,dur=kind==='in'?B2T_IN_MS:kind==='out'?outMs:0;
-    const [rx,ry,rz]=(kind&&ms<dur)?b2tSpinAt(kind,ms,outMs):(kind==='out'?b2tSpinAt('out',outMs,outMs):[0,0,0]);
-    const d=Math.PI/180;
+    const ms=now-t0,dur=curDur(),d=Math.PI/180;
+    let y=0,sc=1,op=1,rx=0,ry=0,rz=0;
+    if(blend){
+      const p=Math.min(1,ms/blend.dur),e=(kind==='in'?B2T_EASE_IN:B2T_EASE_OUT)(p),f=blend.from,t=blend.to;
+      y=L(f.y,t.y,e);sc=L(f.s,t.s,e);rx=L(f.rx,t.rx,e);ry=L(f.ry,t.ry,e);rz=L(f.rz,t.rz,e);
+      op=kind==='out'?(p<.5?f.op:L(f.op,0,Math.min(1,(p-.5)/.4))):L(f.op,1,Math.min(1,p*3));
+    }else if(kind){
+      [rx,ry,rz]=ms<dur?b2tSpinAt(kind,ms,outMs):(kind==='out'?b2tSpinAt('out',outMs,outMs):[0,0,0]);
+      [y,sc,op]=fallAt(kind,Math.min(ms,dur));
+    }
+    Object.assign(last,{y,s:sc,op,rx,ry,rz});
     pyr.rotation.y=pyrAngle(now)*d;
     mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');
-    if(btn&&kind){const [y,sc,op]=fallAt(kind,Math.min(ms,dur));btn.style.transform=`translateX(-50%) translate3d(0,${y.toFixed(2)}px,0) scale(${sc.toFixed(4)})`;btn.style.opacity=String(op);}
+    if(btn&&kind){btn.style.transform=`translateX(-50%) translate3d(0,${y.toFixed(2)}px,0) scale(${sc.toFixed(4)})`;btn.style.opacity=String(op);}
     renderer.render(scene,cam);
-    if(kind&&ms>=dur&&doneFor!==t0){doneFor=t0;try{onDone&&onDone(kind);}catch(_){}}
+    if(kind&&ms>=dur&&doneFor!==t0){doneFor=t0;blend=null;try{onDone&&onDone(kind);}catch(_){}}
     if(active||(kind&&ms<dur))raf=requestAnimationFrame(frame);
   };
   const kick=()=>{if(!raf)raf=requestAnimationFrame(frame);};
   // kind: 'in' | 'out' | null; on: is the cube on screen (drives the idle triangle loop)
   // outMs: the rise lasts as long as the page glide (owner 2026-11-10: cube slips under the nav as the page lands)
-  const play=(k,on,riseMs)=>{size();if(!k&&btn){btn.style.transform='';btn.style.opacity='';}if(k==='out')outMs=riseMs||B2T_OUT_MS;kind=k;t0=performance.now();active=!!on;kick();};
+  const play=(k,on,riseMs)=>{
+    const now=performance.now();
+    const midFlight=kind&&(now-t0)<curDur()&&k&&k!==kind;
+    if(!k&&btn){btn.style.transform='';btn.style.opacity='';}
+    if(k==='out')outMs=riseMs||B2T_OUT_MS;
+    if(midFlight){
+      const away=-((window.innerHeight||800)-16);
+      blend={from:Object.assign({},last),
+        to:k==='in'?{y:0,s:1,rx:0,ry:0,rz:0}:{y:away,s:.88,rx:24,ry:last.ry+360,rz:5},
+        dur:k==='in'?760:Math.min(outMs,700)};
+    }else blend=null;
+    kind=k;t0=now;active=!!on;kick();
+  };
   const setActive=(on)=>{active=!!on;kick();};
   const dispose=()=>{cancelAnimationFrame(raf);if(btn){btn.style.transform='';btn.style.opacity='';}try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
   size();kick();
@@ -9248,6 +9274,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     // when scroll settles after returning from a casting (the page scroll-
     // restores / scrolls to top, which briefly looked like "reached the footer").
     let ready=false;
+    const geo={t:0,threshold:0,scrollH:0};
     const check=()=>{try{
       if(glideRef.current)return; // mid back-to-top glide: skip the footer measuring; runs again on landing
       if(!ready){
@@ -9255,10 +9282,18 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         return;
       }
       const vpBottom=window.innerHeight+window.scrollY;
-      const f=document.querySelector('.site-footer');
-      let threshold=document.documentElement.scrollHeight-4;
-      if(f){const r=f.getBoundingClientRect();threshold=r.top+window.scrollY+r.height*0.5;}
-      const scrollable=document.documentElement.scrollHeight-window.innerHeight;
+      // Footer position is measured at most every 400ms (and on real resizes), not on
+      // every scroll frame: measuring forces Safari to lay the page out again, which is
+      // what made fast flicks stutter on iPhone (2026-11-10).
+      const nowT=performance.now();
+      if(!geo.t||nowT-geo.t>400){
+        const f=document.querySelector('.site-footer');
+        let th=document.documentElement.scrollHeight-4;
+        if(f){const r=f.getBoundingClientRect();th=r.top+window.scrollY+r.height*0.5;}
+        geo.threshold=th;geo.scrollH=document.documentElement.scrollHeight;geo.t=nowT;
+      }
+      const threshold=geo.threshold;
+      const scrollable=geo.scrollH-window.innerHeight;
       // Hysteresis: once the cube is showing, keep it showing until the viewport
       // bottom climbs a good bit (90px) back above the footer midpoint. Without
       // this, scroll jitter / the mobile address-bar collapse flickered the cube
@@ -9275,16 +9310,18 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     const armTimer=setTimeout(()=>{ready=true;check();},700);
     let chkRaf=0;const checkSoon=()=>{if(!chkRaf)chkRaf=requestAnimationFrame(()=>{chkRaf=0;check();});};
     window.addEventListener('scroll',checkSoon,{passive:true});
-    window.addEventListener('resize',check);
+    let lastW=window.innerWidth;
+    const onResize=()=>{if(window.innerWidth!==lastW){lastW=window.innerWidth;geo.t=0;}checkSoon();};
+    window.addEventListener('resize',onResize);
     check();
-    return()=>{clearTimeout(armTimer);cancelAnimationFrame(chkRaf);window.removeEventListener('scroll',checkSoon);window.removeEventListener('resize',check);};
+    return()=>{clearTimeout(armTimer);cancelAnimationFrame(chkRaf);window.removeEventListener('scroll',checkSoon);window.removeEventListener('resize',onResize);};
   },[]);
   // Safety net: always clear the animation class shortly after it starts, even if
   // the animationend event is missed (it can be, mid-scroll on mobile). Settling
   // to the plain .show state is what makes the tap target reliable.
   React.useEffect(()=>{
     if(!b2tAnim)return;
-    const id=setTimeout(()=>setB2tAnim(null),1500);
+    const id=setTimeout(()=>setB2tAnim(null),2200); // longer than the longest drop/rise (1.5s) so it never cuts one short
     return()=>clearTimeout(id);
   },[b2tAnim]);
   // Mobile only (used by the <=640px rule): measure where the footer's social
@@ -9308,8 +9345,12 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     }catch(_){}};
     setRest();
     const t=setTimeout(setRest,800); // recompute once fonts/layout settle
-    window.addEventListener('resize',setRest);
-    return()=>{clearTimeout(t);window.removeEventListener('resize',setRest);};
+    // iOS fires resize every time the address bar collapses/expands mid-scroll; the rest
+    // position only depends on the page width, so ignore height-only resizes.
+    let restW=window.innerWidth;
+    const onRestResize=()=>{if(window.innerWidth!==restW){restW=window.innerWidth;setRest();}};
+    window.addEventListener('resize',onRestResize);
+    return()=>{clearTimeout(t);window.removeEventListener('resize',onRestResize);};
   },[backToTop]);
   return(<>
     {/* Global breathing room above the footer on EVERY page. Carries margin-top:auto
