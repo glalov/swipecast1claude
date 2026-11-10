@@ -4047,7 +4047,7 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-title-link{cursor:pointer;transition:color .15s ease,text-decoration-color .15s ease;}
 .cc-title-link:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
 @media (hover:hover) and (pointer:fine){
-  .cc-title-link:hover,.b5-card:hover .cc-title-link{color:#276551;text-decoration:underline;text-decoration-thickness:2px;
+  .cc-title-link:hover{color:#276551;text-decoration:underline;text-decoration-thickness:2px;
     text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#33826A;}
 }
 /* Featured Castings: only the CENTRED card opens a casting on click, so only its
