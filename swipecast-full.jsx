@@ -4455,6 +4455,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .b5-meta{color:var(--t3);font-size:15px;display:flex;flex-wrap:wrap;row-gap:4px;}
 .b5-meta span+span::before{content:"·";margin:0 8px;color:var(--bdr);}
 .b5-meta .pay{color:var(--teal);font-weight:600;}
+.b5-meta .open{color:#276551;font-weight:600;}
 .b5-when{display:flex;flex-wrap:wrap;gap:4px 20px;font-size:14px;color:var(--t2);}
 .b5-when b{font-weight:700;color:var(--t1);margin-right:6px;}
 .b5-sum{margin:0;color:var(--t1);font-size:16.5px;line-height:1.5;}
@@ -17334,8 +17335,8 @@ function fmtPostedAgo(val,opts){
   if(!then||isNaN(then))return fmtCastingDate(val);
   const MIN=60000,HOUR=3600000,DAY=86400000;
   const diff=nowMs-then.getTime();
-  const weekday=()=>{
-    try{ return "on "+then.toLocaleDateString("en-US",(dateOnly||dayOnly)?{weekday:"long",timeZone:"UTC"}:{weekday:"long"}); }
+  const weekday=(pre)=>{
+    try{ return (pre||"on")+" "+then.toLocaleDateString("en-US",(dateOnly||dayOnly)?{weekday:"long",timeZone:"UTC"}:{weekday:"long"}); }
     catch(_){ return "on "+fmtCastingDate(val); }
   };
   // Day-granular stamps: round, because the stamp sits at noon and "now" can be
@@ -17351,11 +17352,50 @@ function fmtPostedAgo(val,opts){
     if(days<=0)return"today";
     if(days===1)return"yesterday";
   }
-  if(days<7)return weekday();
-  if(days<14)return"a week ago";
-  if(days<21)return"two weeks ago";
-  if(days<28)return"three weeks ago";
+  // Weekday names, counted in CALENDAR days (owner, 2026-11-10): "on Saturday" this
+  // week, "last Sunday" the week before. Never "a week ago" — the word "week" read as
+  // stale on page 2. Past two weeks the card says whether it is still open instead
+  // (castingFreshLabel); this fallback date is only for closed cards.
+  const cal=postedCalDays(then,nowMs,dateOnly||dayOnly);
+  if(cal<7)return weekday("on");
+  if(cal<14)return weekday("last");
   return "on "+fmtCastingDate(val);
+}
+
+// Whole calendar days between two instants: the viewer's own calendar for real
+// timestamps, UTC for day-only stamps (they are anchored at noon UTC).
+function postedCalDays(then,nowMs,utc){
+  const now=new Date(nowMs);
+  const a=utc?Date.UTC(then.getUTCFullYear(),then.getUTCMonth(),then.getUTCDate()):Date.UTC(then.getFullYear(),then.getMonth(),then.getDate());
+  const b=utc?Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()):Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
+  return Math.round((b-a)/86400000);
+}
+
+// The freshness label on Browse cards and the Featured coverflow (owner, 2026-11-10).
+// Under two weeks: "Posted on Saturday" / "Posted last Sunday". From two weeks on, an
+// open casting shows what an actor needs instead of its age: "Apply by Dec 14", or
+// "Accepting submissions" with no deadline. Nothing when the countdown chip is already
+// on the card (deadline within CARD_COUNTDOWN_MAX_DAYS). Closed cards keep the date.
+function castingFreshLabel(c,closed){
+  const at=castingPostedAt(c);
+  if(!at)return"";
+  const dayOnly=castingPostedIsDayOnly(c);
+  let then;
+  try{ then=String(at).length===10?new Date(at+"T12:00:00Z"):new Date(at); }catch(_){ then=null; }
+  const cal=(then&&!isNaN(then))?postedCalDays(then,Date.now(),dayOnly||String(at).length===10):0;
+  if(cal>=14&&!closed){
+    const cdn=castingCountdown(c.deadline);
+    if(cdn&&!cdn.expired){
+      if(cdn.days<=CARD_COUNTDOWN_MAX_DAYS)return"";
+      try{
+        const d=String(c.deadline).length===10?new Date(c.deadline+"T12:00:00Z"):new Date(c.deadline);
+        const sameYear=d.getUTCFullYear()===new Date().getUTCFullYear();
+        return "Apply by "+d.toLocaleDateString("en-US",sameYear?{month:"short",day:"numeric",timeZone:"UTC"}:{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+      }catch(_){ return "Accepting submissions"; }
+    }
+    if(!c.deadline)return"Accepting submissions";
+  }
+  return "Posted "+fmtPostedAgo(at,{dayOnly});
 }
 
 // Does this casting's posted stamp know what TIME it went up, or only what day?
@@ -18648,7 +18688,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             const soon=!isClosedCard&&cdn&&!cdn.expired&&cdn.days<=5;
             const rateLine=castingTopRate(c);
             const shootTxt=cardShootChip(c);
-            const posted=castingPostedAt(c)?`Posted ${fmtPostedAgo(castingPostedAt(c),{dayOnly:castingPostedIsDayOnly(c)})}`:"";
+            const posted=castingFreshLabel(c,isClosedCard);
             const facts=[rateLine?rateLine.text:"",c.union||"",posted].filter(Boolean);
             const whereTxt=(shootLocationForLine(c)||c.location||"").trim();
             const roleCount=c.roles?.length||0;
@@ -18685,7 +18725,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                     {isExpiredCasting&&!isArchived&&<span className="b5-urgent">Expired</span>}
                     {/* Verification badges live inside the casting (owner, 2026-11-07), not on the card. */}
                   </div>
-                  {facts.length>0&&<div className="b5-meta">{facts.map((x,i)=><span key={i} className={i===0&&rateLine&&rateLine.money?"pay":undefined}>{x}</span>)}</div>}
+                  {facts.length>0&&<div className="b5-meta">{facts.map((x,i)=><span key={i} className={i===0&&rateLine&&rateLine.money?"pay":(x===posted&&posted&&!posted.startsWith("Posted"))?"open":undefined}>{x}</span>)}</div>}
                   {(c.tagline&&c.tagline!==c.prod)?<p className="b5-sum">{c.tagline}</p>:null}
                   {story&&<div className="b5-story-wrap">
                     <p className="b5-story">{story}</p>
@@ -27748,7 +27788,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
                     :sCdn?<span className="cc-chip soon">Applications closed</span>:null}
                   {sc.location&&<span className="cc-chip">{sc.location}</span>}
                   {cardShootChip(sc)&&<span className="cc-chip">{cardShootChip(sc)}</span>}
-                  {sPosted&&<span className="cc-chip quiet">Posted {fmtPostedAgo(sPosted,{dayOnly:castingPostedIsDayOnly(sc)})}</span>}
+                  {sPosted&&castingFreshLabel(sc,!!(sCdn&&sCdn.expired))&&<span className="cc-chip quiet">{castingFreshLabel(sc,!!(sCdn&&sCdn.expired))}</span>}
                 </div>
                 {/* Role pills + CTA share the foot row, exactly as on Browse. The
                     pills open this casting on that role. Rendered on EVERY card,
