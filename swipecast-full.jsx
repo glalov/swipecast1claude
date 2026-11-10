@@ -4699,7 +4699,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
 /* Floating back-to-top cube — stays fully off-screen until the footer midpoint
    is reached, then tumbles down/up with the original live timing. */
-.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:var(--b2t-rest,150px);z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;--s:90px;width:var(--s);height:var(--s);padding:0;background:transparent;color:#1A1A2E;border:0;border-radius:17px;cursor:pointer;box-shadow:none;font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:none;}
+.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:var(--b2t-rest,150px);z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;--s:90px;width:var(--s);height:var(--s);padding:0;background:transparent;color:#1A1A2E;border:0;border-radius:8px;cursor:pointer;box-shadow:none;font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:none;}
 /* Resting (settled) state — plain 2D transform, NO 3D context, so the tap hit-box
    lines up exactly with the rendered button. The tumble's perspective/preserve-3d
    used to linger in the resting state and offset the touch target on mobile, which
@@ -4724,23 +4724,35 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* The spin keyframes push the cube's centre half a cube BEHIND the button plane
    (translateZ(-s/2) first) and spin around that centre, so at the last frame the front
    face sits exactly in the button plane: no size jump when it lands. */
-.b2t-f{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
-.b2t-f.front,.b2t-f.back{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#FFFFFF;border:1px solid rgba(0,0,0,0.12);border-radius:17px;box-sizing:border-box;}
-.b2t-f.front{box-shadow:0 16px 34px rgba(0,0,0,0.30);}
-.b2t-cube.dropping .b2t-f.front,.b2t-cube.leaving .b2t-f.front{transform:translateZ(calc(var(--s) / 2));box-shadow:none;}
-.b2t-f.back{transform:rotateY(180deg) translateZ(calc(var(--s) / 2));}
-.b2t-f.right{transform:rotateY(90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(90deg,#E9B80F,#F7CF3A 55%,#E3AF08);}
-.b2t-f.left{transform:rotateY(-90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(90deg,#D2304A,#E6475C 55%,#C92B44);}
-.b2t-f.top{transform:rotateX(90deg) translateZ(calc(var(--s) / 2));background:#3E9479;}
-.b2t-f.bottom{transform:rotateX(-90deg) translateZ(calc(var(--s) / 2));background:#2B6F5A;}
+.b2t-f{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:8px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.10);}
+/* Solidity pass (owner, 2026-11-10, demo back-to-top-3d-cube-demo.html "Fixed"): 8px corners on
+   every face so the faces meet almost edge to edge; each face lit like a real object (bright
+   front, lit top, sides shading away, dark bottom) with a 1px edge line; and a FULL-size inner
+   block in the faces' own colours 1px inside, so the corners show colour, never the black
+   spots the 17px corners left on iPhone. */
+.b2t-f.front,.b2t-f.back{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-sizing:border-box;}
+.b2t-f.front{background:linear-gradient(160deg,#FFFFFF 0%,#FFFFFF 60%,#F1EEE9 100%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.10),0 16px 34px rgba(0,0,0,0.30);}
+.b2t-cube.dropping .b2t-f.front,.b2t-cube.leaving .b2t-f.front{transform:translateZ(calc(var(--s) / 2));box-shadow:inset 0 0 0 1px rgba(0,0,0,.10);}
+.b2t-f.back{transform:rotateY(180deg) translateZ(calc(var(--s) / 2));background:#F4F1EC;}
+.b2t-f.right{transform:rotateY(90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(90deg,#F7CF3A 0%,#EDBB16 60%,#D9A607 100%);}
+.b2t-f.left{transform:rotateY(-90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(270deg,#E6475C 0%,#D6344C 60%,#BF2740 100%);}
+.b2t-f.top{transform:rotateX(90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(180deg,#58AD91,#3E9479);}
+.b2t-f.bottom{transform:rotateX(-90deg) translateZ(calc(var(--s) / 2));background:#24604D;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
 .b2t-core{position:absolute;inset:0;}
-.b2t-core i{position:absolute;left:5px;top:5px;width:calc(var(--s) - 10px);height:calc(var(--s) - 10px);background:#2B6F5A;display:block;}
-.b2t-core i:nth-child(1){transform:translateZ(calc(var(--s) / 2 - 3px));}
-.b2t-core i:nth-child(2){transform:rotateY(180deg) translateZ(calc(var(--s) / 2 - 3px));}
-.b2t-core i:nth-child(3){transform:rotateY(90deg) translateZ(calc(var(--s) / 2 - 3px));}
-.b2t-core i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s) / 2 - 3px));}
-.b2t-core i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s) / 2 - 3px));}
-.b2t-core i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s) / 2 - 3px));}
+.b2t-core i{position:absolute;left:1px;top:1px;width:calc(var(--s) - 2px);height:calc(var(--s) - 2px);background:#E9E4DC;display:block;}
+.b2t-core i:nth-child(1){transform:translateZ(calc(var(--s) / 2 - 1px));background:#F1EEE9;}
+.b2t-core i:nth-child(2){transform:rotateY(180deg) translateZ(calc(var(--s) / 2 - 1px));}
+.b2t-core i:nth-child(3){transform:rotateY(90deg) translateZ(calc(var(--s) / 2 - 1px));background:#E3AF08;}
+.b2t-core i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s) / 2 - 1px));background:#C92B44;}
+.b2t-core i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s) / 2 - 1px));background:#3E9479;}
+.b2t-core i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s) / 2 - 1px));background:#24604D;}
+/* A soft shadow lands with it (fades in during the fall, out when it leaves); at rest the
+   front face's own drop shadow takes over. */
+.b2t-cube::after{content:"";position:absolute;left:10%;right:10%;bottom:-14px;height:12px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);opacity:0;pointer-events:none;}
+.b2t-cube.dropping::after{animation:b2tShadowIn 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
+.b2t-cube.leaving::after{animation:b2tShadowOut .6s ease-in both;}
+@keyframes b2tShadowIn{0%{opacity:0;transform:scale(.4);}78%{opacity:.6;transform:scale(.95);}100%{opacity:.8;transform:scale(1);}}
+@keyframes b2tShadowOut{0%{opacity:.5;transform:scale(1);}100%{opacity:0;transform:scale(.4);}}
 .b2t-cube:not(.dropping):not(.leaving) .b2t-only3d{visibility:hidden;}
 .b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;perspective:200px;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
@@ -4810,10 +4822,9 @@ body.fbsp-open #castoria-root{display:none!important;}
      social (Facebook) row + 14px, so the cube parks just ABOVE the Facebook icon
      and never lands on top of it. The 96px gap opened above the social row is the
      clear space the cube drops into. */
-  .b2t-cube{--s:74px;font-size:9.5px;border-radius:15px;}
+  .b2t-cube{--s:74px;font-size:9.5px;border-radius:8px;}
   .b2t-cube.dropping .b2t-box{animation-name:b2tSpinDownS;}
   .b2t-cube.leaving .b2t-box{animation-name:b2tSpinUpS;}
-  .b2t-f.front,.b2t-f.back{border-radius:15px;}
 }
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
