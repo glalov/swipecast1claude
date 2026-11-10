@@ -12209,12 +12209,12 @@ function ManagerModePage({onNavigate,session,myProfile}){
         <div className="section-label">Industry Events</div>
         <h2>Get out of your apartment. Get in the room.</h2>
         <p>The industry still runs on real relationships, and those start in person. Nobody is going to find you on your couch, so get out of your apartment and go meet the people who make films.</p>
-        <p>Whether you live in New York or Los Angeles, or you're flying from one to the other, you'll always have an up-to-date list of events, carefully curated by the CastSlate team.</p>
+        <p>Whether you're based in one city or flying between the two, you'll always have an up-to-date list of events, carefully curated by the CastSlate team.</p>
       </div>
       <div className="mm-ev-rows">
         {[
-          {city:"New York",icon:"ny",text:"Film festivals, short film nights, screenings with filmmaker Q&As and filmmaker mixers."},
-          {city:"Los Angeles",icon:"la",text:"Film festivals, short film showcases, screenings with filmmaker Q&As, awards nights and industry mixers."}
+          {city:"New York",icon:"ny",text:"Indie film festivals, short film nights and filmmaker mixers."},
+          {city:"Los Angeles",icon:"la",text:"Screenings with filmmaker Q&As, festival premieres and awards nights."}
         ].map(({city,icon,text})=>(
           <div key={city} className="mm-ev-row">
             <div className="mm-ev-ic">
@@ -12229,7 +12229,7 @@ function ManagerModePage({onNavigate,session,myProfile}){
             <div><h3>{city}</h3><p>{text}</p></div>
           </div>
         ))}
-        <div className="mm-ev-fine" style={{paddingTop:18}}><Ico n="calendar-event" s={17}/><div><b>Always in person, 12 months a year.</b> Each event links to its organizer's own page, where you can check tickets and availability.</div></div>
+        <div className="mm-ev-fine" style={{paddingTop:18}}><Ico n="calendar-event" s={17}/><div><b>Always in person.</b> Each event links to its organizer's own page, where you can check tickets and availability.</div></div>
       </div>
     </section>
 
