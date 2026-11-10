@@ -4741,7 +4741,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .b2t-core i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s) / 2 - 3px));}
 .b2t-core i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s) / 2 - 3px));}
 .b2t-core i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s) / 2 - 3px));}
-.b2t-cube:not(.dropping):not(.leaving) .b2t-only3d{display:none;}
+.b2t-cube:not(.dropping):not(.leaving) .b2t-only3d{visibility:hidden;}
 .b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;perspective:200px;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
 .b2t-cube.dropping .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
@@ -4770,9 +4770,9 @@ body.fbsp-open #castoria-root{display:none!important;}
   100%{transform:translateX(-50%) translateY(0) scale(1);}
 }
 @keyframes b2tSpinDown{
-  0%{transform:translateZ(calc(var(--s) / -2)) rotateX(-28deg) rotateY(-900deg) rotateZ(-5deg);}
-  78%{transform:translateZ(calc(var(--s) / -2)) rotateX(-10deg) rotateY(-110deg) rotateZ(-2deg);}
-  100%{transform:translateZ(calc(var(--s) / -2)) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
+  0%{transform:translateZ(-45px) rotateX(-28deg) rotateY(-900deg) rotateZ(-5deg);}
+  78%{transform:translateZ(-45px) rotateX(-10deg) rotateY(-110deg) rotateZ(-2deg);}
+  100%{transform:translateZ(-45px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
 }
 
 @keyframes b2tTumbleUp{
@@ -4780,8 +4780,15 @@ body.fbsp-open #castoria-root{display:none!important;}
   100%{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);}
 }
 @keyframes b2tSpinUp{
-  0%{transform:translateZ(calc(var(--s) / -2)) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
-  100%{transform:translateZ(calc(var(--s) / -2)) rotateX(24deg) rotateY(540deg) rotateZ(5deg);}
+  0%{transform:translateZ(-45px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
+  100%{transform:translateZ(-45px) rotateX(24deg) rotateY(540deg) rotateZ(5deg);}
+}@keyframes b2tSpinDownS{
+  0%{transform:translateZ(-37px) rotateX(-28deg) rotateY(-900deg) rotateZ(-5deg);}
+  78%{transform:translateZ(-37px) rotateX(-10deg) rotateY(-110deg) rotateZ(-2deg);}
+  100%{transform:translateZ(-37px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
+}@keyframes b2tSpinUpS{
+  0%{transform:translateZ(-37px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
+  100%{transform:translateZ(-37px) rotateX(24deg) rotateY(540deg) rotateZ(5deg);}
 }
 
 @keyframes b2tLogoSpinIn{
@@ -4804,6 +4811,8 @@ body.fbsp-open #castoria-root{display:none!important;}
      and never lands on top of it. The 96px gap opened above the social row is the
      clear space the cube drops into. */
   .b2t-cube{--s:74px;font-size:9.5px;border-radius:15px;}
+  .b2t-cube.dropping .b2t-box{animation-name:b2tSpinDownS;}
+  .b2t-cube.leaving .b2t-box{animation-name:b2tSpinUpS;}
   .b2t-f.front,.b2t-f.back{border-radius:15px;}
 }
 .site-backtotop{
