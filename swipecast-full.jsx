@@ -6985,9 +6985,9 @@ button:disabled:hover .cs-tri{transform:none;}
 .lfog>video{opacity:0;transition:opacity .4s ease;}
 .lfog>video.on{opacity:1;}
 .login-hero-full.has-fog{background:#1d0d03;}
-.login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(25,10,0,0) 0%,rgba(25,10,0,0) 64%,rgba(25,10,0,.38) 76%,rgba(20,8,0,.72) 88%,rgba(18,7,0,.86) 100%);}
+.login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 48%,rgba(22,9,0,0.007) 51.7%,rgba(22,9,0,0.031) 55.4%,rgba(22,9,0,0.074) 59.1%,rgba(22,9,0,0.134) 62.9%,rgba(22,9,0,0.208) 66.6%,rgba(22,9,0,0.294) 70.3%,rgba(22,9,0,0.388) 74.0%,rgba(22,9,0,0.484) 77.7%,rgba(22,9,0,0.579) 81.4%,rgba(22,9,0,0.667) 85.1%,rgba(22,9,0,0.744) 88.9%,rgba(22,9,0,0.805) 92.6%,rgba(22,9,0,0.846) 96.3%,rgba(22,9,0,0.860) 100.0%);}
 .lh-him.has-fog{background:#1d0d03;}
-.lh-him.has-fog .lh-fade{top:auto;bottom:0;height:40%;background:linear-gradient(180deg,rgba(25,10,0,0) 0%,rgba(25,10,0,.36) 32%,rgba(20,8,0,.74) 66%,rgba(18,7,0,.88) 100%);}
+.lh-him.has-fog .lh-fade{top:auto;bottom:0;height:56%;background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 0%,rgba(22,9,0,0.007) 7.1%,rgba(22,9,0,0.032) 14.3%,rgba(22,9,0,0.075) 21.4%,rgba(22,9,0,0.137) 28.6%,rgba(22,9,0,0.213) 35.7%,rgba(22,9,0,0.301) 42.9%,rgba(22,9,0,0.397) 50.0%,rgba(22,9,0,0.495) 57.1%,rgba(22,9,0,0.592) 64.3%,rgba(22,9,0,0.683) 71.4%,rgba(22,9,0,0.762) 78.6%,rgba(22,9,0,0.824) 85.7%,rgba(22,9,0,0.865) 92.9%,rgba(22,9,0,0.880) 100.0%);}
 .lh-him>img{height:calc((100% - var(--lh-text)) * 1.15);object-position:center bottom;}
 .lh-him .lh-fade{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);}
 /* Industry/CD signup: teal info panel (left side of the split card) */
