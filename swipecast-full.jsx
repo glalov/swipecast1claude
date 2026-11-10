@@ -28154,13 +28154,11 @@ function SwipeCardPhoto({t,alt="",draggable,pri,hold}){
 // gets every deck photo from castslate.com in priority order instead of opening two more
 // photo services. The original source URL is kept in each card's comment history (git).
 const LANDING_SWIPE_DEMO=[
-  // Order (owner-approved 2026-10-31): Killian first (the face the core 18-35 visitor
-  // identifies with), Zara second, Otis third: most visitors swipe only 2-3 cards, and
-  // after two young faces he reads as range, not as who the site is for. Man/woman
-  // alternate throughout; look-alikes apart (Killian/Alexander, Nayara/Olivia, Otis/Evan).
+  // Order (owner, 2026-11-10): Otis Langford first, then Killian, then Zara Banks; the rest
+  // keep their 2026-10-31 order. (Earlier advice was Otis third; the owner chose him as the opener.)
+  {id:8,name:"Otis Langford",age:62,gender:"Male",height:"6'3\"",pos:"center 35%",img:"/assets/landing/otis-langford.jpg",skills:["Military Background","Bass Vocals","Character Work"]},
   {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
   {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"/assets/landing/deck-zara-banks.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
-  {id:8,name:"Otis Langford",age:62,gender:"Male",height:"6'3\"",pos:"center 35%",img:"/assets/landing/otis-langford.jpg",skills:["Military Background","Bass Vocals","Character Work"]},
   // Nayara (led the deck 2026-09-24 to 2026-10-30). Framed by the owner in the
   // fitter (castslate-nayara-fit-tool.html) against the ORIGINAL 4:5 photo:
   // object-position 61% 11% + scale 1.95 with the origin at the same point
