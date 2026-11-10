@@ -4719,6 +4719,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 .b2t-cube.gl .b2t-gl{display:block;}
 .b2t-cube.gl .b2t-box{display:none;}
 .b2t-cube.gl::after{display:none;}
+.b2t-cube.gl.dropping,.b2t-cube.gl.leaving{animation:none;}
+.b2t-cube.gl.dropping{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);}
+.b2t-cube.gl.leaving{transform:translateX(-50%) translateY(0);}
 .b2t-cube.dropping .b2t-box,.b2t-cube.leaving .b2t-box,.b2t-cube.dropping .b2t-core,.b2t-cube.leaving .b2t-core{transform-style:preserve-3d;-webkit-transform-style:preserve-3d;}
 /* iPhone fix (2026-11-10): Safari cut and blurred the cube when the perspective() and the
    3D spin sat in the SAME transform as the fall. Now the button only falls (flat 2D move +
@@ -9015,7 +9018,7 @@ function b2tSpinAt(kind,ms){
   if(kind==='out'){const e=B2T_EASE_OUT(Math.min(1,Math.max(0,ms/B2T_OUT_MS)));return[L(0,24,e),L(0,540,e),L(0,5,e)];}
   return[0,0,0];
 }
-function makeB2tGL(lib,host,label){
+function makeB2tGL(lib,host,label,btn,onDone){
   // Owner-approved "solid" version (2026-11-10, demo cube-webgl-demo/index.html): ONE 3D object
   // from drop to rest to rise (no swap to HTML, so no shift on landing); every side fully its
   // own colour; the three-colour triangle is a small 3D piece on the front with the same idle
@@ -9025,7 +9028,9 @@ function makeB2tGL(lib,host,label){
   const probe=document.createElement('canvas');
   if(!(probe.getContext('webgl2')||probe.getContext('webgl')))throw new Error('no webgl');
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,3));
+  // Phones draw a little lighter (owner-approved iPhone test page, 2026-11-10) so Safari keeps a steady frame rate.
+  const phone=(window.matchMedia&&window.matchMedia('(max-width:640px)').matches)||/iPhone|iPad|Android/.test(navigator.userAgent||'');
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,phone?2:3));
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   host.appendChild(renderer.domElement);
   const scene=new THREE.Scene();
@@ -9034,7 +9039,7 @@ function makeB2tGL(lib,host,label){
   cam.position.set(0,0,2.2/(2*Math.tan(FOV/2*Math.PI/180))+.5);
   scene.add(new THREE.AmbientLight(0xffffff,2.4));
   const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-2,3,4);scene.add(key);
-  const geo=new RoundedBoxGeometry(1,1,1,6,.12);
+  const geo=new RoundedBoxGeometry(1,1,1,phone?4:6,.12);
   const n=geo.attributes.normal,cols=new Float32Array(n.count*3),C=new THREE.Color();
   for(let i=0;i<n.count;i++){
     const x=n.getX(i),y=n.getY(i),z=n.getZ(i),ax=Math.abs(x),ay=Math.abs(y),az=Math.abs(z);
@@ -9064,6 +9069,21 @@ function makeB2tGL(lib,host,label){
   const pyrAngle=ms=>{const p=(ms%6400)/6400;for(const[a,b,f,t]of SEG){if(p<=b)return f+(t-f)*IDLE((p-a)/(b-a));}return 0;};
   let raf=0,kind=null,t0=0,active=false;
   const size=()=>{const px=Math.max(40,Math.round(host.offsetWidth||200));renderer.setSize(px,px,false);};
+  // ONE clock for the fall AND the spin (iPhone fix, 2026-11-10): Safari ran the CSS fall at
+  // up to 120fps but painted the WebGL spin at 60 (30 in Low Power Mode), so the two drifted
+  // apart. In .gl mode the CSS fall is switched off and this frame sets the button's
+  // position, scale and opacity itself, from the same keyframe values.
+  const L=(a,b,e)=>a+(b-a)*e;
+  const fallAt=(k,ms)=>{
+    const away=-((window.innerHeight||800)-16);
+    if(k==='in'){const p=Math.min(1,Math.max(0,ms/B2T_IN_MS)),q=.78;
+      if(p<q){const e=B2T_EASE_IN(p/q);return[L(away,8,e),L(.88,1.035,e),1];}
+      const e=B2T_EASE_IN((p-q)/(1-q));return[L(8,0,e),L(1.035,1,e),1];}
+    if(k==='out'){const p=Math.min(1,Math.max(0,ms/B2T_OUT_MS)),e=B2T_EASE_OUT(p);
+      return[L(0,away,e),L(1,.88,e),p<.62?1:Math.max(0,1-(p-.62)/.3)];}
+    return[0,1,1];
+  };
+  let doneFor=null;
   const frame=(now)=>{
     raf=0;
     const ms=now-t0,dur=kind==='in'?B2T_IN_MS:kind==='out'?B2T_OUT_MS:0;
@@ -9071,14 +9091,16 @@ function makeB2tGL(lib,host,label){
     const d=Math.PI/180;
     pyr.rotation.y=pyrAngle(now)*d;
     mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');
+    if(btn&&kind){const [y,sc,op]=fallAt(kind,Math.min(ms,dur));btn.style.transform=`translateX(-50%) translate3d(0,${y.toFixed(2)}px,0) scale(${sc.toFixed(4)})`;btn.style.opacity=String(op);}
     renderer.render(scene,cam);
+    if(kind&&ms>=dur&&doneFor!==t0){doneFor=t0;try{onDone&&onDone(kind);}catch(_){}}
     if(active||(kind&&ms<dur))raf=requestAnimationFrame(frame);
   };
   const kick=()=>{if(!raf)raf=requestAnimationFrame(frame);};
   // kind: 'in' | 'out' | null; on: is the cube on screen (drives the idle triangle loop)
-  const play=(k,on)=>{size();kind=k;t0=performance.now();active=!!on;kick();};
+  const play=(k,on)=>{size();if(!k&&btn){btn.style.transform='';btn.style.opacity='';}kind=k;t0=performance.now();active=!!on;kick();};
   const setActive=(on)=>{active=!!on;kick();};
-  const dispose=()=>{cancelAnimationFrame(raf);try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
+  const dispose=()=>{cancelAnimationFrame(raf);if(btn){btn.style.transform='';btn.style.opacity='';}try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
   size();kick();
   return{play,setActive,dispose,size};
 }
@@ -9193,7 +9215,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         const fontsReady=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();
         return fontsReady.then(()=>{
           if(dead||!b2tGLHost.current)return;
-          try{b2tGL.current=makeB2tGL(lib,b2tGLHost.current,t('footer.backToTop'));}catch(_){b2tGL.current=null;return;}
+          try{b2tGL.current=makeB2tGL(lib,b2tGLHost.current,t('footer.backToTop'),b2tGLHost.current.closest('.b2t-cube'),()=>setB2tAnim(null));}catch(_){b2tGL.current=null;return;}
           if(!b2tAnimRef.current)setB2tGLOn(true);
         });
       }).catch(()=>{});
