@@ -2430,19 +2430,24 @@ body.fbsp-open #castoria-root{display:none!important;}
    is why it took 3–5 taps to register. The 3D is now applied ONLY while animating
    (.dropping / .leaving), and cleared the moment the cube settles. */
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
-.b2t-cube.dropping{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
+.b2t-cube.dropping{perspective:780px;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
+.b2t-cube.leaving{perspective:780px;animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
 /* Solid 3D cube (owner pick C, 2026-11-10, demo back-to-top-3d-cube-demo.html): white front
    and back carry the label, red and yellow sides from the triangle, site-teal top and bottom.
    A square core 2px inside the skin fills the rounded corners so the dark footer never shows
    through the edges. Sides, core and back exist only while falling or leaving; at rest the
    button is the plain white front face again, so the tap target stays flat 2D. */
 .b2t-box{position:absolute;inset:0;}
-.b2t-cube.dropping .b2t-box,.b2t-cube.leaving .b2t-box,.b2t-cube.dropping .b2t-core,.b2t-cube.leaving .b2t-core{transform-style:preserve-3d;}
-/* The keyframes push the cube's centre half a cube BEHIND the button plane
-   (translateZ(-s/2) right after the perspective) and spin it around that centre, so
-   at the last frame the front face sits exactly in the button plane and the landing
-   hands over to the flat resting face with no size jump. */
+.b2t-cube.dropping .b2t-box,.b2t-cube.leaving .b2t-box,.b2t-cube.dropping .b2t-core,.b2t-cube.leaving .b2t-core{transform-style:preserve-3d;-webkit-transform-style:preserve-3d;}
+/* iPhone fix (2026-11-10): Safari cut and blurred the cube when the perspective() and the
+   3D spin sat in the SAME transform as the fall. Now the button only falls (flat 2D move +
+   scale) and gives its children a perspective; the inner box does the 3D spin. Same path,
+   same timing, same easing as before. No will-change, so Safari repaints sharp. */
+.b2t-cube.dropping .b2t-box{animation:b2tSpinDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
+.b2t-cube.leaving .b2t-box{animation:b2tSpinUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
+/* The spin keyframes push the cube's centre half a cube BEHIND the button plane
+   (translateZ(-s/2) first) and spin around that centre, so at the last frame the front
+   face sits exactly in the button plane: no size jump when it lands. */
 .b2t-f{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:12px;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
 .b2t-f.front,.b2t-f.back{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#FFFFFF;border:1px solid rgba(0,0,0,0.12);border-radius:17px;box-sizing:border-box;}
 .b2t-f.front{box-shadow:0 16px 34px rgba(0,0,0,0.30);}
@@ -2453,13 +2458,13 @@ body.fbsp-open #castoria-root{display:none!important;}
 .b2t-f.top{transform:rotateX(90deg) translateZ(calc(var(--s) / 2));background:#3E9479;}
 .b2t-f.bottom{transform:rotateX(-90deg) translateZ(calc(var(--s) / 2));background:#2B6F5A;}
 .b2t-core{position:absolute;inset:0;}
-.b2t-core i{position:absolute;left:4px;top:4px;width:calc(var(--s) - 8px);height:calc(var(--s) - 8px);background:#2B6F5A;display:block;}
-.b2t-core i:nth-child(1){transform:translateZ(calc(var(--s) / 2 - 2px));}
-.b2t-core i:nth-child(2){transform:rotateY(180deg) translateZ(calc(var(--s) / 2 - 2px));}
-.b2t-core i:nth-child(3){transform:rotateY(90deg) translateZ(calc(var(--s) / 2 - 2px));}
-.b2t-core i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s) / 2 - 2px));}
-.b2t-core i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s) / 2 - 2px));}
-.b2t-core i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s) / 2 - 2px));}
+.b2t-core i{position:absolute;left:5px;top:5px;width:calc(var(--s) - 10px);height:calc(var(--s) - 10px);background:#2B6F5A;display:block;}
+.b2t-core i:nth-child(1){transform:translateZ(calc(var(--s) / 2 - 3px));}
+.b2t-core i:nth-child(2){transform:rotateY(180deg) translateZ(calc(var(--s) / 2 - 3px));}
+.b2t-core i:nth-child(3){transform:rotateY(90deg) translateZ(calc(var(--s) / 2 - 3px));}
+.b2t-core i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s) / 2 - 3px));}
+.b2t-core i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s) / 2 - 3px));}
+.b2t-core i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s) / 2 - 3px));}
 .b2t-cube:not(.dropping):not(.leaving) .b2t-only3d{display:none;}
 .b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;perspective:200px;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
@@ -2484,14 +2489,25 @@ body.fbsp-open #castoria-root{display:none!important;}
   100%{transform:rotateY(-360deg);}
 }
 @keyframes b2tTumbleDown{
-  0%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) translateZ(calc(var(--s) / -2)) rotateX(-28deg) rotateY(-900deg) rotateZ(-5deg) scale(.88);}
-  78%{transform:translateX(-50%) translateY(8px) perspective(780px) translateZ(calc(var(--s) / -2)) rotateX(-10deg) rotateY(-110deg) rotateZ(-2deg) scale(1.035);}
-  100%{transform:translateX(-50%) translateY(0) perspective(780px) translateZ(calc(var(--s) / -2)) rotateX(0) rotateY(0deg) rotateZ(0) scale(1);}
+  0%{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);}
+  78%{transform:translateX(-50%) translateY(8px) scale(1.035);}
+  100%{transform:translateX(-50%) translateY(0) scale(1);}
 }
+@keyframes b2tSpinDown{
+  0%{transform:translateZ(calc(var(--s) / -2)) rotateX(-28deg) rotateY(-900deg) rotateZ(-5deg);}
+  78%{transform:translateZ(calc(var(--s) / -2)) rotateX(-10deg) rotateY(-110deg) rotateZ(-2deg);}
+  100%{transform:translateZ(calc(var(--s) / -2)) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
+}
+
 @keyframes b2tTumbleUp{
-  0%{transform:translateX(-50%) translateY(0) perspective(780px) translateZ(calc(var(--s) / -2)) rotateX(0) rotateY(0deg) rotateZ(0) scale(1);}
-  100%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) translateZ(calc(var(--s) / -2)) rotateX(24deg) rotateY(540deg) rotateZ(5deg) scale(.88);}
+  0%{transform:translateX(-50%) translateY(0) scale(1);}
+  100%{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);}
 }
+@keyframes b2tSpinUp{
+  0%{transform:translateZ(calc(var(--s) / -2)) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
+  100%{transform:translateZ(calc(var(--s) / -2)) rotateX(24deg) rotateY(540deg) rotateZ(5deg);}
+}
+
 @keyframes b2tLogoSpinIn{
   0%{transform:rotate(-220deg) scale(.78);opacity:.65;}
   72%{transform:rotate(390deg) scale(1.08);opacity:1;}
@@ -2501,7 +2517,7 @@ body.fbsp-open #castoria-root{display:none!important;}
   0%{transform:rotate(360deg) scale(1);opacity:1;}
   100%{transform:rotate(-170deg) scale(.76);opacity:.7;}
 }
-@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}.b2t-cube .pyramid{animation:none!important;}}
+@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}.b2t-cube .pyramid{animation:none!important;}.b2t-cube .b2t-box{animation:none!important;transform:none!important;}}
 /* ── Mobile: lift the cube clear of the footer's bottom links/buttons. It now lands
    in open space above the "© … all rights reserved" line and never covers the
    Privacy / Terms / Contact / Cookie or language buttons. A matching gap is opened
