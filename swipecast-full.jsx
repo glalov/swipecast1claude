@@ -17376,7 +17376,7 @@ function postedCalDays(then,nowMs,utc){
 // open casting shows what an actor needs instead of its age: "Apply by Dec 14", or
 // "Accepting submissions" with no deadline. Nothing when the countdown chip is already
 // on the card (deadline within CARD_COUNTDOWN_MAX_DAYS). Closed cards keep the date.
-function castingFreshLabel(c,closed){
+function castingFreshLabel(c,closed,countdownMax=CARD_COUNTDOWN_MAX_DAYS){
   const at=castingPostedAt(c);
   if(!at)return"";
   const dayOnly=castingPostedIsDayOnly(c);
@@ -17386,7 +17386,7 @@ function castingFreshLabel(c,closed){
   if(cal>=14&&!closed){
     const cdn=castingCountdown(c.deadline);
     if(cdn&&!cdn.expired){
-      if(cdn.days<=CARD_COUNTDOWN_MAX_DAYS)return"";
+      if(cdn.days<=countdownMax)return"";   // the card's own countdown chip already says it
       try{
         const d=String(c.deadline).length===10?new Date(c.deadline+"T12:00:00Z"):new Date(c.deadline);
         const sameYear=d.getUTCFullYear()===new Date().getUTCFullYear();
@@ -18688,7 +18688,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             const soon=!isClosedCard&&cdn&&!cdn.expired&&cdn.days<=5;
             const rateLine=castingTopRate(c);
             const shootTxt=cardShootChip(c);
-            const posted=castingFreshLabel(c,isClosedCard);
+            const posted=castingFreshLabel(c,isClosedCard,5);   // Browse shows its countdown up to 5 days (const soon below)
             const facts=[rateLine?rateLine.text:"",c.union||"",posted].filter(Boolean);
             const whereTxt=(shootLocationForLine(c)||c.location||"").trim();
             const roleCount=c.roles?.length||0;
