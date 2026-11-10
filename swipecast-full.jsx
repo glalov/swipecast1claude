@@ -6980,6 +6980,14 @@ button:disabled:hover .cs-tri{transform:none;}
 /* deeper eased fade: hides the sweater/couch edge in her photo that runs behind "Get booked" */
 .lh-her .lh-fade{position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(180deg,rgba(14,20,23,0) 0%,rgba(14,20,23,.18) 25%,rgba(14,20,23,.5) 50%,rgba(14,20,23,.8) 75%,rgba(14,20,23,.92) 100%);}
 .lh-him{background:#050B11;}
+.lfog{position:absolute;inset:0;background:#1d0d03;}
+.lfog>img,.lfog>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;}
+.lfog>video{opacity:0;transition:opacity .4s ease;}
+.lfog>video.on{opacity:1;}
+.login-hero-full.has-fog{background:#1d0d03;}
+.login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(25,10,0,0) 0%,rgba(25,10,0,0) 46%,rgba(25,10,0,.55) 70%,rgba(18,7,0,.9) 100%);}
+.lh-him.has-fog{background:#1d0d03;}
+.lh-him.has-fog .lh-fade{top:auto;bottom:0;height:58%;background:linear-gradient(180deg,rgba(25,10,0,0) 0%,rgba(25,10,0,.3) 35%,rgba(22,9,0,.78) 75%,rgba(18,7,0,.94) 100%);}
 .lh-him>img{height:calc((100% - var(--lh-text)) * 1.15);object-position:center bottom;}
 .lh-him .lh-fade{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);}
 /* Industry/CD signup: teal info panel (left side of the split card) */
@@ -10002,6 +10010,37 @@ function RegisterCD({onNavigate}){
 // ═══════════════════════════════════════════
 // PAGE: LOGIN
 // ═══════════════════════════════════════════
+// ─── Log-in screens: actor walking out of orange fog (owner, 2026-11-10; demo
+// claude.ai/artifact/SM3gy9uba93vSPRRZtqBiS). Pexels "A Man Walking and Looking Around in Thick
+// Fog" (cottonbro studio, free licence), full 43s, crop follows him so he stays centred; first 5s
+// colour-matched to the ending so the loop restarts without a flash. Log-in screens ONLY: sign-up
+// keeps its still photos (owner chose not to risk sign-up conversion). HEVC 4.2MB for Apple,
+// H.264 7.5MB for everyone else; the still shows first and the video starts only after the page
+// is idle, so logging in is never slowed. Reduce Motion = still only.
+function LoginFogVideo({active=true}){
+  const vRef=React.useRef(null);
+  const [go,setGo]=React.useState(false);
+  React.useEffect(()=>{
+    if(!active||go)return;
+    try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;}catch(_){}
+    let id=0;const start=()=>setGo(true);
+    if('requestIdleCallback' in window)id=window.requestIdleCallback(start,{timeout:1500});else id=setTimeout(start,700);
+    return()=>{try{window.cancelIdleCallback&&window.cancelIdleCallback(id);}catch(_){}clearTimeout(id);};
+  },[active,go]);
+  React.useEffect(()=>{
+    const v=vRef.current;if(!v)return;
+    if(active&&go){try{v.load();}catch(_){}const p=v.play&&v.play();if(p&&p.catch)p.catch(()=>{});}
+    else{try{v.pause();}catch(_){}}
+  },[active,go]);
+  return(<div className="lfog" aria-hidden="true">
+    <img src="/assets/video/login-fog-poster.jpg" alt=""/>
+    {go&&<video ref={vRef} muted playsInline autoPlay loop preload="auto" poster="/assets/video/login-fog-poster.jpg" onPlaying={e=>e.currentTarget.classList.add("on")}>
+      <source src="/assets/video/login-fog-hevc.mp4" type='video/mp4; codecs="hvc1"'/>
+      <source src="/assets/video/login-fog-h264.mp4" type="video/mp4"/>
+    </video>}
+  </div>);
+}
+
 function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
   const t=useT();
   const [email,setEmail]=useState("");
@@ -10125,8 +10164,8 @@ function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}
   if(sentReset)return(<div className="page"><div className="success-msg" style={{padding:"80px 24px",maxWidth:480,margin:"0 auto"}}><div className="check"><Ico n="check" s={24}/></div><h3>{t('login.checkEmail')}</h3><p>{t('login.resetSent')} <strong>{email}</strong>.</p><button className="btn-s" style={{marginTop:24}} onClick={()=>{setForgot(false);setSentReset(false);}}>{t('login.backToLoginBtn')}</button></div><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div className="login-shell"><div className="login-split">
-    <div className="login-hero login-hero-full">
-      <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/>
+    <div className="login-hero login-hero-full has-fog">
+      <LoginFogVideo/>
       <div className="login-hero-overlay"/>
       <div className="login-hero-copy">
         <div className="eye">For actors</div>
@@ -13995,7 +14034,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
       <div className="login-hero">
         {/* Sign Up shows her, Log In shows him; both stay mounted so the tab switch cross-fades (owner 2026-10-31). */}
         <div className={"lh-ph lh-her"+(mode==="signup"?"":" off")}><img src="/assets/auth/signup-actor.jpg" alt="Actor portrait" onError={e=>{e.currentTarget.style.display="none";}}/><div className="lh-fade"/></div>
-        <div className={"lh-ph lh-him"+(mode==="login"?"":" off")}><img src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?w=900&q=80&auto=format&fit=crop" alt="Actor portrait" loading="lazy" onError={e=>{e.currentTarget.style.display="none";}}/><div className="lh-fade"/></div>
+        <div className={"lh-ph lh-him has-fog"+(mode==="login"?"":" off")}><LoginFogVideo active={mode==="login"}/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
