@@ -4047,7 +4047,7 @@ body.sheet-push .b2t-cube{display:none;}
 .cc-title-link{cursor:pointer;transition:color .15s ease,text-decoration-color .15s ease;}
 .cc-title-link:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
 @media (hover:hover) and (pointer:fine){
-  .cc-title-link:hover{color:#276551;text-decoration:underline;text-decoration-thickness:2px;
+  .cc-title-link:hover,.b5-card:hover .cc-title-link{color:#276551;text-decoration:underline;text-decoration-thickness:2px;
     text-underline-offset:.33em;text-decoration-skip-ink:none;text-decoration-color:#33826A;}
 }
 /* Featured Castings: only the CENTRED card opens a casting on click, so only its
@@ -4198,7 +4198,7 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
   .b5-card .b5-role{padding:26px 0;}
   .b5-card .b5-actions{padding-top:10px;}
 }
-.b5-card{position:relative;overflow:hidden;border-radius:14px;background:#FFFFFF;border:1px solid var(--bdr);transition:box-shadow .2s,transform .15s;}
+.b5-card{position:relative;overflow:hidden;border-radius:14px;background:#FFFFFF;border:1px solid var(--bdr);transition:box-shadow .25s ease;}
 .b5-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;}
 .b5-main{padding:30px 32px;display:grid;gap:13px;align-content:start;min-width:0;}
 .cs-pick{display:inline-flex;align-items:center;gap:7px;background:#FBF1DA;color:#5A3E0C;font-family:inherit;font-size:13px;line-height:16.5px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 20px 2px 18px;border:1px solid #E8D3A6;border-radius:999px;white-space:nowrap;}
@@ -18662,8 +18662,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
             return(<React.Fragment key={c.id}>
             {exactN>=0&&closeTags.size>0&&(pg-1)*10+ci===exactN&&<p className="brw-note">{t(exactN===0?'search.noExact':'search.closeMore')}</p>}
             <div className={"b5-card"+(isFeat||isNewCard?" b5-pick":"")+(isNewCard?" b5-new":"")} style={{cursor:isClosedCard?"default":"pointer",boxShadow:restShadow}}
-              onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 4px 16px rgba(26,26,46,0.09)";e.currentTarget.style.transform="translateY(-1px)";}}
-              onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;e.currentTarget.style.transform="";}}
+              onMouseEnter={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow="0 6px 22px -8px rgba(26,26,46,.16),0 1px 2px rgba(26,26,46,.05)";}}
+              onMouseLeave={e=>{if(isClosedCard)return;e.currentTarget.style.boxShadow=restShadow;}}
               onClick={()=>{if(isClosedCard)return;if(window.innerWidth<=768)return;openSheet(rawC);}}>
               {isArchived&&<div className="cs-archived-stamp" aria-hidden="true">Archived</div>}
               <div className={"b5-grid"+(isArchived?" cs-archived-dim":"")}>
