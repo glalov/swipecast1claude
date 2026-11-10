@@ -4707,20 +4707,25 @@ body.fbsp-open #castoria-root{display:none!important;}
    (.dropping / .leaving), and cleared the moment the cube settles. */
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
 .b2t-cube.dropping{perspective:780px;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving{perspective:780px;animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
+.b2t-cube.leaving{perspective:780px;animation:b2tTumbleUp 1.17s cubic-bezier(.45,0,.55,1) both;}
 /* Solid 3D cube (owner pick C, 2026-11-10, demo back-to-top-3d-cube-demo.html): white front
    and back carry the label, red and yellow sides from the triangle, site-teal top and bottom.
    A square core 2px inside the skin fills the rounded corners so the dark footer never shows
    through the edges. Sides, core and back exist only while falling or leaving; at rest the
    button is the plain white front face again, so the tap target stays flat 2D. */
 .b2t-box{position:absolute;inset:0;}
+.b2t-gl{position:absolute;left:50%;top:50%;width:calc(var(--s) * 2.2);height:calc(var(--s) * 2.2);transform:translate(-50%,-50%);pointer-events:none;display:none;}
+.b2t-gl canvas{display:block;width:100%!important;height:100%!important;}
+.b2t-cube.gl .b2t-gl{display:block;}
+.b2t-cube.gl .b2t-box{display:none;}
+.b2t-cube.gl.show::after{opacity:.8;}
 .b2t-cube.dropping .b2t-box,.b2t-cube.leaving .b2t-box,.b2t-cube.dropping .b2t-core,.b2t-cube.leaving .b2t-core{transform-style:preserve-3d;-webkit-transform-style:preserve-3d;}
 /* iPhone fix (2026-11-10): Safari cut and blurred the cube when the perspective() and the
    3D spin sat in the SAME transform as the fall. Now the button only falls (flat 2D move +
    scale) and gives its children a perspective; the inner box does the 3D spin. Same path,
    same timing, same easing as before. No will-change, so Safari repaints sharp. */
 .b2t-cube.dropping .b2t-box{animation:b2tSpinDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving .b2t-box{animation:b2tSpinUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
+.b2t-cube.leaving .b2t-box{animation:b2tSpinUp 1.17s cubic-bezier(.45,0,.55,1) both;}
 /* The spin keyframes push the cube's centre half a cube BEHIND the button plane
    (translateZ(-s/2) first) and spin around that centre, so at the last frame the front
    face sits exactly in the button plane: no size jump when it lands. */
@@ -4788,9 +4793,12 @@ body.fbsp-open #castoria-root{display:none!important;}
 }
 
 @keyframes b2tTumbleUp{
-  0%{transform:translateX(-50%) translateY(0) scale(1);}
-  100%{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);}
+  0%{transform:translateX(-50%) translateY(0) scale(1);opacity:1;}
+  62%{opacity:1;}
+  92%{opacity:0;}
+  100%{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);opacity:0;}
 }
+
 @keyframes b2tSpinUp{
   0%{transform:translateZ(-45px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
   100%{transform:translateZ(-45px) rotateX(24deg) rotateY(540deg) rotateZ(5deg);}
@@ -8970,6 +8978,86 @@ function PageLoader({text}){
 // ═══════════════════════════════════════════
 // FOOTER (shared across all pages)
 // ═══════════════════════════════════════════
+// ─── Back-to-top cube in real 3D (owner, 2026-11-10, demo cube-webgl-demo/) ─────────
+// The CSS cube (six flat cards) could not look solid on iPhone: rounded corners left
+// holes (black spots) and Safari mis-sorted the pieces. This draws ONE rounded block
+// with WebGL instead: oval edges, real light and shade, no seams. three.js (~170 KB gz)
+// loads only when the footer comes near, never on page load. If anything fails (no
+// WebGL, network, old phone) the CSS cube simply stays — nothing else depends on this.
+// The button keeps doing the fall (b2tTumbleDown/Up); this only paints the spin, on the
+// same per-segment easing as the CSS keyframes, so the two stay locked together.
+let __b2tLibP=null;
+function loadB2tLib(){
+  if(!__b2tLibP){
+    __b2tLibP=Promise.all([
+      import('https://cdn.jsdelivr.net/npm/three@0.160.0/+esm'),
+      import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js/+esm')
+    ]).then(([T,R])=>({THREE:T,RoundedBoxGeometry:R.RoundedBoxGeometry}));
+    __b2tLibP.catch(()=>{__b2tLibP=null;});
+  }
+  return __b2tLibP;
+}
+function b2tBezier(p1x,p1y,p2x,p2y){
+  const cx=3*p1x,bx=3*(p2x-p1x)-cx,ax=1-cx-bx,cy=3*p1y,by=3*(p2y-p1y)-cy,ay=1-cy-by;
+  const X=t=>((ax*t+bx)*t+cx)*t,Y=t=>((ay*t+by)*t+cy)*t,dX=t=>(3*ax*t+2*bx)*t+cx;
+  return x=>{if(x<=0)return 0;if(x>=1)return 1;let t=x;for(let i=0;i<8;i++){const e=X(t)-x;if(Math.abs(e)<1e-5)break;const d=dX(t);if(Math.abs(d)<1e-6)break;t-=e/d;}return Y(Math.min(1,Math.max(0,t)));};
+}
+const B2T_EASE_IN=b2tBezier(.18,.82,.26,1.06), B2T_EASE_OUT=b2tBezier(.45,0,.55,1);
+const B2T_IN_MS=1330, B2T_OUT_MS=1170;
+// rotation (deg, CSS sense) at time ms into the drop / the rise
+function b2tSpinAt(kind,ms){
+  const L=(a,b,e)=>a+(b-a)*e;
+  if(kind==='in'){
+    const p=Math.min(1,Math.max(0,ms/B2T_IN_MS)),k=.78;
+    if(p<k){const e=B2T_EASE_IN(p/k);return[L(-28,-10,e),L(-900,-110,e),L(-5,-2,e)];}
+    const e=B2T_EASE_IN((p-k)/(1-k));return[L(-10,0,e),L(-110,0,e),L(-2,0,e)];
+  }
+  if(kind==='out'){const e=B2T_EASE_OUT(Math.min(1,Math.max(0,ms/B2T_OUT_MS)));return[L(0,24,e),L(0,540,e),L(0,5,e)];}
+  return[0,0,0];
+}
+function makeB2tGL(lib,host,label){
+  const {THREE,RoundedBoxGeometry}=lib;
+  const probe=document.createElement('canvas');
+  if(!(probe.getContext('webgl2')||probe.getContext('webgl')))throw new Error('no webgl');
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,3));
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  host.appendChild(renderer.domElement);
+  const scene=new THREE.Scene();
+  // cube = 1 unit; canvas is 2.2 cubes wide so the spin never clips
+  const cam=new THREE.PerspectiveCamera(30,1,.1,50);cam.position.set(0,0,2.2/(2*Math.tan(15*Math.PI/180)));
+  scene.add(new THREE.HemisphereLight(0xffffff,0x3a3330,1.35));
+  const key=new THREE.DirectionalLight(0xffffff,2.1);key.position.set(-2.2,3,3.5);scene.add(key);
+  const rim=new THREE.DirectionalLight(0xffe9c8,.6);rim.position.set(3,-1,-2);scene.add(rim);
+  const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');
+  g.fillStyle='#FFFFFF';g.fillRect(0,0,512,512);
+  g.fillStyle='#F5C518';g.beginPath();g.moveTo(256,150);g.lineTo(310,240);g.lineTo(202,240);g.closePath();g.fill();
+  const txt=String(label||'Back to top').toUpperCase();
+  let fs=56;g.fillStyle='#1A1A2E';g.textAlign='center';g.textBaseline='middle';
+  try{if('letterSpacing' in g)g.letterSpacing='4px';}catch(_){}
+  do{g.font=`800 ${fs}px 'DM Sans',-apple-system,Helvetica,Arial,sans-serif`;fs-=2;}while(g.measureText(txt).width>400&&fs>24);
+  g.fillText(txt,256,310);
+  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;
+  const M=(col,o)=>new THREE.MeshStandardMaterial(Object.assign({color:col,roughness:.42,metalness:0},o||{}));
+  // BoxGeometry groups: +x right, -x left, +y top, -y bottom, +z front, -z back
+  const mats=[M(0xF2C21E),M(0xDD3C53),M(0x4FA386),M(0x24604D),M(0xffffff,{map:tex}),M(0xffffff,{map:tex})];
+  const geo=new RoundedBoxGeometry(1,1,1,6,.17);
+  const mesh=new THREE.Mesh(geo,mats);scene.add(mesh);
+  let raf=0;
+  const size=()=>{const px=Math.max(40,Math.round(host.offsetWidth||200));renderer.setSize(px,px,false);};
+  const pose=(rx,ry,rz)=>{const d=Math.PI/180;mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');renderer.render(scene,cam);};
+  const play=(kind)=>{
+    cancelAnimationFrame(raf);size();
+    if(kind!=='in'&&kind!=='out'){pose(0,0,0);return;}
+    const t0=performance.now(),dur=kind==='in'?B2T_IN_MS:B2T_OUT_MS;
+    const step=(now)=>{const ms=now-t0;const [x,y,z]=b2tSpinAt(kind,ms);pose(x,y,z);if(ms<dur)raf=requestAnimationFrame(step);};
+    raf=requestAnimationFrame(step);
+  };
+  const dispose=()=>{cancelAnimationFrame(raf);try{geo.dispose();mats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}}; 
+  size();pose(0,0,0);
+  return{play,dispose,size};
+}
+
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
@@ -9062,6 +9150,40 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   // bottom; it drops in from above and shoots back up off-screen on scroll-up.
   const [b2tShow,setB2tShow]=React.useState(false);
   const [b2tAnim,setB2tAnim]=React.useState(null); // 'in' | 'out' | null — drives the tumble animation only
+  // WebGL cube (see makeB2tGL): loads when the footer is ~1500px away; switches on only
+  // between animations so a half-finished CSS fall is never swapped mid-air.
+  const b2tGLHost=React.useRef(null), b2tGL=React.useRef(null), b2tAnimRef=React.useRef(null);
+  const [b2tGLOn,setB2tGLOn]=React.useState(false);
+  b2tAnimRef.current=b2tAnim;
+  React.useEffect(()=>{
+    if(!backToTop)return;
+    let dead=false,io=null;
+    try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)return; }catch(_){}
+    const start=()=>{
+      if(io){io.disconnect();io=null;}
+      loadB2tLib().then(lib=>{
+        if(dead||!b2tGLHost.current)return;
+        const fontsReady=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();
+        return fontsReady.then(()=>{
+          if(dead||!b2tGLHost.current)return;
+          try{b2tGL.current=makeB2tGL(lib,b2tGLHost.current,t('footer.backToTop'));}catch(_){b2tGL.current=null;return;}
+          if(!b2tAnimRef.current)setB2tGLOn(true);
+        });
+      }).catch(()=>{});
+    };
+    const el=document.querySelector('.site-footer');
+    if(el&&'IntersectionObserver' in window){io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))start();},{rootMargin:'1500px 0px'});io.observe(el);}
+    else start();
+    const mq=window.matchMedia?window.matchMedia('(max-width:640px)'):null;
+    const onMq=()=>{if(b2tGL.current)b2tGL.current.play(b2tAnimRef.current);};
+    try{mq&&mq.addEventListener('change',onMq);}catch(_){}
+    return()=>{dead=true;if(io)io.disconnect();try{mq&&mq.removeEventListener('change',onMq);}catch(_){}if(b2tGL.current){b2tGL.current.dispose();b2tGL.current=null;}};
+  },[backToTop]);
+  React.useEffect(()=>{
+    if(!b2tGL.current)return;
+    if(!b2tAnim&&!b2tGLOn){setB2tGLOn(true);return;}
+    if(b2tGLOn)b2tGL.current.play(b2tAnim);
+  },[b2tAnim,b2tGLOn]);
   const b2tShownRef=React.useRef(false);
   const glideRef=React.useRef(false); // true while the back-to-top glide runs — mutes check() so its DOM measuring can't jank the ascent
   React.useEffect(()=>{
@@ -9141,7 +9263,8 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     {/* Floating back-to-top cube — only on long pages (home, browse castings,
         tapelink, manager mode). Short pages scroll up in one flick, so the
         drop-down button is just noise there. */}
-    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tAnim==='in'?" dropping":"")+(b2tAnim==='out'?" leaving":"")} onClick={scrollTop} onAnimationEnd={(e)=>{if(e.target===e.currentTarget)setB2tAnim(null);}} aria-label={t('footer.backToTop')}>
+    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tAnim==='in'?" dropping":"")+(b2tAnim==='out'?" leaving":"")+(b2tGLOn?" gl":"")} onClick={scrollTop} onAnimationEnd={(e)=>{if(e.target===e.currentTarget)setB2tAnim(null);}} aria-label={t('footer.backToTop')}>
+      <span className="b2t-gl" ref={b2tGLHost} aria-hidden="true"/>
       <span className="b2t-box">
       <span className="b2t-core b2t-only3d" aria-hidden="true"><i/><i/><i/><i/><i/><i/></span>
       <span className="b2t-f right b2t-only3d" aria-hidden="true"/><span className="b2t-f left b2t-only3d" aria-hidden="true"/>
