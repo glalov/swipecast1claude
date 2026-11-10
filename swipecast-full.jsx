@@ -4707,7 +4707,7 @@ body.fbsp-open #castoria-root{display:none!important;}
    (.dropping / .leaving), and cleared the moment the cube settles. */
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
 .b2t-cube.dropping{perspective:780px;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving{perspective:780px;animation:b2tTumbleUp 1.17s cubic-bezier(.45,0,.55,1) both;}
+.b2t-cube.leaving{perspective:780px;animation:b2tTumbleUp var(--b2t-out,1.17s) cubic-bezier(.45,0,.55,1) both;}
 /* Solid 3D cube (owner pick C, 2026-11-10, demo back-to-top-3d-cube-demo.html): white front
    and back carry the label, red and yellow sides from the triangle, site-teal top and bottom.
    A square core 2px inside the skin fills the rounded corners so the dark footer never shows
@@ -4728,7 +4728,7 @@ body.fbsp-open #castoria-root{display:none!important;}
    scale) and gives its children a perspective; the inner box does the 3D spin. Same path,
    same timing, same easing as before. No will-change, so Safari repaints sharp. */
 .b2t-cube.dropping .b2t-box{animation:b2tSpinDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving .b2t-box{animation:b2tSpinUp 1.17s cubic-bezier(.45,0,.55,1) both;}
+.b2t-cube.leaving .b2t-box{animation:b2tSpinUp var(--b2t-out,1.17s) cubic-bezier(.45,0,.55,1) both;}
 /* The spin keyframes push the cube's centre half a cube BEHIND the button plane
    (translateZ(-s/2) first) and spin around that centre, so at the last frame the front
    face sits exactly in the button plane: no size jump when it lands. */
@@ -9008,14 +9008,14 @@ function b2tBezier(p1x,p1y,p2x,p2y){
 const B2T_EASE_IN=b2tBezier(.18,.82,.26,1.06), B2T_EASE_OUT=b2tBezier(.45,0,.55,1);
 const B2T_IN_MS=1330, B2T_OUT_MS=1170;
 // rotation (deg, CSS sense) at time ms into the drop / the rise
-function b2tSpinAt(kind,ms){
+function b2tSpinAt(kind,ms,outMs){
   const L=(a,b,e)=>a+(b-a)*e;
   if(kind==='in'){
     const p=Math.min(1,Math.max(0,ms/B2T_IN_MS)),k=.78;
     if(p<k){const e=B2T_EASE_IN(p/k);return[L(-28,-10,e),L(-900,-110,e),L(-5,-2,e)];}
     const e=B2T_EASE_IN((p-k)/(1-k));return[L(-10,0,e),L(-110,0,e),L(-2,0,e)];
   }
-  if(kind==='out'){const e=B2T_EASE_OUT(Math.min(1,Math.max(0,ms/B2T_OUT_MS)));return[L(0,24,e),L(0,540,e),L(0,5,e)];}
+  if(kind==='out'){const e=B2T_EASE_OUT(Math.min(1,Math.max(0,ms/(outMs||B2T_OUT_MS))));return[L(0,24,e),L(0,540,e),L(0,5,e)];}
   return[0,0,0];
 }
 function makeB2tGL(lib,host,label,btn,onDone){
@@ -9079,15 +9079,15 @@ function makeB2tGL(lib,host,label,btn,onDone){
     if(k==='in'){const p=Math.min(1,Math.max(0,ms/B2T_IN_MS)),q=.78;
       if(p<q){const e=B2T_EASE_IN(p/q);return[L(away,8,e),L(.88,1.035,e),1];}
       const e=B2T_EASE_IN((p-q)/(1-q));return[L(8,0,e),L(1.035,1,e),1];}
-    if(k==='out'){const p=Math.min(1,Math.max(0,ms/B2T_OUT_MS)),e=B2T_EASE_OUT(p);
+    if(k==='out'){const p=Math.min(1,Math.max(0,ms/outMs)),e=B2T_EASE_OUT(p);
       return[L(0,away,e),L(1,.88,e),p<.62?1:Math.max(0,1-(p-.62)/.3)];}
     return[0,1,1];
   };
-  let doneFor=null;
+  let doneFor=null,outMs=B2T_OUT_MS;
   const frame=(now)=>{
     raf=0;
-    const ms=now-t0,dur=kind==='in'?B2T_IN_MS:kind==='out'?B2T_OUT_MS:0;
-    const [rx,ry,rz]=(kind&&ms<dur)?b2tSpinAt(kind,ms):(kind==='out'?b2tSpinAt('out',B2T_OUT_MS):[0,0,0]);
+    const ms=now-t0,dur=kind==='in'?B2T_IN_MS:kind==='out'?outMs:0;
+    const [rx,ry,rz]=(kind&&ms<dur)?b2tSpinAt(kind,ms,outMs):(kind==='out'?b2tSpinAt('out',outMs,outMs):[0,0,0]);
     const d=Math.PI/180;
     pyr.rotation.y=pyrAngle(now)*d;
     mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');
@@ -9098,7 +9098,8 @@ function makeB2tGL(lib,host,label,btn,onDone){
   };
   const kick=()=>{if(!raf)raf=requestAnimationFrame(frame);};
   // kind: 'in' | 'out' | null; on: is the cube on screen (drives the idle triangle loop)
-  const play=(k,on)=>{size();if(!k&&btn){btn.style.transform='';btn.style.opacity='';}kind=k;t0=performance.now();active=!!on;kick();};
+  // outMs: the rise lasts as long as the page glide (owner 2026-11-10: cube slips under the nav as the page lands)
+  const play=(k,on,riseMs)=>{size();if(!k&&btn){btn.style.transform='';btn.style.opacity='';}if(k==='out')outMs=riseMs||B2T_OUT_MS;kind=k;t0=performance.now();active=!!on;kick();};
   const setActive=(on)=>{active=!!on;kick();};
   const dispose=()=>{cancelAnimationFrame(raf);if(btn){btn.style.transform='';btn.style.opacity='';}try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
   size();kick();
@@ -9150,6 +9151,11 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     // Send the cube tumbling up-and-away immediately — it visibly shoots up past
     // the nav while the page flies, exactly the old feel, and needs no mid-glide
     // footer measuring (glideRef mutes check() so nothing janks the ascent).
+    // Sync (owner 2026-11-10): the cube's rise lasts exactly as long as the page glide, so it
+    // slips under the nav at the moment the page lands. Same formula as rafGlide below.
+    const glideMs=Math.min(1500,Math.max(750,startY*0.16));
+    b2tOutMs.current=glideMs;
+    try{const cb=b2tGLHost.current&&b2tGLHost.current.closest('.b2t-cube');if(cb)cb.style.setProperty('--b2t-out',glideMs+'ms');}catch(_){}
     b2tShownRef.current=false;setB2tShow(false);setB2tAnim('out');
     glideRef.current=true;
     // Freeze video starts during the flight: the reel clips are pre-buffered,
@@ -9201,7 +9207,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   const [b2tAnim,setB2tAnim]=React.useState(null); // 'in' | 'out' | null — drives the tumble animation only
   // WebGL cube (see makeB2tGL): loads when the footer is ~1500px away; switches on only
   // between animations so a half-finished CSS fall is never swapped mid-air.
-  const b2tGLHost=React.useRef(null), b2tGL=React.useRef(null), b2tAnimRef=React.useRef(null);
+  const b2tGLHost=React.useRef(null), b2tGL=React.useRef(null), b2tAnimRef=React.useRef(null), b2tOutMs=React.useRef(B2T_OUT_MS);
   const [b2tGLOn,setB2tGLOn]=React.useState(false);
   b2tAnimRef.current=b2tAnim;
   React.useEffect(()=>{
@@ -9231,7 +9237,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   React.useEffect(()=>{
     if(!b2tGL.current)return;
     if(!b2tAnim&&!b2tGLOn){setB2tGLOn(true);return;}
-    if(b2tGLOn)b2tGL.current.play(b2tAnim,b2tShow||b2tAnim==='in');
+    if(b2tGLOn)b2tGL.current.play(b2tAnim,b2tShow||b2tAnim==='in',b2tOutMs.current);
   },[b2tAnim,b2tGLOn]);
   React.useEffect(()=>{if(b2tGL.current&&b2tGLOn)b2tGL.current.setActive(b2tShow||b2tAnim==='in');},[b2tShow]);
   const b2tShownRef=React.useRef(false);
