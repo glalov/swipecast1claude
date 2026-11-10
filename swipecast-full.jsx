@@ -9145,7 +9145,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       const from=yNow();
       if(from<=0){done=true;hardTop();return;}
       const t0=performance.now();
-      const dur=Math.min(950,Math.max(420,from*0.1));
+      const dur=Math.min(1500,Math.max(750,from*0.16)); // owner 2026-11-10: a little slower than the old 420-950ms
       const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; // easeInOutCubic
       const step=(now)=>{
         const p=Math.min(1,(now-t0)/dur);
@@ -9159,8 +9159,10 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     // thread, so it physically cannot stutter however busy the page is. This
     // only works now that <html> uses overflow-x:clip (see the CSS note) —
     // overflow-x:hidden used to break it, which is why the rAF glide existed.
+    // Owner (2026-11-10) wanted the ride up a little slower. Native smooth scroll runs at
+    // the browser's own (fast, fixed) speed, so the timed glide is used instead; the
+    // native path below is kept only as dead fallback code.
     let native=false;
-    try{window.scrollTo({top:0,left:0,behavior:'smooth'});native=true;}catch(_){}
     if(!native){rafGlide();return;}
     setTimeout(()=>{
       if(done)return;
