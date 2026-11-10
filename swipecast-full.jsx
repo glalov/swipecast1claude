@@ -9070,64 +9070,83 @@ function makeB2tGL(lib,host,label,btn,onDone){
   let raf=0,kind=null,t0=0,active=false;
   let lastPx=0;
   const size=()=>{const px=Math.max(40,Math.round(host.offsetWidth||200));if(px!==lastPx){lastPx=px;renderer.setSize(px,px,false);}};
-  // ONE clock for the fall AND the spin (iPhone fix, 2026-11-10): Safari ran the CSS fall at
-  // up to 120fps but painted the WebGL spin at 60 (30 in Low Power Mode), so the two drifted
-  // apart. In .gl mode the CSS fall is switched off and this frame sets the button's
-  // position, scale and opacity itself, from the same keyframe values.
+  // The FALL runs as a Web Animation on the button (iPhone fix #2, 2026-11-10): Safari
+  // plays those on its compositor, so the cube's position stays smooth even while the
+  // main thread is throttled during fast momentum scrolling. The SPIN (WebGL, main
+  // thread) reads that animation's own currentTime every frame, so the two can never
+  // drift apart. A direction flip mid-flight starts the new animation from the button's
+  // CURRENT on-screen transform, so nothing snaps.
   const L=(a,b,e)=>a+(b-a)*e;
-  const fallAt=(k,ms)=>{
+  const EIN='cubic-bezier(.18,.82,.26,1.06)',EOUT='cubic-bezier(.45,0,.55,1)';
+  const T=(y,sc)=>`translateX(-50%) translate3d(0,${y.toFixed(2)}px,0) scale(${sc})`;
+  let outMs=B2T_OUT_MS,blend=null,fallA=null,fadeA=null,doneFor=null;
+  const last={rx:0,ry:0,rz:0};
+  const cancelFall=()=>{try{fallA&&fallA.cancel();}catch(_){}try{fadeA&&fadeA.cancel();}catch(_){}fallA=fadeA=null;};
+  const startFall=(k,token)=>{
+    if(!btn||typeof btn.animate!=='function')return;
     const away=-((window.innerHeight||800)-16);
-    if(k==='in'){const p=Math.min(1,Math.max(0,ms/B2T_IN_MS)),q=.78;
-      if(p<q){const e=B2T_EASE_IN(p/q);return[L(away,8,e),L(.88,1.035,e),1];}
-      const e=B2T_EASE_IN((p-q)/(1-q));return[L(8,0,e),L(1.035,1,e),1];}
-    if(k==='out'){const p=Math.min(1,Math.max(0,ms/outMs)),e=B2T_EASE_OUT(p);
-      return[L(0,away,e),L(1,.88,e),p<.62?1:Math.max(0,1-(p-.62)/.3)];}
-    return[0,1,1];
+    let fromT=null,fromO=1;
+    if(blend){try{const cs=getComputedStyle(btn);fromT=cs.transform&&cs.transform!=='none'?cs.transform:null;fromO=parseFloat(cs.opacity);if(!(fromO>=0))fromO=1;}catch(_){}}
+    cancelFall();
+    if(blend){
+      const dur=blend.dur;
+      fallA=btn.animate([{transform:fromT||T(k==='in'?away:0,k==='in'?.88:1)},{transform:k==='in'?T(0,1):T(away,.88)}],{duration:dur,easing:k==='in'?EIN:EOUT,fill:'forwards'});
+      fadeA=btn.animate(k==='in'?[{opacity:fromO},{opacity:1,offset:.33},{opacity:1}]:[{opacity:fromO},{opacity:fromO,offset:.5},{opacity:0,offset:.9},{opacity:0}],{duration:dur,fill:'forwards'});
+    }else if(k==='in'){
+      fallA=btn.animate([{transform:T(away,.88),easing:EIN},{transform:T(8,1.035),offset:.78,easing:EIN},{transform:T(0,1)}],{duration:B2T_IN_MS,fill:'forwards'});
+      fadeA=btn.animate([{opacity:1},{opacity:1}],{duration:B2T_IN_MS,fill:'forwards'});
+    }else{
+      fallA=btn.animate([{transform:T(0,1)},{transform:T(away,.88)}],{duration:outMs,easing:EOUT,fill:'forwards'});
+      fadeA=btn.animate([{opacity:1},{opacity:1,offset:.62},{opacity:0,offset:.92},{opacity:0}],{duration:outMs,fill:'forwards'});
+    }
+    fallA.onfinish=()=>{if(token!==t0||doneFor===t0)return;doneFor=t0;blend=null;try{onDone&&onDone(k);}catch(_){}};
   };
-  let doneFor=null,outMs=B2T_OUT_MS,blend=null;
-  // Where the cube is right now (position, scale, opacity, rotation). Fast up-and-down
-  // scrolling used to restart the drop/rise from its first frame, so the cube snapped;
-  // a flip mid-animation now glides on from this pose instead (iPhone, 2026-11-10).
-  const last={y:0,s:1,op:1,rx:0,ry:0,rz:0};
   const curDur=()=>blend?blend.dur:kind==='in'?B2T_IN_MS:kind==='out'?outMs:0;
+  // Redraw only when something on screen changed; the idle triangle only advances while
+  // the page is NOT being scrolled, so a fast flick gets the phone's full attention.
+  let lastScroll=0,idleMs=0,lastNow=0,lastKey='';
+  const onScroll=()=>{lastScroll=performance.now();};
+  window.addEventListener('scroll',onScroll,{passive:true});
   const frame=(now)=>{
     raf=0;
-    const ms=now-t0,dur=curDur(),d=Math.PI/180;
-    let y=0,sc=1,op=1,rx=0,ry=0,rz=0;
-    if(blend){
-      const p=Math.min(1,ms/blend.dur),e=(kind==='in'?B2T_EASE_IN:B2T_EASE_OUT)(p),f=blend.from,t=blend.to;
-      y=L(f.y,t.y,e);sc=L(f.s,t.s,e);rx=L(f.rx,t.rx,e);ry=L(f.ry,t.ry,e);rz=L(f.rz,t.rz,e);
-      op=kind==='out'?(p<.5?f.op:L(f.op,0,Math.min(1,(p-.5)/.4))):L(f.op,1,Math.min(1,p*3));
-    }else if(kind){
-      [rx,ry,rz]=ms<dur?b2tSpinAt(kind,ms,outMs):(kind==='out'?b2tSpinAt('out',outMs,outMs):[0,0,0]);
-      [y,sc,op]=fallAt(kind,Math.min(ms,dur));
+    const dt=lastNow?Math.min(100,now-lastNow):0;lastNow=now;
+    const dur=curDur();
+    let ms=now-t0;
+    if(fallA&&fallA.currentTime!=null)ms=Number(fallA.currentTime);
+    let rx=0,ry=0,rz=0;
+    if(blend){const e=(kind==='in'?B2T_EASE_IN:B2T_EASE_OUT)(Math.min(1,ms/blend.dur)),f=blend.from,t=blend.to;rx=L(f.rx,t.rx,e);ry=L(f.ry,t.ry,e);rz=L(f.rz,t.rz,e);}
+    else if(kind){[rx,ry,rz]=ms<dur?b2tSpinAt(kind,ms,outMs):(kind==='out'?b2tSpinAt('out',outMs,outMs):[0,0,0]);}
+    last.rx=rx;last.ry=ry;last.rz=rz;
+    const moving=!!(kind&&ms<dur);
+    if(moving||now-lastScroll>180)idleMs+=dt;
+    const pa=pyrAngle(idleMs);
+    const key=`${rx.toFixed(2)}|${ry.toFixed(2)}|${rz.toFixed(2)}|${pa.toFixed(2)}`;
+    if(key!==lastKey){
+      lastKey=key;const d=Math.PI/180;
+      pyr.rotation.y=pa*d;mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');
+      renderer.render(scene,cam);
     }
-    Object.assign(last,{y,s:sc,op,rx,ry,rz});
-    pyr.rotation.y=pyrAngle(now)*d;
-    mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');
-    if(btn&&kind){btn.style.transform=`translateX(-50%) translate3d(0,${y.toFixed(2)}px,0) scale(${sc.toFixed(4)})`;btn.style.opacity=String(op);}
-    renderer.render(scene,cam);
-    if(kind&&ms>=dur&&doneFor!==t0){doneFor=t0;blend=null;try{onDone&&onDone(kind);}catch(_){}}
-    if(active||(kind&&ms<dur))raf=requestAnimationFrame(frame);
+    if(active||moving)raf=requestAnimationFrame(frame);
   };
-  const kick=()=>{if(!raf)raf=requestAnimationFrame(frame);};
-  // kind: 'in' | 'out' | null; on: is the cube on screen (drives the idle triangle loop)
-  // outMs: the rise lasts as long as the page glide (owner 2026-11-10: cube slips under the nav as the page lands)
+  const kick=()=>{if(!raf){lastNow=0;raf=requestAnimationFrame(frame);}};
+  // kind: 'in' | 'out' | null; on: is the cube on screen (drives the idle triangle)
+  // riseMs: the rise lasts as long as the page glide (owner 2026-11-10)
   const play=(k,on,riseMs)=>{
     const now=performance.now();
     const midFlight=kind&&(now-t0)<curDur()&&k&&k!==kind;
-    if(!k&&btn){btn.style.transform='';btn.style.opacity='';}
     if(k==='out')outMs=riseMs||B2T_OUT_MS;
     if(midFlight){
-      const away=-((window.innerHeight||800)-16);
       blend={from:Object.assign({},last),
-        to:k==='in'?{y:0,s:1,rx:0,ry:0,rz:0}:{y:away,s:.88,rx:24,ry:last.ry+360,rz:5},
+        to:k==='in'?{rx:0,ry:0,rz:0}:{rx:24,ry:last.ry+360,rz:5},
         dur:k==='in'?760:Math.min(outMs,700)};
     }else blend=null;
-    kind=k;t0=now;active=!!on;kick();
+    kind=k;t0=now;active=!!on;lastKey='';
+    if(k)startFall(k,t0);else cancelFall();
+    if(!k){size();}
+    kick();
   };
   const setActive=(on)=>{active=!!on;kick();};
-  const dispose=()=>{cancelAnimationFrame(raf);if(btn){btn.style.transform='';btn.style.opacity='';}try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
+  const dispose=()=>{cancelAnimationFrame(raf);cancelFall();window.removeEventListener('scroll',onScroll);try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
   size();kick();
   return{play,setActive,dispose,size};
 }
