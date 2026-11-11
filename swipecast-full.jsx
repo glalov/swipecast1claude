@@ -9745,7 +9745,7 @@ function RegisterTalent({onNavigate}){
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
       <div className="login-hero">
-        <div className={"lh-ph lh-her"}><img src="/assets/auth/signup-actor.jpg" alt="Actor portrait" onError={e=>{e.currentTarget.style.display="none";}}/><div className="lh-fade"/></div>
+        <div className="lh-ph lh-him has-fog"><LoginFogVideo/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>Get seen.<br/>Get booked.</h3>
@@ -10018,39 +10018,56 @@ function RegisterCD({onNavigate}){
 // ─── Log-in screens: actor walking out of orange fog (owner, 2026-11-10; demo
 // claude.ai/artifact/SM3gy9uba93vSPRRZtqBiS). Pexels "A Man Walking and Looking Around in Thick
 // Fog" (cottonbro studio, free licence), full 43s, crop follows him so he stays centred; first 5s
-// colour-matched to the ending so the loop restarts without a flash. Log-in screens ONLY: sign-up
-// keeps its still photos (owner chose not to risk sign-up conversion). HEVC 4.2MB for Apple,
+// colour-matched to the ending so the loop restarts without a flash. Since 2026-11-10 on ALL
+// auth screens (join, sign up, log in), owner's choice after the one-video demo. HEVC 4.2MB for Apple,
 // H.264 7.5MB for everyone else; the still shows first and the video starts only after the page
 // is idle, so logging in is never slowed. Reduce Motion = still only.
-function LoginFogVideo({active=true}){
-  // Never stops (owner 2026-11-10: it froze after switching windows in Firefox). Uses the same
-  // csArmLoopVideo keeper as the homepage loops: resumes on tab/window return, unfreezes a clip
-  // stuck on its last frame, retries on the first tap/key (Low Power Mode), and never pauses it
-  // itself. A real src attribute (not <source> children) because the keeper works off v.src;
-  // HEVC when the browser can play it, H.264 otherwise.
-  const vRef=React.useRef(null);
-  const [go,setGo]=React.useState(false);
-  const src=React.useMemo(()=>{
-    try{const t=document.createElement('video');if(t.canPlayType&&t.canPlayType('video/mp4; codecs="hvc1"'))return "/assets/video/login-fog-hevc.mp4";}catch(_){}
-    return "/assets/video/login-fog-h264.mp4";
+// ONE fog clip for every auth screen (owner 2026-11-10: "the one join to all 3 types of login",
+// "smooth playing without interruptions"): /register-talent, the sign-in window's Sign Up and
+// Log In tabs, and /login. A single <video> is made once and MOVED into whichever card is on
+// screen, so switching screens never restarts it: it carries on from the same second. Armed
+// once with csArmLoopVideo (never disarmed): resumes on tab/window return, unfreezes a stuck
+// clip, retries on the first tap (Low Power Mode). While no auth card is on screen it sits
+// outside the page, paused (the keeper skips clips that aren't in the page). A real src
+// attribute (not <source> children) because the keeper works off v.src.
+let csFogVid=null;
+function csFogVideo(){
+  if(csFogVid) return csFogVid;
+  const v=document.createElement('video');
+  v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true; v.preload='auto';
+  ['muted','playsinline','webkit-playsinline','loop','autoplay'].forEach(function(a){ v.setAttribute(a,''); });
+  v.setAttribute('preload','auto'); v.setAttribute('poster','/assets/video/login-fog-poster.jpg');
+  let src='/assets/video/login-fog-h264.mp4';
+  try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src='/assets/video/login-fog-hevc.mp4'; }catch(_){}
+  v.setAttribute('src',src);
+  csFogVid=v;
+  try{ csArmLoopVideo(v); }catch(_){}
+  return v;
+}
+function LoginFogVideo(){
+  const hostRef=React.useRef(null);
+  React.useEffect(()=>{
+    const host=hostRef.current; if(!host) return;
+    try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches) return; }catch(_){}
+    let id=0, done=false;
+    const attach=()=>{
+      if(done) return; done=true;
+      const v=csFogVideo();
+      if(v.parentNode!==host) host.appendChild(v);
+      const p=v.play&&v.play(); if(p&&p.catch)p.catch(()=>{});
+    };
+    // First visit: still first, video once the page is idle. Already made: attach at once,
+    // in the same commit the old card lets go of it, so the browser never pauses it.
+    if(csFogVid) attach();
+    else if('requestIdleCallback' in window) id=window.requestIdleCallback(attach,{timeout:1500});
+    else id=setTimeout(attach,700);
+    return()=>{
+      done=true;
+      try{ window.cancelIdleCallback&&window.cancelIdleCallback(id); }catch(_){} clearTimeout(id);
+      const v=csFogVid; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
+    };
   },[]);
-  React.useEffect(()=>{
-    if(!active||go)return;
-    try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;}catch(_){}
-    let id=0;const start=()=>setGo(true);
-    if('requestIdleCallback' in window)id=window.requestIdleCallback(start,{timeout:1500});else id=setTimeout(start,700);
-    return()=>{try{window.cancelIdleCallback&&window.cancelIdleCallback(id);}catch(_){}clearTimeout(id);};
-  },[active,go]);
-  React.useEffect(()=>{
-    const v=vRef.current;if(!go||!v)return;
-    let off=null;try{off=csArmLoopVideo(v);}catch(_){}
-    const p=v.play&&v.play();if(p&&p.catch)p.catch(()=>{});
-    return()=>{try{off&&off();}catch(_){}};
-  },[go]);
-  return(<div className="lfog" aria-hidden="true">
-    <img src="/assets/video/login-fog-poster.jpg" alt=""/>
-    {go&&<video ref={vRef} src={src} muted playsInline autoPlay loop preload="auto" poster="/assets/video/login-fog-poster.jpg"/>}
-  </div>);
+  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src="/assets/video/login-fog-poster.jpg" alt=""/></div>);
 }
 
 function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
@@ -14044,9 +14061,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
   return(<div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
       <div className="login-hero">
-        {/* Sign Up shows her, Log In shows him; both stay mounted so the tab switch cross-fades (owner 2026-10-31). */}
-        <div className={"lh-ph lh-her"+(mode==="signup"?"":" off")}><img src="/assets/auth/signup-actor.jpg" alt="Actor portrait" onError={e=>{e.currentTarget.style.display="none";}}/><div className="lh-fade"/></div>
-        <div className={"lh-ph lh-him has-fog"+(mode==="login"?"":" off")}><LoginFogVideo active={mode==="login"}/><div className="lh-fade"/></div>
+        {/* One fog clip on both tabs (owner 2026-11-10); it keeps playing through the tab switch. */}
+        <div className="lh-ph lh-him has-fog"><LoginFogVideo/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
@@ -28798,7 +28814,7 @@ function csArmLoopVideo(v){
   let visible=true, gone=false;
   try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); }catch(_){}
   const kick=function(force){
-    if(gone||document.hidden||!v.getAttribute('src')||!v.paused)return;
+    if(gone||document.hidden||!v.getAttribute('src')||!v.paused||v.isConnected===false)return;
     if(!force&&window.__csScrolling)return; // resumed on cs:scroll-idle
     const p=v.play(); if(p&&p.catch)p.catch(function(){});
   };
@@ -28835,7 +28851,7 @@ function csArmLoopVideo(v){
   };
   const checkResume=function(step){
     clearTimeout(resumeT);
-    if(gone||document.hidden||!v.getAttribute('src')) return;
+    if(gone||document.hidden||!v.getAttribute('src')||v.isConnected===false) return;
     if(!visible){ kick(true); return; }
     const t0=v.currentTime; kick(true);
     resumeT=setTimeout(function(){
@@ -28853,7 +28869,7 @@ function csArmLoopVideo(v){
   // (touchstart/pointerdown on a touch screen do NOT unlock media). The clip
   // may read !paused while frozen, so call play() directly, not via kick().
   const unlock=function(){
-    if(gone||!v.getAttribute('src')) return;
+    if(gone||!v.getAttribute('src')||v.isConnected===false) return;
     const p=v.play(); if(p&&p.catch)p.catch(function(){});
   };
   v.addEventListener('playing',onPlaying);
@@ -28883,6 +28899,7 @@ function csArmLoopVideo(v){
   // the browsers already throttle off-screen muted autoplay video themselves.
   let lastT=-1, stuck=0;
   const guard=setInterval(function(){
+    if(v.isConnected===false) return;
     if(visible) kick(false);
     // Silent freeze while on screen (playing, data buffered, clock not moving).
     if(visible&&!document.hidden&&!v.paused&&v.readyState>=3&&v.classList.contains('is-on')){
