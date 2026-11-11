@@ -7002,6 +7002,10 @@ button:disabled:hover .cs-tri{transform:none;}
    ends (measured 2026-11-11), so no fades there: instant swap over the matching still, clean cut. */
 .cs-ffmac .lfog>video{transition:none;}
 .cs-ffmac .lh-ph.lh-in{animation:none;}
+/* ...and it also switches to the darker drawing as soon as a second video sits underneath (owner
+   2026-11-11: "after a few seconds the video gets a shade darker" = the moment the other tab's
+   clip loaded; measured 129 vs 139). The covered clip keeps playing but is not drawn there. */
+.cs-ffmac .lh-ph.off .lfog>video{display:none;}
 .login-hero-full.has-fog{background:#1d0d03;}
 .login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 48%,rgba(22,9,0,0.007) 51.7%,rgba(22,9,0,0.031) 55.4%,rgba(22,9,0,0.074) 59.1%,rgba(22,9,0,0.134) 62.9%,rgba(22,9,0,0.208) 66.6%,rgba(22,9,0,0.294) 70.3%,rgba(22,9,0,0.388) 74.0%,rgba(22,9,0,0.484) 77.7%,rgba(22,9,0,0.579) 81.4%,rgba(22,9,0,0.667) 85.1%,rgba(22,9,0,0.744) 88.9%,rgba(22,9,0,0.805) 92.6%,rgba(22,9,0,0.846) 96.3%,rgba(22,9,0,0.860) 100.0%);}
 .lh-him.has-fog{background:#1d0d03;}
@@ -7844,8 +7848,56 @@ function FeaturedClassBanner({onNavigate}){
     document.addEventListener("visibilitychange",wake);
     window.addEventListener("pageshow",wake);
     window.addEventListener("focus",wake);
+    // Picture watchdog (owner 2026-11-11: in Safari, 2 of 6 tabs opened with the banner frozen and
+    // never starting, on fast wifi). Safari can report the clip as playing, clock running, while no
+    // picture is ever painted (seen in testing on a tab that loaded in the background), and wake()
+    // above only looks at the clock. Once a second, while the tab is visible and the banner is on
+    // screen: paused -> play; data there but the clock stuck -> seek in place, then reload at the
+    // same second; clock running but no new picture for 2s -> re-insert the element (fresh render
+    // layer), then reload. A clip that is still downloading, or playing normally, is never touched.
+    let inView=true,frames=0,lastCt=-1,stuck=0,blind=0,fixes=0,lastProg=Date.now();
+    let bio=null;
+    try{if(typeof IntersectionObserver!=="undefined"){bio=new IntersectionObserver(es=>{es.forEach(e=>{inView=e.isIntersecting;});});bio.observe(v);}}catch(_){}
+    const hasRvfc=typeof v.requestVideoFrameCallback==="function";
+    const onFrame=()=>{frames++;if(!gone)try{v.requestVideoFrameCallback(onFrame);}catch(_){}};
+    if(hasRvfc)try{v.requestVideoFrameCallback(onFrame);}catch(_){}
+    const onProg=()=>{lastProg=Date.now();};
+    v.addEventListener("progress",onProg);
+    const reloadAt=(at)=>{
+      const seek=()=>{v.removeEventListener("loadedmetadata",seek);try{if(at>0.1)v.currentTime=at;}catch(_){}tryPlay();};
+      v.addEventListener("loadedmetadata",seek);
+      try{v.load();}catch(_){}
+      tryPlay();
+    };
+    const reinsert=()=>{
+      try{const par=v.parentNode,nx=v.nextSibling;par.removeChild(v);par.insertBefore(v,nx);}catch(_){}
+      if(hasRvfc)try{v.requestVideoFrameCallback(onFrame);}catch(_){}
+      tryPlay();
+    };
+    const dog=window.setInterval(()=>{
+      const f=frames;frames=0;
+      if(gone||document.hidden||!v.isConnected||!inView||!v.getAttribute("src")){stuck=0;blind=0;lastCt=v.currentTime;return;}
+      if(v.paused){stuck=0;blind=0;lastCt=v.currentTime;tryPlay();return;}
+      const ct=v.currentTime;
+      if(ct===lastCt){
+        blind=0;stuck++;
+        if(v.readyState>=3){
+          if(stuck===2){try{v.currentTime=ct;}catch(_){}tryPlay();}
+          else if(stuck>=4&&fixes<4){fixes++;stuck=0;reloadAt(ct);}
+        }else if(stuck>=6&&Date.now()-lastProg>8000&&fixes<4){fixes++;stuck=0;lastProg=Date.now();reloadAt(ct);}
+      }else{
+        stuck=0;lastCt=ct;
+        if(hasRvfc&&f===0&&v.readyState>=3){
+          blind++;
+          if(blind===2&&fixes<4){fixes++;reinsert();}
+          else if(blind>=4&&fixes<4){fixes++;blind=0;reloadAt(ct);}
+        }else{blind=0;if(f>0)fixes=0;}
+      }
+    },1000);
     return()=>{
-      gone=true;window.clearTimeout(wt);
+      gone=true;window.clearTimeout(wt);window.clearInterval(dog);
+      v.removeEventListener("progress",onProg);
+      try{if(bio)bio.disconnect();}catch(_){}
       gestures.forEach(e=>window.removeEventListener(e,onGesture,true));
       document.removeEventListener("visibilitychange",wake);window.removeEventListener("pageshow",wake);window.removeEventListener("focus",wake);
       // Detach but keep the element (and its buffer) for the next visit to Home.
