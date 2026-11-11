@@ -6980,8 +6980,12 @@ button:disabled:hover .cs-tri{transform:none;}
 /* Auth clip switch (2026-11-11): the incoming clip fades in ON TOP while the outgoing one stays fully
    opaque underneath, then drops out. Fading both at once let the dark card show through mid-fade,
    so the picture dipped and then lit back up on every Sign Up / Log In click. */
-.lh-ph{position:absolute;inset:0;z-index:1;transition:opacity .45s ease;}
-.lh-ph.off{opacity:0;z-index:0;transition:opacity 0s linear .45s;}
+.lh-ph{position:absolute;inset:0;z-index:1;}
+/* Off layer stays fully opaque UNDER the active one (never opacity 0): Firefox stops drawing a
+   transparent video and the clip then "lit up" each time its tab came back (owner 2026-11-11). */
+.lh-ph.off{z-index:0;}
+.lh-ph.lh-in{animation:lhIn .45s ease both;}
+@keyframes lhIn{from{opacity:0}to{opacity:1}}
 .lh-ph>img{position:absolute;left:0;top:0;width:100%;object-fit:cover;}
 .lh-her{background:#2B3A3E;}
 .lh-her>img{height:100%;object-position:58% 30%;}
@@ -6990,7 +6994,9 @@ button:disabled:hover .cs-tri{transform:none;}
 .lh-him{background:#050B11;}
 .lfog{position:absolute;inset:0;background-color:#1d0d03;background-size:cover;background-position:center 30%;}
 .lfog>img,.lfog>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;}
-.lfog>video{opacity:0;}
+.lfog>video{opacity:0;transition:opacity .6s ease;}
+.lfog>img{transition:opacity .35s ease;}
+.lfog>img.wait{opacity:0;transition:none;}
 .lfog>video.on,.lfog>video.is-on{opacity:1;}
 .login-hero-full.has-fog{background:#1d0d03;}
 .login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 48%,rgba(22,9,0,0.007) 51.7%,rgba(22,9,0,0.031) 55.4%,rgba(22,9,0,0.074) 59.1%,rgba(22,9,0,0.134) 62.9%,rgba(22,9,0,0.208) 66.6%,rgba(22,9,0,0.294) 70.3%,rgba(22,9,0,0.388) 74.0%,rgba(22,9,0,0.484) 77.7%,rgba(22,9,0,0.579) 81.4%,rgba(22,9,0,0.667) 85.1%,rgba(22,9,0,0.744) 88.9%,rgba(22,9,0,0.805) 92.6%,rgba(22,9,0,0.846) 96.3%,rgba(22,9,0,0.860) 100.0%);}
@@ -10059,7 +10065,12 @@ function csAuthPoster(C){ return C.base+csAuthSize()+(csIsWebKitEngine?'-poster.
 (function(){ try{
   const pre=function(){ ['mirror','fog'].forEach(function(k){ const i=new Image(); i.decoding='async'; i.src=csAuthPoster(CS_AUTH_CLIPS[k]); }); };
   if(/^\/(login|register-talent|auth-gate)/.test(location.pathname)) pre();
-  else if('requestIdleCallback' in window) window.requestIdleCallback(pre,{timeout:5000}); else setTimeout(pre,3000);
+  else {
+    // Sign-up still on page load (Join is the common next click), the log-in one on idle.
+    const m=function(){ const i=new Image(); i.decoding='async'; i.src=csAuthPoster(CS_AUTH_CLIPS.mirror); };
+    if(document.readyState==='complete') m(); else window.addEventListener('load',m,{once:true});
+    if('requestIdleCallback' in window) window.requestIdleCallback(pre,{timeout:5000}); else setTimeout(pre,3000);
+  }
 }catch(_){} })();
 const csAuthVids={};
 function csFogVideo(clip){
@@ -10078,6 +10089,12 @@ function csFogVideo(clip){
   v.setAttribute('src',src);
   csAuthVids[clip]=v;
   try{ csArmLoopVideo(v); }catch(_){}
+  // Fully downloaded -> the other auth clip may start loading (see LoginFogVideo defer).
+  const onProg=function(){ try{ const d=v.duration, b=v.buffered; if(d&&b.length&&b.end(b.length-1)>=d-3){ /* Chrome stops buffering ~2s short of the end */ v.removeEventListener('progress',onProg); window.__csAuthBuffered=true; window.dispatchEvent(new Event('cs:auth-vid-buffered')); } }catch(_){} };
+  v.addEventListener('progress',onProg);
+  // Chrome often stops buffering well before the end, so also release the other clip 4s after this
+  // one can play through (it is playing smoothly by then, even on a slow connection).
+  v.addEventListener('canplaythrough',function(){ setTimeout(function(){ if(!window.__csAuthBuffered){ window.__csAuthBuffered=true; window.dispatchEvent(new Event('cs:auth-vid-buffered')); } },4000); },{once:true});
   // Picture watchdog (owner 2026-11-10: on iPhone, after leaving Safari for another app and coming
   // back, the clip sat frozen). iOS can bring a page back with the video's clock running but no new
   // pictures on screen, so the keeper's "is currentTime moving" test passes. Here we ask for an
@@ -10132,8 +10149,13 @@ function csFogVideo(clip){
   setInterval(function(){ if(!chk||seen) check(); },3000);
   return v;
 }
-function LoginFogVideo({clip='fog'}){
+function LoginFogVideo({clip='fog',defer=false}){
   const hostRef=React.useRef(null);
+  const C=CS_AUTH_CLIPS[clip]||CS_AUTH_CLIPS.fog;
+  const poster=csAuthPoster(C);
+  // Sharp still: if it isn't in the cache yet, keep the blurred frame and fade the still in when it
+  // arrives (a hard pop read as a flash). Cached -> shown at once, no fade.
+  const [stillReady,setStillReady]=React.useState(function(){ try{ const i=new Image(); i.src=poster; return !!i.complete; }catch(_){ return true; } });
   React.useEffect(()=>{
     const host=hostRef.current; if(!host) return;
     try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches) return; }catch(_){}
@@ -10144,19 +10166,22 @@ function LoginFogVideo({clip='fog'}){
       if(v.parentNode!==host) host.appendChild(v);
       const p=v.play&&v.play(); if(p&&p.catch)p.catch(()=>{});
     };
-    // First visit: still first, video once the page is idle. Already made: attach at once,
-    // in the same commit the old card lets go of it, so the browser never pauses it.
+    // Already made: attach at once, in the same commit the old card lets go of it, so the browser
+    // never pauses it. Otherwise start right after first paint (was: wait for idle, up to 1.5s; the
+    // owner saw the clip start "a second after the page opens"). A deferred clip (the other tab on
+    // the sign-up page) waits until its tab is opened or the visible clip has fully downloaded, so
+    // the two never split a slow connection (owner on a phone hotspot: ~20s before either played).
+    let onBuf=null;
     if(csAuthVids[clip]) attach();
-    else if('requestIdleCallback' in window) id=window.requestIdleCallback(attach,{timeout:1500});
-    else id=setTimeout(attach,700);
+    else if(defer){ onBuf=function(){ id=setTimeout(attach,0); }; window.addEventListener('cs:auth-vid-buffered',onBuf); if(window.__csAuthBuffered) onBuf(); }
+    else id=setTimeout(attach,60);
     return()=>{
-      done=true;
-      try{ window.cancelIdleCallback&&window.cancelIdleCallback(id); }catch(_){} clearTimeout(id);
+      done=true; clearTimeout(id);
+      if(onBuf) window.removeEventListener('cs:auth-vid-buffered',onBuf);
       const v=csAuthVids[clip]; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
     };
-  },[clip]);
-  const C=CS_AUTH_CLIPS[clip]||CS_AUTH_CLIPS.fog;
-  return(<div className="lfog" ref={hostRef} aria-hidden="true" style={{backgroundImage:'url('+C.lq+')'}}><img src={csAuthPoster(C)} alt="" decoding="sync" fetchpriority="high"/></div>);
+  },[clip,defer]);
+  return(<div className="lfog" ref={hostRef} aria-hidden="true" style={{backgroundImage:'url('+C.lq+')'}}><img src={poster} alt="" decoding="sync" fetchpriority={defer?"low":"high"} className={stillReady?undefined:"wait"} onLoad={()=>{ if(!stillReady) setStillReady(true); }}/></div>);
 }
 
 function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
@@ -13917,6 +13942,9 @@ function FairCastingPage({onNavigate}){
 function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
   const [emStep,setEmStep]=useState(false); // two-step email signup (owner, 2026-10-30)
   const [mode,setMode]=useState("signup");
+  // true after the first Sign Up / Log In click: only then does the new clip layer fade in
+  const switchedRef=useRef(false); const firstModeRef=useRef(mode);
+  if(mode!==firstModeRef.current) switchedRef.current=true;
   const [premiumMsg,setPremiumMsg]=useState(false);
   const [loading,setLoading]=useState(false);
   const [err,setErr]=useState("");
@@ -14152,8 +14180,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
       <div className="login-hero">
         {/* Sign Up = mirror clip, Log In = fog (owner 2026-11-11). Both stay mounted and playing, so the
             tab switch cross-fades (.45s) and each carries on from its own second. */}
-        <div className={"lh-ph lh-him has-mirror"+(mode==="signup"?"":" off")}><LoginFogVideo clip="mirror"/><div className="lh-fade"/></div>
-        <div className={"lh-ph lh-him has-fog"+(mode==="login"?"":" off")}><LoginFogVideo clip="fog"/><div className="lh-fade"/></div>
+        <div className={"lh-ph lh-him has-mirror"+(mode==="signup"?(switchedRef.current?" lh-in":""):" off")}><LoginFogVideo clip="mirror" defer={mode!=="signup"}/><div className="lh-fade"/></div>
+        <div className={"lh-ph lh-him has-fog"+(mode==="login"?(switchedRef.current?" lh-in":""):" off")}><LoginFogVideo clip="fog" defer={mode!=="login"}/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
