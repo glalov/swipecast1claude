@@ -6998,6 +6998,10 @@ button:disabled:hover .cs-tri{transform:none;}
 .lfog>img{transition:opacity .35s ease;}
 .lfog>img.wait{opacity:0;transition:none;}
 .lfog>video.on,.lfog>video.is-on{opacity:1;}
+/* Firefox on a Mac draws a video darker while it is being faded and pops brighter when the fade
+   ends (measured 2026-11-11), so no fades there: instant swap over the matching still, clean cut. */
+.cs-ffmac .lfog>video{transition:none;}
+.cs-ffmac .lh-ph.lh-in{animation:none;}
 .login-hero-full.has-fog{background:#1d0d03;}
 .login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 48%,rgba(22,9,0,0.007) 51.7%,rgba(22,9,0,0.031) 55.4%,rgba(22,9,0,0.074) 59.1%,rgba(22,9,0,0.134) 62.9%,rgba(22,9,0,0.208) 66.6%,rgba(22,9,0,0.294) 70.3%,rgba(22,9,0,0.388) 74.0%,rgba(22,9,0,0.484) 77.7%,rgba(22,9,0,0.579) 81.4%,rgba(22,9,0,0.667) 85.1%,rgba(22,9,0,0.744) 88.9%,rgba(22,9,0,0.805) 92.6%,rgba(22,9,0,0.846) 96.3%,rgba(22,9,0,0.860) 100.0%);}
 .lh-him.has-fog{background:#1d0d03;}
@@ -10061,7 +10065,14 @@ const csIsWebKitEngine=(function(){ try{ const u=navigator.userAgent||''; if(/iP
 // Two sizes: phones (card ~full screen width at 3x) need ~1100px wide -> xl 1088x1712;
 // computers/iPads (card ~440pt at 2x) need ~880 -> hd. Each size has its own frame-0 stills.
 function csAuthSize(){ try{ const w=window.innerWidth<=560?window.innerWidth:460; if(w*(window.devicePixelRatio||1)>1000) return 'xl'; }catch(_){} return 'hd'; }
-function csAuthPoster(C){ return C.base+csAuthSize()+(csIsWebKitEngine?'-poster.jpg':'-poster-srgb.jpg'); }
+// Firefox on a Mac (measured 2026-11-11 from screenshots): a fully opaque video is handed to macOS
+// and drawn like Safari draws it, about 10% brighter than the sRGB still (wall 142 vs 129), but
+// while the video is being faded (itself or its layer) Firefox draws it the dark way, so it popped
+// brighter the instant a fade ended. So there: the HDTV still (141 vs 142), and no fades (CSS
+// .cs-ffmac): the video replaces the matching still in one step and tab clicks cut cleanly.
+const csIsFirefoxMac=(function(){ try{ const u=navigator.userAgent||''; return /Firefox\//.test(u)&&/Macintosh/.test(u); }catch(_){ return false; } })();
+try{ if(csIsFirefoxMac) document.documentElement.classList.add('cs-ffmac'); }catch(_){}
+function csAuthPoster(C){ return C.base+csAuthSize()+((csIsWebKitEngine||csIsFirefoxMac)?'-poster.jpg':'-poster-srgb.jpg'); }
 (function(){ try{
   const pre=function(){ ['mirror','fog'].forEach(function(k){ const i=new Image(); i.decoding='async'; i.src=csAuthPoster(CS_AUTH_CLIPS[k]); }); };
   if(/^\/(login|register-talent|auth-gate)/.test(location.pathname)) pre();
@@ -10098,21 +10109,22 @@ function csFogVideo(clip){
   // Picture watchdog (owner 2026-11-10: on iPhone, after leaving Safari for another app and coming
   // back, the clip sat frozen). iOS can bring a page back with the video's clock running but no new
   // pictures on screen, so the keeper's "is currentTime moving" test passes. Here we ask for an
-  // actual painted frame (requestVideoFrameCallback): none within 1.2s while it should be playing
-  // -> 1) nudge (pause, step 1 frame, play), 2) re-insert the element (fresh render layer),
-  // 3) reload the file at the same second. Runs on every return and every 3s while on screen.
+  // actual painted frame (requestVideoFrameCallback): none while it should be playing -> 1) re-insert
+  // the element (fresh render layer) and step one frame, 2) reload the file at the same second.
+  // Runs on every return and every 3s while on screen. (2026-11-11, measured in Safari: when the
+  // picture is really stuck, the old first step, pause + 1-frame seek, did nothing and only the
+  // re-insert brought frames back, so that now comes first.)
   let seen=true, step=0, chk=0, onScreen=true;
   try{ if(typeof IntersectionObserver!=='undefined') new IntersectionObserver(function(es){ es.forEach(function(e){ onScreen=e.isIntersecting; }); }).observe(v); }catch(_){}
   const fix=function(){
-    if(document.hidden||!v.isConnected||step>=3) return; // after a reload, wait for the next return
+    if(document.hidden||!v.isConnected||step>=2) return; // after a reload, wait for the next return
     step++;
     try{
-      if(step===1){ const t=v.currentTime||0; v.pause(); v.currentTime=t+0.04; }
-      else if(step===2){ const par=v.parentNode, nx=v.nextSibling; par.removeChild(v); par.insertBefore(v,nx); }
+      if(step===1){ const t=v.currentTime||0, par=v.parentNode, nx=v.nextSibling; par.removeChild(v); par.insertBefore(v,nx); v.currentTime=t+0.04; }
       else { const t=v.currentTime||0, u=v.getAttribute('src'); const seek=function(){ v.removeEventListener('loadedmetadata',seek); try{ v.currentTime=t; }catch(_){} const q=v.play(); if(q&&q.catch)q.catch(function(){}); }; v.addEventListener('loadedmetadata',seek); v.removeAttribute('src'); v.load(); v.setAttribute('src',u); v.load(); }
     }catch(_){}
     const p=v.play(); if(p&&p.catch)p.catch(function(){});
-    clearTimeout(chk); if(step<3) chk=setTimeout(check,1400);
+    clearTimeout(chk); if(step<2) chk=setTimeout(function(){ check(800); },150);
   };
   const check=function(wait){
     clearTimeout(chk);
@@ -10125,24 +10137,19 @@ function csFogVideo(clip){
     chk=setTimeout(function(){ if(!seen&&!v.paused&&!document.hidden&&v.isConnected&&onScreen&&!(v.closest&&v.closest('.off'))) fix(); },wait||1200);
   };
   // Back from another app / tab (owner 2026-11-11: "still frozen for a few seconds, then starts").
-  // Don't wait to find out: restart the picture at once (fresh render layer + a 1-frame seek, which
-  // makes the decoder paint a new frame), then if no frame shows within 0.7s go straight to the
-  // full reload. Only after a real stay away (>0.8s hidden, or a page restored from history), so
-  // plain window clicks on a computer never trigger it.
+  // A healthy clip is left completely alone: the browser resumes it by itself from the same second.
+  // (Until 2026-11-11 the element was re-inserted and seeked on EVERY return. Measured in Safari:
+  // that itself made the picture stutter 3 times in the first 0.6s, and once froze it for 6s; with
+  // no interference Safari came back at full frame rate every time.) We only look for proof that
+  // the picture is stuck: no new frame painted within 0.45s of coming back -> re-insert at once,
+  // then reload if that did not help either.
   let hiddenAt=0;
-  const reseat=function(){
-    if(!v.isConnected) return;
-    try{ const par=v.parentNode, nx=v.nextSibling; par.removeChild(v); par.insertBefore(v,nx); }catch(_){}
-    try{ v.currentTime=(v.currentTime||0)+0.04; }catch(_){}
-    const p=v.play(); if(p&&p.catch)p.catch(function(){});
-    step=2; setTimeout(function(){ check(700); },120);
-  };
   const onVisChange=function(){
     if(document.hidden){ hiddenAt=Date.now(); return; }
     const away=hiddenAt?Date.now()-hiddenAt:0; hiddenAt=0; step=0;
-    if(away>800) reseat(); else setTimeout(check,300);
+    if(away>800) check(450); else setTimeout(check,300);
   };
-  const back=function(e){ if(document.hidden) return; step=0; if(e&&e.persisted) reseat(); else setTimeout(check,300); };
+  const back=function(e){ if(document.hidden) return; step=0; if(e&&e.persisted) check(450); else setTimeout(check,300); };
   document.addEventListener('visibilitychange',onVisChange);
   window.addEventListener('pageshow',back);
   window.addEventListener('focus',back);
@@ -10156,6 +10163,12 @@ function LoginFogVideo({clip='fog',defer=false}){
   // Sharp still: if it isn't in the cache yet, keep the blurred frame and fade the still in when it
   // arrives (a hard pop read as a flash). Cached -> shown at once, no fade.
   const [stillReady,setStillReady]=React.useState(function(){ try{ const i=new Image(); i.src=poster; return !!i.complete; }catch(_){ return true; } });
+  // `defer` is read through a ref and is NOT a dependency of the attach effect: it flips on every
+  // Sign Up / Log In click, and re-running the effect took the playing video out of the page and
+  // put it straight back (owner 2026-11-11: Safari "jumpy" on tab clicks; measured there as the
+  // clip standing still ~0.6s per click, and a redraw in Firefox).
+  const deferRef=React.useRef(defer); deferRef.current=defer;
+  const attachRef=React.useRef(null);
   React.useEffect(()=>{
     const host=hostRef.current; if(!host) return;
     try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches) return; }catch(_){}
@@ -10166,6 +10179,7 @@ function LoginFogVideo({clip='fog',defer=false}){
       if(v.parentNode!==host) host.appendChild(v);
       const p=v.play&&v.play(); if(p&&p.catch)p.catch(()=>{});
     };
+    attachRef.current=attach;
     // Already made: attach at once, in the same commit the old card lets go of it, so the browser
     // never pauses it. Otherwise start right after first paint (was: wait for idle, up to 1.5s; the
     // owner saw the clip start "a second after the page opens"). A deferred clip (the other tab on
@@ -10173,14 +10187,17 @@ function LoginFogVideo({clip='fog',defer=false}){
     // the two never split a slow connection (owner on a phone hotspot: ~20s before either played).
     let onBuf=null;
     if(csAuthVids[clip]) attach();
-    else if(defer){ onBuf=function(){ id=setTimeout(attach,0); }; window.addEventListener('cs:auth-vid-buffered',onBuf); if(window.__csAuthBuffered) onBuf(); }
+    else if(deferRef.current){ onBuf=function(){ id=setTimeout(attach,0); }; window.addEventListener('cs:auth-vid-buffered',onBuf); if(window.__csAuthBuffered) onBuf(); }
     else id=setTimeout(attach,60);
     return()=>{
-      done=true; clearTimeout(id);
+      done=true; clearTimeout(id); attachRef.current=null;
       if(onBuf) window.removeEventListener('cs:auth-vid-buffered',onBuf);
       const v=csAuthVids[clip]; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
     };
-  },[clip,defer]);
+  },[clip]);
+  // Its tab was opened before the clip was made: start it now (no-op once attached).
+  const deferSeen=React.useRef(defer);
+  React.useEffect(()=>{ if(deferSeen.current===defer) return; deferSeen.current=defer; if(!defer&&attachRef.current) attachRef.current(); },[defer]);
   return(<div className="lfog" ref={hostRef} aria-hidden="true" style={{backgroundImage:'url('+C.lq+')'}}><img src={poster} alt="" decoding="sync" fetchpriority={defer?"low":"high"} className={stillReady?undefined:"wait"} onLoad={()=>{ if(!stillReady) setStillReady(true); }}/></div>);
 }
 
