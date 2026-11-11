@@ -6949,6 +6949,18 @@ button:disabled:hover .cs-tri{transform:none;}
 .login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
 .lh-checks,.lh-casting{display:none;}
 .login-form-side{display:flex;align-items:center;justify-content:center;padding:clamp(36px,4vw,56px) clamp(24px,3vw,44px);background:#fff;min-width:0;}
+/* Join / auth-gate card (owner 2026-11-11): centered logo header like the Sign In page, centered tabs and
+   headings, form fields stay left. One card height for both tabs and the header pinned to the top, so
+   nothing moves or resizes when switching Sign Up / Log In. */
+.ag-head{text-align:center;margin:0 0 18px;}
+.ag-head .logo{justify-content:center;font-size:24px;margin:0;}
+.ag-head .logo-i{width:36px;height:36px;}
+.ag-head .logo-i path{fill:#fff !important;}
+.ag-side>div>.tabs{display:flex;width:max-content;margin:0 auto 26px !important;}
+.ag-side>div>h2{text-align:center;}
+.ag-side>div>h2:has(+p){margin-bottom:8px !important;}
+.ag-side>div>h2+p{text-align:center;margin-bottom:28px !important;}
+@media(min-width:561px){.ag-split{min-height:730px;}.ag-side{align-items:flex-start;padding-top:56px;}}
 /* /login: the original full-photo fade (that actor is small and mid-frame). */
 .login-hero.login-hero-full{background:#3B6F65;}
 .login-hero-full>img{top:0;height:100%;object-position:center 25%;}
@@ -14179,6 +14191,8 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
     {!embedded&&<Footer onNavigate={onNavigate}/>}</div>);
 
   const formBody=(<>
+        {/* Same centered logo header as the Sign In page (owner 2026-11-11). Not on the embedded casting-page form. */}
+        {!embedded&&<div className="ag-head"><div className="logo"><div className="logo-i"><LogoMark/></div>CastSlate</div></div>}
         <div className="tabs" style={{marginBottom:24}}>
           <button className={`tab ${mode==="signup"?"active":""}`} onClick={()=>{setMode("signup");setErr("");}}>Sign Up</button>
           <button className={`tab ${mode==="login"?"active":""}`} onClick={()=>{setMode("login");setErr("");}}>Log In</button>
@@ -14244,7 +14258,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
         {onCancel&&!embedded&&<p style={{textAlign:"center",color:"var(--t3)",fontSize:11,marginTop:24}}><span onClick={onCancel} style={{cursor:"pointer",textDecoration:"underline"}}>{c?"← Back to casting":"← Back"}</span></p>}
   </>);
   if(embedded)return(<div className="cg-form">{formBody}</div>);
-  return(<div className="page"><div className="login-shell"><div className="login-split">
+  return(<div className="page"><div className="login-shell"><div className="login-split ag-split">
       {/* LEFT: hero */}
       <div className="login-hero">
         {/* Sign Up = mirror clip, Log In = fog (owner 2026-11-11). Both stay mounted and playing, so the
@@ -14271,7 +14285,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
       </div>
 
       {/* RIGHT: Sign up / Log in form */}
-      <div className="login-form-side"><div style={{maxWidth:440,width:"100%"}}>
+      <div className="login-form-side ag-side"><div style={{maxWidth:440,width:"100%"}}>
         {formBody}
       </div></div>
     </div></div>
