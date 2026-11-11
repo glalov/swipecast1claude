@@ -10036,12 +10036,45 @@ function csFogVideo(){
   const v=document.createElement('video');
   v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true; v.preload='auto';
   ['muted','playsinline','webkit-playsinline','loop','autoplay'].forEach(function(a){ v.setAttribute(a,''); });
-  v.setAttribute('preload','auto'); v.setAttribute('poster','/assets/video/login-fog-poster.jpg');
-  let src='/assets/video/login-fog-h264.mp4';
-  try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src='/assets/video/login-fog-hevc.mp4'; }catch(_){}
+  v.setAttribute('preload','auto'); v.setAttribute('poster','/assets/video/login-fog-v2-poster.jpg');
+  let src='/assets/video/login-fog-v2-h264.mp4';
+  try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src='/assets/video/login-fog-v2-hevc.mp4'; }catch(_){}
   v.setAttribute('src',src);
   csFogVid=v;
   try{ csArmLoopVideo(v); }catch(_){}
+  // Picture watchdog (owner 2026-11-10: on iPhone, after leaving Safari for another app and coming
+  // back, the clip sat frozen). iOS can bring a page back with the video's clock running but no new
+  // pictures on screen, so the keeper's "is currentTime moving" test passes. Here we ask for an
+  // actual painted frame (requestVideoFrameCallback): none within 1.2s while it should be playing
+  // -> 1) nudge (pause, step 1 frame, play), 2) re-insert the element (fresh render layer),
+  // 3) reload the file at the same second. Runs on every return and every 3s while on screen.
+  let seen=true, step=0, chk=0, onScreen=true;
+  try{ if(typeof IntersectionObserver!=='undefined') new IntersectionObserver(function(es){ es.forEach(function(e){ onScreen=e.isIntersecting; }); }).observe(v); }catch(_){}
+  const fix=function(){
+    if(document.hidden||!v.isConnected||step>=3) return; // after a reload, wait for the next return
+    step++;
+    try{
+      if(step===1){ const t=v.currentTime||0; v.pause(); v.currentTime=t+0.04; }
+      else if(step===2){ const par=v.parentNode, nx=v.nextSibling; par.removeChild(v); par.insertBefore(v,nx); }
+      else { const t=v.currentTime||0, u=v.getAttribute('src'); const seek=function(){ v.removeEventListener('loadedmetadata',seek); try{ v.currentTime=t; }catch(_){} const q=v.play(); if(q&&q.catch)q.catch(function(){}); }; v.addEventListener('loadedmetadata',seek); v.removeAttribute('src'); v.load(); v.setAttribute('src',u); v.load(); }
+    }catch(_){}
+    const p=v.play(); if(p&&p.catch)p.catch(function(){});
+    clearTimeout(chk); if(step<3) chk=setTimeout(check,1400);
+  };
+  const check=function(){
+    clearTimeout(chk);
+    if(document.hidden||!v.isConnected||!onScreen||v.readyState<2) return;
+    if(v.paused){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); }
+    if(typeof v.requestVideoFrameCallback!=='function') return;
+    seen=false;
+    try{ v.requestVideoFrameCallback(function(){ seen=true; step=0; }); }catch(_){ return; }
+    chk=setTimeout(function(){ if(!seen&&!v.paused&&!document.hidden&&v.isConnected&&onScreen) fix(); },1200);
+  };
+  const back=function(){ if(!document.hidden){ step=0; setTimeout(check,300); } };
+  document.addEventListener('visibilitychange',back);
+  window.addEventListener('pageshow',back);
+  window.addEventListener('focus',back);
+  setInterval(function(){ if(!chk||seen) check(); },3000);
   return v;
 }
 function LoginFogVideo(){
@@ -10067,7 +10100,7 @@ function LoginFogVideo(){
       const v=csFogVid; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
     };
   },[]);
-  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src="/assets/video/login-fog-poster.jpg" alt=""/></div>);
+  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src="/assets/video/login-fog-v2-poster.jpg" alt=""/></div>);
 }
 
 function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
