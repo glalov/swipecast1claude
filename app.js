@@ -4667,7 +4667,7 @@ button:disabled:hover .cs-tri{transform:none;}
 .login-hero{--lh-text:190px;}
 .login-hero>img{position:absolute;left:0;top:0;width:100%;height:calc((100% - var(--lh-text)) * 1.15);object-fit:cover;object-position:center bottom;}
 .login-hero-overlay{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);pointer-events:none;}
-.login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:0 40px 38px;color:#fff;}
+.login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:0 40px 38px;color:#fff;z-index:2;}
 .login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
 .login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;text-shadow:0 2px 18px rgba(0,0,0,.25);}
 .login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
@@ -4701,8 +4701,11 @@ button:disabled:hover .cs-tri{transform:none;}
   .login-form-side{padding:30px 22px 34px;}
 }
 /* Sign-up card photos (owner 2026-10-31): her (Pexels) on Sign Up, him on Log In. */
-.lh-ph{position:absolute;inset:0;transition:opacity .45s ease;}
-.lh-ph.off{opacity:0;}
+/* Auth clip switch (2026-11-11): the incoming clip fades in ON TOP while the outgoing one stays fully
+   opaque underneath, then drops out. Fading both at once let the dark card show through mid-fade,
+   so the picture dipped and then lit back up on every Sign Up / Log In click. */
+.lh-ph{position:absolute;inset:0;z-index:1;transition:opacity .45s ease;}
+.lh-ph.off{opacity:0;z-index:0;transition:opacity 0s linear .45s;}
 .lh-ph>img{position:absolute;left:0;top:0;width:100%;object-fit:cover;}
 .lh-her{background:#2B3A3E;}
 .lh-her>img{height:100%;object-position:58% 30%;}
