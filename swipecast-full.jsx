@@ -6985,16 +6985,16 @@ button:disabled:hover .cs-tri{transform:none;}
 /* deeper eased fade: hides the sweater/couch edge in her photo that runs behind "Get booked" */
 .lh-her .lh-fade{position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(180deg,rgba(14,20,23,0) 0%,rgba(14,20,23,.18) 25%,rgba(14,20,23,.5) 50%,rgba(14,20,23,.8) 75%,rgba(14,20,23,.92) 100%);}
 .lh-him{background:#050B11;}
-.lfog{position:absolute;inset:0;background:#1d0d03;}
+.lfog{position:absolute;inset:0;background-color:#1d0d03;background-size:cover;background-position:center 30%;}
 .lfog>img,.lfog>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;}
-.lfog>video{opacity:0;transition:opacity .4s ease;}
+.lfog>video{opacity:0;}
 .lfog>video.on,.lfog>video.is-on{opacity:1;}
 .login-hero-full.has-fog{background:#1d0d03;}
 .login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 48%,rgba(22,9,0,0.007) 51.7%,rgba(22,9,0,0.031) 55.4%,rgba(22,9,0,0.074) 59.1%,rgba(22,9,0,0.134) 62.9%,rgba(22,9,0,0.208) 66.6%,rgba(22,9,0,0.294) 70.3%,rgba(22,9,0,0.388) 74.0%,rgba(22,9,0,0.484) 77.7%,rgba(22,9,0,0.579) 81.4%,rgba(22,9,0,0.667) 85.1%,rgba(22,9,0,0.744) 88.9%,rgba(22,9,0,0.805) 92.6%,rgba(22,9,0,0.846) 96.3%,rgba(22,9,0,0.860) 100.0%);}
 .lh-him.has-fog{background:#1d0d03;}
 .lh-him.has-fog .lh-fade{top:auto;bottom:0;height:56%;background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 0%,rgba(22,9,0,0.007) 7.1%,rgba(22,9,0,0.032) 14.3%,rgba(22,9,0,0.075) 21.4%,rgba(22,9,0,0.137) 28.6%,rgba(22,9,0,0.213) 35.7%,rgba(22,9,0,0.301) 42.9%,rgba(22,9,0,0.397) 50.0%,rgba(22,9,0,0.495) 57.1%,rgba(22,9,0,0.592) 64.3%,rgba(22,9,0,0.683) 71.4%,rgba(22,9,0,0.762) 78.6%,rgba(22,9,0,0.824) 85.7%,rgba(22,9,0,0.865) 92.9%,rgba(22,9,0,0.880) 100.0%);}
 .lh-him.has-mirror{background:#1a0f14;}
-.lh-him.has-mirror .lfog{background:#1a0f14;}
+.lh-him.has-mirror .lfog{background-color:#1a0f14;}
 .lh-him.has-mirror .lh-fade{top:auto;bottom:0;height:52%;background:linear-gradient(180deg,rgba(12,6,10,0.000) 0.0%,rgba(12,6,10,0.006) 7.1%,rgba(12,6,10,0.028) 14.3%,rgba(12,6,10,0.067) 21.4%,rgba(12,6,10,0.121) 28.6%,rgba(12,6,10,0.189) 35.7%,rgba(12,6,10,0.267) 42.9%,rgba(12,6,10,0.351) 50.0%,rgba(12,6,10,0.439) 57.1%,rgba(12,6,10,0.525) 64.3%,rgba(12,6,10,0.605) 71.4%,rgba(12,6,10,0.675) 78.6%,rgba(12,6,10,0.731) 85.7%,rgba(12,6,10,0.767) 92.9%,rgba(12,6,10,0.780) 100.0%);}
 .lh-him>img{height:calc((100% - var(--lh-text)) * 1.15);object-position:center bottom;}
 .lh-him .lh-fade{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);}
@@ -10036,10 +10036,28 @@ function RegisterCD({onNavigate}){
 // Since 2026-11-11 there are TWO clips, each its own never-restarting player (owner's choice):
 // 'mirror' (Pexels 7706677, cottonbro: actor getting ready, turns to camera; slowed to 70% with
 // motion-interpolated frames, 1.2s dissolve loop, 38.5s) on Join + Sign Up, and 'fog' on Log In.
+// No "arrival" (owner 2026-11-11: clips "appear from black and light up"). 1) The card is never
+// black: a ~0.5KB blurred copy of frame 0 is inlined (lq) and painted with the card itself. 2) The
+// still (frame 0) is fetched early: at once on auth URLs, on idle everywhere else. 3) The still
+// matches the video's first frame exactly in EVERY engine: WebKit (all iPhone browsers, Mac
+// Safari) draws bt709 video like an HDTV-profile image, so it gets the HDTV-tagged still; Chrome/
+// Firefox/Edge draw bt709 video like plain sRGB, so they get the untagged -srgb still (made via RGB
+// with the right matrices; ffmpeg avg 118,70,71 = video 118,70,71). 4) The video then replaces the
+// still instantly (no fade), the moment its first frame is painted, so nothing visibly changes.
 const CS_AUTH_CLIPS={
-  fog:{base:'/assets/video/login-fog-v3-',poster:'/assets/video/login-fog-v3-poster.jpg'},
-  mirror:{base:'/assets/video/auth-mirror-v1-',poster:'/assets/video/auth-mirror-v1-poster.jpg'}
+  fog:{base:'/assets/video/login-fog-v3-',lq:'data:image/jpeg;base64,'},
+  mirror:{base:'/assets/video/auth-mirror-v1-',lq:'data:image/jpeg;base64,'}
 };
+const csIsWebKitEngine=(function(){ try{ const u=navigator.userAgent||''; if(/iP(hone|ad|od)/.test(u)) return true; if(/Macintosh/.test(u)&&navigator.maxTouchPoints>1) return true; return /Safari\//.test(u)&&!/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS|Android/.test(u); }catch(_){ return false; } })();
+// Two sizes: phones (card ~full screen width at 3x) need ~1100px wide -> xl 1088x1712;
+// computers/iPads (card ~440pt at 2x) need ~880 -> hd. Each size has its own frame-0 stills.
+function csAuthSize(){ try{ const w=window.innerWidth<=560?window.innerWidth:460; if(w*(window.devicePixelRatio||1)>1000) return 'xl'; }catch(_){} return 'hd'; }
+function csAuthPoster(C){ return C.base+csAuthSize()+(csIsWebKitEngine?'-poster.jpg':'-poster-srgb.jpg'); }
+(function(){ try{
+  const pre=function(){ ['mirror','fog'].forEach(function(k){ const i=new Image(); i.decoding='async'; i.src=csAuthPoster(CS_AUTH_CLIPS[k]); }); };
+  if(/^\/(login|register-talent|auth-gate)/.test(location.pathname)) pre();
+  else if('requestIdleCallback' in window) window.requestIdleCallback(pre,{timeout:5000}); else setTimeout(pre,3000);
+}catch(_){} })();
 const csAuthVids={};
 function csFogVideo(clip){
   if(!CS_AUTH_CLIPS[clip]) clip='fog';
@@ -10048,11 +10066,10 @@ function csFogVideo(clip){
   const v=document.createElement('video');
   v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true; v.preload='auto';
   ['muted','playsinline','webkit-playsinline','loop','autoplay'].forEach(function(a){ v.setAttribute(a,''); });
-  v.setAttribute('preload','auto'); v.setAttribute('poster',C.poster);
+  v.setAttribute('preload','auto'); v.setAttribute('poster',csAuthPoster(C));
   // Made from the 4K original (owner 2026-11-11). Two sizes: phones (card ~full screen width at
   // 3x) need ~1100px wide -> xl 1088x1712; computers/iPads (card ~440pt at 2x) need ~880 -> hd.
-  let size='hd';
-  try{ const w=window.innerWidth<=560?window.innerWidth:460; if(w*(window.devicePixelRatio||1)>1000) size='xl'; }catch(_){}
+  const size=csAuthSize();
   let src=C.base+size+'-h264.mp4';
   try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src=C.base+size+'-hevc.mp4'; }catch(_){}
   v.setAttribute('src',src);
@@ -10135,7 +10152,8 @@ function LoginFogVideo({clip='fog'}){
       const v=csAuthVids[clip]; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
     };
   },[clip]);
-  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src={(CS_AUTH_CLIPS[clip]||CS_AUTH_CLIPS.fog).poster} alt=""/></div>);
+  const C=CS_AUTH_CLIPS[clip]||CS_AUTH_CLIPS.fog;
+  return(<div className="lfog" ref={hostRef} aria-hidden="true" style={{backgroundImage:'url('+C.lq+')'}}><img src={csAuthPoster(C)} alt="" decoding="sync" fetchpriority="high"/></div>);
 }
 
 function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
