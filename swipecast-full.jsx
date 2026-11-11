@@ -2388,6 +2388,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* My Profile hero: the headshot button sits under a 160–200px photo, so it gets less side padding than the site-wide 20px to stay on one line. */
 .my-profile-hero-photo .btn-s.mp-hs-btn{padding:0 8px!important;font-size:14px!important;}
 .btn-s:hover{border-color:var(--t2);background:var(--s1);}
+/* Signed-out nav "Post a Job" + "Sign in" (owner pick A, 2026-11-10): navy outline, bold, site font.
+   They used to be a pale beige outline with text falling back to Arial, so some visitors couldn't
+   see them. Fills navy on hover. Demo: claude.ai/artifact/AXT6fRAaNk7ec5ASb5Sdxt */
+.nav button.btn-s.nav-out{background:transparent;border:1.5px solid #1A1A2E;color:#1A1A2E;font-family:'DM Sans',sans-serif;font-weight:700;}
+.nav button.btn-s.nav-out:hover{background:#1A1A2E;border-color:#1A1A2E;color:#fff;}
 .cs-optin-tg{position:relative;flex:none;width:44px;height:26px;border-radius:99px;border:none;background:#CFC6B4;cursor:pointer;transition:background .2s;padding:0;}
 .cs-optin-tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .2s;}
 .cs-optin-tg.on{background:var(--teal);}
@@ -60182,8 +60187,8 @@ function App(){
                 </button>
               </div>}
             </div>
-            <button className={`${page==="register-cd"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
-            <button className={`${page==="login"?"btn-p":"btn-s"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
+            <button className={`${page==="register-cd"?"btn-p":"btn-s nav-out"} btn-sm`} onClick={()=>navigate("register-cd")}>{navT('nav.postJob')}</button>
+            <button className={`${page==="login"?"btn-p":"btn-s nav-out"} btn-sm`} onClick={()=>navigate("login")}>{navT('nav.signIn')}</button>
           </>}
         </div>
         {authReady&&!isLoggedIn&&<div className="nav-join-mobile" ref={joinRefM} style={{position:"relative"}}>
