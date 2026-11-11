@@ -10036,9 +10036,13 @@ function csFogVideo(){
   const v=document.createElement('video');
   v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true; v.preload='auto';
   ['muted','playsinline','webkit-playsinline','loop','autoplay'].forEach(function(a){ v.setAttribute(a,''); });
-  v.setAttribute('preload','auto'); v.setAttribute('poster','/assets/video/login-fog-v2-poster.jpg');
-  let src='/assets/video/login-fog-v2-h264.mp4';
-  try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src='/assets/video/login-fog-v2-hevc.mp4'; }catch(_){}
+  v.setAttribute('preload','auto'); v.setAttribute('poster','/assets/video/login-fog-v3-poster.jpg');
+  // Made from the 4K original (owner 2026-11-11). Two sizes: phones (card ~full screen width at
+  // 3x) need ~1100px wide -> xl 1088x1712; computers/iPads (card ~440pt at 2x) need ~880 -> hd.
+  let size='hd';
+  try{ const w=window.innerWidth<=560?window.innerWidth:460; if(w*(window.devicePixelRatio||1)>1000) size='xl'; }catch(_){}
+  let src='/assets/video/login-fog-v3-'+size+'-h264.mp4';
+  try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src='/assets/video/login-fog-v3-'+size+'-hevc.mp4'; }catch(_){}
   v.setAttribute('src',src);
   csFogVid=v;
   try{ csArmLoopVideo(v); }catch(_){}
@@ -10118,7 +10122,7 @@ function LoginFogVideo(){
       const v=csFogVid; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
     };
   },[]);
-  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src="/assets/video/login-fog-v2-poster.jpg" alt=""/></div>);
+  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src="/assets/video/login-fog-v3-poster.jpg" alt=""/></div>);
 }
 
 function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
