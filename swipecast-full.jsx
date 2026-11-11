@@ -6944,7 +6944,7 @@ button:disabled:hover .cs-tri{transform:none;}
 .login-hero>img{position:absolute;left:0;top:0;width:100%;height:calc((100% - var(--lh-text)) * 1.15);object-fit:cover;object-position:center bottom;}
 .login-hero-overlay{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);pointer-events:none;}
 .login-hero-copy{position:absolute;left:0;right:0;bottom:0;padding:0 40px 38px;color:#fff;z-index:2;}
-.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
+.login-hero-copy .eye{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#FFD79A;margin:0 0 10px;}
 .login-hero-copy h3{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3vw,34px);letter-spacing:-1px;line-height:1.08;margin:0 0 10px;text-shadow:0 2px 18px rgba(0,0,0,.25);}
 .login-hero-copy p{font-size:14px;line-height:1.55;opacity:.92;margin:0;max-width:320px;}
 .lh-checks,.lh-casting{display:none;}
@@ -10057,7 +10057,7 @@ function RegisterCD({onNavigate}){
       <div className="cd-panel">
         <span style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.30),transparent 70%)",top:-90,right:-50,pointerEvents:"none"}}/>
         <div style={{position:"relative"}}>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,letterSpacing:1.6,textTransform:"uppercase",color:"#FFD79A",marginBottom:10}}>For industry</div>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,letterSpacing:1.4,textTransform:"uppercase",color:"#FFD79A",marginBottom:10}}>For industry</div>
           <h2 style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:"clamp(24px,2.6vw,30px)",letterSpacing:-0.8,lineHeight:1.12,margin:"0 0 8px"}}>Post castings,<br/>find great talent.</h2>
           <p style={{fontSize:13.5,lineHeight:1.55,color:"rgba(255,255,255,.86)",margin:"0 0 22px"}}>Industry accounts are free to create. Post your first casting and go live after a quick admin review.</p>
           <div style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.22)",borderRadius:14,padding:18,backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
