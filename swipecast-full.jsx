@@ -6988,7 +6988,7 @@ button:disabled:hover .cs-tri{transform:none;}
 .lfog{position:absolute;inset:0;background:#1d0d03;}
 .lfog>img,.lfog>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;}
 .lfog>video{opacity:0;transition:opacity .4s ease;}
-.lfog>video.on{opacity:1;}
+.lfog>video.on,.lfog>video.is-on{opacity:1;}
 .login-hero-full.has-fog{background:#1d0d03;}
 .login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 48%,rgba(22,9,0,0.007) 51.7%,rgba(22,9,0,0.031) 55.4%,rgba(22,9,0,0.074) 59.1%,rgba(22,9,0,0.134) 62.9%,rgba(22,9,0,0.208) 66.6%,rgba(22,9,0,0.294) 70.3%,rgba(22,9,0,0.388) 74.0%,rgba(22,9,0,0.484) 77.7%,rgba(22,9,0,0.579) 81.4%,rgba(22,9,0,0.667) 85.1%,rgba(22,9,0,0.744) 88.9%,rgba(22,9,0,0.805) 92.6%,rgba(22,9,0,0.846) 96.3%,rgba(22,9,0,0.860) 100.0%);}
 .lh-him.has-fog{background:#1d0d03;}
@@ -10023,8 +10023,17 @@ function RegisterCD({onNavigate}){
 // H.264 7.5MB for everyone else; the still shows first and the video starts only after the page
 // is idle, so logging in is never slowed. Reduce Motion = still only.
 function LoginFogVideo({active=true}){
+  // Never stops (owner 2026-11-10: it froze after switching windows in Firefox). Uses the same
+  // csArmLoopVideo keeper as the homepage loops: resumes on tab/window return, unfreezes a clip
+  // stuck on its last frame, retries on the first tap/key (Low Power Mode), and never pauses it
+  // itself. A real src attribute (not <source> children) because the keeper works off v.src;
+  // HEVC when the browser can play it, H.264 otherwise.
   const vRef=React.useRef(null);
   const [go,setGo]=React.useState(false);
+  const src=React.useMemo(()=>{
+    try{const t=document.createElement('video');if(t.canPlayType&&t.canPlayType('video/mp4; codecs="hvc1"'))return "/assets/video/login-fog-hevc.mp4";}catch(_){}
+    return "/assets/video/login-fog-h264.mp4";
+  },[]);
   React.useEffect(()=>{
     if(!active||go)return;
     try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;}catch(_){}
@@ -10033,16 +10042,14 @@ function LoginFogVideo({active=true}){
     return()=>{try{window.cancelIdleCallback&&window.cancelIdleCallback(id);}catch(_){}clearTimeout(id);};
   },[active,go]);
   React.useEffect(()=>{
-    const v=vRef.current;if(!v)return;
-    if(active&&go){try{v.load();}catch(_){}const p=v.play&&v.play();if(p&&p.catch)p.catch(()=>{});}
-    else{try{v.pause();}catch(_){}}
-  },[active,go]);
+    const v=vRef.current;if(!go||!v)return;
+    let off=null;try{off=csArmLoopVideo(v);}catch(_){}
+    const p=v.play&&v.play();if(p&&p.catch)p.catch(()=>{});
+    return()=>{try{off&&off();}catch(_){}};
+  },[go]);
   return(<div className="lfog" aria-hidden="true">
     <img src="/assets/video/login-fog-poster.jpg" alt=""/>
-    {go&&<video ref={vRef} muted playsInline autoPlay loop preload="auto" poster="/assets/video/login-fog-poster.jpg" onPlaying={e=>e.currentTarget.classList.add("on")}>
-      <source src="/assets/video/login-fog-hevc.mp4" type='video/mp4; codecs="hvc1"'/>
-      <source src="/assets/video/login-fog-h264.mp4" type="video/mp4"/>
-    </video>}
+    {go&&<video ref={vRef} src={src} muted playsInline autoPlay loop preload="auto" poster="/assets/video/login-fog-poster.jpg"/>}
   </div>);
 }
 
