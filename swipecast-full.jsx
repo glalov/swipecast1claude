@@ -6993,6 +6993,9 @@ button:disabled:hover .cs-tri{transform:none;}
 .login-hero-full.has-fog .login-hero-overlay{background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 48%,rgba(22,9,0,0.007) 51.7%,rgba(22,9,0,0.031) 55.4%,rgba(22,9,0,0.074) 59.1%,rgba(22,9,0,0.134) 62.9%,rgba(22,9,0,0.208) 66.6%,rgba(22,9,0,0.294) 70.3%,rgba(22,9,0,0.388) 74.0%,rgba(22,9,0,0.484) 77.7%,rgba(22,9,0,0.579) 81.4%,rgba(22,9,0,0.667) 85.1%,rgba(22,9,0,0.744) 88.9%,rgba(22,9,0,0.805) 92.6%,rgba(22,9,0,0.846) 96.3%,rgba(22,9,0,0.860) 100.0%);}
 .lh-him.has-fog{background:#1d0d03;}
 .lh-him.has-fog .lh-fade{top:auto;bottom:0;height:56%;background:linear-gradient(180deg,rgba(22,9,0,0) 0%,rgba(22,9,0,0) 0%,rgba(22,9,0,0.007) 7.1%,rgba(22,9,0,0.032) 14.3%,rgba(22,9,0,0.075) 21.4%,rgba(22,9,0,0.137) 28.6%,rgba(22,9,0,0.213) 35.7%,rgba(22,9,0,0.301) 42.9%,rgba(22,9,0,0.397) 50.0%,rgba(22,9,0,0.495) 57.1%,rgba(22,9,0,0.592) 64.3%,rgba(22,9,0,0.683) 71.4%,rgba(22,9,0,0.762) 78.6%,rgba(22,9,0,0.824) 85.7%,rgba(22,9,0,0.865) 92.9%,rgba(22,9,0,0.880) 100.0%);}
+.lh-him.has-mirror{background:#1a0f14;}
+.lh-him.has-mirror .lfog{background:#1a0f14;}
+.lh-him.has-mirror .lh-fade{top:auto;bottom:0;height:52%;background:linear-gradient(180deg,rgba(12,6,10,0.000) 0.0%,rgba(12,6,10,0.006) 7.1%,rgba(12,6,10,0.028) 14.3%,rgba(12,6,10,0.067) 21.4%,rgba(12,6,10,0.121) 28.6%,rgba(12,6,10,0.189) 35.7%,rgba(12,6,10,0.267) 42.9%,rgba(12,6,10,0.351) 50.0%,rgba(12,6,10,0.439) 57.1%,rgba(12,6,10,0.525) 64.3%,rgba(12,6,10,0.605) 71.4%,rgba(12,6,10,0.675) 78.6%,rgba(12,6,10,0.731) 85.7%,rgba(12,6,10,0.767) 92.9%,rgba(12,6,10,0.780) 100.0%);}
 .lh-him>img{height:calc((100% - var(--lh-text)) * 1.15);object-position:center bottom;}
 .lh-him .lh-fade{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);}
 /* Industry/CD signup: teal info panel (left side of the split card) */
@@ -9745,7 +9748,7 @@ function RegisterTalent({onNavigate}){
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
       <div className="login-hero">
-        <div className="lh-ph lh-him has-fog"><LoginFogVideo/><div className="lh-fade"/></div>
+        <div className="lh-ph lh-him has-mirror"><LoginFogVideo clip="mirror"/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>Get seen.<br/>Get booked.</h3>
@@ -10030,21 +10033,30 @@ function RegisterCD({onNavigate}){
 // clip, retries on the first tap (Low Power Mode). While no auth card is on screen it sits
 // outside the page, paused (the keeper skips clips that aren't in the page). A real src
 // attribute (not <source> children) because the keeper works off v.src.
-let csFogVid=null;
-function csFogVideo(){
-  if(csFogVid) return csFogVid;
+// Since 2026-11-11 there are TWO clips, each its own never-restarting player (owner's choice):
+// 'mirror' (Pexels 7706677, cottonbro: actor getting ready, turns to camera; slowed to 70% with
+// motion-interpolated frames, 1.2s dissolve loop, 38.5s) on Join + Sign Up, and 'fog' on Log In.
+const CS_AUTH_CLIPS={
+  fog:{base:'/assets/video/login-fog-v3-',poster:'/assets/video/login-fog-v3-poster.jpg'},
+  mirror:{base:'/assets/video/auth-mirror-v1-',poster:'/assets/video/auth-mirror-v1-poster.jpg'}
+};
+const csAuthVids={};
+function csFogVideo(clip){
+  if(!CS_AUTH_CLIPS[clip]) clip='fog';
+  if(csAuthVids[clip]) return csAuthVids[clip];
+  const C=CS_AUTH_CLIPS[clip];
   const v=document.createElement('video');
   v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true; v.preload='auto';
   ['muted','playsinline','webkit-playsinline','loop','autoplay'].forEach(function(a){ v.setAttribute(a,''); });
-  v.setAttribute('preload','auto'); v.setAttribute('poster','/assets/video/login-fog-v3-poster.jpg');
+  v.setAttribute('preload','auto'); v.setAttribute('poster',C.poster);
   // Made from the 4K original (owner 2026-11-11). Two sizes: phones (card ~full screen width at
   // 3x) need ~1100px wide -> xl 1088x1712; computers/iPads (card ~440pt at 2x) need ~880 -> hd.
   let size='hd';
   try{ const w=window.innerWidth<=560?window.innerWidth:460; if(w*(window.devicePixelRatio||1)>1000) size='xl'; }catch(_){}
-  let src='/assets/video/login-fog-v3-'+size+'-h264.mp4';
-  try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src='/assets/video/login-fog-v3-'+size+'-hevc.mp4'; }catch(_){}
+  let src=C.base+size+'-h264.mp4';
+  try{ if(v.canPlayType&&v.canPlayType('video/mp4; codecs="hvc1"')) src=C.base+size+'-hevc.mp4'; }catch(_){}
   v.setAttribute('src',src);
-  csFogVid=v;
+  csAuthVids[clip]=v;
   try{ csArmLoopVideo(v); }catch(_){}
   // Picture watchdog (owner 2026-11-10: on iPhone, after leaving Safari for another app and coming
   // back, the clip sat frozen). iOS can bring a page back with the video's clock running but no new
@@ -10068,11 +10080,12 @@ function csFogVideo(){
   const check=function(wait){
     clearTimeout(chk);
     if(document.hidden||!v.isConnected||!onScreen||v.readyState<2) return;
+    if(v.closest&&v.closest('.off')) return; // faded-out layer (other tab): browsers may not paint it
     if(v.paused){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); }
     if(typeof v.requestVideoFrameCallback!=='function') return;
     seen=false;
     try{ v.requestVideoFrameCallback(function(){ seen=true; step=0; }); }catch(_){ return; }
-    chk=setTimeout(function(){ if(!seen&&!v.paused&&!document.hidden&&v.isConnected&&onScreen) fix(); },wait||1200);
+    chk=setTimeout(function(){ if(!seen&&!v.paused&&!document.hidden&&v.isConnected&&onScreen&&!(v.closest&&v.closest('.off'))) fix(); },wait||1200);
   };
   // Back from another app / tab (owner 2026-11-11: "still frozen for a few seconds, then starts").
   // Don't wait to find out: restart the picture at once (fresh render layer + a 1-frame seek, which
@@ -10099,7 +10112,7 @@ function csFogVideo(){
   setInterval(function(){ if(!chk||seen) check(); },3000);
   return v;
 }
-function LoginFogVideo(){
+function LoginFogVideo({clip='fog'}){
   const hostRef=React.useRef(null);
   React.useEffect(()=>{
     const host=hostRef.current; if(!host) return;
@@ -10107,22 +10120,22 @@ function LoginFogVideo(){
     let id=0, done=false;
     const attach=()=>{
       if(done) return; done=true;
-      const v=csFogVideo();
+      const v=csFogVideo(clip);
       if(v.parentNode!==host) host.appendChild(v);
       const p=v.play&&v.play(); if(p&&p.catch)p.catch(()=>{});
     };
     // First visit: still first, video once the page is idle. Already made: attach at once,
     // in the same commit the old card lets go of it, so the browser never pauses it.
-    if(csFogVid) attach();
+    if(csAuthVids[clip]) attach();
     else if('requestIdleCallback' in window) id=window.requestIdleCallback(attach,{timeout:1500});
     else id=setTimeout(attach,700);
     return()=>{
       done=true;
       try{ window.cancelIdleCallback&&window.cancelIdleCallback(id); }catch(_){} clearTimeout(id);
-      const v=csFogVid; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
+      const v=csAuthVids[clip]; if(v&&v.parentNode===host){ try{ host.removeChild(v); }catch(_){} }
     };
-  },[]);
-  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src="/assets/video/login-fog-v3-poster.jpg" alt=""/></div>);
+  },[clip]);
+  return(<div className="lfog" ref={hostRef} aria-hidden="true"><img src={(CS_AUTH_CLIPS[clip]||CS_AUTH_CLIPS.fog).poster} alt=""/></div>);
 }
 
 function LoginPage({onNavigate,onLoggedIn,authNotice,clearAuthNotice,getPending}){
@@ -14116,8 +14129,10 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
   return(<div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: hero */}
       <div className="login-hero">
-        {/* One fog clip on both tabs (owner 2026-11-10); it keeps playing through the tab switch. */}
-        <div className="lh-ph lh-him has-fog"><LoginFogVideo/><div className="lh-fade"/></div>
+        {/* Sign Up = mirror clip, Log In = fog (owner 2026-11-11). Both stay mounted and playing, so the
+            tab switch cross-fades (.45s) and each carries on from its own second. */}
+        <div className={"lh-ph lh-him has-mirror"+(mode==="signup"?"":" off")}><LoginFogVideo clip="mirror"/><div className="lh-fade"/></div>
+        <div className={"lh-ph lh-him has-fog"+(mode==="login"?"":" off")}><LoginFogVideo clip="fog"/><div className="lh-fade"/></div>
         <div className="login-hero-copy">
           <div className="eye">For actors</div>
           <h3>{c?"You're one step away.":<>Get seen.<br/>Get booked.</>}</h3>
