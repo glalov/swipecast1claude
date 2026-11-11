@@ -10061,17 +10061,35 @@ function csFogVideo(){
     const p=v.play(); if(p&&p.catch)p.catch(function(){});
     clearTimeout(chk); if(step<3) chk=setTimeout(check,1400);
   };
-  const check=function(){
+  const check=function(wait){
     clearTimeout(chk);
     if(document.hidden||!v.isConnected||!onScreen||v.readyState<2) return;
     if(v.paused){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); }
     if(typeof v.requestVideoFrameCallback!=='function') return;
     seen=false;
     try{ v.requestVideoFrameCallback(function(){ seen=true; step=0; }); }catch(_){ return; }
-    chk=setTimeout(function(){ if(!seen&&!v.paused&&!document.hidden&&v.isConnected&&onScreen) fix(); },1200);
+    chk=setTimeout(function(){ if(!seen&&!v.paused&&!document.hidden&&v.isConnected&&onScreen) fix(); },wait||1200);
   };
-  const back=function(){ if(!document.hidden){ step=0; setTimeout(check,300); } };
-  document.addEventListener('visibilitychange',back);
+  // Back from another app / tab (owner 2026-11-11: "still frozen for a few seconds, then starts").
+  // Don't wait to find out: restart the picture at once (fresh render layer + a 1-frame seek, which
+  // makes the decoder paint a new frame), then if no frame shows within 0.7s go straight to the
+  // full reload. Only after a real stay away (>0.8s hidden, or a page restored from history), so
+  // plain window clicks on a computer never trigger it.
+  let hiddenAt=0;
+  const reseat=function(){
+    if(!v.isConnected) return;
+    try{ const par=v.parentNode, nx=v.nextSibling; par.removeChild(v); par.insertBefore(v,nx); }catch(_){}
+    try{ v.currentTime=(v.currentTime||0)+0.04; }catch(_){}
+    const p=v.play(); if(p&&p.catch)p.catch(function(){});
+    step=2; setTimeout(function(){ check(700); },120);
+  };
+  const onVisChange=function(){
+    if(document.hidden){ hiddenAt=Date.now(); return; }
+    const away=hiddenAt?Date.now()-hiddenAt:0; hiddenAt=0; step=0;
+    if(away>800) reseat(); else setTimeout(check,300);
+  };
+  const back=function(e){ if(document.hidden) return; step=0; if(e&&e.persisted) reseat(); else setTimeout(check,300); };
+  document.addEventListener('visibilitychange',onVisChange);
   window.addEventListener('pageshow',back);
   window.addEventListener('focus',back);
   setInterval(function(){ if(!chk||seen) check(); },3000);
