@@ -3744,7 +3744,7 @@ body.sheet-push .b2t-cube{display:none;}
 .ct-st span{font-size:13px;color:#A9A7BC;}
 @keyframes ctup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
 .ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#1A1A2E;}
-.ct-map iframe{position:absolute;top:-50px;left:-50px;width:calc(100% + 100px);height:calc(100% + 100px);border:0;pointer-events:none;filter:grayscale(1) invert(1) contrast(1.25) brightness(.8);}
+.ct-map iframe{position:absolute;top:-50px;left:-50px;width:calc(100% + 100px);height:calc(100% + 100px);max-width:none;max-height:none;border:0;pointer-events:none;filter:grayscale(1) invert(1) contrast(1.25) brightness(.8);}
 .ct-map::before{content:"";position:absolute;inset:0;z-index:1;background:#24305E;mix-blend-mode:color;pointer-events:none;}
 .ct-ring{position:absolute;top:50%;left:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:2px solid var(--teal);opacity:0;animation:ctradar 2.8s ease-out infinite;z-index:2;pointer-events:none;}
 .ct-ring.r2{animation-delay:.93s;}.ct-ring.r3{animation-delay:1.86s;}
@@ -3755,7 +3755,7 @@ body.sheet-push .b2t-cube{display:none;}
 .ct-pin .t{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid var(--teal);margin-top:-2px;}
 @keyframes ctbob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
 .ct-cap{position:absolute;left:10px;bottom:10px;z-index:3;background:rgba(26,26,46,.82);border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#fff;display:flex;gap:6px;align-items:center;}
-.ct-osm{position:absolute;right:8px;bottom:6px;z-index:3;font-size:10px;color:rgba(255,255,255,.55);background:rgba(26,26,46,.5);padding:1px 5px;border-radius:4px;pointer-events:none;}
+.ct-osm{display:block;margin-top:7px;text-align:right;font-size:10px;line-height:1.3;color:rgba(237,235,245,.32);}
 .ct-right{padding:44px 44px 36px;min-width:0;}
 .ct-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
 .ct-hd h2{font-size:26px;margin:0;}
@@ -3796,7 +3796,7 @@ body.sheet-push .b2t-cube{display:none;}
 .ct-done ul{text-align:left;margin:16px auto 0;max-width:420px;padding-left:18px;color:var(--t2);font-size:13.5px;line-height:1.7;}
 .ct-again{margin-top:18px;height:44px;padding:0 20px;border-radius:10px;border:1.5px solid #1A1A2E;background:transparent;color:#1A1A2E;font:inherit;font-weight:700;cursor:pointer;}
 @media(max-width:900px){.ct-grid{grid-template-columns:minmax(0,1fr);}.ct-left,.ct-right{padding:30px 22px;}.ct-left h1{font-size:38px;}}
-@media(max-width:540px){.ct-row2{grid-template-columns:1fr;}}
+@media(max-width:540px){.ct-row2{grid-template-columns:1fr;}.ct-seg{grid-template-columns:repeat(2,minmax(0,1fr));}.ct-seg button{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.25;}}
 @media (prefers-reduced-motion:reduce){.ct-left::before,.ct-left::after,.ct-dot,.ct-ring,.ct-pin .h,.ct-rot span{animation:none;}.ct-tl::after{animation:none;height:calc(100% - 12px);}.ct-st{animation:none;opacity:1;}.ct-send .pl{transition:none;}}
 .info-hero{text-align:center;padding:80px 40px 60px;max-width:800px;margin:0 auto;}
 .info-hero h1{font-weight:800;font-size:48px;letter-spacing:-2px;margin-bottom:16px;}
@@ -11896,8 +11896,8 @@ function ContactPage({onNavigate,session,myProfile,initialSubject}){
           <span className="ct-ring"/><span className="ct-ring r2"/><span className="ct-ring r3"/>
           <div className="ct-pin"><div className="h"><div><LogoMark/></div></div><div className="t"/></div>
           <div className="ct-cap"><Ico n="map-pin" s={15}/>Office · New York, NY</div>
-          <span className="ct-osm">© OpenStreetMap</span>
         </div>
+        <span className="ct-osm">Map data © OpenStreetMap contributors</span>
       </aside>
       <div className="ct-right">
         {sent?(isCancel?<div className="ct-done">
