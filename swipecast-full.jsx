@@ -5151,7 +5151,7 @@ body.fbsp-open #castoria-root{display:none!important;}
    to the wordmark; phones keep only the iPhone safe-area below it. */
 .site-footer.has-wm .site-footer-inner{padding-bottom:0;}
 .site-footer-wm{max-width:1200px;margin:6px auto 0;padding:0 40px;line-height:0;pointer-events:none;user-select:none;-webkit-user-select:none;}
-.site-footer-wm svg{display:block;width:100%;height:auto;overflow:visible;}
+.site-footer-wm svg{display:block;width:100%;height:auto;overflow:hidden;}
 .site-footer-wm text{font-family:'DM Sans',sans-serif;font-weight:800;}
 @media(max-width:900px){.site-footer-wm{padding:0 24px;}.site-footer.has-wm{padding-bottom:env(safe-area-inset-bottom,0px) !important;}}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
@@ -9350,6 +9350,30 @@ function makeB2tGL(lib,host,label,btn,onDone){
   return{play,setActive,dispose,size};
 }
 
+// Footer wordmark "Grounded" (owner 2026-11-12). Safari ignores SVG textLength/lengthAdjust,
+// so the word was drawn wider than its box and the "e" got clipped. Instead the SVG's viewBox
+// is fitted to the word's real measured box (left edge to right edge, top to baseline), so it
+// fills the width exactly in every browser and whatever font actually loaded.
+function FooterWordmark(){
+  const svgRef=useRef(null),txtRef=useRef(null);
+  const [vb,setVb]=useState(null);
+  useLayoutEffect(()=>{
+    let alive=true;
+    const fit=()=>{try{const t=txtRef.current;if(!t||!alive)return;const b=t.getBBox();if(!b||!b.width)return;
+      setVb(b.x+" "+b.y+" "+b.width+" "+(-b.y));}catch(_){}};
+    fit();
+    try{if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);}catch(_){}
+    const t2=setTimeout(fit,1500);
+    return()=>{alive=false;clearTimeout(t2);};
+  },[]);
+  return(<div className="site-footer-wm" aria-hidden="true">
+    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={vb||"0 -210 1250 210"} preserveAspectRatio="xMidYMax meet" focusable="false" style={vb?undefined:{visibility:"hidden"}}>
+      <defs><linearGradient id="sfwmg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#F3EBE0" stopOpacity=".17"/><stop offset="1" stopColor="#F3EBE0" stopOpacity=".03"/></linearGradient></defs>
+      <text ref={txtRef} x="0" y="0" fontSize="290" fill="url(#sfwmg)">CastSlate</text>
+    </svg>
+  </div>);
+}
+
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
@@ -9672,12 +9696,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           </div>
         </div>
       </div>
-      <div className="site-footer-wm" aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 232" focusable="false">
-          <defs><linearGradient id="sfwmg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#F3EBE0" stopOpacity=".17"/><stop offset="1" stopColor="#F3EBE0" stopOpacity=".03"/></linearGradient></defs>
-          <text x="0" y="236" fontSize="290" textLength="1200" lengthAdjust="spacingAndGlyphs" fill="url(#sfwmg)">CastSlate</text>
-        </svg>
-      </div>
+      <FooterWordmark/>
     </footer>
   </>);
 }
