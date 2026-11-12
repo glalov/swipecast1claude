@@ -3709,6 +3709,95 @@ body.sheet-push .b2t-cube{display:none;}
 .crt-foot .ic{color:var(--teal-dk);flex-shrink:0;margin-top:1px;}
 @media(max-width:540px){.crt-steps{grid-template-columns:1fr;}}
 @media (prefers-reduced-motion:reduce){.crt-env,.crt-env .flap{animation:none;}}
+/* Contact page, design A2 "Studio Split + rotating words" (owner picked 2026-11-12).
+   Navy left panel: rotating headline, live NY status, self-drawing reply timeline,
+   navy-only map (not clickable; iframe oversized 50px each side so OSM zoom
+   buttons and donate bar are cropped; own credit line keeps the OSM licence).
+   Right: form with floating labels, role switch, topic chips (Cancel subscription
+   chip only appears when Settings deep-links with that subject). */
+.ct-wrap{max-width:1180px;margin:8px auto 0;}
+.ct-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);border-radius:24px;overflow:hidden;overflow:clip;box-shadow:0 30px 70px -30px rgba(26,26,46,.45);background:#fff;min-width:0;}
+.ct-left{position:relative;background:#1A1A2E;color:#EDEBF5;padding:44px 40px;overflow:hidden;overflow:clip;min-width:0;}
+.ct-left::before,.ct-left::after{content:"";position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;}
+.ct-left::before{width:340px;height:340px;background:#33826A;opacity:.55;top:-120px;right:-120px;animation:ctdrift 14s ease-in-out infinite alternate;}
+.ct-left::after{width:260px;height:260px;background:#2979BF;opacity:.35;bottom:-110px;left:-80px;animation:ctdrift 18s ease-in-out infinite alternate-reverse;}
+@keyframes ctdrift{from{transform:translate(0,0) scale(1);}to{transform:translate(-60px,50px) scale(1.15);}}
+.ct-left>*{position:relative;z-index:1;}
+.ct-eb{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#8FD1BC;}
+.ct-left h1{font-size:46px;line-height:1.05;color:#fff;margin:12px 0 12px;}
+.ct-rot{display:inline-block;color:#8FD1BC;font-size:.86em;min-height:1.05em;}
+.ct-rot span{display:inline-block;white-space:nowrap;animation:ctrot .5s ease;}
+@keyframes ctrot{from{opacity:0;transform:translateY(60%) rotateX(-60deg);}to{opacity:1;transform:none;}}
+.ct-lead{font-size:15px;line-height:1.6;color:#C9C7D8;margin:0 0 24px;max-width:360px;}
+.ct-live{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;margin-bottom:28px;}
+.ct-dot{width:8px;height:8px;border-radius:50%;background:#3FD08A;flex:none;animation:ctlive 2s infinite;}
+.ct-dot.off{background:#9A958C;animation:none;}
+@keyframes ctlive{0%{box-shadow:0 0 0 0 rgba(63,208,138,.55);}70%{box-shadow:0 0 0 9px rgba(63,208,138,0);}100%{box-shadow:0 0 0 0 rgba(63,208,138,0);}}
+.ct-tl{position:relative;padding-left:30px;margin-bottom:28px;}
+.ct-tl::before{content:"";position:absolute;left:10px;top:6px;bottom:6px;width:2px;background:rgba(255,255,255,.12);border-radius:2px;}
+.ct-tl::after{content:"";position:absolute;left:10px;top:6px;width:2px;height:0;background:linear-gradient(#8FD1BC,#33826A);border-radius:2px;animation:ctfill 2.4s .4s ease forwards;}
+@keyframes ctfill{to{height:calc(100% - 12px);}}
+.ct-st{position:relative;margin-bottom:16px;opacity:0;animation:ctup .5s ease forwards;}
+.ct-st:nth-child(1){animation-delay:.5s;}.ct-st:nth-child(2){animation-delay:1.1s;}.ct-st:nth-child(3){animation-delay:1.7s;}
+.ct-st::before{content:"";position:absolute;left:-25px;top:4px;width:12px;height:12px;border-radius:50%;background:#1A1A2E;border:2px solid #8FD1BC;}
+.ct-st b{display:block;color:#fff;font-size:14.5px;}
+.ct-st span{font-size:13px;color:#A9A7BC;}
+@keyframes ctup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#1A1A2E;}
+.ct-map iframe{position:absolute;top:-50px;left:-50px;width:calc(100% + 100px);height:calc(100% + 100px);border:0;pointer-events:none;filter:grayscale(1) invert(1) contrast(1.25) brightness(.8);}
+.ct-map::before{content:"";position:absolute;inset:0;z-index:1;background:#24305E;mix-blend-mode:color;pointer-events:none;}
+.ct-ring{position:absolute;top:50%;left:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:2px solid var(--teal);opacity:0;animation:ctradar 2.8s ease-out infinite;z-index:2;pointer-events:none;}
+.ct-ring.r2{animation-delay:.93s;}.ct-ring.r3{animation-delay:1.86s;}
+@keyframes ctradar{0%{transform:scale(.4);opacity:.8;}100%{transform:scale(5.5);opacity:0;}}
+.ct-pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:3;}
+.ct-pin .h{width:34px;height:34px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.3);border:2px solid #fff;animation:ctbob 3.2s ease-in-out infinite;}
+.ct-pin .h>div{width:18px;height:18px;}
+.ct-pin .t{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid var(--teal);margin-top:-2px;}
+@keyframes ctbob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+.ct-cap{position:absolute;left:10px;bottom:10px;z-index:3;background:rgba(26,26,46,.82);border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#fff;display:flex;gap:6px;align-items:center;}
+.ct-osm{position:absolute;right:8px;bottom:6px;z-index:3;font-size:10px;color:rgba(255,255,255,.55);background:rgba(26,26,46,.5);padding:1px 5px;border-radius:4px;pointer-events:none;}
+.ct-right{padding:44px 44px 36px;min-width:0;}
+.ct-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.ct-hd h2{font-size:26px;margin:0;}
+.ct-hd p{margin:2px 0 0;font-size:13.5px;color:var(--t3);}
+.ct-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ct-fld{position:relative;margin-bottom:14px;}
+.ct-fld input,.ct-fld textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--bdr);background:#fff;border-radius:10px;padding:22px 14px 8px;font:inherit;font-size:15px;color:var(--t1);outline:none;transition:border-color .2s,box-shadow .2s;}
+.ct-fld textarea{min-height:140px;max-height:320px;resize:vertical;overflow-y:auto;display:block;}
+.ct-fld label{position:absolute;left:15px;top:15px;font-size:15px;color:var(--t3);pointer-events:none;transition:all .18s ease;}
+.ct-fld input:focus,.ct-fld textarea:focus{border-color:var(--teal);box-shadow:0 0 0 4px rgba(51,130,106,.12);}
+.ct-fld input:focus+label,.ct-fld input:not(:placeholder-shown)+label,.ct-fld textarea:focus+label,.ct-fld textarea:not(:placeholder-shown)+label{top:7px;font-size:11.5px;font-weight:700;letter-spacing:.3px;color:var(--teal-dk);}
+.ct-cnt{position:absolute;right:12px;bottom:10px;font-size:11.5px;color:var(--t3);}
+.ct-lbl{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin:4px 0 9px;}
+.ct-seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--s2);border-radius:12px;padding:4px;gap:4px;margin-bottom:16px;}
+.ct-seg button{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;background:transparent;border-radius:9px;padding:9px 10px;font:inherit;font-size:13.5px;font-weight:700;color:var(--t2);cursor:pointer;transition:all .2s;}
+.ct-seg button.on{background:#fff;color:var(--t1);box-shadow:0 2px 8px rgba(36,31,25,.12);}
+.ct-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+.ct-chip{border:1.5px solid var(--bdr);background:#fff;border-radius:999px;padding:7px 13px;font:inherit;font-size:13.5px;font-weight:600;color:var(--t1);cursor:pointer;transition:all .18s;}
+.ct-chip:hover{border-color:var(--teal);}
+.ct-chip.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.ct-cancel{margin:-4px 0 16px;padding:13px 15px;border-radius:12px;background:var(--s2);border:1px solid var(--bdr);font-size:13px;line-height:1.6;color:var(--t2);}
+.ct-cancel b{color:var(--t1);}
+.ct-cancel ul{margin:6px 0 0;padding-left:18px;}
+.ct-send{width:100%;height:52px;display:inline-flex;align-items:center;justify-content:center;gap:9px;border:0;border-radius:10px;background:var(--teal);color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer;overflow:hidden;transition:background .2s;}
+.ct-send:hover{background:var(--teal-dk);}
+.ct-send:disabled{opacity:.75;cursor:default;}
+.ct-send .pl{display:inline-flex;transition:transform .5s cubic-bezier(.5,-.4,.5,1.4);}
+.ct-send.go .pl{transform:translate(260px,-60px) rotate(20deg);}
+.ct-foot{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:12.5px;color:var(--t3);line-height:1.5;}
+.ct-foot .ti{color:var(--teal);}
+.ct-err{margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(214,59,59,.08);border:1px solid rgba(214,59,59,.25);color:var(--red);font-size:13px;font-weight:600;text-align:center;}
+.ct-done{text-align:center;padding:36px 10px 20px;animation:ctup .5s ease;}
+.ct-done .ck{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;background:rgba(51,130,106,.12);display:flex;align-items:center;justify-content:center;}
+.ct-done .ck svg{width:34px;height:34px;stroke:var(--teal);stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:ctdraw .6s .2s ease forwards;}
+@keyframes ctdraw{to{stroke-dashoffset:0;}}
+.ct-done h3{font-size:26px;margin:0 0 6px;}
+.ct-done p{color:var(--t2);font-size:14.5px;margin:0 0 4px;}
+.ct-done ul{text-align:left;margin:16px auto 0;max-width:420px;padding-left:18px;color:var(--t2);font-size:13.5px;line-height:1.7;}
+.ct-again{margin-top:18px;height:44px;padding:0 20px;border-radius:10px;border:1.5px solid #1A1A2E;background:transparent;color:#1A1A2E;font:inherit;font-weight:700;cursor:pointer;}
+@media(max-width:900px){.ct-grid{grid-template-columns:minmax(0,1fr);}.ct-left,.ct-right{padding:30px 22px;}.ct-left h1{font-size:38px;}}
+@media(max-width:540px){.ct-row2{grid-template-columns:1fr;}}
+@media (prefers-reduced-motion:reduce){.ct-left::before,.ct-left::after,.ct-dot,.ct-ring,.ct-pin .h,.ct-rot span{animation:none;}.ct-tl::after{animation:none;height:calc(100% - 12px);}.ct-st{animation:none;opacity:1;}.ct-send .pl{transition:none;}}
 .info-hero{text-align:center;padding:80px 40px 60px;max-width:800px;margin:0 auto;}
 .info-hero h1{font-weight:800;font-size:48px;letter-spacing:-2px;margin-bottom:16px;}
 .info-hero p{color:var(--t2);font-size:17px;line-height:1.6;max-width:600px;margin:0 auto;}
@@ -11729,75 +11818,100 @@ function ContactPage({onNavigate,session,myProfile,initialSubject}){
     }catch(_){setError("Message could not be sent. Please try again.");}
     setSending(false);
   };
-  return(<div className="page"><div style={{maxWidth:600,margin:"0 auto"}}>
-    <div className="section-label">Contact</div>
-    <h1 style={{fontWeight:800,fontSize:36,letterSpacing:"-1.5px",marginBottom:8}}>Get in Touch</h1>
-    <p style={{color:"var(--t2)",fontSize:14,marginBottom:32}}>Questions? Want to partner? Need support? We'd love to hear from you.</p>
-    {sent?(isCancel?<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div>
-      <h3>Cancellation request received</h3>
-      <p>We'll confirm by email within one business day. Here's exactly what happens:</p>
-      <ul style={{textAlign:"left",margin:"18px auto 0",maxWidth:420,paddingLeft:18,color:"var(--t2)",fontSize:13.5,lineHeight:1.7}}>
-        {accessUntilLabel
-          ?<li>You keep full Premium access until <strong style={{color:"var(--t1)"}}>{accessUntilLabel}</strong> — the period you've already paid for.</li>
-          :<li>You keep full Premium access until the end of your current billing period.</li>}
-        <li>You will not be charged again.</li>
-        <li>{accessUntilLabel?<>On {accessUntilLabel} your account</>:<>Your account then</>} returns to the free plan automatically.</li>
-        <li>Nothing is deleted — your profile, media and application history stay.</li>
-      </ul>
-    </div>:<div className="success-msg"><div className="check"><Ico n="check" s={24}/></div><h3>Message sent</h3><p>We'll get back to you soon.</p></div>):<>
-      <div className="form-row"><div className="form-group"><label className="label">Name</label><input className="input" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)}/></div><div className="form-group"><label className="label">Email</label><input className="input" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></div></div>
-      <div className="form-group"><label className="label">I am a...</label><select className="select" style={{width:"100%"}} value={role} onChange={e=>setRole(e.target.value)}><option>Actor / Model / Performer</option><option>Casting Director</option><option>Producer / Director</option><option>Agent / Manager</option><option>Press / Media</option><option>Other</option></select></div>
-      <div className="form-group"><label className="label">Subject</label><select className="select" style={{width:"100%"}} value={subject} onChange={e=>setSubject(e.target.value)}>{CONTACT_SUBJECTS.map(s=><option key={s} value={s}>{s}</option>)}</select></div>
-      {isCancel&&<div style={{marginBottom:18,padding:"14px 16px",borderRadius:12,background:"var(--s2)",border:"1px solid var(--bdr)"}}>
-        <div style={{fontWeight:800,fontSize:13,marginBottom:8}}>What happens when you cancel</div>
-        <ul style={{margin:0,paddingLeft:18,color:"var(--t2)",fontSize:13,lineHeight:1.65}}>
-          {accessUntilLabel
-            ?<li>You keep full Premium access until <strong style={{color:"var(--t1)"}}>{accessUntilLabel}</strong> — the period you've already paid for.</li>
-            :<li>You keep full Premium access until the end of your current billing period.</li>}
-          <li>You will not be charged again.</li>
-          <li>{accessUntilLabel?<>On {accessUntilLabel} your account</>:<>Your account then</>} returns to the free plan automatically.</li>
-          <li>Nothing is deleted — your profile, media and application history stay.</li>
-        </ul>
-      </div>}
-      <div className="form-group"><label className="label">Message</label><textarea className="textarea" placeholder="Tell us more..." style={{minHeight:140}} value={message} onChange={e=>setMessage(e.target.value)}></textarea></div>
-      <button className="btn-p" style={{width:"100%"}} onClick={send} disabled={sending}>{sending?"Sending…":"Send Message"}</button>
-      {error&&<div style={{marginTop:14,padding:"12px 14px",borderRadius:10,background:"rgba(214,59,59,.08)",border:"1px solid rgba(214,59,59,.25)",color:"var(--red)",fontSize:13,fontWeight:600,textAlign:"center"}}>{error}</div>}</>}
-    <div className="crt">
-      <div className="crt-h">
-        <span className="crt-pill">
-          <span className="crt-disc"><span className="crt-env"><span className="bd"/><span className="paper"/><span className="flap"/></span></span>
-          Response times
-        </span>
-        <h4>We'll be in touch soon</h4>
-        <p>Our team reads every message that comes in.</p>
-      </div>
-      <div className="crt-steps">
-        <div className="crt-step"><div className="ic"><Ico n="clock-hour-4" s={17}/></div><div className="t">Usually hours</div><div className="s">Typical reply time</div></div>
-        <div className="crt-step"><div className="ic"><Ico n="calendar-event" s={17}/></div><div className="t">1–2 business days</div><div className="s">During busy periods</div></div>
-        <div className="crt-step"><div className="ic"><Ico n="moon" s={17}/></div><div className="t">A little longer</div><div className="s">On weekends</div></div>
-      </div>
-      <div className="crt-foot">
-        <span className="ic"><Ico n="shield-check" s={17}/></span>
-        <div><b>No need to send it twice.</b> Your message has reached us and is in the queue. We appreciate your patience and look forward to connecting with you.</div>
-      </div>
-    </div>
-    <div style={{marginTop:48,display:"flex",justifyContent:"center"}}>
-      <div className="card" style={{maxWidth:340,width:"100%",textAlign:"center",overflow:"hidden",padding:0}}>
-        <div style={{position:"relative",width:"100%",height:150,overflow:"hidden",background:"#dfe6e0"}}>
-          <iframe title="CastSlate office area map" loading="lazy" referrerPolicy="no-referrer-when-downgrade" scrolling="no"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=-73.9966%2C40.7577%2C-73.9806%2C40.7697&layer=mapnik"
-            style={{position:"absolute",top:0,left:0,width:"100%",height:172,border:0,filter:"saturate(0.85) contrast(1.02)"}}/>
-          <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-100%)",display:"flex",flexDirection:"column",alignItems:"center",pointerEvents:"none"}}>
-            <div style={{width:30,height:30,background:"var(--acc)",borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 10px rgba(0,0,0,.28)",border:"2px solid #fff"}}>
-              <div style={{width:17,height:17}}><LogoMark/></div>
-            </div>
-            <div style={{width:0,height:0,borderLeft:"6px solid transparent",borderRight:"6px solid transparent",borderTop:"7px solid var(--acc)",marginTop:-2,filter:"drop-shadow(0 2px 2px rgba(0,0,0,.15))"}}/>
+  // ── Design A2 (owner picked 2026-11-12) ──
+  const CT_ROLES=[["Actor / Model / Performer","Actor / Performer"],["Casting Director","Casting Director"],["Producer / Director","Producer"],["Agent / Manager","Agent"],["Press / Media","Press"],["Other","Other"]];
+  const CT_SHORT={"Posting a casting (Casting Directors)":"Posting a casting","Billing or payment question":"Billing or payment"};
+  // Cancel subscription is not offered as a chip; it only appears (pre-selected)
+  // when Settings deep-links here with that subject, so cancelling still works.
+  const ctSubjects=CONTACT_SUBJECTS.filter(x=>x!==CANCEL_SUBJECT||initialSubject===CANCEL_SUBJECT);
+  const CT_WORDS=["question","partnership","casting to post","problem","billing question"];
+  const [ctWord,setCtWord]=useState(0);
+  useEffect(()=>{const t=setInterval(()=>setCtWord(w=>(w+1)%CT_WORDS.length),2400);return()=>clearInterval(t);},[]);
+  const ctNow=()=>{
+    const d=new Date();
+    const time=d.toLocaleTimeString("en-US",{timeZone:"America/New_York",hour:"numeric",minute:"2-digit"});
+    const p=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"short",hour:"numeric",hour12:false}).formatToParts(d);
+    const wd=(p.find(x=>x.type==="weekday")||{}).value,h=+((p.find(x=>x.type==="hour")||{}).value||0)%24;
+    return{time,open:wd!=="Sat"&&wd!=="Sun"&&h>=9&&h<18};
+  };
+  const [ctClock,setCtClock]=useState(ctNow);
+  useEffect(()=>{const t=setInterval(()=>setCtClock(ctNow()),15000);return()=>clearInterval(t);},[]);
+  const [ctFly,setCtFly]=useState(false);
+  const ctSend=async e=>{
+    if(e)e.preventDefault();
+    if(sending)return;
+    if(!name.trim()||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())||!message.trim()){setError("Please enter your name, a valid email, and a message.");return;}
+    setCtFly(true);setTimeout(()=>setCtFly(false),700);
+    await send();
+  };
+  return(<div className="page"><div className="ct-wrap">
+    <div className="ct-grid">
+      <aside className="ct-left">
+        <div className="ct-eb">Contact</div>
+        <h1>Got a<br/><span className="ct-rot"><span key={ctWord}>{CT_WORDS[ctWord]}</span></span>?</h1>
+        <p className="ct-lead">Questions, partnerships or support. A real person on our team reads every message.</p>
+        <div className="ct-live"><span className={"ct-dot"+(ctClock.open?"":" off")}/><span>{ctClock.open?"Team online":"Office closed · we reply next business day"} · New York {ctClock.time}</span></div>
+        <div className="ct-tl">
+          <div className="ct-st"><b>Usually within hours</b><span>Typical reply time</span></div>
+          <div className="ct-st"><b>1–2 business days</b><span>During busy periods</span></div>
+          <div className="ct-st"><b>A little longer</b><span>On weekends</span></div>
+        </div>
+        <div className="ct-map">
+          <iframe title="CastSlate office area map" loading="lazy" tabIndex={-1} aria-hidden="true" referrerPolicy="no-referrer-when-downgrade" scrolling="no"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-73.9966%2C40.7577%2C-73.9806%2C40.7697&layer=mapnik"/>
+          <span className="ct-ring"/><span className="ct-ring r2"/><span className="ct-ring r3"/>
+          <div className="ct-pin"><div className="h"><div><LogoMark/></div></div><div className="t"/></div>
+          <div className="ct-cap"><Ico n="map-pin" s={15}/>Office · New York, NY</div>
+          <span className="ct-osm">© OpenStreetMap</span>
+        </div>
+      </aside>
+      <div className="ct-right">
+        {sent?(isCancel?<div className="ct-done">
+          <div className="ck"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <h3>Cancellation request received</h3>
+          <p>We'll confirm by email within one business day. Here's exactly what happens:</p>
+          <ul>
+            {accessUntilLabel
+              ?<li>You keep full Premium access until <strong style={{color:"var(--t1)"}}>{accessUntilLabel}</strong> — the period you've already paid for.</li>
+              :<li>You keep full Premium access until the end of your current billing period.</li>}
+            <li>You will not be charged again.</li>
+            <li>{accessUntilLabel?<>On {accessUntilLabel} your account</>:<>Your account then</>} returns to the free plan automatically.</li>
+            <li>Nothing is deleted — your profile, media and application history stay.</li>
+          </ul>
+        </div>:<div className="ct-done">
+          <div className="ck"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <h3>Message sent</h3>
+          <p>Thanks — it's in our queue. We usually reply within hours.</p>
+          <button type="button" className="ct-again" onClick={()=>{setSent(false);setMessage("");}}>Send another</button>
+        </div>):<form onSubmit={ctSend} noValidate>
+          <div className="ct-hd">
+            <span className="crt-disc"><span className="crt-env"><span className="bd"/><span className="paper"/><span className="flap"/></span></span>
+            <div><h2>Send us a message</h2><p>No need to send it twice. Every message reaches the queue.</p></div>
           </div>
-        </div>
-        <div style={{padding:16}}>
-          <h4 style={{fontSize:14,fontWeight:700,marginBottom:4}}>Office</h4>
-          <p style={{fontSize:13,color:"var(--t2)",margin:0}}>New York, NY</p>
-        </div>
+          <div className="ct-row2">
+            <div className="ct-fld"><input placeholder=" " autoComplete="name" value={name} onChange={e=>setName(e.target.value)}/><label>Your name</label></div>
+            <div className="ct-fld"><input type="email" placeholder=" " autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}/><label>Email</label></div>
+          </div>
+          <div className="ct-lbl">I am a…</div>
+          <div className="ct-seg">{CT_ROLES.map(([v,l])=><button type="button" key={v} className={role===v?"on":""} onClick={()=>setRole(v)}>{l}</button>)}</div>
+          <div className="ct-lbl">Topic</div>
+          <div className="ct-chips">{ctSubjects.map(x=><button type="button" key={x} className={"ct-chip"+(subject===x?" on":"")} onClick={()=>setSubject(x)}>{CT_SHORT[x]||x}</button>)}</div>
+          {isCancel&&<div className="ct-cancel">
+            <b>What happens when you cancel</b>
+            <ul>
+              {accessUntilLabel
+                ?<li>You keep full Premium access until <strong style={{color:"var(--t1)"}}>{accessUntilLabel}</strong> — the period you've already paid for.</li>
+                :<li>You keep full Premium access until the end of your current billing period.</li>}
+              <li>You will not be charged again.</li>
+              <li>{accessUntilLabel?<>On {accessUntilLabel} your account</>:<>Your account then</>} returns to the free plan automatically.</li>
+              <li>Nothing is deleted — your profile, media and application history stay.</li>
+            </ul>
+          </div>}
+          <div className="ct-fld"><textarea placeholder=" " maxLength={2000} value={message} onChange={e=>setMessage(e.target.value)}/><label>Your message</label><span className="ct-cnt">{message.length} / 2000</span></div>
+          <button type="submit" className={"ct-send"+(ctFly?" go":"")} disabled={sending}><span>{sending?"Sending…":"Send message"}</span><span className="pl"><Ico n="send" s={18}/></span></button>
+          {error&&<div className="ct-err">{error}</div>}
+          <div className="ct-foot"><Ico n="shield-check" s={17}/>Your details are only used to reply to you.</div>
+        </form>}
       </div>
     </div>
   </div><Footer onNavigate={onNavigate}/></div>);
