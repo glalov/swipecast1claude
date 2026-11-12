@@ -5162,11 +5162,11 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-brand .logo .logo-i{width:38px;height:38px;border-radius:9px;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:16px;max-width:300px;}
-.site-footer-heading{font-family:inherit;color:#D6D0C4;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 16px;}
+.site-footer-heading{font-family:inherit;color:#D6D0C4;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 20px;}
 /* Apple-style hover (owner 2026-10-23): no slide, an underline appears under the words.
    width:fit-content keeps each link on its own line but limits the hover zone and the
    underline to the text itself, not the whole column. */
-.site-footer-link{display:block;width:fit-content;max-width:100%;color:#F3EBE0;font-size:14px;font-weight:500;line-height:24px;padding:0;cursor:pointer;font-family:inherit;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:1px;}
+.site-footer-link{display:block;width:fit-content;max-width:100%;color:#F3EBE0;font-size:14px;font-weight:500;line-height:30px;padding:0;cursor:pointer;font-family:inherit;text-decoration:none;text-underline-offset:3px;text-decoration-thickness:1px;}
 a.site-footer-link{text-decoration:none;}
 .site-footer-link:hover,a.site-footer-link:hover{color:#F3EBE0;text-decoration:underline;}
 .nyc-guide{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--bdr);min-width:0;}
