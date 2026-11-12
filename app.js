@@ -1467,7 +1467,9 @@ body.sheet-push .b2t-cube{display:none;}
 .ct-st b{display:block;color:#fff;font-size:14.5px;}
 .ct-st span{font-size:13px;color:#A9A7BC;}
 @keyframes ctup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
-.ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(243,235,224,.55);background:#F3EBE0;}
+/* Safari ignores overflow:hidden + border-radius around the filtered iframe (square corners);
+   clip-path + isolation make it round the map in every browser. */
+.ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(243,235,224,.55);background:#F3EBE0;clip-path:inset(0 round 16px);-webkit-clip-path:inset(0 round 16px);isolation:isolate;}
 .ct-map iframe{position:absolute;top:-50px;left:-50px;width:calc(100% + 100px);height:calc(100% + 100px);max-width:none;max-height:none;border:0;pointer-events:none;filter:grayscale(1) contrast(1.08) brightness(1.04);}
 /* Cream Paper (owner 2026-11-12): light warm map so it reads as a card on the navy panel */
 .ct-map::before{content:"";position:absolute;inset:0;z-index:1;background:#E9DCC6;mix-blend-mode:multiply;pointer-events:none;}
