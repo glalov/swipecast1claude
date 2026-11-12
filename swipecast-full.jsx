@@ -3743,18 +3743,19 @@ body.sheet-push .b2t-cube{display:none;}
 .ct-st b{display:block;color:#fff;font-size:14.5px;}
 .ct-st span{font-size:13px;color:#A9A7BC;}
 @keyframes ctup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
-.ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:#1A1A2E;}
-.ct-map iframe{position:absolute;top:-50px;left:-50px;width:calc(100% + 100px);height:calc(100% + 100px);max-width:none;max-height:none;border:0;pointer-events:none;filter:grayscale(1) invert(1) contrast(1.25) brightness(.8);}
-.ct-map::before{content:"";position:absolute;inset:0;z-index:1;background:#24305E;mix-blend-mode:color;pointer-events:none;}
+.ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(243,235,224,.55);background:#F3EBE0;}
+.ct-map iframe{position:absolute;top:-50px;left:-50px;width:calc(100% + 100px);height:calc(100% + 100px);max-width:none;max-height:none;border:0;pointer-events:none;filter:grayscale(1) contrast(1.08) brightness(1.04);}
+/* Cream Paper (owner 2026-11-12): light warm map so it reads as a card on the navy panel */
+.ct-map::before{content:"";position:absolute;inset:0;z-index:1;background:#E9DCC6;mix-blend-mode:multiply;pointer-events:none;}
 .ct-ring{position:absolute;top:50%;left:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:2px solid var(--teal);opacity:0;animation:ctradar 2.8s ease-out infinite;z-index:2;pointer-events:none;}
 .ct-ring.r2{animation-delay:.93s;}.ct-ring.r3{animation-delay:1.86s;}
 @keyframes ctradar{0%{transform:scale(.4);opacity:.8;}100%{transform:scale(5.5);opacity:0;}}
 .ct-pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:3;}
-.ct-pin .h{width:34px;height:34px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.3);border:2px solid #fff;animation:ctbob 3.2s ease-in-out infinite;}
-.ct-pin .h>div{width:18px;height:18px;}
+.ct-pin .h{width:34px;height:34px;overflow:hidden;background:var(--teal);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.3);border:2px solid #fff;animation:ctbob 3.2s ease-in-out infinite;}
+.ct-pin .h>div{width:100%;height:100%;}
 .ct-pin .t{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid var(--teal);margin-top:-2px;}
 @keyframes ctbob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
-.ct-cap{position:absolute;left:10px;bottom:10px;z-index:3;background:rgba(26,26,46,.82);border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#fff;display:flex;gap:6px;align-items:center;}
+.ct-cap{position:absolute;left:10px;bottom:10px;z-index:3;background:rgba(26,26,46,.88);border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;color:#fff;display:flex;gap:6px;align-items:center;}
 .ct-osm{display:block;margin-top:7px;text-align:right;font-size:10px;line-height:1.3;color:rgba(237,235,245,.32);}
 .ct-right{padding:44px 44px 36px;min-width:0;}
 .ct-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
