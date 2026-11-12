@@ -5145,6 +5145,15 @@ body.fbsp-open #castoria-root{display:none!important;}
    still round through mid-scroll. No rounding at any scale reaches 3px. */
 .site-footer::before{content:"";position:absolute;left:0;right:0;top:-3px;height:3px;background:#0E0C0B;pointer-events:none;}
 .site-footer-inner{max-width:1200px;margin:0 auto;padding:60px 40px 28px;}
+/* Footer wordmark "Grounded" (owner picked 2026-11-12 from a live-footer preview): a huge faint
+   CastSlate across the very bottom, letters sitting on the footer's bottom edge. Static on
+   purpose (no animation in the footer, see the Safari layer fix). The inner bottom padding moves
+   to the wordmark; phones keep only the iPhone safe-area below it. */
+.site-footer.has-wm .site-footer-inner{padding-bottom:0;}
+.site-footer-wm{max-width:1200px;margin:6px auto 0;padding:0 40px;line-height:0;pointer-events:none;user-select:none;-webkit-user-select:none;}
+.site-footer-wm svg{display:block;width:100%;height:auto;overflow:visible;}
+.site-footer-wm text{font-family:'DM Sans',sans-serif;font-weight:800;}
+@media(max-width:900px){.site-footer-wm{padding:0 24px;}.site-footer.has-wm{padding-bottom:env(safe-area-inset-bottom,0px) !important;}}
 .site-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
 .site-footer-brand .logo{color:#F3EBE0;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .site-footer-brand .logo .logo-i{background:#F3EBE0;color:#0E0C0B;}
@@ -9586,7 +9595,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       </span>
       </span>
     </button>}
-    <footer className={"site-footer"+(backToTop?" has-b2t":"")}>
+    <footer className={"site-footer has-wm"+(backToTop?" has-b2t":"")}>
       <div className="site-footer-inner">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
@@ -9662,6 +9671,12 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             </button>
           </div>
         </div>
+      </div>
+      <div className="site-footer-wm" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 232" focusable="false">
+          <defs><linearGradient id="sfwmg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#F3EBE0" stopOpacity=".17"/><stop offset="1" stopColor="#F3EBE0" stopOpacity=".03"/></linearGradient></defs>
+          <text x="0" y="236" fontSize="290" textLength="1200" lengthAdjust="spacingAndGlyphs" fill="url(#sfwmg)">CastSlate</text>
+        </svg>
       </div>
     </footer>
   </>);
