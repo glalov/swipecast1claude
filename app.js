@@ -2912,7 +2912,13 @@ a.site-footer-link{text-decoration:none;}
 .site-footer-social-row{display:flex;gap:14px;align-items:center;justify-content:center;padding:18px 0 22px;border-top:none;margin-top:0;}
 /* 126px (was 96): the unified footer's tighter 24px link rows made the footer ~30px
    shorter, so the fixed cube (bottom:150px) sat on "Resources"; this keeps it clear. */
-.site-footer.has-b2t .site-footer-social-row{margin-top:126px;}
+/* Cube pages (owner 2026-11-12, "Tight + letters closer"): only as much room as the cube
+   needs (was 126px), and the big letters pulled up into the empty top of their own box,
+   so scrolled to the bottom on a laptop the footer starts right at the menu's bottom edge. */
+.site-footer.has-b2t .site-footer-social-row{margin-top:50px;}
+/* pull scales with the letters' size: -64px on desktop, ~-12px on a phone (the empty band
+   above the letters is ~30% of their box, so it shrinks with screen width) */
+.site-footer.has-b2t .site-footer-wm{margin-top:max(-64px,calc(12px - 6.3vw));}
 .site-footer-social{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#F3EBE0;background:none;border:1px solid rgba(243,235,224,.14);text-decoration:none;transition:color .18s ease,background .18s ease,transform .18s ease,border-color .18s ease;}
 .site-footer-social:hover{color:#F3EBE0;background:rgba(243,235,224,.06);border-color:rgba(243,235,224,.32);transform:translateY(-2px);}
 .site-footer-bottom{border-top:1px solid rgba(243,235,224,.14);padding-top:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px;flex-wrap:wrap;font-size:15px;line-height:24px;color:#B5AEA2;}
