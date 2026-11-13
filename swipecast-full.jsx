@@ -4052,33 +4052,54 @@ body.sheet-push .b2t-cube{display:none;}
 .join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
 .join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
 .join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
-.plk-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start;}
+.plk-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start;}
 .plk-opts{min-width:0;}
 .plk-saved{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:10px;background:#EAF3EF;color:#276551;font-weight:700;font-size:13.5px;}
 .plk-prev{min-width:0;position:sticky;top:110px;}
 .plk-pvl{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:16px 0 8px;}
 .plk-pvl em{font-style:normal;letter-spacing:0;text-transform:none;font-weight:700;color:var(--teal);}
-.plk-pv{border-radius:14px;overflow:hidden;border:1px solid var(--bdr);transition:background .25s,color .25s;}
-.plk-img{height:210px;background-size:cover;background-position:center 22%;}
-.plk-ph{height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px;background:#F2ECE0;border-bottom:1px solid var(--bdr);color:#A99C88;}
-.plk-ph p{margin:0;font-size:13px;color:#5F574D;max-width:220px;line-height:1.4;}
-.plk-ph button{border:0;border-radius:9px;background:var(--teal);color:#fff;font:inherit;font-weight:700;font-size:13px;padding:9px 14px;cursor:pointer;}
-.plk-ph button:hover{background:var(--teal-dk);}
-.plk-body{padding:16px 18px 18px;}
-.plk-nm{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:23px;margin:0;line-height:1.15;}
-.plk-tg{font-size:13px;margin:4px 0 14px;opacity:.75;overflow-wrap:anywhere;}
-.plk-btns{display:flex;gap:8px;flex-wrap:wrap;}
-.plk-b1,.plk-b2{display:inline-flex;align-items:center;gap:5px;border-radius:9px;padding:8px 13px;font-weight:700;font-size:13px;transition:background .25s,color .25s,border-color .25s;}
-.plk-b1{color:#fff;border:1.5px solid transparent;}
-.plk-b2{background:transparent;border:1.5px solid;}
-.plk-soc{margin-top:13px;font-size:12.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px;transition:color .25s;}
-.plk-note{font-size:12px;color:var(--t3);margin:8px 2px 0;line-height:1.45;}
-.plk-classic{background:#FFFDF8;color:#241F19;}
-.plk-cinematic{background:#171615;color:#F4F1EC;border-color:#2A2724;}
-.plk-cinematic .plk-ph{background:#232020;border-color:#2A2724;}
-.plk-cinematic .plk-ph p{color:#BDB6AC;}
-.plk-editorial{background:#fff;color:#111;}
-.plk-editorial .plk-nm{font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-.5px;}
+/* Preview = a small sketch of the real public page (owner 2026-11-12, demo page-look-preview v3): same layout per option, grey blocks for photos. */
+.plk-pv{--bg:#F7F5F0;--s1:#FFFDF8;--s2:#F2ECE0;--bdr:#E4DCCB;--t1:#241F19;--t2:#3A322A;--t3:#6B6157;--ph:#E9E1D2;--phi:#CFC3AE;background:var(--bg);color:var(--t1);border:1px solid #E4DCCB;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:7px;transition:background .25s;}
+.plk-pv.plk-cinematic{--bg:#171615;--s1:#262422;--s2:#35322F;--bdr:#3A3734;--t1:#F4F1EC;--t2:#DAD5CE;--t3:#A8A39C;--ph:#34302C;--phi:#4A453F;border-color:#2A2724;}
+.plk-pv.plk-editorial{--bg:#FFFFFF;--s1:#FFFFFF;--s2:#F2F0EC;--bdr:#E8E4DD;--t1:#111;--t2:#2B2B2B;--t3:#666;}
+.plk-pc{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;}
+.plk-cinematic .plk-pc{border-color:transparent;}
+.plk-editorial .plk-pc{border-radius:0;}
+.plk-ph{background:var(--ph);border-radius:6px;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;}
+.plk-ph svg{width:62%;height:auto;display:block;fill:var(--phi);}
+.plk-ph b{position:absolute;top:6px;left:0;right:0;text-align:center;font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--t3);}
+.plk-ph.none{background:#E5E5E5;align-items:center;}
+.plk-ph.none b{position:static;color:#999;font-size:11px;letter-spacing:0;text-transform:none;}
+.plk-tile{background:var(--ph);border-radius:5px;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;}
+.plk-tile.v span{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.9);color:#111;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.plk-hero{display:grid;grid-template-columns:.86fr 1fr;background:var(--s1);border:1px solid var(--bdr);border-radius:12px;overflow:hidden;}
+.plk-cinematic .plk-hero{background:#1E2A28;border-color:transparent;--t3:#A7B5B1;}
+.plk-editorial .plk-hero{border:0;border-radius:0;}
+.plk-hero .plk-ph{border-radius:0;min-height:150px;}
+.plk-htx{padding:12px 11px;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.plk-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.plk-tg{display:inline-block;align-self:flex-start;font-size:9.5px;font-weight:600;border-radius:5px;padding:2px 7px;}
+.plk-pv .plk-nm{font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-.5px;font-size:20px;margin:6px 0 5px;line-height:1.05;color:var(--t1);overflow-wrap:anywhere;}
+.plk-cinematic .plk-htx .plk-nm,.plk-editorial .plk-htx .plk-nm{font-family:'Source Serif 4',Georgia,serif;font-weight:700;}
+.plk-ln{width:30px;height:2.5px;border-radius:3px;margin:0 0 7px;}
+.plk-line{font-size:11px;color:var(--t2);margin:0 0 3px;line-height:1.35;overflow-wrap:anywhere;}
+.plk-meta{font-size:10px;color:var(--t3);margin:0 0 9px;line-height:1.35;}
+.plk-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.plk-bt{border-radius:7px;padding:5px 8px;font-weight:800;font-size:10.5px;border:1.5px solid transparent;white-space:nowrap;text-align:center;}
+.plk-gtop{display:grid;gap:5px;}
+.plk-gtop.two{grid-template-columns:1fr 1fr;}
+.plk-g4{display:grid;grid-template-columns:1fr 1fr;gap:5px;align-content:start;}
+.plk-gtop .plk-ph{min-height:118px;}
+.plk-ginfo .plk-nm{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:19px;letter-spacing:-.4px;margin:6px 0 3px;}
+.plk-ginfo p{margin:0 0 2px;font-size:11px;color:var(--t2);}
+.plk-sh{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);border-left:3px solid;padding-left:7px;line-height:1.2;}
+.plk-sl{height:5px;border-radius:3px;background:var(--s2);margin-top:8px;width:85%;}
+.plk-sl+.plk-sl{width:60%;margin-top:5px;}
+.plk-side{display:flex;flex-direction:column;gap:5px;}
+.plk-side small{font-size:9px;color:var(--t3);text-align:center;margin-top:2px;}
+.plk-note{font-size:12.5px;color:var(--t2);margin:8px 2px 0;line-height:1.45;}
+.plk-note button{border:0;background:none;padding:0;font:inherit;color:var(--teal);font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+.plk-key{font-size:11.5px;color:var(--t3);margin:8px 2px 0;line-height:1.45;}
 @media(max-width:900px){.plk-grid{grid-template-columns:1fr;gap:6px;}.plk-prev{order:-1;position:static;}}
 /* Nav dropdowns, Stripe style (owner 2026-11-12, after apple.com full-width d02f1ac8): when Directories,
    Manager Mode or the desktop Join Free menu opens, the nav bar turns into the top of ONE white card
@@ -17943,7 +17964,7 @@ function PublicTalentProfilePage({slug,onNavigate,session,myProfile}){
 
 // ─── My Profile → "Your page look" (Premium). Saves profiles.profile_look on its own,
 // separate from the main profile form, so it can't disturb unsaved profile edits.
-function ProfileLookCard({profile,isPremium,onNavigate}){
+function ProfileLookCard({profile,isPremium,onNavigate,extraPhotos=0,videoCount=0,onAddVideo}){
   const init=profileLook(profile);
   const [look,setLook]=useState(init);
   const [saved,setSaved]=useState(JSON.stringify(init));
@@ -17965,6 +17986,9 @@ function ProfileLookCard({profile,isPremium,onNavigate}){
     finally{setBusy(false);}
   };
   const slug=profile.public_slug;
+  // Mirrors TalentProfile: the hero needs a headshot; showcase tiles = extra photos + videos (max 4).
+  const hasHs=!!profile.headshot_url;
+  const heroOn=look.hero&&hasHs;
   const lab=t=><div style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",color:"var(--t3)",margin:"16px 0 8px"}}>{t}</div>;
   if(!isPremium)return(<div className="card" style={{padding:24,marginBottom:16}}>
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
@@ -17986,17 +18010,18 @@ function ProfileLookCard({profile,isPremium,onNavigate}){
     <div className="plk-grid"><div className="plk-opts">
     {lab("Top of page")}
     <div className="otrg-row">{[[true,"Hero header"],[false,"Photo grid"]].map(([v,l])=><button key={l} type="button" className={"otrg-chip"+(look.hero===v?" on":"")} onClick={()=>set("hero",v)}>{l}{v&&<span style={{marginLeft:7,fontSize:10,fontWeight:800,letterSpacing:".04em",textTransform:"uppercase",background:"#FBF0DA",color:"#8A5A12",borderRadius:99,padding:"2px 7px",verticalAlign:"1px"}}>Recommended</span>}</button>)}</div>
-    <p style={{fontSize:12.5,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>{look.hero?<><b style={{color:"var(--t1)"}}>Recommended — it makes your page the most cinematic and stylish.</b> A large headshot at the top with your name, one-liner, Watch reel / Message buttons and your social links.</>:<>Your headshot and photos in a grid, then your details — the standard layout. <b style={{color:"var(--t1)"}}>Hero header is recommended — it makes your page the most cinematic and stylish.</b></>}</p>
+    <p style={{fontSize:12.5,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>{look.hero?<><b style={{color:"var(--t1)"}}>Recommended, it makes your page the most cinematic and stylish.</b> A large headshot at the top, next to your name, one-liner and buttons.</>:<>Your headshot and photos sit at the top in a grid, with your name and details underneath. Your theme and accent colour still apply.</>}</p>
     {lab("One-line description")}
-    <input className="input" value={look.tagline} maxLength={PL_TAGLINE_MAX} placeholder="e.g. Grounded dramatic lead · Los Angeles & New York" onChange={e=>set("tagline",e.target.value)}/>
-    <div style={{display:"flex",justifyContent:"space-between",gap:10,fontSize:12,color:"var(--t3)",marginTop:6}}><span>Shown under your name in the hero header. No links, emails or phone numbers.</span><span>{look.tagline.length}/{PL_TAGLINE_MAX}</span></div>
+    <input className="input" value={look.tagline} maxLength={PL_TAGLINE_MAX} disabled={!look.hero} placeholder="e.g. Grounded dramatic lead · Los Angeles & New York" onChange={e=>set("tagline",e.target.value)} style={!look.hero?{background:"var(--s2)",color:"#A99C88"}:undefined}/>
+    <div style={{display:"flex",justifyContent:"space-between",gap:14,fontSize:12,color:"var(--t3)",marginTop:6}}>{!look.hero?<span style={{color:"#8A5A12",fontWeight:700}}>Only shown with Hero header.</span>:<span>{hasHs?"Shown under your name in the hero header.":"Shows once you add a headshot."} No links, emails or phone numbers.</span>}<span>{look.tagline.length}/{PL_TAGLINE_MAX}</span></div>
     {lab("Theme")}
     <div className="pl-pick">{PL_THEMES.map(([k,l])=><button key={k} type="button" className={"pl-pick-th"+(look.theme===k?" on":"")} onClick={()=>set("theme",k)} aria-pressed={look.theme===k}>
       <span className={"pl-pick-sw pl-sw-"+k}><i/><i/></span>{l}</button>)}</div>
+    <p style={{fontSize:12.5,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>Changes the background and style of your whole page.</p>
     {lab("Accent color")}
     <div style={{display:"flex",gap:10,alignItems:"center"}}>{Object.entries(PL_ACCENTS).map(([k,c])=><button key={k} type="button" title={k} aria-label={k} aria-pressed={look.accent===k} onClick={()=>set("accent",k)}
       style={{width:30,height:30,borderRadius:99,background:c,border:"none",cursor:"pointer",boxShadow:look.accent===k?"0 0 0 2px var(--s1), 0 0 0 4px "+c:"none"}}/>)}
-      <span style={{fontSize:12.5,color:"var(--t3)"}}>Buttons and links in your header.</span></div>
+      <span style={{fontSize:12.5,color:"var(--t3)"}}>{heroOn?"Your buttons, union tag, name line and section headings.":"Your buttons and section headings."}</span></div>
     <div style={{display:"flex",alignItems:"center",gap:12,marginTop:20,flexWrap:"wrap"}}>
       {/* Nothing to save -> a calm "Saved" label instead of a faded button that looked broken (owner 2026-11-12). */}
       {(dirty||busy)?<button type="button" className="btn-teal" disabled={busy} onClick={save} style={{padding:"10px 22px",fontSize:13.5}}>{busy?"Saving…":"Save look"}</button>
@@ -18004,26 +18029,52 @@ function ProfileLookCard({profile,isPremium,onNavigate}){
       {note&&<span style={{fontSize:13,fontWeight:600,color:note.err?"#B4574B":"var(--teal)"}}>{note.t}</span>}
     </div>
     </div>
-    {/* Live preview of the public page header: updates as theme / accent / one-liner change, before saving. */}
-    {(()=>{const acc=PL_ACCENTS[look.accent]||PL_ACCENTS.teal;const hs=profile.headshot_url;
+    {/* Live preview: a small sketch of the REAL public page (TalentProfile) for the chosen options.
+        Accurate on purpose (owner 2026-11-12): hero only with a headshot, Watch reel only with a video,
+        no header buttons / name line / accent tag in Photo grid, same accent ink + gold rules. */}
+    {(()=>{const cine=look.theme==="cinematic",gold=look.accent==="gold";
+      const c=(cine&&gold)?"#D6AE5C":(PL_ACCENTS[look.accent]||PL_ACCENTS.teal);
+      const ink=gold?(cine?"#D6AE5C":"#94722A"):c;
+      const onFill=gold?(cine?"#171615":"#1A1A2E"):"#fff";
+      const hasVid=videoCount>0;
+      const nTiles=Math.min(4,extraPhotos+videoCount);
+      const tiles=Array.from({length:nTiles},(_,i)=>(hasVid&&i===0)?<i key={i} className="plk-tile v"><span>▶</span></i>:<i key={i} className="plk-tile"/>);
+      const head=hasHs?<div className="plk-ph"><svg viewBox="0 0 100 80" aria-hidden="true"><circle cx="50" cy="28" r="17"/><path d="M14 80c2-20 17-31 36-31s34 11 36 31z"/></svg><b>Your headshot</b></div>:<div className="plk-ph none"><b>No Headshot</b></div>;
+      const name=profile.display_name||"Your name";
+      const loc=profile.location||"";const rep=profile.representation||profile.agent||"";
+      const union=profile.union_status||"Non-Union";
+      const tl=look.tagline.trim();
       const upload=()=>{const b=document.querySelector('.mp-hs-btn');if(b){b.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>b.click(),350);}};
+      const msgOnly=!hasVid;
+      const msgStyle=(cine&&msgOnly)?{background:c,borderColor:c,color:onFill}:{background:"transparent",borderColor:c,color:ink};
       return <div className="plk-prev">
-        <div className="plk-pvl"><span>Live preview</span><em>{dirty?"Not saved yet":"Your page header"}</em></div>
+        <div className="plk-pvl"><span>Live preview</span><em>{dirty?"Not saved yet":"Your page"}</em></div>
         <div className={"plk-pv plk-"+(look.theme||"classic")}>
-          {hs?<div className="plk-img" style={{backgroundImage:"url(\""+hs+"\")"}}/>
-            :<div className="plk-ph"><Ico n="user" s={40}/><p>Add a headshot to turn on your big header</p><button type="button" onClick={upload}>Upload headshot</button></div>}
-          <div className="plk-body">
-            <p className="plk-nm">{profile.display_name||"Your name"}</p>
-            <p className="plk-tg">{look.tagline.trim()||"Your one-line description"}</p>
-            <div className="plk-btns"><span className="plk-b1" style={{background:acc}}><Tri/> Watch reel</span><span className="plk-b2" style={{borderColor:acc,color:acc}}>Message</span></div>
-            <div className="plk-soc" style={{color:acc}}>Your social links</div>
-          </div>
+          {heroOn?<>
+            <div className="plk-hero">{head}<div className="plk-htx">
+              <span className="plk-tg" style={{background:c,color:onFill}}>{union}</span>
+              <p className="plk-nm">{name}</p><div className="plk-ln" style={{background:c}}/>
+              {tl&&tl.toLowerCase()!==loc.trim().toLowerCase()&&<p className="plk-line">{tl}</p>}
+              {(loc||rep)&&<p className="plk-meta">{[loc,rep?"Rep: "+rep:""].filter(Boolean).join(" · ")}</p>}
+              <div className="plk-btns">{hasVid&&<span className="plk-bt" style={{background:c,color:onFill}}>▸ Watch reel</span>}<span className="plk-bt" style={msgStyle}>Message</span></div>
+            </div></div>
+            {nTiles>0&&<div className="plk-strip">{tiles}</div>}
+          </>:<>
+            <div className={"plk-gtop"+(nTiles?" two":"")}>{head}{nTiles>0&&<div className="plk-g4">{tiles}</div>}</div>
+            <div className="plk-pc plk-ginfo">
+              <span className="plk-tg" style={cine?{background:"var(--s2)",color:"var(--t1)"}:{background:"rgba(26,26,46,.08)",color:"#1A1A2E"}}>{union}</span>
+              <p className="plk-nm">{name}</p>{loc&&<p>{loc}</p>}{rep&&<p>Rep: {rep}</p>}
+            </div>
+          </>}
+          <div className="plk-pc"><div className="plk-sh" style={{borderLeftColor:c}}>Credits &amp; Experience</div><div className="plk-sl"/><div className="plk-sl"/></div>
+          <div className="plk-pc plk-side"><span className="plk-bt" style={{background:c,color:onFill}}>Invite to a Casting</span><span className="plk-bt" style={{borderColor:"var(--bdr)",color:"var(--t1)"}}>Message</span><small>Buttons casting directors see</small></div>
         </div>
-        {!hs&&<p className="plk-note">Your look is saved now and switches on automatically as soon as you add a headshot.</p>}
-        {hs&&!look.hero&&<p className="plk-note">You picked Photo grid, so your page opens with your photo grid. Your colours still apply.</p>}
+        <p className="plk-key">A small sketch of your public page. Grey blocks stand for your photos.</p>
+        {!hasHs&&<p className="plk-note">{look.hero?"Hero header needs a headshot. Until you add one, your page shows the photo grid. ":"Your page shows an empty “No Headshot” box until you add one. "}<button type="button" onClick={upload}>Upload headshot</button></p>}
+        {heroOn&&!hasVid&&<p className="plk-note">Add a video to show a Watch reel button.{onAddVideo&&<> <button type="button" onClick={onAddVideo}>Add a video</button></>}</p>}
       </div>;})()}
     </div>
-    <p style={{fontSize:12,color:"var(--t3)",margin:"14px 0 0",lineHeight:1.5}}>Part of Premium. If your membership ends, your page keeps the headshot header in the Classic look — nothing is deleted, and your theme, colors and one-liner come back when you return.</p>
+    <p style={{fontSize:12,color:"var(--t3)",margin:"14px 0 0",lineHeight:1.5}}>Part of Premium. If your membership ends, your page keeps the headshot header in the Classic look. Nothing is deleted, and your theme, colours and one-liner come back when you return.</p>
   </div>);
 }
 
@@ -31952,7 +32003,7 @@ function MyProfilePage({session,profile,onReload,onNavigate,onViewProfile,onView
 
     {/* ── PROFILE TAB ── */}
     {tab==="profile"&&<>
-      {!isCD&&<ProfileLookCard profile={profile} isPremium={isPremium} onNavigate={onNavigate}/>}
+      {!isCD&&<ProfileLookCard profile={profile} isPremium={isPremium} onNavigate={onNavigate} extraPhotos={photos.filter(u=>u&&u!==profile.headshot_url).length} videoCount={mediaItems.length||((profile.reel_url&&!/(youtube\.com|youtu\.be|vimeo\.com)/i.test(profile.reel_url))?1:0)} onAddVideo={()=>{setTab("videos");window.scrollTo({top:0,behavior:"smooth"});}}/>}
       <div className="card" style={{padding:24,marginBottom:16}}>
         <h3 style={{fontSize:15,fontWeight:700,marginBottom:16}}>Basic Info</h3>
         <div className="form-group"><label className="label">Display Name</label><input className="input" value={f.display_name} onChange={e=>up("display_name",e.target.value)}/></div>
