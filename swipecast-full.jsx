@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.mmHead':'Your monthly check-ins','nav.mmEvents':'Industry events in New York and LA','nav.mmCard':'Your actor card with a QR code','nav.mmCta':'See how it works','nav.mmSub':'Industry events and your QR actor card','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.mmHead':'Your monthly check-ins','nav.joinLabel':'Join CastSlate','nav.mmEvents':'Industry events in New York and LA','nav.mmCard':'Your actor card with a QR code','nav.mmCta':'See how it works','nav.mmSub':'Industry events and your QR actor card','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform for working actors. Built so every submission gets a real look.',
@@ -338,7 +338,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.mmHead':'Tus revisiones mensuales','nav.mmEvents':'Eventos de la industria en Nueva York y LA','nav.mmCard':'Tu tarjeta de actor con código QR','nav.mmCta':'Cómo funciona','nav.mmSub':'Eventos de la industria y tu tarjeta QR','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.mmHead':'Tus revisiones mensuales','nav.joinLabel':'Únete a CastSlate','nav.mmEvents':'Eventos de la industria en Nueva York y LA','nav.mmCard':'Tu tarjeta de actor con código QR','nav.mmCta':'Cómo funciona','nav.mmSub':'Eventos de la industria y tu tarjeta QR','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
@@ -4052,6 +4052,35 @@ body.sheet-push .b2t-cube{display:none;}
 .join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
 .join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
 .join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
+/* Nav dropdowns: full-width panel (owner 2026-11-12, "option 4", modelled on apple.com's menus).
+   Directories, Manager Mode and the desktop Join Free menu open as one panel across the screen right
+   under the nav (top = --dd4-top, set from the nav's bottom edge while a menu is open), in the nav's
+   cream, with a small grey label and big bold link names; the page behind goes soft and blurred.
+   The blur layer never takes the mouse, so moving off the menu still closes it. The panel itself has
+   NO opacity/transform animation: that would turn it into a backdrop root and kill the blur. Only
+   the links slide in. Phone menus (.join-dd-menu-m, the burger sheet) are unchanged. */
+html .nav-ddm,html .nav-ddm.nav-mm,html .join-dd-menu{position:fixed;top:var(--dd4-top,86px);left:0;right:0;width:auto;min-width:0;transform:none;padding:34px max(40px,calc((100vw - 1100px)/2)) 46px;background:#FFFDF8;border:0;border-radius:0;box-shadow:0 1px 0 #E4DCCB;display:flex;flex-direction:column;align-items:flex-start;gap:2px;z-index:200;animation:none;}
+html .nav-ddm::before{display:none;}
+html .nav-ddm::after,html .join-dd-menu::after{content:"";position:fixed;left:0;right:0;bottom:0;top:var(--dd4-top,86px);z-index:-1;pointer-events:none;background:rgba(247,245,240,.35);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);animation:dd4Fade .3s ease both;}
+@keyframes dd4Fade{from{opacity:0;}to{opacity:1;}}
+html .nav-ddm>*,html .join-dd-menu>*{animation:dd4Item .4s cubic-bezier(.2,.8,.2,1) both;}
+html .nav-ddm>*:nth-child(2),html .join-dd-menu>*:nth-child(2){animation-delay:.04s;}
+html .nav-ddm>*:nth-child(3),html .join-dd-menu>*:nth-child(3){animation-delay:.08s;}
+html .nav-ddm>*:nth-child(4){animation-delay:.12s;}
+@keyframes dd4Item{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+.ddx-lbl{font-size:12.5px;font-weight:500;color:#857B71;margin:0 0 12px;font-family:'DM Sans',sans-serif;}
+html .nav-ddm button,html .join-dd-menu .join-dd-item{display:block;position:relative;width:auto;margin:0;padding:6px 0;background:none;box-shadow:none;border-radius:0;}
+html .nav-ddm button:first-child,html .nav-ddm button:last-child{margin:0;}
+html .nav-ddm .ic,html .join-dd-menu .join-dd-icon{display:none;}
+html .nav-ddm b,html .join-dd-menu .join-dd-title{display:block;font-family:'DM Sans',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.6px;line-height:1.2;color:#241F19;transition:color .15s;}
+html .nav-ddm small,html .join-dd-menu .join-dd-desc{display:block;font-size:13px;font-weight:500;color:#857B71;margin:2px 0 8px;}
+html .nav-ddm button:hover,html .nav-ddm button.on,html .join-dd-menu .join-dd-item:hover{background:none;}
+html .nav-ddm button:hover b,html .nav-ddm button.on b,html .join-dd-menu .join-dd-item:hover .join-dd-title{color:#33826A;}
+html .nav-ddm.nav-mm h4{font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;line-height:1.3;color:#857B71;margin:0 0 12px;}
+html .nav-ddm.nav-mm button{width:auto;margin:0;}
+html .nav-ddm.nav-mm button.nav-mm-cta{display:inline-flex;align-items:center;gap:6px;height:auto;width:auto;margin:18px 0 0;padding:0;background:none;color:#241F19;font-size:14px;font-weight:700;}
+html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
+@media (prefers-reduced-motion:reduce){html .nav-ddm>*,html .join-dd-menu>*,html .nav-ddm::after,html .join-dd-menu::after{animation:none;}}
 @keyframes scSpin{to{transform:rotate(360deg);}}
 /* ─── "Casting now" live badge (pulsing dot + expanding ring) + ARCHIVED stamp.
        Motion is disabled under prefers-reduced-motion; the dot stays solid. ─── */
@@ -60258,6 +60287,17 @@ function App(){
   // if this is longer the drawer sits finished-but-mounted before it disappears.
   const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},400);},[]);
   const [joinOpen,setJoinOpen]=useState(false);
+  // Full-width nav menus sit right under the nav: keep --dd4-top on the nav's bottom edge while one is
+  // open (the site-top banner above the nav grows and shrinks with scroll). Layout effect = no flash.
+  useLayoutEffect(()=>{
+    if(!(dirOpen||mmOpen||joinOpen))return;
+    const set=()=>{try{const n=document.querySelector('.nav');if(n)document.documentElement.style.setProperty('--dd4-top',Math.round(n.getBoundingClientRect().bottom)+'px');}catch(_){}};
+    set();
+    // the Browse join stripe slides in above the nav after a few seconds (no scroll event), so also re-check
+    const iv=setInterval(set,200);
+    window.addEventListener('scroll',set,{passive:true});window.addEventListener('resize',set);
+    return()=>{clearInterval(iv);window.removeEventListener('scroll',set);window.removeEventListener('resize',set);};
+  },[dirOpen,mmOpen,joinOpen]);
   const [menuJoinOpen,setMenuJoinOpen]=useState(false);
   const joinRef=useRef(null);
   const joinRefM=useRef(null);
@@ -60522,6 +60562,7 @@ function App(){
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);dirTimer.current=setTimeout(()=>setDirOpen(false),180);}}}>
             {navT('nav.directories')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
+              <div className="ddx-lbl">{navT('nav.directories')}</div>
               <button role="menuitem" className={page==="agency-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("agency-directory");}}>
                 <i className="ic"><Ico n="building-bank" s={17}/></i><b>{navT('nav.agencyDirectory')}</b><small>650+ talent agencies &amp; managers · LA + NY</small></button>
               <button role="menuitem" className={page==="casting-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
@@ -60564,6 +60605,7 @@ function App(){
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
               </button>
               {joinOpen&&<div className="join-dd-menu">
+                <div className="ddx-lbl">{navT('nav.joinLabel')}</div>
                 <button className="join-dd-item" onClick={()=>{setJoinOpen(false);navigate("auth-gate");}}>
                   <div className="join-dd-icon"><Ico n="masks-theater" s={22}/></div>
                   <div><span className="join-dd-title">Join as Talent</span><span className="join-dd-desc">Create your actor profile and start submitting.</span></div>
