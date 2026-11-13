@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.mmHead':'Your monthly check-ins','nav.joinLabel':'Join CastSlate','nav.acctSignedIn':'Signed in as','nav.acctYourProfile':'Your profile','nav.acctAccount':'Account','nav.acctSession':'Session','nav.acctSettings':'Account settings','nav.acctMembership':'Membership','nav.acctProfileDesc':'How casting directors see you','nav.acctDashTalent':'Applications and saved castings','nav.acctDashCd':'Your castings and submissions','nav.acctSettingsDesc':'Email, notifications, privacy','nav.acctMembershipDesc':'Your plan and billing','nav.acctSignOutDesc':'See you soon','nav.acctPremium':'Premium member','nav.acctFree':'Free actor account','nav.acctCd':'Casting director account','nav.acctAdmin':'Admin account','nav.mmEvents':'Industry events in New York and LA','nav.mmCard':'Your actor card with a QR code','nav.mmCta':'See how it works','nav.mmSub':'Industry events and your QR actor card','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.mmHead':'Your monthly check-ins','nav.joinLabel':'Join CastSlate','nav.acctSignedIn':'Signed in as','nav.acctYourProfile':'Your profile','nav.acctAccount':'Account','nav.acctSession':'Session','nav.acctSettings':'Account settings','nav.acctMembership':'Membership','nav.acctProfileDesc':'How casting directors see you','nav.acctDashTalent':'Applications and saved castings','nav.acctDashCd':'Your castings and submissions','nav.acctSettingsDesc':'Email, notifications, privacy','nav.acctMembershipDesc':'Your plan and billing','nav.acctSignOutDesc':'See you soon','nav.acctPublic':'View public profile','nav.acctPublicDesc':'See what casting directors see','nav.acctCard':'Actor Business Card','nav.acctCardDesc':'Design and print your card','nav.acctEvents':'Industry Events','nav.acctEventsDesc':'This month in New York and LA','nav.acctPremium':'Premium member','nav.acctFree':'Free actor account','nav.acctCd':'Casting director account','nav.acctAdmin':'Admin account','nav.mmEvents':'Industry events in New York and LA','nav.mmCard':'Your actor card with a QR code','nav.mmCta':'See how it works','nav.mmSub':'Industry events and your QR actor card','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform for working actors. Built so every submission gets a real look.',
@@ -338,7 +338,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.mmHead':'Tus revisiones mensuales','nav.joinLabel':'Únete a CastSlate','nav.acctSignedIn':'Sesión iniciada como','nav.acctYourProfile':'Tu perfil','nav.acctAccount':'Cuenta','nav.acctSession':'Sesión','nav.acctSettings':'Configuración de la cuenta','nav.acctMembership':'Membresía','nav.acctProfileDesc':'Cómo te ven los directores de casting','nav.acctDashTalent':'Postulaciones y castings guardados','nav.acctDashCd':'Tus castings y postulaciones','nav.acctSettingsDesc':'Correo, notificaciones, privacidad','nav.acctMembershipDesc':'Tu plan y facturación','nav.acctSignOutDesc':'Hasta pronto','nav.acctPremium':'Miembro Premium','nav.acctFree':'Cuenta de actor gratis','nav.acctCd':'Cuenta de director de casting','nav.acctAdmin':'Cuenta de administrador','nav.mmEvents':'Eventos de la industria en Nueva York y LA','nav.mmCard':'Tu tarjeta de actor con código QR','nav.mmCta':'Cómo funciona','nav.mmSub':'Eventos de la industria y tu tarjeta QR','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.mmHead':'Tus revisiones mensuales','nav.joinLabel':'Únete a CastSlate','nav.acctSignedIn':'Sesión iniciada como','nav.acctYourProfile':'Tu perfil','nav.acctAccount':'Cuenta','nav.acctSession':'Sesión','nav.acctSettings':'Configuración de la cuenta','nav.acctMembership':'Membresía','nav.acctProfileDesc':'Cómo te ven los directores de casting','nav.acctDashTalent':'Postulaciones y castings guardados','nav.acctDashCd':'Tus castings y postulaciones','nav.acctSettingsDesc':'Correo, notificaciones, privacidad','nav.acctMembershipDesc':'Tu plan y facturación','nav.acctSignOutDesc':'Hasta pronto','nav.acctPublic':'Ver perfil público','nav.acctPublicDesc':'Lo que ven los directores de casting','nav.acctCard':'Tarjeta de actor','nav.acctCardDesc':'Diseña e imprime tu tarjeta','nav.acctEvents':'Eventos de la industria','nav.acctEventsDesc':'Este mes en Nueva York y LA','nav.acctPremium':'Miembro Premium','nav.acctFree':'Cuenta de actor gratis','nav.acctCd':'Cuenta de director de casting','nav.acctAdmin':'Cuenta de administrador','nav.mmEvents':'Eventos de la industria en Nueva York y LA','nav.mmCard':'Tu tarjeta de actor con código QR','nav.mmCta':'Cómo funciona','nav.mmSub':'Eventos de la industria y tu tarjeta QR','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
@@ -4169,9 +4169,11 @@ html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
 .nav-av .nav-dd-tri{margin-left:0;transform:rotate(90deg);transition:transform .3s ease;}
 .nav-av.on .nav-dd-tri{transform:rotate(-90deg);}
 .nav-av-pic{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#1A1A2E;color:#F3EBE0;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;}
-.nav-av-pic img{width:100%;height:100%;object-fit:cover;display:block;}
+.nav-av-pic img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block;}
 .nav-av-pic.big{width:46px;height:46px;font-size:17px;}
-html .nav-ddm.nav-acct{grid-template-columns:1.15fr 1fr 1fr .8fr;}
+html .nav-ddm.nav-acct{grid-template-columns:1.15fr 1fr 1fr;}
+html .nav-ddm.nav-acct.two{grid-template-columns:1.15fr 1fr;}
+.nav-acct .acct-sep{height:1px;background:#EFE8DA;margin:4px 0 12px;}
 .nav-acct .acct-col{padding:0 30px;border-left:1px solid #EFE8DA;min-width:0;}
 .nav-acct .acct-col:first-child{border-left:0;}
 .nav-acct .acct-col .ddx-lbl{padding:0;margin:0 0 12px;}
@@ -60774,23 +60776,25 @@ function App(){
                 <button className={"nav-av"+(acctOpen?" on":"")+(page==="account-settings"?" act":"")} aria-haspopup="true" aria-expanded={acctOpen} onClick={()=>{setDirOpen(false);setMmOpen(false);setJoinOpen(false);setAcctOpen(o=>!o);}}>
                   <Av/><b>{first}</b><span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
                 </button>
-                {acctOpen&&<div className="nav-ddm nav-acct" role="menu" onClick={e=>e.stopPropagation()}>
+                {acctOpen&&<div className={"nav-ddm nav-acct"+(myProfile?.user_type==="talent"?"":" two")} role="menu" onClick={e=>e.stopPropagation()}>
                   <div className="acct-col">
                     <div className="ddx-lbl">{navT('nav.acctSignedIn')}</div>
                     <div className="acct-who"><Av big/><div><b>{myProfile?.display_name||first}</b><small>{plan}</small></div></div>
                   </div>
-                  <div className="acct-col">
+                  {/* Owner 2026-11-13: no links that repeat the bar (Dashboard / My Profile live there). "Your profile" holds
+                      talent shortcuts the bar doesn't have — Manager Mode only shows the SALES page for the card and events.
+                      Sign out sits under Account. Casting directors / admins see only the Account column. */}
+                  {myProfile?.user_type==="talent"&&<div className="acct-col">
                     <div className="ddx-lbl">{navT('nav.acctYourProfile')}</div>
-                    {myProfile?.user_type==="talent"&&<button role="menuitem" onClick={()=>{setAcctOpen(false);navigate("my-profile");}}><b>{navT('nav.myProfile')}</b><small>{navT('nav.acctProfileDesc')}</small></button>}
-                    <button role="menuitem" onClick={()=>{setAcctOpen(false);navigate(dashTo);}}><b>{navT('nav.dashboard')}</b><small>{(isCdLike||isAdm)?navT('nav.acctDashCd'):navT('nav.acctDashTalent')}</small></button>
-                  </div>
+                    <button role="menuitem" onClick={()=>{setAcctOpen(false);const sl=myProfile?.public_slug;if(sl)window.open(`/talent/${encodeURIComponent(sl)}`,"_blank");else navigate("my-profile");}}><b>{navT('nav.acctPublic')}</b><small>{navT('nav.acctPublicDesc')}</small></button>
+                    <button role="menuitem" onClick={()=>{setAcctOpen(false);navigate("actor-business-card");}}><b>{navT('nav.acctCard')}</b><small>{navT('nav.acctCardDesc')}</small></button>
+                    <button role="menuitem" onClick={()=>{setAcctOpen(false);navigate("events");}}><b>{navT('nav.acctEvents')}</b><small>{navT('nav.acctEventsDesc')}</small></button>
+                  </div>}
                   <div className="acct-col">
                     <div className="ddx-lbl">{navT('nav.acctAccount')}</div>
                     <button role="menuitem" onClick={()=>goSettings("account")}><b>{navT('nav.acctSettings')}</b><small>{navT('nav.acctSettingsDesc')}</small></button>
                     <button role="menuitem" onClick={()=>goSettings("subscription")}><b>{navT('nav.acctMembership')}</b><small>{navT('nav.acctMembershipDesc')}</small></button>
-                  </div>
-                  <div className="acct-col">
-                    <div className="ddx-lbl">{navT('nav.acctSession')}</div>
+                    <div className="acct-sep" aria-hidden="true"/>
                     <button role="menuitem" className="acct-out" onClick={()=>{setAcctOpen(false);signOut();}}><b>{navT('nav.signOut')}</b><small>{navT('nav.acctSignOutDesc')}</small></button>
                   </div>
                 </div>}
