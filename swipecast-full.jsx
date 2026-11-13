@@ -58192,26 +58192,139 @@ function _abcDownloadBlob(blob,filename){
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   return {url,filename};
 }
-function _abcWrapCanvasText(ctx,text,maxWidth,maxLines){
-  const words=String(text||'').trim().split(/\s+/).filter(Boolean),lines=[];let line='';
-  for(const word of words){
-    const test=line?`${line} ${word}`:word;
-    if(ctx.measureText(test).width<=maxWidth){line=test;continue;}
-    if(line)lines.push(line);line=word;
-    if(lines.length===maxLines-1)break;
-  }
-  if(line&&lines.length<maxLines)lines.push(line);
-  if(words.length&&lines.join(' ').length<String(text||'').trim().length){
-    let last=lines[lines.length-1]||'';
-    while(last&&ctx.measureText(last+'…').width>maxWidth)last=last.slice(0,-1);
-    lines[lines.length-1]=last+'…';
-  }
-  return lines;
-}
-function _abcDrawCanvasLogo(ctx,x,y,size){
-  ctx.fillStyle='#1A1A2E';_abcRoundRect(ctx,x,y,size,size,Math.max(4,size*.18));ctx.fill();
-  ctx.fillStyle='#ffffff';ctx.save();ctx.translate(x,y);ctx.scale(size/32,size/32);
-  ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);ctx.closePath();ctx.fill();ctx.restore();
+// Paint a rendered ActorCardPreview onto a print-resolution canvas.
+// Owner, 2026-11-13: the download used to be drawn by separate hand-written canvas code
+// (Arial, its own sizes and positions), so it never matched the preview. Now the download
+// is painted FROM the preview's own DOM: every box, rule, chip, image and line of text is
+// read from the browser's layout (position, font, colour) and redrawn at 300 dpi. Any change
+// to ActorCardPreview shows up in the download automatically. Never hand-draw the card again.
+async function _abcDomToCanvas(root,outW,outH,photo){
+  if(document.fonts&&document.fonts.ready){try{await document.fonts.ready;}catch(_){}}
+  const R=root.getBoundingClientRect();
+  if(!R.width||!R.height)throw new Error('card-not-rendered');
+  const canvas=document.createElement('canvas');canvas.width=outW;canvas.height=outH;
+  const ctx=canvas.getContext('2d');
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.scale(outW/R.width,outH/R.height);
+  const px=v=>parseFloat(v)||0;
+  const clear=c=>!c||c==='transparent'||/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(c);
+  const box=el=>{const r=el.getBoundingClientRect();return {x:r.left-R.left,y:r.top-R.top,w:r.width,h:r.height};};
+  const shape=(b,rad)=>{if(rad>0)_abcRoundRect(ctx,b.x,b.y,b.w,b.h,rad);else{ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);}};
+  const hasLS='letterSpacing' in ctx;
+  const textWidth=(t,ls)=>hasLS||!ls?ctx.measureText(t).width:Array.from(t).reduce((w,ch)=>w+ctx.measureText(ch).width+ls,0);
+  const fillText=(t,x,y,ls)=>{
+    if(hasLS||!ls){ctx.fillText(t,x,y);return;}
+    for(const ch of Array.from(t)){ctx.fillText(ch,x,y);x+=ctx.measureText(ch).width+ls;}
+  };
+  const drawText=node=>{
+    const raw=node.nodeValue;if(!raw||!raw.trim())return;
+    const el=node.parentElement,cs=getComputedStyle(el);
+    if(cs.visibility==='hidden'||cs.display==='none')return;
+    ctx.font=`${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    ctx.fillStyle=cs.color;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    const ls=px(cs.letterSpacing);
+    if(hasLS)ctx.letterSpacing=ls+'px';
+    const tt=cs.textTransform;
+    const tf=t=>tt==='uppercase'?t.toUpperCase():tt==='lowercase'?t.toLowerCase():t;
+    // Group the words by the line the browser put them on.
+    const range=document.createRange(),lines=[],re=/\S+/g;let m;
+    while((m=re.exec(raw))){
+      range.setStart(node,m.index);range.setEnd(node,m.index+m[0].length);
+      const rs=range.getClientRects();if(!rs.length)continue;
+      const r=rs[0],last=lines[lines.length-1];
+      if(last&&Math.abs(last.top-r.top)<1)last.end=m.index+m[0].length;
+      else lines.push({top:r.top,left:r.left,height:r.height,start:m.index,end:m.index+m[0].length});
+    }
+    // Text the browser cuts with "…" has to be cut the same way here.
+    let limit=Infinity;
+    for(let a=el;a;a=a===root?null:a.parentElement){
+      const as=getComputedStyle(a);
+      if(as.textOverflow==='ellipsis'&&as.overflowX!=='visible'){const ar=a.getBoundingClientRect();limit=ar.right-px(as.borderRightWidth)-px(as.paddingRight);break;}
+    }
+    const mt=ctx.measureText('Hg'),fa=mt.fontBoundingBoxAscent,fd=mt.fontBoundingBoxDescent;
+    for(const L of lines){
+      let t=tf(raw.slice(L.start,L.end).replace(/\s+/g,' '));
+      const room=limit-L.left;
+      if(room<=0)continue;
+      if(textWidth(t,ls)>room+0.5){
+        while(t.length>1&&textWidth(t+'…',ls)>room)t=t.slice(0,-1);
+        t=t.replace(/\s+$/,'')+'…';
+      }
+      const base=(fa!=null&&fd!=null)?L.top+(L.height-(fa+fd))/2+fa:L.top+L.height*0.78;
+      fillText(t,L.left-R.left,base-R.top,ls);
+    }
+    if(hasLS)ctx.letterSpacing='0px';
+  };
+  const drawPhoto=async holder=>{
+    if(!photo||!photo.src)return;
+    const b=box(holder),img=await _abcLoadImg(photo.src);
+    const sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;
+    // Same maths as the CSS: background-size:contain at posX/posY, scale(zoom) from that
+    // anchor, then a free move in % of the photo box.
+    const fit=Math.min(b.w/sw,b.h/sh)*photo.zoom,dw=sw*fit,dh=sh*fit;
+    const ix=(photo.posX/100)*(b.w-dw)+(photo.offX/100)*b.w;
+    const iy=(photo.posY/100)*(b.h-dh)+(photo.offY/100)*b.h;
+    ctx.drawImage(img,b.x+ix,b.y+iy,dw,dh);
+  };
+  const drawSvg=(el,cs)=>{
+    const b=box(el),vb=(el.getAttribute('viewBox')||'').split(/[\s,]+/).map(Number);
+    if(vb.length!==4||!vb[2]||!vb[3]||typeof Path2D==='undefined')return;
+    ctx.save();ctx.translate(b.x,b.y);ctx.scale(b.w/vb[2],b.h/vb[3]);ctx.translate(-vb[0],-vb[1]);
+    el.querySelectorAll('path').forEach(pe=>{
+      const d=pe.getAttribute('d');if(!d)return;
+      const pcs=getComputedStyle(pe),path=new Path2D(d);
+      if(pcs.fill&&pcs.fill!=='none'){ctx.fillStyle=pcs.fill;ctx.fill(path);}
+      if(pcs.stroke&&pcs.stroke!=='none'){ctx.strokeStyle=pcs.stroke;ctx.lineWidth=px(pcs.strokeWidth)||1;ctx.lineCap=pcs.strokeLinecap||'butt';ctx.lineJoin=pcs.strokeLinejoin||'miter';ctx.stroke(path);}
+    });
+    ctx.restore();
+  };
+  const drawBorders=(b,cs,rad)=>{
+    const sides=[['Top',b.x,b.y,b.x+b.w,b.y,0,1],['Right',b.x+b.w,b.y,b.x+b.w,b.y+b.h,-1,0],['Bottom',b.x,b.y+b.h,b.x+b.w,b.y+b.h,0,-1],['Left',b.x,b.y,b.x,b.y+b.h,1,0]]
+      .map(([n,x1,y1,x2,y2,nx,ny])=>({w:px(cs['border'+n+'Width']),st:cs['border'+n+'Style'],c:cs['border'+n+'Color'],x1,y1,x2,y2,nx,ny}));
+    const on=sides.filter(sd=>sd.w>0&&sd.st!=='none'&&sd.st!=='hidden'&&!clear(sd.c));
+    if(!on.length)return;
+    const dash=sd=>sd.st==='dashed'?[sd.w*3,sd.w*2]:sd.st==='dotted'?[sd.w,sd.w]:[];
+    ctx.save();
+    const f=on[0];
+    if(on.length===4&&on.every(sd=>sd.w===f.w&&sd.st===f.st&&sd.c===f.c)){
+      ctx.strokeStyle=f.c;ctx.lineWidth=f.w;ctx.setLineDash(dash(f));
+      shape({x:b.x+f.w/2,y:b.y+f.w/2,w:b.w-f.w,h:b.h-f.w},Math.max(0,rad-f.w/2));ctx.stroke();
+    }else for(const sd of on){
+      ctx.strokeStyle=sd.c;ctx.lineWidth=sd.w;ctx.setLineDash(dash(sd));
+      ctx.beginPath();ctx.moveTo(sd.x1+sd.nx*sd.w/2,sd.y1+sd.ny*sd.w/2);ctx.lineTo(sd.x2+sd.nx*sd.w/2,sd.y2+sd.ny*sd.w/2);ctx.stroke();
+    }
+    ctx.restore();
+  };
+  const paint=async el=>{
+    const cs=getComputedStyle(el);
+    if(cs.display==='none')return;
+    if(el.hasAttribute('data-abc-photo')){await drawPhoto(el.parentElement);return;}
+    const tag=el.tagName.toLowerCase(),shown=cs.visibility!=='hidden';
+    if(tag==='svg'){if(shown)drawSvg(el,cs);return;}
+    const b=box(el),rad=Math.min(px(cs.borderTopLeftRadius),b.w/2,b.h/2);
+    if(shown){
+      if(!clear(cs.backgroundColor)){ctx.fillStyle=cs.backgroundColor;shape(b,rad);ctx.fill();}
+      drawBorders(b,cs,rad);
+      if(tag==='img'){
+        if(!(el.complete&&el.naturalWidth)&&el.decode){try{await el.decode();}catch(_){}}
+        if(el.naturalWidth){
+          const l=px(cs.borderLeftWidth)+px(cs.paddingLeft),t=px(cs.borderTopWidth)+px(cs.paddingTop);
+          const r=px(cs.borderRightWidth)+px(cs.paddingRight),bt=px(cs.borderBottomWidth)+px(cs.paddingBottom);
+          ctx.drawImage(el,b.x+l,b.y+t,b.w-l-r,b.h-t-bt);
+        }
+        return;
+      }
+    }
+    const clip=cs.overflowX!=='visible'||cs.overflowY!=='visible';
+    if(clip){ctx.save();shape(b,rad);ctx.clip();}
+    for(const node of Array.from(el.childNodes)){
+      if(node.nodeType===3)drawText(node);
+      else if(node.nodeType===1)await paint(node);
+    }
+    if(clip)ctx.restore();
+  };
+  await paint(root);
+  return canvas;
 }
 
 // Card color: only the white panel of the card. Every tint is pale (print-safe on any
@@ -58248,7 +58361,7 @@ const ABC_CARD_COLORS=[
 ];
 const ABC_INK_LIGHT={dark:false,bar:'#1A1A2E',lgbg:'#1A1A2E',lgfg:'#fff',lgtx:'#1A1A2E',name:'#1A1A2E',head:'#6B6B80',sub:'#8E8EA0',sub2:'#9090A0',chipbg:'#F0F0F8',chipfg:'#1A1A2E',chipbd:'#E0E0F0',union:'#2563EB',rule:'#EDEDF0',slug:'#1A1A2E',border:'#E0E0E8',divider:'#E8E8F0'};
 function abcInk(hex){const c=ABC_CARD_COLORS.find(x=>x.hex===hex);return c&&c.ink?{...ABC_INK_LIGHT,...c.ink}:ABC_INK_LIGHT;}
-function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoOffX=0,photoOffY=0,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen}){
+function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',mailingMessage,displayName,headline,directContact,showLocation,location,tags,showUnion,unionStatus,headshotUrl,publicSlug,qrDataUrl,photoZoom,photoPosX,photoPosY,photoOffX=0,photoOffY=0,photoRef,onPhotoMouseDown,onPhotoTouchStart,isDragging,watermark,onOpen,exportMode,rootRef}){
   const format=ABC_CARD_FORMATS[formatKey]||ABC_CARD_FORMATS.business;
   const large=formatKey!=='business';
   // Dark card colours flip the front's ink; the back (mailing side) always stays light.
@@ -58256,7 +58369,7 @@ function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',ma
   const CB=(side==='back'&&abcInk(cardBg).dark)?'#FFFFFF':cardBg;
   const logo=(<div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:large?22:19,height:large?22:19,background:T.lgbg,borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,color:T.lgfg}}><LogoMark/></div><span style={{fontSize:large?9.5:9,fontWeight:800,color:T.lgtx,letterSpacing:1.5}}>CASTSLATE</span></div>);
   return(
-    <div role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:CB,border:'1.5px solid '+T.border,borderRadius:10,overflow:'hidden',boxShadow:'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
+    <div ref={rootRef} role={onOpen?'button':undefined} tabIndex={onOpen?0:undefined} aria-label={onOpen?`Enlarge ${format.name} ${side} preview`:undefined} title={onOpen?'Click to enlarge preview':undefined} onClick={onOpen} onKeyDown={onOpen?(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onOpen();}}:undefined} style={{background:CB,border:exportMode?'none':'1.5px solid '+T.border,borderRadius:exportMode?0:10,overflow:'hidden',boxShadow:exportMode?'none':'0 8px 40px rgba(26,26,46,0.15)',display:'flex',width:'100%',maxWidth:large?520:390,aspectRatio:`${format.width} / ${format.height}`,position:'relative',flexShrink:0,cursor:onOpen?'zoom-in':undefined,outlineOffset:4}}>
       <div style={{position:'absolute',top:0,left:0,right:0,height:5,background:T.bar,zIndex:2}}/>
       {watermark&&<div style={{position:'absolute',inset:'-40%',zIndex:5,pointerEvents:'none',transform:'rotate(-25deg)',display:'grid',gridTemplateColumns:'repeat(6,1fr)',gridTemplateRows:'repeat(7,1fr)',alignItems:'center',justifyItems:'center'}}>
         {Array.from({length:42}).map((_,i)=>(
@@ -58284,7 +58397,7 @@ function ActorCardPreview({cardBg='#ffffff',formatKey='business',side='front',ma
       ):(
         <>
           <div ref={photoRef} style={{width:`${format.photoPct*100}%`,flexShrink:0,position:'relative',marginTop:5,overflow:'hidden',cursor:headshotUrl&&onPhotoMouseDown?(isDragging?'grabbing':'grab'):'default',background:'#E8E8F2',userSelect:'none'}} onMouseDown={onPhotoMouseDown} onTouchStart={onPhotoTouchStart}>
-            {headshotUrl?<><div style={{position:'absolute',inset:0,backgroundImage:`url(${headshotUrl})`,backgroundSize:'contain',backgroundRepeat:'no-repeat',backgroundPosition:`${photoPosX}% ${photoPosY}%`,transform:`translate(${photoOffX}%,${photoOffY}%) scale(${photoZoom})`,transformOrigin:`${photoPosX}% ${photoPosY}%`,pointerEvents:'none',userSelect:'none'}}/>{!large&&<div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',pointerEvents:'none',zIndex:1,color:'#fff'}}><div style={{fontSize:7,textAlign:'center',color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div></div>}</>:<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>}
+            {headshotUrl?<><div data-abc-photo="1" style={{position:'absolute',inset:0,backgroundImage:`url(${headshotUrl})`,backgroundSize:'contain',backgroundRepeat:'no-repeat',backgroundPosition:`${photoPosX}% ${photoPosY}%`,transform:`translate(${photoOffX}%,${photoOffY}%) scale(${photoZoom})`,transformOrigin:`${photoPosX}% ${photoPosY}%`,pointerEvents:'none',userSelect:'none'}}/>{!large&&!exportMode&&<div style={{position:'absolute',bottom:0,left:0,right:0,background:'linear-gradient(transparent,rgba(26,26,46,0.45))',padding:'10px 0 4px',pointerEvents:'none',zIndex:1,color:'#fff'}}><div style={{fontSize:7,textAlign:'center',color:'rgba(255,255,255,0.85)',letterSpacing:0.5,fontWeight:600}}>{photoZoom>1.05?'drag to reposition':'zoom in to crop'}</div></div>}</>:<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:36,color:'#C0C0D0'}}><Ico n="user" s={22}/></div>}
           </div>
           <div style={{flex:1,padding:large?'22px 22px 15px':'16px 14px 12px',display:'flex',flexDirection:'column',minWidth:0,marginTop:5,overflow:'hidden'}}>
             <div style={{marginBottom:large?13:7,flexShrink:0}}>{logo}</div>
@@ -58448,170 +58561,18 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
     setLargePreviewOpen(true);
   },[]);
 
+  // Downloads and print sheets are painted from a hidden, fixed-width copy of the very same
+  // ActorCardPreview the actor is looking at (see _abcDomToCanvas), so they always match it.
+  const exportFrontRef=useRef(null);
+  const exportBackRef=useRef(null);
   const drawCard=useCallback(async()=>{
-    // Draw directly onto the exact 300 dpi output canvas. Scaling the drawing
-    // context keeps the approved layout proportions while text, rules, logo,
-    // headshot, and QR are rasterized at the final resolution instead of being
-    // enlarged from a smaller card (which made type look soft).
-    const CH=600,CW=Math.round(CH*selectedFormat.width/selectedFormat.height);
-    const pixelScale=selectedFormat.height/CH;
-    const TB=14;
-    const canvas=document.createElement('canvas');
-    canvas.width=selectedFormat.width;canvas.height=selectedFormat.height;
-    const ctx=canvas.getContext('2d');
-    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-    ctx.scale(pixelScale,pixelScale);
-    const T=abcInk(cardBg);
-    ctx.fillStyle=cardBg;ctx.fillRect(0,0,CW,CH);
-    ctx.fillStyle=T.bar;ctx.fillRect(0,0,CW,TB);
-
-    const PW=Math.round(CW*selectedFormat.photoPct);
-    if(selectedPhoto){
-      try{
-        const img=await _abcLoadImg(selectedPhoto);
-        const sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;
-        // Match CSS: background-size:contain + scale(zoom) from anchor — full image visible at zoom=1
-        const containScale=Math.min(PW/sw,(CH-TB)/sh);
-        const finalScale=containScale*photoZoom;
-        const dw=sw*finalScale,dh=sh*finalScale;
-        // Anchor-point formula matching CSS transformOrigin + backgroundPosition
-        const ax=(photoPosX/100)*PW, ay=(photoPosY/100)*(CH-TB);
-        const imgX=ax-(photoPosX/100)*dw+(photoOffX/100)*PW;
-        const imgY=ay-(photoPosY/100)*dh+(photoOffY/100)*(CH-TB);
-        ctx.save();ctx.beginPath();ctx.rect(0,TB,PW,CH-TB);ctx.clip();
-        ctx.fillStyle='#E8E8F2';ctx.fillRect(0,TB,PW,CH-TB); // letterbox bg
-        ctx.drawImage(img,imgX,TB+imgY,dw,dh);
-        ctx.restore();
-      }catch(e){}
-    }else{
-      ctx.fillStyle='#E0E0EE';ctx.fillRect(0,TB,PW,CH-TB);
-    }
-    ctx.strokeStyle=T.divider;ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(PW,0);ctx.lineTo(PW,CH);ctx.stroke();
-
-    const IX=PW+30;let IY=36;
-    // CS logo
-    ctx.fillStyle=T.lgbg;
-    _abcRoundRect(ctx,IX,IY-18,24,24,4);ctx.fill();
-    ctx.fillStyle=T.lgfg;
-    const ls=24/32;
-    ctx.save();ctx.translate(IX,IY-18);ctx.scale(ls,ls);
-    ctx.beginPath();ctx.moveTo(4,16);ctx.lineTo(12,9);ctx.lineTo(12,12);ctx.lineTo(20,12);
-    ctx.lineTo(20,9);ctx.lineTo(28,16);ctx.lineTo(20,23);ctx.lineTo(20,20);ctx.lineTo(12,20);ctx.lineTo(12,23);
-    ctx.closePath();ctx.fill();ctx.restore();
-    ctx.fillStyle=T.lgtx;ctx.font='bold 17px Arial,sans-serif';ctx.textAlign='left';
-    ctx.fillText('CASTSLATE',IX+30,IY+1);
-    IY+=46;
-
-    // Name
-    ctx.fillStyle=T.name;
-    let fs2=52;ctx.font=`bold ${fs2}px Arial,sans-serif`;
-    let nameText=displayName||'Your Name';
-    const maxNW=CW-IX-24;
-    while(ctx.measureText(nameText).width>maxNW&&fs2>28){fs2-=2;ctx.font=`bold ${fs2}px Arial,sans-serif`;}
-    if(ctx.measureText(nameText).width>maxNW){while(ctx.measureText(nameText+'…').width>maxNW&&nameText.length>3)nameText=nameText.slice(0,-1);nameText+='…';}
-    ctx.fillText(nameText,IX,IY);IY+=Math.round(fs2*0.9)+10;
-
-    // Headline
-    ctx.fillStyle=T.head;ctx.font='30px Arial,sans-serif';
-    ctx.fillText(headline||'Actor',IX,IY);IY+=38;
-
-    // Location
-    if(showLocation&&location){
-      ctx.fillStyle=T.sub;ctx.font='26px Arial,sans-serif';
-      ctx.fillText(location,IX,IY);IY+=36;
-    }
-
-    // Tags
-    if(cardTags.length>0){
-      let tx=IX;ctx.font='bold 22px Arial,sans-serif';
-      for(const tag of cardTags){
-        const tw=ctx.measureText(tag).width;
-        const pw=tw+24,ph=34;
-        if(tx+pw>CW-20)break;
-        ctx.fillStyle=T.chipbg;_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.fill();
-        ctx.strokeStyle=T.chipbd;ctx.lineWidth=1;_abcRoundRect(ctx,tx,IY-24,pw,ph,5);ctx.stroke();
-        ctx.fillStyle=T.chipfg;ctx.fillText(tag,tx+12,IY+4);
-        tx+=pw+10;
-      }
-      IY+=44;
-    }
-
-    // Union
-    if(showUnion&&unionStatus){
-      ctx.fillStyle=unionStatus.toLowerCase().includes('non')?T.sub:T.union;
-      ctx.font='bold 24px Arial,sans-serif';
-      ctx.fillText(unionStatus,IX,IY);IY+=34;
-    }
-
-    // Optional phone number or email entered directly in the card builder
-    if(directContact){
-      ctx.font='bold 22px Arial,sans-serif';ctx.fillStyle=T.name;
-      const label='Direct contact: ';
-      ctx.fillText(label,IX,IY);
-      const labelWidth=ctx.measureText(label).width;
-      ctx.font='22px Arial,sans-serif';ctx.fillStyle=T.head;
-      let contactText=directContact;
-      const maxContactWidth=CW-IX-labelWidth-24;
-      while(ctx.measureText(contactText).width>maxContactWidth&&contactText.length>3)contactText=contactText.slice(0,-1);
-      if(contactText!==directContact)contactText+='…';
-      ctx.fillText(contactText,IX+labelWidth,IY);
-    }
-
-    // Bottom
-    const BY=CH-130;
-    ctx.strokeStyle=T.rule;ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(IX-10,BY);ctx.lineTo(CW-14,BY);ctx.stroke();
-    ctx.fillStyle=T.sub2;ctx.font='18px monospace';
-    ctx.fillText('castslate.com/talent/',IX,BY+34);
-    ctx.fillStyle=T.slug;ctx.font='bold 24px monospace';
-    let st=publicSlug||'';
-    while(ctx.measureText(st).width>CW-IX-140&&st.length>3)st=st.slice(0,-1);
-    if(st!==publicSlug)st+='…';
-    ctx.fillText(st,IX,BY+66);
-
-    // QR code
-    if(qrDataUrl){
-      try{
-        const qrImg=await _abcLoadImg(qrDataUrl);
-        const QS=100,QX=CW-QS-24,QY=BY-20;
-        // Dark cards: a white plate with a quiet zone so phones still scan it.
-        if(T.dark){ctx.fillStyle='#FFFFFF';_abcRoundRect(ctx,QX-6,QY-6,QS+12,QS+12,6);ctx.fill();}
-        ctx.drawImage(qrImg,QX,QY,QS,QS);
-        ctx.fillStyle=T.sub;ctx.font='11px Arial,sans-serif';
-        ctx.textAlign='right';
-        ctx.fillText('SCAN TO VIEW PROFILE',QX+QS,QY+QS+15);
-        ctx.textAlign='left';
-      }catch(e){}
-    }
-    return canvas;
+    if(!exportFrontRef.current)throw new Error('card-not-rendered');
+    return _abcDomToCanvas(exportFrontRef.current,selectedFormat.width,selectedFormat.height,{src:selectedPhoto,zoom:photoZoom,posX:photoPosX,posY:photoPosY,offX:photoOffX,offY:photoOffY});
   },[selectedPhoto,displayName,headline,directContact,showLocation,location,showUnion,unionStatus,cardTags,qrDataUrl,publicSlug,photoZoom,photoPosX,photoPosY,photoOffX,photoOffY,selectedFormat,cardBg]);
 
   const drawBackCard=useCallback(async()=>{
-    const format=selectedFormat,CW=format.width,CH=format.height;
-    const canvas=document.createElement('canvas');canvas.width=CW;canvas.height=CH;
-    const ctx=canvas.getContext('2d');ctx.fillStyle=abcInk(cardBg).dark?'#FFFFFF':cardBg;ctx.fillRect(0,0,CW,CH);
-    ctx.fillStyle='#1A1A2E';ctx.fillRect(0,0,CW,Math.max(12,Math.round(CH*.012)));
-    const leftW=Math.round(CW*.57),pad=Math.round(CH*.055),logoSize=Math.round(CH*.052);
-    _abcDrawCanvasLogo(ctx,pad,pad,logoSize);
-    ctx.fillStyle='#1A1A2E';ctx.font=`bold ${Math.round(CH*.027)}px Arial,sans-serif`;ctx.fillText('CASTSLATE',pad+logoSize+Math.round(CH*.018),pad+logoSize*.72);
-    let y=pad+logoSize+Math.round(CH*.08);
-    ctx.fillStyle='#6340B4';ctx.font=`bold ${Math.round(CH*.018)}px Arial,sans-serif`;ctx.fillText('A PERSONAL NOTE FROM',pad,y);
-    y+=Math.round(CH*.057);ctx.fillStyle='#1A1A2E';ctx.font=`bold ${Math.round(CH*.06)}px Arial,sans-serif`;
-    const originalBackName=displayName||'Your Name';let backName=originalBackName;while(ctx.measureText(backName).width>leftW-pad*2&&backName.length>3)backName=backName.slice(0,-1);if(backName!==originalBackName)backName+='…';ctx.fillText(backName,pad,y);
-    y+=Math.round(CH*.06);ctx.fillStyle='#6B6B80';ctx.font=`${Math.round(CH*.024)}px Arial,sans-serif`;
-    const messageLines=_abcWrapCanvasText(ctx,mailingMessage,leftW-pad*2,5),lineH=Math.round(CH*.034);
-    messageLines.forEach((line,i)=>ctx.fillText(line,pad,y+i*lineH));
-    if(qrDataUrl){try{const qr=await _abcLoadImg(qrDataUrl);const qs=Math.round(CH*.14);ctx.drawImage(qr,leftW-pad-qs,CH-pad-qs,qs,qs);}catch(e){}}
-    ctx.fillStyle='#FAF8F4';ctx.fillRect(leftW,Math.max(12,Math.round(CH*.012)),CW-leftW,CH);
-    ctx.save();ctx.setLineDash([12,10]);ctx.strokeStyle='#BDB6AC';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(leftW,0);ctx.lineTo(leftW,CH);ctx.stroke();ctx.restore();
-    ctx.fillStyle='#8E8EA0';ctx.font=`${Math.round(CH*.014)}px Arial,sans-serif`;ctx.fillText(`FROM: ${(displayName||'YOUR NAME').toUpperCase()} · ${(location||'NEW YORK, NY').toUpperCase()}`,leftW+pad*.65,pad);
-    const stampW=Math.round(CH*.15),stampH=Math.round(CH*.18),stampX=CW-pad*.65-stampW,stampY=pad*.65;
-    ctx.save();ctx.setLineDash([9,7]);ctx.strokeStyle='#AAA294';ctx.strokeRect(stampX,stampY,stampW,stampH);ctx.restore();ctx.textAlign='center';ctx.fillStyle='#8E8EA0';ctx.font=`bold ${Math.round(CH*.013)}px Arial,sans-serif`;ctx.fillText('PLACE STAMP HERE',stampX+stampW/2,stampY+stampH/2);ctx.textAlign='left';
-    const lineLeft=leftW+pad,lineRight=CW-pad,lineStart=Math.round(CH*.5),lineGap=Math.round(CH*.075);ctx.strokeStyle='#BDB6AC';ctx.lineWidth=2;
-    for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(lineLeft,lineStart+i*lineGap);ctx.lineTo(lineRight,lineStart+i*lineGap);ctx.stroke();}
-    ctx.strokeStyle='#DDD7CD';ctx.beginPath();ctx.moveTo(leftW+pad*.65,CH-pad);ctx.lineTo(CW-pad*.65,CH-pad);ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#8E8EA0';ctx.font=`${Math.round(CH*.014)}px Arial,sans-serif`;ctx.fillText(cardFormat==='postcard'?'USPS POSTCARD-FRIENDLY FORMAT':'VISIBLE FLAT-CARD MAILING · CONFIRM CURRENT POSTAGE',leftW+(CW-leftW)/2,CH-pad*.55);ctx.textAlign='left';
-    return canvas;
+    if(!exportBackRef.current)throw new Error('card-not-rendered');
+    return _abcDomToCanvas(exportBackRef.current,selectedFormat.width,selectedFormat.height,null);
   },[selectedFormat,displayName,location,mailingMessage,qrDataUrl,cardFormat,cardBg]);
 
   // The on-page sheet preview is produced by the exact same card and sheet
@@ -59022,6 +58983,13 @@ function ActorBusinessCardPage({session,myProfile,onNavigate}){
             </div>
           </div>
         </div>
+      </div>
+      {/* Hidden print copies of the card: what the download is painted from. Fixed design width
+          so every device exports the same layout as the desktop preview. */}
+      <div aria-hidden="true" style={{position:'fixed',left:-10000,top:0,width:cardFormat==='business'?390:520,pointerEvents:'none',zIndex:-1}}>
+        {(cardFormat==='business'?['front']:['front','back']).map(sd=>(
+          <ActorCardPreview key={sd} exportMode rootRef={sd==='front'?exportFrontRef:exportBackRef} cardBg={cardBg} formatKey={cardFormat} side={sd} mailingMessage={mailingMessage} displayName={displayName} headline={headline} directContact={directContact} showLocation={showLocation} location={location} tags={cardTags} showUnion={showUnion} unionStatus={unionStatus} headshotUrl={selectedPhoto} publicSlug={publicSlug} qrDataUrl={qrDataUrl} photoZoom={photoZoom} photoPosX={photoPosX} photoPosY={photoPosY} photoOffX={photoOffX} photoOffY={photoOffY} isDragging={false} watermark={false}/>
+        ))}
       </div>
       {largePreviewOpen&&(
         <div role="presentation" onClick={()=>setLargePreviewOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(13,13,24,0.82)',backdropFilter:'blur(7px)',display:'flex',alignItems:'center',justifyContent:'center',padding:isMobile?12:28}}>
