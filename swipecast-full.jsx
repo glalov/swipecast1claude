@@ -4052,35 +4052,39 @@ body.sheet-push .b2t-cube{display:none;}
 .join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
 .join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
 .join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
-/* Nav dropdowns: full-width panel (owner 2026-11-12, "option 4", modelled on apple.com's menus).
-   Directories, Manager Mode and the desktop Join Free menu open as one panel across the screen right
-   under the nav (top = --dd4-top, set from the nav's bottom edge while a menu is open), in the nav's
-   cream, with a small grey label and big bold link names; the page behind goes soft and blurred.
-   The blur layer never takes the mouse, so moving off the menu still closes it. The panel itself has
-   NO opacity/transform animation: that would turn it into a backdrop root and kill the blur. Only
-   the links slide in. Phone menus (.join-dd-menu-m, the burger sheet) are unchanged. */
-html .nav-ddm,html .nav-ddm.nav-mm,html .join-dd-menu{position:fixed;top:var(--dd4-top,86px);left:0;right:0;width:auto;min-width:0;transform:none;padding:34px max(40px,calc((100vw - 1100px)/2)) 46px;background:#FFFDF8;border:0;border-radius:0;box-shadow:0 1px 0 #E4DCCB;display:flex;flex-direction:column;align-items:flex-start;gap:2px;z-index:200;animation:none;}
-html .nav-ddm::before{display:none;}
-html .nav-ddm::after,html .join-dd-menu::after{content:"";position:fixed;left:0;right:0;bottom:0;top:var(--dd4-top,86px);z-index:-1;pointer-events:none;background:rgba(247,245,240,.35);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);animation:dd4Fade .3s ease both;}
+/* Nav dropdowns, Stripe style (owner 2026-11-12, after apple.com full-width d02f1ac8): when Directories,
+   Manager Mode or the desktop Join Free menu opens, the nav bar turns into the top of ONE white card
+   (nav::before, sized by the nav code: --ddL/--ddR = card edges, --ddH = bar + menu height) and the menu
+   sits under the bar in columns. The page blur is body::after (html.ddm-open), BELOW .site-top (z 120),
+   so it blurs the page beside and under the card but never the bar or the homepage banner. Nothing in
+   the menu animates its own opacity/transform (that kills backdrop blur); only the links slide in.
+   Phone menus (.join-dd-menu-m, burger sheet) are unchanged. */
+html .nav-ddm,html .nav-ddm.nav-mm,html .join-dd-menu{position:fixed;top:var(--dd4-top,86px);left:var(--ddL,20px);right:var(--ddR,20px);width:auto;min-width:0;transform:none;padding:28px 0 30px;background:transparent;border:0;border-top:1px solid #EFE8DA;border-radius:0;box-shadow:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;row-gap:0;z-index:200;animation:none;}
+html .nav-ddm:not(.nav-mm){grid-template-columns:repeat(3,minmax(0,1fr));}
+html .nav-ddm::before,html .nav-ddm::after,html .join-dd-menu::before,html .join-dd-menu::after{display:none;}
+html.ddm-open .site-top{background:transparent;}
+html.ddm-open .nav{background:transparent;border-bottom-color:transparent;}
+html.ddm-open .nav::before{content:"";position:absolute;left:var(--ddL,20px);right:var(--ddR,20px);top:6px;height:var(--ddH,300px);background:#fff;border-radius:16px;box-shadow:0 0 0 1px rgba(36,31,25,.10),0 28px 70px -20px rgba(26,26,46,.38),0 10px 22px -12px rgba(26,26,46,.18);z-index:-1;pointer-events:none;}
+html.ddm-open body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;z-index:119;pointer-events:none;background:rgba(36,31,25,.10);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);animation:dd4Fade .25s ease both;}
 @keyframes dd4Fade{from{opacity:0;}to{opacity:1;}}
 html .nav-ddm>*,html .join-dd-menu>*{animation:dd4Item .4s cubic-bezier(.2,.8,.2,1) both;}
 html .nav-ddm>*:nth-child(2),html .join-dd-menu>*:nth-child(2){animation-delay:.04s;}
 html .nav-ddm>*:nth-child(3),html .join-dd-menu>*:nth-child(3){animation-delay:.08s;}
 html .nav-ddm>*:nth-child(4){animation-delay:.12s;}
 @keyframes dd4Item{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
-.ddx-lbl{font-size:12.5px;font-weight:500;color:#857B71;margin:0 0 12px;font-family:'DM Sans',sans-serif;}
-html .nav-ddm button,html .join-dd-menu .join-dd-item{display:block;position:relative;width:auto;margin:0;padding:6px 0;background:none;box-shadow:none;border-radius:0;}
+.ddx-lbl,html .nav-ddm.nav-mm h4{grid-column:1/-1;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;line-height:1.3;color:#857B71;margin:0 0 14px;padding:0 30px;}
+html .nav-ddm button,html .join-dd-menu .join-dd-item{position:relative;display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;text-align:left;width:auto;height:100%;margin:0;padding:4px 30px 6px;background:none;box-shadow:none;border-radius:0;border-left:1px solid #EFE8DA;}
+html .nav-ddm>button:nth-child(2),html .join-dd-menu>.join-dd-item:nth-child(2),html .nav-ddm.nav-mm>button:nth-of-type(1){border-left:0;}
 html .nav-ddm button:first-child,html .nav-ddm button:last-child{margin:0;}
 html .nav-ddm .ic,html .join-dd-menu .join-dd-icon{display:none;}
-html .nav-ddm b,html .join-dd-menu .join-dd-title{display:block;font-family:'DM Sans',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.6px;line-height:1.2;color:#241F19;transition:color .15s;}
-html .nav-ddm small,html .join-dd-menu .join-dd-desc{display:block;font-size:13px;font-weight:500;color:#857B71;margin:2px 0 8px;}
+html .nav-ddm b,html .join-dd-menu .join-dd-title{display:block;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.3px;line-height:1.2;color:#241F19;transition:color .15s;}
+html .nav-ddm small,html .join-dd-menu .join-dd-desc{display:block;font-size:13px;font-weight:500;line-height:1.45;color:#857B71;margin:4px 0 0;}
 html .nav-ddm button:hover,html .nav-ddm button.on,html .join-dd-menu .join-dd-item:hover{background:none;}
 html .nav-ddm button:hover b,html .nav-ddm button.on b,html .join-dd-menu .join-dd-item:hover .join-dd-title{color:#33826A;}
-html .nav-ddm.nav-mm h4{font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;line-height:1.3;color:#857B71;margin:0 0 12px;}
 html .nav-ddm.nav-mm button{width:auto;margin:0;}
-html .nav-ddm.nav-mm button.nav-mm-cta{display:inline-flex;align-items:center;gap:6px;height:auto;width:auto;margin:18px 0 0;padding:0;background:none;color:#241F19;font-size:14px;font-weight:700;}
+html .nav-ddm.nav-mm button.nav-mm-cta{grid-column:1/-1;justify-self:start;display:inline-flex;flex-direction:row;align-items:center;gap:6px;height:auto;width:auto;margin:22px 30px 0;padding:0;border-left:0;background:none;color:#241F19;font-size:14px;font-weight:700;}
 html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
-@media (prefers-reduced-motion:reduce){html .nav-ddm>*,html .join-dd-menu>*,html .nav-ddm::after,html .join-dd-menu::after{animation:none;}}
+@media (prefers-reduced-motion:reduce){html .nav-ddm>*,html .join-dd-menu>*,html.ddm-open body::after{animation:none;}}
 @keyframes scSpin{to{transform:rotate(360deg);}}
 /* ─── "Casting now" live badge (pulsing dot + expanding ring) + ARCHIVED stamp.
        Motion is disabled under prefers-reduced-motion; the dot stays solid. ─── */
@@ -60287,16 +60291,26 @@ function App(){
   // if this is longer the drawer sits finished-but-mounted before it disappears.
   const closeMenu=useCallback(()=>{setMenuClosing(true);setTimeout(()=>{setMenuOpen(false);setMenuClosing(false);},400);},[]);
   const [joinOpen,setJoinOpen]=useState(false);
-  // Full-width nav menus sit right under the nav: keep --dd4-top on the nav's bottom edge while one is
-  // open (the site-top banner above the nav grows and shrinks with scroll). Layout effect = no flash.
+  // Stripe-style nav menus: while one is open, html.ddm-open turns the bar into the top of one white card
+  // (nav::before) and blurs the page (body::after). Each frame: --dd4-top = nav bottom (the site-top banner
+  // and Browse join stripe move it without a scroll event), --ddL/--ddR = card edges (logo / right buttons
+  // + 22px), --ddH = bar + menu height. rAF only runs while a menu is open.
   useLayoutEffect(()=>{
-    if(!(dirOpen||mmOpen||joinOpen))return;
-    const set=()=>{try{const n=document.querySelector('.nav');if(n)document.documentElement.style.setProperty('--dd4-top',Math.round(n.getBoundingClientRect().bottom)+'px');}catch(_){}};
-    set();
-    // the Browse join stripe slides in above the nav after a few seconds (no scroll event), so also re-check
-    const iv=setInterval(set,200);
-    window.addEventListener('scroll',set,{passive:true});window.addEventListener('resize',set);
-    return()=>{clearInterval(iv);window.removeEventListener('scroll',set);window.removeEventListener('resize',set);};
+    const root=document.documentElement;
+    if(!(dirOpen||mmOpen||joinOpen)){root.classList.remove('ddm-open');return;}
+    let raf=0,dead=false;
+    const tick=()=>{if(dead)return;try{
+      const nav=document.querySelector('.nav'),m=document.querySelector('.nav-ddm,.join-dd-menu');
+      if(nav&&m&&window.innerWidth>900){
+        const n=nav.getBoundingClientRect(),lg=nav.querySelector('.logo'),ac=nav.querySelector('.nav-actions');
+        const vw=root.clientWidth,L=lg?Math.max(12,Math.round(lg.getBoundingClientRect().left-22)):20,R=ac?Math.max(12,Math.round(vw-ac.getBoundingClientRect().right-22)):20;
+        root.style.setProperty('--dd4-top',Math.round(n.bottom)+'px');root.style.setProperty('--ddL',L+'px');root.style.setProperty('--ddR',R+'px');
+        root.style.setProperty('--ddH',Math.max(0,Math.round(m.getBoundingClientRect().bottom-n.top-6))+'px');
+        root.classList.add('ddm-open');
+      }else root.classList.remove('ddm-open');
+    }catch(_){}raf=requestAnimationFrame(tick);};
+    tick();
+    return()=>{dead=true;cancelAnimationFrame(raf);root.classList.remove('ddm-open');};
   },[dirOpen,mmOpen,joinOpen]);
   const [menuJoinOpen,setMenuJoinOpen]=useState(false);
   const joinRef=useRef(null);
@@ -60558,7 +60572,7 @@ function App(){
             role="button" tabIndex={0} aria-haspopup="true" aria-expanded={dirOpen}
             onClick={()=>setDirOpen(o=>!o)}
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setDirOpen(o=>!o);}}}
-            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);clearTimeout(mmTimer.current);setMmOpen(false);setDirOpen(true);}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);clearTimeout(mmTimer.current);setMmOpen(false);setJoinOpen(false);setDirOpen(true);}}}
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);dirTimer.current=setTimeout(()=>setDirOpen(false),180);}}}>
             {navT('nav.directories')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
@@ -60575,7 +60589,7 @@ function App(){
           <span className={"nav-dd"+(page==="manager-mode"?" act":"")+(mmOpen?" open":"")} role="button" tabIndex={0}
             onClick={()=>{setMmOpen(false);navigate("manager-mode");}}
             onKeyDown={e=>{if(e.key==="Enter"){setMmOpen(false);navigate("manager-mode");}}}
-            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>{setDirOpen(false);setMmOpen(true);},150);}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>{setDirOpen(false);setJoinOpen(false);setMmOpen(true);},150);}}}
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>setMmOpen(false),180);}}}>
             {navT('nav.managerMode')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {mmOpen&&<div className="nav-ddm nav-mm" role="menu" onClick={e=>e.stopPropagation()}>
@@ -60600,7 +60614,7 @@ function App(){
             <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
           </>:<>
             <div className="join-dropdown" ref={joinRef}>
-              <button className="btn-teal btn-sm join-free-soft" onClick={()=>setJoinOpen(o=>!o)} style={{display:"inline-flex",alignItems:"center",gap:5}}>
+              <button className="btn-teal btn-sm join-free-soft" onClick={()=>{setDirOpen(false);setMmOpen(false);setJoinOpen(o=>!o);}} style={{display:"inline-flex",alignItems:"center",gap:5}}>
                 {navT('nav.join')}
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" style={{transition:"transform .2s",transform:joinOpen?"rotate(180deg)":"rotate(0deg)"}}><path d="M0 0l5 6 5-6z"/></svg>
               </button>
