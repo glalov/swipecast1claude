@@ -4169,7 +4169,8 @@ html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
 .nav-av .nav-dd-tri{margin-left:0;transform:rotate(90deg);transition:transform .3s ease;}
 .nav-av.on .nav-dd-tri{transform:rotate(-90deg);}
 .nav-av-pic{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#1A1A2E;color:#F3EBE0;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;}
-.nav-av-pic img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block;}
+.nav-av-pic{position:relative;}
+.nav-av-pic img{width:100%;height:100%;object-fit:cover;display:block;}
 .nav-av-pic.big{width:46px;height:46px;font-size:17px;}
 html .nav-ddm.nav-acct{grid-template-columns:1.15fr 1fr 1fr;}
 html .nav-ddm.nav-acct.two{grid-template-columns:1.15fr 1fr;}
@@ -9283,6 +9284,47 @@ function LoggedInRedirect({targetForTalent,targetForCd,myProfile,onNavigate}){
 // ZERO shape/proportion change. Never hand-type the ↔ glyph again — that glyph
 // is font-dependent and rendered differently across desktop/mobile/browsers,
 // which is exactly the inconsistency this component eliminates.
+// ═══════════════════════════════════════════
+// FACE-FIT AVATARS (owner 2026-11-13, demo castslate-face-fit-demo.html)
+// A face detector (Google MediaPipe, runs in the actor's own browser, photo never leaves for an AI
+// service) finds the face in the headshot ONCE; the box is saved on profiles.headshot_face as
+// fractions of the photo plus its aspect ratio r. Round crops then centre + zoom on the face.
+// No face / stale data (u !== current headshot_url) → plain centre crop, never worse than before.
+// ═══════════════════════════════════════════
+const CS_MP_VER='0.10.14';
+let _csFaceDetP=null;
+function _csFaceDetector(){
+  if(!_csFaceDetP)_csFaceDetP=(async()=>{
+    const V=await import(/* webpackIgnore: true */`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${CS_MP_VER}/vision_bundle.mjs`);
+    const fs=await V.FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${CS_MP_VER}/wasm`);
+    return V.FaceDetector.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite',delegate:'CPU'},runningMode:'IMAGE',minDetectionConfidence:0.4});
+  })().catch(e=>{_csFaceDetP=null;throw e;});
+  return _csFaceDetP;
+}
+async function csDetectHeadshotFace(url){
+  const det=await _csFaceDetector();
+  const img=await new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>rej(new Error('img-load-failed'));i.src=url;});
+  const W=img.naturalWidth,H=img.naturalHeight;if(!W||!H)throw new Error('img-empty');
+  const r=Math.round(W/H*10000)/10000;
+  const ds=det.detect(img).detections||[];
+  if(!ds.length)return {u:url,r,none:true};
+  const b=ds.map(d=>d.boundingBox).sort((a,z)=>z.width*z.height-a.width*a.height)[0];
+  const f=v=>Math.round(Math.min(1,Math.max(0,v))*10000)/10000;
+  return {u:url,r,x:f(b.originX/W),y:f(b.originY/H),w:f(b.width/W),h:f(b.height/H)};
+}
+// Style for an <img> inside a round, overflow:hidden, position:relative box. Units are the circle's own
+// size, so it works at any diameter. Face ≈46% of the circle; zoom never below "cover", never above 2.4×.
+function csFaceFitStyle(src,face){
+  if(!src||!face||face.u!==src||face.none||!(face.r>0)||!(face.h>0))return {width:'100%',height:'100%',objectFit:'cover',objectPosition:'50% 50%',display:'block'};
+  const r=face.r,cover=Math.max(1/r,1);
+  const sc=Math.min(Math.max(0.46/face.h,cover),cover*2.4);
+  const iw=r*sc,ih=sc;
+  let left=0.5-(face.x+face.w/2)*iw,top=0.5-(face.y+face.h*0.42)*ih;
+  left=Math.min(0,Math.max(1-iw,left));top=Math.min(0,Math.max(1-ih,top));
+  const pc=v=>(v*100).toFixed(3)+'%';
+  return {position:'absolute',left:pc(left),top:pc(top),width:pc(iw),height:pc(ih),maxWidth:'none',display:'block'};
+}
+
 function LogoMark(){
   return(
     /*#__PURE__*/React.createElement("svg",{viewBox:"0 0 32 32",width:"100%",height:"100%","aria-hidden":"true",focusable:"false",style:{display:"block"}},
@@ -59220,6 +59262,23 @@ function App(){
   useEffect(()=>{pageBeforeRef.current=pageNowRef.current;pageNowRef.current=page;if(page!=="login")loginFromCastingRef.current=null;},[page]);
   const [session,setSession]=useState(null);
   const [myProfile,setMyProfile]=useState(null);
+  // Face-fit: measure the signed-in actor's headshot once (new upload, or never measured) in the
+  // background and save it. Skipped on Save-Data connections; failures just leave the centre crop.
+  useEffect(()=>{
+    const p=myProfile;if(!p?.id||!p.headshot_url||!window.sb)return;
+    if(p.headshot_face&&p.headshot_face.u===p.headshot_url)return;
+    try{if(navigator.connection&&navigator.connection.saveData)return;}catch(_){}
+    let off=false;
+    const t=setTimeout(async()=>{
+      try{
+        const face=await csDetectHeadshotFace(p.headshot_url);if(off)return;
+        const {error}=await window.sb.from('profiles').update({headshot_face:face}).eq('id',p.id);
+        if(error){console.warn('[face-fit] save failed:',error.message);return;}
+        setMyProfile(q=>q&&q.id===p.id&&q.headshot_url===p.headshot_url?{...q,headshot_face:face}:q);
+      }catch(e){console.warn('[face-fit]',e?.message||e);}
+    },3000);
+    return()=>{off=true;clearTimeout(t);};
+  },[myProfile?.id,myProfile?.headshot_url,myProfile?.headshot_face?.u]);
   // Mirror of myProfile readable from the stable loadProfile callback. Lets a
   // failed *background* re-fetch keep the profile we already have instead of
   // nulling it — nulling flapped isAdmin/isSuperAdmin and tore down open admin
@@ -60769,7 +60828,7 @@ function App(){
               const dashTo=(isCdLike||isAdm)?"dashboard":"talent-dashboard";
               // Bar button = navy initial for everyone (owner 2026-11-12: a 32px headshot never frames well); the bigger
               // "Signed in as" circle in the menu keeps the headshot when there is one.
-              const Av=({big})=><span className={"nav-av-pic"+(big?" big":"")}>{big&&pic?<img src={pic} alt=""/>:initial}</span>;
+              const Av=({big})=><span className={"nav-av-pic"+(big?" big":"")}>{big&&pic?<img src={pic} alt="" style={csFaceFitStyle(pic,myProfile?.headshot_face)}/>:initial}</span>;
               return <span ref={acctRef} className="nav-acct-wrap"
                 onPointerEnter={e=>{if(e.pointerType!=="mouse")return;clearTimeout(acctTimer.current);setDirOpen(false);setMmOpen(false);setJoinOpen(false);setAcctOpen(true);}}
                 onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(acctTimer.current);acctTimer.current=setTimeout(()=>setAcctOpen(false),180);}}>
