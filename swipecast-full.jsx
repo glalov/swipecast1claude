@@ -4074,6 +4074,17 @@ html.ddm-open .nav::before{opacity:1;height:var(--ddH,300px);box-shadow:0 0 0 1p
 @media(min-width:901px){
   html:not(.pl-body-cinematic) .nav:not(.scrolled){background:transparent;border-bottom-color:transparent;}
   html:not(.pl-body-cinematic) .site-top:has(.nav:not(.scrolled)){background:transparent;}
+  /* Floating bar (owner 2026-11-12, "the last demo"): logo/links/buttons sit in the page's content column
+     (lines up with the hero text); once scrolled the bar IS the white rounded card (no cream strip, so no
+     bar-inside-a-bar on hover), with a soft UNTINTED blur behind it that fades out at its bottom edge, so
+     text sliding past is soft, never cut-off lines, and dark sections stay dark. */
+  .nav{padding-left:max(40px,calc((100vw - 1200px)/2 + 40px));padding-right:max(40px,calc((100vw - 1200px)/2 + 40px));}
+  html:not(.pl-body-cinematic) .nav.scrolled{background:transparent;border-bottom-color:transparent;box-shadow:none;}
+  html:not(.pl-body-cinematic) .site-top:has(.nav.scrolled){background:transparent;}
+  html:not(.pl-body-cinematic) .nav.scrolled::before{opacity:1;box-shadow:0 0 0 1px rgba(36,31,25,.08),0 14px 34px -12px rgba(10,10,20,.35);}
+  html:not(.pl-body-cinematic).ddm-open .nav.scrolled::before{box-shadow:0 0 0 1px rgba(36,31,25,.10),0 28px 70px -20px rgba(26,26,46,.38),0 10px 22px -12px rgba(26,26,46,.18);}
+  html:not(.pl-body-cinematic) .nav.scrolled::after{content:"";position:absolute;left:0;right:0;top:0;bottom:-14px;z-index:-2;pointer-events:none;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 72%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0,#000 72%,transparent 100%);}
+  html.ddm-open .nav.scrolled::after{display:none;}
 }
 @media (prefers-reduced-motion:reduce){.nav::before{transition:none;}}
 html.ddm-open body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;z-index:119;pointer-events:none;background:rgba(36,31,25,.10);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);animation:dd4Fade .25s ease both;}
@@ -60371,6 +60382,7 @@ function App(){
   // Show a soft shadow under the white nav only after scrolling a hair down;
   // none at the very top. Matches the Backstage-style scroll affordance.
   const [navScrolled,setNavScrolled]=useState(false);
+  useEffect(()=>{navCardEdges();const t=setTimeout(navCardEdges,1200);window.addEventListener('resize',navCardEdges);return()=>{clearTimeout(t);window.removeEventListener('resize',navCardEdges);};},[navScrolled]);
   useEffect(()=>{
     const onScroll=()=>setNavScrolled(window.scrollY>4);
     onScroll();
