@@ -3651,7 +3651,7 @@ body.sheet-push .b2t-cube{display:none;}
 .nav-ddm button:hover,.nav-ddm button.on{background:rgba(232,144,42,.1);}
 .nav-ddm .ic{grid-row:span 2;width:34px;height:34px;border-radius:9px;background:#1A1A2E;color:#F0B860;display:flex;align-items:center;justify-content:center;font-style:normal;}
 .nav-ddm b{font-size:13.5px;font-weight:800;color:#111114;}
-/* "New" tag on the Casting Directory (launch weeks only, remove the two <em className="nav-new">). */
+/* "New" tag styles (unused since 2026-11-12: badges removed after launch weeks; reuse for the next launch). */
 .nav-new{position:relative;display:inline-block;vertical-align:2px;margin-left:7px;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1;padding:3px 6px;border-radius:5px;background:#F0B860;color:#1A1A2E;}
 /* Desktop dropdown only: pill pops in, a shine sweeps across twice, three gold stars twinkle,
    and the Casting Directory row warms once. Plays on every open (.nav-ddm mounts on open). */
@@ -60524,10 +60524,10 @@ function App(){
             {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
               <button role="menuitem" className={page==="agency-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("agency-directory");}}>
                 <i className="ic"><Ico n="building-bank" s={17}/></i><b>{navT('nav.agencyDirectory')}</b><small>650+ talent agencies &amp; managers · LA + NY</small></button>
-              <button role="menuitem" className={"nav-dd-new"+(page==="casting-directory"?" on":"")} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
-                <i className="ic"><Ico n="movie" s={17}/></i><b>{navT('nav.castingDirectory')}<em className="nav-new"><span className="gl" aria-hidden="true"/>New<i className="sp s1" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s2" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i><i className="sp s3" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></svg></i></em></b><small>{CASTING_OFFICES.length} active casting offices · who accepts headshots</small></button>
+              <button role="menuitem" className={page==="casting-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("casting-directory");}}>
+                <i className="ic"><Ico n="movie" s={17}/></i><b>{navT('nav.castingDirectory')}</b><small>{CASTING_OFFICES.length} active casting offices · who accepts headshots</small></button>
               <button role="menuitem" className={page==="school-directory"?"on":""} onClick={()=>{setDirOpen(false);navigate("school-directory");}}>
-                <i className="ic"><Ico n="school" s={17}/></i><b>{navT('nav.schoolDirectory')}<em className="nav-added">Just added</em></b><small>351 schools &amp; film programs · LA + NY</small></button>
+                <i className="ic"><Ico n="school" s={17}/></i><b>{navT('nav.schoolDirectory')}</b><small>351 schools &amp; film programs · LA + NY</small></button>
             </div>}
           </span>
           {/* Hover menu (owner, 2026-11-08): opens left of the button so the homepage actor card stays clear; the button itself still goes to the page. */}
@@ -60607,8 +60607,8 @@ function App(){
             <button className="mm-link" onClick={()=>navThen("search")}>{navT('nav.browse')}</button>
             {classesOn&&<button className="mm-link" onClick={()=>navThen("classes")}>{navT('nav.classes')}</button>}
             <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("agency-directory")}>{navT('nav.agencyDirectory')}</button>
-            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("casting-directory")}>{navT('nav.castingDirectory')}<em className="nav-new">New</em></button>
-            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("school-directory")}>{navT('nav.schoolDirectory')}<em className="nav-added">Just added</em></button>
+            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("casting-directory")}>{navT('nav.castingDirectory')}</button>
+            <button className="mm-link" style={{color:"var(--amber-dk)"}} onClick={()=>navThen("school-directory")}>{navT('nav.schoolDirectory')}</button>
             <button className="mm-link" onClick={()=>navThen("manager-mode")}>{navT('nav.managerMode')}<small className="mm-link-sub">{navT('nav.mmSub')}</small></button>
             <button className="mm-link" onClick={()=>navThen("about")}>{navT('nav.about')}</button>
             <button className="mm-link" onClick={()=>navThen("contact")}>{navT('nav.contact')}</button>
