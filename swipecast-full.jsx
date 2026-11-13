@@ -4950,6 +4950,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 .b2t-gl{position:absolute;left:50%;top:50%;width:calc(var(--s) * 2.2);height:calc(var(--s) * 2.2);transform:translate(-50%,-50%);pointer-events:none;display:none;}
 .b2t-gl canvas{display:block;width:100%!important;height:100%!important;}
 .b2t-cube.gl .b2t-gl{display:block;}
+/* Megaminx tap area (owner 2026-11-13): the shape is a little wider than the --s square, so a round
+   hit zone covers the whole visible shape (pseudo-elements are part of the button's tap target). */
+.b2t-cube.gl::before{content:"";position:absolute;inset:calc(var(--s) * -0.078);border-radius:50%;}
 .b2t-cube.gl .b2t-box{display:none;}
 .b2t-cube.gl::after{display:none;}
 .b2t-cube.gl.dropping,.b2t-cube.gl.leaving{animation:none;}
@@ -9459,7 +9462,7 @@ function makeB2tGL(lib,host,label,btn,onDone){
   // MEGAMINX (owner 2026-11-13, demo castslate-megaminx-back-to-top-demo.html): a 12-sided
   // dodecahedron in Tonal Sage with a satin finish (see COL); every face ONE solid colour with a thin black line (no star pattern).
   // Same camera, lights, spin, timing and triangle as the cube it replaced.
-  const MEGA_R=0.70;
+  const MEGA_R=0.616; // 12% smaller than first ship (owner 2026-11-13): ~101px wide on desktop
   const body=new THREE.DodecahedronGeometry(MEGA_R,0);
   const bodyMat=new THREE.MeshPhongMaterial({color:0x0E1412,shininess:30,specular:0x222222});
   const model=new THREE.Group();model.add(new THREE.Mesh(body,bodyMat));
