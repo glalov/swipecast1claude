@@ -9457,11 +9457,11 @@ function makeB2tGL(lib,host,label,btn,onDone){
   scene.add(new THREE.AmbientLight(0xffffff,2.4));
   const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-2,3,4);scene.add(key);
   // MEGAMINX (owner 2026-11-13, demo castslate-megaminx-back-to-top-demo.html): a 12-sided
-  // dodecahedron in CastSlate colours (see COL); every face ONE solid colour with a thin black line (no star pattern).
+  // dodecahedron in Tonal Sage with a satin finish (see COL); every face ONE solid colour with a thin black line (no star pattern).
   // Same camera, lights, spin, timing and triangle as the cube it replaced.
   const MEGA_R=0.70;
   const body=new THREE.DodecahedronGeometry(MEGA_R,0);
-  const bodyMat=new THREE.MeshLambertMaterial({color:0x141416});
+  const bodyMat=new THREE.MeshPhongMaterial({color:0x0E1412,shininess:30,specular:0x222222});
   const model=new THREE.Group();model.add(new THREE.Mesh(body,bodyMat));
   const pos=body.attributes.position,faces=[];
   for(let t=0;t<pos.count;t+=3){
@@ -9475,9 +9475,9 @@ function makeB2tGL(lib,host,label,btn,onDone){
   const v0=faces[0].pts[0].clone().applyQuaternion(qFace);
   const Q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),-Math.PI/2-Math.atan2(v0.y,v0.x)).multiply(qFace);
   model.quaternion.copy(Q);
-  // CastSlate colours (owner 2026-11-13, replaced the photo's toy colours): white front, triangle yellow top,
-  // sage teal + Earth Blue upper sides, terracotta + deep teal below; cream/sand/rose/soft sage/navy/warm grey behind.
-  const COL={front:0xFFFFFF,back:0xF3EBE0,top:0xF2C21E,bottom:0xD9C7A7,ul:0x33826A,ur:0x2979BF,ll:0xC2553B,lr:0x24604D,o_ul:0xDD3C53,o_ur:0x8FBFAE,o_ll:0x2B3352,o_lr:0xA39684};
+  // TONAL SAGE, satin (owner 2026-11-13 after the premium-finish demo): white front, every other face one of
+  // three sage teals (mint #8FBFAE, mid #5FA48C/#33826A, deep #24604D), soft Phong sheen that slides as it spins.
+  const COL={front:0xFFFFFF,back:0x8FBFAE,top:0x8FBFAE,bottom:0x24604D,ul:0x33826A,ur:0x5FA48C,ll:0x24604D,lr:0x33826A,o_ul:0x5FA48C,o_ur:0x24604D,o_ll:0x33826A,o_lr:0x5FA48C};
   const pick=w=>{
     if(w.z>.95)return COL.front;if(w.z<-.95)return COL.back;
     if(w.z>0){if(w.y>.8)return COL.top;if(w.y>0)return w.x<0?COL.ul:COL.ur;return w.x<0?COL.ll:COL.lr;}
@@ -9494,7 +9494,7 @@ function makeB2tGL(lib,host,label,btn,onDone){
     for(let i=0;i<5;i++){const q=P[i],qa=q.clone().lerp(P[(i+4)%5],RAD),qb=q.clone().lerp(P[(i+1)%5],RAD);if(i===0)shape.moveTo(qa.x,qa.y);else shape.lineTo(qa.x,qa.y);shape.quadraticCurveTo(q.x,q.y,qb.x,qb.y);}
     shape.closePath();
     const sg=new THREE.ShapeGeometry(shape,6);stickerGeos.push(sg);
-    const sm=new THREE.MeshLambertMaterial({color:pick(w)});stickerMats.push(sm);
+    const sm=new THREE.MeshPhongMaterial({color:pick(w),shininess:46,specular:0x2E2E2E});stickerMats.push(sm);
     const st=new THREE.Mesh(sg,sm);st.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(u,v,f.n));
     st.position.copy(ctr).addScaledVector(f.n,.004);model.add(st);
     if(w.z>.95)frontInfo={ctr,n:f.n.clone(),r:p2[0].length()*S};
