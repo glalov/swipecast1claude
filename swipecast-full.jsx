@@ -22891,7 +22891,7 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
     </div>
   );
 
-  return(
+  return(<>
     <div className={"td-dash-outer"+(navSliding?" cs-slide-out":"")}>
 
       {/* ── Payment Required urgent banner — shown when a booking is approved and awaiting payment ── */}
@@ -23520,10 +23520,11 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           <div className="td-rv-mob">{recentlyViewedCard}</div>
         </div>
       </div>
-      {/* Site footer (owner 2026-11-13): every signed-in page ends with it — Terms, Privacy, Privacy Choices, Contact. */}
-      <Footer onNavigate={onNavigate}/>
     </div>
-  );
+    {/* Site footer (owner 2026-11-13): every signed-in page ends with it — Terms, Privacy, Privacy Choices, Contact.
+        It sits OUTSIDE .td-dash-outer: that box is max-width 1240 + overflow-x:hidden, which boxed the footer in. */}
+    <Footer onNavigate={onNavigate}/>
+  </>);
 }
 
 // PAGE: CD DASHBOARD — real data
@@ -33696,7 +33697,7 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
     );
   }
 
-  return(
+  return(<>
     <div className="page page-wide" style={{padding:isMobile?"20px 16px 60px":"40px 40px 80px"}}>
       <div style={{maxWidth:960,margin:"0 auto"}}>
         <div style={{marginBottom:28}}>
@@ -33751,10 +33752,11 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           </div>
         </div>
       </div>
-      {/* Site footer (owner 2026-11-13): every signed-in page ends with it. */}
-      <Footer onNavigate={onNavigate}/>
     </div>
-  );
+    {/* Site footer (owner 2026-11-13): every signed-in page ends with it. Outside the .page box so its
+        bottom padding never shows as a cream band under the footer. */}
+    <Footer onNavigate={onNavigate}/>
+  </>);
 }
 
 // ═══════════════════════════════════════════
