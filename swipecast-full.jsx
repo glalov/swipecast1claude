@@ -9411,10 +9411,7 @@ function PageLoader({text}){
 let __b2tLibP=null;
 function loadB2tLib(){
   if(!__b2tLibP){
-    __b2tLibP=Promise.all([
-      import('https://cdn.jsdelivr.net/npm/three@0.160.0/+esm'),
-      import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js/+esm')
-    ]).then(([T,R])=>({THREE:T,RoundedBoxGeometry:R.RoundedBoxGeometry}));
+    __b2tLibP=import('https://cdn.jsdelivr.net/npm/three@0.160.0/+esm').then(T=>({THREE:T}));
     __b2tLibP.catch(()=>{__b2tLibP=null;});
   }
   return __b2tLibP;
@@ -9443,7 +9440,7 @@ function makeB2tGL(lib,host,label,btn,onDone){
   // own colour; the three-colour triangle is a small 3D piece on the front with the same idle
   // steps as the old CSS pyramid; camera calibrated so the resting FRONT face is exactly the
   // button's size; no floor shadow.
-  const {THREE,RoundedBoxGeometry}=lib;
+  const {THREE}=lib;
   const probe=document.createElement('canvas');
   if(!(probe.getContext('webgl2')||probe.getContext('webgl')))throw new Error('no webgl');
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});
@@ -9458,31 +9455,67 @@ function makeB2tGL(lib,host,label,btn,onDone){
   cam.position.set(0,0,2.2/(2*Math.tan(FOV/2*Math.PI/180))+.5);
   scene.add(new THREE.AmbientLight(0xffffff,2.4));
   const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-2,3,4);scene.add(key);
-  const geo=new RoundedBoxGeometry(1,1,1,phone?4:6,.12);
-  const n=geo.attributes.normal,cols=new Float32Array(n.count*3),C=new THREE.Color();
-  for(let i=0;i<n.count;i++){
-    const x=n.getX(i),y=n.getY(i),z=n.getZ(i),ax=Math.abs(x),ay=Math.abs(y),az=Math.abs(z);
-    if(az>=Math.max(ax,ay)*.78)C.set(z>0?0xFFFFFF:0xF4F1EC);
-    else if(ax>=ay)C.set(x>0?0xF2C21E:0xDD3C53);
-    else C.set(y>0?0x4FA386:0x24604D);
-    C.convertSRGBToLinear();cols[i*3]=C.r;cols[i*3+1]=C.g;cols[i*3+2]=C.b;
+  // MEGAMINX (owner 2026-11-13, demo castslate-megaminx-back-to-top-demo.html): a 12-sided
+  // dodecahedron in the photo's colours — white face to the front, yellow top, purple/blue upper
+  // sides, green/red below; every face ONE solid colour with a thin black line (no star pattern).
+  // Same camera, lights, spin, timing and triangle as the cube it replaced.
+  const MEGA_R=0.70;
+  const body=new THREE.DodecahedronGeometry(MEGA_R,0);
+  const bodyMat=new THREE.MeshLambertMaterial({color:0x141416});
+  const model=new THREE.Group();model.add(new THREE.Mesh(body,bodyMat));
+  const pos=body.attributes.position,faces=[];
+  for(let t=0;t<pos.count;t+=3){
+    const A=new THREE.Vector3().fromBufferAttribute(pos,t),B=new THREE.Vector3().fromBufferAttribute(pos,t+1),Cc=new THREE.Vector3().fromBufferAttribute(pos,t+2);
+    const nrm=new THREE.Vector3().subVectors(B,A).cross(new THREE.Vector3().subVectors(Cc,A)).normalize();
+    let f=faces.find(F=>F.n.dot(nrm)>.999);if(!f){f={n:nrm,pts:[]};faces.push(f);}
+    [A,B,Cc].forEach(P=>{if(!f.pts.some(Q=>Q.distanceTo(P)<1e-6))f.pts.push(P.clone());});
   }
-  geo.setAttribute('color',new THREE.BufferAttribute(cols,3));
+  // one face straight at the camera with a flat top edge (a point at the bottom), like the photo
+  const qFace=new THREE.Quaternion().setFromUnitVectors(faces[0].n,new THREE.Vector3(0,0,1));
+  const v0=faces[0].pts[0].clone().applyQuaternion(qFace);
+  const Q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),-Math.PI/2-Math.atan2(v0.y,v0.x)).multiply(qFace);
+  model.quaternion.copy(Q);
+  const COL={front:0xFFFFFF,back:0xA9AEB4,top:0xF7D51D,bottom:0xF6EE8A,ul:0x7C55DD,ur:0x1E74E6,ll:0x14A64A,lr:0xE3262E,o_ul:0xF7881F,o_ur:0xF48FC0,o_ll:0xE84D4F,o_lr:0x6CCBF2};
+  const pick=w=>{
+    if(w.z>.95)return COL.front;if(w.z<-.95)return COL.back;
+    if(w.z>0){if(w.y>.8)return COL.top;if(w.y>0)return w.x<0?COL.ul:COL.ur;return w.x<0?COL.ll:COL.lr;}
+    if(w.y<-.8)return COL.bottom;if(w.y<0)return w.x<0?COL.o_ll:COL.o_lr;return w.x<0?COL.o_ul:COL.o_ur;
+  };
+  const stickerGeos=[],stickerMats=[];let frontInfo=null;
+  for(const f of faces){
+    const w=f.n.clone().applyQuaternion(Q);
+    const ctr=f.pts.reduce((acc,P)=>acc.add(P),new THREE.Vector3()).multiplyScalar(1/f.pts.length);
+    const u=new THREE.Vector3().subVectors(f.pts[0],ctr).normalize(),v=new THREE.Vector3().crossVectors(f.n,u).normalize();
+    const p2=f.pts.map(P=>{const d=new THREE.Vector3().subVectors(P,ctr);return new THREE.Vector2(d.dot(u),d.dot(v));}).sort((m,o)=>Math.atan2(m.y,m.x)-Math.atan2(o.y,o.x));
+    const S=.965,RAD=.10; // thin black lines (owner 2026-11-13: "much much much thinner")
+    const P=p2.map(q=>q.clone().multiplyScalar(S)),shape=new THREE.Shape();
+    for(let i=0;i<5;i++){const q=P[i],qa=q.clone().lerp(P[(i+4)%5],RAD),qb=q.clone().lerp(P[(i+1)%5],RAD);if(i===0)shape.moveTo(qa.x,qa.y);else shape.lineTo(qa.x,qa.y);shape.quadraticCurveTo(q.x,q.y,qb.x,qb.y);}
+    shape.closePath();
+    const sg=new THREE.ShapeGeometry(shape,6);stickerGeos.push(sg);
+    const sm=new THREE.MeshLambertMaterial({color:pick(w)});stickerMats.push(sm);
+    const st=new THREE.Mesh(sg,sm);st.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(u,v,f.n));
+    st.position.copy(ctr).addScaledVector(f.n,.004);model.add(st);
+    if(w.z>.95)frontInfo={ctr,n:f.n.clone(),r:p2[0].length()*S};
+  }
+  // BACK TO TOP + the three-colour triangle on the white face, kept upright on screen
   const c=document.createElement('canvas');c.width=c.height=512;const g=c.getContext('2d');
-  g.fillStyle='#FFFFFF';g.fillRect(0,0,512,512);
   const txt=String(label||'Back to top').toUpperCase();
-  let fs=56;g.fillStyle='#1A1A2E';g.textAlign='center';g.textBaseline='middle';
-  try{if('letterSpacing' in g)g.letterSpacing='4px';}catch(_){}
-  do{g.font=`800 ${fs}px 'DM Sans',-apple-system,Helvetica,Arial,sans-serif`;fs-=2;}while(g.measureText(txt).width>400&&fs>24);
-  g.fillText(txt,256,330);
+  let fs=64;g.fillStyle='#1A1A2E';g.textAlign='center';g.textBaseline='middle';
+  try{if('letterSpacing' in g)g.letterSpacing='1px';}catch(_){}
+  do{g.font=`800 ${fs}px 'DM Sans',-apple-system,Helvetica,Arial,sans-serif`;fs-=2;}while(g.measureText(txt).width>440&&fs>24);
+  g.fillText(txt,256,256);
   const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;
-  const plain=new THREE.MeshLambertMaterial({vertexColors:true});
-  const face=new THREE.MeshLambertMaterial({vertexColors:true,map:tex});
-  const mesh=new THREE.Mesh(geo,[plain,plain,plain,plain,face,face]);scene.add(mesh);
+  const lw=frontInfo.r*1.9,labGeo=new THREE.PlaneGeometry(lw,lw);
+  const labMat=new THREE.MeshLambertMaterial({map:tex,transparent:true,depthWrite:false});
+  const faceGroup=new THREE.Group();faceGroup.quaternion.copy(Q.clone().invert());
+  faceGroup.position.copy(frontInfo.ctr).addScaledVector(frontInfo.n,.006);
+  const lab=new THREE.Mesh(labGeo,labMat);lab.position.set(0,-frontInfo.r*.20,0);faceGroup.add(lab);
   const tri=new THREE.Shape();tri.moveTo(0,.111);tri.lineTo(.133,-.111);tri.lineTo(-.133,-.111);tri.closePath();
   const tg=new THREE.ShapeGeometry(tri),pyr=new THREE.Group(),triMats=[];
   [[0x1A1A2E,0],[0xF5C518,120],[0xE2394D,240]].forEach(([col,a])=>{const m=new THREE.MeshBasicMaterial({color:col});triMats.push(m);const tm=new THREE.Mesh(tg,m);tm.position.z=.078;const h=new THREE.Group();h.rotation.y=a*Math.PI/180;h.add(tm);pyr.add(h);});
-  pyr.position.set(0,.094,.51);mesh.add(pyr);
+  pyr.scale.setScalar(frontInfo.r/0.5*0.95);pyr.position.set(0,frontInfo.r*.28,.004);faceGroup.add(pyr);
+  model.add(faceGroup);
+  const mesh=new THREE.Group();mesh.add(model);scene.add(mesh);
   const IDLE=b2tBezier(.65,0,.35,1);
   const SEG=[[0,.34,0,0],[.34,.42,0,-120],[.42,.58,-120,-120],[.58,.66,-120,-240],[.66,.82,-240,-240],[.82,.90,-240,-360],[.90,1,-360,-360]];
   const pyrAngle=ms=>{const p=(ms%6400)/6400;for(const[a,b,f,t]of SEG){if(p<=b)return f+(t-f)*IDLE((p-a)/(b-a));}return 0;};
@@ -9565,7 +9598,7 @@ function makeB2tGL(lib,host,label,btn,onDone){
     kick();
   };
   const setActive=(on)=>{active=!!on;kick();};
-  const dispose=()=>{cancelAnimationFrame(raf);cancelFall();window.removeEventListener('scroll',onScroll);try{geo.dispose();tg.dispose();plain.dispose();face.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
+  const dispose=()=>{cancelAnimationFrame(raf);cancelFall();window.removeEventListener('scroll',onScroll);try{body.dispose();bodyMat.dispose();stickerGeos.forEach(x=>x.dispose());stickerMats.forEach(x=>x.dispose());labGeo.dispose();labMat.dispose();tg.dispose();triMats.forEach(m=>m.dispose());tex.dispose();renderer.dispose();renderer.domElement.remove();}catch(_){}};
   size();kick();
   return{play,setActive,dispose,size};
 }
