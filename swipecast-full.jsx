@@ -5301,12 +5301,13 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Footer casting-calls signup (owner 2026-11-13, round 3: compact, sage field, lower right). */
 .sf-signup{width:100%;max-width:310px;min-width:0;font-family:inherit;}
 .sf-signup h5{margin:0 0 8px;font-size:13px;font-weight:600;color:#F3EBE0;letter-spacing:normal;}
-.sf-signup form{display:flex;gap:6px;}
-.sf-signup input{flex:1;min-width:0;height:36px;padding:0 12px;border-radius:9px;font:inherit;font-size:13.5px;outline:none;color:#F3EBE0;background:rgba(51,130,106,.20);border:1px solid rgba(91,190,150,.38);transition:border-color .18s ease,background-color .18s ease;}
+/* Pill with the button inside its right end (owner 2026-11-13, Stripe-style; matches the Español pill). */
+.sf-signup form{position:relative;display:block;}
+.sf-signup input{display:block;width:100%;min-width:0;height:40px;padding:0 116px 0 16px;border-radius:999px;font:inherit;font-size:13.5px;outline:none;color:#F3EBE0;background:rgba(51,130,106,.20);border:1px solid rgba(91,190,150,.38);transition:border-color .18s ease,background-color .18s ease;}
 .sf-signup input::placeholder{color:#9DBFAF;}
 .sf-signup input:focus{border-color:#5BBE96;background:rgba(51,130,106,.28);}
 .sf-signup input.sf-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
-.sf-signup button{height:36px;padding:0 13px;border-radius:9px;border:0;background:#33826A;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
+.sf-signup button{position:absolute;right:4px;top:4px;height:32px;padding:0 14px 0 15px;border-radius:999px;border:0;background:#33826A;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
 .sf-signup button:hover{background:#276551;}
 .sf-signup button:disabled{opacity:.7;cursor:default;}
 .sf-signup button i{width:0;height:0;border-left:5px solid #fff;border-top:3.8px solid transparent;border-bottom:3.8px solid transparent;}
