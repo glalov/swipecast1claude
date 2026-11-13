@@ -9456,8 +9456,7 @@ function makeB2tGL(lib,host,label,btn,onDone){
   scene.add(new THREE.AmbientLight(0xffffff,2.4));
   const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(-2,3,4);scene.add(key);
   // MEGAMINX (owner 2026-11-13, demo castslate-megaminx-back-to-top-demo.html): a 12-sided
-  // dodecahedron in the photo's colours — white face to the front, yellow top, purple/blue upper
-  // sides, green/red below; every face ONE solid colour with a thin black line (no star pattern).
+  // dodecahedron in CastSlate colours (see COL); every face ONE solid colour with a thin black line (no star pattern).
   // Same camera, lights, spin, timing and triangle as the cube it replaced.
   const MEGA_R=0.70;
   const body=new THREE.DodecahedronGeometry(MEGA_R,0);
@@ -9475,7 +9474,9 @@ function makeB2tGL(lib,host,label,btn,onDone){
   const v0=faces[0].pts[0].clone().applyQuaternion(qFace);
   const Q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),-Math.PI/2-Math.atan2(v0.y,v0.x)).multiply(qFace);
   model.quaternion.copy(Q);
-  const COL={front:0xFFFFFF,back:0xA9AEB4,top:0xF7D51D,bottom:0xF6EE8A,ul:0x7C55DD,ur:0x1E74E6,ll:0x14A64A,lr:0xE3262E,o_ul:0xF7881F,o_ur:0xF48FC0,o_ll:0xE84D4F,o_lr:0x6CCBF2};
+  // CastSlate colours (owner 2026-11-13, replaced the photo's toy colours): white front, triangle yellow top,
+  // sage teal + Earth Blue upper sides, terracotta + deep teal below; cream/sand/rose/soft sage/navy/warm grey behind.
+  const COL={front:0xFFFFFF,back:0xF3EBE0,top:0xF2C21E,bottom:0xD9C7A7,ul:0x33826A,ur:0x2979BF,ll:0xC2553B,lr:0x24604D,o_ul:0xDD3C53,o_ur:0x8FBFAE,o_ll:0x2B3352,o_lr:0xA39684};
   const pick=w=>{
     if(w.z>.95)return COL.front;if(w.z<-.95)return COL.back;
     if(w.z>0){if(w.y>.8)return COL.top;if(w.y>0)return w.x<0?COL.ul:COL.ur;return w.x<0?COL.ll:COL.lr;}
