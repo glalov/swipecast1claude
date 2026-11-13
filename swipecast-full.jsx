@@ -9521,6 +9521,7 @@ function makeB2tGL(lib,host,label,btn,onDone){
   pyr.scale.setScalar(frontInfo.r/0.5*0.95);pyr.position.set(0,frontInfo.r*.28,.004);faceGroup.add(pyr);
   model.add(faceGroup);
   const mesh=new THREE.Group();mesh.add(model);scene.add(mesh);
+  const frontN=new THREE.Vector3();
   const IDLE=b2tBezier(.65,0,.35,1);
   const SEG=[[0,.34,0,0],[.34,.42,0,-120],[.42,.58,-120,-120],[.58,.66,-120,-240],[.66,.82,-240,-240],[.82,.90,-240,-360],[.90,1,-360,-360]];
   const pyrAngle=ms=>{const p=(ms%6400)/6400;for(const[a,b,f,t]of SEG){if(p<=b)return f+(t-f)*IDLE((p-a)/(b-a));}return 0;};
@@ -9581,6 +9582,10 @@ function makeB2tGL(lib,host,label,btn,onDone){
     if(key!==lastKey){
       lastKey=key;const d=Math.PI/180;
       pyr.rotation.y=pa*d;mesh.rotation.set(-rx*d,ry*d,-rz*d,'XYZ');
+      // Owner saw a glitch just before landing (2026-11-13): the triangle floats slightly in front of the white
+      // face, so while that face is still turned away its tip poked out past the shape's edge as a red sliver.
+      // Only show it once the white face is turning toward the viewer.
+      frontN.set(0,0,1).applyEuler(mesh.rotation);pyr.visible=frontN.z>0.35;
       renderer.render(scene,cam);
     }
     if(active||moving)raf=requestAnimationFrame(frame);
