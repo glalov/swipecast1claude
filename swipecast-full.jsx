@@ -4064,7 +4064,18 @@ html .nav-ddm:not(.nav-mm){grid-template-columns:repeat(3,minmax(0,1fr));}
 html .nav-ddm::before,html .nav-ddm::after,html .join-dd-menu::before,html .join-dd-menu::after{display:none;}
 html.ddm-open .site-top{background:transparent;}
 html.ddm-open .nav{background:transparent;border-bottom-color:transparent;}
-html.ddm-open .nav::before{content:"";position:absolute;left:var(--ddL,20px);right:var(--ddR,20px);top:6px;height:var(--ddH,300px);background:#fff;border-radius:16px;box-shadow:0 0 0 1px rgba(36,31,25,.10),0 28px 70px -20px rgba(26,26,46,.38),0 10px 22px -12px rgba(26,26,46,.18);z-index:-1;pointer-events:none;}
+/* Stripe 3-state bar (owner 2026-11-12): 1) resting at the top of the page the bar blends into the page
+   (no cream box, no line; desktop only, not on the dark cinematic profile theme); 2) mouse on the bar
+   (html.nav-hover): a white rounded card forms around it; 3) menu open (html.ddm-open): the same card grows
+   down into the menu. Once scrolled the bar stays solid cream so content never shows behind the links. */
+.nav::before{content:"";position:absolute;left:var(--ddL,20px);right:var(--ddR,20px);top:6px;height:calc(100% - 12px);background:#fff;border-radius:16px;z-index:-1;pointer-events:none;opacity:0;box-shadow:0 0 0 1px rgba(36,31,25,.08),0 10px 30px -12px rgba(26,26,46,.22);transition:opacity .22s ease,height .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease;}
+html.nav-hover .nav::before{opacity:1;}
+html.ddm-open .nav::before{opacity:1;height:var(--ddH,300px);box-shadow:0 0 0 1px rgba(36,31,25,.10),0 28px 70px -20px rgba(26,26,46,.38),0 10px 22px -12px rgba(26,26,46,.18);}
+@media(min-width:901px){
+  html:not(.pl-body-cinematic) .nav:not(.scrolled){background:transparent;border-bottom-color:transparent;}
+  html:not(.pl-body-cinematic) .site-top:has(.nav:not(.scrolled)){background:transparent;}
+}
+@media (prefers-reduced-motion:reduce){.nav::before{transition:none;}}
 html.ddm-open body::after{content:"";position:fixed;top:0;left:0;right:0;bottom:0;z-index:119;pointer-events:none;background:rgba(36,31,25,.10);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);animation:dd4Fade .25s ease both;}
 @keyframes dd4Fade{from{opacity:0;}to{opacity:1;}}
 html .nav-ddm>*,html .join-dd-menu>*{animation:dd4Item .4s cubic-bezier(.2,.8,.2,1) both;}
@@ -9407,6 +9418,12 @@ function FooterWordmark(){
     </svg>
   </div>);
 }
+
+// Nav card edges for the Stripe-style bar/menus: logo left and right-hand buttons + 22px.
+function navCardEdges(){try{const root=document.documentElement,nav=document.querySelector('.nav');if(!nav)return;
+  const lg=nav.querySelector('.logo'),ac=nav.querySelector('.nav-actions'),vw=root.clientWidth;
+  if(lg)root.style.setProperty('--ddL',Math.max(12,Math.round(lg.getBoundingClientRect().left-22))+'px');
+  if(ac)root.style.setProperty('--ddR',Math.max(12,Math.round(vw-ac.getBoundingClientRect().right-22))+'px');}catch(_){}}
 
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
@@ -60560,7 +60577,9 @@ function App(){
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} session={session} page={page} onNavigate={navigate}/>
       <BrowseJoinStripe page={page} session={session} myProfile={myProfile} authReady={authReady} onNavigate={navigate}/>
-      <nav className={"nav"+(navScrolled?" scrolled":"")}>
+      <nav className={"nav"+(navScrolled?" scrolled":"")}
+        onPointerEnter={e=>{if(e.pointerType!=="mouse"||window.innerWidth<=900)return;clearTimeout(window.__navHoverT);navCardEdges();document.documentElement.classList.add("nav-hover");}}
+        onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(window.__navHoverT);window.__navHoverT=setTimeout(()=>document.documentElement.classList.remove("nav-hover"),120);}}>
         <div className="logo" onClick={()=>navThen("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
         <div className="nav-links">
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
