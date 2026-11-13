@@ -5298,6 +5298,43 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-brand .logo .logo-i svg path{stroke:currentColor;stroke-width:1.1;stroke-linejoin:round;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:0;max-width:300px;}
+/* Footer casting-calls signup (owner 2026-11-13, round 3: compact, sage field, lower right). */
+.sf-signup{width:100%;max-width:310px;min-width:0;font-family:inherit;}
+.sf-signup h5{margin:0 0 8px;font-size:13px;font-weight:600;color:#F3EBE0;letter-spacing:normal;}
+.sf-signup form{display:flex;gap:6px;}
+.sf-signup input{flex:1;min-width:0;height:36px;padding:0 12px;border-radius:9px;font:inherit;font-size:13.5px;outline:none;color:#F3EBE0;background:rgba(51,130,106,.20);border:1px solid rgba(91,190,150,.38);transition:border-color .18s ease,background-color .18s ease;}
+.sf-signup input::placeholder{color:#9DBFAF;}
+.sf-signup input:focus{border-color:#5BBE96;background:rgba(51,130,106,.28);}
+.sf-signup input.sf-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
+.sf-signup button{height:36px;padding:0 13px;border-radius:9px;border:0;background:#33826A;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
+.sf-signup button:hover{background:#276551;}
+.sf-signup button:disabled{opacity:.7;cursor:default;}
+.sf-signup button i{width:0;height:0;border-left:5px solid #fff;border-top:3.8px solid transparent;border-bottom:3.8px solid transparent;}
+.sf-signup p{margin:8px 0 0;font-size:11.5px;line-height:1.5;color:#8C8276;}
+.sf-signup p a{color:#A99F93;text-decoration:underline;text-underline-offset:2px;}
+.sf-signup p.sf-signup-err{color:#F0A08F;margin-top:6px;}
+.sf-signup-ok{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:9px;background:rgba(51,130,106,.16);border:1px solid rgba(91,224,176,.28);color:#F3EBE0;font-size:13.5px;line-height:1.45;}
+.sf-signup-ok b{display:block;font-weight:600;}
+.sf-signup-ok span{color:#B8AEA2;font-size:12.5px;overflow-wrap:anywhere;}
+.sf-signup-ok em{flex:none;width:20px;height:20px;border-radius:50%;background:#33826A;display:grid;place-items:center;color:#fff;font-style:normal;font-size:12px;font-weight:800;margin-top:1px;}
+@media (min-width:901px){
+  .site-footer-grid>.site-footer-brand{grid-column:1;grid-row:1;}
+  .site-footer-grid>.sf-talent{grid-column:2;grid-row:1;}
+  .site-footer-grid>.sf-industry{grid-column:3;grid-row:1;}
+  .site-footer-grid>.sf-company{grid-column:4;grid-row:1;}
+  .site-footer-grid>.sf-support{grid-column:5;grid-row:1;}
+  .site-footer-grid>.sf-signup{grid-column:4/6;grid-row:1;align-self:end;justify-self:start;position:relative;z-index:1;}
+  /* Company/Support share row 1 with the box: keep them their natural height so they never sit over (and swallow clicks on) the Subscribe button. */
+  .site-footer-grid>.sf-company,.site-footer-grid>.sf-support{align-self:start;}
+}
+@media (max-width:900px){.site-footer-grid>.sf-signup{grid-column:1/-1;margin-top:-10px;max-width:360px;}}
+.nl-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:300;display:flex;align-items:flex-start;gap:12px;width:max-content;max-width:calc(100vw - 32px);padding:14px 14px 14px 16px;border-radius:12px;background:#241F19;color:#F3EBE0;box-shadow:0 12px 40px rgba(0,0,0,.28);font-family:'DM Sans',sans-serif;animation:nlToastIn .35s ease both;}
+.nl-toast em{flex:none;width:22px;height:22px;border-radius:50%;background:#33826A;display:grid;place-items:center;color:#fff;font-style:normal;font-size:13px;font-weight:800;margin-top:1px;}
+.nl-toast b{display:block;font-size:15px;font-weight:700;}
+.nl-toast span{display:block;font-size:13.5px;color:#C9BFB2;margin-top:2px;}
+.nl-toast button{flex:none;border:0;background:none;color:#B8AEA2;font-size:20px;line-height:1;cursor:pointer;padding:0 2px;margin-left:4px;}
+@keyframes nlToastIn{from{opacity:0;transform:translate(-50%,10px);}to{opacity:1;transform:translate(-50%,0);}}
+@media (prefers-reduced-motion:reduce){.nl-toast{animation:none;}}
 .site-footer-heading{font-family:inherit;color:#D6D0C4;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 16px;}
 /* Apple-style hover (owner 2026-10-23): no slide, an underline appears under the words.
    width:fit-content keeps each link on its own line but limits the hover zone and the
@@ -9563,6 +9600,47 @@ function navCardEdges(){try{const root=document.documentElement,nav=document.que
   if(lg)root.style.setProperty('--ddL',Math.max(12,Math.round(lg.getBoundingClientRect().left-22))+'px');
   if(ac)root.style.setProperty('--ddR',Math.max(12,Math.round(vw-ac.getBoundingClientRect().right-22))+'px');}catch(_){}}
 
+// Footer "New casting calls, by email" box → newsletter-subscribe edge fn (double opt-in; confirmed
+// subscribers go to the front of the castings promo campaign). Hidden honeypot + time-on-page are
+// the bot traps; the function answers the same way whatever happened, so the list can't be probed.
+function FooterSignup(){
+  const [email,setEmail]=useState("");
+  const [hp,setHp]=useState("");
+  const [state,setState]=useState("idle"); // idle | sending | done | error
+  const [err,setErr]=useState("");
+  const [sentTo,setSentTo]=useState("");
+  const t0=useRef(Date.now());
+  const submit=async(e)=>{
+    e.preventDefault();
+    const v=email.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){setState("error");setErr("Please enter a valid email.");return;}
+    setState("sending");setErr("");
+    try{
+      const base=(window.SC_CONFIG&&window.SC_CONFIG.SUPABASE_URL)||"https://mvqhqbjjvgkftninjcby.supabase.co";
+      const r=await fetch(base+"/functions/v1/newsletter-subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:v,hp,ms:Date.now()-t0.current})});
+      const d=await r.json().catch(()=>({}));
+      if(r.ok&&d.ok){setSentTo(v);setState("done");return;}
+      setState("error");
+      setErr(d.error==="invalid_email"?"Please enter a valid email.":d.error==="rate_limited"?"Too many tries. Please try again a bit later.":"Something went wrong. Please try again.");
+    }catch(_){setState("error");setErr("Something went wrong. Please try again.");}
+  };
+  return(
+    <div className="sf-signup">
+      <h5>New casting calls, by email</h5>
+      {state==="done"?(
+        <div className="sf-signup-ok" role="status"><em aria-hidden="true">✓</em><div><b>Check your inbox to confirm.</b><span>We sent a link to {sentTo}.</span></div></div>
+      ):(<>
+        <form onSubmit={submit} noValidate>
+          <input type="email" inputMode="email" autoComplete="email" placeholder="Your email" aria-label="Your email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="error")setState("idle");}} disabled={state==="sending"}/>
+          <input className="sf-hp" type="text" name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e=>setHp(e.target.value)}/>
+          <button type="submit" disabled={state==="sending"}>{state==="sending"?"Sending…":<>Subscribe<i aria-hidden="true"/></>}</button>
+        </form>
+        {state==="error"&&<p className="sf-signup-err" role="alert">{err}</p>}
+        <p>Occasional casting calls and CastSlate news. Unsubscribe with one click. <a href="/privacy" target="_blank" rel="noopener">Privacy</a></p>
+      </>)}
+    </div>
+  );
+}
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
@@ -9816,7 +9894,10 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           <div className="site-footer-brand">
             <p className="site-footer-blurb">{t('footer.blurb')}</p>
           </div>
-          <div>
+          {/* Casting-calls signup (owner 2026-11-13, demo castslate-footer-email-signup-demo.html round 3):
+              signed-out visitors only; desktop = lower right under Company/Support, phones = under the tagline. */}
+          {typeof window!=="undefined"&&window.__SC_SIGNED_IN===false&&<FooterSignup/>}
+          <div className="sf-col sf-talent">
             <h4 className="site-footer-heading">{t('footer.talent')}</h4>
             <L to="register-talent">{t('footer.createProfile')}</L>
             <L to="search">{t('footer.browse')}</L>
@@ -9830,7 +9911,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="events">{t('footer.events')}</L>
             <L to="resources">{t('footer.resources')}</L>
           </div>
-          <div>
+          <div className="sf-col sf-industry">
             <h4 className="site-footer-heading">{t('footer.industry')}</h4>
             <L to="register-cd">{t('footer.postCasting')}</L>
             {(typeof window!=="undefined"&&window.__SC_PREMIUM===true)
@@ -9840,14 +9921,14 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="studios">{t('footer.forStudios')}</L>
             <L to="tapelink">TapeLink</L>
           </div>
-          <div>
+          <div className="sf-col sf-company">
             <h4 className="site-footer-heading">{t('footer.company')}</h4>
             <L to="about">{t('footer.about')}</L>
             <L to="blog">{t('footer.blog')}</L>
             <L to="careers">{t('footer.careers')}</L>
             <L to="contact">{t('footer.contact')}</L>
           </div>
-          <div>
+          <div className="sf-col sf-support">
             <h4 className="site-footer-heading">{t('footer.support')}</h4>
             <L to="faq">{t('footer.faq')}</L>
             <L to="contact">{t('footer.helpCenter')}</L>
@@ -59349,6 +59430,17 @@ function App(){
   // Set during render so the change is reflected the same tick myProfile updates
   // (App re-renders → Footer re-reads the flag; no prop-drilling, no stale link).
   try{window.__SC_PREMIUM=myProfile?.membership_status==="active";}catch(_){}
+  // Footer signup box shows only to signed-out visitors; null until auth is known (no flash for members).
+  try{window.__SC_SIGNED_IN=authReady?!!session:null;}catch(_){}
+  // Arriving from the footer-signup confirm link (?subscribed=1): a short "you're on the list" note.
+  const [nlToast,setNlToast]=useState(false);
+  useEffect(()=>{try{
+    const u=new URL(window.location.href);
+    if(u.searchParams.get("subscribed")!=="1")return;
+    u.searchParams.delete("subscribed");
+    window.history.replaceState(window.history.state,"",u.pathname+u.search+u.hash);
+    setNlToast(true);const tm=setTimeout(()=>setNlToast(false),8000);return()=>clearTimeout(tm);
+  }catch(_){}},[]);
   // ───────────────────────────────────────────────────────────────
   // Shared refresh signal for cross-page data (castings, talent, etc.)
   // Any page that wants to know "something important changed, re-fetch"
@@ -61076,6 +61168,7 @@ function App(){
         {page==="actor-business-card"&&(!authReady?<PageLoader/>:isLoggedIn&&!myProfile?<PageLoader/>:isLoggedIn&&myProfile?.user_type==="talent"?<ActorBusinessCardPage session={session} myProfile={myProfile} onNavigate={navigate}/>:<LoginPage onNavigate={navigate} onLoggedIn={onLoggedIn}/>)}
         {page==="success"&&<PaymentSuccessPage session={session} myProfile={myProfile} onNavigate={navigate} onResumeApply={resumeDraftApply} onReload={()=>loadProfile(session?.user?.id)} successType={paymentSuccessType}/>}
         {page==="unsubscribed"&&<UnsubscribedPage onNavigate={navigate}/>}
+        {nlToast&&<BodyPortal><div className="nl-toast" role="status"><em aria-hidden="true">✓</em><div><b>You're on the list.</b><span>We'll send you casting calls from time to time.</span></div><button type="button" aria-label="Close" onClick={()=>setNlToast(false)}>×</button></div></BodyPortal>}
       </main>
       {/* Cookie preferences modal — opened via the footer "Cookie Preferences" link.
           Mounted at App level so it can sit on top of any page. */}
