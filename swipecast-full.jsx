@@ -4119,7 +4119,7 @@ html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
 .nav-av b{font-size:13.5px;font-weight:700;}
 .nav-av .nav-dd-tri{margin-left:0;transform:rotate(90deg);transition:transform .3s ease;}
 .nav-av.on .nav-dd-tri{transform:rotate(-90deg);}
-.nav-av-pic{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#C9B89C,#8C7A5E);color:#fff;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;}
+.nav-av-pic{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:#1A1A2E;color:#F3EBE0;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;}
 .nav-av-pic img{width:100%;height:100%;object-fit:cover;display:block;}
 .nav-av-pic.big{width:46px;height:46px;font-size:17px;}
 html .nav-ddm.nav-acct{grid-template-columns:1.15fr 1fr 1fr .8fr;}
@@ -60695,7 +60695,9 @@ function App(){
               const isCdLike=["cd"].includes(myProfile?.user_type);const isAdm=["admin","super_admin"].includes(myProfile?.user_type);
               const plan=isAdm?navT('nav.acctAdmin'):isCdLike?navT('nav.acctCd'):(myProfile?.membership_status==="active"?navT('nav.acctPremium'):navT('nav.acctFree'));
               const dashTo=(isCdLike||isAdm)?"dashboard":"talent-dashboard";
-              const Av=({big})=><span className={"nav-av-pic"+(big?" big":"")}>{pic?<img src={pic} alt=""/>:initial}</span>;
+              // Bar button = navy initial for everyone (owner 2026-11-12: a 32px headshot never frames well); the bigger
+              // "Signed in as" circle in the menu keeps the headshot when there is one.
+              const Av=({big})=><span className={"nav-av-pic"+(big?" big":"")}>{big&&pic?<img src={pic} alt=""/>:initial}</span>;
               return <span ref={acctRef} className="nav-acct-wrap"
                 onPointerEnter={e=>{if(e.pointerType!=="mouse")return;clearTimeout(acctTimer.current);setDirOpen(false);setMmOpen(false);setJoinOpen(false);setAcctOpen(true);}}
                 onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(acctTimer.current);acctTimer.current=setTimeout(()=>setAcctOpen(false),180);}}>
