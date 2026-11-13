@@ -2934,6 +2934,11 @@ body.fbsp-open #castoria-root{display:none!important;}
 /* Footer logo = the nav logo, inverted (owner 2026-10-22): same 38px mark with 9px
    corners (40px at 900px and below, like the nav) — it was the 30px/7px base size. */
 .site-footer-brand .logo .logo-i{width:38px;height:38px;border-radius:9px;}
+/* Footer logo arrow (owner 2026-11-12): the dark-on-cream arrow read smaller/thinner than the white-on-navy
+   one in the nav (same drawing; light-on-dark looks bigger). Thin outline in its own colour + 8% scale
+   matches the nav arrow's visual weight. */
+.site-footer-brand .logo .logo-i svg{transform:scale(1.08);transform-origin:50% 50%;}
+.site-footer-brand .logo .logo-i svg path{stroke:currentColor;stroke-width:1.1;stroke-linejoin:round;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:16px;max-width:300px;}
 .site-footer-heading{font-family:inherit;color:#D6D0C4;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 16px;}
