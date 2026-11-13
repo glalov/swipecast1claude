@@ -5297,7 +5297,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-brand .logo .logo-i svg{transform:scale(1.08);transform-origin:50% 50%;}
 .site-footer-brand .logo .logo-i svg path{stroke:currentColor;stroke-width:1.1;stroke-linejoin:round;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
-.site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:16px;max-width:300px;}
+.site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:0;max-width:300px;}
 .site-footer-heading{font-family:inherit;color:#D6D0C4;font-size:12px;font-weight:500;line-height:16.8px;letter-spacing:normal;text-transform:uppercase;margin:4px 0 16px;}
 /* Apple-style hover (owner 2026-10-23): no slide, an underline appears under the words.
    width:fit-content keeps each link on its own line but limits the hover zone and the
@@ -9811,8 +9811,9 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     <footer className={"site-footer has-wm"+(backToTop?" has-b2t":"")}>
       <div className="site-footer-inner">
         <div className="site-footer-grid">
+          {/* Owner 2026-11-13 (demo castslate-footer-logo-demo.html): no small logo here. The big wordmark at the
+              bottom is the footer's one brand mark, and the small logo sat right under the nav logo when scrolled down. */}
           <div className="site-footer-brand">
-            <div className="logo" onClick={()=>onNavigate("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
             <p className="site-footer-blurb">{t('footer.blurb')}</p>
           </div>
           <div>
