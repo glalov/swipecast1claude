@@ -23520,6 +23520,8 @@ function TalentDashboard({session,myProfile,onNavigate,onViewCastingById,casting
           <div className="td-rv-mob">{recentlyViewedCard}</div>
         </div>
       </div>
+      {/* Site footer (owner 2026-11-13): every signed-in page ends with it — Terms, Privacy, Privacy Choices, Contact. */}
+      <Footer onNavigate={onNavigate}/>
     </div>
   );
 }
@@ -33749,6 +33751,8 @@ function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSu
           </div>
         </div>
       </div>
+      {/* Site footer (owner 2026-11-13): every signed-in page ends with it. */}
+      <Footer onNavigate={onNavigate}/>
     </div>
   );
 }
