@@ -4052,6 +4052,34 @@ body.sheet-push .b2t-cube{display:none;}
 .join-dd-icon{width:34px;height:34px;border-radius:8px;background:var(--s1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;line-height:1;}
 .join-dd-title{display:block;font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px;}
 .join-dd-desc{display:block;font-size:11px;color:var(--t2);line-height:1.45;}
+.plk-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start;}
+.plk-opts{min-width:0;}
+.plk-saved{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:10px;background:#EAF3EF;color:#276551;font-weight:700;font-size:13.5px;}
+.plk-prev{min-width:0;position:sticky;top:110px;}
+.plk-pvl{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:16px 0 8px;}
+.plk-pvl em{font-style:normal;letter-spacing:0;text-transform:none;font-weight:700;color:var(--teal);}
+.plk-pv{border-radius:14px;overflow:hidden;border:1px solid var(--bdr);transition:background .25s,color .25s;}
+.plk-img{height:210px;background-size:cover;background-position:center 22%;}
+.plk-ph{height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px;background:#F2ECE0;border-bottom:1px solid var(--bdr);color:#A99C88;}
+.plk-ph p{margin:0;font-size:13px;color:#5F574D;max-width:220px;line-height:1.4;}
+.plk-ph button{border:0;border-radius:9px;background:var(--teal);color:#fff;font:inherit;font-weight:700;font-size:13px;padding:9px 14px;cursor:pointer;}
+.plk-ph button:hover{background:var(--teal-dk);}
+.plk-body{padding:16px 18px 18px;}
+.plk-nm{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:23px;margin:0;line-height:1.15;}
+.plk-tg{font-size:13px;margin:4px 0 14px;opacity:.75;overflow-wrap:anywhere;}
+.plk-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.plk-b1,.plk-b2{display:inline-flex;align-items:center;gap:5px;border-radius:9px;padding:8px 13px;font-weight:700;font-size:13px;transition:background .25s,color .25s,border-color .25s;}
+.plk-b1{color:#fff;border:1.5px solid transparent;}
+.plk-b2{background:transparent;border:1.5px solid;}
+.plk-soc{margin-top:13px;font-size:12.5px;font-weight:700;text-decoration:underline;text-underline-offset:3px;transition:color .25s;}
+.plk-note{font-size:12px;color:var(--t3);margin:8px 2px 0;line-height:1.45;}
+.plk-classic{background:#FFFDF8;color:#241F19;}
+.plk-cinematic{background:#171615;color:#F4F1EC;border-color:#2A2724;}
+.plk-cinematic .plk-ph{background:#232020;border-color:#2A2724;}
+.plk-cinematic .plk-ph p{color:#BDB6AC;}
+.plk-editorial{background:#fff;color:#111;}
+.plk-editorial .plk-nm{font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-.5px;}
+@media(max-width:900px){.plk-grid{grid-template-columns:1fr;gap:6px;}.plk-prev{order:-1;position:static;}}
 /* Nav dropdowns, Stripe style (owner 2026-11-12, after apple.com full-width d02f1ac8): when Directories,
    Manager Mode or the desktop Join Free menu opens, the nav bar turns into the top of ONE white card
    (nav::before, sized by the nav code: --ddL/--ddR = card edges, --ddH = bar + menu height) and the menu
@@ -17955,6 +17983,7 @@ function ProfileLookCard({profile,isPremium,onNavigate}){
       </div>
       {slug&&<a className="btn-s btn-sm" href={"/talent/"+encodeURIComponent(slug)} target="_blank" rel="noreferrer" style={{textDecoration:"none"}}>View my page <Tri/></a>}
     </div>
+    <div className="plk-grid"><div className="plk-opts">
     {lab("Top of page")}
     <div className="otrg-row">{[[true,"Hero header"],[false,"Photo grid"]].map(([v,l])=><button key={l} type="button" className={"otrg-chip"+(look.hero===v?" on":"")} onClick={()=>set("hero",v)}>{l}{v&&<span style={{marginLeft:7,fontSize:10,fontWeight:800,letterSpacing:".04em",textTransform:"uppercase",background:"#FBF0DA",color:"#8A5A12",borderRadius:99,padding:"2px 7px",verticalAlign:"1px"}}>Recommended</span>}</button>)}</div>
     <p style={{fontSize:12.5,color:"var(--t3)",margin:"8px 0 0",lineHeight:1.5}}>{look.hero?<><b style={{color:"var(--t1)"}}>Recommended — it makes your page the most cinematic and stylish.</b> A large headshot at the top with your name, one-liner, Watch reel / Message buttons and your social links.</>:<>Your headshot and photos in a grid, then your details — the standard layout. <b style={{color:"var(--t1)"}}>Hero header is recommended — it makes your page the most cinematic and stylish.</b></>}</p>
@@ -17969,8 +17998,30 @@ function ProfileLookCard({profile,isPremium,onNavigate}){
       style={{width:30,height:30,borderRadius:99,background:c,border:"none",cursor:"pointer",boxShadow:look.accent===k?"0 0 0 2px var(--s1), 0 0 0 4px "+c:"none"}}/>)}
       <span style={{fontSize:12.5,color:"var(--t3)"}}>Buttons and links in your header.</span></div>
     <div style={{display:"flex",alignItems:"center",gap:12,marginTop:20,flexWrap:"wrap"}}>
-      <button type="button" className="btn-teal" disabled={!dirty||busy} onClick={save} style={{padding:"10px 22px",fontSize:13.5,opacity:(!dirty||busy)?.55:1}}>{busy?"Saving…":"Save look"}</button>
+      {/* Nothing to save -> a calm "Saved" label instead of a faded button that looked broken (owner 2026-11-12). */}
+      {(dirty||busy)?<button type="button" className="btn-teal" disabled={busy} onClick={save} style={{padding:"10px 22px",fontSize:13.5}}>{busy?"Saving…":"Save look"}</button>
+        :<span className="plk-saved"><Ico n="check" s={16}/>Saved</span>}
       {note&&<span style={{fontSize:13,fontWeight:600,color:note.err?"#B4574B":"var(--teal)"}}>{note.t}</span>}
+    </div>
+    </div>
+    {/* Live preview of the public page header: updates as theme / accent / one-liner change, before saving. */}
+    {(()=>{const acc=PL_ACCENTS[look.accent]||PL_ACCENTS.teal;const hs=profile.headshot_url;
+      const upload=()=>{const b=document.querySelector('.mp-hs-btn');if(b){b.scrollIntoView({block:"center",behavior:"smooth"});setTimeout(()=>b.click(),350);}};
+      return <div className="plk-prev">
+        <div className="plk-pvl"><span>Live preview</span><em>{dirty?"Not saved yet":"Your page header"}</em></div>
+        <div className={"plk-pv plk-"+(look.theme||"classic")}>
+          {hs?<div className="plk-img" style={{backgroundImage:"url(\""+hs+"\")"}}/>
+            :<div className="plk-ph"><Ico n="user" s={40}/><p>Add a headshot to turn on your big header</p><button type="button" onClick={upload}>Upload headshot</button></div>}
+          <div className="plk-body">
+            <p className="plk-nm">{profile.display_name||"Your name"}</p>
+            <p className="plk-tg">{look.tagline.trim()||"Your one-line description"}</p>
+            <div className="plk-btns"><span className="plk-b1" style={{background:acc}}><Tri/> Watch reel</span><span className="plk-b2" style={{borderColor:acc,color:acc}}>Message</span></div>
+            <div className="plk-soc" style={{color:acc}}>Your social links</div>
+          </div>
+        </div>
+        {!hs&&<p className="plk-note">Your look is saved now and switches on automatically as soon as you add a headshot.</p>}
+        {hs&&!look.hero&&<p className="plk-note">You picked Photo grid, so your page opens with your photo grid. Your colours still apply.</p>}
+      </div>;})()}
     </div>
     <p style={{fontSize:12,color:"var(--t3)",margin:"14px 0 0",lineHeight:1.5}}>Part of Premium. If your membership ends, your page keeps the headshot header in the Classic look — nothing is deleted, and your theme, colors and one-liner come back when you return.</p>
   </div>);
