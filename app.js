@@ -1908,6 +1908,10 @@ html .nav-ddm.nav-acct .acct-col button{border-left:0;padding:3px 0 10px;height:
 .nav-acct .acct-who small{display:block;font-size:13px;color:#857B71;margin-top:2px;}
 html .nav-ddm.nav-acct button.acct-out b{color:#B3412F;}
 html .nav-ddm.nav-acct button.acct-out:hover b{color:#8E2F21;}
+/* Nav focus ring (owner 2026-11-13, demo castslate-nav-focus-ring-demo.html): no browser-blue ring after a mouse click or tap;
+   keyboard (Tab) users get a CastSlate-teal ring instead. The beige act pill is unchanged. */
+html .nav :is(button,a,[tabindex]):focus:not(:focus-visible){outline:none;}
+html .nav :is(button,a,[tabindex]):focus-visible{outline:2px solid #33826A;outline-offset:2px;}
 @keyframes scSpin{to{transform:rotate(360deg);}}
 /* ─── "Casting now" live badge (pulsing dot + expanding ring) + ARCHIVED stamp.
        Motion is disabled under prefers-reduced-motion; the dot stays solid. ─── */
