@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Sign in','nav.accountSettings':'Account Settings',
     'nav.resources':'Resources','nav.successStories':'Success Stories',
     'nav.about':'About','nav.contact':'Contact','nav.joinAsTalent':'Join as Talent',
-    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.mmHead':'Your monthly check-ins','nav.joinLabel':'Join CastSlate','nav.mmEvents':'Industry events in New York and LA','nav.mmCard':'Your actor card with a QR code','nav.mmCta':'See how it works','nav.mmSub':'Industry events and your QR actor card','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
+    'nav.joinAsCD':'Join as Casting Director','nav.managerMode':'Manager Mode','nav.mmHead':'Your monthly check-ins','nav.joinLabel':'Join CastSlate','nav.acctSignedIn':'Signed in as','nav.acctYourProfile':'Your profile','nav.acctAccount':'Account','nav.acctSession':'Session','nav.acctSettings':'Account settings','nav.acctMembership':'Membership','nav.acctProfileDesc':'How casting directors see you','nav.acctDashTalent':'Applications and saved castings','nav.acctDashCd':'Your castings and submissions','nav.acctSettingsDesc':'Email, notifications, privacy','nav.acctMembershipDesc':'Your plan and billing','nav.acctSignOutDesc':'See you soon','nav.acctPremium':'Premium member','nav.acctFree':'Free actor account','nav.acctCd':'Casting director account','nav.acctAdmin':'Admin account','nav.mmEvents':'Industry events in New York and LA','nav.mmCard':'Your actor card with a QR code','nav.mmCta':'See how it works','nav.mmSub':'Industry events and your QR actor card','nav.tapelink':'TapeLink','nav.agencyDirectory':'Agencies Directory','nav.castingDirectory':'Casting Directory','nav.schoolDirectory':'Acting & Film Schools','nav.directories':'Directories',
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform for working actors. Built so every submission gets a real look.',
@@ -338,7 +338,7 @@ const TRANSLATIONS = {
     'nav.signIn':'Iniciar sesión','nav.accountSettings':'Configuración de cuenta',
     'nav.resources':'Recursos','nav.successStories':'Historias de éxito',
     'nav.about':'Acerca de','nav.contact':'Contacto','nav.joinAsTalent':'Unirse como Talento',
-    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.mmHead':'Tus revisiones mensuales','nav.joinLabel':'Únete a CastSlate','nav.mmEvents':'Eventos de la industria en Nueva York y LA','nav.mmCard':'Tu tarjeta de actor con código QR','nav.mmCta':'Cómo funciona','nav.mmSub':'Eventos de la industria y tu tarjeta QR','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
+    'nav.joinAsCD':'Unirse como Director de Casting','nav.managerMode':'Modo Manager','nav.mmHead':'Tus revisiones mensuales','nav.joinLabel':'Únete a CastSlate','nav.acctSignedIn':'Sesión iniciada como','nav.acctYourProfile':'Tu perfil','nav.acctAccount':'Cuenta','nav.acctSession':'Sesión','nav.acctSettings':'Configuración de la cuenta','nav.acctMembership':'Membresía','nav.acctProfileDesc':'Cómo te ven los directores de casting','nav.acctDashTalent':'Postulaciones y castings guardados','nav.acctDashCd':'Tus castings y postulaciones','nav.acctSettingsDesc':'Correo, notificaciones, privacidad','nav.acctMembershipDesc':'Tu plan y facturación','nav.acctSignOutDesc':'Hasta pronto','nav.acctPremium':'Miembro Premium','nav.acctFree':'Cuenta de actor gratis','nav.acctCd':'Cuenta de director de casting','nav.acctAdmin':'Cuenta de administrador','nav.mmEvents':'Eventos de la industria en Nueva York y LA','nav.mmCard':'Tu tarjeta de actor con código QR','nav.mmCta':'Cómo funciona','nav.mmSub':'Eventos de la industria y tu tarjeta QR','nav.tapelink':'TapeLink','nav.agencyDirectory':'Directorio de Agencias','nav.castingDirectory':'Directorio de Casting','nav.schoolDirectory':'Escuelas de Actuación y Cine','nav.directories':'Directorios',
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
@@ -4107,6 +4107,31 @@ html .nav-ddm.nav-mm button{width:auto;margin:0;}
 html .nav-ddm.nav-mm button.nav-mm-cta{grid-column:1/-1;justify-self:start;display:inline-flex;flex-direction:row;align-items:center;gap:6px;height:auto;width:auto;margin:22px 30px 0;padding:0;border-left:0;background:none;color:#241F19;font-size:14px;font-weight:700;}
 html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
 @media (prefers-reduced-motion:reduce){html .nav-ddm>*,html .join-dd-menu>*,html.ddm-open body::after{animation:none;}}
+/* Signed-in right side (owner 2026-11-12, "Option 1 · Account menu"): text links, inbox icon, one account button. */
+.nav-tl{font:inherit;font-size:14px;font-weight:600;letter-spacing:-.1px;color:#111114;background:none;border:0;cursor:pointer;padding:8px 10px;border-radius:9px;white-space:nowrap;transition:background-color .18s ease;}
+.nav-tl:hover,.nav-tl.act{background:#F2ECE0;}
+.nav-ib{position:relative;width:38px;height:38px;border-radius:50%;border:0;background:none;color:#241F19;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .18s ease;}
+.nav-ib:hover,.nav-ib.act{background:#F2ECE0;}
+.nav-ib-n{position:absolute;top:2px;right:0;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#33826A;color:#fff;font-size:10.5px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #fff;}
+.nav-acct-wrap{position:relative;display:inline-flex;}
+.nav-av{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 10px 0 4px;border-radius:999px;border:1px solid #E4DCCB;background:#fff;cursor:pointer;font:inherit;color:#241F19;transition:border-color .18s ease;}
+.nav-av:hover,.nav-av.on,.nav-av.act{border-color:#33826A;}
+.nav-av b{font-size:13.5px;font-weight:700;}
+.nav-av .nav-dd-tri{margin-left:0;transform:rotate(90deg);transition:transform .3s ease;}
+.nav-av.on .nav-dd-tri{transform:rotate(-90deg);}
+.nav-av-pic{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#C9B89C,#8C7A5E);color:#fff;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;}
+.nav-av-pic img{width:100%;height:100%;object-fit:cover;display:block;}
+.nav-av-pic.big{width:46px;height:46px;font-size:17px;}
+html .nav-ddm.nav-acct{grid-template-columns:1.15fr 1fr 1fr .8fr;}
+.nav-acct .acct-col{padding:0 30px;border-left:1px solid #EFE8DA;min-width:0;}
+.nav-acct .acct-col:first-child{border-left:0;}
+.nav-acct .acct-col .ddx-lbl{padding:0;margin:0 0 12px;}
+html .nav-ddm.nav-acct .acct-col button{border-left:0;padding:3px 0 10px;height:auto;width:auto;}
+.nav-acct .acct-who{display:flex;align-items:center;gap:12px;}
+.nav-acct .acct-who b{display:block;font-size:20px;font-weight:700;letter-spacing:-.3px;color:#241F19;line-height:1.2;}
+.nav-acct .acct-who small{display:block;font-size:13px;color:#857B71;margin-top:2px;}
+html .nav-ddm.nav-acct button.acct-out b{color:#B3412F;}
+html .nav-ddm.nav-acct button.acct-out:hover b{color:#8E2F21;}
 @keyframes scSpin{to{transform:rotate(360deg);}}
 /* ─── "Casting now" live badge (pulsing dot + expanding ring) + ARCHIVED stamp.
        Motion is disabled under prefers-reduced-motion; the dot stays solid. ─── */
@@ -32797,7 +32822,9 @@ function CastslateSubmitOptIn({uid,profile,onReload}){
 function AccountSettingsPage({session,profile,onReload,onNavigate,onSignOut,isSuperAdmin}){
   const vpw=useViewportWidth();
   const isMobile=vpw<768;
-  const [section,setSection]=useState("account");
+  const [section,setSection]=useState(()=>{try{const v=sessionStorage.getItem("cs-settings-section");if(v){sessionStorage.removeItem("cs-settings-section");return v;}}catch(_){}return "account";});
+  // The nav account menu asks for a section (e.g. Membership -> subscription) even when this page is already open.
+  useEffect(()=>{const h=e=>{if(e&&e.detail)setSection(e.detail);};window.addEventListener("cs-settings-section",h);return()=>window.removeEventListener("cs-settings-section",h);},[]);
   const [saving,setSaving]=useState(false);
   const [msg,setMsg]=useState("");
   const [err,setErr]=useState("");
@@ -60309,6 +60336,19 @@ function App(){
   const goMmSection=(id)=>{setMmOpen(false);navigate("manager-mode");let n=0;const t=setInterval(()=>{const el=document.getElementById(id);if(el||++n>40){clearInterval(t);if(el)setTimeout(()=>el.scrollIntoView({block:"start"}),120);}},100);};
   const dirRef=useRef(null);
   const dirTimer=useRef(0);
+  // Account menu (owner 2026-11-12, "Option 1"): one round account button; opens the same bar-card menu
+  // as Directories (hover on desktop mouse, click/tap otherwise).
+  const [acctOpen,setAcctOpen]=useState(false);
+  const acctRef=useRef(null);
+  const acctTimer=useRef(0);
+  useEffect(()=>{
+    if(!acctOpen)return;
+    const away=(e)=>{if(acctRef.current&&!acctRef.current.contains(e.target))setAcctOpen(false);};
+    const esc=(e)=>{if(e.key==="Escape")setAcctOpen(false);};
+    document.addEventListener("pointerdown",away);document.addEventListener("keydown",esc);
+    return()=>{document.removeEventListener("pointerdown",away);document.removeEventListener("keydown",esc);};
+  },[acctOpen]);
+  const goSettings=(sec)=>{setAcctOpen(false);try{sessionStorage.setItem("cs-settings-section",sec);window.dispatchEvent(new CustomEvent("cs-settings-section",{detail:sec}));}catch(_){}navigate("account-settings");};
   useEffect(()=>{
     if(!dirOpen)return;
     const away=(e)=>{if(dirRef.current&&!dirRef.current.contains(e.target))setDirOpen(false);};
@@ -60317,7 +60357,7 @@ function App(){
     document.addEventListener("keydown",esc);
     return()=>{document.removeEventListener("pointerdown",away);document.removeEventListener("keydown",esc);};
   },[dirOpen]);
-  useEffect(()=>{setDirOpen(false);setMmOpen(false);},[page]);
+  useEffect(()=>{setDirOpen(false);setMmOpen(false);setAcctOpen(false);},[page]);
   useEffect(()=>{if(!mmOpen)return;const esc=e=>{if(e.key==="Escape")setMmOpen(false);};document.addEventListener("keydown",esc);return()=>document.removeEventListener("keydown",esc);},[mmOpen]);
   const [menuClosing,setMenuClosing]=useState(false);
   // 400ms must stay in step with the .4s mmDropUp exit on .mobile-menu-inner —
@@ -60330,7 +60370,7 @@ function App(){
   // + 22px), --ddH = bar + menu height. rAF only runs while a menu is open.
   useLayoutEffect(()=>{
     const root=document.documentElement;
-    if(!(dirOpen||mmOpen||joinOpen)){root.classList.remove('ddm-open');return;}
+    if(!(dirOpen||mmOpen||joinOpen||acctOpen)){root.classList.remove('ddm-open');return;}
     let raf=0,dead=false;
     const tick=()=>{if(dead)return;try{
       const nav=document.querySelector('.nav'),m=document.querySelector('.nav-ddm,.join-dd-menu');
@@ -60344,7 +60384,7 @@ function App(){
     }catch(_){}raf=requestAnimationFrame(tick);};
     tick();
     return()=>{dead=true;cancelAnimationFrame(raf);root.classList.remove('ddm-open');};
-  },[dirOpen,mmOpen,joinOpen]);
+  },[dirOpen,mmOpen,joinOpen,acctOpen]);
   const [menuJoinOpen,setMenuJoinOpen]=useState(false);
   const joinRef=useRef(null);
   const joinRefM=useRef(null);
@@ -60608,7 +60648,7 @@ function App(){
             role="button" tabIndex={0} aria-haspopup="true" aria-expanded={dirOpen}
             onClick={()=>setDirOpen(o=>!o)}
             onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();setDirOpen(o=>!o);}}}
-            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);clearTimeout(mmTimer.current);setMmOpen(false);setJoinOpen(false);setDirOpen(true);}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);clearTimeout(mmTimer.current);setMmOpen(false);setJoinOpen(false);setAcctOpen(false);setDirOpen(true);}}}
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(dirTimer.current);dirTimer.current=setTimeout(()=>setDirOpen(false),180);}}}>
             {navT('nav.directories')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {dirOpen&&<div className="nav-ddm" role="menu" onClick={e=>e.stopPropagation()}>
@@ -60625,7 +60665,7 @@ function App(){
           <span className={"nav-dd"+(page==="manager-mode"?" act":"")+(mmOpen?" open":"")} role="button" tabIndex={0}
             onClick={()=>{setMmOpen(false);navigate("manager-mode");}}
             onKeyDown={e=>{if(e.key==="Enter"){setMmOpen(false);navigate("manager-mode");}}}
-            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>{setDirOpen(false);setJoinOpen(false);setMmOpen(true);},150);}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>{setDirOpen(false);setJoinOpen(false);setAcctOpen(false);setMmOpen(true);},150);}}}
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>setMmOpen(false),180);}}}>
             {navT('nav.managerMode')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {mmOpen&&<div className="nav-ddm nav-mm" role="menu" onClick={e=>e.stopPropagation()}>
@@ -60639,15 +60679,50 @@ function App(){
         <div className="nav-actions" style={{display:"flex",gap:12,alignItems:"center"}}>
           {!authReady?null:isLoggedIn?<>
             {isAdmin&&<button className="btn-s btn-sm" onClick={()=>navigate("admin")} style={{display:"inline-flex",alignItems:"center",gap:6}}>{navT('nav.admin')}{adminPendingBookings>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"1px 7px",fontSize:11,fontWeight:800,lineHeight:1.4}}>{adminPendingBookings}</span>}</button>}
-            {["cd","admin","super_admin"].includes(myProfile?.user_type)?<button className="btn-s btn-sm" onClick={()=>navigate("dashboard")}>{navT('nav.dashboard')}</button>:null}
-            {(myProfile?.user_type==="talent"||!myProfile)?<button className="btn-s btn-sm" onClick={()=>navigate("talent-dashboard")}>{navT('nav.dashboard')}</button>:null}
-            {myProfile?.user_type==="talent"?<button className="btn-s btn-sm" onClick={()=>navigate("my-profile")}>{navT('nav.myProfile')}</button>:null}
-            <button className="btn-s btn-sm" onClick={()=>navigate("inbox")} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6}}>
-              <span>{navT('nav.inbox')}</span>
-              {globalUnread>0&&<span style={{background:"var(--acc)",color:"#fff",borderRadius:10,padding:"2px 7px",fontSize:11,fontWeight:800,minWidth:20,textAlign:"center",lineHeight:1.2}}>{globalUnread>99?"99+":globalUnread}</span>}
+            {/* Dashboard / My Profile as plain text links, Inbox as an icon, everything else in the account menu */}
+            {(()=>{const isCdLike=["cd","admin","super_admin"].includes(myProfile?.user_type);const dashTo=isCdLike?"dashboard":"talent-dashboard";
+              return <>
+                {(isCdLike||myProfile?.user_type==="talent"||!myProfile)&&<button className={"nav-tl"+(page===dashTo?" act":"")} onClick={()=>navigate(dashTo)}>{navT('nav.dashboard')}</button>}
+                {myProfile?.user_type==="talent"&&<button className={"nav-tl"+(page==="my-profile"?" act":"")} onClick={()=>navigate("my-profile")}>{navT('nav.myProfile')}</button>}
+              </>;})()}
+            <button className={"nav-ib"+(page==="inbox"?" act":"")} onClick={()=>navigate("inbox")} aria-label={navT('nav.inbox')+(globalUnread>0?" ("+globalUnread+")":"")} title={navT('nav.inbox')}>
+              <Ico n="mail" s={21}/>
+              {globalUnread>0&&<span className="nav-ib-n">{globalUnread>99?"99+":globalUnread}</span>}
             </button>
-            <button className="btn-s btn-sm" onClick={()=>navigate("account-settings")} title={navT('nav.accountSettings')}>{myProfile?.display_name?.split(" ")[0]||navT('nav.accountSettings').split(" ")[0]} <Ico n="settings" s={22}/></button>
-            <button className="btn-p btn-sm" onClick={signOut}>{navT('nav.signOut')}</button>
+            {(()=>{const first=(myProfile?.display_name||"").trim().split(" ")[0]||navT('nav.accountSettings').split(" ")[0];
+              const initial=(first||"?").charAt(0).toUpperCase();
+              const pic=myProfile?.headshot_url;
+              const isCdLike=["cd"].includes(myProfile?.user_type);const isAdm=["admin","super_admin"].includes(myProfile?.user_type);
+              const plan=isAdm?navT('nav.acctAdmin'):isCdLike?navT('nav.acctCd'):(myProfile?.membership_status==="active"?navT('nav.acctPremium'):navT('nav.acctFree'));
+              const dashTo=(isCdLike||isAdm)?"dashboard":"talent-dashboard";
+              const Av=({big})=><span className={"nav-av-pic"+(big?" big":"")}>{pic?<img src={pic} alt=""/>:initial}</span>;
+              return <span ref={acctRef} className="nav-acct-wrap"
+                onPointerEnter={e=>{if(e.pointerType!=="mouse")return;clearTimeout(acctTimer.current);setDirOpen(false);setMmOpen(false);setJoinOpen(false);setAcctOpen(true);}}
+                onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(acctTimer.current);acctTimer.current=setTimeout(()=>setAcctOpen(false),180);}}>
+                <button className={"nav-av"+(acctOpen?" on":"")+(page==="account-settings"?" act":"")} aria-haspopup="true" aria-expanded={acctOpen} onClick={()=>{setDirOpen(false);setMmOpen(false);setJoinOpen(false);setAcctOpen(o=>!o);}}>
+                  <Av/><b>{first}</b><span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
+                </button>
+                {acctOpen&&<div className="nav-ddm nav-acct" role="menu" onClick={e=>e.stopPropagation()}>
+                  <div className="acct-col">
+                    <div className="ddx-lbl">{navT('nav.acctSignedIn')}</div>
+                    <div className="acct-who"><Av big/><div><b>{myProfile?.display_name||first}</b><small>{plan}</small></div></div>
+                  </div>
+                  <div className="acct-col">
+                    <div className="ddx-lbl">{navT('nav.acctYourProfile')}</div>
+                    {myProfile?.user_type==="talent"&&<button role="menuitem" onClick={()=>{setAcctOpen(false);navigate("my-profile");}}><b>{navT('nav.myProfile')}</b><small>{navT('nav.acctProfileDesc')}</small></button>}
+                    <button role="menuitem" onClick={()=>{setAcctOpen(false);navigate(dashTo);}}><b>{navT('nav.dashboard')}</b><small>{(isCdLike||isAdm)?navT('nav.acctDashCd'):navT('nav.acctDashTalent')}</small></button>
+                  </div>
+                  <div className="acct-col">
+                    <div className="ddx-lbl">{navT('nav.acctAccount')}</div>
+                    <button role="menuitem" onClick={()=>goSettings("account")}><b>{navT('nav.acctSettings')}</b><small>{navT('nav.acctSettingsDesc')}</small></button>
+                    <button role="menuitem" onClick={()=>goSettings("subscription")}><b>{navT('nav.acctMembership')}</b><small>{navT('nav.acctMembershipDesc')}</small></button>
+                  </div>
+                  <div className="acct-col">
+                    <div className="ddx-lbl">{navT('nav.acctSession')}</div>
+                    <button role="menuitem" className="acct-out" onClick={()=>{setAcctOpen(false);signOut();}}><b>{navT('nav.signOut')}</b><small>{navT('nav.acctSignOutDesc')}</small></button>
+                  </div>
+                </div>}
+              </span>;})()}
           </>:<>
             <div className="join-dropdown" ref={joinRef}>
               <button className="btn-teal btn-sm join-free-soft" onClick={()=>{setDirOpen(false);setMmOpen(false);setJoinOpen(o=>!o);}} style={{display:"inline-flex",alignItems:"center",gap:5}}>
