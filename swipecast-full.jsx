@@ -3822,14 +3822,6 @@ body.sheet-push .b2t-cube{display:none;}
 .feature-item h4{font-size:14px;font-weight:700;margin-bottom:4px;}
 .feature-item p{font-size:12px;color:var(--t2);line-height:1.5;}
 .api-code{background:var(--hero-bg);border:1px solid var(--bdr);border-radius:10px;padding:20px;font-family:'Courier New',monospace;font-size:12px;color:#6EE7B7;overflow-x:auto;line-height:1.7;white-space:pre;}
-/* Homepage headline letter spin (owner 2026-11-11). Transform-only, so it stays smooth on phones. */
-.landing-hero-title .hd-w{display:inline-block;white-space:nowrap;}
-.landing-hero-title .hd-l{display:inline-block;}
-.landing-hero-title.hd-prep .hd-l{will-change:transform;-webkit-backface-visibility:visible;backface-visibility:visible;-webkit-transform:translateZ(0);transform:translateZ(0);}
-.landing-hero-title.hd-play .hd-l{-webkit-animation:hdTwirl .9s cubic-bezier(.45,.05,.2,1) both;animation:hdTwirl .9s cubic-bezier(.45,.05,.2,1) both;-webkit-animation-delay:calc(var(--i) * 45ms);animation-delay:calc(var(--i) * 45ms);-webkit-transform-origin:50% 55%;transform-origin:50% 55%;}
-@-webkit-keyframes hdTwirl{0%{-webkit-transform:perspective(600px) rotateY(0deg);}100%{-webkit-transform:perspective(600px) rotateY(360deg);}}
-@keyframes hdTwirl{0%{transform:perspective(600px) rotateY(0deg);}100%{transform:perspective(600px) rotateY(360deg);}}
-@media (prefers-reduced-motion:reduce){.landing-hero-title.hd-play .hd-l{animation:none;}}
 @media(max-width:900px){
   .nav{padding:12px 18px;}
   .nav-links{display:none;}
@@ -28681,61 +28673,6 @@ const LANDING_SWIPE_DEMO=[
 // navigation (Home → other page → Home doesn't replay), but resets on a real
 // reload / address-bar entry / new tab — exactly when the logo splash runs too.
 let swipeIntroSeen=false;
-// Homepage headline letter spin (owner 2026-11-11, "twirl" demo): the words are on screen from the start;
-// once the curtain has lifted and the card deck has dealt in, each letter spins once in place, first to
-// last. Letters are their own inline-block spans (words kept whole so lines never break mid-word); the h1
-// carries the full text as aria-label. Plays once per page load; skipped for reduced motion.
-let heroSpinPlayed=false;
-function heroLetters(text,start){
-  let i=start||0;
-  const parts=String(text).split(/(\s+)/);
-  return parts.map((w,k)=>/^\s+$/.test(w)?' ':(w?<span key={k} className="hd-w" aria-hidden="true">{Array.from(w).map((ch,j)=><span key={j} className="hd-l" style={{'--i':i++}}>{ch}</span>)}</span>:null));
-}
-function useHeroSpin(){
-  // Smoothness (owner 2026-11-12, "no stutter on any browser"): no React state at all, so starting or
-  // ending the spin never re-renders the homepage. The class goes straight onto the h1. 1) .hd-prep gives
-  // every letter its own GPU layer a moment BEFORE it moves (no layer creation on the first frame).
-  // 2) The spin starts on a quiet main-thread moment (idle callback, max 300ms) plus two painted frames.
-  // 3) When the last letter finishes, both classes come off, so the text goes back to normal crisp text.
-  const ref=React.useRef(null);
-  React.useEffect(()=>{
-    if(heroSpinPlayed) return;
-    try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){heroSpinPlayed=true;return;} }catch(_){}
-    let waited=false,t2=0,t3=0,t4=0,idle=0,dead=false;
-    const go=()=>{
-      const h=ref.current; if(!h||dead) return;
-      heroSpinPlayed=true;
-      // Layers first, well before the spin (Safari/Firefox were still building the 42 letter layers on
-      // the first frames). Off-screen videos (the reel further down) pause for the 2.8s of the spin so
-      // Safari/Firefox are not decoding 14 hidden clips at the same time; Chrome already pauses them
-      // itself. They resume the moment the last letter lands. On-screen video (the banner) never pauses.
-      h.classList.add('hd-prep');
-      let held=[];
-      const hold=()=>{try{const vh=window.innerHeight||800;document.querySelectorAll('video').forEach(v=>{if(v.paused)return;const r=v.getBoundingClientRect();if(r.bottom<0||r.top>vh||r.width===0){v.pause();held.push(v);}});}catch(_){}};
-      const release=()=>{const hs=held;held=[];hs.forEach(v=>{try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(_){}});};
-      const start=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        if(dead) return;
-        hold();
-        window.__csHeroSpinning=true; // the deck nudge, stats spin and castings carousel skip their ticks
-        h.classList.add('hd-play');
-        const ls=h.querySelectorAll('.hd-l'), last=ls[ls.length-1];
-        let ended=false;
-        const end=()=>{if(ended)return;ended=true;window.__csHeroSpinning=false;h.classList.remove('hd-play','hd-prep');release();};
-        if(last) last.addEventListener('animationend',end,{once:true});
-        t3=setTimeout(end,4200); // safety
-      }));
-      t4=setTimeout(()=>{ if('requestIdleCallback' in window) idle=window.requestIdleCallback(start,{timeout:300}); else start(); },600);
-    };
-    const t=setInterval(()=>{
-      if(document.getElementById('cs-intro')){waited=true;return;}
-      clearInterval(t);
-      // curtain gone: let the card deck finish dealing in first (~2.4s from the drop)
-      t2=setTimeout(go,waited?700:0); // + 600ms layer prep = same start time as before
-    },50);
-    return()=>{dead=true;window.__csHeroSpinning=false;clearInterval(t);clearTimeout(t2);clearTimeout(t3);clearTimeout(t4);try{window.cancelIdleCallback&&window.cancelIdleCallback(idle);}catch(_){}};
-  },[]);
-  return ref;
-}
 function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your free profile"}={}){
   const demo=LANDING_SWIPE_DEMO;
   const total=demo.length;
@@ -29964,12 +29901,11 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     finally{setWlBusy(false);}
   };
 
-  const heroRef=useHeroSpin();
   return(<>
     {/* ───────── HERO ───────── */}
     <section className="landing-hero" style={{padding:"44px 40px 14px",maxWidth:1200,margin:"0 auto",display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:60,alignItems:"start"}}><div className="lh-hero-copy">
       <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--bdr)",padding:"6px 14px",borderRadius:100,fontSize:12,color:"var(--acc)",fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",marginBottom:20}}><span style={{width:6,height:6,borderRadius:"50%",background:"var(--grn)",boxShadow:"0 0 8px var(--grn)"}}/>{isLoggedIn?tr('landing.welcomeBack').replace('{name}',myProfile?.display_name?", "+myProfile.display_name.split(" ")[0]:""):tr('landing.liveNow')}</div>
-      <h1 ref={heroRef} className="landing-hero-title" aria-label={tr('landing.heroTitle')+' '+tr('landing.heroAccent')} style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:58,lineHeight:1.12,letterSpacing:-0.1,marginBottom:20}}>{heroLetters(tr('landing.heroTitle'),0)} <span style={{color:"var(--acc)"}}>{heroLetters(tr('landing.heroAccent'),tr('landing.heroTitle').replace(/\s/g,'').length)}</span></h1>
+      <h1 className="landing-hero-title" style={{fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:58,lineHeight:1.12,letterSpacing:-0.1,marginBottom:20}}>{tr('landing.heroTitle')} <span style={{color:"var(--acc)"}}>{tr('landing.heroAccent')}</span></h1>
       <p className="landing-hero-desc">{tr('landing.heroDesc')}</p>
       <div className="lh-hero-ctas" style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:24}}><button className="btn-p" style={{padding:"14px 24px",fontSize:14}} onClick={()=>onNavigate(heroPrimary.to)}>{heroPrimary.short?<><span className="lh-cta-full">{withTri(heroPrimary.label)}</span><span className="lh-cta-short">{withTri(heroPrimary.short)}</span></>:withTri(heroPrimary.label)}</button><button className="btn-s" style={{padding:"14px 24px",fontSize:14,background:"#fff",color:"#1A1A2E"}} onClick={()=>onNavigate(heroSecondary.to)}>{heroSecondary.label}</button></div>
       <div className="lh-hero-ticks" style={{display:"flex",gap:24,alignItems:"center",fontSize:12,color:"var(--t3)",flexWrap:"wrap"}}><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.freeAccount')}</span><span style={{display:"flex",alignItems:"center",gap:6}}><span style={{color:"var(--grn)",fontWeight:800}}><Ico n="check" s={24}/></span> {tr('landing.quickSignup')}</span></div>
