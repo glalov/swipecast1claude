@@ -22302,7 +22302,9 @@ function FirstFramePage({onNavigate}){
     const still=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(!still&&'IntersectionObserver' in window){
       r.classList.add('ff-anim');
-      io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('ff-inview');io.unobserve(e.target);}});},{threshold:.45});
+      // Start as soon as a card's top is ~12% into the window. (A ratio threshold never fired on load
+      // for the tall full-frame card on shorter screens, leaving it blank until the user scrolled.)
+      io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('ff-inview');io.unobserve(e.target);}});},{threshold:0,rootMargin:'0px 0px -12% 0px'});
       r.querySelectorAll('.ff-why,.ff-duo .ff-box').forEach(c=>io.observe(c));
     }
     return()=>{if(io)io.disconnect();};
