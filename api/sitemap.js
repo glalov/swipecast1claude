@@ -40,6 +40,7 @@ const STATIC_PAGES = [
   { loc: "/tapelink", changefreq: "monthly", priority: "0.8" },
   { loc: "/agency-directory", changefreq: "monthly", priority: "0.9", lastmod: "2026-10-01" }, // FAQ + full crawler text added
   { loc: "/casting-directory", changefreq: "monthly", priority: "0.9", lastmod: "2026-10-08" }, // launched 2026-10-04, re-checked monthly
+  { loc: "/first-frame", changefreq: "monthly", priority: "0.7", lastmod: "2026-11-13" }, // launched 2026-11-13
   { loc: "/school-directory", changefreq: "monthly", priority: "0.8", lastmod: "2026-10-11" }, // launched 2026-10-11, free to browse
   { loc: "/login", changefreq: "monthly", priority: "0.5" },
   { loc: "/register-talent", changefreq: "monthly", priority: "0.7" },
