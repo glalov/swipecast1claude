@@ -30119,6 +30119,10 @@ function BufferedLoopVideo(props){
   );
 }
 
+// Safari (and every iPhone/iPad browser, all WebKit) draws these clips 3-12 points brighter than the JPEG
+// stills made by ffmpeg, so a card visibly "lit up" when its clip took over (2026-11-15). WebKit gets stills
+// captured from WebKit's own rendering of each clip's first frame (<file>-sf.jpg); Chrome/Firefox matched already.
+const CS_WEBKIT_VIDEO=(function(){try{const u=navigator.userAgent;return /iP(hone|ad|od)/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)||(/Safari\//.test(u)&&!/Chrome|Chromium|CriOS|FxiOS|Edg|OPR|Android/.test(u));}catch(_){return false;}})();
 function FormatReel(){
   const reelRef=React.useRef(null);
   // Decided once, at first render (app.js has finished downloading by then, so
@@ -30191,6 +30195,21 @@ function FormatReel(){
       // seamless wrap) waits for its original to be fully buffered, because Safari does not
       // share one download between two <video>s; only a copy already on screen (very wide
       // monitors) starts right away.
+      // (2026-11-15, owner) On a normal connection all seven start TOGETHER, while the opening curtain is
+      // still up, so the reel is already playing when it's revealed — one-after-another starts looked like the
+      // cards freezing and lighting up in turn. Slow connections (lite files) keep the one-after-another order.
+      // TEST ?reel=v2 (2026-11-15): the cards you can see start together right away, the rest one after another
+      const v2=typeof location!=='undefined'&&/[?&]reel=v2/.test(location.search);
+      if(v2&&csVidMode!=='lite'){
+        const W2=window.innerWidth,first=vids.slice(0,n).filter(function(v){ const r=v.getBoundingClientRect(); return r.right>-40&&r.left<W2+40; });
+        const rest=vids.slice(0,n).filter(function(v){ return first.indexOf(v)<0; });
+        first.forEach(setSrc);
+        let k=0;const nextRest=function(){ if(gone||k>=rest.length) return; const v=rest[k++]; let moved=false;
+          const on=function(){ if(moved) return; moved=true; v.removeEventListener('canplay',on); nextRest(); };
+          v.addEventListener('canplay',on); unhooks.push(function(){ v.removeEventListener('canplay',on); }); timers.push(setTimeout(on,1500)); setSrc(v); };
+        timers.push(setTimeout(nextRest,600));
+      }
+      else{
       let k=0;
       const nextCard=function(){
         if(gone||k>=n) return;
@@ -30201,6 +30220,7 @@ function FormatReel(){
         setSrc(v);
       };
       nextCard();
+      }
       vids.slice(n).forEach(function(dup,i){
         const orig=vids[i];
         const go=function(){ if(!gone&&!dup.getAttribute('src')) setSrc(dup); };
@@ -30242,7 +30262,7 @@ function FormatReel(){
         <div className="fmt-track" style={{animationDelay:reelStart.delay}}>
           {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel5/'+c.file+'.mp4'; return (
             <article className={'fmt-card'+(c.light?' fmt-card-light':'')} role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
-              <img className="fmt-poster" src={'/video-formats/reel5/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
+              <img className="fmt-poster" src={'/video-formats/reel5/'+c.file+(CS_WEBKIT_VIDEO?'-sf':'')+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
               <video className="fmt-video" data-src={url} muted loop playsInline autoPlay preload="auto" aria-hidden="true"/>
               <div className="fmt-shade"/>
               <div className="fmt-body">
