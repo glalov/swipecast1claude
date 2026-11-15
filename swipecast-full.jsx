@@ -29761,6 +29761,11 @@ function csArmLoopVideo(v){
 //    3.2×…) into stacked canvases; each level is only scaled up to 1.8× before the next one takes over.
 //  • the browser pins everything itself (sticky stage at top=P; the film box reaches P above it);
 //  • iOS: sized with svh/lvh, and address-bar resizes (height only) never re-lay anything out;
+//  • PHONES / touch screens: iOS updates scroll-linked effects in steps while its own scrolling runs
+//    separately, so even a scroll-driven zoom shakes there. On touch screens the zoom is a timed reveal
+//    instead: once the word has settled mid-screen (card scrolled away) it plays as a ~2s animation that
+//    the phone runs entirely on its graphics chip (Web Animations, transform/opacity only); scrolling
+//    back up plays it in reverse. Perfectly smooth regardless of how the finger moves.
 //  • older browsers (Firefox today): same look, driven by a light per-frame script (two canvases).
 const HE_WORDS={'1':['CASTSLATE'],'2':['ACTION'],'3':['YOUR','SHOT']};
 const HE_GAP=112; // card → top of the letters (measures ~95px on screen)
@@ -29832,6 +29837,41 @@ function HomeEcho({onNavigate}){
     // iOS slides its address bar on scroll, which fires resize with only the height changing: ignore those
     const sizeChanged=()=>{const dw=innerWidth!==lastW,dh=Math.abs(innerHeight-lastH)>(mobile()?200:60);if(dw||dh){lastW=innerWidth;lastH=innerHeight;return true;}return false;};
     lastW=innerWidth;lastH=innerHeight;
+
+    const touch=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
+    const useTimed=!still&&(touch||mobile())&&typeof Element!=="undefined"&&!!Element.prototype.animate&&!(typeof location!=="undefined"&&/[?&]hejs=1/.test(location.search));
+    if(useTimed){
+      const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
+      const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
+      const invScale=s=>{let lo=0,hi=.7;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
+      let bases=[],anims=[],played=false,painted='';
+      const DUR=2100;
+      const paintLevels=()=>{const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
+        while(cvs().length<bases.length){const c=document.createElement('canvas');c.className='he-cover';c.style.opacity='0';covers.appendChild(c);extra.push(c);}
+        cvs().forEach((c,i)=>{if(i<bases.length)draw2d(c,bases[i]);else{c.width=1;c.height=1;}});};
+      const build=()=>{anims.forEach(a=>{try{a.cancel();}catch(_){}});anims=[];
+        const N=60,st=[];for(let i=0;i<=N;i++)st.push(i/N);
+        const sw=bases.map(b=>b===1?0:invScale(b));
+        const all=[...new Set(st.concat(sw.flatMap(s=>[Math.max(0,s-1e-4),s])))].filter(v=>v>=0&&v<=1).sort((a,b)=>a-b);
+        const opts={duration:DUR,fill:'both',easing:'linear'};
+        cvs().forEach((c,i)=>{if(i>=bases.length)return;const b=bases[i],inP=sw[i],outP=i+1<bases.length?sw[i+1]:2;
+          anims.push(c.animate(all.map(v=>{const on=v>=inP&&v<outP;return {offset:v,transform:'translate3d(0,0,0) scale('+(on?Math.max(1,scaleAt(v)/b):1).toFixed(5)+')',opacity:on?1:0};}),opts));});
+        anims.push(covers.animate(all.map(v=>({offset:v,opacity:opAt(v)})),opts));
+        anims.push(after.animate(all.map(v=>{const q=afterAt(v);return {offset:v,opacity:q,transform:'translate3d(0,'+(28-28*q).toFixed(2)+'px,0)'};}),opts));
+        anims.forEach(a=>{a.pause();a.currentTime=played?DUR:0;});};
+      // section colour behind the pinned stage: cream while the word covers it, dark once the film shows
+      const bg=()=>{r.style.backgroundColor=played?'#0B0A09':'#F7F5F0';};
+      const check=()=>{const top=r.getBoundingClientRect().top,past=P-top,inRange=past>=P+2&&top>-(r.offsetHeight-LH)-innerHeight;
+        if(!played&&past>=P+2){played=true;box.style.clipPath='none';anims.forEach(a=>{a.playbackRate=1;a.play();});setTimeout(()=>{if(played)bg();},DUR*0.6);}
+        else if(played&&past<P+2){played=false;box.style.clipPath='inset('+P+'px 0 0 0)';bg();anims.forEach(a=>{a.playbackRate=-2.2;a.play();});}};
+      const full=()=>{r.style.marginTop='0px';measure();bases=levelsFor(mobile()?9:16);paintLevels();
+        box.style.clipPath=played?'none':'inset('+P+'px 0 0 0)';bg();build();check();};
+      full();
+      try{document.fonts.load('500 300px Fraunces').then(()=>{geo.font=fontsOk();painted='';full();}).catch(()=>{});}catch(_){}
+      addEventListener('scroll',check,{passive:true});
+      const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
+      return()=>{if(vio)vio.disconnect();clearTimeout(rz);removeEventListener('scroll',check);removeEventListener('resize',onR);anims.forEach(a=>{try{a.cancel();}catch(_){}});extra.forEach(c=>c.remove());};
+    }
 
     if(useSD){
       // ── scroll-driven path: zero JavaScript while scrolling ──
