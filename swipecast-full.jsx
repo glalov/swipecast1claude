@@ -29909,7 +29909,12 @@ function HomeEcho({onNavigate}){
     //  • the zoom follows your scroll through a light glide (smooths iOS's uneven scroll updates) and
     //    reverses as you scroll back.
     const touch3=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
-    const useV3=!still&&(touch3||mobile())&&!(typeof location!=="undefined"&&/[?&]hejs=1/.test(location.search));
+    // (2026-11-15) desktop Safari uses this path too: the browser-driven (scroll-timeline) version stuttered and
+    // showed broken bits in real Safari, while this one is smooth on iPhone, which is the same engine.
+    // TEST: ?he=wk forces it in any browser; ?he=sd forces the scroll-timeline version.
+    const qs=typeof location!=="undefined"?location.search:'';
+    const wkDesk=(CS_WEBKIT_VIDEO&&/[?&]he=wk/.test(qs))||/[?&]he=wk/.test(qs);
+    const useV3=!still&&(touch3||mobile()||wkDesk)&&!/[?&](hejs=1|he=sd)/.test(qs);
     if(useV3){
       const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
       const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
@@ -29919,16 +29924,18 @@ function HomeEcho({onNavigate}){
       r.classList.add('he-t3');r.style.marginTop='0px';r.style.backgroundColor='';
       const paintLevels=()=>{if(!geo)return;const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
         while(cvs().length<bases.length){const c=document.createElement('canvas');c.className='he-cover';c.style.opacity='0';covers.appendChild(c);extra.push(c);}
-        cvs().forEach((c,i)=>{if(i<bases.length)draw2d(c,bases[i]);else{c.width=1;c.height=1;}});};
-      const release=()=>{painted='';cvs().forEach(c=>{if(c.width>1){c.width=1;c.height=1;}});};
+        cvs().forEach((c,i)=>{if(i>=bases.length){c.width=1;c.height=1;}});const g=++pgen3,lowRes=Math.min(geo.dpr,1);
+        bases.forEach((b,i)=>{const go=()=>{if(g!==pgen3||!near)return;draw2d(cvs()[i],b,i<2?0:lowRes);};if(i<2)go();else setTimeout(go,(i-1)*50);});};
+      let pgen3=0;
+      const release=()=>{painted='';pgen3++;cvs().forEach(c=>{if(c.width>1){c.width=1;c.height=1;}});};
       const measure3=()=>{const sv=probe('100svh'),lv=probe('100lvh');H=sv||innerHeight;LH=Math.max(H,lv||H);const Wd=innerWidth;
         const x=document.createElement('canvas').getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
         const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
-        let fs=100*(Wd*0.88)/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
+        let fs=100*(Wd*(mobile()?0.88:0.84))/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
         // phones (owner 2026-11-15): word settles centred below the site header (56%), zoom starts ~0.3 screen early
         const EARLY=true;
         const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36,CY=H*(EARLY?0.56:0.5),BH=LH,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
-        P=Math.max(0,Math.round(CY-GAP3-half));Z=Math.round(H*1.7);LEAD=EARLY?Math.round(H*0.3):0;
+        P=Math.max(0,Math.round(CY-(mobile()?GAP3:HE_GAP)-half));Z=Math.round(H*1.7);LEAD=EARLY?Math.round(H*0.3):0;
         // section ends exactly when the zoom finishes: from then on the film scene scrolls away with the page,
         // like desktop (the line + button stay put on the film until the whole scene leaves)
         h3=Math.round(LH+Z-P+H*0.45); /* + a short hold with the line and button fully shown, then it rides away */r.style.height=h3+'px';box.style.top='0px';covers.style.height=BH+'px';
