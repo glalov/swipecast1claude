@@ -30198,8 +30198,9 @@ function FormatReel(){
       // (2026-11-15, owner) On a normal connection all seven start TOGETHER, while the opening curtain is
       // still up, so the reel is already playing when it's revealed — one-after-another starts looked like the
       // cards freezing and lighting up in turn. Slow connections (lite files) keep the one-after-another order.
-      // TEST ?reel=v2 (2026-11-15): the cards you can see start together right away, the rest one after another
-      const v2=typeof location!=='undefined'&&/[?&]reel=v2/.test(location.search);
+      // Default since 2026-11-15 (owner tested ?reel=v2 in Safari): the cards you can see start together right
+      // away, the rest one after another. (All seven at once froze Safari's opening curtain >2s in tests.)
+      const v2=true;
       if(v2&&csVidMode!=='lite'){
         const W2=window.innerWidth,first=vids.slice(0,n).filter(function(v){ const r=v.getBoundingClientRect(); return r.right>-40&&r.left<W2+40; });
         const rest=vids.slice(0,n).filter(function(v){ return first.indexOf(v)<0; });
