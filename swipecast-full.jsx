@@ -29832,7 +29832,7 @@ const HE_CSS=`
 /* phones v3: section = clip-path window; film fixed inside it; the word layer is a direct child of the
    section (absolute while riding up, fixed while it holds) so it paints above the fixed film */
 .he.he-t3{clip-path:inset(0);-webkit-clip-path:inset(0);background:#F7F5F0}
-.he.he-t3 .he-stage{position:fixed;left:0;right:0;top:0!important;height:100lvh;z-index:0}
+.he.he-t3 .he-stage{position:fixed;left:0;right:0;top:0;height:100lvh;z-index:0}
 .he.he-t3 .he-box{top:0!important;clip-path:none!important}
 .he.he-t3>.he-covers{position:absolute;left:0;width:100%;z-index:1;will-change:opacity}
 .he.he-t .he-stage{position:fixed;left:0;right:0;top:0!important;height:100lvh}
@@ -29905,7 +29905,7 @@ function HomeEcho({onNavigate}){
       const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
       const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
       const invScale=s=>{let lo=0,hi=.7;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
-      let bases=[],painted='',near=false,sw=[],Z=0,GAP3=72;
+      let bases=[],painted='',near=false,sw=[],Z=0,GAP3=72,h3=0;
       const home=covers.parentNode;r.appendChild(covers); // the word layer lives in the section, not the fixed scene
       r.classList.add('he-t3');r.style.marginTop='0px';r.style.backgroundColor='';
       const paintLevels=()=>{if(!geo)return;const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
@@ -29918,12 +29918,16 @@ function HomeEcho({onNavigate}){
         let fs=100*(Wd*0.88)/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
         const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36,CY=H*0.5,BH=LH,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
         P=Math.max(0,Math.round(CY-GAP3-half));Z=Math.round(H*1.7);
-        r.style.height=(P+Z+H)+'px';stage.style.top='0px';box.style.top='0px';covers.style.height=BH+'px';
+        // section ends exactly when the zoom finishes: from then on the film scene scrolls away with the page,
+        // like desktop (the line + button stay put on the film until the whole scene leaves)
+        h3=Math.round(LH+Z-P+H*0.45); /* + a short hold with the line and button fully shown, then it rides away */r.style.height=h3+'px';box.style.top='0px';covers.style.height=BH+'px';
         after.style.bottom=Math.round((LH-H)+H*0.12)+'px';
         geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};};
       const cache={},set=(el,k,prop,val)=>{if(cache[k]!==val){cache[k]=val;el.style[prop]=val;}};
       // word layer: scrolls with the page until its word reaches mid-screen (section top = P), then holds
-      const place=S=>{if(S>P){set(covers,'pos','position','absolute');set(covers,'top','top',(-P)+'px');}else{set(covers,'pos','position','fixed');set(covers,'top','top','0px');}};
+      const place=S=>{if(S>P){set(covers,'pos','position','absolute');set(covers,'top','top',(-P)+'px');}else{set(covers,'pos','position','fixed');set(covers,'top','top','0px');}
+        // film scene: fixed to the screen until the section's end reaches the bottom, then it rides away
+        if(S+h3<=LH){set(stage,'spos','position','absolute');set(stage,'stop','top',(h3-LH)+'px');}else{set(stage,'spos','position','fixed');set(stage,'stop','top','0px');}};
       const apply=p=>{const sc=scaleAt(p);
         cvs().forEach((c,i)=>{if(i>=bases.length)return;const inP=sw[i],outP=i+1<bases.length?sw[i+1]:2,on=p>=inP&&p<outP;
           set(c,'o'+i,'opacity',on?'1':'0');if(on)set(c,'t'+i,'transform','translate3d(0,0,0) scale('+Math.max(1,sc/bases[i]).toFixed(5)+')');});
@@ -29948,7 +29952,7 @@ function HomeEcho({onNavigate}){
       addEventListener('scroll',onScroll,{passive:true});
       const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
       return()=>{if(vio)vio.disconnect();if(nio)nio.disconnect();if(raf)cancelAnimationFrame(raf);clearTimeout(rz);removeEventListener('scroll',onScroll);removeEventListener('resize',onR);
-        extra.forEach(c=>c.remove());r.classList.remove('he-t3');r.style.height='';stage.style.visibility='';covers.style.position='';covers.style.top='';if(home)home.insertBefore(covers,after);};
+        extra.forEach(c=>c.remove());r.classList.remove('he-t3');r.style.height='';stage.style.visibility='';stage.style.position='';stage.style.top='';covers.style.position='';covers.style.top='';if(home)home.insertBefore(covers,after);};
     }
 
     const touch2=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
