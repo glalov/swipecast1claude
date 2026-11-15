@@ -6044,15 +6044,27 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .scale-tagline.st-in .st-lead{opacity:1;transform:none;}
 .scale-tagline.st-in .st-a24{transform:none;transition-delay:.3s;animation:st-dark 2.9s ease-in-out 3.4s infinite;}
 .scale-tagline.st-in .st-s1{transform:scale(1);transition-delay:.9s;}
-.scale-tagline.st-in .st-neon{transform:none;transition-delay:1.05s;animation:st-glowN 2.9s ease-in-out 3.2s infinite;}
+.scale-tagline.st-in .st-neon{transform:none;transition-delay:1.05s;}
 .scale-tagline.st-in .st-s2{transform:scale(1);transition-delay:1.7s;}
-.scale-tagline.st-in .st-netflix{transform:none;transition-delay:1.85s;animation:st-glowX 2.9s ease-in-out 3.6s infinite;}
+.scale-tagline.st-in .st-netflix{transform:none;transition-delay:1.85s;}
+/* Neon/Netflix glow (2026-11-15): a copy of the word with only a soft shadow, faded in and out. The old
+   filter + text-shadow keyframes repainted every frame, froze the page ~0.6s as the line scrolled in, and
+   left visible boxes behind the words in Safari. Opacity-only = handled by the graphics chip. */
+.scale-tagline .st-neon,.scale-tagline .st-netflix{position:relative;}
+.scale-tagline .st-neon{text-shadow:0 0 14px rgba(255,45,111,.22);}
+.scale-tagline .st-netflix{text-shadow:0 0 14px rgba(229,9,20,.22);}
+.scale-tagline .st-neon::after,.scale-tagline .st-netflix::after{content:attr(data-t);position:absolute;left:0;top:0;color:transparent;pointer-events:none;opacity:0;will-change:opacity;}
+.scale-tagline .st-neon::after{text-shadow:0 0 24px rgba(255,45,111,.5);}
+.scale-tagline .st-netflix::after{text-shadow:0 0 24px rgba(229,9,20,.5);}
+.scale-tagline.st-in .st-neon::after{animation:st-glowO 2.9s ease-in-out 3.2s infinite;}
+.scale-tagline.st-in .st-netflix::after{animation:st-glowO 2.9s ease-in-out 3.6s infinite;}
+@keyframes st-glowO{0%,100%{opacity:.2;}50%{opacity:1;}}
 .scale-tagline.st-in .st-trail{opacity:1;transform:none;transition-delay:2.5s;}
 @keyframes st-dark{0%,100%{opacity:1;}50%{opacity:.9;}}
 @keyframes st-glowN{0%,100%{filter:brightness(1);text-shadow:0 0 14px rgba(255,45,111,.22);}50%{filter:brightness(1.18);text-shadow:0 0 24px rgba(255,45,111,.45);}}
 @keyframes st-glowX{0%,100%{filter:brightness(1);text-shadow:0 0 14px rgba(229,9,20,.22);}50%{filter:brightness(1.18);text-shadow:0 0 24px rgba(229,9,20,.45);}}
 @media (max-width:768px){.scale-tagline{padding:36px 20px 0;}.scale-tagline .st-names{font-size:34px;}}
-@media (prefers-reduced-motion:reduce){.scale-tagline .st-lead,.scale-tagline .st-trail,.scale-tagline .st-names span{opacity:1!important;transform:none!important;transition:none!important;}.scale-tagline.st-in .st-a24,.scale-tagline.st-in .st-neon,.scale-tagline.st-in .st-netflix{animation:none!important;}}
+@media (prefers-reduced-motion:reduce){.scale-tagline .st-lead,.scale-tagline .st-trail,.scale-tagline .st-names span{opacity:1!important;transform:none!important;transition:none!important;}.scale-tagline.st-in .st-a24,.scale-tagline.st-in .st-neon,.scale-tagline.st-in .st-netflix,.scale-tagline.st-in .st-neon::after,.scale-tagline.st-in .st-netflix::after{animation:none!important;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
 .fmt-reel-wrap{position:relative;}
 .fmt-reel{overflow:hidden;padding:10px 0 16px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 36px,#000 calc(100% - 36px),transparent 100%);}
@@ -9420,6 +9432,15 @@ function loadB2tLib(){
   }
   return __b2tLibP;
 }
+// Warm the 3D library ahead of time (2026-11-15): importing it at the footer froze the page ~0.15-0.2s.
+// 5s after load, at a moment you are not scrolling, it is fetched and evaluated in the background. Skipped
+// on slow / data-saver connections (the footer still loads it on demand, as before).
+(function(){try{if(typeof window==="undefined")return;
+  const c=navigator.connection;if(c&&(c.saveData||/(^|-)2g|3g/.test(c.effectiveType||"")))return;
+  const go=()=>{if(document.hidden)return;if(window.__csScrolling){window.addEventListener("cs:scroll-idle",go,{once:true});return;}loadB2tLib();};
+  const start=()=>setTimeout(()=>{(window.requestIdleCallback||function(f){return setTimeout(f,0);})(go,{timeout:3000});},5000);
+  if(document.readyState==="complete")start();else window.addEventListener("load",start,{once:true});
+}catch(_){}})();
 function b2tBezier(p1x,p1y,p2x,p2y){
   const cx=3*p1x,bx=3*(p2x-p1x)-cx,ax=1-cx-bx,cy=3*p1y,by=3*(p2y-p1y)-cy,ay=1-cy-by;
   const X=t=>((ax*t+bx)*t+cx)*t,Y=t=>((ay*t+by)*t+cy)*t,dX=t=>(3*ax*t+2*bx)*t+cx;
@@ -9798,9 +9819,14 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         if(dead||!b2tGLHost.current)return;
         const fontsReady=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();
         return fontsReady.then(()=>{
-          if(dead||!b2tGLHost.current)return;
-          try{b2tGL.current=makeB2tGL(lib,b2tGLHost.current,t('footer.backToTop'),b2tGLHost.current.closest('.b2t-cube'),()=>setB2tAnim(null));}catch(_){b2tGL.current=null;return;}
-          if(!b2tAnimRef.current)setB2tGLOn(true);
+          // building the 3D scene takes ~0.15s: do it at a moment you're not scrolling (2026-11-15)
+          const build=()=>{
+            if(dead||!b2tGLHost.current||b2tGL.current)return;
+            if(window.__csScrolling){window.addEventListener('cs:scroll-idle',build,{once:true});return;}
+            try{b2tGL.current=makeB2tGL(lib,b2tGLHost.current,t('footer.backToTop'),b2tGLHost.current.closest('.b2t-cube'),()=>setB2tAnim(null));}catch(_){b2tGL.current=null;return;}
+            if(!b2tAnimRef.current)setB2tGLOn(true);
+          };
+          build();
         });
       }).catch(()=>{});
     };
@@ -29628,6 +29654,12 @@ const csStartQ=[];let csStartBusy=false;
 function csStartNext(){
   if(!csStartQ.length){ csStartBusy=false; return; }
   csStartBusy=true;
+  // Hold every clip start until the opening curtain has finished falling (2026-11-15): starting video
+  // decoders during the fall made it jump ("cuts through"). 6s cap in case the intro never reports.
+  if(typeof window!=='undefined'&&!window.__CS_INTRO_DONE&&document.getElementById('cs-intro')){
+    let done=false;const go=function(){ if(done) return; done=true; csStartNext(); };
+    window.addEventListener('cs:intro-done',go,{once:true}); setTimeout(go,6000); return;
+  }
   const run=function(){ const f=csStartQ.shift(); try{ f(); }catch(_){} setTimeout(csStartNext,120); };
   if(typeof requestIdleCallback==='function') requestIdleCallback(run,{timeout:400}); else setTimeout(run,0);
 }
@@ -29916,13 +29948,17 @@ function HomeEcho({onNavigate}){
         css+='.he.he-sd{'+anim('he-bg')+'}.he.he-sd .he-box{'+anim('he-bx')+'}.he.he-sd .he-covers{'+anim('he-co')+'}.he.he-sd .he-after{'+anim('he-af')+'}';
         bases.forEach((b,i)=>{css+='.he.he-sd .he-cover:nth-child('+(i+1)+'){'+anim('he-l'+i)+'}';});
         if(styleEl.textContent!==css)styleEl.textContent=css;};
-      const full=()=>{r.style.marginTop='0px';measure();bases=levelsFor(mobile()?9:16);paintLevels();keyframes();r.classList.add('he-sd');};
+      // the zoom layers (~25MB of graphics memory each) are only painted while the section is within
+      // ~1.5 screens, and released when you've moved away — so the rest of the page never carries them
+      let near=false,nio=null;const release=()=>{painted='';cvs().forEach(c=>{if(c.width>1){c.width=1;c.height=1;}});};
+      const full=()=>{r.style.marginTop='0px';measure();bases=levelsFor(mobile()?9:16);if(near)paintLevels();keyframes();r.classList.add('he-sd');};
+      try{nio=new IntersectionObserver(es=>{const e=es[es.length-1];if(!e)return;if(e.isIntersecting){near=true;paintLevels();}else{near=false;release();}},{rootMargin:'150% 0px'});nio.observe(r);}catch(_){near=true;}
       full();
       try{document.fonts.load('500 300px Fraunces').then(()=>{geo.font=fontsOk();full();}).catch(()=>{});}catch(_){}
       // the page above can change height (images, news); keep the scroll range in step — no repaint
       let ro=null,roT=0;try{ro=new ResizeObserver(()=>{clearTimeout(roT);roT=setTimeout(keyframes,80);});ro.observe(document.body);}catch(_){}
       const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
-      return()=>{if(vio)vio.disconnect();if(ro)ro.disconnect();clearTimeout(roT);clearTimeout(rz);removeEventListener('resize',onR);r.classList.remove('he-sd');styleEl.remove();extra.forEach(c=>c.remove());};
+      return()=>{if(vio)vio.disconnect();if(nio)nio.disconnect();if(ro)ro.disconnect();clearTimeout(roT);clearTimeout(rz);removeEventListener('resize',onR);r.classList.remove('he-sd');styleEl.remove();extra.forEach(c=>c.remove());};
     }
 
     // ── fallback path (no scroll-driven animations): light per-frame script, two stacked canvases ──
@@ -30620,7 +30656,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       {taglineOn && (
         <div className="scale-tagline" ref={taglineRef}>
           <p className="st-lead">From indie films to</p>
-          <p className="st-names"><span className="st-a24">A24</span> <span className="st-sep st-s1">·</span> <span className="st-mask"><span className="st-neon">Neon</span></span> <span className="st-sep st-s2">·</span> <span className="st-netflix">Netflix</span></p>
+          <p className="st-names"><span className="st-a24">A24</span> <span className="st-sep st-s1">·</span> <span className="st-mask"><span className="st-neon" data-t="Neon">Neon</span></span> <span className="st-sep st-s2">·</span> <span className="st-netflix" data-t="Netflix">Netflix</span></p>
           <span className="st-trail">— level projects</span>
         </div>
       )}
