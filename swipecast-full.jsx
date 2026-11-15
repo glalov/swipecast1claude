@@ -29913,7 +29913,7 @@ function HomeEcho({onNavigate}){
       const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
       const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
       const invScale=s=>{let lo=0,hi=ZEND();for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
-      let bases=[],painted='',near=false,sw=[],Z=0,GAP3=72,h3=0;
+      let bases=[],painted='',near=false,sw=[],Z=0,GAP3=72,h3=0,LEAD=0;
       const home=covers.parentNode;r.appendChild(covers); // the word layer lives in the section, not the fixed scene
       r.classList.add('he-t3');r.style.marginTop='0px';r.style.backgroundColor='';
       const paintLevels=()=>{if(!geo)return;const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
@@ -29924,8 +29924,9 @@ function HomeEcho({onNavigate}){
         const x=document.createElement('canvas').getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
         const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
         let fs=100*(Wd*0.88)/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
-        const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36,CY=H*0.5,BH=LH,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
-        P=Math.max(0,Math.round(CY-GAP3-half));Z=Math.round(H*1.7);
+        const EARLY=typeof location!=="undefined"&&/[?&]he=early/.test(location.search); // TEST 2026-11-15: earlier phone zoom
+        const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36,CY=H*(EARLY?0.56:0.5),BH=LH,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
+        P=Math.max(0,Math.round(CY-GAP3-half));Z=Math.round(H*1.7);LEAD=EARLY?Math.round(H*0.3):0;
         // section ends exactly when the zoom finishes: from then on the film scene scrolls away with the page,
         // like desktop (the line + button stay put on the film until the whole scene leaves)
         h3=Math.round(LH+Z-P+H*0.45); /* + a short hold with the line and button fully shown, then it rides away */r.style.height=h3+'px';box.style.top='0px';covers.style.height=BH+'px';
@@ -29944,7 +29945,7 @@ function HomeEcho({onNavigate}){
         const q=afterAt(p);set(after,'ao','opacity',q.toFixed(3));set(after,'at','transform','translate3d(0,'+(28-28*q).toFixed(1)+'px,0)');};
       let cur=null,raf=0,lastT=0;
       const tick=now=>{raf=0;if(!near)return;const S=r.getBoundingClientRect().top;place(S);
-        const t=Z>0?clamp((P-S)/Z,0,1):0,dt=Math.min(64,lastT?now-lastT:16.7);lastT=now;
+        const t=Z>0?clamp((P+LEAD-S)/(Z+LEAD),0,1):0,dt=Math.min(64,lastT?now-lastT:16.7);lastT=now;
         if(cur===null)cur=t;cur+=(t-cur)*(1-Math.pow(1-.2,dt/16.7));
         if(t-cur>.06)cur=t-.06;else if(cur-t>.06)cur=t+.06;
         if(t>=1||t<=0||Math.abs(t-cur)<.0003)cur=t;apply(cur);
