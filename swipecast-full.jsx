@@ -29911,9 +29911,9 @@ function HomeEcho({onNavigate}){
     const touch3=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
     // (2026-11-15) desktop Safari uses this path too: the browser-driven (scroll-timeline) version stuttered and
     // showed broken bits in real Safari, while this one is smooth on iPhone, which is the same engine.
-    // TEST: ?he=wk forces it in any browser; ?he=sd forces the scroll-timeline version.
+    // ?he=wk forces it in any browser; ?he=sd forces the scroll-timeline version (for comparison).
     const qs=typeof location!=="undefined"?location.search:'';
-    const wkDesk=(CS_WEBKIT_VIDEO&&/[?&]he=wk/.test(qs))||/[?&]he=wk/.test(qs);
+    const wkDesk=CS_WEBKIT_VIDEO||/[?&]he=wk/.test(qs); // default for Safari since 2026-11-15 (owner tested ?he=wk)
     const useV3=!still&&(touch3||mobile()||wkDesk)&&!/[?&](hejs=1|he=sd)/.test(qs);
     if(useV3){
       const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
