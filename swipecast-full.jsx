@@ -29829,6 +29829,12 @@ const HE_CSS=`
 .he.he-touch .he-stage{position:relative;top:0!important;height:100%}
 .he.he-touch .he-box{top:0!important;clip-path:none!important}
 .he.he-t{height:260svh;clip-path:inset(0);-webkit-clip-path:inset(0);background:#0B0A09}
+/* phones v3: section = clip-path window; film fixed inside it; the word layer is a direct child of the
+   section (absolute while riding up, fixed while it holds) so it paints above the fixed film */
+.he.he-t3{clip-path:inset(0);-webkit-clip-path:inset(0);background:#F7F5F0}
+.he.he-t3 .he-stage{position:fixed;left:0;right:0;top:0!important;height:100lvh;z-index:0}
+.he.he-t3 .he-box{top:0!important;clip-path:none!important}
+.he.he-t3>.he-covers{position:absolute;left:0;width:100%;z-index:1;will-change:opacity}
 .he.he-t .he-stage{position:fixed;left:0;right:0;top:0!important;height:100lvh}
 .he.he-t .he-box{top:0!important;clip-path:none!important}
 @media (prefers-reduced-motion:reduce){.he-after{opacity:1}}
@@ -29886,6 +29892,65 @@ function HomeEcho({onNavigate}){
     // slides back over the film. Nothing moves the scene itself, so there is nothing to shake.
     // Progress: ?m=a → CSS scroll-driven animation; default → light glide script (smooths iOS's stepped
     // scroll updates). Both reverse exactly as you scroll back.
+    // ── PHONES v3 (test link ?he=v3): the SAME sequence as desktop — the word rides up ~72px under the card,
+    // settles mid-screen, grows, the film takes over, the line appears — built from iPhone-safe parts:
+    //  • the film is position:fixed inside a clip-path "window" (the section): iOS keeps fixed layers still;
+    //  • the cream word layer scrolls with the page (plain absolute) until it reaches mid-screen, then
+    //    switches to fixed at exactly the same spot (one switch, no sticky, nothing pinned that iOS nudges);
+    //  • the zoom follows your scroll through a light glide (smooths iOS's uneven scroll updates) and
+    //    reverses as you scroll back.
+    const touch3=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
+    const useV3=!still&&(touch3||mobile())&&typeof location!=="undefined"&&/[?&]he=v3/.test(location.search);
+    if(useV3){
+      const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
+      const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
+      const invScale=s=>{let lo=0,hi=.7;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
+      let bases=[],painted='',near=false,sw=[],Z=0,GAP3=72;
+      const home=covers.parentNode;r.appendChild(covers); // the word layer lives in the section, not the fixed scene
+      r.classList.add('he-t3');r.style.marginTop='0px';r.style.backgroundColor='';
+      const paintLevels=()=>{if(!geo)return;const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
+        while(cvs().length<bases.length){const c=document.createElement('canvas');c.className='he-cover';c.style.opacity='0';covers.appendChild(c);extra.push(c);}
+        cvs().forEach((c,i)=>{if(i<bases.length)draw2d(c,bases[i]);else{c.width=1;c.height=1;}});};
+      const release=()=>{painted='';cvs().forEach(c=>{if(c.width>1){c.width=1;c.height=1;}});};
+      const measure3=()=>{const sv=probe('100svh'),lv=probe('100lvh');H=sv||innerHeight;LH=Math.max(H,lv||H);const Wd=innerWidth;
+        const x=document.createElement('canvas').getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
+        const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
+        let fs=100*(Wd*0.88)/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
+        const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36,CY=H*0.5,BH=LH,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
+        P=Math.max(0,Math.round(CY-GAP3-half));Z=Math.round(H*1.7);
+        r.style.height=(P+Z+H)+'px';stage.style.top='0px';box.style.top='0px';covers.style.height=BH+'px';
+        after.style.bottom=Math.round((LH-H)+H*0.12)+'px';
+        geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};};
+      const cache={},set=(el,k,prop,val)=>{if(cache[k]!==val){cache[k]=val;el.style[prop]=val;}};
+      // word layer: scrolls with the page until its word reaches mid-screen (section top = P), then holds
+      const place=S=>{if(S>P){set(covers,'pos','position','absolute');set(covers,'top','top',(-P)+'px');}else{set(covers,'pos','position','fixed');set(covers,'top','top','0px');}};
+      const apply=p=>{const sc=scaleAt(p);
+        cvs().forEach((c,i)=>{if(i>=bases.length)return;const inP=sw[i],outP=i+1<bases.length?sw[i+1]:2,on=p>=inP&&p<outP;
+          set(c,'o'+i,'opacity',on?'1':'0');if(on)set(c,'t'+i,'transform','translate3d(0,0,0) scale('+Math.max(1,sc/bases[i]).toFixed(5)+')');});
+        const op=Math.round(opAt(p)*1000)/1000;set(covers,'co','opacity',String(op));set(covers,'cv','visibility',op<=.001?'hidden':'visible');
+        const q=afterAt(p);set(after,'ao','opacity',q.toFixed(3));set(after,'at','transform','translate3d(0,'+(28-28*q).toFixed(1)+'px,0)');};
+      let cur=null,raf=0,lastT=0;
+      const tick=now=>{raf=0;if(!near)return;const S=r.getBoundingClientRect().top;place(S);
+        const t=Z>0?clamp((P-S)/Z,0,1):0,dt=Math.min(64,lastT?now-lastT:16.7);lastT=now;
+        if(cur===null)cur=t;cur+=(t-cur)*(1-Math.pow(1-.2,dt/16.7));
+        if(t-cur>.06)cur=t-.06;else if(cur-t>.06)cur=t+.06;
+        if(t>=1||t<=0||Math.abs(t-cur)<.0003)cur=t;apply(cur);
+        if(cur!==t)raf=requestAnimationFrame(tick);else lastT=0;};
+      const kick=()=>{if(!raf&&near)raf=requestAnimationFrame(tick);};
+      const onScroll=()=>{if(near)place(r.getBoundingClientRect().top);kick();};
+      const full=()=>{measure3();bases=levelsFor(9);sw=bases.map(b=>b===1?0:invScale(b));if(near)paintLevels();cur=null;place(r.getBoundingClientRect().top);kick();};
+      let nio=null;
+      try{nio=new IntersectionObserver(es=>{const e=es[es.length-1];if(!e)return;near=e.isIntersecting;
+          stage.style.visibility=near?'visible':'hidden';if(near){paintLevels();kick();}else release();},{rootMargin:'100% 0px'});nio.observe(r);}catch(_){near=true;}
+      stage.style.visibility='hidden';
+      full();
+      try{document.fonts.load('500 300px Fraunces').then(()=>{painted='';full();}).catch(()=>{});}catch(_){}
+      addEventListener('scroll',onScroll,{passive:true});
+      const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
+      return()=>{if(vio)vio.disconnect();if(nio)nio.disconnect();if(raf)cancelAnimationFrame(raf);clearTimeout(rz);removeEventListener('scroll',onScroll);removeEventListener('resize',onR);
+        extra.forEach(c=>c.remove());r.classList.remove('he-t3');r.style.height='';stage.style.visibility='';covers.style.position='';covers.style.top='';if(home)home.insertBefore(covers,after);};
+    }
+
     const touch2=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
     // TEST (2026-11-15): ?he=v2 turns on the new phone version for the owner to try on a real iPhone
     const useTouch=!still&&(touch2||mobile())&&typeof location!=="undefined"&&/[?&]he=v2/.test(location.search);
