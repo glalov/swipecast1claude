@@ -6078,7 +6078,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    its neighbours) flash lighter in Safari/Chrome. Cards stay perfectly still
    under the cursor; the reel keeps sliding. */
 .fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
-.fmt-video{opacity:0;transition:opacity .4s ease;background:transparent;}
+.fmt-video{opacity:0;background:transparent;}
 .fmt-video.is-on{opacity:1;}
 .fmt-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
 /* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
@@ -29656,7 +29656,8 @@ function csStartNext(){
   csStartBusy=true;
   // Hold every clip start until the opening curtain has finished falling (2026-11-15): starting video
   // decoders during the fall made it jump ("cuts through"). 6s cap in case the intro never reports.
-  if(typeof window!=='undefined'&&!window.__CS_INTRO_DONE&&document.getElementById('cs-intro')){
+  const ci=typeof document!=='undefined'&&document.getElementById('cs-intro');
+  if(typeof window!=='undefined'&&!window.__CS_INTRO_DONE&&ci&&ci.classList.contains('cs-go')){
     let done=false;const go=function(){ if(done) return; done=true; csStartNext(); };
     window.addEventListener('cs:intro-done',go,{once:true}); setTimeout(go,6000); return;
   }
@@ -30176,7 +30177,8 @@ function FormatReel(){
     // blank for ~12s while the reel's 14 clips downloaded): wait for the front deck photo,
     // at most 4s (15s on slow Android). Not on pages without the deck.
     let slowW=false; try{ slowW=!!window.__csMoonWait; }catch(_){}
-    let hold=!window.__csHeroReady&&!swipeIntroSeen&&!!document.querySelector('.s-card'), pend=false;
+    // (2026-11-15) only slow Android still waits for the front deck photo; everywhere else the reel loads at once
+    let hold=slowW&&!window.__csHeroReady&&!swipeIntroSeen&&!!document.querySelector('.s-card'), pend=false;
     const release=function(){ if(!hold) return; hold=false; if(pend) begin(); };
     if(hold){ window.addEventListener('cs:hero-ready',release); timers.push(setTimeout(release,slowW?15000:4000)); unhooks.push(function(){ window.removeEventListener('cs:hero-ready',release); }); }
     const begin=function(){
@@ -30208,27 +30210,12 @@ function FormatReel(){
         timers.push(setTimeout(go,12000)); // safety net if canplaythrough never fires
       });
     };
-    if(typeof IntersectionObserver!=='undefined'){
-      nearIo=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })) begin(); },{rootMargin:'100% 0px',threshold:0});
-      nearIo.observe(wrap);
-    } else begin();
+    begin();
     // "Reel is rolling": every original card can play through (or 8s passed).
     // The two big landing clips wait for this on slow connections so they
     // don't steal the reel's bandwidth at load.
-    // The slide waits until the reel is on screen, so Feature Films is at the right edge when the visitor
-    // arrives, and its clip restarts then, so they see the clapperboard moment at the top of the clip.
-    const track=reel.querySelector('.fmt-track');
-    const firstCard=vids.slice(0,n).filter(function(v){ return /feature4/.test(v.getAttribute('src')||v.getAttribute('data-src')||''); })[0];
-    const goReel=function(){
-      if(!track||!track.classList.contains('fmt-wait')) return;
-      track.classList.remove('fmt-wait');
-      if(firstCard&&firstCard.readyState>=2&&firstCard.currentTime>0.3){ try{ firstCard.currentTime=0; }catch(_){} }
-    };
-    if(typeof IntersectionObserver!=='undefined'){
-      const seeIo=new IntersectionObserver(function(es){ if(es.some(function(e){ return e.isIntersecting; })){ seeIo.disconnect(); goReel(); } },{threshold:0.15});
-      seeIo.observe(wrap);
-      unhooks.push(function(){ seeIo.disconnect(); });
-    } else goReel();
+    // (2026-11-15, owner) The slide no longer waits for the reel to come on screen and the Feature clip is no
+    // longer restarted then: the reel is already rolling, with every clip playing, before you scroll to it.
     const firsts=vids.slice(0,n);
     const checkReady=function(){
       if(window.__csReelReady||gone) return;
@@ -30252,7 +30239,7 @@ function FormatReel(){
   return (
     <div className="fmt-reel-wrap">
       <div className="fmt-reel" ref={reelRef} role="list" aria-label="Production formats">
-        <div className="fmt-track fmt-wait" style={{animationDelay:reelStart.delay}}>
+        <div className="fmt-track" style={{animationDelay:reelStart.delay}}>
           {doubled.map(function(c,i){ const first=i<FORMAT_CARDS.length, url='/video-formats/reel5/'+c.file+'.mp4'; return (
             <article className={'fmt-card'+(c.light?' fmt-card-light':'')} role="listitem" tabIndex={0} key={c.file+'-'+i} aria-hidden={first?undefined:'true'}>
               <img className="fmt-poster" src={'/video-formats/reel5/'+c.file+'.jpg'} alt={c.cat+' — production footage'} decoding="async"/>
