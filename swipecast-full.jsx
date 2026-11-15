@@ -30054,7 +30054,7 @@ function HomeEcho({onNavigate}){
           <div className="he-shade"/>
           <div className="he-covers" aria-hidden="true"><canvas className="he-cover"/><canvas className="he-cover" style={{opacity:0}}/></div>
           <div className="he-after">
-            <h2>Every set starts here.</h2>
+            <h2>Seen full-screen.</h2>
             <button className="btn-teal" style={{padding:"14px 26px",fontSize:16}} onClick={()=>onNavigate&&onNavigate("search")}>Browse castings <Tri/></button>
           </div>
         </div>
