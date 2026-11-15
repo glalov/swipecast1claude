@@ -29924,7 +29924,8 @@ function HomeEcho({onNavigate}){
         const x=document.createElement('canvas').getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
         const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
         let fs=100*(Wd*0.88)/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
-        const EARLY=typeof location!=="undefined"&&/[?&]he=early/.test(location.search); // TEST 2026-11-15: earlier phone zoom
+        // phones (owner 2026-11-15): word settles centred below the site header (56%), zoom starts ~0.3 screen early
+        const EARLY=true;
         const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36,CY=H*(EARLY?0.56:0.5),BH=LH,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
         P=Math.max(0,Math.round(CY-GAP3-half));Z=Math.round(H*1.7);LEAD=EARLY?Math.round(H*0.3):0;
         // section ends exactly when the zoom finishes: from then on the film scene scrolls away with the page,
