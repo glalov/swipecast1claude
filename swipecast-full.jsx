@@ -9819,24 +9819,34 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
         if(dead||!b2tGLHost.current)return;
         const fontsReady=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();
         return fontsReady.then(()=>{
-          // building the 3D scene takes ~0.15s: do it at a moment you're not scrolling (2026-11-15)
+          // building the 3D scene takes ~0.15s: done at a moment you're not scrolling — but never later than
+          // the moment the footer is close, so the cube always drops in as the hexagonal one (2026-11-15: waiting
+          // for a scroll pause let a straight scroll to the bottom drop the old square fallback cube first)
           const build=()=>{
             if(dead||!b2tGLHost.current||b2tGL.current)return;
-            if(window.__csScrolling){window.addEventListener('cs:scroll-idle',build,{once:true});return;}
-            try{b2tGL.current=makeB2tGL(lib,b2tGLHost.current,t('footer.backToTop'),b2tGLHost.current.closest('.b2t-cube'),()=>setB2tAnim(null));}catch(_){b2tGL.current=null;return;}
+            const ft=document.querySelector('.site-footer'),far=ft?ft.getBoundingClientRect().top>innerHeight*2.2:false;
+            if(window.__csScrolling&&far){window.addEventListener('cs:scroll-idle',build,{once:true});return;}
+            try{b2tGL.current=makeB2tGL(lib,b2tGLHost.current,t('footer.backToTop'),b2tGLHost.current.closest('.b2t-cube'),()=>setB2tAnim(null));}catch(_){b2tGL.current=null;window.__b2tGLFail=true;return;}
             if(!b2tAnimRef.current)setB2tGLOn(true);
           };
           build();
         });
-      }).catch(()=>{});
+      }).catch(()=>{window.__b2tGLFail=true;});
     };
+    window.addEventListener('cs:b2t-need',start);
     const el=document.querySelector('.site-footer');
     if(el&&'IntersectionObserver' in window){io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting))start();},{rootMargin:'1500px 0px'});io.observe(el);}
     else start();
+    // also build it early, in a quiet moment ~6s after the page has loaded (after the library warm-up), so it's
+    // ready long before anyone reaches the footer; skipped on slow/data-saver connections (footer trigger stays)
+    let early=0;
+    try{const c=navigator.connection;if(!(c&&(c.saveData||/(^|-)2g|3g/.test(c.effectiveType||'')))){
+      const kick=()=>{early=setTimeout(()=>{(window.requestIdleCallback||function(f){return setTimeout(f,0);})(()=>{if(!dead)start();},{timeout:3000});},6000);};
+      if(document.readyState==='complete')kick();else window.addEventListener('load',kick,{once:true});}}catch(_){}
     const mq=window.matchMedia?window.matchMedia('(max-width:640px)'):null;
     const onMq=()=>{if(b2tGL.current)b2tGL.current.size();};
     try{mq&&mq.addEventListener('change',onMq);}catch(_){}
-    return()=>{dead=true;if(io)io.disconnect();try{mq&&mq.removeEventListener('change',onMq);}catch(_){}if(b2tGL.current){b2tGL.current.dispose();b2tGL.current=null;}};
+    return()=>{dead=true;clearTimeout(early);window.removeEventListener('cs:b2t-need',start);if(io)io.disconnect();try{mq&&mq.removeEventListener('change',onMq);}catch(_){}if(b2tGL.current){b2tGL.current.dispose();b2tGL.current=null;}};
   },[backToTop]);
   React.useEffect(()=>{
     if(!b2tGL.current)return;
@@ -9879,6 +9889,13 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       // the 3–5 taps before a tap landed.
       const margin=b2tShownRef.current?90:0;
       const nextShow=scrollable>240 && vpBottom>=(threshold-margin);
+      // (2026-11-15) If you reach the bottom before the hexagonal 3D cube is ready (e.g. right after the page
+      // opened), wait for it — up to 2.5s — instead of dropping the old square fallback cube first.
+      if(nextShow&&!b2tShownRef.current&&!b2tGL.current&&!window.__b2tGLFail){
+        if(!geo.wantAt){geo.wantAt=performance.now();try{window.dispatchEvent(new Event('cs:b2t-need'));}catch(_){}}
+        if(performance.now()-geo.wantAt<2500){clearTimeout(geo.wantT);geo.wantT=setTimeout(check,120);return;}
+      }
+      if(!nextShow)geo.wantAt=0;
       if(nextShow!==b2tShownRef.current){
         b2tShownRef.current=nextShow;
         setB2tShow(nextShow);
