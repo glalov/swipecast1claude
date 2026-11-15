@@ -29823,10 +29823,14 @@ const HE_CSS=`
  .he-stage{height:100lvh}
  .he-after h2{font-size:31px}
 }
-/* touch screens: a plain full-screen block, never pinned (see note above) */
+/* touch screens: the scene is FIXED to the screen and the section is a window onto it (clip-path clips
+   fixed children) — iPhone scrolls fixed layers perfectly still, unlike pinned (sticky) ones */
 .he.he-touch{height:100svh;min-height:560px;max-height:860px}
 .he.he-touch .he-stage{position:relative;top:0!important;height:100%}
 .he.he-touch .he-box{top:0!important;clip-path:none!important}
+.he.he-t{height:260svh;clip-path:inset(0);-webkit-clip-path:inset(0);background:#0B0A09}
+.he.he-t .he-stage{position:fixed;left:0;right:0;top:0!important;height:100lvh}
+.he.he-t .he-box{top:0!important;clip-path:none!important}
 @media (prefers-reduced-motion:reduce){.he-after{opacity:1}}
 `;
 const HE_SD=(()=>{try{return typeof CSS!=="undefined"&&CSS.supports('animation-timeline: scroll()')&&CSS.supports('animation-range: 0px 100px');}catch(_){return false;}})();
@@ -29874,6 +29878,79 @@ function HomeEcho({onNavigate}){
     // iOS slides its address bar on scroll, which fires resize with only the height changing: ignore those
     const sizeChanged=()=>{const dw=innerWidth!==lastW,dh=Math.abs(innerHeight-lastH)>(mobile()?200:60);if(dw||dh){lastW=innerWidth;lastH=innerHeight;return true;}return false;};
     lastW=innerWidth;lastH=innerHeight;
+
+    // ── PHONES / touch screens: same scroll-following zoom as desktop, built the iPhone-safe way ──
+    // A pinned (sticky) scene shook on iPhone. Here the scene is position:fixed (iOS scrolls fixed layers on
+    // its graphics chip, perfectly still) and the section is a "window" onto it (clip-path:inset(0)): the
+    // page slides away to reveal the word, the word stays put and grows as you scroll, and the next section
+    // slides back over the film. Nothing moves the scene itself, so there is nothing to shake.
+    // Progress: ?m=a → CSS scroll-driven animation; default → light glide script (smooths iOS's stepped
+    // scroll updates). Both reverse exactly as you scroll back.
+    const touch2=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
+    // TEST (2026-11-15): ?he=v2 turns on the new phone version for the owner to try on a real iPhone
+    const useTouch=!still&&(touch2||mobile())&&typeof location!=="undefined"&&/[?&]he=v2/.test(location.search);
+    if(useTouch){
+      const modeA=HE_SD&&typeof location!=="undefined"&&/[?&]m=a/.test(location.search);
+      const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
+      const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
+      const invScale=s=>{let lo=0,hi=.7;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
+      let bases=[],painted='',near=false,sw=[];
+      r.classList.add('he-t');r.style.marginTop='0px';r.style.backgroundColor='';
+      const paintLevels=()=>{if(!geo)return;const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
+        while(cvs().length<bases.length){const c=document.createElement('canvas');c.className='he-cover';c.style.opacity='0';covers.appendChild(c);extra.push(c);}
+        cvs().forEach((c,i)=>{if(i<bases.length)draw2d(c,bases[i]);else{c.width=1;c.height=1;}});};
+      const release=()=>{painted='';cvs().forEach(c=>{if(c.width>1){c.width=1;c.height=1;}});};
+      // scene = the screen (svh for positions, lvh tall so the address bar never uncovers its bottom)
+      const measureT=()=>{const sv=probe('100svh'),lv=probe('100lvh');H=sv||innerHeight;LH=Math.max(H,lv||H);P=0;const Wd=innerWidth;
+        const x=document.createElement('canvas').getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
+        const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
+        let fs=100*(Wd*0.88)/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
+        const lh=fs*0.86,CY=H*0.5,BH=LH,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
+        stage.style.top='0px';box.style.top='0px';covers.style.height=BH+'px';after.style.bottom=Math.round((LH-H)+H*0.12)+'px';
+        geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};};
+      // 0 when the section's top reaches the top of the screen (word fully revealed), 1 at its end
+      const prog=()=>{const b=r.getBoundingClientRect(),tot=r.offsetHeight-H;return tot>0?clamp(-b.top/tot,0,1):0;};
+      const cache={},set=(el,k,prop,val)=>{if(cache[k]!==val){cache[k]=val;el.style[prop]=val;}};
+      const apply=p=>{const sc=scaleAt(p);
+        cvs().forEach((c,i)=>{if(i>=bases.length)return;const inP=sw[i],outP=i+1<bases.length?sw[i+1]:2,on=p>=inP&&p<outP;
+          set(c,'o'+i,'opacity',on?'1':'0');if(on)set(c,'t'+i,'transform','translate3d(0,0,0) scale('+Math.max(1,sc/bases[i]).toFixed(5)+')');});
+        const op=Math.round(opAt(p)*1000)/1000;set(covers,'co','opacity',String(op));set(covers,'cv','visibility',op<=.001?'hidden':'visible');
+        const q=afterAt(p);set(after,'ao','opacity',q.toFixed(3));set(after,'at','transform','translate3d(0,'+(28-28*q).toFixed(1)+'px,0)');};
+      let styleEl=null;
+      const keyframesA=()=>{if(!styleEl){styleEl=document.createElement('style');document.head.appendChild(styleEl);}
+        const secTop=r.getBoundingClientRect().top+scrollY,start=Math.round(secTop),end=start+Math.max(1,r.offsetHeight-H);
+        const N=72,st=[];for(let i=0;i<=N;i++)st.push(i/N);
+        const all=[...new Set(st.concat(sw.flatMap(s=>[Math.max(0,s-1e-4),s])))].filter(v=>v>=0&&v<=1).sort((a,b)=>a-b),pct=v=>(v*100).toFixed(4)+'%';
+        let css='';
+        bases.forEach((b,i)=>{const inP=sw[i],outP=i+1<bases.length?sw[i+1]:2;css+='@keyframes het-l'+i+'{'+all.map(v=>{const on=v>=inP&&v<outP;return pct(v)+'{transform:translate3d(0,0,0) scale('+(on?Math.max(1,scaleAt(v)/b):1).toFixed(5)+');opacity:'+(on?1:0)+'}';}).join('')+'}';});
+        css+='@keyframes het-co{'+all.map(v=>pct(v)+'{opacity:'+opAt(v).toFixed(4)+'}').join('')+'}';
+        css+='@keyframes het-af{'+all.map(v=>{const q=afterAt(v);return pct(v)+'{opacity:'+q.toFixed(4)+';transform:translate3d(0,'+(28-28*q).toFixed(2)+'px,0)}';}).join('')+'}';
+        const anim=n=>'animation-name:'+n+';animation-duration:1ms;animation-duration:auto;animation-timing-function:linear;animation-fill-mode:both;animation-timeline:scroll(root block);animation-range:'+start+'px '+end+'px;';
+        css+='.he.he-t.he-a .he-covers{'+anim('het-co')+'}.he.he-t.he-a .he-after{'+anim('het-af')+'}';
+        bases.forEach((b,i)=>{css+='.he.he-t.he-a .he-cover:nth-child('+(i+1)+'){'+anim('het-l'+i)+'}';});
+        if(styleEl.textContent!==css)styleEl.textContent=css;r.classList.add('he-a');};
+      // glide (default): follows the scroll, smoothing iOS's uneven scroll updates; never more than 6% behind
+      let cur=null,raf=0,lastT=0;
+      const tick=now=>{raf=0;if(!near)return;const t=prog(),dt=Math.min(64,lastT?now-lastT:16.7);lastT=now;
+        if(cur===null)cur=t;cur+=(t-cur)*(1-Math.pow(1-.2,dt/16.7));
+        if(t-cur>.06)cur=t-.06;else if(cur-t>.06)cur=t+.06;
+        if(t>=1||t<=0||Math.abs(t-cur)<.0003)cur=t;apply(cur);
+        if(cur!==t)raf=requestAnimationFrame(tick);else lastT=0;};
+      const kick=()=>{if(!raf&&near&&!modeA)raf=requestAnimationFrame(tick);};
+      const full=()=>{measureT();bases=levelsFor(9);sw=bases.map(b=>b===1?0:invScale(b));if(near)paintLevels();if(modeA)keyframesA();else{cur=null;kick();}};
+      // the fixed scene only exists (painted, visible, film loaded) while the section is within ~1 screen
+      let nio=null;
+      try{nio=new IntersectionObserver(es=>{const e=es[es.length-1];if(!e)return;near=e.isIntersecting;
+          stage.style.visibility=near?'visible':'hidden';if(near){paintLevels();kick();}else release();},{rootMargin:'100% 0px'});nio.observe(r);}catch(_){near=true;}
+      stage.style.visibility='hidden';
+      full();
+      try{document.fonts.load('500 300px Fraunces').then(()=>{painted='';full();}).catch(()=>{});}catch(_){}
+      let ro=null,roT=0;if(modeA){try{ro=new ResizeObserver(()=>{clearTimeout(roT);roT=setTimeout(keyframesA,80);});ro.observe(document.body);}catch(_){}}
+      if(!modeA)addEventListener('scroll',kick,{passive:true});
+      const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
+      return()=>{if(vio)vio.disconnect();if(nio)nio.disconnect();if(ro)ro.disconnect();clearTimeout(roT);if(raf)cancelAnimationFrame(raf);clearTimeout(rz);removeEventListener('scroll',kick);removeEventListener('resize',onR);
+        if(styleEl)styleEl.remove();extra.forEach(c=>c.remove());r.classList.remove('he-t','he-a');stage.style.visibility='';};
+    }
 
     const touch=(()=>{try{return matchMedia('(pointer: coarse)').matches;}catch(_){return false;}})();
     const useTimed=!still&&(touch||mobile())&&typeof Element!=="undefined"&&!!Element.prototype.animate&&!(typeof location!=="undefined"&&/[?&]hejs=1/.test(location.search));
