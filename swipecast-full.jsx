@@ -29751,16 +29751,17 @@ function csArmLoopVideo(v){
 // start) or as soon as they come within 3000px, whichever is first, so they are
 // already rolling by the time anyone scrolls to them. The poster sits on the
 // wrapper and the video fades in over it (see csArmLoopVideo).
-// ─── HOMEPAGE "Through the word" (demo 2026-11-15): one word cut out of the cream; the homepage
-// film shows through and floods the screen as you scroll, then a line + Browse castings.
-// Smoothness rules (each one fixed a real stutter):
-//  • the browser moves everything itself (sticky); JS only touches layers that are already pinned;
-//  • letters are redrawn sharp at each ~12% zoom step instead of blowing up one small bitmap;
-//  • TWO stacked canvases: the next step is drawn into the hidden one ahead of time, and reaching a
-//    step only flips which one is visible + its scale (pure layer properties, applied in one frame).
-//    Safari can show a canvas's new pixels a frame apart from a transform change, which made each
-//    step "pop" on slow scrolls; flipping finished layers never changes pixels on screen mid-frame;
-//  • no new full-screen bitmaps while scrolling (memory clean-up pauses).
+// ─── HOMEPAGE "Through the word" (2026-11-15): one word cut out of the cream; the homepage film
+// shows through and floods the screen as you scroll, then a line + Browse castings.
+// HOW IT STAYS SMOOTH (each rule fixed a stutter the owner saw):
+//  • Safari/iOS 26+ and Chrome: the whole sequence is a CSS scroll-driven animation (animation-timeline:
+//    scroll()). The browser computes every frame straight from the scroll position — no JavaScript runs
+//    while you scroll, so nothing can arrive a frame late (iPhone shake, Safari stutter).
+//  • Sharp letters without redrawing mid-scroll: the cream is painted once per zoom LEVEL (1×, 1.8×,
+//    3.2×…) into stacked canvases; each level is only scaled up to 1.8× before the next one takes over.
+//  • the browser pins everything itself (sticky stage at top=P; the film box reaches P above it);
+//  • iOS: sized with svh/lvh, and address-bar resizes (height only) never re-lay anything out;
+//  • older browsers (Firefox today): same look, driven by a light per-frame script (two canvases).
 const HE_WORDS={'1':['CASTSLATE'],'2':['ACTION'],'3':['YOUR','SHOT']};
 const HE_GAP=112; // card → top of the letters (measures ~95px on screen)
 const HE_CSS=`
@@ -29774,13 +29775,10 @@ const HE_CSS=`
 .he-after{position:absolute;left:0;right:0;text-align:center;color:#F7F0E6;opacity:0;will-change:opacity,transform;padding:0 24px}
 .he-after h2{margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(34px,4vw,58px);line-height:1.08;letter-spacing:-1px;color:#F7F0E6;text-shadow:0 2px 30px rgba(0,0,0,.35)}
 .he-after .btn-teal{margin-top:26px}
+.he-probe{position:fixed;left:-9px;top:0;width:1px;visibility:hidden;pointer-events:none}
 .he-sw{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9990;display:flex;gap:4px;padding:4px;background:#fff;border:1px solid #D8CEBD;border-radius:999px;box-shadow:0 8px 24px -10px rgba(0,0,0,.3);font:700 13px 'DM Sans',sans-serif}
 .he-sw button{border:0;background:none;padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit;color:#241F19}
 .he-sw button.on{background:#241F19;color:#fff}
-/* phones: same pinned sequence, shorter. iOS slides its address bar in and out, which changes 100vh:
-   the stage is 100lvh tall (always reaches the bottom even with the bar hidden) and every position is
-   measured against the small viewport (svh), so nothing jumps or opens a gap. Light portrait film. */
-.he-probe{position:fixed;left:-9px;top:0;width:1px;visibility:hidden;pointer-events:none}
 @media (max-width:900px){
  .guarantee-construct{margin:24px auto 0!important}
  .he{height:230svh;margin:0 0 48px}
@@ -29789,73 +29787,112 @@ const HE_CSS=`
 }
 @media (prefers-reduced-motion:reduce){.he-after{opacity:1}}
 `;
+const HE_SD=(()=>{try{return typeof CSS!=="undefined"&&CSS.supports('animation-timeline: scroll()')&&CSS.supports('animation-range: 0px 100px');}catch(_){return false;}})();
 function HomeEcho({onNavigate}){
   const ref=React.useRef(null);
   const demo=typeof location!=="undefined"&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   const[w,setW]=useState(()=>{try{return demo&&(location.search.match(/[?&]echo=(\d)/)||[])[1]||'1';}catch(_){return'1';}});
   useEffect(()=>{const r=ref.current;if(!r)return;
     const stage=r.querySelector('.he-stage'),box=r.querySelector('.he-box'),covers=r.querySelector('.he-covers'),after=r.querySelector('.he-after'),vid=r.querySelector('video');
-    const cv=[...r.querySelectorAll('.he-cover')];
     const L=HE_WORDS[w]||HE_WORDS['1'];
     const mobile=()=>innerWidth<=900,still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const useSD=HE_SD&&!still&&!(typeof location!=="undefined"&&/[?&]hejs=1/.test(location.search));
+    // film: loads only as the section gets close; portrait cut on phones
     let vio=null;
     if(vid){vid.addEventListener('playing',()=>{const p=r.querySelector('.he-poster');if(p)p.style.visibility='hidden';},{once:true});
       const go=()=>{if(!vid.src){vid.src=mobile()?vid.dataset.msrc:vid.dataset.src;vid.preload='auto';}try{vid.play().catch(()=>{});}catch(_){}};
       try{vio=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){go();}else{try{vid.pause();}catch(_){}}},{rootMargin:'1200px 0px'});vio.observe(r);}catch(_){go();}}
-    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),seg=(p,a,b)=>clamp((p-a)/(b-a),0,1),cache={};
-    const ease=t=>t*t*(3-2*t);
-    const set=(el,k,prop,val)=>{if(cache[k]!==val){cache[k]=val;el.style[prop]=val;}};
-    let P=0,H=0,LH=0,geo=null;
-    // buffers: each canvas remembers the zoom it was drawn at
-    const buf=cv.map(c=>({c,s:0,k:''}));let act=0;
-    const fk=()=>w+(document.fonts&&document.fonts.check('500 40px Fraunces')?'f':'')+'/'+(geo?geo.cw+'x'+geo.ch:'');
-    const draw2d=(b,sc)=>{const {Wd,BH,CY,fs,lh,sp,dpr,cw,ch}=geo,c=b.c;
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),seg=(p,a,b)=>clamp((p-a)/(b-a),0,1),ease=t=>t*t*(3-2*t);
+    const scaleAt=p=>{const z=ease(seg(p,0,.7));return 1+Math.pow(z,2.2)*(mobile()?8:15);};
+    const opAt=p=>1-ease(seg(p,.46,.72)),afterAt=p=>ease(seg(p,.7,.9));
+    const probe=h=>{const d=document.createElement('div');d.className='he-probe';d.style.height=h;r.appendChild(d);const v=d.offsetHeight;d.remove();return v;};
+    const fontsOk=()=>!!(document.fonts&&document.fonts.check('500 40px Fraunces'));
+    let geo=null,P=0,H=0,LH=0;
+    // geometry: word size, pin offset P (word centre lands mid-screen), film box height
+    const measure=()=>{const sv=probe('100svh'),lv=probe('100lvh');H=sv||innerHeight;LH=Math.max(H,lv||H);const Wd=innerWidth;
+      const x=document.createElement('canvas').getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
+      const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
+      let fs=100*(Wd*(mobile()?0.88:0.84))/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
+      const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36;
+      P=Math.max(0,Math.round(H*(mobile()?0.5:0.55)-(mobile()?72:HE_GAP)-half));
+      const BH=LH+P,CY=H*(mobile()?0.5:0.55);
+      // canvas resolution: crisp but bounded (max ~2880px wide per layer)
+      const dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
+      stage.style.top=P+'px';box.style.top=(-P)+'px';covers.style.height=BH+'px';after.style.bottom=(P+(LH-H)+H*(mobile()?0.1:0.12))+'px';
+      geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};};
+    const draw2d=(c,sc)=>{const {Wd,BH,CY,fs,lh,sp,dpr,cw,ch}=geo;
       if(c.width!==cw||c.height!==ch){c.width=cw;c.height=ch;}c.style.height=BH+'px';c.style.transformOrigin='50% '+(CY/BH*100).toFixed(3)+'%';
       const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#F7F5F0';x.fillRect(0,0,Wd,BH);
       x.translate(Wd/2,CY);x.scale(sc,sc);x.translate(-Wd/2,-CY);
       x.globalCompositeOperation='destination-out';x.fillStyle='#000';x.font='500 '+fs.toFixed(2)+'px Fraunces, Georgia, serif';x.textBaseline='alphabetic';
       const line=(t,y)=>{const ch2=[...t],ws=ch2.map(q=>x.measureText(q).width),g=sp*fs,tot=ws.reduce((a,b2)=>a+b2,0)+g*(ch2.length-1);let cx=Wd/2-tot/2;ch2.forEach((q,n)=>{x.fillText(q,cx,y);cx+=ws[n]+g;});};
       const top=CY-(L.length*lh)/2+fs*0.72;L.forEach((t,n)=>line(t,top+n*lh));
-      x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='source-over';b.s=sc;b.k=fk();};
-    const probe=h=>{const d=document.createElement('div');d.className='he-probe';d.style.height=h;r.appendChild(d);const v=d.offsetHeight;d.remove();return v;};
-    const layout=()=>{const sv=probe('100svh'),lv=probe('100lvh');H=sv||innerHeight;LH=Math.max(H,lv||H);const Wd=innerWidth;const SH=H;
-      const x=cv[0].getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
-      const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
-      let fs=100*(Wd*(mobile()?0.88:0.84))/Math.max(...L.map(at100));fs=Math.min(fs,(SH*0.62)/(L.length*0.86));
-      const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36;
-      P=Math.max(0,Math.round(H*(mobile()?0.5:0.55)-(mobile()?72:HE_GAP)-half));stage.style.top=P+'px';box.style.top=(-P)+'px';
-      const BH=LH+P,CY=H*(mobile()?0.5:0.55);
-      after.style.bottom=(P+(LH-H)+H*(mobile()?0.1:0.12))+'px';covers.style.height=BH+'px';
-      const dpr=Math.min(devicePixelRatio||1,2);
-      // iOS fires resize as the address bar slides; skip the redraw when nothing about the word changed
-      if(geo&&geo.Wd===Wd&&geo.BH===BH&&Math.abs(geo.fs-fs)<.01&&buf[act].k===fk()){kick();return;}
-      geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr)};
-      // start fresh: active canvas at the current zoom, the other prepared one step ahead
-      const sc=cur!=null?scaleAt(cur):1;draw2d(buf[act],Math.max(1,sc));show(act);prep();};
-    const scaleAt=p=>{const z=ease(seg(p,0,.7));return 1+Math.pow(z,2.2)*(mobile()?8:15);};
-    const UP=1.12,DN=1.06;
-    let dir=1,lastSc=1,pT=0;
-    // draw the hidden canvas one step ahead in the direction of travel (between frames, never mid-swap)
+      x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='source-over';c.__s=sc;};
+    let lastW=0,lastH=0,rz=0;
+    // iOS slides its address bar on scroll, which fires resize with only the height changing: ignore those
+    const sizeChanged=()=>{const dw=innerWidth!==lastW,dh=Math.abs(innerHeight-lastH)>(mobile()?200:60);if(dw||dh){lastW=innerWidth;lastH=innerHeight;return true;}return false;};
+    lastW=innerWidth;lastH=innerHeight;
+
+    if(useSD){
+      // ── scroll-driven path: zero JavaScript while scrolling ──
+      const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
+      let styleEl=document.createElement('style');document.head.appendChild(styleEl);
+      let bases=[],painted='';
+      const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
+      const invScale=s=>{let lo=0,hi=.7;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
+      const paintLevels=()=>{const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
+        while(cvs().length<bases.length){const c=document.createElement('canvas');c.className='he-cover';c.style.opacity='0';covers.appendChild(c);extra.push(c);}
+        cvs().forEach((c,i)=>{if(i<bases.length)draw2d(c,bases[i]);else{c.width=1;c.height=1;}});};
+      const keyframes=()=>{
+        const secTop=r.getBoundingClientRect().top+scrollY,start=Math.round(secTop-P),len=Math.max(1,r.offsetHeight-LH),end=start+len;
+        const N=72,stops=[];for(let i=0;i<=N;i++)stops.push(i/N);
+        const sw=bases.map(b=>b===1?0:invScale(b));
+        const pc=Math.min(1,(P+2)/len),pbg=(()=>{let lo=0,hi=1;for(let i=0;i<30;i++){const m=(lo+hi)/2;if(opAt(m)>.5)lo=m;else hi=m;}return (lo+hi)/2;})();
+        const all=[...new Set(stops.concat(sw.flatMap(s=>[Math.max(0,s-1e-4),s]),[Math.max(0,pc-1e-4),pc,Math.max(0,pbg-1e-4),pbg]))].filter(v=>v>=0&&v<=1).sort((a,b)=>a-b);
+        const pct=v=>(v*100).toFixed(4)+'%';
+        let css='';
+        bases.forEach((b,i)=>{const inP=sw[i],outP=i+1<bases.length?sw[i+1]:2;
+          css+='@keyframes he-l'+i+'{'+all.map(v=>{const on=v>=inP&&v<outP;const s=Math.max(1,scaleAt(v)/b);return pct(v)+'{transform:translate3d(0,0,0) scale('+(on?s:1).toFixed(5)+');opacity:'+(on?1:0)+'}';}).join('')+'}';});
+        css+='@keyframes he-co{'+all.map(v=>pct(v)+'{opacity:'+opAt(v).toFixed(4)+';visibility:'+(opAt(v)<=.001?'hidden':'visible')+'}').join('')+'}';
+        css+='@keyframes he-af{'+all.map(v=>{const q=afterAt(v);return pct(v)+'{opacity:'+q.toFixed(4)+';transform:translate3d(0,'+(28-28*q).toFixed(2)+'px,0)}';}).join('')+'}';
+        css+='@keyframes he-bx{0%{clip-path:inset('+P+'px 0 0 0)}'+pct(Math.max(0,pc-1e-4))+'{clip-path:inset('+P+'px 0 0 0)}'+pct(pc)+'{clip-path:inset(0px 0 0 0)}100%{clip-path:inset(0px 0 0 0)}}';
+        css+='@keyframes he-bg{0%{background-color:#F7F5F0}'+pct(Math.max(0,pbg-1e-4))+'{background-color:#F7F5F0}'+pct(pbg)+'{background-color:#0B0A09}100%{background-color:#0B0A09}}';
+        const anim=n=>'animation-name:'+n+';animation-duration:1ms;animation-duration:auto;animation-timing-function:linear;animation-fill-mode:both;animation-timeline:scroll(root block);animation-range:'+start+'px '+end+'px;';
+        css+='.he.he-sd{'+anim('he-bg')+'}.he.he-sd .he-box{'+anim('he-bx')+'}.he.he-sd .he-covers{'+anim('he-co')+'}.he.he-sd .he-after{'+anim('he-af')+'}';
+        bases.forEach((b,i)=>{css+='.he.he-sd .he-cover:nth-child('+(i+1)+'){'+anim('he-l'+i)+'}';});
+        if(styleEl.textContent!==css)styleEl.textContent=css;};
+      const full=()=>{r.style.marginTop='0px';measure();bases=levelsFor(mobile()?9:16);paintLevels();keyframes();r.classList.add('he-sd');};
+      full();
+      try{document.fonts.load('500 300px Fraunces').then(()=>{geo.font=fontsOk();full();}).catch(()=>{});}catch(_){}
+      // the page above can change height (images, news); keep the scroll range in step — no repaint
+      let ro=null,roT=0;try{ro=new ResizeObserver(()=>{clearTimeout(roT);roT=setTimeout(keyframes,80);});ro.observe(document.body);}catch(_){}
+      const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
+      return()=>{if(vio)vio.disconnect();if(ro)ro.disconnect();clearTimeout(roT);clearTimeout(rz);removeEventListener('resize',onR);r.classList.remove('he-sd');styleEl.remove();extra.forEach(c=>c.remove());};
+    }
+
+    // ── fallback path (no scroll-driven animations): light per-frame script, two stacked canvases ──
+    const cache={},set=(el,k,prop,val)=>{if(cache[k]!==val){cache[k]=val;el.style[prop]=val;}};
+    const buf=[...r.querySelectorAll('.he-cover')].slice(0,2).map(c=>({c,s:0,k:''}));let act=0;
+    const fk=()=>w+(geo&&geo.font?'f':'')+'/'+(geo?geo.cw+'x'+geo.ch:'');
+    const drawBuf=(b,sc)=>{draw2d(b.c,sc);b.s=sc;b.k=fk();};
+    const UP=1.12,DN=1.06;let dir=1,lastSc=1,pT=0;
     const prep=()=>{clearTimeout(pT);pT=setTimeout(()=>{if(!geo)return;const a=buf[act],o=buf[1-act];
-      const want=dir>=0?a.s*UP:Math.max(1,a.s/DN);if(o.k===fk()&&Math.abs(o.s-want)<1e-6)return;draw2d(o,want);},0);};
+      const want=dir>=0?a.s*UP:Math.max(1,a.s/DN);if(o.k===fk()&&Math.abs(o.s-want)<1e-6)return;drawBuf(o,want);},0);};
     const show=i=>{act=i;set(buf[i].c,'o'+i,'opacity','1');set(buf[1-i].c,'o'+(1-i),'opacity','0');};
-    const snap=()=>{r.style.marginTop='0px';const t=r.getBoundingClientRect().top+scrollY,f=t-Math.floor(t);if(f>.01&&f<.99)r.style.marginTop=(1-f).toFixed(3)+'px';};
-    // 0 when the stage pins (word settled mid-screen), 1 when it lets go; same rule on phones and desktop
     const target=()=>{if(still)return 0;const b=r.getBoundingClientRect();const tot=r.offsetHeight-LH;return tot>0?clamp((P-b.top)/tot,0,1):1;};
     const draw=(p,raw)=>{
       const scrolledPastPin=raw*(r.offsetHeight-LH);set(box,'cp','clipPath',scrolledPastPin>=P+2?'none':'inset('+P+'px 0 0 0)');
       const sc=scaleAt(p);
       if(Math.abs(sc-lastSc)>1e-5){const nd=sc>lastSc?1:-1;if(nd!==dir){dir=nd;prep();}lastSc=sc;}
       let a=buf[act];const o=buf[1-act];
-      // reached the next step? flip to the prepared canvas (layer properties only)
       if(sc/a.s>UP||sc<a.s){
         if(o.k===fk()&&sc>=o.s&&sc/o.s<=UP){set(o.c,'t'+(1-act),'transform','translate3d(0,0,0) scale('+(sc/o.s).toFixed(5)+')');show(1-act);a=o;prep();}
-        else{draw2d(a,sc<a.s?Math.max(1,sc/DN):sc);prep();} // not ready (very fast flick): draw in place
+        else{drawBuf(a,sc<a.s?Math.max(1,sc/DN):sc);prep();}
       }
       set(a.c,'t'+act,'transform','translate3d(0,0,0) scale('+(sc/a.s).toFixed(5)+')');
-      const op=Math.round((1-ease(seg(p,.46,.72)))*1000)/1000;set(covers,'co','opacity',String(op));set(covers,'cv','visibility',op<=.001?'hidden':'visible');
+      const op=Math.round(opAt(p)*1000)/1000;set(covers,'co','opacity',String(op));set(covers,'cv','visibility',op<=.001?'hidden':'visible');
       set(r,'bg','backgroundColor',op>.5?'#F7F5F0':'#0B0A09');
-      const q=ease(seg(p,.7,.9));set(after,'ao','opacity',q.toFixed(3));set(after,'at','transform','translate3d(0,'+(28-28*q).toFixed(1)+'px,0)');};
+      const q=afterAt(p);set(after,'ao','opacity',q.toFixed(3));set(after,'at','transform','translate3d(0,'+(28-28*q).toFixed(1)+'px,0)');};
     let cur=null,raf=0,lastT=0;
     const tick=now=>{raf=0;if(!r.offsetParent)return;const t=target(),dt=Math.min(64,lastT?now-lastT:16.7);lastT=now;
       if(cur===null)cur=t;cur+=(t-cur)*(1-Math.pow(1-.12,dt/16.7));
@@ -29863,11 +29900,11 @@ function HomeEcho({onNavigate}){
       if(t>=1||t<=0||Math.abs(t-cur)<.0003)cur=t;draw(cur,t);
       if(cur!==t)raf=requestAnimationFrame(tick);else lastT=0;};
     const kick=()=>{if(!raf)raf=requestAnimationFrame(tick);};
-    const prepAll=()=>{snap();layout();kick();};
-    prepAll();try{document.fonts.load('500 300px Fraunces').then(prepAll).catch(()=>{});document.fonts.ready.then(prepAll);}catch(_){}
-    addEventListener('scroll',kick,{passive:true});let rz=0;const onR=()=>{clearTimeout(rz);rz=setTimeout(prepAll,120);};addEventListener('resize',onR);
-    const late=setTimeout(prepAll,1500);
-    return()=>{if(vio)vio.disconnect();if(raf)cancelAnimationFrame(raf);removeEventListener('scroll',kick);removeEventListener('resize',onR);clearTimeout(rz);clearTimeout(late);clearTimeout(pT);};
+    const full=()=>{measure();drawBuf(buf[act],Math.max(1,cur!=null?scaleAt(cur):1));show(act);prep();kick();};
+    full();try{document.fonts.load('500 300px Fraunces').then(()=>{geo.font=fontsOk();full();}).catch(()=>{});}catch(_){}
+    addEventListener('scroll',kick,{passive:true});
+    const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
+    return()=>{if(vio)vio.disconnect();if(raf)cancelAnimationFrame(raf);removeEventListener('scroll',kick);removeEventListener('resize',onR);clearTimeout(rz);clearTimeout(pT);};
   },[w]);
   return(<>
     <style>{HE_CSS}</style>
