@@ -29751,6 +29751,144 @@ function csArmLoopVideo(v){
 // start) or as soon as they come within 3000px, whichever is first, so they are
 // already rolling by the time anyone scrolls to them. The poster sits on the
 // wrapper and the video fades in over it (see csArmLoopVideo).
+// ─── HOMEPAGE "Through the word" (demo 2026-11-15): one word cut out of the cream; the homepage
+// film shows through and floods the screen as you scroll, then a line + Browse castings.
+// Smoothness rules (each one fixed a real stutter):
+//  • the browser moves everything itself (sticky); JS only touches layers that are already pinned;
+//  • letters are redrawn sharp at each ~12% zoom step instead of blowing up one small bitmap;
+//  • TWO stacked canvases: the next step is drawn into the hidden one ahead of time, and reaching a
+//    step only flips which one is visible + its scale (pure layer properties, applied in one frame).
+//    Safari can show a canvas's new pixels a frame apart from a transform change, which made each
+//    step "pop" on slow scrolls; flipping finished layers never changes pixels on screen mid-frame;
+//  • no new full-screen bitmaps while scrolling (memory clean-up pauses).
+const HE_WORDS={'1':['CASTSLATE'],'2':['ACTION'],'3':['YOUR','SHOT']};
+const HE_GAP=112; // card → top of the letters (measures ~95px on screen)
+const HE_CSS=`
+.he{position:relative;height:250vh;background:#F7F5F0;margin:0 0 64px}
+.he-stage{position:sticky;top:0;height:100vh}
+.he-box{position:absolute;left:0;right:0;top:0;bottom:0;overflow:hidden;background:#0B0A09;transform:translateZ(0)}
+.he-box video,.he-box .he-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.he-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,10,9,.10) 0%,rgba(11,10,9,.04) 40%,rgba(11,10,9,.62) 100%)}
+.he-covers{position:absolute;left:0;top:0;width:100%;will-change:opacity}
+.he-cover{position:absolute;left:0;top:0;width:100%;height:100%;will-change:transform,opacity;transform:translateZ(0)}
+.he-after{position:absolute;left:0;right:0;text-align:center;color:#F7F0E6;opacity:0;will-change:opacity,transform;padding:0 24px}
+.he-after h2{margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(34px,4vw,58px);line-height:1.08;letter-spacing:-1px;color:#F7F0E6;text-shadow:0 2px 30px rgba(0,0,0,.35)}
+.he-after .btn-teal{margin-top:26px}
+.he-sw{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9990;display:flex;gap:4px;padding:4px;background:#fff;border:1px solid #D8CEBD;border-radius:999px;box-shadow:0 8px 24px -10px rgba(0,0,0,.3);font:700 13px 'DM Sans',sans-serif}
+.he-sw button{border:0;background:none;padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit;color:#241F19}
+.he-sw button.on{background:#241F19;color:#fff}
+@media (max-width:900px){
+ .he{display:none}
+ .guarantee-construct{margin:24px auto 64px!important}
+ .he{height:auto;margin-bottom:40px}
+ .he-stage{position:relative;height:78vh;min-height:460px}
+ .he-box{top:0!important;clip-path:none!important}
+ .he-cover{will-change:auto}
+ .he-after{opacity:1;bottom:7vh!important}
+ .he-after h2{color:#241F19;text-shadow:none;font-size:30px}
+}
+@media (prefers-reduced-motion:reduce){.he-after{opacity:1}}
+`;
+function HomeEcho({onNavigate}){
+  const ref=React.useRef(null);
+  const demo=typeof location!=="undefined"&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const[w,setW]=useState(()=>{try{return demo&&(location.search.match(/[?&]echo=(\d)/)||[])[1]||'1';}catch(_){return'1';}});
+  useEffect(()=>{const r=ref.current;if(!r)return;
+    const stage=r.querySelector('.he-stage'),box=r.querySelector('.he-box'),covers=r.querySelector('.he-covers'),after=r.querySelector('.he-after'),vid=r.querySelector('video');
+    const cv=[...r.querySelectorAll('.he-cover')];
+    const L=HE_WORDS[w]||HE_WORDS['1'];
+    const mobile=()=>innerWidth<=900,still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let vio=null;
+    if(vid&&!mobile()){vid.addEventListener('playing',()=>{const p=r.querySelector('.he-poster');if(p)p.style.visibility='hidden';},{once:true});
+      const go=()=>{if(!vid.src){vid.src=vid.dataset.src;vid.preload='auto';}try{vid.play().catch(()=>{});}catch(_){}};
+      try{vio=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){go();}else{try{vid.pause();}catch(_){}}},{rootMargin:'1200px 0px'});vio.observe(r);}catch(_){go();}}
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),seg=(p,a,b)=>clamp((p-a)/(b-a),0,1),cache={};
+    const ease=t=>t*t*(3-2*t);
+    const set=(el,k,prop,val)=>{if(cache[k]!==val){cache[k]=val;el.style[prop]=val;}};
+    let P=0,H=0,geo=null;
+    // buffers: each canvas remembers the zoom it was drawn at
+    const buf=cv.map(c=>({c,s:0,k:''}));let act=0;
+    const fk=()=>w+(document.fonts&&document.fonts.check('500 40px Fraunces')?'f':'')+'/'+(geo?geo.cw+'x'+geo.ch:'');
+    const draw2d=(b,sc)=>{const {Wd,BH,CY,fs,lh,sp,dpr,cw,ch}=geo,c=b.c;
+      if(c.width!==cw||c.height!==ch){c.width=cw;c.height=ch;}c.style.height=BH+'px';c.style.transformOrigin='50% '+(CY/BH*100).toFixed(3)+'%';
+      const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#F7F5F0';x.fillRect(0,0,Wd,BH);
+      x.translate(Wd/2,CY);x.scale(sc,sc);x.translate(-Wd/2,-CY);
+      x.globalCompositeOperation='destination-out';x.fillStyle='#000';x.font='500 '+fs.toFixed(2)+'px Fraunces, Georgia, serif';x.textBaseline='alphabetic';
+      const line=(t,y)=>{const ch2=[...t],ws=ch2.map(q=>x.measureText(q).width),g=sp*fs,tot=ws.reduce((a,b2)=>a+b2,0)+g*(ch2.length-1);let cx=Wd/2-tot/2;ch2.forEach((q,n)=>{x.fillText(q,cx,y);cx+=ws[n]+g;});};
+      const top=CY-(L.length*lh)/2+fs*0.72;L.forEach((t,n)=>line(t,top+n*lh));
+      x.setTransform(1,0,0,1,0,0);x.globalCompositeOperation='source-over';b.s=sc;b.k=fk();};
+    const layout=()=>{H=innerHeight;const Wd=innerWidth;
+      const x=cv[0].getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
+      const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
+      let fs=100*(Wd*0.84)/Math.max(...L.map(at100));fs=Math.min(fs,(H*0.62)/(L.length*0.86));
+      const lh=fs*0.86,half=(L.length-1)*lh*0.5+fs*0.36;
+      if(mobile()){P=0;stage.style.top='0px';box.style.top='0px';}
+      else{P=Math.max(0,Math.round(H*0.55-HE_GAP-half));stage.style.top=P+'px';box.style.top=(-P)+'px';}
+      const BH=H+P,CY=mobile()?H*0.42:H*0.55;
+      after.style.bottom=(mobile()?0:P+H*0.12)+'px';covers.style.height=BH+'px';
+      const dpr=Math.min(devicePixelRatio||1,2);
+      geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr)};
+      // start fresh: active canvas at the current zoom, the other prepared one step ahead
+      const sc=cur!=null?scaleAt(cur):1;draw2d(buf[act],Math.max(1,sc));show(act);prep();};
+    const scaleAt=p=>{const z=ease(seg(p,0,.7));return 1+Math.pow(z,2.2)*15;};
+    const UP=1.12,DN=1.06;
+    let dir=1,lastSc=1,pT=0;
+    // draw the hidden canvas one step ahead in the direction of travel (between frames, never mid-swap)
+    const prep=()=>{clearTimeout(pT);pT=setTimeout(()=>{if(!geo||mobile())return;const a=buf[act],o=buf[1-act];
+      const want=dir>=0?a.s*UP:Math.max(1,a.s/DN);if(o.k===fk()&&Math.abs(o.s-want)<1e-6)return;draw2d(o,want);},0);};
+    const show=i=>{act=i;set(buf[i].c,'o'+i,'opacity','1');set(buf[1-i].c,'o'+(1-i),'opacity','0');};
+    const snap=()=>{r.style.marginTop='0px';if(mobile())return;const t=r.getBoundingClientRect().top+scrollY,f=t-Math.floor(t);if(f>.01&&f<.99)r.style.marginTop=(1-f).toFixed(3)+'px';};
+    const target=()=>{if(still||mobile())return 0;const b=r.getBoundingClientRect(),tot=r.offsetHeight-H;return tot>0?clamp((P-b.top)/tot,0,1):1;};
+    const draw=(p,raw)=>{
+      if(mobile()){set(r,'bg','backgroundColor','#F7F5F0');set(buf[act].c,'t'+act,'transform','none');set(covers,'co','opacity','1');set(covers,'cv','visibility','visible');set(after,'ao','opacity','1');set(after,'at','transform','none');set(box,'cp','clipPath','none');return;}
+      const scrolledPastPin=raw*(r.offsetHeight-H);
+      set(box,'cp','clipPath',scrolledPastPin>=P+2?'none':'inset('+P+'px 0 0 0)');
+      const sc=scaleAt(p);
+      if(Math.abs(sc-lastSc)>1e-5){const nd=sc>lastSc?1:-1;if(nd!==dir){dir=nd;prep();}lastSc=sc;}
+      let a=buf[act];const o=buf[1-act];
+      // reached the next step? flip to the prepared canvas (layer properties only)
+      if(sc/a.s>UP||sc<a.s){
+        if(o.k===fk()&&sc>=o.s&&sc/o.s<=UP){set(o.c,'t'+(1-act),'transform','translate3d(0,0,0) scale('+(sc/o.s).toFixed(5)+')');show(1-act);a=o;prep();}
+        else{draw2d(a,sc<a.s?Math.max(1,sc/DN):sc);prep();} // not ready (very fast flick): draw in place
+      }
+      set(a.c,'t'+act,'transform','translate3d(0,0,0) scale('+(sc/a.s).toFixed(5)+')');
+      const op=Math.round((1-ease(seg(p,.46,.72)))*1000)/1000;set(covers,'co','opacity',String(op));set(covers,'cv','visibility',op<=.001?'hidden':'visible');
+      set(r,'bg','backgroundColor',op>.5?'#F7F5F0':'#0B0A09');
+      const q=ease(seg(p,.7,.9));set(after,'ao','opacity',q.toFixed(3));set(after,'at','transform','translate3d(0,'+(28-28*q).toFixed(1)+'px,0)');};
+    let cur=null,raf=0,lastT=0;
+    const tick=now=>{raf=0;if(!r.offsetParent)return;const t=target(),dt=Math.min(64,lastT?now-lastT:16.7);lastT=now;
+      if(cur===null)cur=t;cur+=(t-cur)*(1-Math.pow(1-.12,dt/16.7));
+      if(t-cur>.05)cur=t-.05;else if(cur-t>.05)cur=t+.05;
+      if(t>=1||t<=0||Math.abs(t-cur)<.0003)cur=t;draw(cur,t);
+      if(cur!==t)raf=requestAnimationFrame(tick);else lastT=0;};
+    const kick=()=>{if(!raf)raf=requestAnimationFrame(tick);};
+    const prepAll=()=>{snap();layout();kick();};
+    prepAll();try{document.fonts.load('500 300px Fraunces').then(prepAll).catch(()=>{});document.fonts.ready.then(prepAll);}catch(_){}
+    addEventListener('scroll',kick,{passive:true});let rz=0;const onR=()=>{clearTimeout(rz);rz=setTimeout(prepAll,120);};addEventListener('resize',onR);
+    const late=setTimeout(prepAll,1500);
+    return()=>{if(vio)vio.disconnect();if(raf)cancelAnimationFrame(raf);removeEventListener('scroll',kick);removeEventListener('resize',onR);clearTimeout(rz);clearTimeout(late);clearTimeout(pT);};
+  },[w]);
+  return(<>
+    <style>{HE_CSS}</style>
+    <section ref={ref} className="he" aria-label="CastSlate">
+      <div className="he-stage">
+        <div className="he-box">
+          <img className="he-poster" src="/assets/video/actor-journey-set-hd-poster.jpg" alt=""/>
+          <video muted playsInline loop preload="none" poster="/assets/video/actor-journey-set-hd-poster.jpg" aria-hidden="true" data-src="/assets/video/actor-journey-set-hd.mp4"/>
+          <div className="he-shade"/>
+          <div className="he-covers" aria-hidden="true"><canvas className="he-cover"/><canvas className="he-cover" style={{opacity:0}}/></div>
+          <div className="he-after">
+            <h2>Your next role is already casting.</h2>
+            <button className="btn-teal" style={{padding:"14px 26px",fontSize:16}} onClick={()=>onNavigate&&onNavigate("castings")}>Browse castings <Tri/></button>
+          </div>
+        </div>
+      </div>
+    </section>
+    {demo&&<div className="he-sw" role="group" aria-label="Demo word">{[['1','CastSlate'],['2','Action'],['3','Your shot']].map(([k,l])=>
+      <button key={k} className={w===k?'on':''} onClick={()=>setW(k)}>{k} · {l}</button>)}</div>}
+  </>);
+}
+
 function BufferedLoopVideo(props){
   const{src,poster,onError,...rest}=props;
   const ref=React.useRef(null);
@@ -30427,7 +30565,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── THE GUARANTEE ───────── */}
-    <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"24px auto 64px",padding:"0 24px"}}>
+    <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"57px auto 0",padding:"0 24px"}}>
       <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
         {/* colorful glow blobs */}
         <span className="guarantee-glow-left" style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,139,127,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
@@ -30447,6 +30585,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <p className="guarantee-copy" style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <strong style={{color:"var(--teal)"}}>full-screen</strong>. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
       </div>
     </div>
+
+    <HomeEcho onNavigate={onNavigate}/>
 
     {/* ───────── "Skip the website builder" (owner, 2026-10-14, demo website-comparison-demo.html).
          Sample actor "Nina" uses the owner's photo set (marissa-kent-*, grace-kent-hero). Builder prices = cheapest ad-free
