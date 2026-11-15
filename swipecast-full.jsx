@@ -29887,7 +29887,7 @@ function HomeEcho({onNavigate}){
       stage.style.top=P+'px';box.style.top=(-P)+'px';covers.style.height=BH+'px';after.style.bottom=(P+(LH-H)+H*(mobile()?0.1:0.12))+'px';
       geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};
       if(FLY){const f=flyTarget(Wd,BH,H,CY,fs,lh,sp);if(f){geo.OX=f.ox;geo.OY=f.oy;SMAX=f.smax;}}};
-    const draw2d=(c,sc)=>{const {Wd,BH,CY,fs,lh,sp,dpr,cw,ch}=geo;
+    const draw2d=(c,sc,dl)=>{const {Wd,BH,CY,fs,lh,sp}=geo;const dpr=dl||geo.dpr,cw=dl?Math.round(Wd*dl):geo.cw,ch=dl?Math.round(BH*dl):geo.ch;
       const OX=geo.OX!=null?geo.OX:Wd/2,OY=geo.OY!=null?geo.OY:CY;
       if(c.width!==cw||c.height!==ch){c.width=cw;c.height=ch;}c.style.height=BH+'px';c.style.transformOrigin=(OX/Wd*100).toFixed(3)+'% '+(OY/BH*100).toFixed(3)+'%';
       const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#F7F5F0';x.fillRect(0,0,Wd,BH);
@@ -29974,11 +29974,21 @@ function HomeEcho({onNavigate}){
       let bases=[],painted='';
       const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
       const invScale=s=>{let lo=0,hi=ZEND();for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
-      const paintLevels=()=>{const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
+      // (2026-11-15) The first two zoom layers are painted at full sharpness right away; the deeper ones (only
+      // reached once the letter is huge, where edges are long gentle curves) at standard resolution and one per
+      // ~50ms. Before: 7 full-resolution layers (158MB) painted in one go — a visible stall in Safari.
+      let pgen=0;
+      const paintLevels=()=>{const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;const g=++pgen;
         while(cvs().length<bases.length){const c=document.createElement('canvas');c.className='he-cover';c.style.opacity='0';covers.appendChild(c);extra.push(c);}
-        cvs().forEach((c,i)=>{if(i<bases.length)draw2d(c,bases[i]);else{c.width=1;c.height=1;}});};
+        cvs().forEach((c,i)=>{if(i>=bases.length){c.width=1;c.height=1;}});
+        const lowRes=Math.min(geo.dpr,1);
+        bases.forEach((b,i)=>{const go=()=>{if(g!==pgen||!near)return;draw2d(cvs()[i],b,i<2?0:lowRes);};if(i<2)go();else setTimeout(go,(i-1)*50);});};
+      // Timeline = the section itself (view-timeline --he): progress is measured from the section's own position,
+      // so content above it loading or changing height never forces the animations to be rebuilt mid-scroll
+      // (each rebuild could make Safari flash or jump). Older engines fall back to the page scroll + px range.
+      const VT=(()=>{try{return CSS.supports('view-timeline: --a block')&&CSS.supports('animation-range: cover 100px cover 900px');}catch(_){return false;}})();
       const keyframes=()=>{
-        const secTop=r.getBoundingClientRect().top+scrollY,start=Math.round(secTop-P),len=Math.max(1,r.offsetHeight-LH),end=start+len;
+        const secTop=r.getBoundingClientRect().top+scrollY,len=Math.max(1,r.offsetHeight-LH),start=VT?Math.round(innerHeight-P):Math.round(secTop-P),end=start+len;
         const N=72,stops=[];for(let i=0;i<=N;i++)stops.push(i/N);
         const sw=bases.map(b=>b===1?0:invScale(b));
         const pc=Math.min(1,(P+2)/len),pbg=(()=>{let lo=0,hi=1;for(let i=0;i<30;i++){const m=(lo+hi)/2;if(opAt(m)>.5)lo=m;else hi=m;}return (lo+hi)/2;})();
@@ -29991,7 +30001,8 @@ function HomeEcho({onNavigate}){
         css+='@keyframes he-af{'+all.map(v=>{const q=afterAt(v);return pct(v)+'{opacity:'+q.toFixed(4)+';transform:translate3d(0,'+(28-28*q).toFixed(2)+'px,0)}';}).join('')+'}';
         css+='@keyframes he-bx{0%{clip-path:inset('+P+'px 0 0 0)}'+pct(Math.max(0,pc-1e-4))+'{clip-path:inset('+P+'px 0 0 0)}'+pct(pc)+'{clip-path:inset(0px 0 0 0)}100%{clip-path:inset(0px 0 0 0)}}';
         css+='@keyframes he-bg{0%{background-color:#F7F5F0}'+pct(Math.max(0,pbg-1e-4))+'{background-color:#F7F5F0}'+pct(pbg)+'{background-color:#0B0A09}100%{background-color:#0B0A09}}';
-        const anim=n=>'animation-name:'+n+';animation-duration:1ms;animation-duration:auto;animation-timing-function:linear;animation-fill-mode:both;animation-timeline:scroll(root block);animation-range:'+start+'px '+end+'px;';
+        const anim=n=>'animation-name:'+n+';animation-duration:1ms;animation-duration:auto;animation-timing-function:linear;animation-fill-mode:both;'+(VT?'animation-timeline:--he;animation-range:cover '+start+'px cover '+end+'px;':'animation-timeline:scroll(root block);animation-range:'+start+'px '+end+'px;');
+        if(VT)css+='.he.he-sd{view-timeline:--he block;}';
         css+='.he.he-sd{'+anim('he-bg')+'}.he.he-sd .he-box{'+anim('he-bx')+'}.he.he-sd .he-covers{'+anim('he-co')+'}.he.he-sd .he-after{'+anim('he-af')+'}';
         bases.forEach((b,i)=>{css+='.he.he-sd .he-cover:nth-child('+(i+1)+'){'+anim('he-l'+i)+'}';});
         if(styleEl.textContent!==css)styleEl.textContent=css;};
@@ -30003,7 +30014,7 @@ function HomeEcho({onNavigate}){
       full();
       try{document.fonts.load('500 300px Fraunces').then(()=>{geo.font=fontsOk();full();}).catch(()=>{});}catch(_){}
       // the page above can change height (images, news); keep the scroll range in step — no repaint
-      let ro=null,roT=0;try{ro=new ResizeObserver(()=>{clearTimeout(roT);roT=setTimeout(keyframes,80);});ro.observe(document.body);}catch(_){}
+      let ro=null,roT=0;if(!VT){try{ro=new ResizeObserver(()=>{clearTimeout(roT);roT=setTimeout(keyframes,80);});ro.observe(document.body);}catch(_){}}
       const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
       return()=>{if(vio)vio.disconnect();if(nio)nio.disconnect();if(ro)ro.disconnect();clearTimeout(roT);clearTimeout(rz);removeEventListener('resize',onR);r.classList.remove('he-sd');styleEl.remove();extra.forEach(c=>c.remove());};
     }
