@@ -29848,8 +29848,28 @@ function HomeEcho({onNavigate}){
       const go=()=>{if(!vid.src){vid.src=mobile()?vid.dataset.msrc:vid.dataset.src;vid.preload='auto';}try{vid.play().catch(()=>{});}catch(_){}};
       try{vio=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){go();}else{try{vid.pause();}catch(_){}}},{rootMargin:'1200px 0px'});vio.observe(r);}catch(_){go();}}
     const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),seg=(p,a,b)=>clamp((p-a)/(b-a),0,1),ease=t=>t*t*(3-2*t);
-    const scaleAt=p=>{const z=ease(seg(p,0,.7));return 1+Math.pow(z,2.2)*(mobile()?8:15);};
-    const opAt=p=>1-ease(seg(p,.46,.72)),afterAt=p=>ease(seg(p,.7,.9));
+    // FLY (default since 2026-11-15, owner): instead of fading the cream, the camera flies into a letter — the cream stays
+    // solid, the stroke grows until the film fills the screen, then the line appears.
+    const FLY=!(typeof location!=="undefined"&&/[?&]fly=0/.test(location.search)); // ?fly=0 = old cream fade, for comparison
+    let SMAX=0;const ZE=.8;
+    const scaleAt=p=>{if(FLY&&SMAX){return Math.pow(SMAX,ease(seg(p,0,ZE)));}const z=ease(seg(p,0,.7));return 1+Math.pow(z,2.2)*(mobile()?8:15);};
+    const opAt=p=>FLY&&SMAX?(p<ZE?1:0):1-ease(seg(p,.46,.72)),afterAt=p=>FLY&&SMAX?ease(seg(p,.8,.93)):ease(seg(p,.7,.9));
+    const ZEND=()=>FLY&&SMAX?ZE:.7;
+    // Fly-through target: the film shows through the letter STROKES, so the camera aims at the thick stroke
+    // nearest the middle of the screen (found by scanning the painted word) and zooms until that stroke covers
+    // every corner of the screen. Measured from real pixels, so it works for any word and font.
+    const flyTarget=(Wd,BH,Hs,CY,fs,lh,sp)=>{try{
+      const c0=document.createElement('canvas');draw2d(c0,1);const d=geo.dpr,x=c0.getContext('2d'),cw=c0.width,ch=c0.height;
+      const alphaRow=y=>x.getImageData(0,Math.round(y*d),cw,1).data,alphaCol=(xx)=>x.getImageData(Math.round(xx*d),0,1,ch).data;
+      const top=CY-(L.length*lh)/2+fs*0.72;let best=null;
+      for(let n=0;n<L.length;n++){const y=top+n*lh-fs*0.35,row=alphaRow(y);let i=0;
+        while(i<cw){if(row[i*4+3]<128){let j=i;while(j<cw&&row[j*4+3]<128)j++;const w=(j-i)/d,cx=(i+j)/2/d;
+            if(w>=fs*0.07){const score=Math.abs(cx-Wd/2)+Math.abs(y-Hs*0.5)*0.5-w*2;if(!best||score<best.score)best={score,cx,y,w};}i=j;}else i++;}}
+      if(!best)return null;
+      const col=alphaCol(best.cx);let a=Math.round(best.y*d),b=a;while(a>0&&col[(a-1)*4+3]<128)a--;while(b<ch-1&&col[(b+1)*4+3]<128)b++;
+      const top2=a/d,bot2=b/d,oy=(top2+bot2)/2,hh=(bot2-top2)/2,hw=best.w/2;
+      const sx=Math.max(best.cx,Wd-best.cx)/hw,sy=Math.max(oy,Hs-oy)/hh;
+      return {ox:best.cx,oy,smax:Math.max(sx,sy)*1.06};}catch(_){return null;}};
     const probe=h=>{const d=document.createElement('div');d.className='he-probe';d.style.height=h;r.appendChild(d);const v=d.offsetHeight;d.remove();return v;};
     const fontsOk=()=>!!(document.fonts&&document.fonts.check('500 40px Fraunces'));
     let geo=null,P=0,H=0,LH=0;
@@ -29864,11 +29884,13 @@ function HomeEcho({onNavigate}){
       // canvas resolution: crisp but bounded (max ~2880px wide per layer)
       const dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
       stage.style.top=P+'px';box.style.top=(-P)+'px';covers.style.height=BH+'px';after.style.bottom=(P+(LH-H)+H*(mobile()?0.1:0.12))+'px';
-      geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};};
+      geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};
+      if(FLY){const f=flyTarget(Wd,BH,H,CY,fs,lh,sp);if(f){geo.OX=f.ox;geo.OY=f.oy;SMAX=f.smax;}}};
     const draw2d=(c,sc)=>{const {Wd,BH,CY,fs,lh,sp,dpr,cw,ch}=geo;
-      if(c.width!==cw||c.height!==ch){c.width=cw;c.height=ch;}c.style.height=BH+'px';c.style.transformOrigin='50% '+(CY/BH*100).toFixed(3)+'%';
+      const OX=geo.OX!=null?geo.OX:Wd/2,OY=geo.OY!=null?geo.OY:CY;
+      if(c.width!==cw||c.height!==ch){c.width=cw;c.height=ch;}c.style.height=BH+'px';c.style.transformOrigin=(OX/Wd*100).toFixed(3)+'% '+(OY/BH*100).toFixed(3)+'%';
       const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.globalCompositeOperation='source-over';x.fillStyle='#F7F5F0';x.fillRect(0,0,Wd,BH);
-      x.translate(Wd/2,CY);x.scale(sc,sc);x.translate(-Wd/2,-CY);
+      x.translate(OX,OY);x.scale(sc,sc);x.translate(-OX,-OY);
       x.globalCompositeOperation='destination-out';x.fillStyle='#000';x.font='500 '+fs.toFixed(2)+'px Fraunces, Georgia, serif';x.textBaseline='alphabetic';
       const line=(t,y)=>{const ch2=[...t],ws=ch2.map(q=>x.measureText(q).width),g=sp*fs,tot=ws.reduce((a,b2)=>a+b2,0)+g*(ch2.length-1);let cx=Wd/2-tot/2;ch2.forEach((q,n)=>{x.fillText(q,cx,y);cx+=ws[n]+g;});};
       const top=CY-(L.length*lh)/2+fs*0.72;L.forEach((t,n)=>line(t,top+n*lh));
@@ -29890,7 +29912,7 @@ function HomeEcho({onNavigate}){
     if(useV3){
       const extra=[];const cvs=()=>[...covers.querySelectorAll('.he-cover')];
       const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
-      const invScale=s=>{let lo=0,hi=.7;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
+      const invScale=s=>{let lo=0,hi=ZEND();for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
       let bases=[],painted='',near=false,sw=[],Z=0,GAP3=72,h3=0;
       const home=covers.parentNode;r.appendChild(covers); // the word layer lives in the section, not the fixed scene
       r.classList.add('he-t3');r.style.marginTop='0px';r.style.backgroundColor='';
@@ -29908,7 +29930,8 @@ function HomeEcho({onNavigate}){
         // like desktop (the line + button stay put on the film until the whole scene leaves)
         h3=Math.round(LH+Z-P+H*0.45); /* + a short hold with the line and button fully shown, then it rides away */r.style.height=h3+'px';box.style.top='0px';covers.style.height=BH+'px';
         after.style.bottom=Math.round((LH-H)+H*0.12)+'px';
-        geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};};
+        geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};
+        if(FLY){const f=flyTarget(Wd,BH,H,CY,fs,lh,sp);if(f){geo.OX=f.ox;geo.OY=f.oy;SMAX=f.smax;}}};
       const cache={},set=(el,k,prop,val)=>{if(cache[k]!==val){cache[k]=val;el.style[prop]=val;}};
       // word layer: scrolls with the page until its word reaches mid-screen (section top = P), then holds
       const place=S=>{if(S>P){set(covers,'pos','position','absolute');set(covers,'top','top',(-P)+'px');}else{set(covers,'pos','position','fixed');set(covers,'top','top','0px');}
@@ -29928,7 +29951,7 @@ function HomeEcho({onNavigate}){
         if(cur!==t)raf=requestAnimationFrame(tick);else lastT=0;};
       const kick=()=>{if(!raf&&near)raf=requestAnimationFrame(tick);};
       const onScroll=()=>{if(near)place(r.getBoundingClientRect().top);kick();};
-      const full=()=>{measure3();bases=levelsFor(9);sw=bases.map(b=>b===1?0:invScale(b));if(near)paintLevels();cur=null;place(r.getBoundingClientRect().top);kick();};
+      const full=()=>{measure3();bases=levelsFor(Math.max(9,SMAX*1.01));sw=bases.map(b=>b===1?0:invScale(b));if(near)paintLevels();cur=null;place(r.getBoundingClientRect().top);kick();};
       let nio=null;
       try{nio=new IntersectionObserver(es=>{const e=es[es.length-1];if(!e)return;near=e.isIntersecting;
           stage.style.visibility=near?'visible':'hidden';if(near){paintLevels();kick();}else release();},{rootMargin:'100% 0px'});nio.observe(r);}catch(_){near=true;}
@@ -29947,7 +29970,7 @@ function HomeEcho({onNavigate}){
       let styleEl=document.createElement('style');document.head.appendChild(styleEl);
       let bases=[],painted='';
       const levelsFor=max=>{const b=[];let s=1;while(s<max-1e-6){b.push(+s.toFixed(4));s*=1.8;}return b;};
-      const invScale=s=>{let lo=0,hi=.7;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
+      const invScale=s=>{let lo=0,hi=ZEND();for(let i=0;i<40;i++){const m=(lo+hi)/2;if(scaleAt(m)<s)lo=m;else hi=m;}return (lo+hi)/2;};
       const paintLevels=()=>{const key=geo.cw+'x'+geo.ch+'/'+w+'/'+(geo.font?'f':'')+'/'+bases.join(',');if(painted===key)return;painted=key;
         while(cvs().length<bases.length){const c=document.createElement('canvas');c.className='he-cover';c.style.opacity='0';covers.appendChild(c);extra.push(c);}
         cvs().forEach((c,i)=>{if(i<bases.length)draw2d(c,bases[i]);else{c.width=1;c.height=1;}});};
@@ -29972,7 +29995,7 @@ function HomeEcho({onNavigate}){
       // the zoom layers (~25MB of graphics memory each) are only painted while the section is within
       // ~1.5 screens, and released when you've moved away — so the rest of the page never carries them
       let near=false,nio=null;const release=()=>{painted='';cvs().forEach(c=>{if(c.width>1){c.width=1;c.height=1;}});};
-      const full=()=>{r.style.marginTop='0px';measure();bases=levelsFor(mobile()?9:16);if(near)paintLevels();keyframes();r.classList.add('he-sd');};
+      const full=()=>{r.style.marginTop='0px';measure();bases=levelsFor(Math.max(mobile()?9:16,SMAX*1.01));if(near)paintLevels();keyframes();r.classList.add('he-sd');};
       try{nio=new IntersectionObserver(es=>{const e=es[es.length-1];if(!e)return;if(e.isIntersecting){near=true;paintLevels();}else{near=false;release();}},{rootMargin:'150% 0px'});nio.observe(r);}catch(_){near=true;}
       full();
       try{document.fonts.load('500 300px Fraunces').then(()=>{geo.font=fontsOk();full();}).catch(()=>{});}catch(_){}
