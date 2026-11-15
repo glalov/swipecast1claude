@@ -29835,7 +29835,8 @@ const HE_SD=(()=>{try{return typeof CSS!=="undefined"&&CSS.supports('animation-t
 function HomeEcho({onNavigate}){
   const ref=React.useRef(null);
   const demo=typeof location!=="undefined"&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-  const[w,setW]=useState(()=>{try{return demo&&(location.search.match(/[?&]echo=(\d)/)||[])[1]||'1';}catch(_){return'1';}});
+  // word: YOUR / SHOT (owner 2026-11-15; picks up "Your shot, actually taken." on the guarantee card above)
+  const[w,setW]=useState(()=>{try{return demo&&(location.search.match(/[?&]echo=(\d)/)||[])[1]||'3';}catch(_){return'3';}});
   useEffect(()=>{const r=ref.current;if(!r)return;
     const stage=r.querySelector('.he-stage'),box=r.querySelector('.he-box'),covers=r.querySelector('.he-covers'),after=r.querySelector('.he-after'),vid=r.querySelector('video');
     const L=HE_WORDS[w]||HE_WORDS['1'];
@@ -30019,7 +30020,7 @@ function HomeEcho({onNavigate}){
   },[w]);
   return(<>
     <style>{HE_CSS}</style>
-    <section ref={ref} className="he" aria-label="CastSlate">
+    <section ref={ref} className="he" aria-label="Your shot">
       <div className="he-stage">
         <div className="he-box">
           <img className="he-poster" src="/assets/video/actor-journey-set-hd-poster.jpg" alt=""/>
