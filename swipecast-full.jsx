@@ -29763,9 +29763,10 @@ function csArmLoopVideo(v){
 //  • iOS: sized with svh/lvh, and address-bar resizes (height only) never re-lay anything out;
 //  • PHONES / touch screens: iOS updates scroll-linked effects in steps while its own scrolling runs
 //    separately, so even a scroll-driven zoom shakes there. On touch screens the zoom is a timed reveal
-//    instead: once the word has settled mid-screen (card scrolled away) it plays as a ~2s animation that
-//    the phone runs entirely on its graphics chip (Web Animations, transform/opacity only); scrolling
-//    back up plays it in reverse. Perfectly smooth regardless of how the finger moves.
+//    instead, and NOTHING is pinned: iOS moves pinned (sticky) layers whenever its address bar slides,
+//    which shook the whole scene. On touch screens the section is an ordinary full-screen block; when
+//    most of it is on screen the zoom plays as a ~2s animation run by the phone's graphics chip (Web
+//    Animations, transform/opacity only), and it rewinds if the block leaves downward (scrolling back).
 //  • older browsers (Firefox today): same look, driven by a light per-frame script (two canvases).
 const HE_WORDS={'1':['CASTSLATE'],'2':['ACTION'],'3':['YOUR','SHOT']};
 const HE_GAP=112; // card → top of the letters (measures ~95px on screen)
@@ -29790,6 +29791,10 @@ const HE_CSS=`
  .he-stage{height:100lvh}
  .he-after h2{font-size:31px}
 }
+/* touch screens: a plain full-screen block, never pinned (see note above) */
+.he.he-touch{height:100svh;min-height:560px;max-height:860px}
+.he.he-touch .he-stage{position:relative;top:0!important;height:100%}
+.he.he-touch .he-box{top:0!important;clip-path:none!important}
 @media (prefers-reduced-motion:reduce){.he-after{opacity:1}}
 `;
 const HE_SD=(()=>{try{return typeof CSS!=="undefined"&&CSS.supports('animation-timeline: scroll()')&&CSS.supports('animation-range: 0px 100px');}catch(_){return false;}})();
@@ -29860,17 +29865,27 @@ function HomeEcho({onNavigate}){
         anims.push(after.animate(all.map(v=>{const q=afterAt(v);return {offset:v,opacity:q,transform:'translate3d(0,'+(28-28*q).toFixed(2)+'px,0)'};}),opts));
         anims.forEach(a=>{a.pause();a.currentTime=played?DUR:0;});};
       // section colour behind the pinned stage: cream while the word covers it, dark once the film shows
-      const bg=()=>{r.style.backgroundColor=played?'#0B0A09':'#F7F5F0';};
-      const check=()=>{const top=r.getBoundingClientRect().top,past=P-top,inRange=past>=P+2&&top>-(r.offsetHeight-LH)-innerHeight;
-        if(!played&&past>=P+2){played=true;box.style.clipPath='none';anims.forEach(a=>{a.playbackRate=1;a.play();});setTimeout(()=>{if(played)bg();},DUR*0.6);}
-        else if(played&&past<P+2){played=false;box.style.clipPath='inset('+P+'px 0 0 0)';bg();anims.forEach(a=>{a.playbackRate=-2.2;a.play();});}};
-      const full=()=>{r.style.marginTop='0px';measure();bases=levelsFor(mobile()?9:16);paintLevels();
-        box.style.clipPath=played?'none':'inset('+P+'px 0 0 0)';bg();build();check();};
+      r.classList.add('he-touch');r.style.marginTop='0px';r.style.backgroundColor='';
+      // geometry inside the block: word centred a little above the middle, film fills the block
+      const measureTouch=()=>{const Wd=innerWidth,BH=r.offsetHeight||Math.round(innerHeight);P=0;H=BH;LH=BH;
+        const x=document.createElement('canvas').getContext('2d');x.font='500 100px Fraunces, Georgia, serif';const sp=-0.042;
+        const at100=t=>{const c=[...t];return c.reduce((a,q)=>a+x.measureText(q).width,0)+sp*100*(c.length-1);};
+        let fs=100*(Wd*(Wd<=900?0.88:0.84))/Math.max(...L.map(at100));fs=Math.min(fs,(BH*0.62)/(L.length*0.86));
+        const lh=fs*0.86,CY=BH*0.44,dpr=Math.min(devicePixelRatio||1,2,2880/Wd);
+        covers.style.height=BH+'px';after.style.bottom=Math.round(BH*0.1)+'px';
+        geo={Wd,BH,CY,fs,lh,sp,dpr,cw:Math.round(Wd*dpr),ch:Math.round(BH*dpr),font:fontsOk()};};
+      const play=f=>{played=f;anims.forEach(a=>{a.playbackRate=f?1:-2.2;a.play();});};
+      // most of the block on screen → play; block leaves downward (you scrolled back up) → rewind
+      let io=null;
+      try{io=new IntersectionObserver(es=>{const e=es[es.length-1];if(!e)return;
+          if(!played&&e.intersectionRatio>=0.72)play(true);
+          else if(played&&e.intersectionRatio<0.2&&e.boundingClientRect.top>0)play(false);},
+        {threshold:[0,0.2,0.5,0.72,0.9,1]});io.observe(r);}catch(_){}
+      const full=()=>{measureTouch();bases=levelsFor(Math.max(innerWidth,1)<=900?9:12);paintLevels();build();};
       full();
-      try{document.fonts.load('500 300px Fraunces').then(()=>{geo.font=fontsOk();painted='';full();}).catch(()=>{});}catch(_){}
-      addEventListener('scroll',check,{passive:true});
+      try{document.fonts.load('500 300px Fraunces').then(()=>{painted='';full();}).catch(()=>{});}catch(_){}
       const onR=()=>{if(!sizeChanged())return;clearTimeout(rz);rz=setTimeout(full,150);};addEventListener('resize',onR);
-      return()=>{if(vio)vio.disconnect();clearTimeout(rz);removeEventListener('scroll',check);removeEventListener('resize',onR);anims.forEach(a=>{try{a.cancel();}catch(_){}});extra.forEach(c=>c.remove());};
+      return()=>{if(vio)vio.disconnect();if(io)io.disconnect();clearTimeout(rz);removeEventListener('resize',onR);anims.forEach(a=>{try{a.cancel();}catch(_){}});extra.forEach(c=>c.remove());r.classList.remove('he-touch');};
     }
 
     if(useSD){
