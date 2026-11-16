@@ -29649,6 +29649,9 @@ function NewsArticlePage({slug,onNavigate}){
 // monitor and actors (x=480 of 2048), 0.4s eased crossfade.
 // feature2 (2026-11-04): reel5/feature stabilized (vidstab smoothing 60, zoom 2) with a 0.4s eased crossfade.
 // voiceover4 (2026-11-04): owner-supplied Pexels 7599377, original speed, stabilized, crop y=1040 of 4096.
+// voiceover6 (2026-11-16): owner-picked Pexels 7086280 (4K), from 2.5s (just before she walks in) to the end,
+// 42s; the 3:4 crop slides x=640 -> 1040 between 11s and 14s (eased) to follow her to the mic. 0.4s eased
+// crossfade. 600x800 crf 26 veryslow (2.7MB), lite 360x480 (789KB), -sf.jpg from WebKit. voiceover4 kept unused.
 // commercials3 (2026-11-04): Coverr woman-taking-photos-9338 (owner download), original speed, full 18s,
 // stabilized, crop x=470, 0.4s eased crossfade. Card uses .fmt-card-light.
 // ═══════════════════════════════════════════
@@ -29662,7 +29665,7 @@ const FORMAT_CARDS=[
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
   {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie2",icon:"star"},
-  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover4",icon:"mic",light:true},
+  {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover6",icon:"mic",light:true},
 ];
 const FORMAT_ICONS={
   clapper:'<path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/>',
