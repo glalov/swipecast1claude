@@ -43058,7 +43058,7 @@ const ACG = (()=>{
     {k:"mv-bike",t:["Music Video"],genre:"narrative music video",tracks:["other"],sub:[{k:"synth",w:["a city street at night","a bridge lit by streetlights"]},{k:"country",w:["a country road at sunset","a small town main street"]},{k:"alt",w:["a beach boardwalk at dawn","a waterfront path"]}],
      p:S=>`a teenager rides a bike across town all night to make it to one door before sunrise`,ttl:S=>["Before Sunrise","All Night","The Ride"],
      turns:[`the door opens and the video cuts to black`,`friends join the ride one by one`,`the bike breaks and the last mile is on foot`,`it is one continuous tracking shot`],
-     cast:S=>[{s:"the rider",r:"Lead",a:"teen",xs:[`Rides a bike for nearly the whole video. Confident cyclist; a parent or guardian on set if under 18.`,`No dialogue, all motion. Strong, expressive face.`]},
+     cast:S=>[{s:"the rider",r:"Lead",a:"teen",xs:[`Rides a bike for nearly the whole video. Confident cyclist, at ease riding after dark.`,`No dialogue, all motion. Strong, expressive face.`]},
               {s:"the friends",r:"Supporting",a:"teen",xs:[`Join the ride for part of the night. Confident cyclists.`,`Ride alongside for a few blocks.`]},
               {s:"the one at the door",r:"Day Player",a:"teen",xs:[`Opens the door in the last shot. One look.`,`Appears only at the very end.`]}],
      pay:["flat","stipendFlat","gas"],days:[1,2],req:[S=>`Tell us how comfortable you are riding a bike at night.`]},
@@ -43961,7 +43961,7 @@ const ACG = (()=>{
     soundstage:/far from Earth|relay station|ice survey|cave system|container ship|wagon crossing|sleeper cabin|overnight train|island lighthouse|remote light|between floors|tunnel through a hillside|dance marathon/i,
     beach:/boardwalk|\bbeach\b|seaside/i,
     water:/ferry|harbou?r|\briver\b|\bboat\b|salvage|\bpier\b|\bdocks?\b|waterfront|open water|canal|lighthouse|fish market|marina|\bship\b|\bflood/i,
-    rural:/farmhouse|\bfarm\b|\bcabin\b|\bbarn\b|farmland|orchard|vineyard|lake house|campground|trailhead|dirt road|back road|frozen road|remote (patients|town|road|valley)|trapper|\branch\b|small town|river town|lake town|highway motel|motel strip|two-lane|summer camp|travell?ing fair|two hours from anywhere|\bdig\b|eclipse|storm-chasing|fire line|in a field|wagon|country road|mountain|hikers?|\btrail|woods|forest|snowstorm|ranger|\bdesert\b|county fair/i,
+    rural:/farmhouse|\bfarm\b|\brural\b|sheriff|sheep|shearing|\bcabin\b|\bbarn\b|farmland|orchard|vineyard|lake house|campground|trailhead|dirt road|back road|frozen road|remote (patients|town|road|valley)|trapper|\branch\b|small town|river town|lake town|highway motel|motel strip|two-lane|summer camp|travell?ing fair|two hours from anywhere|\bdig\b|eclipse|storm-chasing|fire line|in a field|wagon|country road|mountain|hikers?|\btrail|woods|forest|snowstorm|ranger|\bdesert\b|county fair/i,
     industrial:/warehouse|factory|body shop|loading dock|parking (structure|garage)|depot|capture (volume|stage)/i
   };
   function v3Need(text){
@@ -44033,7 +44033,7 @@ const ACG = (()=>{
   function v3PickPlace(need,h,res){
     const count=(c,a)=>((h.areaUse&&h.areaUse[v3AreaKey(c.name,a)])||0)+((res.areaUse&&res.areaUse[v3AreaKey(c.name,a)])||0);
     const fits=a=>!need||need==="industrial"&&!/beach/.test(areaTags(a))?true:areaTags(a).split(" ").indexOf(need)>-1;
-    const strictFits=a=>!need||areaTags(a).split(" ").indexOf(need)>-1;
+    const strictFits=a=>!need?areaTags(a).split(" ").indexOf("rural")<0:areaTags(a).split(" ").indexOf(need)>-1;
     const options=[];
     R21_LIVE.forEach(c=>{
       const min=Math.min(...c.areas.map(a=>count(c,a)));
@@ -44658,6 +44658,9 @@ const ACG = (()=>{
     {const newest=(existing||[]).slice().sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));
      h.r16Tags=newest.slice(0,60).map(c=>r16TagMark(c.tagline));
      h.r18Pay=newest.slice(0,120).map(c=>r18PayMark(c.pay)).filter(Boolean);
+     h.r22LocalN=newest.slice(0,6).filter(c=>R22_LOCALNOTE.test(String(c.schedule_note||""))).length;
+     h.r22Tails=new Set();newest.slice(0,14).forEach(c=>v3Sentences(c.pay).slice(1).forEach(x=>h.r22Tails.add(clean(x))));
+     h.r22Unpaid=new Set(newest.slice(0,14).map(c=>r22UnpaidKey(c.pay)).filter(Boolean));
      h.r21Fmts=newest.slice(0,6).map(c=>r21FmtOf(c.roles,c.type)).filter(Boolean);
      h.r21Locs=newest.slice(0,6).map(c=>r21LocStyle(c.shoot_location)).filter(Boolean);
      h.r16Opens={};newest.slice(0,60).forEach(c=>(c.roles||[]).forEach(r=>{const k=r16OpenId(r&&r.description,r&&r.name);if(k)h.r16Opens[k]=(h.r16Opens[k]||0)+1;}));}
@@ -45458,6 +45461,15 @@ const ACG = (()=>{
   function v5Iso(d){return d.toISOString().slice(0,10);}
   function v5D(s){return new Date(String(s).slice(0,10)+"T12:00:00Z");}
   // Thanksgiving week, Christmas to New Year, and the Fourth of July.
+  function r22NoDeadline(d){
+    const m=d.getUTCMonth(),day=d.getUTCDate(),wd=d.getUTCDay();
+    if(m===10&&wd===4&&day>=22&&day<=28)return true;
+    if(m===10&&wd===5&&day>=23&&day<=29)return true;
+    if(m===11&&(day===24||day===25||day===31))return true;
+    if(m===0&&day===1)return true;
+    if(m===6&&day===4)return true;
+    return false;
+  }
   function v5Holiday(d){
     const m=d.getUTCMonth(),day=d.getUTCDate(),y=d.getUTCFullYear();
     if(m===6&&day>=3&&day<=5)return true;
@@ -45612,7 +45624,8 @@ const ACG = (()=>{
       // Deadline 7–28 days before the start, at least a week after posting,
       // two listings per date at most; expiration 0–3 days after it.
       const dLo=new Date(Math.max(s.getTime()-T15.dlMax*V5_DAY,now.getTime()+T15.post*V5_DAY)),dHi=new Date(s.getTime()-T15.dlMin*V5_DAY);
-      const all=[];for(let t=dLo.getTime();t<=dHi.getTime();t+=V5_DAY)all.push(new Date(t));
+      // Round 22: nobody sets a submission deadline on Thanksgiving, Christmas or New Year.
+      const all=[];for(let t=dLo.getTime();t<=dHi.getTime();t+=V5_DAY){const x=new Date(t);if(!r22NoDeadline(x))all.push(x);}
       if(!all.length)continue;
       // Same cap, same fallback: prefer a date under two, else the emptiest.
       const free=all.filter(x=>dlN(v5Iso(x))<2);
@@ -45620,7 +45633,8 @@ const ACG = (()=>{
       const dl=pick(cands);
       const gap=Math.round((s-dl)/V5_DAY);
       const expN=k=>((h.v7Expires||{})[k]||0)+((res.v7Expires||{})[k]||0);
-      const inGap=cgShuffle([0,1,2,3].filter(x=>x<gap));
+      // Round 22: the listing comes down at least three days before the first day.
+      const inGap=cgShuffle([0,1,2].filter(x=>x<=gap-3));
       if(!inGap.length)continue;
       const freeOffs=inGap.filter(x=>expN(v5Iso(new Date(dl.getTime()+x*V5_DAY)))<2);
       const offs=freeOffs.length?freeOffs:inGap.sort((a,b)=>expN(v5Iso(new Date(dl.getTime()+a*V5_DAY)))-expN(v5Iso(new Date(dl.getTime()+b*V5_DAY))));
@@ -46523,6 +46537,7 @@ const ACG = (()=>{
       if(lc)cands.push(`${capFirst(lc)} ${pick(["brand","company","business"])} seeks fresh faces for its next ${stripArticle(f0)}.`,`Next up for ${v3Aa(lc)} ${pick(["brand","company","business"])}: a new ${stripArticle(f0)}.`);
       if(at)cands.push(`Shooting ${at}: ${aB}.`);
     }
+    for(let i=cands.length-1;i>=0;i--)if(/ever rooted for|built on (a|an|the) |built around (a|an|the) /.test(cands[i]))cands.splice(i,1);
     const tType=String(c.type||"");
     const isJob=/^(Stand-In|Body Double|Stunts|Background \/ Extras)$/.test(tType);
     const isStage=/Theater|Workshop|Table Read|Performance Art/.test(tType);
@@ -46910,7 +46925,7 @@ const ACG = (()=>{
     const lab=String(r._slot||"role").replace(/^(the|a|an)\s+/i,"").replace(/^[A-Z][a-z]+['’]s\s+/,m=>m);
     const G=c.genre||"";
     const opts=({
-      demand:()=>{const x=low?"a lot of listening and very few words":lead&&days>=5?`energy that lasts ${units(days)}`:/comedy/.test(G)?"a light touch with jokes":/thriller|crime|horror/.test(G)?"real tension in small moments":"a clear, natural read";
+      demand:()=>{const x=low?"a lot of listening and very few words":lead&&days>=5?`energy that lasts ${units(days)}`:/comedy/.test(G)?"a light touch with jokes":/thriller|crime|horror/.test(G)?"real tension in small moments":pick(["a clear, natural read","an easy, unforced delivery","honest reactions more than big choices","plain, believable delivery","someone who listens well","a relaxed, lived-in feel","small, truthful choices","a steady, unshowy presence"]);
         // Round 11: the label is never pasted back in as a noun once the name
         // has been given ("The plow driver is needed all three days").
         return [`What ${F} needs most is ${x}.`,`${F} needs ${x}.`,`The part asks for ${x}.`,`Bring ${x}.`,`${F} lives or dies on ${x}.`,`We're after ${x} here.`,`Above all: ${x}.`];},
@@ -46930,12 +46945,12 @@ const ACG = (()=>{
         return [`We're looking for someone who can be ${a[0]} and ${a[1]} at once.`,`We want an actor who is ${a[0]} without losing ${a[1]}.`.replace(/losing (\w+)/,(m,w)=>`being ${w}`),`We'd love someone ${a[0]} and ${a[1]}.`,`${c.voice==="i"?"I'm":"We're"} after someone ${a[0]}, with a ${a[1]} side.`];},
       question:()=>{const q=low?"hold a scene with almost no lines":skill?`do real ${skill}`:/comedy/.test(G)?"be funny without winking at the audience":null;
         return q?[`Can you ${q}?`,`Can you ${q}? Then this is yours to read for.`,`Question for you: can you ${q}?`]:null;},
-      detail:()=>{const d=sk.filter(z=>z.split(/\s+/).length<=9).sort((a,b)=>a.length-b.length)[0];return d?[`__DETAIL__${d}`]:null;},
+      detail:()=>{const d=sk.filter(z=>z.split(/\s+/).length<=9&&z.split(/\s+/).length>=5).sort((a,b)=>a.length-b.length)[0];return d?[`__DETAIL__${d}`]:null;},
       tone:()=>/comedy/.test(G)?[`It's a comedy, but ${F} doesn't know that.`,`${F} is played for laughs, never for winks.`,`Funny because ${F} means it.`]:/thriller|crime|horror|mystery/.test(G)?[`Tense and quiet; ${F} never shouts.`,`With ${F}, the fear stays below the lines.`,`${F} is scared the whole time and hides it well.`,`Menace without volume from ${F}.`]:/romantic/.test(G)?[`Warm, with real affection in how ${F} is played.`,`${F} is tender, never sappy.`]:/drama|family|period/.test(G)?[`Grounded and real; ${F} does nothing big.`,`Small and honest: ${F} is never showy.`,`Nothing big is asked of ${F}; the camera finds it.`,`Play ${F} low. The story does the work.`,`${F} shouldn't look like acting.`,`Keep ${F} quiet and let the scenes land.`,`No speeches, no tears on cue, just ${F} getting through the day.`]:[`Play it straight: ${F} believes every word.`,`${F} works best underplayed.`,`Don't push ${F}; the situation is enough.`],
       hard:()=>{const x=low?"saying very little and still holding the scene":lead&&days>=5?`staying fresh across ${units(days)}`:skill?`doing real ${skill}`:/comedy/.test(G)?"being funny while taking it seriously":null;
         return x?[`The hard part is ${x}.`,`What's tricky: ${x}.`,`The challenge for ${F} is ${x}.`]:null;},
       physical:()=>skill&&/boxing|swimming|dance|climbing|skating|horse riding|stunt|driving/.test(skill)?[`Physically demanding: real ${skill}.`,`${F} needs to be fit enough for real ${skill}.`,`There's real ${skill} in this part.`]:null,
-      appears:()=>c.stage?null:total>1?(days>=total||(lead&&days/total>=0.6)?[`${F} appears across the whole ${c.noun}.`,`${F} is in nearly every scene.`]:days===1?[`${F} is in one ${unit} only.`,`A one-${unit} part.`,`Just one ${unit} for ${F}.`]:[`${F} turns up across the ${c.noun}, not in every scene.`,`${F} comes and goes through the ${c.noun}.`]):null,
+      appears:()=>c.stage?null:total>1?(days>=total||(lead&&days/total>=0.6)?[`${F} appears across the whole ${c.noun}.`,`${F} is in nearly every scene.`]:days===1?[`${F} is in one ${unit} only.`,`A one-${unit} part.`,`Just one ${unit} for ${F}.`]:days/total<0.25?null:[`${F} turns up across the ${c.noun}, not in every scene.`,`${F} comes and goes through the ${c.noun}.`]):null,
       merge:()=>{const s1=sk[0]||"";const w=s1.split(/\s+/)[0]||"";return s1&&(V5_ADJ.test(w.replace(/,$/,""))||/ly$/.test(w))&&!V5_PRONOUN.test(s1)?[`__MERGE__`]:null;},
       flip:()=>sk.length>=2?[`__FLIP__`]:null,
       sketchlead:()=>{const s1=sk[0]||"";const w=s1.split(/\s+/)[0]||"";return s1&&V5_VERB3.test(w)&&!V5_PRONOUN.test(s1)&&s1.split(/\s+/).length<=12?[`__SKLEAD__`]:null;},
@@ -46945,7 +46960,7 @@ const ACG = (()=>{
       // Round 11: only a plain job noun reads well here ("a plow driver"); the
       // "know the X's world / what a X's day looks like" lines are retired.
       prep:()=>false&&/^[a-z-]+( [a-z-]+)?$/.test(lab)&&!/\b(one|who|that|other|new|old|young|older|younger|first|second)\b/.test(lab)?[`Before the read, think about what ${v3Aa(lab)} notices first.`]:null,
-      sharewith:()=>P&&!lead?[`Most of ${F}'s scenes are with ${PF}, the ${PL}.`,`${F} mostly plays against ${PF} (the ${PL}).`,`You'll be working opposite ${PF}, the ${PL}, most of the time.`,`Chemistry with whoever plays ${PF} matters.`,`Every scene ${F} has, ${PF} is in it too.`,`Wherever ${F} goes, ${PF} is never far away.`]:null,
+      sharewith:()=>P&&!lead?[`Most of ${F}'s scenes are with ${PF}, the ${PL}.`,`${F} mostly plays against ${PF} (the ${PL}).`,`You'll be working opposite ${PF}, the ${PL}, most of the time.`,`Chemistry with whoever plays ${PF} matters.`]:null,
       partner:()=>P&&lead?[`${F}'s scenes are almost all with ${PF}, the ${PL}.`,`${PF}, the ${PL}, is the person ${F} deals with most.`,`The story keeps putting ${F} and ${PF} together.`,`${F} and ${PF} (the ${PL}) share most of the story.`,`Callbacks will pair ${F} with ${PF}.`,`Nearly every scene has ${PF} as the other half.`]:null
     })[move];
     const o=opts&&opts();
@@ -47741,18 +47756,18 @@ const ACG = (()=>{
     {m:"The top rate here is",f:x=>`The top rate here is ${x.A} ${x.per}.`},
     {m:"Budget tops out at",f:x=>`Budget tops out at ${x.A} ${x.per}.`},
     {m:"is the most any part",any:1,f:x=>`${x.A} ${x.per} is the most any part on this ${x.noun} earns.`},
-    {m:"You'd earn",f:x=>`You'd earn ${x.R} ${x.per}${x.wide?", depending on the part":""}.`},
-    {m:"Expect ",f:x=>`Expect ${x.R} ${x.per}.`},
-    {m:"We can offer",f:x=>`We can offer ${x.R} ${x.per}.`},
+    {m:"You'd earn",one:1,f:x=>`You'd earn ${x.R} ${x.per}${x.wide?", depending on the part":""}.`},
+    {m:"Expect ",one:1,f:x=>`Expect ${x.R} ${x.per}.`},
+    {m:"We can offer",one:1,f:x=>`We can offer ${x.R} ${x.per}.`},
     {m:"Our rate:",f:x=>`Our rate: ${x.A} ${x.per} at the high end.`},
-    {m:"Compensation:",f:x=>`Compensation: ${x.R} ${x.per}.`},
+    {m:"Compensation:",one:1,f:x=>`Compensation: ${x.R} ${x.per}.`},
     {m:"Money first:",f:x=>`Money first: ${x.A} ${x.per} at most.`},
-    {m:"On the money side",f:x=>`On the money side, it's ${x.R} ${x.per}.`},
-    {m:"The job pays",f:x=>`The job pays ${x.R} ${x.per}.`},
+    {m:"On the money side",one:1,f:x=>`On the money side, it's ${x.R} ${x.per}.`},
+    {m:"The job pays",one:1,f:x=>`The job pays ${x.R} ${x.per}.`},
     {m:"Budget is modest",f:x=>`Budget is modest: ${x.A} ${x.per} at most.`},
-    {m:"Small budget, honest rate",f:x=>`Small budget, honest rate: ${x.R} ${x.per}.`},
-    {m:"Fee:",f:x=>`Fee: ${x.R} ${x.per}.`},
-    {m:"Paid work,",f:x=>`Paid work, ${x.R} ${x.per}.`},
+    {m:"Small budget, honest rate",one:1,f:x=>`Small budget, honest rate: ${x.R} ${x.per}.`},
+    {m:"Fee:",one:1,f:x=>`Fee: ${x.R} ${x.per}.`},
+    {m:"Paid work,",one:1,f:x=>`Paid work, ${x.R} ${x.per}.`},
     {m:"Nobody here earns more than",f:x=>`Nobody here earns more than ${x.A} ${x.per}.`},
     {m:"Looking at",f:x=>`Looking at ${x.A} ${x.per} for the biggest part.`},
     {m:"for the largest part",f:x=>`${x.A} ${x.per} for the largest part, and less for the smaller ones.`,diff:1},
@@ -47778,7 +47793,8 @@ const ACG = (()=>{
     const lead=leadRow?leadRow.x.rate_amount:0;
     const x={A:r8Amt(top),L:r8Amt(low),Lead:r8Amt(lead||top),R:wide?`${r8Amt(low)} to ${r8Amt(top)}`:r8Amt(top),per,noun,wide};
     const canLead=lead>0&&!V7_FN.test(type);
-    const fit=R18_PAY_MODELS.filter(o=>(!o.wide||wide)&&(!o.lead||canLead)&&(!o.same||same)&&(!o.diff||!same));
+    // Round 22: "Paid work, $450 flat" when two of the three parts get $325 is not true.
+    const fit=R18_PAY_MODELS.filter(o=>(!o.wide||wide)&&(!o.lead||canLead)&&(!o.same||same)&&(!o.diff||!same)&&(!o.one||same||wide));
     const recent=((C.res&&C.res._r18Pay)||[]).concat((C.h&&C.h.r18Pay)||[]);
     const age=o=>{const i=recent.indexOf(o.m);return i<0?9999:i;};
     const chosen=cgShuffle(fit).sort((p,q)=>age(q)-age(p))[0];
@@ -47790,8 +47806,10 @@ const ACG = (()=>{
     if(st==="session")extra.push(pick(["Sessions run about four hours.","Plan on roughly four hours a session.","Each booking is around four hours."]));
     if(st==="hour")extra.push(pick(["Four-hour minimum.","Calls are booked in four-hour blocks.","Minimum call is four hours."]));
     const r=Math.random();
-    if(r<0.35)extra.push(stage?pick(["Paid weekly.","Checks go out every Friday.","Paid at the end of each week."]):pick(["Paid within two weeks of wrap.","Payroll runs the Friday after wrap.","Direct deposit within 30 days.","You'll be paid at the end of the shoot.","Payment goes out within ten days."]));
-    else if(r<0.7&&!/^(audio|anim)$/.test(v3Fam(type))&&st!=="stipendFlat")extra.push(pick(["Meals on set.","Lunch is on us.","Credit and a hot lunch included.","Snacks all day and a real lunch.","Footage for your reel as well.","A copy of the final cut comes with it."]));
+    const read=/^(Table Read|Workshop \/ Staged Reading)$/.test(type);
+    const tail=a=>{const used=x=>(C.h&&C.h.r22Tails&&C.h.r22Tails.has(clean(x)))||(C.res&&C.res._r22Tails&&C.res._r22Tails.has(clean(x)));const f=cgShuffle(a).find(x=>!used(x));if(f)extra.push(f);};
+    if(r<0.35)tail(stage||read?["Paid weekly.","Checks go out every Friday.","Paid at the end of each week.","Paid by check at closing.","Paid on the night."].slice(read?3:0,read?5:4):["Paid within two weeks of wrap.","Payroll runs the Friday after wrap.","Direct deposit within 30 days.","You'll be paid at the end of the shoot.","Payment goes out within ten days.","Paid by check on the day.","Invoices are paid net 15.","Paid through a payroll company, so bring ID.","Checks are mailed the week after wrap.","Same-day payment by Zelle or Venmo.","Paid on the last shoot day.","Money goes out the Monday after we wrap.","Payment within one week, by direct deposit.","Paid in full before the edit starts."]);
+    else if(r<0.7&&!/^(audio|anim)$/.test(v3Fam(type))&&st!=="stipendFlat")tail(read?["Coffee and pastries at the table.","Snacks provided.","Dinner after the read is on us."]:stage?["Program credit included.","Coffee and snacks at every call.","Two comp tickets come with it."]:["Meals on set.","Lunch is on us.","Credit and a hot lunch included.","Snacks all day and a real lunch.","Footage for your reel as well.","A copy of the final cut comes with it.","Coffee, lunch and a credit.","You get your scenes once the edit locks.","Lunch and parking are covered.","Credit in the end titles.","Everyone gets fed properly.","Craft table all day.","Breakfast and lunch on the day.","A link to the finished piece when it is out."]);
     (item._r18Mark=chosen.m);
     return [line].concat(extra).join(" ").replace(/\s{2,}/g," ").trim();
   }
@@ -48083,12 +48101,14 @@ const ACG = (()=>{
   function r13NoteLine(c,h,res){
     const town=(String(c.town||"").trim()||"the city").replace(/^Bronx$/,"the Bronx");
     const o=[];
-    if(!c.remote)o.push(`Note: ${town}-area talent only; travel and lodging aren't covered.`,`Note: Please live within commuting distance of ${town}.`,`Note: We're hiring locally in ${town}; no travel is paid.`,`Note: Local to ${town} only, please.`,`Note: You'll need to get yourself to ${town} each day.`,`Note: This is a local hire for ${town}.`);
+    // Round 22: a local-hire note is the exception, one listing in six at most.
+    const localOk=!((res&&res._r21LocalN)||0)&&!((h&&h.r22LocalN)||0)&&Math.random()<0.5;
+    if(!c.remote&&localOk)o.push(`Note: ${town}-area talent only; travel and lodging aren't covered.`,`Note: Please live within commuting distance of ${town}.`,`Note: We're hiring locally in ${town}; no travel is paid.`,`Note: Local to ${town} only, please.`,`Note: You'll need to get yourself to ${town} each day.`,`Note: This is a local hire for ${town}.`);
     const N=c.days>1&&c.days<=6?v3Words(c.days):"";
     if(c.days===2)o.push("Note: Must be available both days.","Note: Both days are required; no partial bookings.","Note: Please hold both dates before you submit.");
     else if(N)o.push(`Note: Must be available all ${N} days.`,`Note: All ${N} days are required.`,`Note: Please hold all ${N} days before submitting.`);
     else if(c.days===1&&!c.stage)o.push("Note: Must be available on the shoot date.","Note: The single shoot day is fixed.","Note: Please hold the shoot date before you submit.");
-    if(c.stage)o.push("Note: Must be available for all performances.","Note: Every performance date is required.");
+    if(c.stage&&!c.read)o.push("Note: Must be available for all performances.","Note: Every performance date is required.");
     if(!c.remote&&/^(ad|photo)$/.test(c.fam))o.push("Note: Wardrobe fitting the day before.","Note: There's a short fitting the afternoon before.","Note: Expect a fitting call the day before the shoot.","Note: Bring three outfits to the fitting the day before.");
     if(c.remote)o.push(c.audio?"Note: Must have a quiet space to record.":"Note: Must have a quiet space and good lighting.","Note: You'll need a quiet room and a decent microphone.");
     const ok=cgShuffle(o).find(x=>r13Fresh(x,h,res)&&!v3SentUsed(v3SentKey(x),h,res));
@@ -48552,6 +48572,50 @@ const ACG = (()=>{
     // 12. One background group is plenty outside a background call.
     if(type!=="Background / Extras"&&item._roles){let seen=false;item._roles=item._roles.filter(r=>{if(!/background/i.test(r.role_type||""))return true;if(seen)return false;seen=true;return true;});}
     if(item.title)item.title=String(item.title).replace(/^Untitled Play (Drama|Comedy|Thriller|Mystery|Romance)\b/,"Untitled Stage $1");
+    // ── Round 22 (2026-11-16): the first fifteen made by round 21 ──────────
+    const oneDay=days<=1||(item.shoot_start&&(!item.shoot_end||item.shoot_end===item.shoot_start));
+    const isRead=/^(Table Read|Workshop \/ Staged Reading)$/.test(type);
+    // a. "The video centers on a training video for…" says video twice.
+    if(item.synopsis)item.synopsis=String(item.synopsis).replace(/\bThe (spot|video|ad|film|piece|campaign|session|shoot) (centers on|shows|is about|is built around) (a|an) ((?:[\w'’-]+ ){0,5}?(?:video|PSA|campaign|promo|demo|spot|ad|commercial|shoot|film|series)\b)/g,(m,a,v,ar,np)=>`It's ${ar} ${np}`)
+      .replace(/\b(opening|opens|shooting|shoots) in\b/g,(m,w)=>isRead?(/s$/.test(w)?"is held in":"held in"):m);
+    // b. A period line only where the period is the point.
+    if(item.synopsis&&!/period|western/.test(item._genre||"")){
+      const S=v3Sentences(item.synopsis),k=S.filter(x=>!/\b(set in|takes place in|happens in|Period:|are all|This is a) (the )?(18|19|20)\d0s\b/.test(x)&&!/^Period: /.test(x));
+      if(k.length&&k.length<S.length)item.synopsis=k.join(" ");
+    }
+    // c. One-day jobs have a day, not days; a read has no performances.
+    if(item.schedule_note){
+      let S=v3Sentences(item.schedule_note);
+      if(oneDay)S=S.filter(x=>!/\b(These days are set|The days are firm|The schedule won't move)\b/.test(x)).map(x=>x.replace(/\bbefore the first day\b/,"before the shoot day"));
+      if(isRead)S=S.filter(x=>!/\bperformances?\b/i.test(x));
+      item.schedule_note=S.join(" ");
+    }
+    // d. Role lines.
+    roles.forEach(r=>{
+      const lo=parseInt(String(r.age_range||"").split("-")[0],10);
+      if(isFinite(lo)&&lo<3&&/\b(baby|infant|newborn|toddler)\b/i.test(`${r.name||""} ${r._slot||""}`)){
+        r.description=pick(["An infant. A parent stays within arm's reach the whole time, and the day is built around naps and feeds.","A real baby, calm with new people. Short stretches on camera with a parent just out of frame.","Infant; twins welcome. The schedule follows the baby, not the other way round."]);
+        return;
+      }
+      if(/each spot|three-spot|two-spot|separate (spots|ads|videos)/i.test(item.synopsis||""))keepSome(r,x=>/deals with most|plays against|opposite|is in it too|scenes are with|share most|Callbacks will pair/i.test(x));
+      if(/background/i.test(r.role_type||"")){
+        const b=String(r.age_range||"").match(/^(\d+)-(\d+)$/);
+        if(b&&+b[1]>=18&&+b[2]-+b[1]<25)r.age_range=pick(["18-65","21-60","25-70","18-70","20-65"]);
+        if(/Passersby|Sidewalk|Street/i.test(r.name||"")&&!R21_OUTDOOR.test(venue)){
+          const V=titleCase(stripArticle(venue));
+          if(V&&V.split(/\s+/).length<=5){r.name=`People at the ${V} (Background)`;if(r._groupName)r._groupName=r.name;r.description=`The people who would really be at ${venue.replace(/^(A|An|The)\s/,x=>x.toLowerCase())} that day, in the back of the frame; small, natural movement.`;}
+        }
+      }
+    });
+    // e. The same request is not made twice in different words.
+    if(item.submission_requirements){
+      const S=v3Sentences(item.submission_requirements);
+      [/competing ads|ads you have done|ads you've done/i,/\b(sample|reading from the role|voice clip|demo)\b/i,/\bconflicts\b/i].forEach(re=>{let seen=false;for(let i=1;i<S.length;i++){if(S[i]&&re.test(S[i])){if(seen)S[i]="";seen=true;}}});
+      if(!/capture|mocap|motion/i.test(`${item.shoot_location||""} ${item._r8Venue||""} ${item.synopsis||""}`))for(let i=0;i<S.length;i++)if(/capture, stunt or movement work/i.test(S[i]))S[i]="";
+      item.submission_requirements=S.filter(Boolean).join(" ");
+    }
+    // f. A table read hands out no footage.
+    if(isRead&&item.pay)item.pay=v3Sentences(item.pay).filter(x=>!/footage|final cut|reel|scenes/i.test(x)).join(" ");
     // 11. Some listings say more: who is making it, how, and where it is headed.
     if(item.synopsis&&r8Kind(type)!=="brand"){
       const about=r21About(item,h,res);
@@ -48620,6 +48684,11 @@ const ACG = (()=>{
       r.name=nm;
     });
     if(res)(res._r21Fmts=res._r21Fmts||[]).unshift(r21FmtOf(roles,item.type)||"fn");
+    if(res){
+      if(R22_LOCALNOTE.test(String(item.schedule_note||"")))res._r21LocalN=(res._r21LocalN||0)+1;
+      res._r22Tails=res._r22Tails||new Set();v3Sentences(item.pay).slice(1).forEach(x=>res._r22Tails.add(clean(x)));
+      const uk=r22UnpaidKey(item.pay);if(uk)(res._r22Unpaid=res._r22Unpaid||new Set()).add(uk);
+    }
     r21Where(item,h,res);
     item._lines=splitLines(item.synopsis).concat([item.tagline],roles.map(r=>r.description)).filter(Boolean);
   }
@@ -48890,7 +48959,7 @@ const ACG = (()=>{
         seen[b]=(seen[b]||0)+1;
         let nm=cnt[b]>1?`${b} ${seen[b]}`:b;
         // About 8% of commercial parts carry a named character ("Shane").
-        const named=!(cnt[b]>1)&&Math.random()<0.06&&!/background/i.test(r.role_type||"");
+        const named=false&&!(cnt[b]>1)&&Math.random()<0.06&&!/background/i.test(r.role_type||"");
         const first=String(r._person).split(" ")[0];
         if(named){nm=first;r._r8Named=true;}
         const low=cnt[b]>1?`${["first","second","third","fourth"][seen[b]-1]||"other"} ${b.toLowerCase()}`:b.toLowerCase();
@@ -49016,7 +49085,7 @@ const ACG = (()=>{
       if(!plan.read&&!item._r8Stage.perfStart)item._r8Stage.perfStart=item.shoot_end;
     }
     const noteOn=Math.random()<0.30;
-    const noteLine=noteOn?r13NoteLine({remote:kind==="remote",days,stage,fam,audio:/^(audio|anim)$/.test(fam)||type==="Voiceover",town:String(place||"").split(",")[0].trim()},h,res):"";
+    const noteLine=noteOn?r13NoteLine({remote:kind==="remote",days,stage,read:!!plan.read,fam,audio:/^(audio|anim)$/.test(fam)||type==="Voiceover",town:String(place||"").split(",")[0].trim()},h,res):"";
     const persona=String(item.schedule_note||"").trim();
     if(kind==="dated"){item.schedule_note=[persona,noteLine].filter(Boolean).join(" ");return true;}
     const verb=R8_VERB(type);
@@ -49473,10 +49542,10 @@ const ACG = (()=>{
     if(r<0.6)return `${pay} ${pick(["Transportation is not provided.","Getting to set is on you.","No travel or parking covered.","Actors arrange their own travel."])}`;
     return pay;
   }
-  function r10UnpaidText(roles,item,noun){
+  function r10UnpaidText0(roles,item,noun){
     const u=String(item.union_status||"");
     const gas=roles.some(r=>/gas money/i.test(r.pay)),def=roles.some(r=>/deferred/i.test(r.pay));
-    const perk=pick([`meals`,`hot meals`,`lunch every day`,`snacks and lunch`]);
+    const perk=pick([`meals`,`hot meals`,`lunch every day`,`snacks and lunch`,`a proper lunch`,`coffee and a meal`,`food on set`]);
     const copy=/^(play|musical|reading|read|performance)$/.test(noun)?pick([`program credit`,`archival video`,`production photos`]):pick([`a copy of the finished ${noun}`,`footage for your reel`,`your scenes cut for your reel`,`final files for your reel`]);
     const cred=pick([`credit`,`screen credit`,`an IMDb credit`,`a credit`]);
     if(/Showcase/.test(u))return pick([`Unpaid. AEA Showcase Code: travel to every call reimbursed, plus ${copy}.`,`Unpaid. Equity Showcase Code; travel is reimbursed and you get ${copy}.`]);
@@ -49484,8 +49553,17 @@ const ACG = (()=>{
     if(gas)return pick([`Unpaid. Gas money and ${perk}, plus ${copy}.`,`Unpaid. We cover gas and ${perk}; ${cred} too.`]);
     if(def)return pick([`Unpaid (deferred pay). ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid up front; pay is deferred until the ${noun} sells. ${capFirst(perk)} and ${cred}.`,`Unpaid (deferred). ${capFirst(copy)} and ${perk} guaranteed.`]);
     if(!/^(play|musical|reading|read|performance)$/.test(noun)&&Math.random()<0.6)return pick([`Unpaid. In exchange: ${cred}, demo footage and on-set experience.`,`Unpaid. In exchange for your time: ${cred}, demo footage and on-set experience. ${capFirst(perk)} provided.`,`Unpaid. You leave with demo material, ${cred} and real on-set experience.`,`Unpaid. Copy, credit and on-set experience in exchange for your time. ${capFirst(perk)} too.`]);
-    return pick([`Unpaid. ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid. In return: ${perk}, ${copy} and ${cred}.`,`Unpaid. ${capFirst(copy)}, ${perk} and ${cred} for everyone.`,`Unpaid. ${capFirst(cred)}, ${copy}, and ${perk}.`]);
+    return pick([`Unpaid. ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid. In return: ${perk}, ${copy} and ${cred}.`,`Unpaid. ${capFirst(copy)}, ${perk} and ${cred} for everyone.`,`Unpaid. ${capFirst(cred)}, ${copy}, and ${perk}.`,`Unpaid. What you get: ${copy}, ${cred}, ${perk}.`,`Unpaid. Nobody on this ${noun} is taking a fee; you get ${copy} and ${perk}.`,`Unpaid. We can offer ${perk}, ${cred} and ${copy}, and a set that runs on time.`,`Unpaid. This is a no-budget ${noun}: ${perk}, ${copy}, ${cred}.`,`Unpaid. We cover ${perk} and send ${copy}.`,`Unpaid. No rate on this one. ${capFirst(copy)} and ${perk} for the whole cast.`]);
   }
+  // Round 22: the unpaid box is not written the same way as a recent listing.
+  function r22UnpaidKey(t){const x=String(t||"");if(!/^Unpaid/.test(x))return "";return clean(x.replace(/^Unpaid[^.]*\.\s*/,"")).split(" ").slice(0,3).join(" ");}
+  function r10UnpaidText(roles,item,noun){
+    const used=k=>(R13_H&&R13_H.r22Unpaid&&R13_H.r22Unpaid.has(k))||(R13_RES&&R13_RES._r22Unpaid&&R13_RES._r22Unpaid.has(k));
+    let t="";
+    for(let i=0;i<14;i++){t=r10UnpaidText0(roles,item,noun);if(!used(r22UnpaidKey(t)))break;}
+    return t;
+  }
+  const R22_LOCALNOTE=/Note: [^.]*(Local to|local hire|hiring locally|commuting distance|-area talent only|get yourself to)/i;
 
   // ── Company names: shapes ────────────────────────────────────────────────
   // "Rangel & Nakano Film Company" and "Unit Seven" were the new fingerprints.
