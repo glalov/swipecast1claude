@@ -34349,37 +34349,44 @@ const ACG = (()=>{
   // at least eight areas, and a neighborhood is not used again until every area
   // in that city has had a turn (see v3PickPlace). AREA_TAGS marks waterfront,
   // beach, rural and industrial areas, so a story is only shot somewhere it fits.
+  // Round 21 (2026-11-15): owner's rule. The board is the New York tri-state
+  // area (about four listings in five) plus the West Coast. Every other market
+  // is switched off (off:true) and kept only so older listings still resolve.
   const CITIES=[
-    {name:"New York, NY",short:"NYC",w:68,areas:["Greenpoint, Brooklyn","Williamsburg, Brooklyn","Bushwick, Brooklyn","Bedford-Stuyvesant, Brooklyn","Crown Heights, Brooklyn","Flatbush, Brooklyn","Prospect Lefferts Gardens, Brooklyn","Park Slope, Brooklyn","Gowanus, Brooklyn","Red Hook, Brooklyn","Carroll Gardens, Brooklyn","Sunset Park, Brooklyn","Bay Ridge, Brooklyn","Bensonhurst, Brooklyn","Borough Park, Brooklyn","Coney Island, Brooklyn","Brighton Beach, Brooklyn","Sheepshead Bay, Brooklyn","Canarsie, Brooklyn","East New York, Brooklyn","Brownsville, Brooklyn","Fort Greene, Brooklyn","DUMBO, Brooklyn","Clinton Hill, Brooklyn","Astoria, Queens","Long Island City, Queens","Sunnyside, Queens","Woodside, Queens","Jackson Heights, Queens","Elmhurst, Queens","Corona, Queens","Flushing, Queens","Forest Hills, Queens","Ridgewood, Queens","Richmond Hill, Queens","Jamaica, Queens","the Rockaways, Queens","Howard Beach, Queens","Bayside, Queens","Harlem, Manhattan","East Harlem, Manhattan","Washington Heights, Manhattan","Inwood, Manhattan","the Upper West Side, Manhattan","Hell's Kitchen, Manhattan","Chelsea, Manhattan","the Lower East Side, Manhattan","Chinatown, Manhattan","the East Village, Manhattan","Tribeca, Manhattan","the Financial District, Manhattan","Two Bridges, Manhattan","Mott Haven, the Bronx","Hunts Point, the Bronx","Fordham, the Bronx","Belmont, the Bronx","Riverdale, the Bronx","City Island, the Bronx","Kingsbridge, the Bronx","Throggs Neck, the Bronx","St. George, Staten Island","Stapleton, Staten Island","Tottenville, Staten Island","Port Richmond, Staten Island","New Dorp, Staten Island"]},
-    {name:"Los Angeles, CA",short:"LA",w:5,areas:["Highland Park","Echo Park","Boyle Heights","Culver City","North Hollywood","Inglewood","San Pedro","Van Nuys","Glendale","Koreatown","Venice","Long Beach, CA","Silver Lake","Burbank","Santa Monica"]},
-    {name:"Chicago, IL",short:"Chicago",w:3,areas:["Pilsen","Logan Square","Bronzeville","Rogers Park","Humboldt Park","Bridgeport","Albany Park","Uptown","Hyde Park, Chicago","Wicker Park","the South Loop"]},
-    {name:"Boston, MA",short:"Boston",w:2,areas:["Somerville","Dorchester","East Boston","Jamaica Plain","Allston","Quincy","Cambridge","Charlestown","South Boston","Roxbury"]},
-    {name:"Philadelphia, PA",short:"Philly",w:2,areas:["Fishtown","Kensington","South Philadelphia","Germantown","West Philadelphia","Port Richmond, Philadelphia","Manayunk","Old City","Point Breeze"]},
-    {name:"Atlanta, GA",short:"Atlanta",w:2,areas:["East Atlanta","the West End","Decatur","Old Fourth Ward","College Park","Kirkwood","Grant Park","Inman Park","Adair Park"]},
-    {name:"Newark, NJ",short:"Newark",w:1,areas:["the Ironbound","Forest Hill","the North Ward","Weequahic","University Heights","Vailsburg","the Central Ward","the Newark Riverfront"]},
-    {name:"Jersey City, NJ",short:"Jersey City",w:1,areas:["Journal Square","the Heights","Paulus Hook","Greenville","Bergen-Lafayette","Downtown Jersey City","Liberty State Park","McGinley Square"]},
-    {name:"New Orleans, LA",short:"New Orleans",w:1.5,areas:["Bywater","Mid-City","Algiers Point","the Marigny","Tremé","the Irish Channel","Gentilly","Holy Cross"]},
-    {name:"Pittsburgh, PA",short:"Pittsburgh",w:1,areas:["Lawrenceville","Bloomfield","the North Side","Braddock","Polish Hill","the Strip District","Squirrel Hill","Millvale"]},
-    {name:"Austin, TX",short:"Austin",w:1.5,areas:["East Austin","South Congress","Hyde Park, Austin","Montopolis","Zilker","Mueller","Bouldin Creek","Riverside, Austin","Dripping Springs"]},
-    {name:"Detroit, MI",short:"Detroit",w:1,areas:["Corktown","Hamtramck","Midtown Detroit","Southwest Detroit","Jefferson-Chalmers","Rivertown","Eastern Market","the North End","Delray"]},
-    {name:"Baltimore, MD",short:"Baltimore",w:1,areas:["Hampden","Highlandtown","Fells Point","Pigtown","Canton","Locust Point","Remington","Station North","Sandtown"]},
-    {name:"Nashville, TN",short:"Nashville",w:1.5,areas:["East Nashville","the Gulch","Germantown, Nashville","Wedgewood-Houston","Sylvan Park","12 South","Bordeaux","Madison","Shelby Park"]},
-    {name:"Miami, FL",short:"Miami",w:1.5,areas:["Little Havana","Wynwood","Allapattah","Little Haiti","Coconut Grove","Overtown","Miami Beach","Coral Gables","Key Biscayne"]},
-    {name:"Seattle, WA",short:"Seattle",w:1.5,areas:["Ballard","Capitol Hill, Seattle","Georgetown, Seattle","the Central District","Fremont","Columbia City","West Seattle","the International District","Beacon Hill"]},
-    {name:"Portland, OR",short:"Portland",w:1,areas:["the Alberta Arts District","St. Johns","Sellwood","Hawthorne","Montavilla","the Pearl District","Foster-Powell","Kenton","the Central Eastside"]},
-    {name:"Denver, CO",short:"Denver",w:1,areas:["Five Points","RiNo","Highland","Baker","Capitol Hill, Denver","Globeville","Sunnyside, Denver","Washington Park","Golden"]},
-    {name:"Minneapolis, MN",short:"Minneapolis",w:1,areas:["Northeast Minneapolis","Uptown, Minneapolis","Powderhorn","Longfellow","Cedar-Riverside","North Loop","Seward","Whittier","Lake Nokomis"]},
-    {name:"San Diego, CA",short:"San Diego",w:1,areas:["Barrio Logan","North Park","Ocean Beach","Chula Vista","Logan Heights","Pacific Beach","City Heights","Point Loma","National City"]},
-    {name:"Albuquerque, NM",short:"Albuquerque",w:1,areas:["Nob Hill","Barelas","the South Valley","Old Town","Downtown Albuquerque","Los Ranchos","the International District, Albuquerque","Corrales"]},
-    {name:"Savannah, GA",short:"Savannah",w:1,areas:["the Historic District","Thunderbolt","the Starland District","Tybee Island","Pooler","the Victorian District","Midtown Savannah","Isle of Hope"]},
-    {name:"Charlotte, NC",short:"Charlotte",w:1,areas:["NoDa","Plaza Midwood","South End","West End Charlotte","Dilworth","Camp North End","Belmont, Charlotte","Elizabeth"]},
-    {name:"Providence, RI",short:"Providence",w:1,areas:["Federal Hill","Fox Point","Olneyville","the West End, Providence","Wayland Square","Elmwood","Pawtucket","Downcity"]},
-    {name:"Hudson Valley, NY",short:"Hudson Valley",w:1.5,areas:["Kingston","Beacon","Newburgh","Poughkeepsie","Hudson","Catskill","Woodstock","New Paltz","Rhinebeck"]},
-    {name:"Long Island, NY",short:"Long Island",w:1.5,areas:["Long Beach, NY","Montauk","Riverhead","Hempstead","Port Jefferson","Freeport","Patchogue","Huntington","Greenport","North Fork farmland"]},
-    {name:"Westchester, NY",short:"Westchester",w:1,areas:["Yonkers","New Rochelle","Peekskill","White Plains","Mount Vernon","Port Chester","Tarrytown","Ossining"]},
-    {name:"New Haven, CT",short:"New Haven",w:1,areas:["Wooster Square","Fair Haven","the Hill","East Rock","Westville","Dixwell","City Point","Long Wharf"]}
+    {name:"New York, NY",short:"NYC",w:66,areas:["Greenpoint, Brooklyn","Williamsburg, Brooklyn","Bushwick, Brooklyn","Bedford-Stuyvesant, Brooklyn","Crown Heights, Brooklyn","Flatbush, Brooklyn","Prospect Lefferts Gardens, Brooklyn","Park Slope, Brooklyn","Gowanus, Brooklyn","Red Hook, Brooklyn","Carroll Gardens, Brooklyn","Sunset Park, Brooklyn","Bay Ridge, Brooklyn","Bensonhurst, Brooklyn","Borough Park, Brooklyn","Coney Island, Brooklyn","Brighton Beach, Brooklyn","Sheepshead Bay, Brooklyn","Canarsie, Brooklyn","East New York, Brooklyn","Brownsville, Brooklyn","Fort Greene, Brooklyn","DUMBO, Brooklyn","Clinton Hill, Brooklyn","Astoria, Queens","Long Island City, Queens","Sunnyside, Queens","Woodside, Queens","Jackson Heights, Queens","Elmhurst, Queens","Corona, Queens","Flushing, Queens","Forest Hills, Queens","Ridgewood, Queens","Richmond Hill, Queens","Jamaica, Queens","the Rockaways, Queens","Howard Beach, Queens","Bayside, Queens","Harlem, Manhattan","East Harlem, Manhattan","Washington Heights, Manhattan","Inwood, Manhattan","the Upper West Side, Manhattan","Hell's Kitchen, Manhattan","Chelsea, Manhattan","the Lower East Side, Manhattan","Chinatown, Manhattan","the East Village, Manhattan","Tribeca, Manhattan","the Financial District, Manhattan","Two Bridges, Manhattan","Mott Haven, the Bronx","Hunts Point, the Bronx","Fordham, the Bronx","Belmont, the Bronx","Riverdale, the Bronx","City Island, the Bronx","Kingsbridge, the Bronx","Throggs Neck, the Bronx","St. George, Staten Island","Stapleton, Staten Island","Tottenville, Staten Island","Port Richmond, Staten Island","New Dorp, Staten Island"]},
+    {name:"Los Angeles, CA",short:"LA",w:19,areas:["Highland Park","Echo Park","Boyle Heights","Culver City","North Hollywood","Inglewood","San Pedro","Van Nuys","Glendale","Koreatown","Venice","Long Beach, CA","Silver Lake","Burbank","Santa Monica","Topanga Canyon","Santa Clarita","Malibu","Pasadena","Atwater Village"]},
+    {name:"Chicago, IL",short:"Chicago",w:3,off:true,areas:["Pilsen","Logan Square","Bronzeville","Rogers Park","Humboldt Park","Bridgeport","Albany Park","Uptown","Hyde Park, Chicago","Wicker Park","the South Loop"]},
+    {name:"Boston, MA",short:"Boston",w:2,off:true,areas:["Somerville","Dorchester","East Boston","Jamaica Plain","Allston","Quincy","Cambridge","Charlestown","South Boston","Roxbury"]},
+    {name:"Philadelphia, PA",short:"Philly",w:2,off:true,areas:["Fishtown","Kensington","South Philadelphia","Germantown","West Philadelphia","Port Richmond, Philadelphia","Manayunk","Old City","Point Breeze"]},
+    {name:"Atlanta, GA",short:"Atlanta",w:2,off:true,areas:["East Atlanta","the West End","Decatur","Old Fourth Ward","College Park","Kirkwood","Grant Park","Inman Park","Adair Park"]},
+    {name:"Newark, NJ",short:"Newark",w:2,areas:["the Ironbound","Forest Hill","the North Ward","Weequahic","University Heights","Vailsburg","the Central Ward","the Newark Riverfront"]},
+    {name:"Jersey City, NJ",short:"Jersey City",w:3.5,areas:["Journal Square","the Heights","Paulus Hook","Greenville","Bergen-Lafayette","Downtown Jersey City","Liberty State Park","McGinley Square"]},
+    {name:"New Orleans, LA",short:"New Orleans",w:1.5,off:true,areas:["Bywater","Mid-City","Algiers Point","the Marigny","Tremé","the Irish Channel","Gentilly","Holy Cross"]},
+    {name:"Pittsburgh, PA",short:"Pittsburgh",w:1,off:true,areas:["Lawrenceville","Bloomfield","the North Side","Braddock","Polish Hill","the Strip District","Squirrel Hill","Millvale"]},
+    {name:"Austin, TX",short:"Austin",w:1.5,off:true,areas:["East Austin","South Congress","Hyde Park, Austin","Montopolis","Zilker","Mueller","Bouldin Creek","Riverside, Austin","Dripping Springs"]},
+    {name:"Detroit, MI",short:"Detroit",w:1,off:true,areas:["Corktown","Hamtramck","Midtown Detroit","Southwest Detroit","Jefferson-Chalmers","Rivertown","Eastern Market","the North End","Delray"]},
+    {name:"Baltimore, MD",short:"Baltimore",w:1,off:true,areas:["Hampden","Highlandtown","Fells Point","Pigtown","Canton","Locust Point","Remington","Station North","Sandtown"]},
+    {name:"Nashville, TN",short:"Nashville",w:1.5,off:true,areas:["East Nashville","the Gulch","Germantown, Nashville","Wedgewood-Houston","Sylvan Park","12 South","Bordeaux","Madison","Shelby Park"]},
+    {name:"Miami, FL",short:"Miami",w:1.5,off:true,areas:["Little Havana","Wynwood","Allapattah","Little Haiti","Coconut Grove","Overtown","Miami Beach","Coral Gables","Key Biscayne"]},
+    {name:"Seattle, WA",short:"Seattle",w:2.5,areas:["Ballard","Capitol Hill, Seattle","Georgetown, Seattle","the Central District","Fremont","Columbia City","West Seattle","the International District","Beacon Hill"]},
+    {name:"Portland, OR",short:"Portland",w:2.5,areas:["the Alberta Arts District","St. Johns","Sellwood","Hawthorne","Montavilla","the Pearl District","Foster-Powell","Kenton","the Central Eastside"]},
+    {name:"Denver, CO",short:"Denver",w:1,off:true,areas:["Five Points","RiNo","Highland","Baker","Capitol Hill, Denver","Globeville","Sunnyside, Denver","Washington Park","Golden"]},
+    {name:"Minneapolis, MN",short:"Minneapolis",w:1,off:true,areas:["Northeast Minneapolis","Uptown, Minneapolis","Powderhorn","Longfellow","Cedar-Riverside","North Loop","Seward","Whittier","Lake Nokomis"]},
+    {name:"San Diego, CA",short:"San Diego",w:3,areas:["Barrio Logan","North Park","Ocean Beach","Chula Vista","Logan Heights","Pacific Beach","City Heights","Point Loma","National City"]},
+    {name:"Albuquerque, NM",short:"Albuquerque",w:1,off:true,areas:["Nob Hill","Barelas","the South Valley","Old Town","Downtown Albuquerque","Los Ranchos","the International District, Albuquerque","Corrales"]},
+    {name:"Savannah, GA",short:"Savannah",w:1,off:true,areas:["the Historic District","Thunderbolt","the Starland District","Tybee Island","Pooler","the Victorian District","Midtown Savannah","Isle of Hope"]},
+    {name:"Charlotte, NC",short:"Charlotte",w:1,off:true,areas:["NoDa","Plaza Midwood","South End","West End Charlotte","Dilworth","Camp North End","Belmont, Charlotte","Elizabeth"]},
+    {name:"Providence, RI",short:"Providence",w:1,off:true,areas:["Federal Hill","Fox Point","Olneyville","the West End, Providence","Wayland Square","Elmwood","Pawtucket","Downcity"]},
+    {name:"Hudson Valley, NY",short:"Hudson Valley",w:2.5,areas:["Kingston","Beacon","Newburgh","Poughkeepsie","Hudson","Catskill","Woodstock","New Paltz","Rhinebeck"]},
+    {name:"Long Island, NY",short:"Long Island",w:4,areas:["Long Beach, NY","Montauk","Riverhead","Hempstead","Port Jefferson","Freeport","Patchogue","Huntington","Greenport","North Fork farmland"]},
+    {name:"Westchester, NY",short:"Westchester",w:3,areas:["Yonkers","New Rochelle","Peekskill","White Plains","Mount Vernon","Port Chester","Tarrytown","Ossining"]},
+    {name:"San Francisco Bay Area, CA",short:"Bay Area",w:5,areas:["the Mission District, San Francisco","the Outer Sunset, San Francisco","the Richmond District, San Francisco","Dogpatch, San Francisco","Bernal Heights, San Francisco","Temescal, Oakland","West Oakland","Fruitvale, Oakland","Berkeley","Alameda","Daly City","Pacifica"]},
+    {name:"Hoboken, NJ",short:"Hoboken",w:1.5,areas:["Washington Street","the Hoboken waterfront","Uptown Hoboken","Weehawken","Union City","West New York, NJ","Edgewater, NJ","Fort Lee"]},
+    {name:"Montclair, NJ",short:"North Jersey",w:1.5,areas:["Montclair","Bloomfield, NJ","Maplewood","South Orange","Paterson","Clifton","Hackensack","Asbury Park","Red Bank"]},
+    {name:"Stamford, CT",short:"Stamford",w:1.5,areas:["Downtown Stamford","the South End, Stamford","Springdale","Norwalk","Bridgeport","Greenwich","Darien","Westport"]},
+    {name:"New Haven, CT",short:"New Haven",w:2,areas:["Wooster Square","Fair Haven","the Hill","East Rock","Westville","Dixwell","City Point","Long Wharf"]}
   ];
-  function pickCity(){const total=CITIES.reduce((s,c)=>s+(c.w||1),0);let r=Math.random()*total;for(const c of CITIES){r-=c.w||1;if(r<=0)return c;}return CITIES[0];}
+  function pickCity(){const L=CITIES.filter(c=>!c.off);const total=L.reduce((s,c)=>s+(c.w||1),0);let r=Math.random()*total;for(const c of L){r-=c.w||1;if(r<=0)return c;}return L[0];}
   function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
   // Plain language wins. A talent reads a listing once, on a phone, between
   // other things — so between turns that are equally fresh, take the one that
@@ -40603,6 +40610,8 @@ const ACG = (()=>{
   // Water / beach / rural / industrial tags for areas, so a ferry story is
   // shot near the water and a farmhouse story is not shot in Hell's Kitchen.
   const AREA_TAGS={
+    "Topanga Canyon":"rural","Santa Clarita":"rural industrial","Malibu":"water beach rural",
+    "the Outer Sunset, San Francisco":"water beach","Dogpatch, San Francisco":"water industrial","West Oakland":"industrial","Alameda":"water","Pacifica":"water beach rural","the Hoboken waterfront":"water","Weehawken":"water","Edgewater, NJ":"water","Paterson":"industrial","Asbury Park":"water beach","Red Bank":"water","the South End, Stamford":"water industrial","Bridgeport":"water industrial","Westport":"water beach","Norwalk":"water",
     "Greenpoint, Brooklyn":"water industrial","Williamsburg, Brooklyn":"water","Bushwick, Brooklyn":"industrial","Red Hook, Brooklyn":"water industrial",
     "Sunset Park, Brooklyn":"water industrial","Gowanus, Brooklyn":"industrial","Bay Ridge, Brooklyn":"water","Coney Island, Brooklyn":"water beach",
     "Brighton Beach, Brooklyn":"water beach","Sheepshead Bay, Brooklyn":"water","Canarsie, Brooklyn":"water","East New York, Brooklyn":"industrial",
@@ -41260,7 +41269,7 @@ const ACG = (()=>{
       p:"a traveling nurse has one week to reach three remote patients before the frozen road back to town closes for the season",
       h:"her ride is a teenager with a new license and an old truck",h2:"the third patient does not want to be found",
       w:["an old pickup on a snowy road","a cabin in the woods in winter","a small town clinic"],
-      c:[{s:"the nurse",r:"Lead",a:"midCareer",g:"F",x:"Took this posting to get away from a city hospital and is finding out how far away is."},
+      c:[{s:"the nurse",r:"Lead",a:"midCareer",g:"F",x:"Took this posting to get away from a city hospital and is finding out how far away that really is."},
          {s:"the young driver",r:"Lead",a:"teen",x:"Knows every turn on the road and has told a few lies about the truck."},
          {s:"the old trapper",r:"Supporting",a:"senior",g:"M",x:"Refuses treatment and will not stop making coffee."}]},
     {k:"r14-court-reporter",era:"1990s",genre:"thriller",tracks:["film","tv"],ttl:["Off the Record","Read That Back","The Stenographer"],
@@ -43952,7 +43961,7 @@ const ACG = (()=>{
     soundstage:/far from Earth|relay station|ice survey|cave system|container ship|wagon crossing|sleeper cabin|overnight train|island lighthouse|remote light|between floors|tunnel through a hillside|dance marathon/i,
     beach:/boardwalk|\bbeach\b|seaside/i,
     water:/ferry|harbou?r|\briver\b|\bboat\b|salvage|\bpier\b|\bdocks?\b|waterfront|open water|canal|lighthouse|fish market|marina|\bship\b|\bflood/i,
-    rural:/farmhouse|\bfarm\b|\branch\b|small town|river town|lake town|highway motel|motel strip|two-lane|summer camp|travell?ing fair|two hours from anywhere|\bdig\b|eclipse|storm-chasing|fire line|in a field|wagon|country road|mountain|hikers?|\btrail|woods|forest|snowstorm|ranger|\bdesert\b|county fair/i,
+    rural:/farmhouse|\bfarm\b|\bcabin\b|\bbarn\b|farmland|orchard|vineyard|lake house|campground|trailhead|dirt road|back road|frozen road|remote (patients|town|road|valley)|trapper|\branch\b|small town|river town|lake town|highway motel|motel strip|two-lane|summer camp|travell?ing fair|two hours from anywhere|\bdig\b|eclipse|storm-chasing|fire line|in a field|wagon|country road|mountain|hikers?|\btrail|woods|forest|snowstorm|ranger|\bdesert\b|county fair/i,
     industrial:/warehouse|factory|body shop|loading dock|parking (structure|garage)|depot|capture (volume|stage)/i
   };
   function v3Need(text){
@@ -44020,12 +44029,13 @@ const ACG = (()=>{
     const min=Math.min(...c.areas.map(count));
     return {city:c,area:pick(c.areas.filter(a=>count(a)===min))};
   }
+  const R21_LIVE=CITIES.filter(c=>!c.off);
   function v3PickPlace(need,h,res){
     const count=(c,a)=>((h.areaUse&&h.areaUse[v3AreaKey(c.name,a)])||0)+((res.areaUse&&res.areaUse[v3AreaKey(c.name,a)])||0);
     const fits=a=>!need||need==="industrial"&&!/beach/.test(areaTags(a))?true:areaTags(a).split(" ").indexOf(need)>-1;
     const strictFits=a=>!need||areaTags(a).split(" ").indexOf(need)>-1;
     const options=[];
-    CITIES.forEach(c=>{
+    R21_LIVE.forEach(c=>{
       const min=Math.min(...c.areas.map(a=>count(c,a)));
       const open=c.areas.filter(a=>count(c,a)===min);
       const ok=open.filter(need==="industrial"?fits:strictFits);
@@ -44035,12 +44045,12 @@ const ACG = (()=>{
     if(!pool.length){
       // Every fitting area has been used: take the least-used ones across all
       // cities, so one city's only rural area isn't the default every time.
-      let gmin=Infinity;CITIES.forEach(c=>c.areas.filter(strictFits).forEach(a=>{gmin=Math.min(gmin,count(c,a));}));
-      CITIES.forEach(c=>{const ok=c.areas.filter(a=>strictFits(a)&&count(c,a)===gmin);if(ok.length)pool.push({c,areas:ok});});
+      let gmin=Infinity;R21_LIVE.forEach(c=>c.areas.filter(strictFits).forEach(a=>{gmin=Math.min(gmin,count(c,a));}));
+      R21_LIVE.forEach(c=>{const ok=c.areas.filter(a=>strictFits(a)&&count(c,a)===gmin);if(ok.length)pool.push({c,areas:ok});});
       const usedFrac=c=>c.areas.filter(a=>count(c,a)>0).length/c.areas.length;
       if(pool.length){const best=pool.slice().sort((a,b)=>usedFrac(b.c)-usedFrac(a.c))[0];return {city:best.c,area:pick(best.areas)};}
     }
-    if(!pool.length)CITIES.forEach(c=>pool.push({c,areas:c.areas}));
+    if(!pool.length)R21_LIVE.forEach(c=>pool.push({c,areas:c.areas}));
     // Keep New York near 60% of the board: its weight is nudged up or down by
     // how far the recent listings have drifted from that.
     const nyN=(h.nycRecent||0)+(res.nycCount||0),nyT=(h.recentTotal||0)+(res.placeCount||0);
@@ -44648,6 +44658,8 @@ const ACG = (()=>{
     {const newest=(existing||[]).slice().sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));
      h.r16Tags=newest.slice(0,60).map(c=>r16TagMark(c.tagline));
      h.r18Pay=newest.slice(0,120).map(c=>r18PayMark(c.pay)).filter(Boolean);
+     h.r21Fmts=newest.slice(0,6).map(c=>r21FmtOf(c.roles,c.type)).filter(Boolean);
+     h.r21Locs=newest.slice(0,6).map(c=>r21LocStyle(c.shoot_location)).filter(Boolean);
      h.r16Opens={};newest.slice(0,60).forEach(c=>(c.roles||[]).forEach(r=>{const k=r16OpenId(r&&r.description,r&&r.name);if(k)h.r16Opens[k]=(h.r16Opens[k]||0)+1;}));}
     h.v5=h.v5||{};h.v5.warmth={};
     h.v8Recent.forEach(m=>{if(m.warmth)h.v5.warmth[m.warmth]=(h.v5.warmth[m.warmth]||0)+1;});
@@ -46142,8 +46154,10 @@ const ACG = (()=>{
     if(/\b(the cast is|we are casting|we are looking for|roles? (are|is) open|parts? to cast|shown to studios|streamers|sell the (full )?show|scenes are filmed|writers will use)\b/i.test(syn))out.push("casting-process info in the synopsis");
     const ns=v3Sentences(syn).length,bk=item._synBucket;
     if(bk==="short"&&(ns>2||(item._turnText&&covers(item._turnText,syn)>=0.55)))out.push("short synopsis runs long or gives away the twist");
-    if(bk==="medium"&&(ns<2||ns>3))out.push("medium synopsis is not 2–3 sentences");
-    if(bk==="long"&&(ns<4||ns>5))out.push("long synopsis is not 4–5 sentences");
+    // Round 21: the "about the production" lines sit on top of the story's own length.
+    const ns21=ns-(item._r21AboutN||0);
+    if(bk==="medium"&&(ns21<2||ns21>3))out.push("medium synopsis is not 2–3 sentences");
+    if(bk==="long"&&(ns21<4||ns21>5))out.push("long synopsis is not 4–5 sentences");
     if(V5_SPOILER.test(v3Sentences(syn).slice(2).join(" ")))out.push("synopsis detail gives away the ending");
     // E. Schedule note vs facts.
     if(/\bin a row\b|back to back|consecutive/i.test(note)&&!/not back to back/i.test(note)&&!/^(consecutive|one)$/.test(plan.mode||""))out.push("note says back to back but days aren't");
@@ -46921,7 +46935,7 @@ const ACG = (()=>{
       hard:()=>{const x=low?"saying very little and still holding the scene":lead&&days>=5?`staying fresh across ${units(days)}`:skill?`doing real ${skill}`:/comedy/.test(G)?"being funny while taking it seriously":null;
         return x?[`The hard part is ${x}.`,`What's tricky: ${x}.`,`The challenge for ${F} is ${x}.`]:null;},
       physical:()=>skill&&/boxing|swimming|dance|climbing|skating|horse riding|stunt|driving/.test(skill)?[`Physically demanding: real ${skill}.`,`${F} needs to be fit enough for real ${skill}.`,`There's real ${skill} in this part.`]:null,
-      appears:()=>c.stage?null:total>1?(days>=total?[`${F} appears across the whole ${c.noun}.`,`${F} is in nearly every scene.`]:days===1?[`${F} is in one ${unit} only.`,`A one-${unit} part.`,`Just one ${unit} for ${F}.`]:[`${F} turns up across the ${c.noun}, not in every scene.`,`${F} comes and goes through the ${c.noun}.`]):null,
+      appears:()=>c.stage?null:total>1?(days>=total||(lead&&days/total>=0.6)?[`${F} appears across the whole ${c.noun}.`,`${F} is in nearly every scene.`]:days===1?[`${F} is in one ${unit} only.`,`A one-${unit} part.`,`Just one ${unit} for ${F}.`]:[`${F} turns up across the ${c.noun}, not in every scene.`,`${F} comes and goes through the ${c.noun}.`]):null,
       merge:()=>{const s1=sk[0]||"";const w=s1.split(/\s+/)[0]||"";return s1&&(V5_ADJ.test(w.replace(/,$/,""))||/ly$/.test(w))&&!V5_PRONOUN.test(s1)?[`__MERGE__`]:null;},
       flip:()=>sk.length>=2?[`__FLIP__`]:null,
       sketchlead:()=>{const s1=sk[0]||"";const w=s1.split(/\s+/)[0]||"";return s1&&V5_VERB3.test(w)&&!V5_PRONOUN.test(s1)&&s1.split(/\s+/).length<=12?[`__SKLEAD__`]:null;},
@@ -46930,7 +46944,7 @@ const ACG = (()=>{
         return [`${sz}: ${units(days)}, ${dl}.`,`${sz}: ${units(days)}, with ${dl}.`,`It's ${sz[0].toLowerCase()+sz.slice(1)} with ${dl}, over ${units(days)}.`];},
       // Round 11: only a plain job noun reads well here ("a plow driver"); the
       // "know the X's world / what a X's day looks like" lines are retired.
-      prep:()=>/^[a-z-]+( [a-z-]+)?$/.test(lab)&&!/\b(one|who|that|other|new|old|young|older|younger|first|second)\b/.test(lab)?[`Before the read, think about what ${v3Aa(lab)} notices first.`]:null,
+      prep:()=>false&&/^[a-z-]+( [a-z-]+)?$/.test(lab)&&!/\b(one|who|that|other|new|old|young|older|younger|first|second)\b/.test(lab)?[`Before the read, think about what ${v3Aa(lab)} notices first.`]:null,
       sharewith:()=>P&&!lead?[`Most of ${F}'s scenes are with ${PF}, the ${PL}.`,`${F} mostly plays against ${PF} (the ${PL}).`,`You'll be working opposite ${PF}, the ${PL}, most of the time.`,`Chemistry with whoever plays ${PF} matters.`,`Every scene ${F} has, ${PF} is in it too.`,`Wherever ${F} goes, ${PF} is never far away.`]:null,
       partner:()=>P&&lead?[`${F}'s scenes are almost all with ${PF}, the ${PL}.`,`${PF}, the ${PL}, is the person ${F} deals with most.`,`The story keeps putting ${F} and ${PF} together.`,`${F} and ${PF} (the ${PL}) share most of the story.`,`Callbacks will pair ${F} with ${PF}.`,`Nearly every scene has ${PF} as the other half.`]:null
     })[move];
@@ -47039,22 +47053,69 @@ const ACG = (()=>{
     if(m&&m[1].split(/\s+/).length<=7)return out(m[1],"");
     return null;
   }
+  // Round 21 (2026-11-15): owner's rule, every casting in its own voice. One
+  // person writes a breakdown, so all the parts in a listing open the same
+  // way, and the next listing opens another way. "mixed" is the round-16
+  // behaviour (a different opening on every part).
+  const R21_FMTS=[{id:"mixed",w:2.5},{id:"label",w:2},{id:"caps",w:1.5},{id:"paren",w:1.5},{id:"plays",w:1},{id:"last",w:1.5}];
+  const R21_MIXED_OFF=/^(know|place|page|goesby|story|who|need)$/;
+  function r21FmtOf(roles,type){
+    if(V7_FN.test(String(type||"")))return "";
+    const p=(roles||[]).filter(r=>r&&r.description&&!/background/i.test(`${r.role_type||""} ${r.name||""}`));
+    if(!p.length)return "";
+    const d=String(p[0].description),F=String(p[0].name||"").replace(/^(Dr\.|Detective|Judge|Professor|Officer|Sheriff|Mayor|Senator|Reverend|Pastor|Sergeant|Lieutenant|Principal|Coach|Dean)\s+/,"").split(/[ ,]/)[0];
+    if(/^[A-Z][A-Z'’.-]+: /.test(d))return "caps";
+    if(/^Plays /.test(d))return "plays";
+    if(F&&d.indexOf(F+" (")===0)return "paren";
+    if(F&&d.indexOf(F)<0)return "label";
+    if(F&&d.indexOf(F)>20&&new RegExp(F+" is [^.]*\\.$").test(d))return "last";
+    return "mixed";
+  }
+  function r21PickFmt(c){
+    const res=c.res||{},h=c.h||{};
+    const recent=(res._r21Fmts||[]).concat(h.r21Fmts||[]).slice(0,2);
+    const pool=R21_FMTS.filter(f=>recent.indexOf(f.id)<0);
+    const total=pool.reduce((a,f)=>a+f.w,0);let x=Math.random()*total;
+    for(const f of pool){x-=f.w;if(x<=0)return f.id;}
+    return pool[0].id;
+  }
+  function r21Open(fmt,p,r){
+    const {F,bare,rest}=p;const first=rest[0]||"";
+    const tail=rest.join(" ");
+    if(fmt==="label"&&rest.length){r._r21NoName=true;return `${capFirst(bare)}. ${tail}`;}
+    if(fmt==="caps"&&rest.length){r._r21NoName=true;return `${F.toUpperCase()}: ${bare}. ${tail}`;}
+    if(fmt==="plays"&&rest.length){r._r21NoName=true;return `Plays ${bare}. ${tail}`;}
+    if(fmt==="paren"&&R16_VERB.test(first)&&!/\?$/.test(first))return `${F} (${bare}) ${v5LowerFirst(first)}${rest.length>1?" "+rest.slice(1).join(" "):""}`;
+    if(fmt==="paren"&&rest.length){r._r21NoName=true;return `${capFirst(bare)}. ${tail}`;}
+    if(fmt==="last"&&rest.length>=2&&first.indexOf(F)<0)return `${tail} ${F} is ${bare}.`;
+    if(fmt==="last"&&rest.length){r._r21NoName=true;return `${capFirst(bare)}. ${tail}`;}
+    return null;
+  }
   function r16Reopen(people,c){
     const res=c.res||{},h=c.h||{};
     const here=new Set();
     const runCounts=res._r16Opens||(res._r16Opens={});
+    if(!c.fn&&!c._r21Fmt)c._r21Fmt=r21PickFmt(c);
     people.forEach(r=>{
       if(c.fn)return;
       const p=r16Split(r);if(!p)return;
       const {F,bare,rest}=p;
       const first=rest[0]||"";
+      r._r21NoName=false;
+      if(c._r21Fmt!=="mixed"){
+        const t=r21Open(c._r21Fmt,p,r);
+        if(t){r.description=v4Pronouns(t,r.gender).replace(/\s{2,}/g," ").trim();return;}
+      }
       const ranked=R16_OPENS.map(o=>({o,n:((h.r16Opens||{})[o.id]||0)+(runCounts[o.id]||0)+Math.random()*2})).sort((a,b)=>a.n-b.n).map(x=>x.o);
       for(const o of ranked){
-        if(here.has(o.id))continue;
+        if(here.has(o.id)||R21_MIXED_OFF.test(o.id))continue;
         if(o.the&&!/^the /i.test(bare))continue;
         let text=null;
         if(o.sketch){
           if(!first||first.indexOf(F)>-1||/\?$/.test(first)||first.split(/\s+/).length>14)continue;
+          // Round 21: a sketch that runs on ("Thinks he deserves it. Might be right.") is not cut in two.
+          if(/[:;]/.test(first))continue;
+          if(o.sketch===1&&rest[1]&&(rest[1].split(/\s+/).length<7||first.split(/\s+/).length<6))continue;
           text=o.sketch===1?`${first} ${F} is ${bare}.${rest.length>1?" "+rest.slice(1).join(" "):""}`:`${first.replace(/[.!?]+$/,"")}: that's ${F}, ${bare}.${rest.length>1?" "+rest.slice(1).join(" "):""}`;
         }else if(o.verb){
           if(!R16_VERB.test(first))continue;
@@ -47109,7 +47170,7 @@ const ACG = (()=>{
               const rest=sk.filter(z=>z.indexOf(det)<0);
               const idc=idn.replace(/\.$/,"");
               parts=place==="before"?[`${idc}: ${v5LowerFirst(det)}.`].concat(rest):[idn].concat(rest,[`One detail: ${v5LowerFirst(det)}.`]);
-            }else if(place==="middle"){if(sk.length<2)continue;parts=[idn,sk[0],ln].concat(sk.slice(1));}
+            }else if(place==="middle"){if(sk.length<2||sk[0].split(/\s+/).length<7||sk[1].split(/\s+/).length<7||/^(Might|Maybe|And|But|So|Or|Then|Still|Every one|Mostly|Not|Never|Almost|Twice|Once)\b/.test(sk[1]))continue;parts=[idn,sk[0],ln].concat(sk.slice(1));}
             else parts=place==="before"?[idn,ln].concat(sk):[idn].concat(sk,[ln]);
             const text=parts.filter(Boolean).join(" ").replace(/\s{2,}/g," ").trim();
             if(isLead&&(c.fn?text.split(/\s+/).length<12:(v3Sentences(text).length<2||text.split(/\s+/).length<18)))continue;
@@ -47158,7 +47219,7 @@ const ACG = (()=>{
       const holder=people.find(o=>o!==r&&new RegExp("\\b"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"s?\\b","i").test(String(o._slot||"")));
       if(!holder)continue;
       const o=String(holder.name).split(" ")[0];
-      const line=pick([`The ${w} in question is ${o}.`,`${o} is that ${w}.`,`That ${w} is ${o}.`]);
+      const line=pick([`Plays opposite ${o}.`,`Most of this is played against ${o}.`,`Reads with ${o} at callbacks.`,`Scenes are with ${o}.`]);
       r.description+=` ${line}`;
     }
     r16Reopen(people,c);
@@ -47712,7 +47773,7 @@ const ACG = (()=>{
     const same=low===top,wide=top/low>=1.4;
     const type=String(item.type||""),u=String(item.union_status||"");
     const st=P.structure;
-    const per={buyout:"a day",session:"per session",hour:"an hour",ep:"per episode",week:"a week",flat:"flat for the job",stipendDay:"a day as a stipend",stipendFlat:"as a stipend for the whole job"}[st]||"a day";
+    const per={buyout:"a day",session:"per session",hour:"an hour",ep:"per episode",week:"a week",flat:"flat for the job",stipendDay:"a day as a stipend",stipendFlat:"as a flat stipend"}[st]||"a day";
     const leadRow=rates.find(o=>v3RankOf(o.r)==="Lead");
     const lead=leadRow?leadRow.x.rate_amount:0;
     const x={A:r8Amt(top),L:r8Amt(low),Lead:r8Amt(lead||top),R:wide?`${r8Amt(low)} to ${r8Amt(top)}`:r8Amt(top),per,noun,wide};
@@ -47874,7 +47935,8 @@ const ACG = (()=>{
 
   // ── 2. The summary ───────────────────────────────────────────────────────
   const R8_OPEN_MIX={Casting:0.6,Seeking:0.4};
-  const R8_LEN_MIX={one:0.40,mid:0.45,long:0.15};
+  // Round 21: owner asked for a real spread, a third short, a third medium, a third long.
+  const R8_LEN_MIX={one:0.32,mid:0.36,long:0.32};
   function r8Length(type,seed){
     const eps=pick(["six","eight","ten"]),n=m=>rand(m[0],m[1],1);
     const g=v3Genre(seed);const gw=/drama|comedy|thriller|horror|romance|crime|mystery|western|period|sports/.test(g)?g.split(" ").slice(-1)[0]:"";
@@ -48223,6 +48285,7 @@ const ACG = (()=>{
     }
     if(item.shoot_location)item.shoot_location=String(item.shoot_location).replace(/^([^,(]+)/,m=>{const t=r13TrimVenue(m.trim());return t.charAt(0).toUpperCase()+t.slice(1)+(m.endsWith(" ")?" ":"");});
     r17Teach(item);
+    r21Teach(item,h,res);
   }
   // Round 17 (2026-11-09): the mistakes the owner's review of ten drafts found,
   // written down as rules so new listings cannot repeat them.
@@ -48313,6 +48376,252 @@ const ACG = (()=>{
       const k=S.filter(x=>{const g=x.match(/\bthose (?:\w+ )?(minutes|hours|days|weeks|months|years|nights)\b/i);return !g||said.indexOf(clean(g[0]).replace(/^those /,""))>-1;});
       if(k.length&&k.length<S.length)r.description=k.join(" ");
     });
+  }
+  // ── Round 21 (2026-11-15): the owner's review of the latest twenty ───────
+  // Every rule below came from a real draft: a cabin shot in Bensonhurst,
+  // "lunch every day on every day", a host with "close-ups in the quiet
+  // scenes", a rain plan for a flooded kitchen, a first-name cast with one
+  // "Elizabeth Hansen" in it, and the same "Venue, Area (City)" line on every
+  // listing.
+  const R21_SERIES_TYPES=/Series|Pilot|Miniseries|Docu|Unscripted|Hosting|Animation|Podcast|Vertical/;
+  const R21_NO_SCENES=/^(Hosting \/ Presenter|Reality \/ Docu-Series|Lifestyle \/ Unscripted|Other|Live Event|Modeling|Photo Shoot|Print Campaign|Influencer \/ UGC Content)$/;
+  const R21_SCENE_TALK=/close-ups|quiet scenes|reactions carry|camera (spends|often stays)|\bscenes?\b|plenty of dialogue|some dialogue|\b(big|small|large|lead|mid-sized|short|solid supporting) part\b/i;
+  const R21_OUTDOOR=/park|street|beach|pier|trail|field|farm|\blot\b|roof|highway|road|boardwalk|garden|yard|campground|corner|playground|track|bridge|harbor|marina|plaza|square|sidewalk|stoop|woods|forest|lake|river|ranch|orchard|vineyard|dock|market|fair|stadium|pool/i;
+  const R21_WEATHER=/rain or shine|in any weather|whatever the weather|cover set|if it turns|bring layers/i;
+  const R21_ABOUT={
+    short:{
+      goal:[["The plan is","We're aiming for","The goal is"],["a festival run next year","regional festivals first and an online release after","a festival premiere, then a free release online","a handful of festival submissions and a cast-and-crew screening"]],
+      also:["This is the director's second short.","It's a calling card for a longer version of the same story.","The script placed in a screenwriting contest last year.","The whole thing was written for the location we have.","Post is already booked, so the film will be finished.","The director edits their own work, so you will see a cut quickly.","It was written for a small cast on purpose.","The script is locked and runs short; nothing gets added on the day."],
+      how:["Small crew, about eight people.","We rehearse once on video before the shoot.","Expect a calm set and a real lunch break.","Two cameras, so fewer takes.","Natural light wherever we can get it.","We shoot in order as much as the location allows.","There's a table read the week before.","The crew has worked together on three shorts."]
+    },
+    student:{
+      goal:[["The film is","This is"],["a thesis project and will be finished and screened","a second-year directing project with a faculty advisor","a thesis film headed for the school showcase and then festivals","a class project with a full student crew and school equipment"]],
+      also:["It screens at the department showcase in the spring.","Past films from this program have played regional festivals.","The director has cast from outside the school before and keeps in touch about cuts.","You get your footage whether or not the film travels.","The script has been through a full semester of workshop."],
+      how:["Expect a student crew of ten or so, with a professor on call.","We keep to twelve-hour days at the most.","There will be a rehearsal on campus first.","The crew is learning, the schedule is realistic.","Equipment and insurance come through the school."]
+    },
+    feature:{
+      goal:[["Financing is","The budget is"],["private and already in place","small, private and fully raised","in place for the whole shoot","raised, and the edit is already scheduled"]],
+      also:["The aim is a festival premiere and then a streaming release.","We're planning a festival run before any sale.","A sales agent has read the script and wants to see the cut.","The director's last feature found distribution after its festival run.","This is a first feature from a team with several shorts behind it.","The film is built around a few locations and a tight cast.","The script went through a lab and two rounds of readings."],
+      how:["The crew is around twenty people.","Days run ten hours where we can manage it.","There is rehearsal time for the leads before cameras roll.","We shoot five-day weeks.","Most of the crew worked on the director's last film.","The schedule groups each actor's days together where possible."]
+    },
+    series:{
+      goal:[["Every episode is","All of it is"],["written","written and scheduled","on the page already","written, and we shoot in blocks"]],
+      also:["The finished episodes go out to buyers and then online.","The plan is to release it independently and pitch a second season.","It will be cut as a pilot first, then the rest.","A short version of this premise already found an audience online.","The team has made one web series together before.","It's built to be watched on a phone, in short episodes."],
+      how:["We shoot two episodes at a time.","Scripts go out as soon as you are cast.","Episodes are short and the days are planned around actors, not gear.","Expect a small, quick crew.","There's a read-through for each block."]
+    },
+    stage:{
+      goal:[["The script has had","The play has had"],["two public readings","a workshop and a reading","one developmental reading","a week-long workshop last year"]],
+      also:["This is its first full production.","The playwright will be in the room for the first week.","The director staged the reading and is staying with it.","The company has produced new work in this space for several seasons.","It runs about ninety minutes with no intermission.","Reviewers are invited in the second week."],
+      how:["Rehearsals are in the same building as the theater.","Off-book date is the end of week two.","Tech is a single weekend.","We keep rehearsals to four hours on weeknights.","The schedule is built around people with day jobs."]
+    },
+    audio:{
+      goal:[["The scripts are","The season is"],["finished","written and edited","locked","ready to record"]],
+      also:["It will be released weekly on the usual podcast apps.","The first season is already funded.","Sound design starts as soon as the voices are in.","The team's last show found a steady audience."],
+      how:["Sessions are directed live, even when you record from home.","Each session is short and we record in story order.","You get scripts a week ahead.","We do two takes of everything and move on."]
+    }
+  };
+  const R21_TONE={
+    comedy:["The comedy is dry; nobody in it thinks they're funny.","It's played straight, and that is where the laughs are.","Think awkward and warm, not broad."],
+    horror:["The scares are slow and quiet, with very little blood.","It's dread more than jump scares.","Most of the fear is in what people don't say."],
+    thriller:["The tension is in small rooms and long pauses.","It moves fast and stays quiet.","Nobody raises their voice until the end."],
+    drama:["The tone is quiet and close to real life.","It's a small, honest story with room for silence.","Nothing in it is heightened; it should feel overheard."],
+    romance:["It's tender and a little funny, never sugary.","The romance is in the small moments."],
+    crime:["It's a crime story told from the edges, with almost no violence on screen."],
+    mystery:["The mystery is small and human, and it gets answered."]
+  };
+  function r21AboutKey(type,fam){
+    if(fam==="stage")return /Reading|Table Read/.test(type)?"":"stage";
+    if(/^(Podcast \/ Audio Drama)$/.test(type))return "audio";
+    if(type==="Student Film")return "student";
+    if(/^(Short Film|Experimental Film|Proof of Concept)$/.test(type))return "short";
+    if(/^(Feature Film|Independent Film)$/.test(type))return "feature";
+    if(/^(TV Series|Streaming Series|Limited Series|Miniseries|Web Series|Vertical Series)$/.test(type))return "series";
+    return "";
+  }
+  function r21About(item,h,res){
+    const type=String(item.type||""),fam=item._creatorKind||"";
+    const B=R21_ABOUT[r21AboutKey(type,fam)];if(!B)return "";
+    const len=item._r8Len;
+    const want=len==="long"?3:len==="mid"&&Math.random()<0.65?rand(1,3,1):0;
+    if(!want)return "";
+    const free=x=>!(h&&v3SentUsed(v3SentKey(x),h,res));
+    const g=(item._genre||"").split(" ").slice(-1)[0];
+    const cands=[];
+    {const a=cgShuffle(B.goal[0].slice()),b=cgShuffle(B.goal[1].slice());let got="";for(const x of a){for(const y of b){const t=`${x} ${y}.`;if(free(t)){got=t;break;}}if(got)break;}if(got)cands.push(got);}
+    {const t=cgShuffle((R21_TONE[g]||[]).slice()).find(free);if(t)cands.push(t);}
+    {const t=cgShuffle(B.also.slice()).find(free);if(t)cands.push(t);}
+    {const t=cgShuffle(B.how.slice()).find(free);if(t)cands.push(t);}
+    return cgShuffle(cands).slice(0,want).join(" ");
+  }
+  function r21Teach(item,h,res){
+    const roles=item._roles||[];
+    const type=String(item.type||""),fam=item._creatorKind||"";
+    const people=roles.filter(r=>!r._group&&!/background/i.test(r.role_type||""));
+    const days=+item._shootDays||1;
+    const venue=String(item.shoot_location||item._r8Venue||"").split(",")[0];
+    const keepSome=(r,bad)=>{const S=v3Sentences(r.description);const k=S.filter(x=>!bad(x));if(k.length&&k.length<S.length)r.description=k.join(" ");};
+    // 1. "a youngest member", "an oldest sibling".
+    ["tagline","synopsis"].forEach(k=>{if(item[k])item[k]=String(item[k]).replace(/\b(a|an) (oldest|youngest|eldest|only|last|first|same|middle) /g,"the $2 ").replace(/\b(A|An) (oldest|youngest|eldest|only|last|first|same|middle) /g,"The $2 ");});
+    // 2. Lines that belong to another kind of job.
+    const seriesTalk=R21_SERIES_TYPES.test(type)||/\b(series|episodes?)\b/i.test(item.synopsis||"");
+    roles.forEach(r=>{
+      if(!seriesTalk)keepSome(r,x=>/\b(series|season|episodes?|finale)\b/i.test(x));
+      if(R21_NO_SCENES.test(type))keepSome(r,x=>R21_SCENE_TALK.test(x));
+      if(people.length<=1||/\bno (dialogue|lines)\b/i.test(r.description||""))keepSome(r,x=>/a lot of listening|plays against|opposite|chemistry/i.test(x));
+      if(/understudy|swing|standby/i.test(r._slot||"")){
+        keepSome(r,x=>/plays against|scenes are with|scenes? .* with|opposite|Callbacks will pair|Chemistry with|is in it too|never far away/i.test(x));
+        if(!/\$\d/.test(String(r.pay||"")))r.description=String(r.description||"").replace(/\bwith paid put-in rehearsals\b/,"with put-in rehearsals");
+      }
+    });
+    // 3. A married couple reads "Wife" and "Husband", not "First Spouse".
+    {const sp=roles.filter(r=>/^(First|Second) Spouse$/.test(r.name||""));
+      if(sp.length===2&&new Set(sp.map(r=>r.gender)).size===2&&sp.every(r=>/^(Female|Male)$/.test(r.gender))){
+        const fields=["synopsis","tagline","schedule_note","pay","submission_requirements"];
+        const swap=t=>{let x=String(t||"");sp.forEach(r=>{const ord=/^First/.test(r.name)?"first":"second",nw=r.gender==="Female"?"wife":"husband";
+          x=x.replace(new RegExp("\\b"+capFirst(ord)+" Spouse\\b","g"),capFirst(nw)).replace(new RegExp("\\b"+capFirst(ord)+" spouse\\b","g"),capFirst(nw)).replace(new RegExp("\\b"+ord+" spouse\\b","g"),nw);});
+          return x.replace(/\bTwo spouses\b/g,"A married couple").replace(/\btwo spouses\b/g,"a married couple");};
+        fields.forEach(k=>{if(item[k])item[k]=swap(item[k]);});
+        roles.forEach(r=>{r.description=swap(r.description);});
+        sp.forEach(r=>{r.name=r.gender==="Female"?"Wife":"Husband";});
+      }}
+    // 4. Married people and homeowners are not eighteen.
+    roles.forEach(r=>{
+      if(!/\b(spouse|husband|wife|homeowners?|newlywed|married|parent|mother|father|mom|dad)\b/i.test(`${r._slot||""} ${r.name||""}`))return;
+      const m=String(r.age_range||"").match(/^(\d+)-(\d+)$/);if(!m||+m[1]>=25||+m[1]<18)return;
+      const lo=rand(25,29,1);r.age_range=`${lo}-${lo+Math.max(8,+m[2]-+m[1])}`;
+    });
+    // 4b. A sketch that states an age sets the age ("Seventy years old" on a 30-40 part).
+    {const NUM={twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90},ONE={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9};
+      roles.forEach(r=>{
+        if(r._group)return;
+        const m=String(r.description||"").match(/\b(\d{2}|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:[- ](one|two|three|four|five|six|seven|eight|nine))? years old\b/i);if(!m)return;
+        const n=(/^\d/.test(m[1])?+m[1]:NUM[m[1].toLowerCase()])+(m[2]?ONE[m[2].toLowerCase()]:0);
+        const b=String(r.age_range||"").match(/^(\d+)-(\d+)$/);if(!n||n<18||(b&&n>=+b[1]&&n<=+b[2]))return;
+        r.age_range=`${Math.max(18,n-5)}-${Math.min(85,n+5)}`;
+      });}
+    // 5. Pay box: perks fit the hours, and a stage job has no screen credit.
+    if(item.pay){
+      let p=String(item.pay);
+      const note=String(item.schedule_note||"");
+      const evening=/evening|6 to 10|after work|weeknights|nothing starts before/i.test(note);
+      if(fam==="stage"||evening)p=p.replace(/\b(hot meals|lunch every day|snacks and lunch)\b/g,"coffee and snacks at every call").replace(/\b(Hot meals|Lunch every day|Snacks and lunch)\b/g,"Coffee and snacks at every call").replace(/(Lunch is on us|Credit and a hot lunch included|Snacks all day and a real lunch|Meals on set)\./g,"Coffee and snacks at every call.");
+      if(fam==="stage")p=p.replace(/\b(an IMDb credit|screen credit)\b/gi,"program credit").replace(/\b(a )?credit,? (and )?(a )?program credit\b/gi,"program credit").replace(/\bprogram credit,? (and )?program credit\b/gi,"program credit");
+      if(fam==="photo")p=p.replace(/\b(an IMDb credit|screen credit)\b/gi,"photo credit").replace(/\b[Aa] copy of the finished (shoot|photo shoot|campaign)\b/g,m=>/^A/.test(m)?"Final images":"final images");
+      p=p.replace(/\bon every day\b/g,"every day").replace(/\bevery day every day\b/g,"every day").replace(/(^|[.!?]\s+)([a-z])/g,(m,a,b)=>a+b.toUpperCase());
+      item.pay=p;
+    }
+    // 6. Role-play and standardized-patient work pays training-day money.
+    if(/role-play|standardized patient|simulated patient|simulation/i.test(`${item.title||""} ${item.synopsis||""}`)){
+      roles.forEach(r=>{
+        const x=parseRoleRate(r.pay);if(!x||x.rate_amount<=250)return;
+        const old=`$${Number(x.rate_amount).toLocaleString("en-US")}`,now=`$${Math.max(125,Math.round(x.rate_amount*0.45/25)*25)}`;
+        r.pay=String(r.pay).split(old).join(now);item.pay=String(item.pay||"").split(old).join(now);
+      });
+    }
+    // 7. The same thing is not asked for twice.
+    if(item.submission_requirements){
+      const S=v3Sentences(item.submission_requirements);
+      [/voice (sample|clip)|voice demo|audio sample/i,/talking to camera|hosting reel/i,/\bsizes\b/i].forEach(re=>{let seen=false;for(let i=0;i<S.length;i++){if(S[i]&&re.test(S[i])){if(seen)S[i]="";seen=true;}}});
+      item.submission_requirements=S.filter(Boolean).join(" ");
+    }
+    // 8. A remote job has no town and no set.
+    if(!item.shoot_location||/Records? remotely|Self-shot|from home/i.test(item.schedule_note||"")){
+      if(item.synopsis)item.synopsis=String(item.synopsis).replace(/,? (recorded|recording|shooting|shot|filming|taped) in (the )?[A-Z][\w'’-]*( [A-Z][\w'’-]*)*(?=[,.])/,"").replace(/\s{2,}/g," ");
+      if(item.submission_requirements)item.submission_requirements=String(item.submission_requirements).replace(/stays on set the whole time/g,"sits in on every session").replace(/must stay on set with/g,"must sit in on sessions with").replace(/\bon set\b/g,"at every session");
+    }
+    if(type==="Animation"&&item.synopsis&&/animated short/.test(item.synopsis)&&(/animated series/i.test(item.tagline||"")||/\bepisodes?\b/i.test(item.synopsis)))item.synopsis=String(item.synopsis).replace(/\banimated short\b/g,"animated series");
+    // 9. Schedule note: no rain plan indoors, and the day count is said once.
+    if(item.schedule_note){
+      let S=v3Sentences(item.schedule_note);
+      if(!R21_OUTDOOR.test(venue))S=S.filter(x=>!R21_WEATHER.test(x));
+      if(S.some(x=>/\bshoots? \w+ days?\b/i.test(x)))S=S.filter(x=>!/\b[\w-]+-day shoot\b/i.test(x)||/\bshoots? \w+ days?\b/i.test(x));
+      item.schedule_note=S.join(" ");
+    }
+    // 10. Summary wording.
+    if(item.synopsis){
+      let syn=String(item.synopsis);
+      if(/^(audio|anim)$/.test(fam)||type==="Voiceover")syn=syn.replace(/\bshooting in\b/g,"recording in").replace(/\bshoots in\b/g,"records in");
+      if(days>1)syn=syn.replace(/\bquick, well-run shoot\b/,"well-run shoot");
+      syn=syn.replace(/\bThe (spot|video|ad|film|piece) (is about|shows) (a|an) (spec )?(spot|ad|video|promo|commercial)\b[^:.]*: /,(m,a)=>`The ${a}: `);
+      syn=syn.replace(/\babout an? (music video|animated [\w ]*?(?:show|series|short)|spec spot|short film|web series) (that follows|set in|in which|about)\b/,(m,a,b)=>b);
+      syn=syn.replace(/\b(An?|an?) untitled play (drama|comedy|thriller|mystery|romance)\b/g,(m,a,g)=>`${/^A/.test(a)?"An":"an"} untitled stage ${g}`);
+      item.synopsis=syn;
+    }
+    ["synopsis","tagline","schedule_note","submission_requirements"].forEach(k=>{if(item[k])item[k]=String(item[k]).replace(/\b(of|in|around|to|from|near|across) (San Francisco Bay Area|Hudson Valley)\b/g,(m,a,b)=>`${a} the ${b==="Hudson Valley"?b:"Bay Area"}`);});
+    if((/^(audio|anim)$/.test(fam)||type==="Voiceover")&&item.schedule_note)item.schedule_note=String(item.schedule_note).replace(/\bshoot (dates?)\b/g,"session $1");
+    // 12. One background group is plenty outside a background call.
+    if(type!=="Background / Extras"&&item._roles){let seen=false;item._roles=item._roles.filter(r=>{if(!/background/i.test(r.role_type||""))return true;if(seen)return false;seen=true;return true;});}
+    if(item.title)item.title=String(item.title).replace(/^Untitled Play (Drama|Comedy|Thriller|Mystery|Romance)\b/,"Untitled Stage $1");
+    // 11. Some listings say more: who is making it, how, and where it is headed.
+    if(item.synopsis&&r8Kind(type)!=="brand"){
+      const about=r21About(item,h,res);
+      if(about){item.synopsis=`${String(item.synopsis).trim()} ${about}`;item._r21About=true;item._r21AboutN=v3Sentences(about).length;}
+    }
+  }
+  // Where the shoot is: read back from a saved line, so history counts too.
+  function r21LocStyle(v){
+    const s=String(v||"").trim();if(!s)return "";
+    if(/^Location (TBA|to be confirmed)|exact (address|location)/i.test(s))return "tba";
+    if(/^In and around /.test(s))return "around";
+    if(/^(A|An|The) [^,]+, .+\([^()]+\)$/.test(s))return "full";
+    if(/^(A|An|The) .+ (in|on) /.test(s))return /,/.test(s)?"venueArea":"venueCity";
+    if(/^(NYC|New York City|Greater |North Jersey)|( area| and nearby)$/.test(s))return "loose";
+    return /, [A-Z]{2}$/.test(s)&&s.split(",").length===2&&/^(The Bronx|Brooklyn|Queens|Manhattan|Staten Island)/.test(s)?"borough":"areaOnly";
+  }
+  const R21_LOC_W={full:20,venueArea:16,areaOnly:18,borough:12,venueCity:12,tba:8,around:6,loose:8};
+  const R21_REGION_IN={"Long Island":"on Long Island","Hudson Valley":"in the Hudson Valley","San Francisco Bay Area":"in the Bay Area","Montclair":"in North Jersey","Westchester":"in Westchester"};
+  const R21_LOOSE={"Los Angeles":["Greater Los Angeles","Los Angeles area"],"San Francisco Bay Area":["Bay Area","San Francisco Bay Area"],"Long Island":["Long Island"],"Hudson Valley":["Hudson Valley","Hudson Valley, NY"],"Westchester":["Westchester County"],"Montclair":["North Jersey"],"Newark":["Newark area"],"Jersey City":["Jersey City","Hudson County, NJ"],"Hoboken":["Hoboken area"]};
+  function r21Where(item,h,res){
+    const m=String(item.shoot_location||"").match(/^([^,]+), (.+) \(([^()]+)\)$/);
+    if(!m)return;
+    const venue=m[1],area=m[2],city=m[3];
+    if(/ (to|and|then) | — |→/.test(area))return;
+    const nyc=city==="New York, NY";
+    const parts=area.split(", "),hood=parts[0],boro=nyc?(parts[1]||""):"";
+    const st=city.split(", ")[1]||"",cityShort=city.split(",")[0];
+    const areaLine=area.indexOf(",")>-1?area:/^the /.test(area)?`${area}, ${R21_REGION_IN[cityShort]?st:cityShort}`:`${area}, ${st}`;
+    const inBig=nyc?`in ${boro||"New York City"}`:(R21_REGION_IN[cityShort]||`in ${cityShort}`);
+    const fixed=/theater|stage|playhouse|studio|booth/i.test(venue)||item._creatorKind==="stage";
+    const days=+item._shootDays||1;
+    const mk={
+      full:()=>item.shoot_location,
+      venueArea:()=>`${venue} in ${area.replace(/, [A-Z]{2}$/,"")}`,
+      areaOnly:()=>capFirst(areaLine),
+      borough:()=>nyc&&boro?`${capFirst(boro)}, NY`:null,
+      venueCity:()=>`${venue} ${inBig}`,
+      tba:()=>{const X=nyc&&boro?capFirst(boro):capFirst(areaLine);return pick([`Location TBA, ${X}`,`${X} (exact address sent with the call sheet)`,`${X}; exact location to be confirmed`]);},
+      around:()=>days>=2?`In and around ${areaLine}`:null,
+      loose:()=>nyc?pick(["New York City","NYC"].concat(boro?[`${capFirst(boro)} and nearby`]:[])):pick(R21_LOOSE[cityShort]||[`${cityShort} area`])
+    };
+    const recent=((res&&res._r21Locs)||[]).concat((h&&h.r21Locs)||[]).slice(0,2);
+    let pool=Object.keys(R21_LOC_W).filter(k=>recent.indexOf(k)<0&&(!fixed||/^(full|venueArea|venueCity)$/.test(k)));
+    if(!pool.length)pool=["full","venueArea","venueCity"];
+    for(let i=0;i<8;i++){
+      const total=pool.reduce((a,k)=>a+R21_LOC_W[k],0);let x=Math.random()*total,k=pool[0];
+      for(const q of pool){x-=R21_LOC_W[q];if(x<=0){k=q;break;}}
+      const v=mk[k]();
+      if(v){item.shoot_location=v;item._r21Loc=k;if(res)(res._r21Locs=res._r21Locs||[]).unshift(k);return;}
+      pool=pool.filter(q=>q!==k);if(!pool.length)break;
+    }
+  }
+  // Runs once a draft has passed every check: how the place is written, and
+  // the one titled surname a cast may carry.
+  function r21Final(item,h,res){
+    const roles=item._roles||[];
+    const esc=x=>String(x).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    roles.forEach(r=>{
+      if(!r._r21Title||!r._person)return;
+      const parts=String(r._person).trim().split(/\s+/),first=parts[0],last=parts.slice(1).join(" ");
+      if(!last)return;
+      const nm=`${r._r21Title} ${last}`,full=String(r._person);
+      const fix=t=>String(t||"").split(full).join(nm).replace(new RegExp("\\b"+esc(first.toUpperCase())+"\\b(?=:)","g"),nm.toUpperCase()).replace(new RegExp("(^|[^.\\w] ?|[.!?] )"+esc(first)+"\\b(?! "+esc(last)+")","g"),(m0,a)=>a+nm);
+      ["tagline","synopsis","schedule_note","pay","submission_requirements"].forEach(k=>{if(item[k])item[k]=fix(item[k]);});
+      roles.forEach(o=>{o.description=fix(o.description);});
+      r.name=nm;
+    });
+    if(res)(res._r21Fmts=res._r21Fmts||[]).unshift(r21FmtOf(roles,item.type)||"fn");
+    r21Where(item,h,res);
+    item._lines=splitLines(item.synopsis).concat([item.tagline],roles.map(r=>r.description)).filter(Boolean);
   }
   // ── Round 13 validators ──────────────────────────────────────────────────
   const R13_FEW=/\b(steps in once|in one scene|one scene only|just two scenes|two scenes\b|appears only at the very end|last (three|few) seconds|a one-day part|just one day for|is in one day only)\b/i;
@@ -48566,6 +48875,8 @@ const ACG = (()=>{
   // Function names read like a board: "Front Desk Staffer", "Parent 1".
   const R8_NEEDS_FULL=/\b(detective|officer|cop|inspector|sergeant|lieutenant|captain|senator|mayor|governor|judge|professor|doctor|reverend|pastor|agent|councilman|councilwoman|anchor|founder|landlord|principal|lawyer|attorney|sheriff|chief|commissioner|dean|director)\b/i;
   function r8FnTitle(lab){return titleCase(String(lab||"").toLowerCase()).replace(/\b(Ugc|Psa|Tv|Dj|Emt|Ceo|Nyc)\b/g,m=>m.toUpperCase()).replace(/^([a-z])/,m=>m.toUpperCase());}
+  const R21_TITLES=[[/\b(doctor|physician|surgeon|pediatrician|psychiatrist|veterinarian|dentist)\b/i,"Dr."],[/\bdetective\b/i,"Detective"],[/\bjudge\b/i,"Judge"],[/\bprofessor\b/i,"Professor"],[/\b(police|patrol|beat) (officer|cop)\b|^(the |an? )?(officer|cop)$/i,"Officer"],[/\bsheriff\b/i,"Sheriff"],[/\bmayor\b/i,"Mayor"],[/\bsenator\b/i,"Senator"],[/\breverend\b/i,"Reverend"],[/\bpastor\b/i,"Pastor"],[/\bsergeant\b/i,"Sergeant"],[/\blieutenant\b/i,"Lieutenant"],[/\b(school )?principal\b/i,"Principal"],[/\bcoach\b/i,"Coach"],[/\bdean\b/i,"Dean"]];
+  function r21Title(slot){const t=String(slot||"");if(/['’]s\b/.test(t))return "";const m=R21_TITLES.find(([re])=>re.test(t));return m?m[1]:"";}
   function r8RenameRoles(item,roles,type,fnNamed){
     const esc=x=>String(x).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
     const fields=["synopsis","tagline","schedule_note","pay","submission_requirements"];
@@ -48599,15 +48910,22 @@ const ACG = (()=>{
     // character per listing unless the clash forces it.
     const dupe=r=>firsts[String(r.name).split(" ")[0]]>1;
     const needFull=ppl.filter(r=>!dupe(r)&&R8_NEEDS_FULL.test(r._slot||""));
-    const chosenFull=needFull.length&&Math.random()<0.5?needFull[0]:null;
+    // Round 21: owner's rule. A cast list never mixes "Bailey" with
+    // "Elizabeth Hansen". A surname is printed only with a title that earns it
+    // ("Dr. Hansen", set in r21Final), or on every part at once.
+    const titled=needFull.filter(r=>r21Title(r._slot));
+    const anyDupe=ppl.some(r=>dupe(r));
+    const chosenFull=!anyDupe&&titled.length&&Math.random()<0.5?titled[0]:null;
+    const allFull=!chosenFull&&ppl.length>=2&&(anyDupe||Math.random()<0.1);
+    if(allFull){ppl.forEach(r=>{r._person=String(r.name);r._r8Full=true;r._r21AllFull=true;});return;}
     // Round 10 item 4i: "Gavin, Shop Assistant" only when every part in the
     // listing reads that way.
     const labelOk=r=>{const slot=r8Slot(r);return slot&&slot.split(/\s+/).length<=3&&!/'|’|\b(who|that|one|with|of|in|at)\b/i.test(slot)&&/^(Lead|Supporting|Day Player)$/.test(r.role_type||"");};
-    const allLabeled=ppl.length>1&&ppl.every(r=>labelOk(r)&&!dupe(r)&&r!==chosenFull)&&Math.random()<0.08;
+    const allLabeled=false&&ppl.length>1&&ppl.every(r=>labelOk(r)&&!dupe(r)&&r!==chosenFull)&&Math.random()<0.08;
     ppl.forEach(r=>{
       const full=String(r.name),first=full.split(" ")[0];
       r._person=full;
-      if(dupe(r)||r===chosenFull){r._r8Full=true;return;}
+      if(r===chosenFull){r._r8Full=true;r._r21Title=r21Title(r._slot);return;}
       const slot=r8Slot(r);
       let nm=first;
       if(allLabeled&&slot)nm=`${first}, ${titleCase(slot)}`;
@@ -49166,7 +49484,7 @@ const ACG = (()=>{
     if(gas)return pick([`Unpaid. Gas money and ${perk}, plus ${copy}.`,`Unpaid. We cover gas and ${perk}; ${cred} too.`]);
     if(def)return pick([`Unpaid (deferred pay). ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid up front; pay is deferred until the ${noun} sells. ${capFirst(perk)} and ${cred}.`,`Unpaid (deferred). ${capFirst(copy)} and ${perk} guaranteed.`]);
     if(!/^(play|musical|reading|read|performance)$/.test(noun)&&Math.random()<0.6)return pick([`Unpaid. In exchange: ${cred}, demo footage and on-set experience.`,`Unpaid. In exchange for your time: ${cred}, demo footage and on-set experience. ${capFirst(perk)} provided.`,`Unpaid. You leave with demo material, ${cred} and real on-set experience.`,`Unpaid. Copy, credit and on-set experience in exchange for your time. ${capFirst(perk)} too.`]);
-    return pick([`Unpaid. ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid. In return: ${perk}, ${copy} and ${cred}.`,`Unpaid. ${capFirst(copy)}, ${perk} and ${cred} for everyone.`,`Unpaid. ${capFirst(cred)}, ${copy}, and ${perk} on every day.`]);
+    return pick([`Unpaid. ${capFirst(perk)}, ${cred} and ${copy}.`,`Unpaid. In return: ${perk}, ${copy} and ${cred}.`,`Unpaid. ${capFirst(copy)}, ${perk} and ${cred} for everyone.`,`Unpaid. ${capFirst(cred)}, ${copy}, and ${perk}.`]);
   }
 
   // ── Company names: shapes ────────────────────────────────────────────────
@@ -49774,7 +50092,7 @@ const ACG = (()=>{
         talent_scope:fam==="stage"?"Local — shoot city only":/^(audio|anim)$/.test(fam)?"United States — Nationwide":"Local + self-report (within driving distance)",
         // Round 9 step 4: the board's order, biggest part first inside a rank.
         _roles:r9MergeBackground(named).slice().sort(compareRoles),_brandCat:brandCat||null,_areaName:area,_voiceKey:voice,_shootDays:plan.days,
-        _v8:{persona:persona.k,warmth:persona.w,structs:res._v8StructsHere||[],tagSkel,weave},_brief:brief,_v5:{plan,tier:payTier,noteTier,castBucket:fam==="job"?v5CastBucket(named.length):castBucket,structure:PAY.structure,monthKey:DT.monthKey},_synBucket:synBucketFinal,
+        _v8:{persona:persona.k,warmth:persona.w,structs:res._v8StructsHere||[],tagSkel,weave},_brief:brief,_genre:v3Genre(seed),_v5:{plan,tier:payTier,noteTier,castBucket:fam==="job"?v5CastBucket(named.length):castBucket,structure:PAY.structure,monthKey:DT.monthKey},_synBucket:synBucketFinal,
         _setupText:ctx.setup,_turnText:turn,_baseKey:fp(seed.k+" "+turn),_storyKey:fp(seed.k+" "+turn+" "+type),
         _storyTextKey:`${T8?T8.t:title} ${type} ${synopsis}`.slice(0,1200),_traitKey:fp([type,city.short,seed.k,turn].join("|")),
         _ageKey:fp(named.map(r=>r.age_range).join("|")),_roleCountKey:String(named.length),_creatorKind:fam,
@@ -50168,7 +50486,7 @@ const ACG = (()=>{
       // 5/6/7
       if(!r._group&&!r._job){
         const first=String(r._person||r.name).split(" ")[0];
-        if(!V7_FN.test(item.type)&&d.indexOf(first)<0)out.push("description never names the character");
+        if(!V7_FN.test(item.type)&&!r._r21NoName&&d.indexOf(first)<0)out.push("description never names the character");
         if(/^[^.]*\b(her|his|their)\s+(son|daughter|mother|father|wife|husband|brother|sister|boss|partner)\b/i.test(d))out.push("possessive label instead of a name");
         if(/^(Male|Female)$/.test(r.gender)&&/\b(they|them|their|theirs|themselves)\b/i.test(d))out.push("they on a gendered role");
       }
@@ -51543,6 +51861,7 @@ const ACG = (()=>{
       {const pm=r18PayMark(item.pay);if(pm)(res._r18Pay=res._r18Pay||[]).unshift(pm);}
       res.lastFamily=familySeed(built.seed);
       if(res.lastFamily)res.famCount=(res.famCount||0)+1;
+      r21Final(item,h,res);
       out.push(item);
     }
     rememberGenerated(out);
