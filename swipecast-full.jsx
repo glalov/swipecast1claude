@@ -19084,18 +19084,18 @@ const NYC_STEPS=[
   ["Start with student and indie films", "NYU, Columbia, The New School, SVA and Brooklyn College cast all year. They're the fastest way to get credits and real footage for your reel.", "/casting-calls/student-films", "Student film casting calls"],
   ["Submit early, and only when you fit", "Breakdowns fill quickly, so apply soon after a role posts. Read the role, check the shoot dates, and write a short note on why you're right for it."],
   ["Treat the self-tape as the audition", "Most first rounds in New York are self-tapes now. Learn the lines, frame from the chest up, keep the background plain and the sound clear."],
-  ["Go to open calls", "Theater runs regular open calls in Midtown, including Equity Principal Auditions. Non-Equity actors can usually be seen there as time allows, so arrive early."],
-  ["Find representation once you have credits", "A few credits and a reel make it much easier to get an agent or manager to look. They submit you to work you can't reach on your own.", "/agency-directory", "Talent agency directory"],
+  ["Go to open calls", "Theater runs open calls in Midtown, including Equity Principal Auditions. Non-Equity actors can often be seen as time allows, so arrive early."],
+  ["Then find an agent or manager", "A few credits and a reel make it much easier to get an agent or manager to look. They submit you to work you can't reach on your own.", "/agency-directory", "Talent agency directory"],
 ];
 // Guide under the student-film listings (2026-11-16): student-film searches were showing
 // CastSlate at positions 15-30 with a thin page. KEEP IN SYNC with STUDENT_GUIDE in api/landing.js.
 const STUDENT_GUIDE=[
   ["How student film casting works", "Film students cast their thesis and class projects much like a professional production: they post a breakdown, review submissions, then hold auditions or ask for self-tapes. Shoots usually run a few days, often on weekends, and many happen in New York and Los Angeles."],
   ["Why actors take student films", "Student films are where many actors earn their first credits and their first reel footage. You work on set with a real crew, practise hitting marks and repeating takes, and meet the directors and cinematographers who'll be making indie features in a few years."],
-  ["Pay, meals and credit", "Many student films are unpaid or pay a small flat fee, so read each listing. Expect meals on set, a credit, and a copy of your footage. Ask when you'll get that footage before you agree to the shoot, and get it in writing."],
+  ["Pay, meals and credit", "Many student films are unpaid or pay a small flat fee, so read each listing carefully before you apply. Expect meals on set, a credit, and a copy of your footage. Ask when you'll get that footage before you agree to the shoot, and get it in writing."],
   ["Union actors on student films", "SAG-AFTRA members can work on student films made under the union's Student Film Agreement, which the school's filmmaker signs before the shoot. Non-union actors can submit to any student film. Every listing on CastSlate shows its union status, so you know before applying."],
   ["Where student films cast", "In New York, look for projects from NYU, Columbia, The New School, SVA and Brooklyn College. In Los Angeles, USC, UCLA, AFI, CalArts and Chapman students cast throughout the school year. Thesis films are usually the most ambitious ones, with the biggest crews."],
-  ["How to stand out", "Submit with a current headshot, a short note on why you fit the role, and a clear self-tape if they ask for one. Be on time, know your lines and be easy to work with: student directors remember actors who made their shoot go well."],
+  ["How to stand out", "Submit with a current headshot, a short note on why you fit the role, and a clear self-tape if they ask for one. On the day, be on time, know your lines well and be easy to work with: student directors remember actors who made their shoot go well."],
 ];
 const STUDENT_GUIDE_CLOSE="Every student film above is open now, and the filmmakers review one profile at a time.";
 // In-app jump to any built-in landing page from a real <a href>.
