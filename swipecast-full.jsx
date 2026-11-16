@@ -5973,6 +5973,27 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fcs-card-v2 .fcs-card-body{display:flex;flex-direction:column;min-width:0;}
 .fcs-card-v2 .cc-foot{margin-top:auto;}
 .fcs-ctawrap{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0;}
+.fcs-card-b5{background:#FFFFFF;justify-content:stretch;box-shadow:2px 3px 3px -2px rgba(26,26,46,.42),1px 1px 0 rgba(26,26,46,.06);}
+.fcs-card-b5 .fcs-b5{height:100%;width:100%;}
+.fcs-card-b5 .b5-main{align-content:center;}
+.fcs-b5-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.fcs-b5-actions .fcs-count{margin-left:auto;}
+.fcs-rows{gap:8px;padding:18px 20px;}
+.fcs-row{display:grid;grid-template-columns:4px minmax(0,1fr) auto;gap:0 12px;align-items:center;width:100%;text-align:left;background:#FFFFFF;border:1px solid #EAE5DB;border-radius:10px;padding:12px 14px 12px 12px;font:inherit;color:inherit;cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease;}
+.fcs-row:hover{border-color:#CFC6B4;box-shadow:0 4px 12px -8px rgba(26,26,46,.35);}
+.fcs-row:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.fcs-row .b5-bar{align-self:stretch;}
+.fcs-row.lead .b5-bar{background:var(--teal);}
+.fcs-row.sup .b5-bar{background:#EAC080;}
+.fcs-row-tx{display:flex;flex-direction:column;min-width:0;}
+.fcs-row .b5-rname{font-size:15.5px;}
+.fcs-row .b5-rspec{font-size:13.5px;}
+.fcs-row-go{display:inline-flex;color:#141414;transition:transform .15s ease;}
+.fcs-row-go .cs-tri{width:10px;height:12px;}
+.fcs-row:hover .fcs-row-go{transform:translateX(2px);}
+.fcs-row-more .b5-bar{background:transparent;}
+.fcs-row-more .b5-rname{color:var(--teal-dk);}
+@media(max-width:767px){.fcs-rows{padding:14px 16px 16px;}}
 .fcs-count{font-size:11px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;font-weight:700;white-space:nowrap;}
 .fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 1px 10px rgba(26,26,46,0.05);}
 .fcs-card-center:hover{transform:scale(1.004) translateY(-1px);box-shadow:-12px 10px 30px -16px rgba(26,26,46,0.09),12px 10px 30px -16px rgba(26,26,46,0.09),0 14px 32px -18px rgba(26,26,46,0.08);border-color:var(--bdr);}
@@ -29082,72 +29103,65 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
             else{e.stopPropagation();setIdx(i);}
           };
           return(<div key={sc.id||i}
-            className={`fcs-card fcs-card-v2 ${isCenter?"fcs-card-center":"fcs-card-side"} ${dist>=2?"fcs-card-far":""}`}
+            className={`fcs-card fcs-card-v2 fcs-card-b5 ${isCenter?"fcs-card-center":"fcs-card-side"} ${dist>=2?"fcs-card-far":""}`}
             style={{flex:`0 0 ${cardWidth}px`,visibility:visuallyHidden?"hidden":"visible"}}
             onClick={onSlotClick}
             aria-hidden={!isCenter}
             tabIndex={isCenter?0:-1}>
-            {/* Same card design as Browse Castings — .cc-* classes are shared, not
-                copied. Only the slider chrome (coverflow scale/opacity, the pinned
-                height, the "Casting N of M" counter) is specific to this component. */}
-            <div className="casting-card-row">
-              {/* Raw type on purpose — ProjectTypeTile canonicalises it itself. */}
-              <ProjectTypeTile type={sc.type}/>
-              <div className="fcs-card-body">
-                <div className="cc-titlewrap">
-                  <h3 className="cc-title">{sc.title}</h3>
-                  <div className="cc-badgerow">
-                    <span className="cc-badge">{castingTypeLabel(sc.type||"Film")}</span>
-                    {sc.union&&<span className="cc-badge">{sc.union}</span>}
-                    {(!sCdn||!sCdn.expired)&&<LiveCastingBadge/>}
-                    {/* Verification badges live inside the casting (owner, 2026-11-07), not on the card. */}
+            {/* Browse card design (owner, 2026-11-16, demo castslate-featured-cards-demo): same .b5-*
+                classes as Browse, minus the story preview (the carousel turns too fast to read it),
+                and roles as rows with a black play triangle instead of Apply buttons, like a
+                shop window. Phones show 2 roles, desktop 3, so every card keeps one height. */}
+            {(()=>{
+              const closed=!!(sCdn&&sCdn.expired);
+              const posted=castingFreshLabel(sc,closed,5);
+              const facts=[sRate?sRate.text:"",sc.union||"",posted].filter(Boolean);
+              const shootTxt=cardShootChip(sc);
+              const whereTxt=(shootLocationForLine(sc)||sc.location||"").trim();
+              const soon=!closed&&sCdn&&sCdn.days<=5;
+              const n=sRoles.length;const pk=isMobileVpw?castingCardRoles(sc,2):sPick;
+              const btn=(sCdn&&!closed&&sCdn.days<=3?"Closing soon · ":"")+(pk.rest>0?`See all ${n} roles`:n>1?"Read the full breakdown":"Read the breakdown");
+              const go=(e)=>{e.stopPropagation();if(isCenter)onViewCasting&&onViewCasting(sc);else setIdx(i);};
+              return(<div className="b5-grid fcs-b5">
+                <div className="b5-main">
+                  <div className="b5-head">
+                    <h3 className="cc-title">{sc.title}</h3>
+                    <TicketTypeTag type={sc.type} lang="en"/>
+                    {soon&&<span className="b5-urgent">{sCdn.label}</span>}
+                  </div>
+                  {facts.length>0&&<div className="b5-meta">{facts.map((x,k)=><span key={k} className={k===0&&sRate&&sRate.money?"pay":(x===posted&&posted&&!posted.startsWith("Posted"))?"open":undefined}>{x}</span>)}</div>}
+                  {(sc.tagline&&sc.tagline!==sc.prod)?<p className="b5-sum">{sc.tagline}</p>:null}
+                  {(shootTxt||whereTxt)&&<div className="b5-when">
+                    {shootTxt&&<span><b>Shoots</b>{shootTxt.replace(/^Shoots\s+/,"")}</span>}
+                    {whereTxt&&<span><b>Where</b>{whereTxt}</span>}
+                  </div>}
+                  <div className="b5-actions fcs-b5-actions">
+                    <button type="button" className="b5-ghost" tabIndex={isCenter?0:-1} onClick={go}>{withTri(btn)}</button>
+                    <span className="fcs-count">Casting {i+1} of {castings.length}</span>
                   </div>
                 </div>
-                {sc.tagline&&<p className="cc-tagline">{sc.tagline}</p>}
-                {/* Same fact strip as Browse: parts, pay, deadline, place, freshness.
-                    The countdown chip stays hidden above CARD_COUNTDOWN_MAX_DAYS —
-                    see the card-countdown note on the Browse card. */}
-                <div className="cc-strip">
-                  {sRoles.length>0&&<span className="cc-chip roles">{sRoles.length===1?"1 Role":`${sRoles.length} Roles`}</span>}
-                  {sRate&&<span className={"cc-chip"+(sRate.money?" pay":"")}>{sRate.text}</span>}
-                  {sCdn&&!sCdn.expired
-                    ?(sCdn.days>CARD_COUNTDOWN_MAX_DAYS?null:<span className={"cc-chip "+(sCdn.urgent?"urgent":"soon")}>{sCdn.label}</span>)
-                    :sCdn?<span className="cc-chip soon">Applications closed</span>:null}
-                  {sc.location&&<span className="cc-chip">{sc.location}</span>}
-                  {cardShootChip(sc)&&<span className="cc-chip">{cardShootChip(sc)}</span>}
-                  {sPosted&&castingFreshLabel(sc,!!(sCdn&&sCdn.expired))&&<span className="cc-chip quiet">{castingFreshLabel(sc,!!(sCdn&&sCdn.expired))}</span>}
-                </div>
-                {/* Role pills + CTA share the foot row, exactly as on Browse. The
-                    pills open this casting on that role. Rendered on EVERY card,
-                    not just the centred one — a row that appears and disappears
-                    on the 5s timer resized the whole section. Hidden, not
-                    unmounted, so the space is always reserved. Side cards now
-                    SHOW it too — see the .fcs-card-side note in the CSS. */}
-                <div className="cc-foot">
-                  <div className="cc-pills">
-                    {sPick.shown.map((r,ri)=>{
-                      const spec=roleCardSpec(r);
-                      const label=r.type||r.role_type||"Role";
-                      return(<button key={r.id||ri} type="button" className="cc-pill" tabIndex={isCenter?0:-1}
-                        onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>
-                        <span className="p1">{label}</span>{spec&&<span className="p2">{spec}</span>}
-                      </button>);
-                    })}
-                    {sPick.rest>0&&<span className="cc-pill-rest">+ {sPick.rest} more {sPick.rest===1?"role":"roles"}</span>}
-                  </div>
-                  <div className="fcs-ctawrap">
-                    <button className="btn-teal cc-cta" tabIndex={isCenter?0:-1} onClick={(e)=>{e.stopPropagation();onViewCasting&&onViewCasting(sc);}}>View Roles &amp; Apply <Tri/></button>
-                    {/* i, not idx. This used to print the centred card's number
-                        on every card, so one slide dirtied a text node inside all
-                        twelve and React re-rendered the lot; now only the two
-                        cards whose state actually changed update. It was also
-                        simply wrong once the side cards became readable — the
-                        card to the right of "Casting 4 of 12" also said 4. */}
-                    <span className="fcs-count">· Casting {i+1} of {castings.length}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+                {pk.shown.length>0&&<div className="b5-side fcs-rows">
+                  {pk.shown.map((r,ri)=>{
+                    const label=r.type||r.role_type||"Role";
+                    const lead=/^(lead|principal|series regular|host)$/i.test(label),sup=/^(supporting|co-star|recurring|guest star|featured)$/i.test(label);
+                    const spec=roleCardSpec(r);
+                    return(<button type="button" key={r.id||ri} className={"fcs-row"+(lead?" lead":sup?" sup":"")} tabIndex={isCenter?0:-1} onClick={go} aria-label={(r.name||label)+", open this casting"}>
+                      <span className="b5-bar" aria-hidden="true"/>
+                      <span className="fcs-row-tx">
+                        <span className="b5-rname">{r.name||label}</span>
+                        <span className="b5-rspec">{[label].concat(spec?spec.split(" · "):[]).join(" · ")}</span>
+                      </span>
+                      <span className="fcs-row-go" aria-hidden="true"><Tri/></span>
+                    </button>);
+                  })}
+                  {pk.rest>0&&<button type="button" className="fcs-row fcs-row-more" tabIndex={isCenter?0:-1} onClick={go}>
+                    <span className="b5-bar" aria-hidden="true"/>
+                    <span className="fcs-row-tx"><span className="b5-rname">+{pk.rest} more {pk.rest===1?"role":"roles"}</span><span className="b5-rspec">View all</span></span>
+                    <span className="fcs-row-go" aria-hidden="true"><Tri/></span>
+                  </button>}
+                </div>}
+              </div>);
+            })()}
           </div>);
         })}
       </div>
