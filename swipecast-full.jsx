@@ -11356,11 +11356,49 @@ async function compressImageFile(file,maxDim,quality){
   }catch(e){ return file; }
 }
 
+// ── Small card images (owner, 2026-11-16) ──
+// Cards used to load each picture at its full original size: news thumbnails up to 3.8MB from the
+// publisher, 84 photographer photos adding up to 33MB. On weak wifi the boxes sat empty for a long
+// time. csThumb asks for a card-sized copy instead: Supabase and the publishers' own servers
+// (WordPress VIP: ?w=) can resize; anything else goes through Vercel's image resizer, which only
+// accepts the hosts listed in vercel.json "images.remotePatterns". If a small copy ever fails,
+// the original loads instead, so a picture is never lost.
+const CS_ON_LIVE=typeof window!=="undefined"&&/(^|\.)castslate\.com$/.test(window.location.hostname);
+function csVercelImg(url,w){
+  if(!CS_ON_LIVE||!/^https:\/\//.test(String(url||"")))return url;
+  return "/_vercel/image?url="+encodeURIComponent(url)+"&w="+(w>640?960:w>480?640:w>320?480:320)+"&q=75";
+}
+function csThumb(url,w,q){
+  if(!url||typeof url!=="string")return url;
+  w=w||640;
+  if(url.indexOf("/storage/v1/object/public/")!==-1)return sbImg(url,w,q);
+  let h="";try{h=new URL(url).hostname;}catch(_){return url;}
+  if(/(^|\.)(variety|deadline|indiewire|hollywoodreporter)\.com$/.test(h)){
+    const u=url.replace(/([?&])w=\d+&?/,"$1").replace(/[?&]$/,"");
+    return u+(u.indexOf("?")===-1?"?":"&")+"w="+w;
+  }
+  if(h==="images.unsplash.com")return /[?&]w=\d+/.test(url)?url.replace(/([?&])w=\d+/,"$1w="+w):url+(url.indexOf("?")===-1?"?":"&")+"w="+w+"&q=80&auto=format&fit=crop";
+  return url;
+}
+// Card image: small copy first, original as the fallback, and a soft fade-in over the card's own
+// tinted box so pictures never pop in. onGone fires only when the original fails too.
+function CsImg({src,w,q,eager,onGone,style,alt,...rest}){
+  const small=csThumb(src,w,q);
+  const [cur,setCur]=useState(small);
+  const [on,setOn]=useState(false);
+  // Never leave a picture hidden: if the load event is missed, show it anyway.
+  useEffect(()=>{const t=setTimeout(()=>setOn(true),6000);return()=>clearTimeout(t);},[]);
+  const seen=el=>{if(el&&el.complete&&el.naturalWidth>0)setOn(true);};
+  return <img ref={seen} src={cur} alt={alt||""} loading={eager?"eager":"lazy"} decoding="async" {...rest}
+    style={{...(style||{}),opacity:on?1:0,transition:"opacity .3s ease"}}
+    onLoad={()=>setOn(true)}
+    onError={()=>{if(cur!==src&&src)setCur(src);else{setOn(true);if(onGone)onGone();}}}/>;
+}
 function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}){
   const vw=useViewportWidth();
   const _W=variant==="card"?(vw>768?560:640):1100;
   const _Q=variant==="card"?74:82;
-  const _img=u=>sbImg(u,_W,_Q);
+  
   const imgs=Array.isArray(posters)&&posters.length>0
     ?posters.map(p=>p.url||p)
     :imageUrl?[imageUrl]:[];
@@ -11372,20 +11410,19 @@ function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}
   // Desktop class CARDS keep the original edge-to-edge collage (1 big + 2 small)
   // so the frame fills with no empty letterbox space. Mobile cards (≤768px) and
   // the class-detail hero use the full-poster contain layout instead.
-  const _ld=variant==="hero"?"eager":"lazy";
   if(variant==="card"&&vw>768){
-    if(imgs.length===1)return<img src={_img(imgs[0])} alt={title} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>;
+    if(imgs.length===1)return<CsImg src={imgs[0]} w={_W} q={_Q} eager={true} alt={title} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>;
     if(imgs.length===2)return(
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",height:"100%",gap:2}}>
-        {imgs.map((url,i)=><img key={i} src={_img(url)} alt={`${title} ${i+1}`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>)}
+        {imgs.map((url,i)=><CsImg key={i} src={url} w={_W} q={_Q} eager={true} alt={`${title} ${i+1}`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>)}
       </div>
     );
     return(
       <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",height:"100%",gap:2}}>
-        <img src={_img(imgs[0])} alt={`${title} 1`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+        <CsImg src={imgs[0]} w={_W} q={_Q} eager={true} alt={`${title} 1`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
         <div style={{display:"grid",gridTemplateRows:"1fr 1fr",gap:2}}>
-          <img src={_img(imgs[1])} alt={`${title} 2`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-          <img src={_img(imgs[2])} alt={`${title} 3`} loading={_ld} decoding="async" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+          <CsImg src={imgs[1]} w={_W} q={_Q} eager={true} alt={`${title} 2`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+          <CsImg src={imgs[2]} w={_W} q={_Q} eager={true} alt={`${title} 3`} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
         </div>
       </div>
     );
@@ -11396,7 +11433,7 @@ function ClassPosterCollage({posters,imageUrl,title,bg="#F4F1EA",variant="hero"}
   return(
     <div style={{display:"grid",gridTemplateColumns:`repeat(${imgs.length},1fr)`,width:"100%",height:"100%",background:bg}}>
       {imgs.map((url,i)=>(
-        <img key={i} src={_img(url)} alt={`${title} ${i+1}`} loading={_ld} decoding="async"
+        <CsImg key={i} src={url} w={_W} q={_Q} eager={true} alt={`${title} ${i+1}`}
           style={{width:"100%",height:"100%",objectFit:"contain",objectPosition:variant==="card"?"center top":"center",display:"block",background:bg}}/>
       ))}
     </div>
@@ -11431,6 +11468,14 @@ async function prefetchClasses(){
       return new Date(a.created_at)-new Date(b.created_at);
     });
     _classesCache=cls;
+    try{
+      const cn=navigator.connection||{};
+      if(!cn.saveData&&!/2g|3g/.test(String(cn.effectiveType||""))&&csVidMode!=="lite"){
+        const w=window.innerWidth>768?560:640;
+        const go=()=>cls.slice(0,10).forEach(c=>{const ps=Array.isArray(c.instructor_poster_urls)&&c.instructor_poster_urls.length?c.instructor_poster_urls.map(p=>p.url||p):c.image_url?[c.image_url]:[];ps.slice(0,3).forEach(u=>{const im=new Image();im.decoding="async";im.src=csThumb(u,w,74);});});
+        if(typeof requestIdleCallback!=="undefined")requestIdleCallback(go,{timeout:5000});else setTimeout(go,2500);
+      }
+    }catch(_){}
     if(cls.length){
       const{data:sd}=await window.sb.from("class_time_slots").select("*").in("class_id",cls.map(c=>c.id)).eq("active",true).order("day_of_week");
       const map={};for(const s of sd||[]){if(!map[s.class_id])map[s.class_id]=[];map[s.class_id].push(s);}
@@ -22434,8 +22479,9 @@ function FirstFramePage({onNavigate}){
     const draw=()=>{
       const q=st.q.trim().toLowerCase();
       const rows=FF_DATA.filter(x=>(st.c==='ALL'||x.city.includes(st.c))&&(!q||(x.name+' '+(x.area||'')).toLowerCase().includes(q))).sort((a,b)=>a.name.localeCompare(b.name));
-      $('grid').innerHTML=rows.map(x=>'<a class="ff-ph" href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow"><span class="ff-pic">'+(x.img?'<img src="'+esc(x.img)+'" alt="" loading="lazy" referrerpolicy="no-referrer" style="object-position:'+esc(x.pos||'50% 25%')+'">':'')+'<em>'+esc(x.name)+'</em></span><span class="ff-txt"><b>'+esc(x.name)+'</b><span class="ff-where">'+esc(x.area?x.area+' · '+city(x.city):city(x.city))+'</span><span class="ff-go">'+esc(host(x.url))+' ↗</span></span></a>').join('');
-      $('grid').querySelectorAll('img').forEach(im=>{im.onerror=()=>{im.parentNode.classList.add('ff-none');im.remove();};});
+      $('grid').innerHTML=rows.map((x,i)=>'<a class="ff-ph" href="'+esc(x.url)+'" target="_blank" rel="noopener nofollow"><span class="ff-pic">'+(x.img?'<img src="'+esc(csVercelImg(x.img,640))+'" data-o="'+esc(x.img)+'" alt="" loading="'+(i<9?'eager':'lazy')+'" decoding="async" referrerpolicy="no-referrer" style="opacity:0;transition:opacity .3s ease,transform .5s ease;object-position:'+esc(x.pos||'50% 25%')+'">':'')+'<em>'+esc(x.name)+'</em></span><span class="ff-txt"><b>'+esc(x.name)+'</b><span class="ff-where">'+esc(x.area?x.area+' · '+city(x.city):city(x.city))+'</span><span class="ff-go">'+esc(host(x.url))+' ↗</span></span></a>').join('');
+      // Card-sized copies (about 30KB each, was 400KB on average); the photographer's original is the fallback.
+      $('grid').querySelectorAll('img').forEach(im=>{const show=()=>{im.style.opacity='1';};im.onload=show;if(im.complete&&im.naturalWidth>0)show();setTimeout(show,6000);im.onerror=()=>{const o=im.getAttribute('data-o');if(o&&!im.dataset.f&&im.getAttribute('src')!==o){im.dataset.f='1';im.src=o;return;}im.parentNode.classList.add('ff-none');im.remove();};});
       $('empty').style.display=rows.length?'none':'block';
       $('count').textContent=rows.length+' photographer'+(rows.length===1?'':'s');
     };
@@ -22564,7 +22610,7 @@ function DashNews({onNavigate,maxRows=3}){
   // The full list lives on the main page: go there and bring it into view.
   const seeAll=()=>{onNavigate("home");let n=0;const t=setInterval(()=>{const el=document.querySelector(".news-sec");if(el||++n>40){clearInterval(t);if(el)el.scrollIntoView({block:"start"});}},150);};
   const body=a=>{const img=a.original_image_url||a.image_url;return(<>
-    {img&&<img src={img} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>drop(a.slug)}/>}
+    {img&&<CsImg src={img} w={320} eager={true} referrerPolicy="no-referrer" onGone={()=>drop(a.slug)}/>}
     <div><small style={{color:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</small><b>{a.original_headline||a.headline}</b><span>{a.source_name?a.source_name+" ↗ · ":""}{newsDate(a.written_at)}</span></div>
   </>);};
   return(<div className="td-news">
@@ -29530,7 +29576,7 @@ function NewsSection({onNavigate}){
   const InternalCard=(a)=>(
     <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
       <div className="news-thumb">
-        {a.image_url&&<img src={a.image_url} alt="" loading="lazy" decoding="async" onError={()=>dropBroken(a.slug)}/>}
+        {a.image_url&&<CsImg src={a.image_url} w={640} eager={true} onGone={()=>dropBroken(a.slug)}/>}
         <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
       </div>
       <div className="news-body">
@@ -29547,7 +29593,7 @@ function NewsSection({onNavigate}){
     return (
       <a key={a.slug} className="news-card" href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">
         <div className="news-thumb">
-          {img&&<img src={img} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={()=>dropBroken(a.slug)}/>}
+          {img&&<CsImg src={img} w={640} eager={true} referrerPolicy="no-referrer" onGone={()=>dropBroken(a.slug)}/>}
           <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
         </div>
         <div className="news-body">
@@ -29612,7 +29658,7 @@ function NewsArticlePage({slug,onNavigate}){
         <span className="news-bystaff">Written by {a.author||"CastSlate Staff"}</span><span className="news-dot"/>
         <span>{newsDate(a.written_at)}</span>
       </div>
-      {a.image_url&&<div className="news-article-hero"><img src={a.image_url} alt="" onError={e=>{const d=e.currentTarget.parentNode;if(d)d.style.display="none";}}/></div>}
+      {a.image_url&&<div className="news-article-hero"><img src={csThumb(a.image_url,960)} alt="" onError={e=>{const t=e.currentTarget;if(!t.dataset.f&&t.getAttribute("src")!==a.image_url){t.dataset.f="1";t.src=a.image_url;return;}const d=t.parentNode;if(d)d.style.display="none";}}/></div>}
       <div className="news-article-body" style={{marginTop:a.image_url?22:0}}>{paras.map((p,i)=><p key={i}>{p}</p>)}</div>
     </article>
   );

@@ -1141,3 +1141,19 @@ print(f"  App bundle: {APP_FILE}")
 print(f"  Pre-rendered {len(ROUTES)} routes (self-canonical):")
 for filename, path, title, desc in ROUTES:
     print(f"    {path:24s} → {filename}")
+
+
+# FF_DATA host check (2026-11-16): photographer photos go through Vercel's image resizer, which only
+# accepts hosts listed in vercel.json images.remotePatterns. A missing host still works (the page
+# falls back to the full-size original) but loads slowly, so say so.
+try:
+    import json as _j, re as _r
+    from urllib.parse import urlparse as _up
+    _src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "swipecast-full.jsx"), encoding="utf-8").read()
+    _m = _r.search(r'const FF_DATA=(\[.*?\]);\n', _src, _r.S)
+    _ok = {p["hostname"] for p in _j.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "vercel.json")))["images"]["remotePatterns"]}
+    _miss = sorted({_up(x.get("img") or "").netloc for x in _j.loads(_m.group(1))} - _ok - {""})
+    if _miss:
+        print("\n  WARNING: photographer image hosts missing from vercel.json images.remotePatterns:", ", ".join(_miss))
+except Exception as _e:
+    print("\n  (FF_DATA host check skipped:", _e, ")")
