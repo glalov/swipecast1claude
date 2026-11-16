@@ -4472,6 +4472,10 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 .fev-plum{background:linear-gradient(120deg,#24122A 0%,#4A2350 60%,#6E3A6B 100%);}
 .fev-amber{background:linear-gradient(120deg,#2B1A08 0%,#5A3A12 60%,#8A5A1C 100%);}
 .fev-teal{background:linear-gradient(120deg,#0E2628 0%,#164448 60%,#22656A 100%);}
+/* Owner picks 2026-11-16: Midnight navy + Warm charcoal (cream button). Red is no longer handed out. */
+.fev-midnight{background:linear-gradient(120deg,#11142A 0%,#1A1F3D 60%,#252C55 100%);}
+.fev-charcoal{background:linear-gradient(120deg,#151210 0%,#24201B 60%,#332D26 100%);}
+.fev-charcoal .evs-go,.fev-charcoal .fev-cta{background:#F2E6CF;}
 .iemb{position:relative;min-height:290px;border-radius:14px;overflow:hidden;color:#FFFFFF;background:#102E31;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 1px 2px rgba(26,26,46,.14);}
 .iemb-l,.iemb-r{position:absolute;top:0;width:36%;height:100%;object-fit:cover;}
 .iemb-l{left:0;-webkit-mask-image:linear-gradient(270deg,transparent 0,#000 62%);mask-image:linear-gradient(270deg,transparent 0,#000 62%);}
@@ -19238,21 +19242,34 @@ function FilmEventCard({ev,compact}){
 function FilmEventBanner(){
   const list=useAllEvents();
   const ev=(list||[]).find(e=>e.city==="los-angeles"&&!e._ended);
-  return ev?<EventStripe ev={ev}/>:null;
+  const ny=(list||[]).find(e=>e.city==="new-york"&&!e._ended);
+  return ev?<EventStripe ev={{...ev,palette:distinctPalette(ev.palette,ny&&ny.palette)}}/>:null;
+}
+// The two Browse stripes must never look alike (owner, 2026-11-16). Navy, midnight and blue
+// count as one family; red is never shown (owner dislikes it). KEEP IN SYNC with PALETTES
+// in supabase/functions/events-refresh/index.ts.
+const EV_PALETTES=["midnight","charcoal","teal","plum","green","amber","blue","navy"];
+const evFamily=p=>(p==="navy"||p==="midnight"||p==="blue")?"navy":(p||"navy");
+function distinctPalette(p,avoid){
+  const mine=p==="red"||!p?"midnight":p;
+  if(!avoid)return mine;
+  const other=avoid==="red"?"midnight":avoid;
+  if(evFamily(mine)!==evFamily(other))return mine;
+  return EV_PALETTES.find(c=>evFamily(c)!==evFamily(other))||"charcoal";
 }
 // Top of Browse page 1: the New York event, in the same stripe as the Los Angeles one.
 function FilmEventStrip(){
   const list=useAllEvents();
   const ev=(list||[]).find(e=>e.city==="new-york"&&!e._ended);
-  return ev?<EventStripe ev={ev}/>:null;
+  return ev?<EventStripe ev={{...ev,palette:distinctPalette(ev.palette,null)}}/>:null;
 }
 // Event stripe (owner, 2026-11-08): 136px tall, the event's own website image on the right.
 // Wide images fill and fade into the colour; posters show whole on a blur of themselves.
 function EventStripe({ev}){
   const [bad,setBad]=useState(false);
   const a=ev.art||{};
-  const [poster,setPoster]=useState(!!a.whole);
-  useEffect(()=>{setBad(false);setPoster(!!(ev.art&&ev.art.whole));},[ev.id]);
+  const [poster,setPoster]=useState(!!a.whole&&!a.cover);
+  useEffect(()=>{setBad(false);setPoster(!!(ev.art&&ev.art.whole&&!ev.art.cover));},[ev.id]);
   const when=Array.isArray(ev.when_lines)?ev.when_lines.slice(0,2).map(w=>w&&w[1]).filter(Boolean).join(" · "):"";
   const word=(ev.marquee_word||ev.title.split(/\s+/)[0]).toUpperCase();
   const noArt=bad||(!ev.image_url&&!(a.row&&a.row.length));
@@ -19267,7 +19284,7 @@ function EventStripe({ev}){
       {noArt?<span className="evs-word">{word}</span>
         :a.row?<span className="evs-row">{a.row.slice(0,3).map(u=><img key={u} src={u} alt="" referrerPolicy="no-referrer" onError={e=>{e.currentTarget.style.display="none";}}/>)}</span>
         :a.logo?<span className={"evs-chip"+(a.dark?" dk":"")}><img src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)}/></span>
-        :<>{poster&&<img className="evs-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"evs-fg":"evs-cov"} src={ev.image_url} alt="" referrerPolicy="no-referrer" onError={()=>setBad(true)} onLoad={e=>{const t=e.currentTarget,r=t.naturalWidth/t.naturalHeight;if(r<1.25||r>2.6)setPoster(true);}}/></>}
+        :<>{poster&&<img className="evs-bg" src={ev.image_url} alt="" referrerPolicy="no-referrer"/>}<img className={poster?"evs-fg":"evs-cov"} src={ev.image_url} alt="" referrerPolicy="no-referrer" style={!poster&&a.pos?{objectPosition:String(a.pos)}:undefined} onError={()=>setBad(true)} onLoad={e=>{if(a.cover)return;const t=e.currentTarget,r=t.naturalWidth/t.naturalHeight;if(r<1.25||r>2.6)setPoster(true);}}/></>}
     </span>
   </a>);
 }

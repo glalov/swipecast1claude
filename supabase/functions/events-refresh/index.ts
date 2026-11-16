@@ -38,7 +38,15 @@ const CATEGORIES = [
   { id: "awards", what: "film awards nights and major industry events worth following" },
 ];
 const SLICES = CITIES.flatMap((c) => CATEGORIES.map((k) => ({ city: c, cat: k })));
-const PALETTES = ["blue", "red", "green", "navy", "plum", "amber", "teal"];
+// No red (owner, 2026-11-16). Each new event gets the colour used least among the city's upcoming
+// events, so neighbouring cards differ. KEEP IN SYNC with EV_PALETTES in swipecast-full.jsx.
+const PALETTES = ["midnight", "charcoal", "teal", "plum", "green", "amber", "blue"];
+const famOf = (p: string) => (p === "navy" || p === "midnight" || p === "blue") ? "navy" : p;
+function nextPalette(used: string[], last: string | null): string {
+  const count = (c: string) => used.filter((u) => famOf(u) === famOf(c)).length;
+  return PALETTES.filter((c) => !last || famOf(c) !== famOf(last))
+    .sort((a, b) => count(a) - count(b) || PALETTES.indexOf(a) - PALETTES.indexOf(b))[0] || "midnight";
+}
 const UA = "Mozilla/5.0 (compatible; CastSlateEvents/1.0; +https://www.castslate.com)";
 
 const json = (b: unknown, s = 200) =>
@@ -96,7 +104,7 @@ async function fetchText(url: string): Promise<{ ok: boolean; html: string; fina
 }
 
 // The event's own artwork: the page's share image first, then the large images on the page.
-async function artFor(pageHtml: string, pageUrl: string): Promise<{ image_url: string | null; art_style: "logo" | "cover" | "marquee" }> {
+async function artFor(pageHtml: string, pageUrl: string, gemini = ""): Promise<{ image_url: string | null; art_style: "logo" | "cover" | "marquee" }> {
   const found: string[] = [];
   for (const m of pageHtml.matchAll(/<meta[^>]+(?:og:image|twitter:image)[^>]*>/gi)) {
     const c = m[0].match(/content=["']([^"']+)/i);
@@ -110,7 +118,8 @@ async function artFor(pageHtml: string, pageUrl: string): Promise<{ image_url: s
   }
   const urls = [...new Set(found.map((u) => {
     try { return new URL(u.replace(/&amp;/g, "&"), pageUrl).href.replace(/^http:\/\//i, "https://"); } catch (_) { return ""; }
-  }))].filter((u) => u && !/\.(svg|gif)(\?|$)|logo|icon|sprite|spacer|pixel|badge|laurel|facebook|avatar/i.test(u)).slice(0, 10);
+  }))].filter((u) => u && !/\.(svg|gif)(\?|$)|logo|icon|sprite|spacer|pixel|badge|laurel|facebook|avatar/i.test(u)).slice(0, 16);
+  const ok: { img: string; w: number; h: number }[] = [];
   for (const img of urls) {
     try {
       // No Range header: some image servers cache the partial response and then serve a cut-off image.
@@ -129,10 +138,17 @@ async function artFor(pageHtml: string, pageUrl: string): Promise<{ image_url: s
       const size = imageSize(head.subarray(0, Math.min(got, head.length)));
       if (!size || size.w < 500 || size.h < 200) continue;
       if (size.w === size.h && size.w <= 600) continue;
-      return { image_url: img, art_style: size.w / size.h >= 1.25 ? "cover" : "logo" };
+      ok.push({ img, w: size.w, h: size.h });
+      if (ok.length >= 8) break;
     } catch (_) { /* try the next image */ }
   }
-  return { image_url: null, art_style: "marquee" };
+  if (!ok.length) return { image_url: null, art_style: "marquee" };
+  // Owner (2026-11-16): cinematic photos only, ideally with people's faces. Gemini looks at the
+  // wide candidates and picks one; if it can't, keep the old rule (first usable image).
+  const wide = ok.filter((c) => c.w / c.h >= 1.25 && c.w / c.h <= 2.6);
+  const best = gemini && wide.length ? await pickCinematic(gemini, wide.map((c) => c.img)) : null;
+  const pick = best ? ok.find((c) => c.img === best)! : ok[0];
+  return { image_url: pick.img, art_style: pick.w / pick.h >= 1.25 ? "cover" : "logo" };
 }
 
 type Found = { title: string; kicker: string; why: string; starts_on: string; ends_on: string; when_lines: [string, string][]; url: string; palette: string; marquee_word?: string };
@@ -149,11 +165,10 @@ Rules:
 - "why" is ONE plain sentence (under 30 words) on why an actor should go. Plain everyday words, no hype, no exclamation marks. Only say there is a Q&A or panel if the page says so.
 - "kicker" is like "Documentary festival · Manhattan" or "Screening series · Burbank".
 - "when_lines": 1 to 3 short pairs [tablerIcon, text]. Icons: calendar-event, map-pin, trophy, ticket, users.
-- "palette": one of ${PALETTES.join(", ")} that suits the event's mood.
 - "marquee_word": a short all-caps word or acronym (max 10 characters).
 
 Answer with ONLY a JSON array, no other text:
-[{"title":"","kicker":"","why":"","starts_on":"YYYY-MM-DD","ends_on":"YYYY-MM-DD","when_lines":[["calendar-event",""]],"url":"https://...","palette":"","marquee_word":""}]
+[{"title":"","kicker":"","why":"","starts_on":"YYYY-MM-DD","ends_on":"YYYY-MM-DD","when_lines":[["calendar-event",""]],"url":"https://...","marquee_word":""}]
 Return [] if you cannot confirm any.`;
 }
 
@@ -181,6 +196,42 @@ async function geminiModel(key: string): Promise<string> {
 
 // Looks at the actual image. Posters, banners and anything with words get shown whole on the
 // site; only plain photos may be cropped to fill the frame. null means the check itself failed.
+// Shows Gemini up to 6 candidate images and asks for the most cinematic real photograph,
+// preferring visible faces. Returns null when none qualifies or the check fails.
+async function pickCinematic(key: string, imgs: string[]): Promise<string | null> {
+  try {
+    const parts: Record<string, unknown>[] = [];
+    const kept: string[] = [];
+    for (const img of imgs.slice(0, 6)) {
+      try {
+        const r = await fetch(img, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(12000) });
+        const mime = (r.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+        if (!r.ok || !["image/jpeg", "image/png", "image/webp"].includes(mime)) continue;
+        const bytes = new Uint8Array(await r.arrayBuffer());
+        if (bytes.length > 3000000) continue;
+        let bin = "";
+        for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
+        parts.push({ text: `Image ${kept.length}:` }, { inline_data: { mime_type: mime, data: btoa(bin) } });
+        kept.push(img);
+      } catch (_) { /* skip this one */ }
+    }
+    if (!kept.length) return null;
+    const prompt = 'These images come from a film event\'s website. Pick the ONE that looks most cinematic: a real film still or a real photograph of people (on stage, on set, at the event), ideally with faces clearly visible. Never pick a poster, a logo, a flyer, an image with designed text or dates, a screenshot, a building, or an empty room. If none qualifies, answer -1. Reply with only JSON: {"best": <number>}.';
+    const model = await geminiModel(key);
+    const g = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }, ...parts] }], generationConfig: { temperature: 0 } }),
+      signal: AbortSignal.timeout(60000),
+    });
+    if (!g.ok) return null;
+    const d = await g.json();
+    const out = (d?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join(" ");
+    const m = out.match(/"best"\s*:\s*(-?\d+)/);
+    const i = m ? parseInt(m[1], 10) : -1;
+    return i >= 0 && i < kept.length ? kept[i] : null;
+  } catch (_) { return null; }
+}
+
 async function hasTextArt(key: string, model: string, img: string): Promise<boolean | null> {
   try {
     const r = await fetch(img, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) });
@@ -267,8 +318,9 @@ async function run(sb: ReturnType<typeof createClient>) {
 
   const { data: st } = await sb.from("site_settings").select("events_slice").eq("id", 1).maybeSingle();
   const start = Math.max(0, Number((st as { events_slice?: number } | null)?.events_slice) || 0) % SLICES.length;
-  const { data: existing } = await sb.from("film_events").select("ekey,title,url,city").gte("ends_on", today);
-  const rows = (existing || []) as { ekey: string; title: string; url: string; city: string }[];
+  const { data: existing } = await sb.from("film_events").select("ekey,title,url,city,palette").gte("ends_on", today);
+  const rows = (existing || []) as { ekey: string; title: string; url: string; city: string; palette?: string }[];
+  const lastPal: Record<string, string | null> = {};
   const knownKeys = new Set(rows.map((e) => e.ekey));
   const knownUrls = new Set(rows.map((e) => normUrl(e.url)));
   const knownNames = new Set(rows.map((e) => normTitle(e.title)));
@@ -303,7 +355,7 @@ async function run(sb: ReturnType<typeof createClient>) {
       const low = page.html.toLowerCase();
       const named = words.length === 0 || words.filter((w) => low.includes(w)).length >= Math.min(2, words.length);
       const verified = page.ok && named && pageHasDate(low, f.starts_on);
-      const art = verified ? await artFor(page.html, page.finalUrl) : { image_url: null, art_style: "marquee" as const };
+      const art = verified ? await artFor(page.html, page.finalUrl, gemini) : { image_url: null, art_style: "marquee" as const };
       // If the check fails, show the image whole: an uncropped image is always the safe choice.
       const artText = art.image_url && gemini ? await hasTextArt(gemini, await geminiModel(gemini), art.image_url) : null;
       const row = {
@@ -313,14 +365,15 @@ async function run(sb: ReturnType<typeof createClient>) {
         url: page.finalUrl || f.url, image_url: art.image_url, art_style: art.art_style,
         art: art.image_url && gemini ? { whole: artText !== false, checked: artText !== null } : null,
         marquee_word: String(f.marquee_word || "").toUpperCase().slice(0, 10) || null,
-        palette: PALETTES.includes(f.palette) ? f.palette : "navy",
+        palette: nextPalette(rows.filter((e) => e.city === city.id).map((e) => e.palette || ""), lastPal[city.id] || null),
         status: verified && f.why && !/\b(hybrid event|via zoom|on zoom|online only|virtual event|webinar)\b/i.test(page.html) ? "published" : "review", source: "agent", city: city.id, category: cat.id,
       };
       const { error } = await sb.from("film_events").insert(row);
       if (!error) {
         (row.status === "published" ? added : held).push(`${city.id}: ${row.title}`);
         knownKeys.add(ekey); knownUrls.add(normUrl(f.url)); knownUrls.add(normUrl(row.url)); knownNames.add(normTitle(f.title));
-        rows.push({ ekey, title: row.title, url: row.url, city: city.id });
+        rows.push({ ekey, title: row.title, url: row.url, city: city.id, palette: row.palette });
+        lastPal[city.id] = row.palette;
       }
     }
   }
