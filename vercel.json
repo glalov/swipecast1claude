@@ -1,171 +1,510 @@
 {
-  "buildCommand": null,
-  "installCommand": null,
-  "outputDirectory": ".",
-  "framework": null,
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "castslate.com" }],
-      "destination": "https://www.castslate.com/:path*",
-      "permanent": true
+    "buildCommand": null,
+    "installCommand": null,
+    "outputDirectory": ".",
+    "framework": null,
+    "redirects": [
+        {
+            "source": "/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "castslate.com"
+                }
+            ],
+            "destination": "https://www.castslate.com/:path*",
+            "permanent": true
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/sitemap.xml",
+            "destination": "/api/sitemap"
+        },
+        {
+            "source": "/casting/:slug",
+            "destination": "/api/casting-og?slug=:slug"
+        },
+        {
+            "source": "/casting-calls/:key",
+            "destination": "/api/landing?key=:key"
+        },
+        {
+            "source": "/browse-castings",
+            "destination": "/browse-castings.html"
+        },
+        {
+            "source": "/pricing",
+            "destination": "/pricing.html"
+        },
+        {
+            "source": "/classes",
+            "destination": "/classes.html"
+        },
+        {
+            "source": "/actor-toolkit",
+            "destination": "/actor-toolkit.html"
+        },
+        {
+            "source": "/resources",
+            "destination": "/resources.html"
+        },
+        {
+            "source": "/trust-safety",
+            "destination": "/trust-safety.html"
+        },
+        {
+            "source": "/pay-talent",
+            "destination": "/pay-talent.html"
+        },
+        {
+            "source": "/about",
+            "destination": "/about.html"
+        },
+        {
+            "source": "/blog",
+            "destination": "/blog.html"
+        },
+        {
+            "source": "/careers",
+            "destination": "/careers.html"
+        },
+        {
+            "source": "/contact",
+            "destination": "/contact.html"
+        },
+        {
+            "source": "/faq",
+            "destination": "/faq.html"
+        },
+        {
+            "source": "/terms",
+            "destination": "/terms.html"
+        },
+        {
+            "source": "/privacy-choices",
+            "destination": "/privacy-choices.html"
+        },
+        {
+            "source": "/privacy",
+            "destination": "/privacy.html"
+        },
+        {
+            "source": "/fair-casting",
+            "destination": "/fair-casting.html"
+        },
+        {
+            "source": "/manager-mode",
+            "destination": "/manager-mode.html"
+        },
+        {
+            "source": "/events",
+            "destination": "/events.html"
+        },
+        {
+            "source": "/tapelink",
+            "destination": "/tapelink.html"
+        },
+        {
+            "source": "/agency-directory",
+            "destination": "/agency-directory.html"
+        },
+        {
+            "source": "/casting-directory",
+            "destination": "/casting-directory.html"
+        },
+        {
+            "source": "/school-directory",
+            "destination": "/school-directory.html"
+        },
+        {
+            "source": "/first-frame",
+            "destination": "/first-frame.html"
+        },
+        {
+            "source": "/login",
+            "destination": "/login.html"
+        },
+        {
+            "source": "/register-talent",
+            "destination": "/register-talent.html"
+        },
+        {
+            "source": "/register-cd",
+            "destination": "/register-cd.html"
+        },
+        {
+            "source": "/set-roles",
+            "destination": "/set-roles.html"
+        },
+        {
+            "source": "/((?!_vercel/|favicon\\.ico|favicon\\.svg|favicon-32x32\\.png|favicon-16x16\\.png|apple-touch-icon\\.png|og-image\\.png|og-card\\.png|robots\\.txt|sitemap\\.xml|googlec524d5c8d8b80af3\\.html|a6124d7bc19f64d5eba71e5868b9a59a\\.txt|app\\.js|app\\.jsx|api/|video-formats/|assets/|email/).*)",
+            "destination": "/index.html"
+        }
+    ],
+    "functions": {
+        "api/casting-og.js": {
+            "includeFiles": "index.html"
+        },
+        "api/landing.js": {
+            "includeFiles": "index.html"
+        },
+        "api/casting-card.js": {
+            "includeFiles": "api/{_fonts,_vendor}/**"
+        }
+    },
+    "headers": [
+        {
+            "source": "/sitemap.xml",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400"
+                },
+                {
+                    "key": "Content-Type",
+                    "value": "application/xml; charset=utf-8"
+                }
+            ]
+        },
+        {
+            "source": "/robots.txt",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=86400"
+                }
+            ]
+        },
+        {
+            "source": "/og-card.png",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=86400"
+                }
+            ]
+        },
+        {
+            "source": "/og-image.png",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=2592000, immutable"
+                }
+            ]
+        },
+        {
+            "source": "/favicon.ico",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/favicon.svg",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/favicon-32x32.png",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/favicon-16x16.png",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/apple-touch-icon.png",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/video-formats/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=2592000, immutable"
+                }
+            ]
+        },
+        {
+            "source": "/email/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=2592000, immutable"
+                }
+            ]
+        },
+        {
+            "source": "/(app\\.js|app\\.jsx|castoria\\.js)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                }
+            ]
+        },
+        {
+            "source": "/vendor/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                }
+            ]
+        },
+        {
+            "source": "/assets/video/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=2592000, immutable"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                }
+            ]
+        },
+        {
+            "source": "/logos/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=86400, stale-while-revalidate=604800"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                }
+            ]
+        },
+        {
+            "source": "/assets/((?!video/).*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=86400, stale-while-revalidate=604800"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                }
+            ]
+        },
+        {
+            "source": "/((?!_vercel/|video-formats/|vendor/|assets/|logos/|app\\.js|app\\.jsx|castoria\\.js|og-image\\.png|og-card\\.png|favicon|apple-touch-icon\\.png|robots\\.txt|sitemap\\.xml).*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "SAMEORIGIN"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "strict-origin-when-cross-origin"
+                }
+            ]
+        },
+        {
+            "source": "/email/(.*)\\.(png|jpg|jpeg|gif|webp)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=2592000, immutable"
+                }
+            ]
+        }
+    ],
+    "images": {
+        "sizes": [
+            320,
+            480,
+            640,
+            960
+        ],
+        "formats": [
+            "image/webp"
+        ],
+        "minimumCacheTTL": 2592000,
+        "remotePatterns": [
+            {
+                "protocol": "https",
+                "hostname": "actors.cityheadshots.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "assets.playbill.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "cdn.goodgallery.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "douglasgorenstein.live.photofolio.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "duvallcreations.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "faheyfoto.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "format.creatorcdn.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "headshotsbyscott.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "headshotsla.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "i0.wp.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "image4.photobiz.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "images-pw.pixieset.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "images.squarespace-cdn.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "jeffreymosierphotography.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "lewinephoto.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "mackephotography.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "michaelroud.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "motive.blob.core.windows.net"
+            },
+            {
+                "protocol": "https",
+                "hostname": "poyeyphotos.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "sovanephotography.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "static.showit.co"
+            },
+            {
+                "protocol": "https",
+                "hostname": "static.wixstatic.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "static1.squarespace.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "storage.googleapis.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "tedely.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "thelightcommittee.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "theoandjuliet.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.argentoheadshots.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.colemanphotographix.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.davidbeyda.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.davidlaportestudio.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.davidnoles.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.gornphotoheadshots.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.kenweingart.com"
+            },
+            {
+                "protocol": "https",
+                "hostname": "www.xantheelbrickphotography.com"
+            }
+        ]
     }
-  ],
-  "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/casting/:slug", "destination": "/api/casting-og?slug=:slug" },
-    { "source": "/casting-calls/:key", "destination": "/api/landing?key=:key" },
-    { "source": "/browse-castings", "destination": "/browse-castings.html" },
-    { "source": "/pricing", "destination": "/pricing.html" },
-    { "source": "/classes", "destination": "/classes.html" },
-    { "source": "/actor-toolkit", "destination": "/actor-toolkit.html" },
-    { "source": "/resources", "destination": "/resources.html" },
-    { "source": "/trust-safety", "destination": "/trust-safety.html" },
-    { "source": "/pay-talent", "destination": "/pay-talent.html" },
-    { "source": "/about", "destination": "/about.html" },
-    { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/careers", "destination": "/careers.html" },
-    { "source": "/contact", "destination": "/contact.html" },
-    { "source": "/faq", "destination": "/faq.html" },
-    { "source": "/terms", "destination": "/terms.html" },
-    { "source": "/privacy-choices", "destination": "/privacy-choices.html" },
-    { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/fair-casting", "destination": "/fair-casting.html" },
-    { "source": "/manager-mode", "destination": "/manager-mode.html" },
-    { "source": "/events", "destination": "/events.html" },
-    { "source": "/tapelink", "destination": "/tapelink.html" },
-    { "source": "/agency-directory", "destination": "/agency-directory.html" },
-    { "source": "/casting-directory", "destination": "/casting-directory.html" },
-    { "source": "/school-directory", "destination": "/school-directory.html" },
-    { "source": "/first-frame", "destination": "/first-frame.html" },
-    { "source": "/login", "destination": "/login.html" },
-    { "source": "/register-talent", "destination": "/register-talent.html" },
-    { "source": "/register-cd", "destination": "/register-cd.html" },
-    { "source": "/set-roles", "destination": "/set-roles.html" },
-    { "source": "/((?!favicon\\.ico|favicon\\.svg|favicon-32x32\\.png|favicon-16x16\\.png|apple-touch-icon\\.png|og-image\\.png|og-card\\.png|robots\\.txt|sitemap\\.xml|googlec524d5c8d8b80af3\\.html|a6124d7bc19f64d5eba71e5868b9a59a\\.txt|app\\.js|app\\.jsx|api/|video-formats/|assets/|email/).*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/casting-og.js": { "includeFiles": "index.html" },
-    "api/landing.js": { "includeFiles": "index.html" },
-    "api/casting-card.js": { "includeFiles": "api/{_fonts,_vendor}/**" }
-  },
-  "headers": [
-    {
-      "source": "/sitemap.xml",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" },
-        { "key": "Content-Type", "value": "application/xml; charset=utf-8" }
-      ]
-    },
-    {
-      "source": "/robots.txt",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
-      ]
-    },
-    {
-      "source": "/og-card.png",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
-      ]
-    },
-    {
-      "source": "/og-image.png",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
-      ]
-    },
-    {
-      "source": "/favicon.ico",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/favicon.svg",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/favicon-32x32.png",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/favicon-16x16.png",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/apple-touch-icon.png",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/video-formats/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
-      ]
-    },
-    {
-      "source": "/email/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
-      ]
-    },
-    {
-      "source": "/(app\\.js|app\\.jsx|castoria\\.js)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    },
-    {
-      "source": "/vendor/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    },
-    {
-      "source": "/assets/video/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    },
-    {
-      "source": "/logos/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    },
-    {
-      "source": "/assets/((?!video/).*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    },
-    {
-      "source": "/((?!video-formats/|vendor/|assets/|logos/|app\\.js|app\\.jsx|castoria\\.js|og-image\\.png|og-card\\.png|favicon|apple-touch-icon\\.png|robots\\.txt|sitemap\\.xml).*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
-    },
-    {
-      "source": "/email/(.*)\\.(png|jpg|jpeg|gif|webp)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=2592000, immutable" }
-      ]
-    }
-  ]
 }
