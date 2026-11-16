@@ -53,6 +53,24 @@ const NYC_GUIDE = [
   ["Stay safe", "Real casting directors don't charge you to audition and won't ask for bank details or your Social Security number before you're booked. Be wary of anyone who makes paid photos or classes a condition of casting. If a listing asks for money up front, walk away and report it."],
 ];
 const NYC_GUIDE_CLOSE = "Every listing above is open now, and casting directors review one profile at a time.";
+// KEEP IN SYNC with NYC_STEPS / STUDENT_GUIDE / STUDENT_GUIDE_CLOSE in swipecast-full.jsx.
+const NYC_STEPS = [
+  ["Get your basics ready", "A headshot that looks like you today, a one-page résumé and a simple self-tape setup. That's all most New York listings ask for at the start."],
+  ["Start with student and indie films", "NYU, Columbia, The New School, SVA and Brooklyn College cast all year. They're the fastest way to get credits and real footage for your reel.", "/casting-calls/student-films", "Student film casting calls"],
+  ["Submit early, and only when you fit", "Breakdowns fill quickly, so apply soon after a role posts. Read the role, check the shoot dates, and write a short note on why you're right for it."],
+  ["Treat the self-tape as the audition", "Most first rounds in New York are self-tapes now. Learn the lines, frame from the chest up, keep the background plain and the sound clear."],
+  ["Go to open calls", "Theater runs regular open calls in Midtown, including Equity Principal Auditions. Non-Equity actors can usually be seen there as time allows, so arrive early."],
+  ["Find representation once you have credits", "A few credits and a reel make it much easier to get an agent or manager to look. They submit you to work you can't reach on your own.", "/agency-directory", "Talent agency directory"],
+];
+const STUDENT_GUIDE = [
+  ["How student film casting works", "Film students cast their thesis and class projects much like a professional production: they post a breakdown, review submissions, then hold auditions or ask for self-tapes. Shoots usually run a few days, often on weekends, and many happen in New York and Los Angeles."],
+  ["Why actors take student films", "Student films are where many actors earn their first credits and their first reel footage. You work on set with a real crew, practise hitting marks and repeating takes, and meet the directors and cinematographers who'll be making indie features in a few years."],
+  ["Pay, meals and credit", "Many student films are unpaid or pay a small flat fee, so read each listing. Expect meals on set, a credit, and a copy of your footage. Ask when you'll get that footage before you agree to the shoot, and get it in writing."],
+  ["Union actors on student films", "SAG-AFTRA members can work on student films made under the union's Student Film Agreement, which the school's filmmaker signs before the shoot. Non-union actors can submit to any student film. Every listing on CastSlate shows its union status, so you know before applying."],
+  ["Where student films cast", "In New York, look for projects from NYU, Columbia, The New School, SVA and Brooklyn College. In Los Angeles, USC, UCLA, AFI, CalArts and Chapman students cast throughout the school year. Thesis films are usually the most ambitious ones, with the biggest crews."],
+  ["How to stand out", "Submit with a current headshot, a short note on why you fit the role, and a clear self-tape if they ask for one. Be on time, know your lines and be easy to work with: student directors remember actors who made their shoot go well."],
+];
+const STUDENT_GUIDE_CLOSE = "Every student film above is open now, and the filmmakers review one profile at a time.";
 
 const NY_TERMS = ["new york","new york, ny","new york,ny","nyc","n.y.c","manhattan","brooklyn","queens","the bronx","bronx","staten island","long island","yonkers","westchester","jersey city","hoboken","newark","north jersey","new jersey","nj","nassau","suffolk","harlem","astoria","flushing","the heights","washington heights","upper east","upper west","midtown","downtown","tribeca","soho","noho","lower east","east village","west village","chelsea","flatiron","gramercy","murray hill","hell's kitchen","lincoln center","inwood","riverdale","soundview","fordham","jamaica","corona","elmhurst","ridgewood","bay ridge","bensonhurst","park slope","williamsburg","bushwick","bedford","crown heights","flatbush","east new york","rockaway","fresh meadows","bayside","forest hills","rego park","sunnyside","woodside","jackson heights","maspeth","north bergen","weehawken","union city","bayonne"];
 function locHasTerm(loc, term) {
@@ -164,7 +182,8 @@ function inject(html, key, list, dyn) {
   const block = `<div id="cs-seo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0;white-space:normal">
 <h1>${esc(P.label)}</h1><p>${D}</p>
 ${items ? `<h2>Open now (${list.length})</h2><ul>${items}</ul>` : `<p>No open castings in this category right now — new castings are added every week.</p>`}
-${key === "new-york" ? `<h2>How to find casting calls in New York City</h2>${NYC_GUIDE.map(([h, p]) => `<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join("")}<p>${esc(NYC_GUIDE_CLOSE)} <a href="${ORIGIN}/register-talent">Create a free actor profile</a></p>` : ""}
+${key === "new-york" ? `<h2>How to find casting calls in New York City</h2>${NYC_GUIDE.map(([h, p]) => `<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join("")}<h2>How to get auditions in New York</h2><ol>${NYC_STEPS.map(([h, p, href, text]) => `<li><h3>${esc(h)}</h3><p>${esc(p)}${href ? ` <a href="${ORIGIN}${href}">${esc(text)}</a>` : ""}</p></li>`).join("")}</ol><p>${esc(NYC_GUIDE_CLOSE)} <a href="${ORIGIN}/register-talent">Create a free actor profile</a></p>` : ""}
+${key === "student-films" ? `<h2>A guide to student film casting calls</h2>${STUDENT_GUIDE.map(([h, p]) => `<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join("")}<p>${esc(STUDENT_GUIDE_CLOSE)} <a href="${ORIGIN}/register-talent">Create a free actor profile</a></p>` : ""}
 <p><a href="${ORIGIN}/browse-castings">Browse all casting calls</a></p>
 <h2>More casting calls</h2><ul>${others}</ul>
 </div>`;

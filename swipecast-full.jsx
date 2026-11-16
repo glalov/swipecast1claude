@@ -5359,6 +5359,13 @@ a.site-footer-link{text-decoration:none;}
 .nyc-guide-close .ngc-sub{display:block;margin-top:14px;font-size:13.5px;color:var(--t3);}
 .nyc-guide-close .ngc-sub a{color:var(--teal-dk);font-weight:700;text-decoration:none;}
 @media (max-width:640px){.nyc-guide-close .btn-p{display:flex;justify-content:center;}}
+.nyc-steps{margin-top:44px;padding-top:34px;border-top:1px solid var(--bdr);min-width:0;}
+.nyc-steps h2{font-family:'Playfair Display',Georgia,serif;font-size:clamp(22px,2.4vw,28px);font-weight:700;color:var(--t1);margin:0 0 20px;line-height:1.2;}
+.nyc-steps-list{list-style:none;margin:0;padding:0;}
+.nyc-steps-list .nyc-guide-item{position:relative;padding-left:44px;}
+.nyc-step-n{position:absolute;left:0;top:-2px;width:30px;height:30px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.nyc-guide-link{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;font-weight:700;color:var(--teal-dk);text-decoration:none;}
+.nyc-guide-link:hover{text-decoration:underline;text-underline-offset:3px;}
 .nyc-crosslink{margin:36px 0 0;font-size:14px;color:var(--t2);text-align:center;}
 .nyc-crosslink a{color:var(--teal);font-weight:700;text-decoration:none;margin-left:4px;}
 .nyc-crosslink a:hover{text-decoration:underline;text-underline-offset:3px;}
@@ -19069,6 +19076,61 @@ const NYC_GUIDE=[
 // Full-width closing line under the 2x3 grid (owner picked layout B, 2026-10-20).
 // No "first submission is free" here — the limit isn't advertised before a first apply.
 const NYC_GUIDE_CLOSE="Every listing above is open now, and casting directors review one profile at a time.";
+// "How to get auditions in New York" steps under the NYC guide grid (2026-11-16): GSC showed
+// that exact search at position ~67. Six numbered steps (2x3, same grid as the guide). Optional
+// 3rd/4th items = internal link (href, text). KEEP IN SYNC with NYC_STEPS in api/landing.js.
+const NYC_STEPS=[
+  ["Get your basics ready", "A headshot that looks like you today, a one-page résumé and a simple self-tape setup. That's all most New York listings ask for at the start."],
+  ["Start with student and indie films", "NYU, Columbia, The New School, SVA and Brooklyn College cast all year. They're the fastest way to get credits and real footage for your reel.", "/casting-calls/student-films", "Student film casting calls"],
+  ["Submit early, and only when you fit", "Breakdowns fill quickly, so apply soon after a role posts. Read the role, check the shoot dates, and write a short note on why you're right for it."],
+  ["Treat the self-tape as the audition", "Most first rounds in New York are self-tapes now. Learn the lines, frame from the chest up, keep the background plain and the sound clear."],
+  ["Go to open calls", "Theater runs regular open calls in Midtown, including Equity Principal Auditions. Non-Equity actors can usually be seen there as time allows, so arrive early."],
+  ["Find representation once you have credits", "A few credits and a reel make it much easier to get an agent or manager to look. They submit you to work you can't reach on your own.", "/agency-directory", "Talent agency directory"],
+];
+// Guide under the student-film listings (2026-11-16): student-film searches were showing
+// CastSlate at positions 15-30 with a thin page. KEEP IN SYNC with STUDENT_GUIDE in api/landing.js.
+const STUDENT_GUIDE=[
+  ["How student film casting works", "Film students cast their thesis and class projects much like a professional production: they post a breakdown, review submissions, then hold auditions or ask for self-tapes. Shoots usually run a few days, often on weekends, and many happen in New York and Los Angeles."],
+  ["Why actors take student films", "Student films are where many actors earn their first credits and their first reel footage. You work on set with a real crew, practise hitting marks and repeating takes, and meet the directors and cinematographers who'll be making indie features in a few years."],
+  ["Pay, meals and credit", "Many student films are unpaid or pay a small flat fee, so read each listing. Expect meals on set, a credit, and a copy of your footage. Ask when you'll get that footage before you agree to the shoot, and get it in writing."],
+  ["Union actors on student films", "SAG-AFTRA members can work on student films made under the union's Student Film Agreement, which the school's filmmaker signs before the shoot. Non-union actors can submit to any student film. Every listing on CastSlate shows its union status, so you know before applying."],
+  ["Where student films cast", "In New York, look for projects from NYU, Columbia, The New School, SVA and Brooklyn College. In Los Angeles, USC, UCLA, AFI, CalArts and Chapman students cast throughout the school year. Thesis films are usually the most ambitious ones, with the biggest crews."],
+  ["How to stand out", "Submit with a current headshot, a short note on why you fit the role, and a clear self-tape if they ask for one. Be on time, know your lines and be easy to work with: student directors remember actors who made their shoot go well."],
+];
+const STUDENT_GUIDE_CLOSE="Every student film above is open now, and the filmmakers review one profile at a time.";
+// In-app jump to any built-in landing page from a real <a href>.
+function openLandingKey(onNavigate,key){
+  if(typeof onNavigate==="function")onNavigate("search");
+  try{
+    window.history.replaceState(window.history.state,"","/casting-calls/"+key);
+    if(LANDING_PAGES[key])document.title=LANDING_PAGES[key].title;
+    window.dispatchEvent(new Event("cs:landing"));
+    window.scrollTo(0,0);
+  }catch(_){}
+}
+function GuideLink({href,text,onNavigate}){
+  const click=e=>{e.preventDefault();const m=href.match(/^\/casting-calls\/([a-z0-9-]+)$/);if(m)openLandingKey(onNavigate,m[1]);else if(typeof onNavigate==="function")onNavigate(href.replace(/^\//,""));};
+  return <a className="nyc-guide-link" href={href} onClick={click}>{text} <Tri/></a>;
+}
+function NycSteps({onNavigate}){
+  return(<div className="nyc-steps" aria-labelledby="nyc-steps-h">
+    <h2 id="nyc-steps-h">How to get auditions in New York</h2>
+    <ol className="nyc-guide-grid nyc-steps-list">{NYC_STEPS.map(([h,p,href,text],i)=><li key={h} className="nyc-guide-item"><span className="nyc-step-n" aria-hidden="true">{i+1}</span><h3>{h}</h3><p>{p}</p>{href&&<GuideLink href={href} text={text} onNavigate={onNavigate}/>}</li>)}</ol>
+  </div>);
+}
+function StudentFilmGuide({isLoggedIn,onNavigate}){
+  const go=(e,to)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(to);};
+  return(<section className="nyc-guide" aria-labelledby="sf-guide-h">
+    <h2 id="sf-guide-h">A guide to student film casting calls</h2>
+    <div className="nyc-guide-grid">{STUDENT_GUIDE.map(([h,p])=><div key={h} className="nyc-guide-item"><h3>{h}</h3><p>{p}</p></div>)}</div>
+    {!isLoggedIn&&<div className="nyc-guide-close">
+      <h3 className="ngc-h">Your first credit could be on this page.</h3>
+      <p>{STUDENT_GUIDE_CLOSE}</p>
+      <a className="btn-p" href="/register-talent" onClick={e=>go(e,"register-talent")}>Create your free profile <Tri/></a>
+      <span className="ngc-sub">Already a member? <a href="/login" onClick={e=>go(e,"login")}>Log in</a></span>
+    </div>}
+  </section>);
+}
 // In-app jump to the NYC page from a real <a href> (crawlable link; footer/Browse).
 // navigate("search") pushes /browse-castings; swap that entry for the landing URL and
 // nudge SearchPage, which reads the landing key from the URL.
@@ -19088,6 +19150,7 @@ function NycGuide({isLoggedIn,onNavigate}){
   return(<section className="nyc-guide" aria-labelledby="nyc-guide-h">
     <h2 id="nyc-guide-h">How to find casting calls in New York City</h2>
     <div className="nyc-guide-grid">{NYC_GUIDE.map(([h,p])=><div key={h} className="nyc-guide-item"><h3>{h}</h3><p>{p}</p></div>)}</div>
+    <NycSteps onNavigate={onNavigate}/>
     {!isLoggedIn&&<div className="nyc-guide-close">
       <h3 className="ngc-h">Your next role is on this page.</h3>
       <p>{NYC_GUIDE_CLOSE}</p>
@@ -19952,6 +20015,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         </>}
     </>
     {landingKey==="new-york"&&<NycGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
+    {landingKey==="student-films"&&<StudentFilmGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
     {!landingKey&&<p className="nyc-crosslink">Looking for work in New York? <a href="/casting-calls/new-york" onClick={e=>{e.preventDefault();setPg(1);openNycLanding(onNavigate);}}>Casting calls in NYC <Tri/></a></p>}
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
     <div className="page-foot-gap" aria-hidden="true"/>
