@@ -19087,6 +19087,7 @@ const NYC_STEPS=[
   ["Go to open calls", "Theater runs open calls in Midtown, including Equity Principal Auditions. Non-Equity actors can often be seen as time allows, so arrive early."],
   ["Then find an agent or manager", "A few credits and a reel make it much easier to get an agent or manager to look. They submit you to work you can't reach on your own.", "/agency-directory", "Talent agency directory"],
 ];
+// Signed-out only (owner 2026-11-16): members already know this; Google reads the signed-out page.
 // Guide under the student-film listings (2026-11-16): student-film searches were showing
 // CastSlate at positions 15-30 with a thin page. KEEP IN SYNC with STUDENT_GUIDE in api/landing.js.
 const STUDENT_GUIDE=[
@@ -19150,7 +19151,7 @@ function NycGuide({isLoggedIn,onNavigate}){
   return(<section className="nyc-guide" aria-labelledby="nyc-guide-h">
     <h2 id="nyc-guide-h">How to find casting calls in New York City</h2>
     <div className="nyc-guide-grid">{NYC_GUIDE.map(([h,p])=><div key={h} className="nyc-guide-item"><h3>{h}</h3><p>{p}</p></div>)}</div>
-    <NycSteps onNavigate={onNavigate}/>
+    {!isLoggedIn&&<NycSteps onNavigate={onNavigate}/>}
     {!isLoggedIn&&<div className="nyc-guide-close">
       <h3 className="ngc-h">Your next role is on this page.</h3>
       <p>{NYC_GUIDE_CLOSE}</p>
@@ -20015,7 +20016,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
         </>}
     </>
     {landingKey==="new-york"&&<NycGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
-    {landingKey==="student-films"&&<StudentFilmGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
+    {landingKey==="student-films"&&!isLoggedIn&&<StudentFilmGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
     {!landingKey&&<p className="nyc-crosslink">Looking for work in New York? <a href="/casting-calls/new-york" onClick={e=>{e.preventDefault();setPg(1);openNycLanding(onNavigate);}}>Casting calls in NYC <Tri/></a></p>}
     {applyTo&&<div className="modal-overlay" onClick={()=>setApplyTo(null)}><div className="modal" onClick={e=>e.stopPropagation()}><h2>{t('search.submitForRole')}</h2><div style={{background:"var(--s2)",borderRadius:10,padding:16,marginBottom:20}}><h4 style={{fontSize:14,fontWeight:700}}>{applyTo.title}</h4><p style={{color:"var(--t2)",fontSize:12,marginTop:2}}>{applyTo.prod} · {applyTo.location}</p></div><div className="form-group"><label className="label">{t('search.coverNote')}</label><textarea className="textarea" placeholder={t('search.coverNotePlaceholder')}></textarea></div><div className="form-group"><label className="label">{t('search.whichHeadshot')}</label><div style={{display:"flex",gap:10,marginTop:8}}><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"2px solid var(--acc)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t2)",textAlign:"center",padding:4}}>{t('search.primary')}</div><div style={{width:70,height:90,borderRadius:8,background:"var(--s3)",border:"1px solid var(--bdr)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--t3)",textAlign:"center",padding:4,cursor:"pointer"}}>{t('search.addPhoto')}</div></div></div><div style={{display:"flex",gap:12,marginTop:24}}><button className="btn-p" style={{flex:1}} onClick={()=>{setApplied(p=>new Set([...p,applyTo.id]));setApplyTo(null);}}>{t('search.submitApp')}</button><button className="btn-s" onClick={()=>setApplyTo(null)}>{t('cancel')}</button></div></div></div>}
     <div className="page-foot-gap" aria-hidden="true"/>
