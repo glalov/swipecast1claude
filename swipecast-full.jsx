@@ -4956,7 +4956,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
 .b2t-cube.dropping .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
 .b2t-cube.leaving .mark{animation:b2tLogoSpinOut .82s cubic-bezier(.5,0,.75,.45) both;}
-.b2t-cube .pyramid{width:24px;height:20px;position:relative;transform-style:preserve-3d;animation:b2tPyramidIdle 6.4s cubic-bezier(.65,0,.35,1) infinite;}
+.b2t-cube .pyramid{width:24px;height:20px;position:relative;transform-style:preserve-3d;transition:transform .25s cubic-bezier(.2,.7,.2,1);} /* owner 2026-11-17: still black up-triangle, lifts 2px on hover only */
+.b2t-cube .pyramid .face.white{display:none;}
+.b2t-cube:hover .pyramid{transform:translateY(-2px);}
 .b2t-cube .pyramid .face{position:absolute;inset:0;backface-visibility:hidden;}
 .b2t-cube .pyramid .face svg{display:block;width:24px;height:20px;}
 .b2t-cube .pyramid .face.black{transform:rotateY(0deg) translateZ(7px);}
@@ -9503,7 +9505,7 @@ function makeB2tGL(lib,host,label,btn,onDone){
   const mesh=new THREE.Group();mesh.add(model);scene.add(mesh);
   const frontN=new THREE.Vector3();
   const IDLE=b2tBezier(.65,0,.35,1);
-  const SEG=[[0,.40,0,0],[.40,.50,0,-180],[.50,.90,-180,-180],[.90,1,-180,-360]]; // owner 11-16: two faces, navy + outlined white
+  const SEG=[[0,1,0,0]]; // owner 11-17: still black up-triangle, no idle turn
   const pyrAngle=ms=>{const p=(ms%6400)/6400;for(const[a,b,f,t]of SEG){if(p<=b)return f+(t-f)*IDLE((p-a)/(b-a));}return 0;};
   let raf=0,kind=null,t0=0,active=false;
   let lastPx=0;
@@ -29414,7 +29416,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
       </div>
       <div className="sw-hint-pill">
         <span className="sw-hint-arrow" aria-hidden="true"><span className="fc-travel"><span className="fc-coin">
-          <span className="fc-face front"><svg viewBox="0 0 24 24"><path d="M16.5 5.5 L6.5 12 L16.5 18.5 Z"/></svg></span>
+          <span className="fc-face front"><svg viewBox="0 0 24 24"><path d="M2.5 12 L9 6.5 L9 17.5 Z M21.5 12 L15 6.5 L15 17.5 Z"/></svg></span>
           <span className="fc-face back"><svg viewBox="0 0 24 24"><path d="M7.5 5.5 L17.5 12 L7.5 18.5 Z"/></svg></span>
         </span></span></span>
         <span className="sw-hint-text">Swipe or tap to review talent</span>
