@@ -5730,6 +5730,8 @@ a.mq-item:hover .mq-go{animation:none;transform:translateX(3px);}
 /* Live castings, refined palette (owner 2026-11-17): champagne titles, dim cream details,
    dim separators, outlined NEW - gold only on the titles so it reads expensive, not loud. */
 .mq-stripe.is-live .mq-item::after{background:rgba(240,234,224,.22);}
+.mq-group:not(:empty){animation:mqFadeIn .5s ease both;}
+@keyframes mqFadeIn{from{opacity:0}to{opacity:1}}
 .mq-item.mq-live .mq-txt{color:rgba(240,234,224,.62);}
 .mq-item.mq-live em{color:#E3C78F;}
 .mq-new{align-self:center;flex-shrink:0;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#E3C78F;box-shadow:inset 0 0 0 1px rgba(227,199,143,.7);border-radius:3px;padding:1px 6px;margin-right:9px;}
@@ -8382,7 +8384,19 @@ function MarqueeStripe({onNavigate,onViewCastingById}){
   // Live castings (owner 2026-11-17): the strip shows the newest open castings instead of
   // slogans - real roles arriving is what earns the motion. Refetched every 10 min while the
   // tab is visible. Under 3 castings or any error -> the slogan strip below stays.
-  const [live,setLive]=useState([]);
+  // First load can wait several seconds behind the auth session warm-up, and swapping slogans
+  // for castings mid-scroll looks broken. So: last list is cached per browser and shown at once;
+  // with no cache the strip stays dark up to 4s for the live list, then falls back to slogans
+  // for this visit (fresh list is still cached for the next one). No mid-view swap, ever.
+  const readCache=()=>{try{const v=JSON.parse(localStorage.getItem("cs_mq_live")||"null");return Array.isArray(v)&&v.length>=3?v:[];}catch(_){return[];}};
+  const [live,setLive]=useState(readCache);
+  const [mode,setMode]=useState(()=>readCache().length?"live":"wait");
+  const modeRef=useRef(mode);modeRef.current=mode;
+  useEffect(()=>{
+    if(mode!=="wait")return;
+    const t=setTimeout(()=>{if(modeRef.current==="wait")setMode("slogans");},4000);
+    return()=>clearTimeout(t);
+  },[mode]);
   useEffect(()=>{
     let dead=false;
     const load=async()=>{
@@ -8395,7 +8409,10 @@ function MarqueeStripe({onNavigate,onViewCastingById}){
           .order("created_at",{ascending:false}).limit(14);
         if(dead||error||!data||data.length<3)return;
         const at=c=>new Date(c.go_live_at||c.created_at).getTime();
-        setLive(data.slice().sort((a,b)=>at(b)-at(a)));
+        const list=data.slice().sort((a,b)=>at(b)-at(a));
+        try{localStorage.setItem("cs_mq_live",JSON.stringify(list));}catch(_){}
+        if(modeRef.current==="slogans")return; // already showing slogans this visit: no mid-view swap
+        setLive(list);setMode("live");
       }catch(_){}
     };
     load();
@@ -8431,12 +8448,12 @@ function MarqueeStripe({onNavigate,onViewCastingById}){
   useEffect(()=>{
     const el=trackRef.current;
     if(!el)return;
-    const pps=live.length?38:55;
+    const pps=mode==="live"?38:55;
     const fit=()=>{const half=el.scrollWidth/2;if(half>0)el.style.animationDuration=Math.max(20,half/pps)+"s";};
     fit();
     window.addEventListener("resize",fit);
     return()=>window.removeEventListener("resize",fit);
-  },[live]);
+  },[live,mode]);
   // Only claims the site already makes elsewhere (footer, landing, pricing,
   // classes), kept short because they are set in capitals. No money talk
   // (price, credit card) up here; the owner wants benefits only (2026-10-20).
@@ -8465,7 +8482,8 @@ function MarqueeStripe({onNavigate,onViewCastingById}){
       {fresh&&<b className="mq-new">New</b>}<span className="mq-txt"><em>{c.title}</em>{" \u00b7 "+bits}</span></a>;
   });
   const renderGroup=(gk,hidden)=>{
-    if(live.length)return renderLive(gk,hidden);
+    if(mode==="live")return renderLive(gk,hidden);
+    if(mode==="wait")return [];
     const out=[];
     for(let r=0;r<4;r++)ITEMS.forEach(([pre,em,post,page,href],i)=>{
       const k=gk+"-"+r+"-"+i;
@@ -8476,7 +8494,7 @@ function MarqueeStripe({onNavigate,onViewCastingById}){
     });
     return out;
   };
-  return(<div className={`mq-stripe${collapsed?" is-collapsed":""}${live.length?" is-live":""}`} role="region" aria-label={live.length?"Latest castings":"CastSlate highlights"}>
+  return(<div className={`mq-stripe${collapsed?" is-collapsed":""}${mode==="live"?" is-live":""}`} role="region" aria-label={mode==="live"?"Latest castings":"CastSlate highlights"}>
     <div className="mq-track" ref={trackRef}>
       <div className="mq-group">{renderGroup("a",false)}</div>
       <div className="mq-group" aria-hidden="true">{renderGroup("b",true)}</div>
