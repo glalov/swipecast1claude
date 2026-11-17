@@ -28902,8 +28902,10 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
 
   // Auto-advance every 5s — paused only when the cursor is over an arrow button,
   // or during a touch swipe. Loops forever: end → wraps back to first card.
+  // Owner 2026-11-16: NO auto-advance. The slider moves only when the visitor clicks
+  // next/prev, a dot, or swipes. Constant motion read as cheap.
   useEffect(()=>{
-    if(paused||castings.length<2)return;
+    if(true||paused||castings.length<2)return;
     const tid=setInterval(()=>{if(!window.__csHeroSpinning)setIdx(i=>(i+1)%castings.length);},5000); // quiet while the headline letters spin
     return()=>clearInterval(tid);
   },[paused,castings.length]);
