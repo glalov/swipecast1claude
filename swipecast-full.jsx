@@ -5732,6 +5732,9 @@ a.mq-item:hover .mq-go{animation:none;transform:translateX(3px);}
 .mq-stripe.is-live .mq-item::after{background:rgba(240,234,224,.22);}
 .mq-group:not(:empty){animation:mqFadeIn .5s ease both;}
 @keyframes mqFadeIn{from{opacity:0}to{opacity:1}}
+/* iOS text autosizing (2026-11-17): the live track is ~20,000px wide, and on a tap/back-navigation relayout
+   Safari inflated its text back up past the phone size. Opt the strip out so the sizes we set are the sizes shown. */
+.mq-stripe,.mq-stripe *{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .mq-item.mq-live .mq-txt{color:rgba(240,234,224,.62);}
 .mq-item.mq-live em{color:#E3C78F;}
 .mq-new{align-self:center;flex-shrink:0;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#E3C78F;box-shadow:inset 0 0 0 1px rgba(227,199,143,.7);border-radius:3px;padding:1px 6px;margin-right:9px;}
