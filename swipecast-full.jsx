@@ -117,7 +117,7 @@ const TRANSLATIONS = {
     'landing.createProfile':'Create My Free Profile →','landing.createProfileShort':'Create Free Profile →','landing.iAmCD':'I\'m a Casting Director',
     'landing.openDashboard':'Open Dashboard →','landing.browseCastings':'Browse Castings →',
     'landing.myProfile':'My Profile',
-    'landing.freeAccount':'Free actor account — upgrade to Premium from $10.75/mo',
+    'landing.freeAccount':'Free actor account',
     'landing.noCreditCard':'No credit card to sign up','landing.quickSignup':'60-second signup',
     'landing.trustedBy':'Casting across every format',
     'landing.swipeDone':'You\'ve seen everyone!',
@@ -369,7 +369,7 @@ const TRANSLATIONS = {
     'landing.createProfile':'Crear mi perfil gratis →','landing.createProfileShort':'Crear perfil gratis →','landing.iAmCD':'Soy director de casting',
     'landing.openDashboard':'Abrir panel →','landing.browseCastings':'Ver convocatorias →',
     'landing.myProfile':'Mi perfil',
-    'landing.freeAccount':'Cuenta gratuita — mejora a Premium desde $10.75/mes',
+    'landing.freeAccount':'Cuenta de actor gratuita',
     'landing.noCreditCard':'Sin tarjeta de crédito para registrarse','landing.quickSignup':'Registro en 60 segundos',
     'landing.trustedBy':'Casting en todos los formatos',
     'landing.swipeDone':'¡Ya los viste a todos!',
@@ -30811,7 +30811,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <FeaturedCastingsSlider onViewCasting={onViewCasting} onNavigate={onNavigate} castingsVersion={castingsVersion}/>
 
     {/* ───────── STATS ───────── */}
-    <LandingStats/>
+    {/* <LandingStats/> removed 2026-11-16 (owner): pastel counting stat cards not needed */}
 
     {/* ───────── CINEMATIC FEATURE CARD ───────── */}
     <div className="cinema-feature">
