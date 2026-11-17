@@ -417,9 +417,12 @@ async function cardPick(sb: ReturnType<typeof createClient>, force: boolean) {
   const key = typeof gk === "string" ? gk : "";
   if (!key) return { error: "no key" };
   const model = await geminiModel(key);
-  const today = nyToday(), monthEnd = month + "-31";
-  const { data } = await sb.from("film_events").select("id,title,image_url,starts_on,ends_on,featured_rank")
+  const today = nyToday();
+  const [yy, mm] = month.split("-").map(Number);
+  const monthEnd = new Date(Date.UTC(yy, mm, 0)).toISOString().slice(0, 10); // real last day ("2026-11-31" is not a date)
+  const { data, error: qErr } = await sb.from("film_events").select("id,title,image_url,starts_on,ends_on,featured_rank")
     .eq("status", "published").gte("ends_on", today).lte("starts_on", monthEnd).not("image_url", "is", null);
+  if (qErr) return { error: "events query failed: " + qErr.message }; // never record "none" on a failed read
   const rows = ((data || []) as { id: string; title: string; image_url: string; starts_on: string; featured_rank: number | null }[])
     .sort((a, b) => ((a.featured_rank ?? 99) - (b.featured_rank ?? 99)) || String(a.starts_on).localeCompare(String(b.starts_on)));
   const tried: string[] = [];
