@@ -3469,7 +3469,11 @@ a.mq-item:hover .mq-go{animation:none;transform:translateX(3px);}
   .member-banner .mb-full{display:none;}
   .member-banner .mb-short{display:inline;white-space:nowrap;}
   .mq-stripe{height:28px;}
-  .mq-item{font-size:10.5px;letter-spacing:1.2px;}
+  .mq-item{font-size:9.5px;letter-spacing:.9px;}
+  /* Phones (owner 2026-11-17): live-casting lines read too big - lighter weight, title stays bold. */
+  .mq-item.mq-live{font-weight:600;}
+  .mq-item.mq-live em{font-weight:700;}
+  .mq-new{font-size:8.5px;letter-spacing:.9px;padding:0 5px;margin-right:7px;}
   .mq-go{width:8px;height:10px;margin-left:7px;}
   .mq-item::after{margin:0 20px;}
   .featured-class-stripe{height:148px;overflow:hidden;}
