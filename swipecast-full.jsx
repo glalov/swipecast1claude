@@ -3130,11 +3130,12 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .s-card-tags{display:flex;gap:5px;flex-wrap:wrap;}
 .s-card-tags span{background:var(--s2);padding:3px 8px;border-radius:5px;font-size:10px;color:var(--t2);}
 /* Landing swipe entrance — Zara settles in, then the deck deals in behind her. */
-@keyframes sw-in-top{0%{transform:translateY(150%) scale(.86);opacity:0}55%{opacity:1}82%{transform:translateY(-11px) scale(1.012)}100%{transform:translateY(0) scale(1);opacity:1}}
-@keyframes sw-in-back{0%{transform:translateX(190%) rotate(9deg) scale(.84);opacity:0}65%{opacity:var(--ro,.3)}100%{transform:var(--rest);opacity:var(--ro,.3)}}
+@keyframes sw-in-top{0%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes sw-in-back{0%{transform:var(--rest) translateY(12px);opacity:0}100%{transform:var(--rest);opacity:var(--ro,.3)}}
 .sw-pre{opacity:0!important;}
-.sw-intro-top{animation:sw-in-top .5s cubic-bezier(.34,1.4,.5,1) both;will-change:transform,opacity;}
-.sw-intro-back{animation:sw-in-back .62s cubic-bezier(.2,.75,.25,1) both;animation-delay:var(--d,0s);will-change:transform,opacity;}
+/* Owner 2026-11-16: calm entrance. The whole deck fades up 12px together, no bounce, no cards dealt in from the side. */
+.sw-intro-top{animation:sw-in-top .5s cubic-bezier(.2,.7,.2,1) both;will-change:transform,opacity;}
+.sw-intro-back{animation:sw-in-back .5s cubic-bezier(.2,.7,.2,1) both;animation-delay:0s;will-change:transform,opacity;}
 @media(prefers-reduced-motion:reduce){.sw-intro-top,.sw-intro-back{animation:none!important;}}
 .swipe-btns{display:flex;gap:20px;align-items:flex-start;}
 .sw-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;}
@@ -3173,6 +3174,10 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .sw-btn.save.sw-still:hover{border-color:#111111;background:rgba(20,17,15,.05);}
 .sw-btn.save::after{content:"";position:absolute;inset:-2px;border-radius:50%;box-shadow:0 0 0 10px rgba(99,91,255,0.22);z-index:-1;pointer-events:none;opacity:0;animation:sw-ring 2.8s ease-in-out infinite;}
 .sw-btn.save:hover::after{animation:none;opacity:0;}
+/* Owner 2026-11-16: swipe hint is still (navy arrow, no travel or flip) and the homepage star has no pulse ring. */
+.sw-hint-arrow .fc-travel,.sw-hint-arrow .fc-coin{animation:none!important;transform:none!important;}
+.sw-hint-arrow .fc-face.front{background:#1A1A2E;box-shadow:none;}
+.sw-btn.save.sw-still::after{animation:none!important;opacity:0!important;}
 .sw-star-wrap{position:relative;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
 .sw-star-fill{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 @keyframes csAppStar{0%,100%{transform:scale(1);}50%{transform:scale(1.14);}}
