@@ -72,10 +72,11 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .logo-i svg{width:100%;height:100%;display:block;}
 /* Top-nav logo: a bit larger + a 3D "cube turn" spin once every 10s. */
 .nav .logo{perspective:620px;}
-.nav .logo-i{width:38px;height:38px;border-radius:9px;transform-style:preserve-3d;animation:cs-logo-spin 1.1s cubic-bezier(.6,0,.3,1) .4s 1 backwards;transition:transform .7s cubic-bezier(.6,0,.3,1);}
+.nav .logo-i{width:38px;height:38px;border-radius:9px;transform-style:preserve-3d;animation:cs-logo-spin 1.1s cubic-bezier(.6,0,.3,1) .4s 1 backwards;}
 /* Owner 2026-11-17: the logo spins ONCE as the page loads, then only when hovered. No endless loop. */
 @keyframes cs-logo-spin{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
-.nav .logo:hover .logo-i{animation:none;transform:rotateY(360deg);}
+.nav .logo:hover .logo-i{animation:cs-logo-spin-h .9s cubic-bezier(.6,0,.3,1) 1;} /* own keyframe name so every new hover restarts it; a 0->360 transition is a no-op (same matrix) */
+@keyframes cs-logo-spin-h{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
 @media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
 .nav-join-mobile{display:none;}
 @media (prefers-reduced-motion:reduce){.nav .logo-i{animation:none;}}
