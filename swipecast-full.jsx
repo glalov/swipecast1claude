@@ -4517,7 +4517,8 @@ h1:not(.pl-hero-nm),h2:not(.pl-hero-nm){font-family:'Fraunces',Georgia,serif!imp
 @media(max-width:760px){.evs{flex-direction:column;}.evs-art{order:-1;width:100%;height:150px;}.evs-cov,.evs-bg{-webkit-mask-image:none;mask-image:none;}.evs-fg{left:0;right:0;margin:0 auto;}.evs-chip{right:auto;left:50%;transform:translate(-50%,-50%);}.evs-row{left:0;right:0;justify-content:center;}.evs-tx{padding:16px 16px 6px;}.evs-t{font-size:22px;}.evs-go{align-self:flex-start;margin:6px 16px 16px;}}
 /* Industry Events: dashboard card and /events (2026-11-08) */
 .ievc{background:#fff;border:1px solid var(--bdr);border-radius:18px;box-shadow:0 2px 6px rgba(26,26,46,.07);}
-.ievc-top{position:relative;height:124px;background:#0E2628 center/cover no-repeat;border-radius:17px 17px 0 0;}
+.ievc-top{position:relative;height:170px;background:#0E2628 center/cover no-repeat;border-radius:17px 17px 0 0;transition:background-image .3s;} /* 170px (owner 2026-11-17): room for photo subject above the title */
+.ievc-top.has-art::after{background:linear-gradient(0deg,rgba(10,9,8,.88),rgba(10,9,8,.15) 70%,rgba(10,9,8,0));}
 .ievc-top::after{content:"";position:absolute;inset:0;border-radius:17px 17px 0 0;background:linear-gradient(0deg,rgba(10,22,24,.86),rgba(10,22,24,.12) 75%);}
 .ievc-tt{position:absolute;left:20px;right:20px;bottom:13px;z-index:1;color:#fff;}
 .ievc-tt small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;opacity:.9;margin-bottom:3px;}
@@ -19416,14 +19417,29 @@ function IevInfo({label,light}){
   const [open,setOpen]=useState(false);
   return <span className={"iev-tip"+(light?" iev-tip-l":"")+(open?" is-open":"")} tabIndex={0} role="button" aria-label={label} onClick={e=>{e.stopPropagation();setOpen(v=>!v);}} onBlur={()=>setOpen(false)}><Ico n="info-circle" s={19}/><span className="iev-pop">{IEV_TEXT}</span></span>;
 }
+// Card header art (owner 2026-11-17): the events agent picks ONE wide, text-free event photo a
+// month (site_settings.events_card_art, copied into our storage, with a focus point). No pick ->
+// the owner's licensed festival-marquee photo. Never the raw festival banner any more.
+const IEV_CARD_FALLBACK={url:"/assets/events/events-marquee.jpg",pos:"70% 36%"};
+let _ievArt=null;
+function useEventsCardArt(){
+  const [art,setArt]=useState(_ievArt);
+  useEffect(()=>{
+    if(_ievArt)return;let live=true;
+    (async()=>{for(let i=0;i<4&&live;i++){try{if(!window.sb)throw 0;const{data}=await window.sb.from("site_settings").select("events_card_art").eq("id",1).maybeSingle();const a=data?.events_card_art;_ievArt=(a&&a.url)?{url:a.url,pos:a.pos||"50% 40%"}:IEV_CARD_FALLBACK;if(live)setArt(_ievArt);return;}catch(_){await new Promise(r=>setTimeout(r,1200));}}
+      _ievArt=IEV_CARD_FALLBACK;if(live)setArt(_ievArt);})();
+    return()=>{live=false;};
+  },[]);
+  return art;
+}
 function IndustryEventsCard({isPremium,onNavigate}){
   const list=useAllEvents();
+  const art=useEventsCardArt();
   if(!list||!list.length)return null;
   const today=ievToday(),thisM=today.slice(0,7),mon=ievMonthName(thisM),mName=mon.split(" ")[0];
   const inMonth=c=>list.filter(e=>e.city===c&&ievInMonth(e,thisM)).length;
-  const hero=list.find(e=>e._photo&&!e._ended&&!(e.art&&e.art.whole));
   return(<div className="ievc">
-    <div className="ievc-top" style={hero?{backgroundImage:"url(\""+hero.image_url+"\")"}:undefined}>
+    <div className={"ievc-top"+(art?" has-art":"")} style={art?{backgroundImage:"url(\""+art.url+"\")",backgroundPosition:art.pos}:undefined}>
       <div className="ievc-tt"><small>{isPremium?mon:"Premium feature · "+mon}</small><div className="ievc-ttl"><b>Industry Events</b><IevInfo label="About Industry Events" light/></div></div>
     </div>
     <div className="ievc-b">

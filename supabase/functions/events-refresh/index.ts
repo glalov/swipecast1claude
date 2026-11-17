@@ -402,6 +402,64 @@ async function artCheck(sb: ReturnType<typeof createClient>) {
   return { whole, photo, failed };
 }
 
+// Dashboard Industry Events card header (owner, 2026-11-17, demo on the talent dashboard).
+// Once a month, look at this month's event photos and keep ONE that survives a wide crop:
+// shape check first (wide, sharp), then Gemini looks at it (real photo or film still, no
+// designed text/logo/poster, faces inside a ~2.2:1 strip) and gives the focus point.
+// The winner is COPIED into our own storage so the card never hotlinks or breaks.
+// Nothing passes -> url null, and the card shows the owner's licensed marquee photo.
+async function cardPick(sb: ReturnType<typeof createClient>, force: boolean) {
+  const month = nyToday().slice(0, 7);
+  const { data: ss } = await sb.from("site_settings").select("events_card_art").eq("id", 1).maybeSingle();
+  const cur = (ss as { events_card_art?: { month?: string } } | null)?.events_card_art;
+  if (!force && cur?.month === month) return { skipped: "already picked this month", current: cur };
+  const { data: gk } = await sb.rpc("news_get_gemini_key");
+  const key = typeof gk === "string" ? gk : "";
+  if (!key) return { error: "no key" };
+  const model = await geminiModel(key);
+  const today = nyToday(), monthEnd = month + "-31";
+  const { data } = await sb.from("film_events").select("id,title,image_url,starts_on,ends_on,featured_rank")
+    .eq("status", "published").gte("ends_on", today).lte("starts_on", monthEnd).not("image_url", "is", null);
+  const rows = ((data || []) as { id: string; title: string; image_url: string; starts_on: string; featured_rank: number | null }[])
+    .sort((a, b) => ((a.featured_rank ?? 99) - (b.featured_rank ?? 99)) || String(a.starts_on).localeCompare(String(b.starts_on)));
+  const tried: string[] = [];
+  const prompt = 'This image will be the header of a small card on a website. It will be cropped to a wide strip about 2.2 times wider than it is tall, with a white title over the bottom-left. Say ok:true ONLY if ALL of these hold: it is a real photograph or a film still (NOT a poster, flyer, logo, banner, graphic, collage, illustration or screenshot); it has NO designed text, titles, logos or dates in it; it is not mostly blank or one flat colour; and its main subject (faces above all) stays fully inside a 2.2:1 crop. Also give the point the crop should centre on, as percentages from the left (x) and top (y). Reply with only JSON: {"ok":true,"x":50,"y":40} or {"ok":false}.';
+  for (const e of rows.slice(0, 25)) {
+    try {
+      const r = await fetch(e.image_url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) });
+      const mime = (r.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+      if (!r.ok || !["image/jpeg", "image/webp", "image/png"].includes(mime)) { tried.push(e.title + ": bad file"); continue; }
+      const bytes = new Uint8Array(await r.arrayBuffer());
+      const sz = imageSize(bytes);
+      if (!sz || sz.w < 1000 || sz.w / sz.h < 1.6 || bytes.length > 4000000) { tried.push(e.title + ": shape " + (sz ? sz.w + "x" + sz.h : "?")); continue; }
+      let bin = "";
+      for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
+      const g = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: mime, data: btoa(bin) } }] }], generationConfig: { temperature: 0 } }),
+        signal: AbortSignal.timeout(45000),
+      });
+      if (!g.ok) { tried.push(e.title + ": vision error"); continue; }
+      const d = await g.json();
+      const out = (d?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join(" ");
+      if (!/"ok"\s*:\s*true/i.test(out)) { tried.push(e.title + ": rejected"); continue; }
+      const num = (k: string, def: number) => { const m = out.match(new RegExp('"' + k + '"\\s*:\\s*(\\d+(?:\\.\\d+)?)')); const v = m ? parseFloat(m[1]) : def; return Math.max(0, Math.min(100, Math.round(v))); };
+      const pos = `${num("x", 50)}% ${num("y", 40)}%`;
+      const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
+      const path = `events-card/${month}-${slug(e.title)}.${ext}`;
+      const up = await sb.storage.from("news-media").upload(path, bytes, { contentType: mime, upsert: true, cacheControl: "31536000" });
+      if (up.error) { tried.push(e.title + ": upload failed"); continue; }
+      const url = sb.storage.from("news-media").getPublicUrl(path).data.publicUrl;
+      const art = { month, url, pos, event_id: e.id, title: e.title, picked_at: new Date().toISOString() };
+      await sb.from("site_settings").update({ events_card_art: art }).eq("id", 1);
+      return { picked: art, tried };
+    } catch (_) { tried.push(e.title + ": error"); }
+  }
+  const none = { month, url: null, none: true, picked_at: new Date().toISOString() };
+  await sb.from("site_settings").update({ events_card_art: none }).eq("id", 1);
+  return { picked: null, tried };
+}
+
 // Daily sold-out sweep (owner, 2026-11-08). One-day events only: a festival with one sold-out
 // showing is still worth listing. Listing pages are skipped, since "sold out" there can be
 // about a different event.
@@ -430,6 +488,7 @@ Deno.serve(async (req) => {
   catch (_) { return json({ ok: false, error: "unauthorized" }, 401); }
   const url = new URL(req.url);
   if (url.searchParams.get("mode") === "artcheck") return json({ ok: true, ...(await artCheck(sb)) });
+  if (url.searchParams.get("mode") === "cardpick") return json({ ok: true, ...(await cardPick(sb, url.searchParams.get("force") === "1")) });
   if (url.searchParams.get("mode") === "soldout") {
     if (url.searchParams.get("wait") === "1") return json({ ok: true, ...(await soldOutCheck(sb)) });
     // deno-lint-ignore no-explicit-any
