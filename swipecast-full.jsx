@@ -29732,6 +29732,10 @@ function NewsArticlePage({slug,onNavigate}){
 // commercials3 (2026-11-04): Coverr woman-taking-photos-9338 (owner download), original speed, full 18s,
 // stabilized, crop x=470, 0.4s eased crossfade. Card uses .fmt-card-light.
 // ═══════════════════════════════════════════
+// indie3 (2026-11-17, owner pick from a live demo): Mixkit 44069 (free licence), 4K original, the beanie filmmaker
+// setting up his camera. Crop x=1100 of 3840, WARM grade (eq saturation .5, colorbalance toward red/away from blue) so it
+// no longer reads neon purple next to musical4, full 25s at 80% = 30.8s loop, 0.5s eased crossfade. 600x800 crf 24
+// (1.1MB), lite 360x480. -sf.jpg = copy of the ffmpeg first frame. indie2 kept unused.
 // musical4 (2026-11-17, owner pick from a live demo): Pexels 30278604 (4K stage tango ensemble), the FULL 19s at
 // 80% speed = 23.4s loop, toned (eq saturation .72, brightness -.035, contrast 1.04), 3:4 crop that follows the dancers
 // (x 700->1050 by 1.5s, hold, ->1900 at 11-12.3s, back to 1250 by 13.3s, 1100 from 15.6s), 0.5s eased crossfade.
@@ -29745,7 +29749,7 @@ const FORMAT_CARDS=[
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
   {cat:"Musical Theater",desc:"Live performance.",file:"musical4",icon:"music"},
-  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie2",icon:"star"},
+  {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie3",icon:"star"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover6",icon:"mic",light:true},
 ];
 const FORMAT_ICONS={
