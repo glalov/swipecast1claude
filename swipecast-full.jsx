@@ -5727,6 +5727,12 @@ a.mq-item:focus-visible{outline:1px solid #F0B860;outline-offset:3px;}
 a.mq-item:hover .mq-go{animation:none;transform:translateX(3px);}
 @media (prefers-reduced-motion:reduce){.mq-go{animation:none;}}
 .mq-item::after{content:"";display:inline-block;align-self:center;width:4.5px;height:4.5px;background:rgba(240,184,96,.6);transform:rotate(45deg);margin:0 32px;flex-shrink:0;}
+/* Live castings, refined palette (owner 2026-11-17): champagne titles, dim cream details,
+   dim separators, outlined NEW - gold only on the titles so it reads expensive, not loud. */
+.mq-stripe.is-live .mq-item::after{background:rgba(240,234,224,.22);}
+.mq-item.mq-live .mq-txt{color:rgba(240,234,224,.62);}
+.mq-item.mq-live em{color:#E3C78F;}
+.mq-new{align-self:center;flex-shrink:0;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#E3C78F;box-shadow:inset 0 0 0 1px rgba(227,199,143,.7);border-radius:3px;padding:1px 6px;margin-right:9px;}
 @keyframes mq-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 /* No pause-on-hover (owner, 2026-10-19): the marquee keeps scrolling whatever the
    pointer does. It used to pause under a mouse, and on iOS a stuck synthetic
@@ -8370,9 +8376,33 @@ function FeaturedClassBanner({onNavigate}){
 // homepage. Collapses to 0 height on scroll (same >40px threshold as the
 // banner) so the two fold away together. Text is duplicated into two identical
 // groups; the 0→-50% keyframe gives a seamless right→left loop with no jump.
-function MarqueeStripe({onNavigate}){
+function MarqueeStripe({onNavigate,onViewCastingById}){
   const [collapsed,setCollapsed]=useState(false);
   const trackRef=useRef(null);
+  // Live castings (owner 2026-11-17): the strip shows the newest open castings instead of
+  // slogans - real roles arriving is what earns the motion. Refetched every 10 min while the
+  // tab is visible. Under 3 castings or any error -> the slogan strip below stays.
+  const [live,setLive]=useState([]);
+  useEffect(()=>{
+    let dead=false;
+    const load=async()=>{
+      try{
+        if(!window.sb)return;
+        const{data,error}=await window.sb.from("castings")
+          .select("id,slug,title,type,location,created_at,go_live_at,roles(name,gender,age_range,role_type)")
+          .eq("status","open").eq("published",true)
+          .or("go_live_at.is.null,go_live_at.lte."+new Date().toISOString())
+          .order("created_at",{ascending:false}).limit(14);
+        if(dead||error||!data||data.length<3)return;
+        const at=c=>new Date(c.go_live_at||c.created_at).getTime();
+        setLive(data.slice().sort((a,b)=>at(b)-at(a)));
+      }catch(_){}
+    };
+    load();
+    const t1=setTimeout(load,2000); // window.sb can still be warming up on first paint
+    const tid=setInterval(()=>{if(!document.hidden)load();},10*60*1000);
+    return()=>{dead=true;clearTimeout(t1);clearInterval(tid);};
+  },[]);
   useEffect(()=>{
     const onScroll=()=>setCollapsed(window.scrollY>40);
     onScroll();
@@ -8395,16 +8425,18 @@ function MarqueeStripe({onNavigate}){
     document.addEventListener("visibilitychange",resume);
     return()=>{ window.removeEventListener("pageshow",resume); document.removeEventListener("visibilitychange",resume); };
   },[]);
-  // Constant reading speed: one group's width / 55px per second, recomputed
-  // when the viewport changes.
+  // Constant reading speed: one group's width / px per second, recomputed when the
+  // viewport or the content changes. Live castings run calm at 38px/s (owner pick
+  // 2026-11-17) so a line can be read without chasing it; slogans keep 55px/s.
   useEffect(()=>{
     const el=trackRef.current;
     if(!el)return;
-    const fit=()=>{const half=el.scrollWidth/2;if(half>0)el.style.animationDuration=Math.max(20,half/55)+"s";};
+    const pps=live.length?38:55;
+    const fit=()=>{const half=el.scrollWidth/2;if(half>0)el.style.animationDuration=Math.max(20,half/pps)+"s";};
     fit();
     window.addEventListener("resize",fit);
     return()=>window.removeEventListener("resize",fit);
-  },[]);
+  },[live]);
   // Only claims the site already makes elsewhere (footer, landing, pricing,
   // classes), kept short because they are set in capitals. No money talk
   // (price, credit card) up here; the owner wants benefits only (2026-10-20).
@@ -8419,7 +8451,21 @@ function MarqueeStripe({onNavigate}){
   const go=(e,page)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(page);};
   // Repeat the sequence enough times per group that one group is wider than any
   // viewport, so the seamless -50% loop never shows a gap.
+  const ago=ms=>{const h=(Date.now()-ms)/36e5;if(h<1)return"just posted";if(h<24)return Math.floor(h)+"h ago";if(h<48)return"yesterday";return Math.floor(h/24)+" days ago";};
+  const sex=g=>/^m/i.test(g||"")?"M":/^f/i.test(g||"")?"F":"All genders";
+  const renderLive=(gk,hidden)=>live.map(c=>{
+    const r=(c.roles||[])[0]||{};
+    const when=new Date(c.go_live_at||c.created_at).getTime();
+    const fresh=Date.now()-when<864e5;
+    const role=[r.role_type,sex(r.gender)+(r.age_range?" "+String(r.age_range).replace("-","\u2013"):"")].filter(Boolean).join(", ");
+    const city=String(c.location||"").replace(/, [A-Z]{2}$/,"");
+    const bits=[c.type,role,city,ago(when)].filter(Boolean).join(" \u00b7 ");
+    return <a key={gk+"-"+c.id} className="mq-item mq-live" href={"/casting/"+encodeURIComponent(c.slug||c.id)} tabIndex={hidden?-1:undefined}
+      onClick={e=>{if(typeof onViewCastingById!=="function")return;e.preventDefault();onViewCastingById(c.id);}}>
+      {fresh&&<b className="mq-new">New</b>}<span className="mq-txt"><em>{c.title}</em>{" \u00b7 "+bits}</span></a>;
+  });
   const renderGroup=(gk,hidden)=>{
+    if(live.length)return renderLive(gk,hidden);
     const out=[];
     for(let r=0;r<4;r++)ITEMS.forEach(([pre,em,post,page,href],i)=>{
       const k=gk+"-"+r+"-"+i;
@@ -8430,7 +8476,7 @@ function MarqueeStripe({onNavigate}){
     });
     return out;
   };
-  return(<div className={`mq-stripe${collapsed?" is-collapsed":""}`} role="region" aria-label="CastSlate highlights">
+  return(<div className={`mq-stripe${collapsed?" is-collapsed":""}${live.length?" is-live":""}`} role="region" aria-label={live.length?"Latest castings":"CastSlate highlights"}>
     <div className="mq-track" ref={trackRef}>
       <div className="mq-group">{renderGroup("a",false)}</div>
       <div className="mq-group" aria-hidden="true">{renderGroup("b",true)}</div>
@@ -62632,7 +62678,7 @@ function App(){
       <div className="site-top" ref={siteTopRef}>
       {/* Thin sliding marquee directly above the featured-class banner —
           homepage only. Folds away in sync with the banner on scroll. */}
-      {page==="home"&&<MarqueeStripe onNavigate={navigate}/>}
+      {page==="home"&&<MarqueeStripe onNavigate={navigate} onViewCastingById={viewCastingById}/>}
       {/* Featured-class banner — homepage only. Replaces the old yearly promo
           stripe in this slot. Uses the Scene Study Workshop artwork as-is; the
           "view classes" hotspot routes to the Classes page. */}
