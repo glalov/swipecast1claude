@@ -16,7 +16,7 @@ OUT  = os.path.join(ROOT, "castoria.js")
 
 MARKUP = """<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assistant</b></div>
 <button class="launch" id="launch" aria-label="Message Super Assistant">
-  <svg class="clap" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="var(--board)"/><rect x="7" y="16" width="18" height="2" rx="1" fill="var(--cm1)"/><rect x="7" y="20" width="12" height="2" rx="1" fill="var(--cm2)"/><g class="stick"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="var(--board)"/><g clip-path="url(#csClip)" fill="var(--stripe)"><polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/><polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g></g><defs><clipPath id="csClip"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4"/></clipPath></defs></svg>
+  <svg class="spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.9L18.7 9.7 13.8 11.5 12 16.4 10.2 11.5 5.3 9.7 10.2 7.9z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg><span class="lbl">Ask CastSlate</span><span class="dot"></span>
   <span class="x">&times;</span>
 </button>
 <div class="panel" id="panel" role="dialog" aria-label="Super Assistant">
@@ -24,7 +24,7 @@ MARKUP = """<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assist
     <button class="xreset" id="newchat" aria-label="Start a new chat" title="New chat"><svg viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.8 3.6v4.6h-4.6"/></svg></button>
     <button class="xexpand" id="expand" aria-label="Make the panel smaller" title="Smaller"><svg viewBox="0 0 24 24"><g class="i-grow"><path d="M15 4h5v5M9 20H4v-5M20 4l-7 7M4 20l7-7"/></g><g class="i-shrink"><path d="M20 9h-5V4M4 15h5v5M15 9l5-5M9 15l-5 5"/></g></svg></button>
     <button class="xclose" id="close" aria-label="Close Super Assistant">&#10005;</button>
-    <div class="ava"><svg class="clap" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="var(--board)"/><rect x="7" y="16" width="18" height="2" rx="1" fill="var(--cm1)"/><rect x="7" y="20" width="12" height="2" rx="1" fill="var(--cm2)"/><g class="stick"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="var(--board)"/><g clip-path="url(#csClip)" fill="var(--stripe)"><polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/><polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g></g><defs><clipPath id="csClip"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4"/></clipPath></defs></svg></div>
+    <div class="ava"><svg class="spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.9L18.7 9.7 13.8 11.5 12 16.4 10.2 11.5 5.3 9.7 10.2 7.9z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg></div>
     <b>Super Assistant</b>
     <i id="barsub">Acting coach</i>
   </div>
