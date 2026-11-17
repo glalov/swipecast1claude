@@ -2348,8 +2348,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .logo-i svg{width:100%;height:100%;display:block;}
 /* Top-nav logo: a bit larger + a 3D "cube turn" spin once every 10s. */
 .nav .logo{perspective:620px;}
-.nav .logo-i{width:38px;height:38px;border-radius:9px;transform-style:preserve-3d;animation:cs-logo-spin 10s cubic-bezier(.6,0,.3,1) infinite;}
-@keyframes cs-logo-spin{0%,70%{transform:rotateY(0deg) scale(1);}82%{transform:rotateY(180deg) scale(1.12);}100%{transform:rotateY(360deg) scale(1);}}
+.nav .logo-i{width:38px;height:38px;border-radius:9px;transform-style:preserve-3d;animation:cs-logo-spin 1.1s cubic-bezier(.6,0,.3,1) .4s 1 both;transition:transform .7s cubic-bezier(.6,0,.3,1);}
+/* Owner 2026-11-17: the logo spins ONCE as the page loads, then only when hovered. No endless loop. */
+@keyframes cs-logo-spin{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
+.nav .logo:hover .logo-i{animation:none;transform:rotateY(360deg);}
 @media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
 .nav-join-mobile{display:none;}
 @media (prefers-reduced-motion:reduce){.nav .logo-i{animation:none;}}
@@ -7212,6 +7214,14 @@ button:disabled:hover .cs-tri{transform:none;}
 @keyframes guaranteeDetailTop{0%{transform:translateY(-120px);opacity:0;}35%{opacity:1;}62%{transform:translateY(7px);}100%{transform:translateY(0);opacity:1;}}
 @keyframes guaranteeDetailBottom{0%{transform:translateY(140px);opacity:0;}35%{opacity:1;}62%{transform:translateY(-8px);}100%{transform:translateY(0);opacity:1;}}
 @media (prefers-reduced-motion:reduce){.guarantee-construct:not(.is-in) .guarantee-card-construct,.guarantee-construct:not(.is-in) .guarantee-glow-left,.guarantee-construct:not(.is-in) .guarantee-glow-right,.guarantee-construct:not(.is-in) .guarantee-badge,.guarantee-construct:not(.is-in) .guarantee-title,.guarantee-construct:not(.is-in) .guarantee-rule,.guarantee-construct:not(.is-in) .guarantee-copy{transform:none;clip-path:none;opacity:1;}.guarantee-construct.is-in .guarantee-card-construct,.guarantee-construct.is-in .guarantee-glow-left,.guarantee-construct.is-in .guarantee-glow-right,.guarantee-construct.is-in .guarantee-badge,.guarantee-construct.is-in .guarantee-title,.guarantee-construct.is-in .guarantee-rule,.guarantee-construct.is-in .guarantee-copy{animation:none;}}
+/* Owner 2026-11-17: both homepage cards (guarantee + CTA) fade up as ONE piece. No assembling from four
+   directions. These win over the construct rules above. */
+.home-cta-construct:not(.is-in) .home-cta-inner *,.guarantee-construct:not(.is-in) .guarantee-card-construct *{transform:none!important;opacity:1!important;}
+.home-cta-construct.is-in .home-cta-inner *,.guarantee-construct.is-in .guarantee-card-construct *{animation:none!important;}
+.home-cta-construct:not(.is-in) .home-cta-inner,.guarantee-construct:not(.is-in) .guarantee-card-construct{transform:translateY(16px)!important;opacity:0!important;}
+.home-cta-construct.is-in .home-cta-inner,.guarantee-construct.is-in .guarantee-card-construct{animation:csCardFadeUp .6s cubic-bezier(.2,.7,.2,1) both!important;}
+@keyframes csCardFadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.home-cta-construct .home-cta-inner,.guarantee-construct .guarantee-card-construct{animation:none!important;transform:none!important;opacity:1!important;}}
 @media(max-width:640px){
   .home-cta-sub{flex-direction:column;gap:14px;}
   .home-cta-sub .txt{text-align:center;align-items:center;}
@@ -31085,8 +31095,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="home-cta-inner">
         <span className="home-cta-blob b1"/><span className="home-cta-blob b2"/>
         <p className="home-cta-eyebrow"><span className="dot"/>For actors</p>
-        <h2>It's time to get seen.</h2>
-        <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start — Premium plans start at $10.75/mo when you want more.</p>
+        <h2>Built for working actors.</h2>
+        <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start.</p>
         <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
         <div className="home-cta-sub">
           <div className="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
