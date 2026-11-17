@@ -4954,11 +4954,12 @@ body.fbsp-open #castoria-root{display:none!important;}
    is why it took 3–5 taps to register. The 3D is now applied ONLY while animating
    (.dropping / .leaving), and cleared the moment the cube settles. */
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
-.b2t-cube.dropping{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
+.b2t-cube.dropping{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleDown 1.1s cubic-bezier(.18,.82,.26,1.02) both;} /* owner 2026-11-17: ONE turn (was 2.5 turns / 1.33s) */
 .b2t-cube.leaving{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;perspective:200px;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
-.b2t-cube.dropping .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
+.b2t-cube.dropping .mark{animation:b2tMarkOne .9s cubic-bezier(.2,.7,.2,1) both;}
+@keyframes b2tMarkOne{0%{transform:rotate(-90deg) scale(.9);opacity:.7;}100%{transform:none;opacity:1;}}
 .b2t-cube.leaving .mark{animation:b2tLogoSpinOut .82s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube .pyramid{width:24px;height:20px;position:relative;transform-style:preserve-3d;transition:transform .25s cubic-bezier(.2,.7,.2,1);} /* owner 2026-11-17: still black up-triangle, lifts 2px on hover only */
 .b2t-cube .pyramid .face.white{display:none;}
@@ -4977,8 +4978,8 @@ body.fbsp-open #castoria-root{display:none!important;}
   100%{transform:rotateY(-360deg);}
 }
 @keyframes b2tTumbleDown{
-  0%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(-900deg) rotateX(5deg) rotateZ(-5deg) scale(.88);}
-  78%{transform:translateX(-50%) translateY(8px) perspective(780px) rotateY(-110deg) rotateX(2deg) rotateZ(-2deg) scale(1.035);}
+  0%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(-360deg) rotateX(4deg) rotateZ(-3deg) scale(.92);}
+  78%{transform:translateX(-50%) translateY(6px) perspective(780px) rotateY(-30deg) rotateX(1deg) rotateZ(-1deg) scale(1.02);}
   100%{transform:translateX(-50%) translateY(0) perspective(780px) rotateY(0deg) rotateX(0) rotateZ(0) scale(1);}
 }
 @keyframes b2tTumbleUp{
@@ -9497,15 +9498,15 @@ function b2tBezier(p1x,p1y,p2x,p2y){
   const X=t=>((ax*t+bx)*t+cx)*t,Y=t=>((ay*t+by)*t+cy)*t,dX=t=>(3*ax*t+2*bx)*t+cx;
   return x=>{if(x<=0)return 0;if(x>=1)return 1;let t=x;for(let i=0;i<8;i++){const e=X(t)-x;if(Math.abs(e)<1e-5)break;const d=dX(t);if(Math.abs(d)<1e-6)break;t-=e/d;}return Y(Math.min(1,Math.max(0,t)));};
 }
-const B2T_EASE_IN=b2tBezier(.18,.82,.26,1.06), B2T_EASE_OUT=b2tBezier(.45,0,.55,1);
-const B2T_IN_MS=1330, B2T_OUT_MS=1170;
+const B2T_EASE_IN=b2tBezier(.18,.82,.26,1.02), B2T_EASE_OUT=b2tBezier(.45,0,.55,1);
+const B2T_IN_MS=1100, B2T_OUT_MS=1170;
 // rotation (deg, CSS sense) at time ms into the drop / the rise
 function b2tSpinAt(kind,ms,outMs){
   const L=(a,b,e)=>a+(b-a)*e;
   if(kind==='in'){
     const p=Math.min(1,Math.max(0,ms/B2T_IN_MS)),k=.78;
-    if(p<k){const e=B2T_EASE_IN(p/k);return[L(-28,-10,e),L(-900,-110,e),L(-5,-2,e)];}
-    const e=B2T_EASE_IN((p-k)/(1-k));return[L(-10,0,e),L(-110,0,e),L(-2,0,e)];
+    if(p<k){const e=B2T_EASE_IN(p/k);return[L(-22,-5,e),L(-360,-30,e),L(-3,-1,e)];} // one turn (owner 2026-11-17)
+    const e=B2T_EASE_IN((p-k)/(1-k));return[L(-5,0,e),L(-30,0,e),L(-1,0,e)];
   }
   if(kind==='out'){const e=B2T_EASE_OUT(Math.min(1,Math.max(0,ms/(outMs||B2T_OUT_MS))));return[L(0,24,e),L(0,540,e),L(0,5,e)];}
   return[0,0,0];
