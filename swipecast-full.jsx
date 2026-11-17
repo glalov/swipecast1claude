@@ -6069,7 +6069,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fmt-poster,.fmt-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;}
 .fmt-video{opacity:0;background:transparent;}
 .fmt-video.is-on{opacity:1;}
-.fmt-shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 36%,rgba(10,10,18,.42) 70%,rgba(10,10,18,.78) 100%);}
+.fmt-shade{position:absolute;inset:0;z-index:2;background:none;} /* owner 2026-11-17: no dark bottom fade on the format cards */
 /* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
    stay readable on every device even if .fmt-shade ever fails to paint.
    translateZ(0) forces its own GPU layer so it always stacks ABOVE the inline
@@ -6077,13 +6077,13 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    paints over non-composited text (which is why mobile showed only the icon,
    whose backdrop-filter already gave it a layer). Rounded bottom corners keep
    the overlay inside the card even when a composited layer escapes overflow. */
-.fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:3;transform:translateZ(0);-webkit-transform:translateZ(0);border-bottom-left-radius:18px;border-bottom-right-radius:18px;background:linear-gradient(180deg,rgba(8,8,16,0) 0%,rgba(8,8,16,.55) 55%,rgba(8,8,16,.88) 100%);}
+.fmt-body{position:absolute;left:0;right:0;bottom:0;padding:52px 20px 22px;color:#fff;z-index:3;transform:translateZ(0);-webkit-transform:translateZ(0);border-bottom-left-radius:18px;border-bottom-right-radius:18px;background:none;}
 /* Voiceover only: lighter shade so the note-taking in the clip stays visible. */
-.fmt-card-light .fmt-shade{background:linear-gradient(180deg,rgba(10,10,18,.05) 0%,rgba(10,10,18,.02) 60%,rgba(10,10,18,.14) 78%,rgba(10,10,18,.5) 100%);}
-.fmt-card-light .fmt-body{background:linear-gradient(90deg,rgba(8,8,16,.62) 0%,rgba(8,8,16,.42) 42%,rgba(8,8,16,0) 72%);-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 34%);mask-image:linear-gradient(180deg,transparent 0,#000 34%);}
+.fmt-card-light .fmt-shade{background:none;}
+.fmt-card-light .fmt-body{background:none;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 34%);mask-image:linear-gradient(180deg,transparent 0,#000 34%);}
 .fmt-icon{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:11px;margin-bottom:12px;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.26);}
-.fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 12px rgba(0,0,0,.5);color:#fff;}
-.fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.9);margin:0;text-shadow:0 1px 10px rgba(0,0,0,.55);max-width:92%;}
+.fmt-title{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;line-height:1.12;margin:0 0 4px;text-shadow:0 1px 2px rgba(0,0,0,.45),0 1px 14px rgba(0,0,0,.6);color:#fff;}
+.fmt-desc{font-size:13px;line-height:1.4;font-weight:400;color:rgba(255,255,255,.92);margin:0;text-shadow:0 1px 2px rgba(0,0,0,.5),0 1px 12px rgba(0,0,0,.65);max-width:92%;}
 @media (max-width:768px){
   .fmt-card{width:80vw;max-width:300px;margin-right:14px;}
   /* Lighter, narrower edge fade on phones — only the outer ~18px, so the video
@@ -29732,6 +29732,10 @@ function NewsArticlePage({slug,onNavigate}){
 // commercials3 (2026-11-04): Coverr woman-taking-photos-9338 (owner download), original speed, full 18s,
 // stabilized, crop x=470, 0.4s eased crossfade. Card uses .fmt-card-light.
 // ═══════════════════════════════════════════
+// musical4 (2026-11-17, owner pick from a live demo): Pexels 30278604 (4K stage tango ensemble), the FULL 19s at
+// 80% speed = 23.4s loop, toned (eq saturation .72, brightness -.035, contrast 1.04), 3:4 crop that follows the dancers
+// (x 700->1050 by 1.5s, hold, ->1900 at 11-12.3s, back to 1250 by 13.3s, 1100 from 15.6s), 0.5s eased crossfade.
+// 600x800 crf 23 (7.2MB), lite 360x480 (0.9MB). -sf.jpg is a copy of the ffmpeg first frame (not a WebKit capture).
 // Loop order: Feature, Commercials, Theater, Student, Musical Theater, Indie, Voiceover, so the dark cards
 // and the camera cards stay apart. Each card adds 8.675s to the slide. FormatReel rotates this list at
 // first render so Feature Films starts at the right edge of the screen, at any screen width.
@@ -29740,7 +29744,7 @@ const FORMAT_CARDS=[
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials3",icon:"megaphone",light:true},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
-  {cat:"Musical Theater",desc:"Live performance.",file:"theater",icon:"music"},
+  {cat:"Musical Theater",desc:"Live performance.",file:"musical4",icon:"music"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie2",icon:"star"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover6",icon:"mic",light:true},
 ];
