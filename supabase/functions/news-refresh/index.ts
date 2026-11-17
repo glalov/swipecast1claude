@@ -294,6 +294,67 @@ async function geminiRewrite(key: string, title: string, desc: string, source: s
   } catch (_) { return null; }
 }
 
+// ─── Same-story guard (owner, 2026-11-17) ───────────────────────────────────
+// Different outlets cover the same news (Deadline + Variety both ran the Jafar Panahi
+// sentence story). The source_url/image dedupe can't see that, so before writing a
+// story we ask: is this the same EVENT as anything published in the last few days?
+// Gemini decides; if Gemini is unavailable a strict name-overlap rule decides.
+const NAME_STOP = new Set(["The","A","An","And","Of","In","On","At","To","For","With","From","By","As","Is","Are","Its","After","Over","New","Film","Films","Movie","TV","Series","Season","First","Trailer","Review","Exclusive","Studio","Studios","Festival","Awards","Show","Star","Stars","Cast","Casting","Director","Netflix","HBO","Disney","Amazon","Apple","Hollywood","Broadway","Says","Sets","Gets","Lands","Joins","Will","How","Why","What","Who","Up","Out","Back","Off","Into","Than"]);
+function nameTokens(t: string): Set<string> {
+  const out = new Set<string>();
+  for (const w of (t || "").replace(/[’']s\b/g, "").split(/[^A-Za-z0-9À-ÿ'-]+/)) {
+    if (w.length < 3 || !/^[A-ZÀ-Ý]/.test(w) || NAME_STOP.has(w)) continue;
+    out.add(w.toLowerCase());
+  }
+  return out;
+}
+function nameOverlap(a: string, b: string): number {
+  const A = nameTokens(a), B = nameTokens(b);
+  let n = 0;
+  for (const x of A) if (B.has(x)) n++;
+  return n;
+}
+let _model = "";
+async function flashModel(key: string): Promise<string> {
+  if (_model) return _model;
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${encodeURIComponent(key)}`);
+    const d = await r.json();
+    const names = (d?.models || [])
+      .filter((m: { name: string; supportedGenerationMethods?: string[] }) => /^models\/gemini-\d+(\.\d+)?-flash$/.test(m.name) && (m.supportedGenerationMethods || []).includes("generateContent"))
+      .map((m: { name: string }) => m.name.replace(/^models\//, ""));
+    const ver = (n: string) => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || "0");
+    names.sort((x: string, y: string) => ver(y) - ver(x));
+    _model = names[0] || "gemini-flash-latest";
+  } catch (_) { _model = "gemini-flash-latest"; }
+  return _model;
+}
+// true = same story as one of `recent`. Only headlines that share at least one name are
+// sent to Gemini, so unrelated news never costs a call.
+async function isSameStory(key: string | null, title: string, recent: string[]): Promise<boolean> {
+  const close = recent.filter((r) => nameOverlap(title, r) >= 1).slice(0, 25);
+  if (!close.length) return false;
+  if (key) {
+    try {
+      const model = await flashModel(key);
+      const list = close.map((r, i) => `${i + 1}. ${r}`).join("\n");
+      const prompt = `A news site must never publish the same news event twice, even when two outlets word it differently.\nNEW headline: ${title}\n\nAlready published:\n${list}\n\nIs the NEW headline reporting the SAME underlying news event (same people and the same development) as any already-published one? A different development about the same person or project (e.g. a casting announcement vs. a later trailer) is NOT the same. Reply with only JSON: {"same": <number of the matching line, or 0>}.`;
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0, responseMimeType: "application/json" } }),
+      });
+      if (r.ok) {
+        const j = await r.json();
+        const text = (j?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join(" ");
+        const m = text.match(/"same"\s*:\s*(\d+)/);
+        if (m) return parseInt(m[1], 10) > 0;
+      }
+    } catch (_) { /* fall through to the name rule */ }
+  }
+  // No model answer: treat as the same story only on a strong match (3+ shared names).
+  return close.some((r) => nameOverlap(title, r) >= 3);
+}
+
 // Safe fallback: an original CastSlate blurb built from the headline only.
 function fallbackRewrite(title: string, source: string, category: Category) {
   const headline = title.replace(/\s*[\|\-–—]\s*[^|\-–—]*$/, "").trim() || title;
@@ -382,8 +443,21 @@ serve(async (req) => {
       }
     }
 
+    // Headlines published in the last 4 days (ours + the source's), for the same-story guard.
+    const recentTitles: string[] = [];
+    {
+      const since = new Date(Date.now() - 4 * 864e5).toISOString();
+      const { data: rec } = await sb.from("news_articles").select("headline,original_headline")
+        .eq("published", true).gte("written_at", since).order("written_at", { ascending: false }).limit(80);
+      for (const r of (rec || []) as Array<{ headline: string; original_headline: string }>) {
+        if (r.original_headline) recentTitles.push(r.original_headline);
+        else if (r.headline) recentTitles.push(r.headline);
+      }
+    }
+
     let added = 0;
     let skippedNoImg = 0;
+    const skippedSameStory: string[] = [];
     // Cap new articles per invocation so the run finishes within the 150s limit.
     const MAX_NEW = 6;
     for (const c of candidates) {
@@ -394,6 +468,7 @@ serve(async (req) => {
       const srcImg = c.item.image;
       if (!srcImg || usedImg.has(srcImg)) continue;
       if (!(await isLandscapeImage(srcImg))) { skippedNoImg++; continue; }
+      if (await isSameStory(geminiKey, c.item.title, recentTitles)) { skippedSameStory.push(`${c.source}: ${c.item.title}`); continue; }
 
       const rewritten =
         (geminiKey ? await geminiRewrite(geminiKey, c.item.title, c.item.description, c.source, c.category) : null)
@@ -422,7 +497,7 @@ serve(async (req) => {
         fetched_at: isNaN(Date.parse(fetched)) ? written : fetched,
         written_at: written,
       });
-      if (!error) added++;
+      if (!error) { added++; recentTitles.unshift(c.item.title); }
       // Pace requests to stay under Gemini's free-tier per-minute limit.
       if (geminiKey && added < MAX_NEW) await sleep(3000);
     }
@@ -454,7 +529,7 @@ serve(async (req) => {
     // Stamp the run.
     await sb.from("site_settings").update({ news_last_run: new Date().toISOString() }).eq("id", 1);
 
-    return json({ ok: true, added, retiredBrokenImage: retired, scanned: candidates.length, skippedNonLandscape: skippedNoImg, model: geminiKey ? "gemini" : (ANTHROPIC_API_KEY ? "claude" : "fallback") });
+    return json({ ok: true, added, retiredBrokenImage: retired, scanned: candidates.length, skippedNonLandscape: skippedNoImg, skippedSameStory, model: geminiKey ? "gemini" : (ANTHROPIC_API_KEY ? "claude" : "fallback") });
   } catch (e) {
     return json({ ok: false, error: String((e as Error)?.message || e) }, 500);
   }
