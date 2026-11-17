@@ -4934,74 +4934,19 @@ body.fbsp-open #castoria-root{display:none!important;}
        component. Inherits the warm .app bg, flex-shrink:0 so it always exists
        even when the page is taller than the viewport. ─── */
 .site-footer-spacer{min-height:40px;flex-shrink:0;background:var(--bg);width:100%;margin-top:auto;}
+/* Card drop restored 2026-11-16 (owner): the megaminx/cube read as a toy. This block is the Nov 9 card,
+   keyframes and timing byte-for-byte. The WebGL megaminx code is switched off by B2T_GL. */
 /* Floating back-to-top cube — stays fully off-screen until the footer midpoint
    is reached, then tumbles down/up with the original live timing. */
-.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:var(--b2t-rest,150px);z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;--s:90px;width:var(--s);height:var(--s);padding:0;background:transparent;color:#1A1A2E;border:0;border-radius:8px;cursor:pointer;box-shadow:none;font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:none;}
+.b2t-cube{--b2t-away:calc(-100vh + 16px);position:fixed;left:50%;bottom:var(--b2t-rest,150px);z-index:110;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:96px;height:86px;background:#FFFFFF;color:#1A1A2E;border:1px solid rgba(0,0,0,0.12);border-radius:17px;cursor:pointer;box-shadow:0 16px 34px rgba(0,0,0,0.30);font-family:'DM Sans',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;transform:translateX(-50%) translateY(var(--b2t-away));opacity:1;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:none;}
 /* Resting (settled) state — plain 2D transform, NO 3D context, so the tap hit-box
    lines up exactly with the rendered button. The tumble's perspective/preserve-3d
    used to linger in the resting state and offset the touch target on mobile, which
    is why it took 3–5 taps to register. The 3D is now applied ONLY while animating
    (.dropping / .leaving), and cleared the moment the cube settles. */
 .b2t-cube.show{transform:translateX(-50%) translateY(0);pointer-events:auto;}
-.b2t-cube.dropping{perspective:780px;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving{perspective:780px;animation:b2tTumbleUp var(--b2t-out,1.17s) cubic-bezier(.45,0,.55,1) both;}
-/* Solid 3D cube (owner pick C, 2026-11-10, demo back-to-top-3d-cube-demo.html): white front
-   and back carry the label, red and yellow sides from the triangle, site-teal top and bottom.
-   A square core 2px inside the skin fills the rounded corners so the dark footer never shows
-   through the edges. Sides, core and back exist only while falling or leaving; at rest the
-   button is the plain white front face again, so the tap target stays flat 2D. */
-.b2t-box{position:absolute;inset:0;}
-.b2t-gl{position:absolute;left:50%;top:50%;width:calc(var(--s) * 2.2);height:calc(var(--s) * 2.2);transform:translate(-50%,-50%);pointer-events:none;display:none;}
-.b2t-gl canvas{display:block;width:100%!important;height:100%!important;}
-.b2t-cube.gl .b2t-gl{display:block;}
-/* Megaminx tap area (owner 2026-11-13): the shape is a little wider than the --s square, so a round
-   hit zone covers the whole visible shape (pseudo-elements are part of the button's tap target). */
-.b2t-cube.gl::before{content:"";position:absolute;inset:calc(var(--s) * -0.078);border-radius:50%;}
-.b2t-cube.gl .b2t-box{display:none;}
-.b2t-cube.gl::after{display:none;}
-.b2t-cube.gl.dropping,.b2t-cube.gl.leaving{animation:none;}
-.b2t-cube.gl.dropping{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);}
-.b2t-cube.gl.leaving{transform:translateX(-50%) translateY(0);}
-.b2t-cube.dropping .b2t-box,.b2t-cube.leaving .b2t-box,.b2t-cube.dropping .b2t-core,.b2t-cube.leaving .b2t-core{transform-style:preserve-3d;-webkit-transform-style:preserve-3d;}
-/* iPhone fix (2026-11-10): Safari cut and blurred the cube when the perspective() and the
-   3D spin sat in the SAME transform as the fall. Now the button only falls (flat 2D move +
-   scale) and gives its children a perspective; the inner box does the 3D spin. Same path,
-   same timing, same easing as before. No will-change, so Safari repaints sharp. */
-.b2t-cube.dropping .b2t-box{animation:b2tSpinDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving .b2t-box{animation:b2tSpinUp var(--b2t-out,1.17s) cubic-bezier(.45,0,.55,1) both;}
-/* The spin keyframes push the cube's centre half a cube BEHIND the button plane
-   (translateZ(-s/2) first) and spin around that centre, so at the last frame the front
-   face sits exactly in the button plane: no size jump when it lands. */
-.b2t-f{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:8px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.10);}
-/* Solidity pass (owner, 2026-11-10, demo back-to-top-3d-cube-demo.html "Fixed"): 8px corners on
-   every face so the faces meet almost edge to edge; each face lit like a real object (bright
-   front, lit top, sides shading away, dark bottom) with a 1px edge line; and a FULL-size inner
-   block in the faces' own colours 1px inside, so the corners show colour, never the black
-   spots the 17px corners left on iPhone. */
-.b2t-f.front,.b2t-f.back{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-sizing:border-box;}
-.b2t-f.front{background:linear-gradient(160deg,#FFFFFF 0%,#FFFFFF 60%,#F1EEE9 100%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.10),0 16px 34px rgba(0,0,0,0.30);}
-.b2t-cube.dropping .b2t-f.front,.b2t-cube.leaving .b2t-f.front{transform:translateZ(calc(var(--s) / 2));box-shadow:inset 0 0 0 1px rgba(0,0,0,.10);}
-.b2t-f.back{transform:rotateY(180deg) translateZ(calc(var(--s) / 2));background:#F4F1EC;}
-.b2t-f.right{transform:rotateY(90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(90deg,#F7CF3A 0%,#EDBB16 60%,#D9A607 100%);}
-.b2t-f.left{transform:rotateY(-90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(270deg,#E6475C 0%,#D6344C 60%,#BF2740 100%);}
-.b2t-f.top{transform:rotateX(90deg) translateZ(calc(var(--s) / 2));background:linear-gradient(180deg,#58AD91,#3E9479);}
-.b2t-f.bottom{transform:rotateX(-90deg) translateZ(calc(var(--s) / 2));background:#24604D;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
-.b2t-core{position:absolute;inset:0;}
-.b2t-core i{position:absolute;left:1px;top:1px;width:calc(var(--s) - 2px);height:calc(var(--s) - 2px);background:#E9E4DC;display:block;}
-.b2t-core i:nth-child(1){transform:translateZ(calc(var(--s) / 2 - 1px));background:#F1EEE9;}
-.b2t-core i:nth-child(2){transform:rotateY(180deg) translateZ(calc(var(--s) / 2 - 1px));}
-.b2t-core i:nth-child(3){transform:rotateY(90deg) translateZ(calc(var(--s) / 2 - 1px));background:#E3AF08;}
-.b2t-core i:nth-child(4){transform:rotateY(-90deg) translateZ(calc(var(--s) / 2 - 1px));background:#C92B44;}
-.b2t-core i:nth-child(5){transform:rotateX(90deg) translateZ(calc(var(--s) / 2 - 1px));background:#3E9479;}
-.b2t-core i:nth-child(6){transform:rotateX(-90deg) translateZ(calc(var(--s) / 2 - 1px));background:#24604D;}
-/* A soft shadow lands with it (fades in during the fall, out when it leaves); at rest the
-   front face's own drop shadow takes over. */
-.b2t-cube::after{content:"";position:absolute;left:10%;right:10%;bottom:-14px;height:12px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);opacity:0;pointer-events:none;}
-.b2t-cube.dropping::after{animation:b2tShadowIn 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
-.b2t-cube.leaving::after{animation:b2tShadowOut .6s ease-in both;}
-@keyframes b2tShadowIn{0%{opacity:0;transform:scale(.4);}78%{opacity:.6;transform:scale(.95);}100%{opacity:.8;transform:scale(1);}}
-@keyframes b2tShadowOut{0%{opacity:.5;transform:scale(1);}100%{opacity:0;transform:scale(.4);}}
-.b2t-cube:not(.dropping):not(.leaving) .b2t-only3d{visibility:hidden;}
+.b2t-cube.dropping{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleDown 1.33s cubic-bezier(.18,.82,.26,1.06) both;}
+.b2t-cube.leaving{transform-style:preserve-3d;backface-visibility:visible;will-change:transform;animation:b2tTumbleUp 1.17s cubic-bezier(.5,0,.75,.45) both;}
 .b2t-cube .mark{width:24px;height:20px;display:flex;align-items:center;justify-content:center;transform-origin:50% 50%;perspective:200px;}
 .b2t-cube .mark svg{display:block;width:24px;height:20px;}
 .b2t-cube.dropping .mark{animation:b2tLogoSpinIn 1.08s cubic-bezier(.18,.82,.26,1.05) both;}
@@ -5025,35 +4970,14 @@ body.fbsp-open #castoria-root{display:none!important;}
   100%{transform:rotateY(-360deg);}
 }
 @keyframes b2tTumbleDown{
-  0%{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);}
-  78%{transform:translateX(-50%) translateY(8px) scale(1.035);}
-  100%{transform:translateX(-50%) translateY(0) scale(1);}
+  0%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(-900deg) rotateX(5deg) rotateZ(-5deg) scale(.88);}
+  78%{transform:translateX(-50%) translateY(8px) perspective(780px) rotateY(-110deg) rotateX(2deg) rotateZ(-2deg) scale(1.035);}
+  100%{transform:translateX(-50%) translateY(0) perspective(780px) rotateY(0deg) rotateX(0) rotateZ(0) scale(1);}
 }
-@keyframes b2tSpinDown{
-  0%{transform:translateZ(-45px) rotateX(-28deg) rotateY(-900deg) rotateZ(-5deg);}
-  78%{transform:translateZ(-45px) rotateX(-10deg) rotateY(-110deg) rotateZ(-2deg);}
-  100%{transform:translateZ(-45px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
-}
-
 @keyframes b2tTumbleUp{
-  0%{transform:translateX(-50%) translateY(0) scale(1);opacity:1;}
-  62%{opacity:1;}
-  92%{opacity:0;}
-  100%{transform:translateX(-50%) translateY(var(--b2t-away)) scale(.88);opacity:0;}
+  0%{transform:translateX(-50%) translateY(0) perspective(780px) rotateY(0deg) rotateX(0) rotateZ(0) scale(1);}
+  100%{transform:translateX(-50%) translateY(var(--b2t-away)) perspective(780px) rotateY(540deg) rotateX(-4deg) rotateZ(5deg) scale(.88);}
 }
-
-@keyframes b2tSpinUp{
-  0%{transform:translateZ(-45px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
-  100%{transform:translateZ(-45px) rotateX(24deg) rotateY(540deg) rotateZ(5deg);}
-}@keyframes b2tSpinDownS{
-  0%{transform:translateZ(-37px) rotateX(-28deg) rotateY(-900deg) rotateZ(-5deg);}
-  78%{transform:translateZ(-37px) rotateX(-10deg) rotateY(-110deg) rotateZ(-2deg);}
-  100%{transform:translateZ(-37px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
-}@keyframes b2tSpinUpS{
-  0%{transform:translateZ(-37px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);}
-  100%{transform:translateZ(-37px) rotateX(24deg) rotateY(540deg) rotateZ(5deg);}
-}
-
 @keyframes b2tLogoSpinIn{
   0%{transform:rotate(-220deg) scale(.78);opacity:.65;}
   72%{transform:rotate(390deg) scale(1.08);opacity:1;}
@@ -5063,7 +4987,7 @@ body.fbsp-open #castoria-root{display:none!important;}
   0%{transform:rotate(360deg) scale(1);opacity:1;}
   100%{transform:rotate(-170deg) scale(.76);opacity:.7;}
 }
-@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}.b2t-cube .pyramid{animation:none!important;}.b2t-cube .b2t-box{animation:none!important;transform:none!important;}}
+@media(prefers-reduced-motion:reduce){.b2t-cube{animation:none!important;transition:opacity .2s ease!important;transform:translateX(-50%) translateY(0)!important;opacity:0!important;}.b2t-cube.show{opacity:1!important;}.b2t-cube .mark{animation:none!important;}.b2t-cube .pyramid{animation:none!important;}}
 /* ── Mobile: lift the cube clear of the footer's bottom links/buttons. It now lands
    in open space above the "© … all rights reserved" line and never covers the
    Privacy / Terms / Contact / Cookie or language buttons. A matching gap is opened
@@ -5073,9 +4997,7 @@ body.fbsp-open #castoria-root{display:none!important;}
      social (Facebook) row + 14px, so the cube parks just ABOVE the Facebook icon
      and never lands on top of it. The 96px gap opened above the social row is the
      clear space the cube drops into. */
-  .b2t-cube{--s:74px;font-size:9.5px;border-radius:8px;}
-  .b2t-cube.dropping .b2t-box{animation-name:b2tSpinDownS;}
-  .b2t-cube.leaving .b2t-box{animation-name:b2tSpinUpS;}
+  .b2t-cube{width:84px;height:66px;font-size:9.5px;border-radius:15px;}
 }
 .site-backtotop{
   display:flex;align-items:center;justify-content:center;gap:8px;
@@ -9737,6 +9659,8 @@ function FooterSignup(){
     </div>
   );
 }
+// false = the flat card with its CSS drop (owner, 2026-11-16). true would bring the WebGL megaminx back.
+const B2T_GL=false;
 function Footer({onNavigate,noSpacer,backToTop=false}){
   const t=useT();
   const {lang,setLang}=useLanguage();
@@ -9842,7 +9766,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   const [b2tGLOn,setB2tGLOn]=React.useState(false);
   b2tAnimRef.current=b2tAnim;
   React.useEffect(()=>{
-    if(!backToTop)return;
+    if(!backToTop||!B2T_GL)return;
     let dead=false,io=null;
     try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)return; }catch(_){}
     const start=()=>{
@@ -9923,7 +9847,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
       const nextShow=scrollable>240 && vpBottom>=(threshold-margin);
       // (2026-11-15) If you reach the bottom before the hexagonal 3D cube is ready (e.g. right after the page
       // opened), wait for it — up to 2.5s — instead of dropping the old square fallback cube first.
-      if(nextShow&&!b2tShownRef.current&&!b2tGL.current&&!window.__b2tGLFail){
+      if(B2T_GL&&nextShow&&!b2tShownRef.current&&!b2tGL.current&&!window.__b2tGLFail){
         if(!geo.wantAt){geo.wantAt=performance.now();try{window.dispatchEvent(new Event('cs:b2t-need'));}catch(_){}}
         if(performance.now()-geo.wantAt<2500){clearTimeout(geo.wantT);geo.wantT=setTimeout(check,120);return;}
       }
@@ -9987,22 +9911,13 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     {/* Floating back-to-top cube — only on long pages (home, browse castings,
         tapelink, manager mode). Short pages scroll up in one flick, so the
         drop-down button is just noise there. */}
-    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tAnim==='in'?" dropping":"")+(b2tAnim==='out'?" leaving":"")+(b2tGLOn?" gl":"")} onClick={scrollTop} onAnimationEnd={(e)=>{if(e.target===e.currentTarget)setB2tAnim(null);}} aria-label={t('footer.backToTop')}>
-      <span className="b2t-gl" ref={b2tGLHost} aria-hidden="true"/>
-      <span className="b2t-box">
-      <span className="b2t-core b2t-only3d" aria-hidden="true"><i/><i/><i/><i/><i/><i/></span>
-      <span className="b2t-f right b2t-only3d" aria-hidden="true"/><span className="b2t-f left b2t-only3d" aria-hidden="true"/>
-      <span className="b2t-f top b2t-only3d" aria-hidden="true"/><span className="b2t-f bottom b2t-only3d" aria-hidden="true"/>
-      <span className="b2t-f back b2t-only3d" aria-hidden="true"><span className="mark"><svg viewBox="0 0 24 20" style={{width:24,height:20}}><path d="M12 2 L22 18 L2 18 Z" fill="#E2394D"/></svg></span><span>{t('footer.backToTop')}</span></span>
-      <span className="b2t-f front">
+    {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tAnim==='in'?" dropping":"")+(b2tAnim==='out'?" leaving":"")} onClick={scrollTop} onAnimationEnd={(e)=>{if(e.target===e.currentTarget)setB2tAnim(null);}} aria-label={t('footer.backToTop')}>
       <span className="mark"><span className="pyramid">
         <span className="face black"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#1A1A2E"/></svg></span>
         <span className="face yellow"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#F5C518"/></svg></span>
         <span className="face red"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#E2394D"/></svg></span>
       </span></span>
       <span>{t('footer.backToTop')}</span>
-      </span>
-      </span>
     </button>}
     <footer className={"site-footer has-wm"+(backToTop?" has-b2t":"")}>
       <div className="site-footer-inner">
