@@ -6013,6 +6013,9 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 @keyframes st-dark{0%,100%{opacity:1;}50%{opacity:.9;}}
 @keyframes st-glowN{0%,100%{filter:brightness(1);text-shadow:0 0 14px rgba(255,45,111,.22);}50%{filter:brightness(1.18);text-shadow:0 0 24px rgba(255,45,111,.45);}}
 @keyframes st-glowX{0%,100%{filter:brightness(1);text-shadow:0 0 14px rgba(229,9,20,.22);}50%{filter:brightness(1.18);text-shadow:0 0 24px rgba(229,9,20,.45);}}
+/* Owner 2026-11-16: studios line is STATIC. No slide-in, no pop-in dots, no glow loop. Same look, just still. */
+.scale-tagline .st-lead,.scale-tagline .st-sep,.scale-tagline .st-a24,.scale-tagline .st-neon,.scale-tagline .st-netflix,.scale-tagline .st-trail{opacity:1!important;transform:none!important;transition:none!important;animation:none!important;}
+.scale-tagline .st-neon::after,.scale-tagline .st-netflix::after{animation:none!important;opacity:0!important;}
 @media (max-width:768px){.scale-tagline{padding:36px 20px 0;}.scale-tagline .st-names{font-size:34px;}}
 @media (prefers-reduced-motion:reduce){.scale-tagline .st-lead,.scale-tagline .st-trail,.scale-tagline .st-names span{opacity:1!important;transform:none!important;transition:none!important;}.scale-tagline.st-in .st-a24,.scale-tagline.st-in .st-neon,.scale-tagline.st-in .st-netflix,.scale-tagline.st-in .st-neon::after,.scale-tagline.st-in .st-netflix::after{animation:none!important;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
