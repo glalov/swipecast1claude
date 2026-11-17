@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Assistant Launcher Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F5F0;--navy:#1A1A2E;--t2:#3A322A;--t3:#433B32;--line:#E4DED3;--teal:#33826A;--gold:#E8B54A;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--navy);font-family:'DM Sans',-apple-system,Helvetica,Arial,sans-serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 16px 80px}
+h1{font-family:Fraunces,serif;font-weight:500;font-size:34px;margin:0 0 8px}
+.lede{color:var(--t3);font-size:16px;line-height:1.55;max-width:760px;margin:0 0 22px}
+.why{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:0 0 28px;font-size:15px;line-height:1.6;color:var(--t2)}
+.why b{color:var(--navy)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+.bar button{font:600 14px 'DM Sans';border-radius:999px;padding:10px 18px;cursor:pointer;border:1.5px solid var(--navy);background:#fff;color:var(--navy)}
+.bar button.pri{background:var(--navy);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.opt{min-width:0}
+.opt h2{font-size:18px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.tag{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--teal);color:#fff;border-radius:999px;padding:3px 9px}
+.opt p{margin:0 0 12px;color:var(--t3);font-size:14px;line-height:1.5}
+.stage{position:relative;height:300px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.stage.dark{background:#0E0C0B;border-color:#0E0C0B}
+.fake{padding:20px}
+.fake i{display:block;height:12px;border-radius:6px;background:#EEEAE2;margin:0 0 12px}
+.fake i.h{height:22px;width:60%;background:#E4DED3}
+.dark .fake i{background:#1E1B19}.dark .fake i.h{background:#2A2622}
+.sw{display:flex;gap:6px;margin-top:10px}
+.sw button{font:600 12px 'DM Sans';border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;cursor:pointer;color:var(--t2)}
+.sw button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* shared: calm entrance, no bounce, no idle loop */
+.L{position:absolute;right:18px;bottom:18px;border:0;cursor:pointer;font-family:'DM Sans';opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s cubic-bezier(.2,.7,.2,1),box-shadow .2s ease,background-color .2s ease}
+.L.in{opacity:1;transform:none}
+
+/* A — Concierge pill */
+.A{height:48px;padding:0 20px 0 16px;border-radius:999px;background:var(--navy);color:#fff;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;letter-spacing:.005em;box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 10px 30px rgba(14,12,11,.22)}
+.A:hover{background:#25253F;box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 14px 34px rgba(14,12,11,.28)}
+.A svg{width:18px;height:18px;flex:none}
+.A .dot{width:7px;height:7px;border-radius:50%;background:#4CC38A;box-shadow:0 0 0 3px rgba(76,195,138,.18);margin-left:2px}
+.dark .A{background:#fff;color:var(--navy)}
+.dark .A:hover{background:#F2EFE9}
+.stage.phone .A{width:52px;height:52px;padding:0;justify-content:center;border-radius:50%}
+.stage.phone .A .lbl,.stage.phone .A .dot{display:none}
+.stage.phone .A svg{width:22px;height:22px}
+
+/* B — Monogram disc */
+.B{width:56px;height:56px;border-radius:50%;background:var(--navy);display:grid;place-items:center;box-shadow:0 0 0 1px rgba(232,181,74,.55) inset,0 10px 28px rgba(14,12,11,.24)}
+.B svg{width:24px;height:24px}
+.B .tip{position:absolute;right:66px;top:50%;transform:translate(6px,-50%);background:#fff;color:var(--navy);border:1px solid var(--line);font-size:13px;font-weight:600;white-space:nowrap;padding:7px 12px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 6px 18px rgba(14,12,11,.10)}
+.B:hover .tip{opacity:1;transform:translate(0,-50%)}
+.B:hover{box-shadow:0 0 0 1px rgba(232,181,74,.9) inset,0 14px 32px rgba(14,12,11,.30)}
+.dark .B{background:#1A1A2E}
+
+/* C — Refined slate (keeps the film idea, drops the cartoon) */
+.C{width:56px;height:56px;border-radius:16px;background:var(--navy);display:grid;place-items:center;box-shadow:0 10px 28px rgba(14,12,11,.24)}
+.C svg{width:26px;height:26px;overflow:visible}
+.C .arm{transform-origin:5px 11px;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.C:hover .arm{transform:rotate(-14deg)}
+.dark .C{background:#fff}.dark .C svg{color:var(--navy)}
+
+.cur{margin-top:34px}
+.cur h2{font-size:18px;margin:0 0 4px}
+.oldL{position:absolute;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#C9CDD3 70%,#A9AEB6);display:grid;place-items:center;box-shadow:0 8px 26px rgba(0,0,0,.24);animation:oldDrop 1.05s cubic-bezier(.34,1.6,.64,1) both}
+.oldL svg{width:58px;height:58px}
+.oldL .stick{transform-origin:5.5px 12.5px;animation:csclap 2.4s cubic-bezier(.3,1.6,.5,1) infinite}
+@keyframes csclap{0%,70%,100%{transform:rotate(0)}80%{transform:rotate(-27deg)}88%{transform:rotate(-24deg)}95%{transform:rotate(0)}}
+@keyframes oldDrop{0%{transform:translateY(-120px) scale(.8)}60%{transform:translateY(6px) scale(1.08,.9)}100%{transform:none}}
+.notes{margin-top:28px;font-size:14px;line-height:1.6;color:var(--t2)}
+.notes li{margin:0 0 6px}
+@media(max-width:600px){h1{font-size:27px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Super Assistant launcher: three grown-up options</h1>
+  <p class="lede">The bottom-right button is the one thing on every page, so it sets the tone for the whole site. Below are three replacements. Hover each one. Use “Replay entrance” to see how it arrives, and “Phone” to see it at phone size.</p>
+
+  <div class="why"><b>Why it reads as child’s play today:</b> a shiny silver ball, a cartoon clapperboard, a drop-from-the-sky entrance that squashes and bounces, a clap every 10 seconds forever, and a springy hover. Each one is fine alone; together they feel like a toy.<br><b>The fix in all three:</b> solid brand navy, a thin line icon, a quiet 0.45s fade-up entrance, <b>no idle motion at all</b>, and a hover that only deepens the colour or shows a label. Premium sites (Stripe, Linear, Apple Support) keep this button still and let the content move.</div>
+
+  <div class="bar">
+    <button class="pri" onclick="replay()">Replay entrance</button>
+    <button onclick="toggleAll('phone')" id="bPhone">Phone</button>
+    <button onclick="toggleAll('dark')" id="bDark">Cinematic (dark) page</button>
+  </div>
+
+  <div class="grid">
+    <div class="opt">
+      <h2>A · Concierge pill <span class="tag">My pick</span></h2>
+      <p>Navy pill with a thin spark icon and the words “Ask CastSlate”. A small green dot says “available”. It explains itself, so the “Try Super Assistant” nudge can be retired. On phones it shrinks to a plain round button.</p>
+      <div class="stage"><div class="fake"><i class="h"></i><i></i><i style="width:80%"></i><i style="width:70%"></i><i style="width:85%"></i></div>
+        <button class="L A" aria-label="Ask CastSlate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L18.7 9.7 13.8 11.5 12 16.4 10.2 11.5 5.3 9.7 10.2 7.9z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg><span class="lbl">Ask CastSlate</span><span class="dot"></span></button>
+      </div>
+    </div>
+
+    <div class="opt">
+      <h2>B · Monogram disc</h2>
+      <p>A navy circle with a thin gold hairline and a quiet speech mark. The label only appears on hover. It's the smallest footprint and the most “private members’ club” of the three.</p>
+      <div class="stage"><div class="fake"><i class="h"></i><i></i><i style="width:80%"></i><i style="width:70%"></i><i style="width:85%"></i></div>
+        <button class="L B" aria-label="Super Assistant"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 19.5l1.4-4.4A7.5 7.5 0 1 1 20 11.5z"/><path d="M9 11.5h.01M12.5 11.5h.01M16 11.5h.01" stroke-width="2.2"/></svg><span class="tip">Super Assistant</span></button>
+      </div>
+    </div>
+
+    <div class="opt">
+      <h2>C · Refined slate</h2>
+      <p>Keeps the film idea but drops the cartoon: a thin line-drawn slate on a navy rounded square, completely still. On hover the arm lifts slightly, once. No clapping loop, no silver ball.</p>
+      <div class="stage"><div class="fake"><i class="h"></i><i></i><i style="width:80%"></i><i style="width:70%"></i><i style="width:85%"></i></div>
+        <button class="L C" aria-label="Super Assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" color="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="1.6"/><g class="arm"><path d="M4 11 L4.6 7.6 L20.2 5 L19.6 8.4 Z"/><path d="M8.4 7 L9.8 10.4 M12.6 6.3 L14 9.7 M16.8 5.6 L18.2 9"/></g></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cur">
+    <h2>For comparison: today</h2>
+    <p style="margin:0 0 12px;color:var(--t3);font-size:14px">The clap speed is exaggerated here so you can see it. Live, it claps every 10 seconds.</p>
+    <div class="stage" style="max-width:380px"><div class="fake"><i class="h"></i><i></i><i style="width:80%"></i><i style="width:70%"></i></div>
+      <div class="oldL" id="old"><svg viewBox="0 0 32 32"><rect x="4" y="12.6" width="24" height="14.4" rx="2.6" fill="#2B2B33"/><rect x="7" y="16" width="18" height="2" rx="1" fill="#8A8F98"/><rect x="7" y="20" width="12" height="2" rx="1" fill="#8A8F98"/><g class="stick"><rect x="3.5" y="5" width="25" height="6.6" rx="1.4" fill="#2B2B33"/><g fill="#fff"><polygon points="5,11.6 8.6,5 12,5 8.4,11.6"/><polygon points="13,11.6 16.6,5 20,5 16.4,11.6"/><polygon points="21,11.6 24.6,5 28,5 24.4,11.6"/></g></g></svg></div>
+    </div>
+  </div>
+
+  <ul class="notes">
+    <li><b>All options:</b> the button fades in about 2s after the page settles (not a drop from the sky), never moves again, and respects reduced-motion.</li>
+    <li><b>Chat window header:</b> it gets the same icon as the launcher, so the cartoon clapper disappears from inside the chat too.</li>
+    <li><b>Nudge:</b> with A, the “Try Super Assistant” pill can go away entirely. With B or C, keep it as-is (desktop only).</li>
+  </ul>
+</div>
+<script>
+function replay(){document.querySelectorAll('.L').forEach(b=>{b.classList.remove('in');void b.offsetWidth;});setTimeout(()=>document.querySelectorAll('.L').forEach(b=>b.classList.add('in')),350);const o=document.getElementById('old');o.style.animation='none';void o.offsetWidth;o.style.animation='';}
+function toggleAll(c){const on=!document.querySelector('.grid .stage').classList.contains(c);document.querySelectorAll('.grid .stage').forEach(s=>s.classList.toggle(c,on));document.getElementById(c==='phone'?'bPhone':'bDark').classList.toggle('pri',on);}
+replay();
+</script>
+</body>
+</html>
