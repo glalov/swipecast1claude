@@ -4955,18 +4955,14 @@ body.fbsp-open #castoria-root{display:none!important;}
 .b2t-cube .pyramid .face{position:absolute;inset:0;backface-visibility:hidden;}
 .b2t-cube .pyramid .face svg{display:block;width:24px;height:20px;}
 .b2t-cube .pyramid .face.black{transform:rotateY(0deg) translateZ(7px);}
-.b2t-cube .pyramid .face.yellow{transform:rotateY(120deg) translateZ(7px);}
-.b2t-cube .pyramid .face.red{transform:rotateY(240deg) translateZ(7px);}
+.b2t-cube .pyramid .face.white{transform:rotateY(180deg) translateZ(7px);}
 .b2t-cube.dropping .pyramid,.b2t-cube.leaving .pyramid{animation-play-state:paused;}
 .b2t-cube span{line-height:1.1;}
 @keyframes b2tPyramidIdle{
   0%{transform:rotateY(0deg);}
-  34%{transform:rotateY(0deg);}
-  42%{transform:rotateY(-120deg);}
-  58%{transform:rotateY(-120deg);}
-  66%{transform:rotateY(-240deg);}
-  82%{transform:rotateY(-240deg);}
-  90%{transform:rotateY(-360deg);}
+  40%{transform:rotateY(0deg);}
+  50%{transform:rotateY(-180deg);}
+  90%{transform:rotateY(-180deg);}
   100%{transform:rotateY(-360deg);}
 }
 @keyframes b2tTumbleDown{
@@ -9492,13 +9488,14 @@ function makeB2tGL(lib,host,label,btn,onDone){
   const lab=new THREE.Mesh(labGeo,labMat);lab.position.set(0,-frontInfo.r*.20,0);faceGroup.add(lab);
   const tri=new THREE.Shape();tri.moveTo(0,.111);tri.lineTo(.133,-.111);tri.lineTo(-.133,-.111);tri.closePath();
   const tg=new THREE.ShapeGeometry(tri),pyr=new THREE.Group(),triMats=[];
-  [[0x1A1A2E,0],[0xF5C518,120],[0xE2394D,240]].forEach(([col,a])=>{const m=new THREE.MeshBasicMaterial({color:col});triMats.push(m);const tm=new THREE.Mesh(tg,m);tm.position.z=.078;const h=new THREE.Group();h.rotation.y=a*Math.PI/180;h.add(tm);pyr.add(h);});
+  const triIn=new THREE.Shape();triIn.moveTo(0,.072);triIn.lineTo(.104,-.094);triIn.lineTo(-.104,-.094);triIn.closePath();const tgIn=new THREE.ShapeGeometry(triIn);
+  [[0x1A1A2E,0,false],[0x1A1A2E,180,true]].forEach(([col,a,outl])=>{const m=new THREE.MeshBasicMaterial({color:col});triMats.push(m);const tm=new THREE.Mesh(tg,m);tm.position.z=.078;const h=new THREE.Group();h.rotation.y=a*Math.PI/180;h.add(tm);if(outl){const wm=new THREE.MeshBasicMaterial({color:0xFFFFFF});triMats.push(wm);const wi=new THREE.Mesh(tgIn,wm);wi.position.z=.0785;h.add(wi);}pyr.add(h);});
   pyr.scale.setScalar(frontInfo.r/0.5*0.95);pyr.position.set(0,frontInfo.r*.28,.004);faceGroup.add(pyr);
   model.add(faceGroup);
   const mesh=new THREE.Group();mesh.add(model);scene.add(mesh);
   const frontN=new THREE.Vector3();
   const IDLE=b2tBezier(.65,0,.35,1);
-  const SEG=[[0,.34,0,0],[.34,.42,0,-120],[.42,.58,-120,-120],[.58,.66,-120,-240],[.66,.82,-240,-240],[.82,.90,-240,-360],[.90,1,-360,-360]];
+  const SEG=[[0,.40,0,0],[.40,.50,0,-180],[.50,.90,-180,-180],[.90,1,-180,-360]]; // owner 11-16: two faces, navy + outlined white
   const pyrAngle=ms=>{const p=(ms%6400)/6400;for(const[a,b,f,t]of SEG){if(p<=b)return f+(t-f)*IDLE((p-a)/(b-a));}return 0;};
   let raf=0,kind=null,t0=0,active=false;
   let lastPx=0;
@@ -9914,8 +9911,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
     {backToTop&&<button type="button" className={"b2t-cube"+(b2tShow?" show":"")+(b2tAnim==='in'?" dropping":"")+(b2tAnim==='out'?" leaving":"")} onClick={scrollTop} onAnimationEnd={(e)=>{if(e.target===e.currentTarget)setB2tAnim(null);}} aria-label={t('footer.backToTop')}>
       <span className="mark"><span className="pyramid">
         <span className="face black"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#1A1A2E"/></svg></span>
-        <span className="face yellow"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#F5C518"/></svg></span>
-        <span className="face red"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 2 L22 18 L2 18 Z" fill="#E2394D"/></svg></span>
+        <span className="face white"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M12 3.6 L20.6 17.2 L3.4 17.2 Z" fill="#FFFFFF" stroke="#1A1A2E" strokeWidth="1.8" strokeLinejoin="round"/></svg></span>
       </span></span>
       <span>{t('footer.backToTop')}</span>
     </button>}
