@@ -363,7 +363,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
   <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css"/></noscript>
   <!-- Structured Data: WebSite -->
   <script type="application/ld+json">
-  {{"@context":"https://schema.org","@type":"WebSite","name":"CastSlate","alternateName":["Cast Slate","CastSlate Casting"],"url":"https://www.castslate.com"}}
+  {{"@context":"https://schema.org","@type":"WebSite","name":"CastSlate","alternateName":["Cast Slate","CastSlate Casting"],"url":"https://www.castslate.com/"}}
   </script>
   <!-- Structured Data: Organization -->
   <script type="application/ld+json">
