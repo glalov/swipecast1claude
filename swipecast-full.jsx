@@ -2356,6 +2356,16 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 @media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
 .nav-join-mobile{display:none;}
 @media (prefers-reduced-motion:reduce){.nav .logo-i{animation:none;}}
+/* Two-sided nav logo, Variant 1 "turn over" (owner 2026-11-17, live demo): black face (white arrow) and a white face
+   (navy outline + navy arrow). The page opens white side up and turns over ONCE to black; hover half-turns to the
+   white side and HOLDS; leaving turns it back. Replaces the plain 360 spin (no story with one face). */
+.nav .logo-i.logo-2s{position:relative;background:transparent;overflow:visible;animation:cs-logo-turnover .9s cubic-bezier(.6,0,.3,1) .3s 1 backwards;transition:transform .6s cubic-bezier(.6,0,.3,1);}
+.logo-i.logo-2s>span{position:absolute;inset:0;border-radius:inherit;display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;}
+.logo-i.logo-2s .lf-a{background:var(--acc);color:#fff;}
+.logo-i.logo-2s .lf-b{background:#fff;color:var(--acc);box-shadow:inset 0 0 0 1.5px var(--acc);transform:rotateY(180deg);}
+.nav .logo:hover .logo-i.logo-2s{animation:none;transform:rotateY(180deg);}
+@keyframes cs-logo-turnover{from{transform:rotateY(-180deg);}to{transform:rotateY(0deg);}}
+@media (prefers-reduced-motion:reduce){.nav .logo-i.logo-2s{animation:none;transition:none;}}
 .nav-links{display:flex;gap:14px;align-items:center;}
 .nav-links span{color:#111114;font-size:14px;font-weight:600;letter-spacing:-.1px;cursor:pointer;padding:8px 10px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
@@ -62754,7 +62764,7 @@ function App(){
       <nav className={"nav"+(navScrolled?" scrolled":"")}
         onPointerEnter={e=>{if(e.pointerType!=="mouse"||window.innerWidth<=900)return;clearTimeout(window.__navHoverT);navCardEdges();document.documentElement.classList.add("nav-hover");}}
         onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(window.__navHoverT);window.__navHoverT=setTimeout(()=>document.documentElement.classList.remove("nav-hover"),120);}}>
-        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i"><LogoMark/></div>CastSlate</div>
+        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i logo-2s"><span className="lf-a"><LogoMark/></span><span className="lf-b" aria-hidden="true"><LogoMark/></span></div>CastSlate</div>
         <div className="nav-links">
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           {classesOn&&<span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>}
