@@ -5323,6 +5323,19 @@ a.site-footer-link{text-decoration:none;}
 .nyc-crosslink{margin:36px 0 0;font-size:14px;color:var(--t2);text-align:center;}
 .nyc-crosslink a{color:var(--teal);font-weight:700;text-decoration:none;margin-left:4px;}
 .nyc-crosslink a:hover{text-decoration:underline;text-underline-offset:3px;}
+/* Drama Book Shop tip (owner, 2026-11-18, demo layout 4 "Editorial"): Browse page 1 only, under the
+   pager, above the NYC line. Thin rule + small label, left-aligned with the cards; their deep teal only
+   on the small type tile (our own lettering, not their logo file). Shown to everyone. */
+.dbs-tip{margin:48px 0 0;border-top:1px solid var(--bdr);padding-top:20px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px;align-items:center;}
+.dbs-tip-kick{grid-column:1/-1;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7A6F62;margin-bottom:-6px;}
+.dbs-tip-wm{flex:none;width:54px;height:54px;border-radius:8px;background:#0F4A5C;color:#fff;font:800 10.5px/.98 Poppins,system-ui,sans-serif;text-transform:uppercase;letter-spacing:-.01em;display:flex;flex-direction:column;justify-content:center;padding:0 7px;}
+.dbs-tip-wm small{font-size:.5em;letter-spacing:.03em;line-height:1.1;}
+.dbs-tip p{margin:0;font-size:15px;color:var(--t2);min-width:0;}
+.dbs-tip p b{color:var(--t1);}
+.dbs-tip a{color:#0F4A5C;font-weight:700;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+.dbs-tip a:hover{text-decoration:underline;text-underline-offset:3px;}
+@media(max-width:700px){.dbs-tip{grid-template-columns:auto minmax(0,1fr);}.dbs-tip a{grid-column:2;}}
+@media(max-width:480px){.dbs-tip{gap:12px 14px;}.dbs-tip-wm{width:46px;height:46px;font-size:9px;padding:0 5px;}}
 .site-footer-social-row{display:flex;gap:14px;align-items:center;justify-content:center;padding:18px 0 22px;border-top:none;margin-top:0;}
 /* 126px (was 96): the unified footer's tighter 24px link rows made the footer ~30px
    shorter, so the fixed cube (bottom:150px) sat on "Resources"; this keeps it clear. */
@@ -19374,6 +19387,15 @@ function distinctPalette(p,avoid){
   return EV_PALETTES.find(c=>evFamily(c)!==evFamily(other))||"charcoal";
 }
 // Top of Browse page 1: the New York event, in the same stripe as the Los Angeles one.
+// Drama Book Shop tip at the bottom of Browse page 1 (owner, 2026-11-18). External link, new tab.
+function BookshopTip(){
+  return(<div className="dbs-tip">
+    <div className="dbs-tip-kick">For your craft</div>
+    <div className="dbs-tip-wm" aria-hidden="true"><small>The</small>Drama Book Shop</div>
+    <p><b>Looking for scenes to work on?</b> The Drama Book Shop has plays, scene books and acting guides, and ships anywhere.</p>
+    <a href="https://www.dramabookshop.com" target="_blank" rel="noopener">Browse the shop <Tri/></a>
+  </div>);
+}
 function FilmEventStrip(){
   const list=useAllEvents();
   const ev=(list||[]).find(e=>e.city==="new-york"&&!e._ended);
@@ -20161,6 +20183,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 <button type="button" key={n} className={"b5-pg"+(pg===n?" on":"")+(keep(n)?"":" nb")} aria-current={pg===n?"page":undefined} aria-label={"Page "+n} onClick={()=>go(n)}>{n}</button>)}
               <button type="button" className="b5-pg-step" aria-label="Next page" disabled={pg===tp} onClick={()=>go(Math.min(tp,pg+1))}><span className="b5-pg-long">{t('search.nextPage')}</span><span className="b5-pg-short" aria-hidden="true">→</span></button>
             </nav>);})()}
+          {pg===1&&fc.length>0&&<BookshopTip/>}
         </>}
     </>
     {landingKey==="new-york"&&<NycGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
