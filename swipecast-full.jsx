@@ -19393,11 +19393,14 @@ function distinctPalette(p,avoid){
 }
 // Top of Browse page 1: the New York event, in the same stripe as the Los Angeles one.
 // Drama Book Shop tip at the bottom of Browse page 1 (owner, 2026-11-18). External link, new tab.
-function BookshopTip(){
+// nyc: New York actors (profile city, NYC filter or the NYC landing) get the local sentence (owner, 2026-11-18).
+function BookshopTip({nyc}){
   return(<div className="dbs-tip">
     <div className="dbs-tip-kick">For your craft</div>
     <div className="dbs-tip-wm" aria-hidden="true"><small>The</small>Drama Book Shop</div>
-    <p><b>Looking for scenes to work on?</b> The Drama Book Shop has plays, scene books and acting guides, and ships anywhere.</p>
+    {nyc
+      ?<p><b>Looking for scenes to work on?</b> The Drama Book Shop has served actors since 1917: plays, scene books and acting guides. Stop by on West 39th Street, or order online.</p>
+      :<p><b>Looking for scenes to work on?</b> New York's Drama Book Shop has served actors since 1917: plays, scene books and acting guides, shipped anywhere.</p>}
     <a href="https://www.dramabookshop.com" target="_blank" rel="noopener">Browse the shop <Tri/></a>
   </div>);
 }
@@ -20188,7 +20191,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
                 <button type="button" key={n} className={"b5-pg"+(pg===n?" on":"")+(keep(n)?"":" nb")} aria-current={pg===n?"page":undefined} aria-label={"Page "+n} onClick={()=>go(n)}>{n}</button>)}
               <button type="button" className="b5-pg-step" aria-label="Next page" disabled={pg===tp} onClick={()=>go(Math.min(tp,pg+1))}><span className="b5-pg-long">{t('search.nextPage')}</span><span className="b5-pg-short" aria-hidden="true">→</span></button>
             </nav>);})()}
-          {pg===1&&fc.length>0&&<BookshopTip/>}
+          {pg===1&&fc.length>0&&<BookshopTip nyc={landingKey==="new-york"||canonCastingCity(f.location)==="New York"||canonCastingCity(myProfile?.location)==="New York"}/>}
         </>}
     </>
     {landingKey==="new-york"&&<NycGuide isLoggedIn={isLoggedIn} onNavigate={onNavigate}/>}
