@@ -83,7 +83,12 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* Two-sided nav logo, Variant 1 "turn over" (owner 2026-11-17, live demo): black face (white arrow) and a white face
    (navy outline + navy arrow). The page opens white side up and turns over ONCE to black; hover half-turns to the
    white side and HOLDS; leaving turns it back. Replaces the plain 360 spin (no story with one face). */
-.nav .logo-i.logo-2s{position:relative;background:transparent;overflow:visible;animation:cs-logo-turnover .9s cubic-bezier(.6,0,.3,1) .3s 1 backwards;transition:transform .6s cubic-bezier(.6,0,.3,1);}
+.nav .logo-i.logo-2s{position:relative;background:transparent;overflow:visible;animation:none;transform:rotateY(180deg);transition:transform .6s cubic-bezier(.6,0,.3,1);}
+/* Handoff (2026-11-17): the logo waits white side up behind the intro curtain and turns over to black as the
+   curtain uncovers it. build-html.py adds html.cs-lf-go when the curtain starts falling (and on every other
+   intro exit path: skipped, reduced motion, hard cap), so it can never stay stuck white. */
+html.cs-lf-go .nav .logo-i.logo-2s{transform:none;animation:cs-logo-turnover .9s cubic-bezier(.6,0,.3,1) .45s 1 backwards;}
+html.cs-lf-go .nav .logo:hover .logo-i.logo-2s{animation:none;transform:rotateY(180deg);}
 .logo-i.logo-2s>span{position:absolute;inset:0;border-radius:inherit;display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;}
 .logo-i.logo-2s .lf-a{background:var(--acc);color:#fff;}
 .logo-i.logo-2s .lf-b{background:#fff;color:var(--acc);box-shadow:inset 0 0 0 1.5px var(--acc);transform:rotateY(180deg);}
@@ -99,7 +104,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .fq-new .fq-steps{margin:0 0 14px;padding:0 0 0 22px;}
 .fq-new .fq-steps li{padding:3px 0;}
 @keyframes cs-logo-turnover{from{transform:rotateY(-180deg);}to{transform:rotateY(0deg);}}
-@media (prefers-reduced-motion:reduce){.nav .logo-i.logo-2s{animation:none;transition:none;}}
+@media (prefers-reduced-motion:reduce){.nav .logo-i.logo-2s,html.cs-lf-go .nav .logo-i.logo-2s{animation:none;transition:none;transform:none;}}
 .nav-links{display:flex;gap:14px;align-items:center;}
 .nav-links span{color:#111114;font-size:14px;font-weight:600;letter-spacing:-.1px;cursor:pointer;padding:8px 10px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
