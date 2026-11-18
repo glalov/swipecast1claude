@@ -42,7 +42,6 @@ MARKUP = """<div class="nudge" id="nudge" aria-hidden="true"><b>Try Super Assist
       <textarea id="input" rows="1" placeholder="Message"></textarea>
       <div class="ctools">
         <button class="tool" id="tTopics" aria-label="What I can help with" title="What I can help with"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button>
-        <button class="tool" id="tEmoji" aria-label="Emoji" title="Emoji"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.6 14.2c.9 1.1 2.1 1.7 3.4 1.7s2.5-.6 3.4-1.7"/><path d="M9.2 9.4h.01M14.8 9.4h.01"/></svg></button>
         <button class="tool" id="tLesson" aria-label="Acting lessons" title="Acting lessons"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7.6 4.5v15M16.4 4.5v15M3 9.4h4.6M3 14.6h4.6M16.4 9.4H21M16.4 14.6H21"/></svg></button>
         <button class="tool" id="tMic" aria-label="Dictate" title="Speak instead of typing"><svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3.2"/></svg></button>
         <span class="sp"></span>

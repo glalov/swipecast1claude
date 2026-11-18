@@ -8,7 +8,7 @@
 :root{
   --ink:#000000;--ink2:#3C3C43;--mute:#8E8E93;--mute2:#AEAEB2;
   --page:#FFFFFF;--bar:#F7F7F7;--hair:#D8D8DC;
-  --in:#E9E9EB;--out:#2FC24D;--out2:#28B245;
+  --in:#F1EDE5;--out:#1A1A2E;--out2:#1A1A2E; /* calm chat (owner 2026-11-17): navy sent, warm cream received, no phone green */
   --blue:#007AFF;--field:#FFFFFF;--fieldln:#D1D1D6;
   --brand:#1A1A2E;--brand-2:#E8902A;
   /* Mono clapper. Silver disc, charcoal board, white stripes. The hairline
@@ -144,8 +144,8 @@ h1 span{color:var(--out2);}
 .b{position:relative;max-width:83%;padding:8px 13px 9px;border-radius:19px;font-size:15.5px;line-height:1.32;letter-spacing:-.2px;word-wrap:break-word;}
 .msg.in .b{background:var(--in);color:var(--ink);}
 .msg.out .b{background:var(--out);color:#fff;}
-.b.tail::before{content:"";position:absolute;bottom:0;width:18px;height:19px;}
-.b.tail::after{content:"";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);}
+.b.tail::before{content:"";position:absolute;bottom:0;width:18px;height:19px;display:none;} /* no iMessage tails (owner 2026-11-17) */
+.b.tail::after{content:"";position:absolute;bottom:0;width:14px;height:19px;background:var(--page);display:none;}
 .msg.in .b.tail::before{left:-6px;background:var(--in);border-bottom-right-radius:15px;}
 .msg.in .b.tail::after{left:-14px;border-bottom-right-radius:9px;}
 .msg.out .b.tail::before{right:-6px;background:var(--out);border-bottom-left-radius:15px;}
@@ -268,7 +268,7 @@ h1 span{color:var(--out2);}
 .ctools .sp{flex:1;}
 .tool{width:30px;height:30px;border:0;border-radius:9px;background:transparent;color:var(--mute);cursor:pointer;display:grid;place-items:center;padding:0;transition:background .14s,color .14s;}
 .tool:hover{background:rgba(120,120,128,.12);color:var(--ink2);}
-.tool[aria-pressed="true"]{background:rgba(47,194,77,.16);color:var(--out2);}
+.tool[aria-pressed="true"]{background:rgba(26,26,46,.08);color:var(--out2);}
 .tool svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
 .tool.on svg{stroke:var(--out2);}
 .emoji{position:absolute;left:11px;right:11px;bottom:100%;margin-bottom:6px;background:var(--field);border:1.5px solid var(--fieldln);border-radius:16px;padding:9px;box-shadow:0 12px 30px rgba(0,0,0,.13);display:none;grid-template-columns:repeat(8,1fr);gap:3px;z-index:4;}
@@ -438,7 +438,6 @@ h1 span{color:var(--out2);}
       <textarea id="input" rows="1" placeholder="Message"></textarea>
       <div class="ctools">
         <button class="tool" id="tTopics" aria-label="What I can help with" title="What I can help with"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg></button>
-        <button class="tool" id="tEmoji" aria-label="Emoji" title="Emoji"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.6 14.2c.9 1.1 2.1 1.7 3.4 1.7s2.5-.6 3.4-1.7"/><path d="M9.2 9.4h.01M14.8 9.4h.01"/></svg></button>
         <button class="tool" id="tLesson" aria-label="Acting lessons" title="Acting lessons"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7.6 4.5v15M16.4 4.5v15M3 9.4h4.6M3 14.6h4.6M16.4 9.4H21M16.4 14.6H21"/></svg></button>
         <button class="tool" id="tMic" aria-label="Dictate" title="Speak instead of typing"><svg viewBox="0 0 24 24"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3.2"/></svg></button>
         <span class="sp"></span>
@@ -724,7 +723,7 @@ const ART={
 const first=c=>c.name?c.name:'';
 const SMALL=[
  {id:'greet',re:/^(hi|hey+|hello+|yo|hiya|heya|sup|howdy|hi there|hey there|good (morning|afternoon|evening))[\s!.,?]*$/i,
-  a:c=>c.name?`Hey ${c.name} 👋`:`Hey there 👋`,
+  a:c=>c.name?`Hey ${c.name}.`:`Hey there.`,
   b:c=>c.plan==='premium'?`What are we working on today?`:`What can I help you with?`,
   s:['What can I ask you?','How do I improve my profile?','What does Premium include?']},
  {id:'howareyou',re:/how (are|r) (you|u)|how'?s it going|how (you )?doing|how are things|you good|what'?s up|whats up|wassup|how have you been/i,
@@ -744,11 +743,11 @@ const SMALL=[
   b:c=>`Where do you want to start?`,
   s:['Teach me the fundamentals','How do I improve my profile?','What makes casting skip a reel?']},
  {id:'thanks',re:/^(thanks|thank you|ty|thx|cheers|appreciate it|much appreciated|great thanks|perfect thanks)[\s!.,]*$/i,
-  a:c=>`Any time${c.name?', '+c.name:''} 🙌`,b:c=>`Anything else while I'm here?`,s:['No, that\'s all','What is Manager Mode?']},
+  a:c=>`Any time${c.name?', '+c.name:''}.`,b:c=>`Anything else while I'm here?`,s:['No, that\'s all','What is Manager Mode?']},
  {id:'bye',re:/^(bye|goodbye|see ya|see you|later|gtg|got to go|good night|night|that'?s all|no,? that'?s all|nope)[\s!.,]*$/i,
   a:c=>`Take care${c.name?', '+c.name:''}.`,b:c=>`I'll be right here if something comes up — good luck out there.`,s:[]},
  {id:'ack',re:/^(ok|okay|k|kk|cool|got it|gotcha|nice|great|awesome|sure|alright|yeah|yep|yes|no|nah|lol|haha|hmm|mm|i see)[\s!.,]*$/i,
-  a:c=>`👍`,b:c=>`Anything else you want to dig into?`,s:['How do I improve my profile?','What does Premium include?']},
+  a:c=>`Got it.`,b:c=>`Anything else you want to dig into?`,s:['How do I improve my profile?','What does Premium include?']},
  {id:'huh',re:/^(what|huh|wdym|what do you mean|i don'?t understand|confused|\?+)[\s!.,?]*$/i,
   a:c=>`Sorry — let me try again.`,b:c=>`Tell me what you're trying to do and I'll be more specific.`,s:['How do I apply to a casting?','What does Premium cost?']},
  {id:'rude',re:/(you'?re |ur |you )?(useless|stupid|dumb|garbage|trash|terrible|awful|suck|the worst|hate you|shut up)/i,
@@ -807,11 +806,11 @@ const EMO=[
   b:c=>`I am here whenever you want to work on something — a lesson, your profile, or the business side.`,
   s:['Teach me the fundamentals','How do I improve my profile?','What does Premium include?']},
  {id:'clap',re:/[\u{1F44F}\u{1F64C}]/u,
-  a:c=>`I will take it 🙌`,
+  a:c=>`I will take it.`,
   b:c=>`What do you want to look at next?`,
   s:['Teach me the first six seconds','Which headshot should I lead with?','What should I submit to?']},
  {id:'wave',re:/[\u{1F44B}\u{1F590}\u{270B}]/u,
-  a:c=>c.name?`Hey ${c.name} 👋`:`Hey there 👋`,
+  a:c=>c.name?`Hey ${c.name}.`:`Hey there.`,
   b:c=>`What can I help you with? I answer anything about CastSlate or the acting business, and I teach the fundamentals free.`,
   s:['Teach me the fundamentals','How do I get started?','What can I ask you?']},
  {id:'good',re:/[\u{1F44D}\u{1F44C}\u{2705}\u{1F4AF}\u{1F525}\u{2B50}\u{1F31F}\u{1F389}\u{1F4AA}\u{1F91D}\u{270C}]/u,
@@ -819,7 +818,7 @@ const EMO=[
   b:c=>`Want to keep going, or is there something else you are chewing on?`,
   s:['Teach me the fundamentals','How do I improve my profile?','What should I submit to?']},
  {id:'warm',re:/[\u{2764}\u{1F60D}\u{1F970}\u{1F60A}\u{1F642}\u{1F603}\u{1F600}\u{1F60B}\u{1F607}\u{1F929}\u{1F495}-\u{1F49F}]/u,
-  a:c=>`Glad that landed 🙂`,
+  a:c=>`Glad that landed.`,
   b:c=>`Anything else you want to work on?`,
   s:['Teach me the fundamentals','Which monologue should I pick?','How do I get an agent?']},
  {id:'money',re:/[\u{1F4B0}\u{1F4B5}\u{1F4B8}\u{1F4B3}\u{1F911}]/u,
@@ -831,7 +830,7 @@ const EMO=[
   b:c=>`The spec, or the part that actually decides whether you get called in?`,
   s:['Which headshot should I lead with?','What are the headshot requirements?','What annoys casting directors?']},
  {id:'film',re:/[\u{1F3AC}\u{1F3AD}\u{1F3A5}\u{1F4FD}\u{1F39E}\u{1F37F}\u{1F4FA}\u{1F3A4}]/u,
-  a:c=>`My favourite subject 🎬`,
+  a:c=>`My favourite subject.`,
   b:c=>`Film, stage, commercial or voice — which one do you want to work on?`,
   s:['Teach me the fundamentals','Give me a commercial acting lesson','Teach me the theatre technicals']},
  {id:'sleepy',re:/[\u{1F634}\u{1F971}\u{1F62A}]/u,
@@ -848,7 +847,7 @@ function emojiFor(text){
   if(!onlyEmoji(text)) return null;
   for(const e of EMO) if(e.re.test(text)) return e;
   return {id:'other',
-    a:c=>`😄`,
+    a:c=>`Happy to help.`,
     b:c=>`Tell me what you need in words and I will get to work — or I can teach you something instead.`,
     s:['Teach me the fundamentals','How do I improve my profile?','What can I ask you?']};
 }
@@ -4457,7 +4456,7 @@ function hello(){
   const t=typing();
   setTimeout(()=>{
     t.remove();
-    msg('in',c.name?`Hi ${c.name} \u{1F44B}`:`Hi there \u{1F44B}`);
+    msg('in',c.name?`Hi ${c.name}.`:`Hi there.`);
     setTimeout(()=>{
       if(c.plan==='visitor'){
         msg('in',`I can answer questions about acting and about CastSlate — and I can <b>teach</b>. All the fundamentals of acting for film or stage, free, right here. No need to spend money on acting classes to begin — just grab a notepad and a pen for the bits worth keeping.`);
