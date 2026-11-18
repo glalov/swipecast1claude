@@ -2349,9 +2349,10 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* Top-nav logo: a bit larger + a 3D "cube turn" spin once every 10s. */
 .nav .logo{perspective:620px;}
 .nav .logo-i{width:38px;height:38px;border-radius:9px;transform-style:preserve-3d;animation:cs-logo-spin 1.1s cubic-bezier(.6,0,.3,1) .4s 1 backwards;}
+.nav .logo-i.logo-2s{animation:none;}
 /* Owner 2026-11-17: the logo spins ONCE as the page loads, then only when hovered. No endless loop. */
 @keyframes cs-logo-spin{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
-.nav .logo:hover .logo-i{animation:cs-logo-spin-h .9s cubic-bezier(.6,0,.3,1) 1;} /* own keyframe name so every new hover restarts it; a 0->360 transition is a no-op (same matrix) */
+.nav .logo:hover .logo-i:not(.logo-2s){animation:cs-logo-spin-h .9s cubic-bezier(.6,0,.3,1) 1;} /* own keyframe name so every new hover restarts it; a 0->360 transition is a no-op (same matrix) */
 @keyframes cs-logo-spin-h{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
 @media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
 .nav-join-mobile{display:none;}
@@ -2359,28 +2360,20 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 /* Two-sided nav logo, Variant 1 "turn over" (owner 2026-11-17, live demo): black face (white arrow) and a white face
    (navy outline + navy arrow). The page opens white side up and turns over ONCE to black; hover half-turns to the
    white side and HOLDS; leaving turns it back. Replaces the plain 360 spin (no story with one face). */
-.nav .logo-i.logo-2s{position:relative;background:transparent;overflow:visible;animation:none;transform:rotateY(180deg);transition:transform .6s cubic-bezier(.6,0,.3,1);}
-/* Handoff (2026-11-17): the logo waits white side up behind the intro curtain and turns over to black as the
-   curtain uncovers it. build-html.py adds html.cs-lf-go when the curtain starts falling (and on every other
-   intro exit path: skipped, reduced motion, hard cap), so it can never stay stuck white. */
+.nav .logo-i.logo-2s{position:relative;background:transparent;overflow:visible;animation:none;transform:rotateY(180deg);transform-style:preserve-3d;}
+/* TWO LAYERS (fix 2026-11-17): the outer .logo-i plays the one-time load turn-over; the inner .lf-card does the
+   hover flip with a transition. Hover must never touch the outer animation: swapping animation on :hover made the
+   logo jump instantly, and on mouse-out it re-ran the whole load turn-over. Handoff: the logo waits white side up
+   behind the intro curtain and turns over to black as the curtain uncovers it. build-html.py adds html.cs-lf-go when
+   the curtain starts falling (and on every other intro exit path), so it can never stay stuck white. */
 html.cs-lf-go .nav .logo-i.logo-2s{transform:none;animation:cs-logo-turnover .9s cubic-bezier(.6,0,.3,1) .45s 1 backwards;}
-html.cs-lf-go .nav .logo:hover .logo-i.logo-2s{animation:none;transform:rotateY(180deg);}
-.logo-i.logo-2s>span{position:absolute;inset:0;border-radius:inherit;display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;}
+.logo-i.logo-2s .lf-card{position:absolute;inset:0;border-radius:inherit;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.6,0,.3,1);}
+.nav .logo:hover .logo-i.logo-2s .lf-card{transform:rotateY(180deg);}
+.logo-i.logo-2s .lf-card>span{position:absolute;inset:0;border-radius:inherit;display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;}
 .logo-i.logo-2s .lf-a{background:var(--acc);color:#fff;}
 .logo-i.logo-2s .lf-b{background:#fff;color:var(--acc);box-shadow:inset 0 0 0 1.5px var(--acc);transform:rotateY(180deg);}
-.nav .logo:hover .logo-i.logo-2s{animation:none;transform:rotateY(180deg);}
-.fq-new{max-width:600px;color:var(--t2);font-size:15px;line-height:1.6;} /* homepage FAQ, owner 2026-11-17: short answer first, details second */
-.fq-new p{margin:0 0 12px;}.fq-new p:last-child{margin-bottom:0;}.fq-new b{color:var(--t1);font-weight:700;}
-.fq-new .fq-k{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);margin:18px 0 8px;}
-.fq-new ul{margin:0 0 14px;padding:0;list-style:none;}
-.fq-new ul li{position:relative;padding:5px 0 5px 24px;border-bottom:1px solid #EEE9E0;}
-.fq-new ul li:last-child{border-bottom:0;}
-.fq-new ul li::before{content:"";position:absolute;left:4px;top:13px;width:9px;height:5px;border-left:2px solid #33826A;border-bottom:2px solid #33826A;transform:rotate(-45deg);}
-.fq-new .fq-foot{font-size:13.5px;color:var(--t3);}
-.fq-new .fq-steps{margin:0 0 14px;padding:0 0 0 22px;}
-.fq-new .fq-steps li{padding:3px 0;}
 @keyframes cs-logo-turnover{from{transform:rotateY(-180deg);}to{transform:rotateY(0deg);}}
-@media (prefers-reduced-motion:reduce){.nav .logo-i.logo-2s,html.cs-lf-go .nav .logo-i.logo-2s{animation:none;transition:none;transform:none;}}
+@media (prefers-reduced-motion:reduce){.nav .logo-i.logo-2s,html.cs-lf-go .nav .logo-i.logo-2s{animation:none;transform:none;}.logo-i.logo-2s .lf-card{transition:none;}}
 .nav-links{display:flex;gap:14px;align-items:center;}
 .nav-links span{color:#111114;font-size:14px;font-weight:600;letter-spacing:-.1px;cursor:pointer;padding:8px 10px;border-radius:9px;transition:background-color .18s ease,color .18s ease;}
 .nav-links span:hover{background:#F7F7F8;}
@@ -62792,7 +62785,7 @@ function App(){
       <nav className={"nav"+(navScrolled?" scrolled":"")}
         onPointerEnter={e=>{if(e.pointerType!=="mouse"||window.innerWidth<=900)return;clearTimeout(window.__navHoverT);navCardEdges();document.documentElement.classList.add("nav-hover");}}
         onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(window.__navHoverT);window.__navHoverT=setTimeout(()=>document.documentElement.classList.remove("nav-hover"),120);}}>
-        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i logo-2s"><span className="lf-a"><LogoMark/></span><span className="lf-b" aria-hidden="true"><LogoMark/></span></div>CastSlate</div>
+        <div className="logo" onClick={()=>navThen("home")}><div className="logo-i logo-2s"><span className="lf-card"><span className="lf-a"><LogoMark/></span><span className="lf-b" aria-hidden="true"><LogoMark/></span></span></div>CastSlate</div>
         <div className="nav-links">
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
           {classesOn&&<span className={page==="classes"?"act":""} onClick={()=>navigate("classes")}>{navT('nav.classes')}</span>}
