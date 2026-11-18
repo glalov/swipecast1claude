@@ -29901,6 +29901,45 @@ function csStartNext(){
   if(typeof requestIdleCallback==='function') requestIdleCallback(run,{timeout:400}); else setTimeout(run,0);
 }
 function csQueueStart(f){ csStartQ.push(f); if(!csStartBusy) csStartNext(); }
+// ── Hidden video switch, stage 1 (owner 2026-11-17) ───────────────────────────────────────────────────
+// castslate.com/?videos=new turns it on for this browser tab session; ?videos=old turns it off and removes the
+// cache worker. Normal visitors never get any of this. What it does:
+//  1. Only videos on screen (plus 80px) may play. Off-screen ones pause, and HTMLMediaElement.play() is gated
+//     so the existing auto-resume helpers can't restart them. Homepage goes from ~15 decoding at once to ~6.
+//  2. A reel card that stalls drops back to its still (poster) until it really moves again.
+//  3. /sw-video.js saves every homepage clip after the first visit and serves it from the device after that.
+const CS_VID2=(function(){
+  try{
+    const q=location.search||"";
+    if(/[?&]videos=old\b/.test(q)){
+      sessionStorage.removeItem("cs_videos");
+      if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){if(/sw-video\.js/.test((r.active||r.installing||r.waiting||{}).scriptURL||""))r.unregister();});});
+      return false;
+    }
+    if(/[?&]videos=new\b/.test(q))sessionStorage.setItem("cs_videos","new");
+    return sessionStorage.getItem("cs_videos")==="new";
+  }catch(_){return false;}
+})();
+if(CS_VID2&&typeof window!=="undefined"&&!window.__csVid2){
+  window.__csVid2=true;
+  try{ if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw-video.js",{scope:"/"}).catch(function(){}); }catch(_){}
+  try{
+    const realPlay=HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play=function(){ if(this.__csOff) return Promise.resolve(); return realPlay.apply(this,arguments); };
+    const io=new IntersectionObserver(function(es){ es.forEach(function(e){ const v=e.target;
+      if(e.isIntersecting){ v.__csOff=false; if(v.getAttribute("src")&&v.paused&&!document.hidden){ const p=v.play(); if(p&&p.catch)p.catch(function(){}); } }
+      else{ v.__csOff=true; try{ v.pause(); }catch(_){} }
+    }); },{rootMargin:"80px 0px",threshold:0});
+    const seen=new WeakSet();
+    const watch=function(v){ if(seen.has(v))return; seen.add(v); io.observe(v);
+      if(v.classList&&v.classList.contains("fmt-video")) v.addEventListener("waiting",function(){ v.classList.remove("is-on"); });
+    };
+    let queued=false;
+    const scan=function(){ queued=false; document.querySelectorAll("video").forEach(watch); };
+    new MutationObserver(function(){ if(!queued){ queued=true; setTimeout(scan,250); } }).observe(document.documentElement,{childList:true,subtree:true});
+    scan();
+  }catch(_){}
+}
 function csArmLoopVideo(v){
   let visible=true, gone=false;
   try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); }catch(_){}
