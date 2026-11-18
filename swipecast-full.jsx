@@ -2364,6 +2364,16 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .logo-i.logo-2s .lf-a{background:var(--acc);color:#fff;}
 .logo-i.logo-2s .lf-b{background:#fff;color:var(--acc);box-shadow:inset 0 0 0 1.5px var(--acc);transform:rotateY(180deg);}
 .nav .logo:hover .logo-i.logo-2s{animation:none;transform:rotateY(180deg);}
+.fq-new{max-width:600px;color:var(--t2);font-size:15px;line-height:1.6;} /* homepage FAQ, owner 2026-11-17: short answer first, details second */
+.fq-new p{margin:0 0 12px;}.fq-new p:last-child{margin-bottom:0;}.fq-new b{color:var(--t1);font-weight:700;}
+.fq-new .fq-k{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3);margin:18px 0 8px;}
+.fq-new ul{margin:0 0 14px;padding:0;list-style:none;}
+.fq-new ul li{position:relative;padding:5px 0 5px 24px;border-bottom:1px solid #EEE9E0;}
+.fq-new ul li:last-child{border-bottom:0;}
+.fq-new ul li::before{content:"";position:absolute;left:4px;top:13px;width:9px;height:5px;border-left:2px solid #33826A;border-bottom:2px solid #33826A;transform:rotate(-45deg);}
+.fq-new .fq-foot{font-size:13.5px;color:var(--t3);}
+.fq-new .fq-steps{margin:0 0 14px;padding:0 0 0 22px;}
+.fq-new .fq-steps li{padding:3px 0;}
 @keyframes cs-logo-turnover{from{transform:rotateY(-180deg);}to{transform:rotateY(0deg);}}
 @media (prefers-reduced-motion:reduce){.nav .logo-i.logo-2s{animation:none;transition:none;}}
 .nav-links{display:flex;gap:14px;align-items:center;}
@@ -31134,18 +31144,31 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
       <div style={{display:"flex",flexDirection:"column",gap:10}}>
         {[
-          {q:"How much does CastSlate cost for actors?",a:"Free accounts get 1 headshot and their first casting submission free. Premium is $129 a year ($10.75/month), and it stays $129 every year — we do not discount your first year and raise it later. Prefer monthly? $17.99/month. Either way you get unlimited submissions, unlimited media uploads (photos, videos, Cast Me As clips), Actor Slate Video, Actor Business Card with QR code, Manager Mode monthly career check-ins, monthly industry events in New York and LA, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York — plus the Casting Companies Directory (131 active casting offices) and the Acting & Film School Directory (351 schools and film programs). No hidden tiers, no per-submission fees."},
-          {q:"How is CastSlate different from legacy casting websites?",a:"On older platforms, your submission lands in a grid where a CD can scan 80 faces in 20 seconds. On CastSlate, every submission is full-screen, one at a time, swipe-style. CDs decide on you individually. No one gets skipped."},
-          {q:"Can minors (under 18) sign up?",a:"Only with a parent or legal guardian managing the account. We require guardian verification and comply with COPPA and state child-performer laws."},
-          {q:"Is this SAG-AFTRA friendly?",a:"Yes. SAG-AFTRA, AEA, and non-union castings are all supported. Union status is displayed on every casting post and can be filtered."},
-          {q:"How does CastSlate work?",a:"Create a free profile, browse open castings, and apply. Your first submission is free. Premium is $129 a year ($10.75/month) and stays $129 every year; the 6-month plan is $79 per term ($13.17/month), and month-to-month is $17.99/month. No plan uses an introductory rate that increases later. Every Premium plan includes unlimited submissions, unlimited media uploads, Actor Slate Video, Actor Business Card, Manager Mode, monthly industry events in New York and LA, and the Talent Agency & Manager Directory — 650+ talent agencies and management companies in Los Angeles and New York, with addresses and how each one wants to be approached — plus the Casting Companies Directory (131 active casting offices) and the Acting & Film School Directory (351 schools and film programs). Casting directors review every submission individually."}
+          {q:"How much does CastSlate cost for actors?",a:<div className="fq-new">
+            <p><b>Free to start.</b> Your first headshot and first casting submission are free.</p>
+            <p><b>Premium: $129 a year</b> ($10.75/month), and it stays $129 every year. Or <b>$79</b> for 6 months ($13.17/month), or <b>$17.99</b> month to month.</p>
+            <div className="fq-k">Every Premium plan includes</div>
+            <ul><li>Unlimited submissions and media uploads</li><li>Actor Slate Video and Business Card with QR code</li><li>Manager Mode monthly career check-ins</li><li>Monthly industry events in New York and LA</li><li>Directories: 650+ agencies &amp; managers, 131 casting offices, 351 schools</li></ul>
+            <p className="fq-foot">No hidden tiers. No per-submission fees. No introductory rate that rises later.</p></div>},
+          {q:"How is CastSlate different from legacy casting websites?",a:<div className="fq-new">
+            <p><b>Every submission is seen full-screen, one at a time.</b></p>
+            <p>On older platforms, your submission lands in a grid where a casting director can scan 80 faces in 20 seconds. On CastSlate, casting directors review each actor individually and decide on you, so no one gets skipped.</p></div>},
+          {q:"Can minors (under 18) sign up?",a:<div className="fq-new">
+            <p><b>Yes, with a parent or legal guardian managing the account.</b></p>
+            <p>We require guardian verification and comply with COPPA and state child-performer laws.</p></div>},
+          {q:"Is this SAG-AFTRA friendly?",a:<div className="fq-new">
+            <p><b>Yes.</b> SAG-AFTRA, AEA and non-union castings are all supported.</p>
+            <p>Union status is shown on every casting and can be filtered.</p></div>},
+          {q:"How does CastSlate work?",a:<div className="fq-new">
+            <ol className="fq-steps"><li><b>Create a free profile</b> with your headshot and details.</li><li><b>Browse open castings</b> and filter by role, location and union status.</li><li><b>Apply</b> to the roles that fit. Your first submission is free.</li></ol>
+            <p>Casting directors review every submission individually. For plans and what Premium includes, see the first question above.</p></div>}
         ].map((f,i)=>
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
               <h4 style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{f.q}</h4>
               <span style={{fontSize:22,color:"var(--acc)",transform:openFaq===i?"rotate(45deg)":"none",transition:"transform .2s",fontWeight:300}}>+</span>
             </div>
-            {openFaq===i&&<div style={{padding:"0 24px 20px",color:"var(--t2)",fontSize:14,lineHeight:1.65,borderTop:"1px solid var(--bdr)",paddingTop:16}}>{f.a}</div>}
+            {openFaq===i&&<div style={{padding:"0 24px 20px",color:"var(--t2)",borderTop:"1px solid var(--bdr)",paddingTop:18}}>{f.a}</div>}
           </div>
         )}
       </div>
