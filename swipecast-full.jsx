@@ -14256,6 +14256,11 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
         .atk-kit{margin:0 auto 32px;}
         .atk-kit>span{font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:#8A5A12;}
         .atk-kit small{display:block;font-size:17px;color:var(--t2);}
+        /* Drama Book Shop line (owner, 2026-11-18, demo version B): serif italic, finishes the Talent thought. */
+        .atk-sharp{margin:14px auto 0;max-width:560px;font:italic 600 19px/1.45 'Source Serif 4',Georgia,serif;color:var(--t2);}
+        .atk-sharp a{color:var(--t1);text-decoration:underline;text-decoration-color:#F0B860;text-decoration-thickness:2px;text-underline-offset:4px;white-space:nowrap;}
+        .atk-sharp a:hover{text-decoration-thickness:3px;}
+        .atk-sharp a svg{margin-left:6px;color:#8A5A12;}
         .atk-last{padding-bottom:88px;}
         @media(max-width:900px){
           .atk-wrap,.atk-prem{padding:0 20px;}
@@ -14308,7 +14313,7 @@ function ActorToolkitPage({onNavigate,session,myProfile}){
               <button type="button" className="atk-px-tag" onClick={()=>onNavigate(p.to)}><Ico n={p.icon} s={16}/>{p.tag}{p.premium&&<em>Premium</em>}</button>
             </div>
           ))}</div>
-          <div className="atk-kit"><span>What you bring:</span><div className="atk-serif atk-answer">Talent<span>.</span></div><small>Nobody can give it to you. Nobody can take it either.</small></div>
+          <div className="atk-kit"><span>What you bring:</span><div className="atk-serif atk-answer">Talent<span>.</span></div><small>Nobody can give it to you. Nobody can take it either.</small><p className="atk-sharp">So keep it sharp: plays and scene books at <a href="https://www.dramabookshop.com" target="_blank" rel="noopener">The Drama Book Shop<Tri/></a></p></div>
           {loggedIn
             ?<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("search")}>Browse Castings <Tri/></button>
             :<button className="atk-btn atk-btn-ink" onClick={()=>onNavigate("register-talent")}>Start Being Found <Tri/></button>}
