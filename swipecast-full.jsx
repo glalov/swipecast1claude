@@ -4144,7 +4144,7 @@ html.ddm-open .nav{background:transparent;border-bottom-color:transparent;}
    (html.nav-hover): a white rounded card forms around it; 3) menu open (html.ddm-open): the same card grows
    down into the menu. Once scrolled the bar stays solid cream so content never shows behind the links. */
 .nav::before{content:"";position:absolute;left:var(--ddL,20px);right:var(--ddR,20px);top:6px;height:calc(100% - 12px);background:#fff;border-radius:16px;z-index:-1;pointer-events:none;opacity:0;box-shadow:0 0 0 1px rgba(36,31,25,.08),0 10px 30px -12px rgba(26,26,46,.22);transition:opacity .22s ease,height .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s ease;}
-html.nav-hover .nav::before{opacity:1;}
+.nav[data-hov]::before{opacity:1;} /* attribute on the nav itself (React never overwrites it) (was html.nav-hover): a class on <html> restyled the whole page on every hover */
 html.ddm-open .nav::before{opacity:1;height:var(--ddH,300px);box-shadow:0 0 0 1px rgba(36,31,25,.10),0 28px 70px -20px rgba(26,26,46,.38),0 10px 22px -12px rgba(26,26,46,.18);}
 @media(min-width:901px){
   html:not(.pl-body-cinematic) .nav:not(.scrolled){background:transparent;border-bottom-color:transparent;}
@@ -9746,8 +9746,12 @@ function FooterWordmark(){
 // Nav card edges for the Stripe-style bar/menus: logo left and right-hand buttons + 22px.
 function navCardEdges(){try{const root=document.documentElement,nav=document.querySelector('.nav');if(!nav)return;
   const lg=nav.querySelector('.logo'),ac=nav.querySelector('.nav-actions'),vw=root.clientWidth;
-  if(lg)root.style.setProperty('--ddL',Math.max(12,Math.round(lg.getBoundingClientRect().left-22))+'px');
-  if(ac)root.style.setProperty('--ddR',Math.max(12,Math.round(vw-ac.getBoundingClientRect().right-22))+'px');}catch(_){}}
+  /* Only write when the value really changed (2026-11-17): a custom property set on <html> makes the browser
+     re-check the styles of every element on the page (~3,000), which cost a dropped frame on EVERY hover,
+     exactly as the logo started its flip. The edges only move on resize. */
+  const set=function(k,v){ if(root.style.getPropertyValue(k)!==v) root.style.setProperty(k,v); };
+  if(lg)set('--ddL',Math.max(12,Math.round(lg.getBoundingClientRect().left-22))+'px');
+  if(ac)set('--ddR',Math.max(12,Math.round(vw-ac.getBoundingClientRect().right-22))+'px');}catch(_){}}
 
 // Footer "New casting calls, by email" box → newsletter-subscribe edge fn (double opt-in; confirmed
 // subscribers go to the front of the castings promo campaign). Hidden honeypot + time-on-page are
@@ -62837,8 +62841,8 @@ function App(){
       <ActivateMembershipBanner myProfile={myProfile} session={session} page={page} onNavigate={navigate}/>
       <BrowseJoinStripe page={page} session={session} myProfile={myProfile} authReady={authReady} onNavigate={navigate}/>
       <nav className={"nav"+(navScrolled?" scrolled":"")}
-        onPointerEnter={e=>{if(e.pointerType!=="mouse"||window.innerWidth<=900)return;clearTimeout(window.__navHoverT);navCardEdges();document.documentElement.classList.add("nav-hover");}}
-        onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(window.__navHoverT);window.__navHoverT=setTimeout(()=>document.documentElement.classList.remove("nav-hover"),120);}}>
+        onPointerEnter={e=>{if(e.pointerType!=="mouse"||window.innerWidth<=900)return;clearTimeout(window.__navHoverT);navCardEdges();e.currentTarget.setAttribute("data-hov","");}}
+        onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(window.__navHoverT);const nv=e.currentTarget;window.__navHoverT=setTimeout(()=>nv.removeAttribute("data-hov"),120);}}>
         <div className="logo" onClick={()=>navThen("home")}><div className="logo-i logo-2s"><span className="lf-card"><span className="lf-a"><LogoMark/></span><span className="lf-b" aria-hidden="true"><LogoMark/></span></span></div>CastSlate</div>
         <div className="nav-links">
           <span className={page==="search"?"act":""} onClick={()=>navigate("search")}>{navT('nav.browse')}</span>
