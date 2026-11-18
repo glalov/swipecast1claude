@@ -8507,18 +8507,31 @@ function MarqueeStripe({onNavigate,onViewCastingById}){
   const go=(e,page)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(page);};
   // Repeat the sequence enough times per group that one group is wider than any
   // viewport, so the seamless -50% loop never shows a gap.
-  const ago=ms=>{const h=(Date.now()-ms)/36e5;if(h<1)return"just posted";if(h<24)return Math.floor(h)+"h ago";if(h<48)return"yesterday";return Math.floor(h/24)+" days ago";};
+  // Strip line (owner 2026-11-17): NO ages ("8 days ago" made open castings look stale) and NO pay. A small outlined
+  // NEW tag marks castings live for under 3 days. The place shows only when it is outside New York City (12 of 14
+  // were "New York", which just repeated); NYC boroughs count as the city. Day-only stamps (no go_live_at,
+  // created_at exactly noon UTC) are judged by calendar day, never by hours - see fmtPostedAgo's same rule.
   const sex=g=>/^m/i.test(g||"")?"M":/^f/i.test(g||"")?"F":"All genders";
+  const isNewCasting=c=>{
+    const t=new Date(c.go_live_at||c.created_at).getTime();
+    if(!isFinite(t))return false;
+    const dayOnly=!c.go_live_at&&/T12:00:00(\.0+)?Z$/.test(new Date(c.created_at).toISOString());
+    if(dayOnly){const d=new Date(t),n=new Date();const days=Math.floor((Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate())-Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()))/864e5);return days<=2;}
+    return Date.now()-t<72*36e5;
+  };
+  const placeOutsideNYC=loc=>{
+    const city=String(loc||"").trim().replace(/\s*,\s*(NY|New York|CA|NJ|CT|PA)\s*$/i,"").trim();
+    if(!city)return "";
+    return /^(new york( city)?|nyc|manhattan|brooklyn|queens|(the )?bronx|staten island)$/i.test(city)?"":city;
+  };
   const renderLive=(gk,hidden)=>live.map(c=>{
     const r=(c.roles||[])[0]||{};
-    const when=new Date(c.go_live_at||c.created_at).getTime();
-    const fresh=Date.now()-when<864e5;
+    const fresh=isNewCasting(c);
     const role=[r.role_type,sex(r.gender)+(r.age_range?" "+String(r.age_range).replace("-","\u2013"):"")].filter(Boolean).join(", ");
-    const city=String(c.location||"").replace(/, [A-Z]{2}$/,"");
-    const bits=[c.type,role,city,ago(when)].filter(Boolean).join(" \u00b7 ");
+    const bits=[c.type,role,placeOutsideNYC(c.location)].filter(Boolean).join(" \u00b7 ");
     return <a key={gk+"-"+c.id} className="mq-item mq-live" href={"/casting/"+encodeURIComponent(c.slug||c.id)} tabIndex={hidden?-1:undefined}
       onClick={e=>{if(typeof onViewCastingById!=="function")return;e.preventDefault();onViewCastingById(c.id);}}>
-      {fresh&&<b className="mq-new">New</b>}<span className="mq-txt"><em>{c.title}</em>{" \u00b7 "+bits}</span></a>;
+      {fresh&&<b className="mq-new">New</b>}<span className="mq-txt"><em>{c.title}</em>{bits?" \u00b7 "+bits:""}</span></a>;
   });
   const renderGroup=(gk,hidden)=>{
     if(mode==="live")return renderLive(gk,hidden);
@@ -29768,9 +29781,11 @@ const FORMAT_CARDS=[
   {cat:"Commercials",desc:"Brands. Campaigns.",file:"commercials3",icon:"megaphone",light:true},
   {cat:"Theater",desc:"Performance. Style. Story.",file:"stage2",icon:"masks"},
   {cat:"Student Films",desc:"Where emerging talent gets discovered.",file:"student3",icon:"cap"},
-  {cat:"Musical Theater",desc:"Live performance.",file:"musical4s70",icon:"music"},
   {cat:"Indie Projects",desc:"Independent stories. Unlimited possibilities.",file:"indie3",icon:"star"},
   {cat:"Voiceover",desc:"Bring words to life.",file:"voiceover6",icon:"mic",light:true},
+  // Musical Theater LAST (owner 2026-11-17): the loop wraps, so it sits just left of Feature Films and is in the
+  // opening view on desktop (centre-right) and on phones (one of the first two cards).
+  {cat:"Musical Theater",desc:"Live performance.",file:"musical4s70",icon:"music"},
 ];
 const FORMAT_ICONS={
   clapper:'<path d="M3 7h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7Z"/><path d="M3 7 6 3l3 4M9 7l3-4 3 4M15 7l3-4 3 4"/>',
