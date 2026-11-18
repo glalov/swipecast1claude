@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Video Demo Stage 1</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Fraunces:opsz,wght@9..144,500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F5F0;--navy:#1A1A2E;--t2:#3A322A;--t3:#5E554B;--line:#E4DED3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--navy);font-family:'DM Sans',-apple-system,Helvetica,Arial,sans-serif}
+.top{background:#0C0A08;color:#F0EAE0;font:700 12px 'DM Sans',sans-serif;letter-spacing:1.4px;text-transform:uppercase;text-align:center;padding:10px 16px}
+.media{position:relative;overflow:hidden;background:#111}
+.media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .35s ease;z-index:2;pointer-events:none}
+.moving>.still{opacity:0}
+.banner{width:100%;aspect-ratio:43/12;max-height:420px;background:#000}
+.banner .copy{position:absolute;left:clamp(16px,5vw,80px);top:50%;transform:translateY(-50%);z-index:3;color:#fff}
+.banner .copy small{display:block;font:700 12px 'DM Sans';letter-spacing:2px;color:#F0B860;margin-bottom:8px}
+.banner .copy b{font:500 clamp(28px,4vw,52px)/1.05 Fraunces,serif;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 16px}
+.label{font:700 12px 'DM Sans';letter-spacing:1.6px;text-transform:uppercase;color:var(--t3);text-align:center;margin:10px 0 18px}
+.reel{overflow:hidden;width:100%;padding:4px 0 12px}
+.track{display:flex;width:max-content;animation:slide 60.7s linear infinite}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.card{position:relative;flex:0 0 auto;width:clamp(236px,24vw,300px);aspect-ratio:3/4;margin-right:20px;border-radius:18px;overflow:hidden;background:#15151f}
+.card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.card .body{position:absolute;left:0;right:0;bottom:0;padding:20px;color:#fff;z-index:3}
+.card h3{font:600 20px 'Playfair Display',Fraunces,serif;margin:0 0 3px;text-shadow:0 1px 2px rgba(0,0,0,.45),0 1px 14px rgba(0,0,0,.6)}
+.card p{margin:0;font-size:13px;text-shadow:0 1px 2px rgba(0,0,0,.5),0 1px 12px rgba(0,0,0,.65)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+.pair .media{aspect-ratio:16/9;border-radius:14px}
+@media(max-width:760px){.pair{grid-template-columns:1fr}}
+#stats{position:fixed;right:12px;bottom:12px;z-index:50;background:rgba(14,12,11,.92);color:#E9E3D8;font:12px/1.45 ui-monospace,Menlo,monospace;border-radius:12px;padding:10px 12px;max-width:min(380px,calc(100vw - 24px));box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#stats b{color:#fff}#stats .ok{color:#7ED6A8}#stats .warn{color:#F0B860}
+#stats button{font:600 12px 'DM Sans';border:0;border-radius:999px;padding:5px 10px;margin:6px 6px 0 0;cursor:pointer;background:#fff;color:#1A1A2E}
+#stats.min .rows{display:none}
+.note{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 24px;line-height:1.55;color:var(--t2);font-size:15px}
+</style>
+</head>
+<body>
+<div class="top">Stage 1 demo · same look as the homepage · only how the videos play has changed</div>
+
+<div class="media banner" data-hls="banner/master.m3u8">
+  <img class="still" src="banner/poster.jpg" alt="">
+  <div class="copy"><small>CASTING CALLS</small><b>Find Roles.<br>Get Seen.</b></div>
+</div>
+
+<div class="wrap">
+  <div class="note"><b>Stage 1</b> keeps the reel exactly as on the homepage (each card its own clip, full lengths), and changes only how videos play: only what is on screen plays, a still covers any stall, the big videos stream in 3–4 quality levels, weak connections get the light reel clips, and everything is saved on the device after the first visit. <b>Test:</b> scroll, switch tabs/apps and come back, weak wifi, and wifi <b>off</b> after one visit.</div>
+  <div class="label">Casting across every format</div>
+</div>
+<div class="reel"><div class="track" id="track"></div></div>
+
+<div class="wrap">
+  <div class="pair">
+    <div class="media" data-hls="journey/master.m3u8"><img class="still" src="journey/poster.jpg" alt=""></div>
+    <div class="media" data-hls="cd/master.m3u8"><img class="still" src="cd/poster.jpg" alt=""></div>
+  </div>
+  <div style="height:60vh"></div>
+</div>
+
+<div id="stats"><div><b>Live video stats</b> <button id="statsToggle">Hide</button></div><div class="rows" id="statsRows">starting…</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"></script>
+<script>
+(function(){
+var swState='not supported';
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js',{scope:'./'}).then(function(){swState=navigator.serviceWorker.controller?'active (videos play from the device when saved)':'installed (takes over on next reload)';}).catch(function(){swState='failed';});
+}
+/* Connection estimate: start sharp on good connections, light on weak ones. */
+var c=navigator.connection||{}, weak=!!(c.saveData||/^(slow-2g|2g|3g)$/.test(c.effectiveType||'')||(c.downlink&&c.downlink<2));
+var estimate=(c.downlink?c.downlink*1e6*0.8:3e6);
+var players=[];
+function cover(owner,on){owner.classList.toggle('moving',on);}
+function hook(v,owner){v.addEventListener('playing',function(){cover(owner,true);});v.addEventListener('waiting',function(){cover(owner,false);});v.addEventListener('pause',function(){cover(owner,false);});}
+
+/* Big videos: adaptive streams (hls.js; Safari plays the same stream natively) */
+document.querySelectorAll('.media[data-hls]').forEach(function(el){
+  var v=document.createElement('video');v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='none';el.insertBefore(v,el.firstChild);hook(v,el);
+  var url=el.getAttribute('data-hls'),p={v:v,el:el,name:url.split('/')[0],want:false};
+  if(window.Hls&&Hls.isSupported()){p.hls=new Hls({startLevel:-1,abrEwmaDefaultEstimate:estimate,capLevelToPlayerSize:true,maxBufferLength:12,autoStartLoad:false});p.hls.loadSource(url);p.hls.attachMedia(v);}
+  else p.native=url;
+  el.__p=p;players.push(p);
+});
+/* Reel: each card its own clip, exactly like the homepage */
+var CARDS=[['Feature Films','Big stories.','feature4'],['Commercials','Brands. Campaigns.','commercials3'],['Theater','Performance. Style. Story.','stage2'],['Student Films','Where emerging talent gets discovered.','student3'],['Indie Projects','Independent stories. Unlimited possibilities.','indie3'],['Voiceover','Bring words to life.','voiceover6'],['Musical Theater','Live performance.','musical4s70']];
+var track=document.getElementById('track');
+for(var rep=0;rep<2;rep++)CARDS.forEach(function(cd){
+  var d=document.createElement('div');d.className='card';
+  d.innerHTML='<img class="still" src="/video-formats/reel5/'+cd[2]+'.jpg" alt=""><div class="body"><h3>'+cd[0]+'</h3><p>'+cd[1]+'</p></div>';
+  var v=document.createElement('video');v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='none';d.insertBefore(v,d.firstChild);hook(v,d);
+  var p={v:v,el:d,name:cd[0],file:cd[2],lite:weak,want:false,card:true};d.__p=p;players.push(p);track.appendChild(d);
+  /* A card that stalls for 1.5s on the sharp file drops to the light one at the same moment of the clip */
+  var t=null;v.addEventListener('waiting',function(){if(p.lite)return;clearTimeout(t);t=setTimeout(function(){if(v.readyState<3&&p.want){var at=v.currentTime;p.lite=true;v.src='/video-formats/reel5-lite/'+p.file+'.mp4';v.currentTime=at;v.play().catch(function(){});}},1500);});
+  v.addEventListener('playing',function(){clearTimeout(t);});
+});
+function start(p){if(p.want)return;p.want=true;
+  if(p.hls)p.hls.startLoad(-1);
+  else if(p.native&&!p.v.src)p.v.src=p.native;
+  else if(p.card&&!p.v.src)p.v.src=(p.lite?'/video-formats/reel5-lite/':'/video-formats/reel5/')+p.file+'.mp4';
+  var q=p.v.play();if(q&&q.catch)q.catch(function(){});}
+function stop(p){if(!p.want)return;p.want=false;try{p.v.pause();}catch(e){}if(p.hls)p.hls.stopLoad();}
+/* Play only what is on screen (cards are watched as they slide past) */
+var io=new IntersectionObserver(function(es){es.forEach(function(e){var p=e.target.__p;if(!p)return;if(e.isIntersecting)start(p);else stop(p);});},{rootMargin:'80px 0px',threshold:0.01});
+players.forEach(function(p){io.observe(p.el);});
+document.addEventListener('visibilitychange',function(){if(document.hidden)return;players.forEach(function(p){if(p.want){var q=p.v.play();if(q&&q.catch)q.catch(function(){});}});});
+
+var rows=document.getElementById('statsRows'),st=document.getElementById('stats');
+document.getElementById('statsToggle').onclick=function(){st.classList.toggle('min');this.textContent=st.classList.contains('min')?'Show':'Hide';};
+setInterval(function(){
+  var playing=players.filter(function(p){return !p.v.paused;});
+  var h='Videos decoding now: <b class="'+(playing.length<=7?'ok':'warn')+'">'+playing.length+'</b> of 17 (homepage today: 15 of 18)<br>';
+  players.filter(function(p){return !p.card;}).forEach(function(p){var lv=p.hls&&p.hls.levels[p.hls.currentLevel];h+=p.name+': '+(p.v.paused?'paused (off screen)':'<span class="ok">playing</span>')+' · '+(lv?lv.height+'p':(p.native?'auto':'-'))+'<br>';});
+  var cards=players.filter(function(p){return p.card&&!p.v.paused;});
+  h+='Reel cards playing: '+cards.length+' (only the ones on screen)'+(cards.some(function(p){return p.lite;})?' · <span class="warn">light files in use</span>':'')+'<br>';
+  h+='Connection: '+(weak?'<span class="warn">weak - light files first</span>':'good - sharp files first')+'<br>Offline cache: '+swState;
+  rows.innerHTML=h;
+},700);
+})();
+</script>
+</body>
+</html>
