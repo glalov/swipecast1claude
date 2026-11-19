@@ -6059,7 +6059,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .scale-tagline .st-a24{color:#0A0A0A;transform:translateX(-50vw);transition:transform .95s cubic-bezier(.3,.15,.2,1);}
 .scale-tagline .st-neon{color:#FF2D6F;transform:translateY(190%);transition:transform .95s cubic-bezier(.3,.15,.2,1);}
 .scale-tagline .st-netflix{color:#E50914;transform:translateX(50vw);transition:transform .95s cubic-bezier(.3,.15,.2,1);}
-.scale-tagline .st-trail{display:block;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;color:var(--t2);margin-top:16px;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease;}
+.scale-tagline .st-trail{display:block;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;letter-spacing:2.4px;text-transform:uppercase;color:var(--t3);margin-top:16px;opacity:0;transform:translateY(12px);transition:opacity .7s ease,transform .7s ease;}
 /* Entrance, fired once when the line scrolls into view (.st-in added by an
    IntersectionObserver): A24 in from the left, Neon up from beneath, Netflix
    in from the right — then the glow takes over and it holds still. */
@@ -6073,8 +6073,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    filter + text-shadow keyframes repainted every frame, froze the page ~0.6s as the line scrolled in, and
    left visible boxes behind the words in Safari. Opacity-only = handled by the graphics chip. */
 .scale-tagline .st-neon,.scale-tagline .st-netflix{position:relative;}
-.scale-tagline .st-neon{text-shadow:0 0 14px rgba(255,45,111,.22);}
-.scale-tagline .st-netflix{text-shadow:0 0 14px rgba(229,9,20,.22);}
+/* Owner 2026-11-19: no glow, the haze made the letters look blurry. Crisp, same colours. */
+.scale-tagline .st-neon,.scale-tagline .st-netflix{text-shadow:none;}
 .scale-tagline .st-neon::after,.scale-tagline .st-netflix::after{content:attr(data-t);position:absolute;left:0;top:0;color:transparent;pointer-events:none;opacity:0;will-change:opacity;}
 .scale-tagline .st-neon::after{text-shadow:0 0 24px rgba(255,45,111,.5);}
 .scale-tagline .st-netflix::after{text-shadow:0 0 24px rgba(229,9,20,.5);}
@@ -6088,7 +6088,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 /* Owner 2026-11-16: studios line is STATIC. No slide-in, no pop-in dots, no glow loop. Same look, just still. */
 .scale-tagline .st-lead,.scale-tagline .st-sep,.scale-tagline .st-a24,.scale-tagline .st-neon,.scale-tagline .st-netflix,.scale-tagline .st-trail{opacity:1!important;transform:none!important;transition:none!important;animation:none!important;}
 .scale-tagline .st-neon::after,.scale-tagline .st-netflix::after{animation:none!important;opacity:0!important;}
-@media (max-width:768px){.scale-tagline{padding:36px 20px 0;}.scale-tagline .st-names{font-size:34px;}}
+/* Phones: the names fill one line (they are ~7.8x as wide as tall), so ~41px on a 375px phone instead of a fixed 34px. */
+@media (max-width:768px){.scale-tagline{padding:36px 20px 0;}.scale-tagline .st-names{font-size:clamp(32px,calc((100vw - 48px) / 8.1),60px);white-space:nowrap;}}
 @media (prefers-reduced-motion:reduce){.scale-tagline .st-lead,.scale-tagline .st-trail,.scale-tagline .st-names span{opacity:1!important;transform:none!important;transition:none!important;}.scale-tagline.st-in .st-a24,.scale-tagline.st-in .st-neon,.scale-tagline.st-in .st-netflix,.scale-tagline.st-in .st-neon::after,.scale-tagline.st-in .st-netflix::after{animation:none!important;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
 .fmt-reel-wrap{position:relative;}
@@ -31040,7 +31041,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         <div className="scale-tagline" ref={taglineRef}>
           <p className="st-lead">From indie films to</p>
           <p className="st-names"><span className="st-a24">A24</span> <span className="st-sep st-s1">·</span> <span className="st-mask"><span className="st-neon" data-t="Neon">Neon</span></span> <span className="st-sep st-s2">·</span> <span className="st-netflix" data-t="Netflix">Netflix</span></p>
-          <span className="st-trail">— level projects</span>
+          <span className="st-trail">-level projects</span>
         </div>
       )}
     </div>
