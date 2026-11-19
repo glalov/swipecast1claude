@@ -6894,6 +6894,9 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .agd-ul .ul-rays,.agd-ul .ul-halo,.agd-ul.play .ul-rays,.agd-ul.play .ul-halo{animation:none;opacity:1;transform:none;}
   .agd-ul.play .ul-pw{animation:none;}
 }
+/* Owner 2026-11-19 (Agency Directory): no emoji padlock, rings or swinging key; one still line icon, and the hidden names stop shimmering. */
+.agd-flatlock{width:52px;height:52px;border-radius:50%;background:var(--s1);border:1px solid var(--bdr);display:grid;place-items:center;margin-bottom:12px;color:var(--t1);}
+.agd-still .agd-redact{animation:none;}
 .agd-lock h4{margin:0 0 6px;font-size:19px;letter-spacing:-.6px;font-weight:800;}
 .agd-lock p{margin:0 0 15px;font-size:13.5px;color:var(--t2);max-width:420px;}
 .agd-steps{display:flex;flex-direction:column;gap:18px;margin-top:24px;}
@@ -13827,7 +13830,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
     </div></section></div>
 
     <div className="agd-wrap"><section className="agd-blk" style={{paddingTop:0}}>
-      <div className="agd-table">
+      <div className="agd-table agd-still">
         <div className="agd-row head"><div>Company</div><div>City</div><div>Submissions</div><div>Size</div></div>
         {AGD_SAMPLE.map(([city,sub,size,w,ok],i)=>(
           <div className="agd-row" key={i}>
@@ -13838,7 +13841,7 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
           </div>
         ))}
         <div className="agd-lock">
-          {isPremium?<UnlockedPad/>:<div className="agd-lockwrap"><span className="agd-ring"/><span className="agd-ring r2"/><span className="agd-key">🔒</span></div>}
+          {isPremium?<UnlockedPad/>:<div className="agd-flatlock" aria-hidden="true"><Ico n="lock" s={24}/></div>}
           <h4>{isPremium?"All 650+ companies are unlocked for you":"650+ companies unlock with Premium"}</h4>
           <p>Names, office addresses, websites and submission routes.</p>
           <button className="agd-btn gold" onClick={go} style={{padding:"13px 25px",fontSize:14}}>{isPremium?"Open the directory":"Unlock the directory"}</button>
@@ -13889,8 +13892,8 @@ function AgencyDirectoryPage({onNavigate,isPremium=false}){
         <div className="section-label">Getting representation</div>
         <h2 className="agd-h2">Questions actors ask about agents and managers.</h2>
         <div className="agd-faq">
-          {/* The first card (the BEST ANSWER) starts open; React only sets "open" on mount, so readers can still close it. */}
-          {AGD_FAQ.map(([q,a,badge],i)=><details key={i} open={i===0}><summary><span>{q}{badge&&<span className="agd-faq-badge">{badge}</span>}</span><span className="pm"><Ico n="plus" s={14}/></span></summary>
+          {/* The first card starts open (no "Best answer" badge since 2026-11-19, owner); React only sets "open" on mount, so readers can still close it. */}
+          {AGD_FAQ.map(([q,a,badge],i)=><details key={i} open={i===0}><summary><span>{q}</span><span className="pm"><Ico n="plus" s={14}/></span></summary>
             <div className="a">{a.split("\n\n").map((para,j)=><p key={j}>{para.split("**").map((t,k)=>k%2?<b key={k}>{t}</b>:t)}</p>)}</div></details>)}
         </div>
       </section>
