@@ -3818,7 +3818,7 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .scale-tagline .st-lg{display:block;width:auto;height:clamp(28px,6.2vw,66px);}
 .scale-tagline .st-ldot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--t3);opacity:.7;}
 /* Phones: the names fill one line (they are ~7.8x as wide as tall), so ~41px on a 375px phone instead of a fixed 34px. */
-@media (max-width:768px){.scale-tagline .st-lg{height:min(48px,calc((100vw - 80px) / 9.9));}.scale-tagline .st-logos{gap:10px;}}
+@media (max-width:768px){.scale-tagline .st-lg{height:min(48px,calc((100vw - 104px) / 9.9));}.scale-tagline .st-logos{gap:10px;}}
 @media (max-width:768px){.scale-tagline{padding:36px 20px 0;}.scale-tagline .st-names{font-size:clamp(32px,calc((100vw - 48px) / 8.1),60px);white-space:nowrap;}}
 @media (prefers-reduced-motion:reduce){.scale-tagline .st-lead,.scale-tagline .st-trail,.scale-tagline .st-names span{opacity:1!important;transform:none!important;transition:none!important;}.scale-tagline.st-in .st-a24,.scale-tagline.st-in .st-neon,.scale-tagline.st-in .st-netflix,.scale-tagline.st-in .st-neon::after,.scale-tagline.st-in .st-netflix::after{animation:none!important;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
