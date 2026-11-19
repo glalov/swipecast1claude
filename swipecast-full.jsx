@@ -49841,14 +49841,15 @@ const ACG = (()=>{
     const order=ppl.slice().sort((a,b)=>(pinned(b)-pinned(a))||((/^Lead$/.test(b.role_type)?1:0)-(/^Lead$/.test(a.role_type)?1:0))||(refs(b)-refs(a)));
     const keep=new Set(order.filter(pinned));
     order.forEach(r=>{if(keep.size<k)keep.add(r);});
-    const dropThe=Math.random()<0.3;
+    // Owner 2026-11-19: too many labels started with "The". Bare like real breakdowns ("Mother", "Night Nurse"); "The" only on very short ones ("The Ex").
+    const dropThe=true;
     const used=new Set(roles.filter(r=>!ppl.includes(r)).map(r=>String(r.name).toLowerCase()));
     let changed=0;
     ppl.forEach(r=>{
       if(keep.has(r)||!okLabel(r))return;
       const sl=slotOf(r),poss=/^[A-Z][a-z]+['’]s\b/.test(sl);
       const base=titleCase(sl);
-      const lab=poss?base:(dropThe&&!/^(the\s+)?other\b/i.test(sl))?base:("The "+base);
+      const lab=poss?base:(dropThe&&base.length>=4&&!/^(the\s+)?other\b/i.test(sl))?base:("The "+base);
       if(!lab||used.has(lab.toLowerCase()))return;
       // Name in other text -> "the daughter"; possessive slots read as written.
       const ref=poss?sl:("the "+sl.replace(/^the\s+/i,"")).toLowerCase();
