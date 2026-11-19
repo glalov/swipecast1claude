@@ -3842,7 +3842,9 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 /* Owner 2026-11-19: one shared colour grade on every reel clip (and its poster, so the swap doesn't flash):
    a little less saturation, a touch more contrast, warm toward the site's cream/gold. Static filter, no animation.
    The demo's soft-light warm overlay was left out on purpose: blending over moving video costs every frame. */
-.fmt-poster,.fmt-video{filter:saturate(.72) contrast(1.06) brightness(.97) sepia(.14);}
+.fmt-poster,.fmt-video,
+/* Same grade on the three homepage videos below the reel (owner 2026-11-19): Seen full-screen, actor journey, for casting directors. */
+.he-box video,.he-box .he-poster,.cinema-feature-img video,.cinema-feature-img img,.hiw-card-img video,.hiw-card-img img{filter:saturate(.72) contrast(1.06) brightness(.97) sepia(.14);}
 .fmt-video.is-on{opacity:1;}
 .fmt-shade{position:absolute;inset:0;z-index:2;background:none;} /* owner 2026-11-17: no dark bottom fade on the format cards */
 /* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
