@@ -19398,7 +19398,7 @@ function BookshopTip(){
   return(<div className="dbs-tip">
     <div className="dbs-tip-kick">For your craft</div>
     <div className="dbs-tip-wm" aria-hidden="true"><small>The</small>Drama Book Shop</div>
-    <p><b>Looking for scenes to work on?</b> New York's Drama Book Shop has served actors since 1917: plays, scene books and acting guides, shipped anywhere.</p>
+    <p><b>Looking for scenes to work on?</b> The Drama Book Shop on West 39th Street in New York has served actors since 1917: plays, scene books and acting guides. Stop by, or order online.</p>
     <a href="https://www.dramabookshop.com" target="_blank" rel="noopener">Browse the shop <Tri/></a>
   </div>);
 }
