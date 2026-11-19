@@ -3194,6 +3194,10 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .sw-btn.save.sw-still{color:#111111;}
 .sw-btn.save.sw-still::after{box-shadow:0 0 0 5px rgba(20,17,15,.1);}
 .sw-btn.save.sw-still:hover{border-color:#111111;background:rgba(20,17,15,.05);}
+/* Shortlist star G (owner, 2026-11-19): thin outline at rest like the X and check; on tap the star fills ink and the ring darkens while the card flies up, then resets for the next actor. */
+.sw-btn.save.sw-still .sw-star-fill{opacity:0;transition:opacity .2s ease;}
+.sw-btn.save.sw-still.on .sw-star-fill{opacity:1;}
+.sw-btn.save.sw-still.on,.sw-btn.save.sw-still.on:disabled{border-color:#111111;}
 .sw-btn.save::after{content:"";position:absolute;inset:-2px;border-radius:50%;box-shadow:0 0 0 10px rgba(99,91,255,0.22);z-index:-1;pointer-events:none;opacity:0;animation:sw-ring 2.8s ease-in-out infinite;}
 .sw-btn.save:hover::after{animation:none;opacity:0;}
 /* Owner 2026-11-16: swipe hint is still (navy arrow, no travel or flip) and the homepage star has no pulse ring. */
@@ -29601,13 +29605,13 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
           <span className="sw-btn-label">Skip</span>
         </div>
         <div className="sw-btn-wrap">
-          <button className="sw-btn save sw-still" title="Shortlist" disabled={animating} onClick={()=>shortlist()}>
+          <button className={"sw-btn save sw-still"+(superFly?" on":"")} title="Shortlist" disabled={animating} onClick={()=>shortlist()}>
             <span className="sw-star-wrap" aria-hidden="true">
               <Ico n="star" s={24}/>
               <span className="sw-star-fill"><Ico n="star-filled" s={24}/></span>
             </span>
           </button>
-          <span className="sw-btn-label">Shortlist</span>
+          <span className="sw-btn-label">{superFly?"Shortlisted":"Shortlist"}</span>
         </div>
         <div className="sw-btn-wrap">
           <button className="sw-btn yes" title="Callback" disabled={animating} onClick={()=>advance(1)}><Ico n="check" s={24}/></button>
