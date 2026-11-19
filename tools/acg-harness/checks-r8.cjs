@@ -106,7 +106,7 @@ module.exports=function register({check:check0,addBoard:addBoard0,real,sentences
       if(/\bstates: "/.test(L.synopsis))R.states++;
       persons(L).forEach(r=>{
         if(FN.test(L.type)){R.commRoles++;if(r.name===String(r._person||"").split(" ")[0])R.commFirst++;if(r._person&&r.name===r._person)R.commFull++;}
-        else if(!DOCU.test(L.type)){R.narrRoles++;if(isFull(r.name))R.narrFull++;}
+        else if(!DOCU.test(L.type)){R.narrRoles++;if(isFull(r.name)&&!r._r24Label&&!/^The\b/.test(r.name))R.narrFull++;}
       });
     });
     // Every category appears in every 100-listing window.

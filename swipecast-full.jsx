@@ -49800,7 +49800,68 @@ const ACG = (()=>{
       const uk=r22UnpaidKey(item.pay);if(uk)(res._r22Unpaid=res._r22Unpaid||new Set()).add(uk);
     }
     r21Where(item,h,res);
+    r24Labels(item,res);
     item._lines=splitLines(item.synopsis).concat([item.tagline],roles.map(r=>r.description)).filter(Boolean);
+  }
+  // ── Round 24: varied role labels (owner, 2026-11-19) ─────────────────────
+  // Browse cards read "Mason / Deborah / Melissa" because every story part
+  // carried a first name. Like real breakdowns, leads may keep a name while
+  // other parts are shown by who they are ("The Daughter", "Walter's Son",
+  // "Vice Principal"). Labels come from the role's own _slot (written by the
+  // seed), never guessed. At most two names per card, often one or none, and
+  // never the same count twice in a row. The person's own description keeps
+  // the name; every OTHER mention (synopsis, tagline, other roles) becomes
+  // "the daughter" so nobody reads about a stranger. Function-named formats
+  // (commercials, music videos, VO...) already use job titles and are skipped.
+  const R24_VAGUE=/^(the\s+)?(woman|man|girl|boy|person|people|guy|lady|kid|other|one|friend)$/i;
+  function r24Labels(item,res){
+    if(V7_FN.test(item.type||"")&&!V7_DOC.test(item.type||""))return;
+    const roles=item._roles||[];
+    const ppl=roles.filter(r=>!r._group&&!r._job&&r._person&&r._slot&&!/background/i.test(r.role_type||"")&&!r._r21Title);
+    if(ppl.length<2)return;
+    const firstOf=r=>String(r._person).trim().split(/\s+/)[0];
+    const firsts=ppl.map(firstOf);
+    if(new Set(firsts).size<firsts.length)return;
+    const esc=x=>String(x).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    const others=r=>[item.tagline,item.synopsis,item.schedule_note,item.submission_requirements].concat(roles.filter(o=>o!==r).map(o=>o.description)).join(" \n ");
+    const slotOf=r=>String(r._slot).trim();
+    const slots=ppl.map(slotOf);
+    // A person named inside another part's label ("Walter's son") stays named.
+    const pinned=r=>slots.some(sl=>new RegExp("\\b"+esc(firstOf(r))+"['’]s\\b").test(sl));
+    const okLabel=r=>{const sl=slotOf(r);if(R24_VAGUE.test(sl)||sl.split(/\s+/).length>4||/\b(who|that|with|of|in|at)\b/i.test(sl))return false;
+      const m=sl.match(/^([A-Z][a-z]+)['’]s\b/);if(m&&!firsts.includes(m[1]))return false;return true;};
+    // How many keep a name: 0, 1 or 2, never the same as the listing before.
+    const pick=()=>{const x=Math.random();return x<0.35?0:x<0.75?1:2;};
+    let k=pick();if(res&&res._r24LastK===k)k=pick();
+    if(res&&res._r24LastK===k)k=(k+1)%3;
+    // Every card mixes kinds: with no group or titled part, at least one person gets a label.
+    if(!roles.some(r=>!ppl.includes(r)))k=Math.min(k,ppl.length-1);
+    // Keep names on the parts the rest of the listing talks about most, leads first.
+    const refs=r=>(others(r).match(new RegExp("\\b"+esc(firstOf(r))+"\\b","g"))||[]).length;
+    const order=ppl.slice().sort((a,b)=>(pinned(b)-pinned(a))||((/^Lead$/.test(b.role_type)?1:0)-(/^Lead$/.test(a.role_type)?1:0))||(refs(b)-refs(a)));
+    const keep=new Set(order.filter(pinned));
+    order.forEach(r=>{if(keep.size<k)keep.add(r);});
+    const dropThe=Math.random()<0.3;
+    const used=new Set(roles.filter(r=>!ppl.includes(r)).map(r=>String(r.name).toLowerCase()));
+    let changed=0;
+    ppl.forEach(r=>{
+      if(keep.has(r)||!okLabel(r))return;
+      const sl=slotOf(r),poss=/^[A-Z][a-z]+['’]s\b/.test(sl);
+      const base=titleCase(sl);
+      const lab=poss?base:(dropThe&&!/^(the\s+)?other\b/i.test(sl))?base:("The "+base);
+      if(!lab||used.has(lab.toLowerCase()))return;
+      // Name in other text -> "the daughter"; possessive slots read as written.
+      const ref=poss?sl:("the "+sl.replace(/^the\s+/i,"")).toLowerCase();
+      const full=String(r._person),first=firstOf(r);
+      const fix=t=>String(t||"").replace(new RegExp("\\b("+esc(full)+"|"+esc(first)+")(['’]s)?\\b","g"),(m0,nm,ps,off,str)=>{
+        const before=str.slice(0,off);const start=!before.trim()||/[.!?:\n]\s*$/.test(before);
+        const out=ref+(ps||"");return start?out.charAt(0).toUpperCase()+out.slice(1):out;});
+      ["tagline","synopsis","schedule_note","submission_requirements"].forEach(f=>{if(item[f])item[f]=fix(item[f]);});
+      roles.forEach(o=>{if(o!==r)o.description=fix(o.description);});
+      used.add(lab.toLowerCase());
+      r.name=lab;r._r24Label=true;changed++;
+    });
+    if(res)res._r24LastK=ppl.length-changed;
   }
   // ── Round 13 validators ──────────────────────────────────────────────────
   const R13_FEW=/\b(steps in once|in one scene|one scene only|just two scenes|two scenes\b|appears only at the very end|last (three|few) seconds|a one-day part|just one day for|is in one day only)\b/i;

@@ -124,7 +124,8 @@ module.exports=function register({check,addBoard,sentences,clean,famOf,parseRole
       const slot=String((raw.find(z=>z.name===r.name||z._person===r.name||String(z.name).toUpperCase()===r.name)||{})._slot||"").replace(/^(the|a|an)\s+/i,"");
       const own=slot?new RegExp("\\b("+slot.split(/\s+/).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")\\b","ig"):null;
       const rel=own?t.replace(own,""):t;
-      if(REL.test(rel)&&!firsts.some(n=>t.indexOf(n)>-1))out.push({detail:`${r.name}: "${(rel.match(REL)||[""])[0]}" with nobody named`});
+      const labs=L.roles.filter(o=>o.name!==r.name).map(o=>String(o.name).replace(/^the\s+/i,"").toLowerCase()).filter(x=>x.length>2);
+      if(REL.test(rel)&&!firsts.some(n=>t.indexOf(n)>-1)&&!labs.some(x=>t.toLowerCase().indexOf(x)>-1))out.push({detail:`${r.name}: "${(rel.match(REL)||[""])[0]}" with nobody named`});
     });
     return out;
   });
