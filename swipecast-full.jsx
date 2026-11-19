@@ -45768,6 +45768,7 @@ const ACG = (()=>{
      h.r22Unpaid=new Set(newest.slice(0,14).map(c=>r22UnpaidKey(c.pay)).filter(Boolean));
      h.r21Fmts=newest.slice(0,6).map(c=>r21FmtOf(c.roles,c.type)).filter(Boolean);
      h.r21Locs=newest.slice(0,6).map(c=>r21LocStyle(c.shoot_location)).filter(Boolean);
+     h.r24LocHeads=newest.slice(0,6).map(c=>String(c.shoot_location||"").replace(/^(a|an)\s+/i,"").trim().split(/[\s,]+/)[0].toLowerCase()).filter(Boolean);
      h.r16Opens={};newest.slice(0,60).forEach(c=>(c.roles||[]).forEach(r=>{const k=r16OpenId(r&&r.description,r&&r.name);if(k)h.r16Opens[k]=(h.r16Opens[k]||0)+1;}));}
     h.v5=h.v5||{};h.v5.warmth={};
     h.v8Recent.forEach(m=>{if(m.warmth)h.v5.warmth[m.warmth]=(h.v5.warmth[m.warmth]||0)+1;});
@@ -49742,13 +49743,17 @@ const ACG = (()=>{
     if(/^(NYC|New York City|Greater |North Jersey)|( area| and nearby)$/.test(s))return "loose";
     return /, [A-Z]{2}$/.test(s)&&s.split(",").length===2&&/^(The Bronx|Brooklyn|Queens|Manhattan|Staten Island)/.test(s)?"borough":"areaOnly";
   }
-  const R21_LOC_W={full:20,venueArea:16,areaOnly:18,borough:12,venueCity:12,tba:8,around:6,loose:8};
+  const R21_LOC_W={full:14,venueArea:14,areaVenue:12,areaOnly:16,borough:10,venueCity:12,tba:8,around:6,loose:8};
+  // Owner 2026-11-19: Where lines all opened "A cabin…", "A sheriff's office…". No leading article,
+  // and a new line may not open with the same first word as any of the last six listings.
+  const r24NoArt=v=>{const t=String(v||"").replace(/^(a|an)\s+/i,"").replace(/\.$/,"");return t?t.charAt(0).toUpperCase()+t.slice(1):t;};
+  const r24Head=v=>String(v||"").trim().split(/[\s,]+/)[0].toLowerCase();
   const R21_REGION_IN={"Long Island":"on Long Island","Hudson Valley":"in the Hudson Valley","San Francisco Bay Area":"in the Bay Area","Montclair":"in North Jersey","Westchester":"in Westchester"};
   const R21_LOOSE={"Los Angeles":["Greater Los Angeles","Los Angeles area"],"San Francisco Bay Area":["Bay Area","San Francisco Bay Area"],"Long Island":["Long Island"],"Hudson Valley":["Hudson Valley","Hudson Valley, NY"],"Westchester":["Westchester County"],"Montclair":["North Jersey"],"Newark":["Newark area"],"Jersey City":["Jersey City","Hudson County, NJ"],"Hoboken":["Hoboken area"]};
   function r21Where(item,h,res){
     const m=String(item.shoot_location||"").match(/^([^,]+), (.+) \(([^()]+)\)$/);
-    if(!m)return;
-    const venue=m[1],area=m[2],city=m[3];
+    if(!m){if(item.shoot_location)item.shoot_location=r24NoArt(item.shoot_location);return;}
+    const venue=r24NoArt(m[1]),venueLow=venue.charAt(0).toLowerCase()+venue.slice(1),area=m[2],city=m[3];
     if(/ (to|and|then) | — |→/.test(area))return;
     const nyc=city==="New York, NY";
     const parts=area.split(", "),hood=parts[0],boro=nyc?(parts[1]||""):"";
@@ -49758,8 +49763,9 @@ const ACG = (()=>{
     const fixed=/theater|stage|playhouse|studio|booth/i.test(venue)||item._creatorKind==="stage";
     const days=+item._shootDays||1;
     const mk={
-      full:()=>item.shoot_location,
+      full:()=>nyc?`${venue}, ${area}`:`${venue}, ${area} (${city})`,
       venueArea:()=>`${venue} in ${area.replace(/, [A-Z]{2}$/,"")}`,
+      areaVenue:()=>`${capFirst(areaLine)} (${venueLow})`,
       areaOnly:()=>capFirst(areaLine),
       borough:()=>nyc&&boro?`${capFirst(boro)}, NY`:null,
       venueCity:()=>`${venue} ${inBig}`,
@@ -49768,15 +49774,18 @@ const ACG = (()=>{
       loose:()=>nyc?pick(["New York City","NYC"].concat(boro?[`${capFirst(boro)} and nearby`]:[])):pick(R21_LOOSE[cityShort]||[`${cityShort} area`])
     };
     const recent=((res&&res._r21Locs)||[]).concat((h&&h.r21Locs)||[]).slice(0,2);
-    let pool=Object.keys(R21_LOC_W).filter(k=>recent.indexOf(k)<0&&(!fixed||/^(full|venueArea|venueCity)$/.test(k)));
-    if(!pool.length)pool=["full","venueArea","venueCity"];
+    let pool=Object.keys(R21_LOC_W).filter(k=>recent.indexOf(k)<0&&(!fixed||/^(full|venueArea|areaVenue|venueCity)$/.test(k)));
+    if(!pool.length)pool=["full","venueArea","areaVenue","venueCity"];
     for(let i=0;i<8;i++){
       const total=pool.reduce((a,k)=>a+R21_LOC_W[k],0);let x=Math.random()*total,k=pool[0];
       for(const q of pool){x-=R21_LOC_W[q];if(x<=0){k=q;break;}}
-      const v=mk[k]();
-      if(v){item.shoot_location=v;item._r21Loc=k;if(res)(res._r21Locs=res._r21Locs||[]).unshift(k);return;}
+      const v0=mk[k](),v=v0&&r24NoArt(v0);
+      const heads=((res&&res._r24LocHeads)||[]).concat((h&&h.r24LocHeads)||[]).slice(0,6);
+      if(v&&heads.indexOf(r24Head(v))<0){item.shoot_location=v;item._r21Loc=k;if(res){(res._r21Locs=res._r21Locs||[]).unshift(k);(res._r24LocHeads=res._r24LocHeads||[]).unshift(r24Head(v));}return;}
       pool=pool.filter(q=>q!==k);if(!pool.length)break;
     }
+    // Every style collided: keep the venue line but never with an article.
+    item.shoot_location=r24NoArt(item.shoot_location);if(res)(res._r24LocHeads=res._r24LocHeads||[]).unshift(r24Head(item.shoot_location));
   }
   // Runs once a draft has passed every check: how the place is written, and
   // the one titled surname a cast may carry.
