@@ -30125,7 +30125,6 @@ const HE_CSS=`
 .he-cover{position:absolute;left:0;top:0;width:100%;height:100%;will-change:transform,opacity;transform:translateZ(0)}
 .he-after{position:absolute;left:0;right:0;text-align:center;color:#F7F0E6;opacity:0;will-change:opacity,transform;padding:0 24px}
 .he-after h2{margin:0;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:clamp(34px,4vw,58px);line-height:1.08;letter-spacing:-1px;color:#F7F0E6;text-shadow:0 2px 30px rgba(0,0,0,.35)}
-.he-after .btn-teal{margin-top:26px}
 .he-probe{position:fixed;left:-9px;top:0;width:1px;visibility:hidden;pointer-events:none}
 .he-sw{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9990;display:flex;gap:4px;padding:4px;background:#fff;border:1px solid #D8CEBD;border-radius:999px;box-shadow:0 8px 24px -10px rgba(0,0,0,.3);font:700 13px 'DM Sans',sans-serif}
 .he-sw button{border:0;background:none;padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit;color:#241F19}
@@ -30384,8 +30383,8 @@ function HomeEcho({onNavigate}){
           <div className="he-shade"/>
           <div className="he-covers" aria-hidden="true"><canvas className="he-cover"/><canvas className="he-cover" style={{opacity:0}}/></div>
           <div className="he-after">
+            {/* Owner 2026-11-19: no button here. The statement stands alone; Browse is in the banner and nav. */}
             <h2>Seen full-screen.</h2>
-            <button className="btn-teal" style={{padding:"14px 26px",fontSize:16}} onClick={()=>onNavigate&&onNavigate("search")}>Browse castings <Tri/></button>
           </div>
         </div>
       </div>
