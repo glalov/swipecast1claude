@@ -30000,6 +30000,26 @@ if(CS_VID2&&typeof window!=="undefined"&&!window.__csVid2){
     scan();
   }catch(_){}
 }
+// Owner 2026-11-19: Cmd+Tab back to the homepage made every clip wake at the same instant (and twice:
+// visibilitychange AND focus), each one playing, nudging and sometimes reloading its file -> stutter.
+// One shared queue instead: clips on screen first, nearest the middle first, ~150ms apart; off-screen
+// clips after 1.2s, 300ms apart. A second resume signal within 600ms of a flush is ignored.
+const csResumeQ=(function(){
+  const pending=new Map(); let t=0, lastRun=0;
+  function flush(){
+    t=0; if(document.hidden){ pending.clear(); return; }
+    const items=Array.from(pending.values()); pending.clear(); lastRun=Date.now();
+    const on=items.filter(function(x){ return x.vis(); }).sort(function(a,b){ return a.dist()-b.dist(); });
+    const off=items.filter(function(x){ return !x.vis(); });
+    on.forEach(function(x,i){ setTimeout(function(){ if(!document.hidden) x.run(); },i*150); });
+    off.forEach(function(x,i){ setTimeout(function(){ if(!document.hidden) x.run(); },1200+i*300); });
+  }
+  return function(v,vis,run){
+    if(Date.now()-lastRun<600) return;
+    pending.set(v,{vis:vis,run:run,dist:function(){ try{ const r=v.getBoundingClientRect(); return Math.abs(r.top+r.height/2-window.innerHeight/2); }catch(_){ return 9e9; } }});
+    if(!t) t=setTimeout(flush,60);
+  };
+})();
 function csArmLoopVideo(v){
   let visible=true, gone=false;
   try{ v.muted=true; v.defaultMuted=true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); }catch(_){}
@@ -30051,7 +30071,7 @@ function csArmLoopVideo(v){
       unfreeze(step); checkResume(step+1);
     },step?1500:900);
   };
-  const onResume=function(){ if(!document.hidden) checkResume(0); };
+  const onResume=function(){ if(!document.hidden) csResumeQ(v,function(){ return visible; },function(){ checkResume(0); }); };
   const onVis=onResume;
   const onIdle=function(){ if(visible) kick(false); };
   // Low Power Mode (iPhone/iPad/Mac) blocks every autoplay until a real tap,
