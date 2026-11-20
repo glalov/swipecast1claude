@@ -6120,7 +6120,10 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    The demo's soft-light warm overlay was left out on purpose: blending over moving video costs every frame. */
 .fmt-poster,.fmt-video,
 /* Same grade on the three homepage videos below the reel (owner 2026-11-19): Seen full-screen, actor journey, for casting directors. */
-.he-box video,.he-box .he-poster,.cinema-feature-img video,.cinema-feature-img img,.hiw-card-img video,.hiw-card-img img{filter:saturate(.72) contrast(1.06) brightness(.97) sepia(.14);}
+.he-box video,.he-box .he-poster{filter:saturate(.72) contrast(1.06) brightness(.97) sepia(.14);}
+/* The two white-card videos (actor journey, casting directors) were already low on colour (overcast street, white walls),
+   so the full grade made them beige and flat. Lighter version: same warm tone, less colour taken out, more contrast. */
+.cinema-feature-img video,.cinema-feature-img img,.hiw-card-img video,.hiw-card-img img{filter:saturate(.92) contrast(1.12) brightness(1.01) sepia(.09);}
 .fmt-video.is-on{opacity:1;}
 .fmt-shade{position:absolute;inset:0;z-index:2;background:none;} /* owner 2026-11-17: no dark bottom fade on the format cards */
 /* Self-contained dark bottom overlay lives on .fmt-body so the white title/desc
