@@ -3776,10 +3776,10 @@ body.sheet-push .b2t-cube{display:none;}
 @keyframes ctup{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
 /* Safari ignores overflow:hidden + border-radius around the filtered iframe (square corners);
    clip-path + isolation make it round the map in every browser. */
-.ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(243,235,224,.55);background:#F3EBE0;clip-path:inset(0 round 16px);-webkit-clip-path:inset(0 round 16px);isolation:isolate;}
-.ct-map iframe{position:absolute;top:-50px;left:-50px;width:calc(100% + 100px);height:calc(100% + 100px);max-width:none;max-height:none;border:0;pointer-events:none;filter:grayscale(1) contrast(1.08) brightness(1.04);}
-/* Cream Paper (owner 2026-11-12): light warm map so it reads as a card on the navy panel */
-.ct-map::before{content:"";position:absolute;inset:0;z-index:1;background:#E9DCC6;mix-blend-mode:multiply;pointer-events:none;}
+.ct-map{position:relative;height:170px;border-radius:16px;overflow:hidden;border:1px solid rgba(220,235,226,.7);background:#EEF3EE;clip-path:inset(0 round 16px);-webkit-clip-path:inset(0 round 16px);isolation:isolate;}
+.ct-map-img{position:absolute;top:50%;left:50%;width:800px;height:400px;max-width:none;max-height:none;transform:translate(-50%,-50%);pointer-events:none;user-select:none;-webkit-user-select:none;filter:grayscale(1) contrast(.9) brightness(1.08);}
+/* Sage cream (owner 2026-11-21, demo castslate-contact-map-tint-demos.html; was Cream Paper #E9DCC6): light map with a hint of the site sage */
+.ct-map::before{content:"";position:absolute;inset:0;z-index:1;background:#DDEBE3;mix-blend-mode:multiply;pointer-events:none;}
 .ct-ring{position:absolute;top:50%;left:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;border:2px solid var(--teal);opacity:0;animation:ctradar 2.8s ease-out infinite;z-index:2;pointer-events:none;}
 .ct-ring.r2{animation-delay:.93s;}.ct-ring.r3{animation-delay:1.86s;}
 @keyframes ctradar{0%{transform:scale(.4);opacity:.8;}100%{transform:scale(5.5);opacity:0;}}
@@ -9795,6 +9795,7 @@ function navCardEdges(){try{const root=document.documentElement,nav=document.que
 // Footer "New casting calls, by email" box → newsletter-subscribe edge fn (double opt-in; confirmed
 // subscribers go to the front of the castings promo campaign). Hidden honeypot + time-on-page are
 // the bot traps; the function answers the same way whatever happened, so the list can't be probed.
+const CT_MAP_IMG="/assets/contact/contact-map-z16.jpg";
 function FooterSignup(){
   const [email,setEmail]=useState("");
   const [hp,setHp]=useState("");
@@ -12414,8 +12415,9 @@ function ContactPage({onNavigate,session,myProfile,initialSubject}){
           <div className="ct-st"><b>A little longer</b><span>On weekends</span></div>
         </div>
         <div className="ct-map">
-          <iframe title="CastSlate office area map" loading="lazy" tabIndex={-1} aria-hidden="true" referrerPolicy="no-referrer-when-downgrade" scrolling="no"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=-73.9966%2C40.7577%2C-73.9806%2C40.7697&layer=mapnik"/>
+          {/* Self-hosted static map (OSM z16 tiles stitched 2026-11-21, pin at the image centre) instead of the OSM iframe,
+              which painted 1–2s after the page. Preloaded on /contact (build-html.py ROUTE_PRELOADS) and warmed at idle. */}
+          <img className="ct-map-img" src={CT_MAP_IMG} width="800" height="400" alt="" aria-hidden="true" decoding="sync" fetchpriority="high" draggable="false"/>
           <span className="ct-ring"/><span className="ct-ring r2"/><span className="ct-ring r3"/>
           <div className="ct-pin"><div className="h"><div><LogoMark/></div></div><div className="t"/></div>
           <div className="ct-cap"><Ico n="map-pin" s={15}/>Office · New York, NY</div>
@@ -62542,6 +62544,8 @@ function App(){
     const warm=()=>{
       if(done)return; done=true;
       try{AGD_STUDIOS.forEach(s=>{const im=new Image();im.decoding="async";im.src=s.f;});}catch(e){}
+      // Contact page map: warm it too, so an in-app visit to /contact paints it with the page.
+      try{const im=new Image();im.decoding="async";im.src=CT_MAP_IMG;}catch(e){}
     };
     const ric=typeof requestIdleCallback!=="undefined"
       ? requestIdleCallback(warm,{timeout:4000})

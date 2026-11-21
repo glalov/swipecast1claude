@@ -223,7 +223,7 @@ CDX_STUDIO_LOGOS = ["netflix", "hbo", "appletv", "primevideo", "disneyplus", "nb
 ROUTE_PRELOADS = {
     "/agency-directory": [(f"/logos/{n}.svg", "image") for n in STUDIO_LOGOS],
     "/casting-directory": [(f"/logos/{n}.svg", "image") for n in CDX_STUDIO_LOGOS]
-                        + [(f"/assets/cdx-cards/cdx-card-{i}.jpg", "image") for i in (1, 2, 3)],
+                        + [(f"/assets/cdx-cards/cdx-card-{i}.jpg", "image") for i in (1, 2, 3)],    "/contact": [("/assets/contact/contact-map-z16.jpg", "image")],
 }
 
 def route_preload_tags(path):
