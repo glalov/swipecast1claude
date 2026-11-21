@@ -5268,7 +5268,7 @@ body.fbsp-open #castoria-root{display:none!important;}
 .sf-signup button{position:absolute;right:6px;top:6px;bottom:6px;width:110px;padding:0;border-radius:999px;border:0;background:#1A1A2E;color:#fff;font-family:inherit;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
 .sf-signup button:hover{background:#2A2A44;}
 .sf-signup button:disabled{opacity:.7;cursor:default;}
-.sf-signup-under{display:inline-block;margin-top:16px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#F3EBE0;border-bottom:1px solid currentColor;padding-bottom:2px;cursor:pointer;}
+.sf-signup-under{display:inline-block;text-decoration:none;margin-top:16px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#F3EBE0;border-bottom:1px solid currentColor;padding-bottom:2px;cursor:pointer;}
 .sf-signup p.sf-signup-err{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#F0A08F;}
 @media(max-width:900px){.sf-signup form{margin-left:-12px;max-width:calc(100% + 12px);}.sf-signup input{padding-left:8px;}}
 .sf-signup-ok{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:9px;background:rgba(51,130,106,.16);border:1px solid rgba(91,224,176,.28);color:#F3EBE0;font-size:13.5px;line-height:1.45;}
@@ -5286,6 +5286,61 @@ body.fbsp-open #castoria-root{display:none!important;}
 }
 /* min-width:0 so the pill shrinks to the tagline column instead of stretching the grid and pushing the link columns right (owner 2026-11-21). */
 .site-footer-brand{min-width:0;}
+/* /newsletter page (owner 2026-11-21) */
+.nlp{padding:24px 0 88px;}
+.nlp-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px;align-items:center;}
+.nlp-copy{min-width:0;}
+.nlp-eb{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#33826A;}
+.nlp h1{font-size:56px;line-height:1.04;margin:14px 0 18px;color:#1A1A2E;}
+.nlp-lead{font-size:18px;line-height:1.55;color:#433B32;margin:0 0 32px;max-width:470px;}
+.sf-signup.sf-signup-page{max-width:440px;}
+.sf-signup-page form{width:100%;max-width:100%;margin-left:0;}
+.sf-signup-page input{height:60px;padding:0 140px 0 22px;border:1px solid #D9D2C5;box-shadow:0 8px 24px rgba(26,26,46,.06);}
+.sf-signup-page input:focus{border-color:#1A1A2E;}
+.sf-signup-page button{width:118px;font-size:13.5px;}
+.sf-signup-page .nlp-fine{margin:14px 0 0 4px;font-size:13px;line-height:1.5;color:#6E655B;}
+.sf-signup-page .nlp-fine a{color:inherit;text-decoration:underline;text-underline-offset:2px;}
+.sf-signup-page p.sf-signup-err{color:#B5452F;}
+.sf-signup-page .sf-signup-ok{background:#fff;border:1px solid #CFE3D8;color:#1A1A2E;padding:16px 18px;border-radius:14px;}
+.sf-signup-page .sf-signup-ok span{color:#6E655B;}
+.nlp-prev{min-width:0;}
+.nlp-prev-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 4px 12px;font-size:13px;color:#6E655B;}
+.nlp-prev-h b{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#1A1A2E;}
+.nlp-live{display:inline-flex;align-items:center;gap:6px;}
+.nlp-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#33826A;}
+.nlp-stack{position:relative;padding:0 0 18px;}
+.nlp-stack::before,.nlp-stack::after{content:"";position:absolute;left:22px;right:22px;bottom:9px;height:40px;border-radius:18px;background:#fff;border:1px solid #E6E0D5;}
+.nlp-stack::after{left:44px;right:44px;bottom:0;opacity:.7;}
+.nlp-mail{position:relative;z-index:1;background:#fff;border:1px solid #E6E0D5;border-radius:18px;box-shadow:0 24px 60px rgba(26,26,46,.10);overflow:hidden;}
+.nlp-mail-top{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #E6E0D5;font-size:13px;color:#6E655B;}
+.nlp-mail-top b{display:block;color:#1A1A2E;font-size:14px;}
+.nlp-mi{flex:none;width:28px;height:28px;border-radius:7px;background:#1A1A2E;color:#fff;display:flex;overflow:hidden;}
+.nlp-when{margin-left:auto;font-size:12px;color:#9A9083;}
+.nlp-cast{padding:16px 18px;border-bottom:1px solid #F0EBE2;}
+.nlp-cast:last-child{border-bottom:0;}
+.nlp-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#33826A;}
+.nlp-cast h3{margin:3px 0 2px;font-size:17px;font-weight:700;color:#1A1A2E;font-family:'DM Sans',sans-serif;}
+.nlp-m{font-size:13px;color:#6E655B;}
+.nlp-role{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;padding:8px 12px;border-radius:9px;background:#F7F5F0;font-size:13.5px;color:#1A1A2E;text-decoration:none;transition:background-color .15s ease;}
+.nlp-role>span>span{color:#6E655B;font-size:12.5px;margin-left:6px;}
+.nlp-role:hover{background:#EEEAE1;}
+.nlp-role:hover b{text-decoration:underline;text-underline-offset:3px;}
+.nlp-skel{height:92px;margin:16px 18px;border-radius:10px;background:#F2EEE6;}
+.nlp-get{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;margin-top:72px;}
+.nlp-get>div{padding-top:18px;border-top:1px solid #D9D2C5;min-width:0;}
+.nlp-get em{display:block;font-style:normal;font-size:12px;font-weight:700;letter-spacing:.14em;color:#33826A;margin-bottom:10px;}
+.nlp-get b{display:block;font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin-bottom:6px;color:#1A1A2E;}
+.nlp-get p{margin:0;font-size:15px;line-height:1.55;color:#433B32;}
+@media(max-width:900px){
+  .nlp{padding:12px 0 56px;}
+  .nlp-hero{grid-template-columns:1fr;gap:40px;}
+  .nlp h1{font-size:40px;}
+  .nlp-lead{font-size:16.5px;margin-bottom:24px;}
+  .sf-signup-page form{margin-left:0;max-width:100%;}
+  .sf-signup-page input{height:56px;padding:0 124px 0 18px;}
+  .sf-signup-page button{width:104px;font-size:12.5px;}
+  .nlp-get{grid-template-columns:1fr;gap:22px;margin-top:48px;}
+}
 .site-footer-brand .sf-signup{margin-top:46px;}
 @media (max-width:900px){.site-footer-brand .sf-signup{margin-top:28px;}}
 .nl-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:300;display:flex;align-items:flex-start;gap:12px;width:max-content;max-width:calc(100vw - 32px);padding:14px 14px 14px 16px;border-radius:12px;background:#241F19;color:#F3EBE0;box-shadow:0 12px 40px rgba(0,0,0,.28);font-family:'DM Sans',sans-serif;animation:nlToastIn .35s ease both;}
@@ -9796,7 +9851,7 @@ function navCardEdges(){try{const root=document.documentElement,nav=document.que
 // subscribers go to the front of the castings promo campaign). Hidden honeypot + time-on-page are
 // the bot traps; the function answers the same way whatever happened, so the list can't be probed.
 const CT_MAP_IMG="/assets/contact/contact-map-z16.jpg";
-function FooterSignup(){
+function FooterSignup({onNavigate,variant="footer"}={}){
   const [email,setEmail]=useState("");
   const [hp,setHp]=useState("");
   const [state,setState]=useState("idle"); // idle | sending | done | error
@@ -9818,21 +9873,80 @@ function FooterSignup(){
     }catch(_){setState("error");setErr("Something went wrong. Please try again.");}
   };
   return(
-    <div className="sf-signup">
+    <div className={"sf-signup"+(variant==="page"?" sf-signup-page":"")}>
       {/* Owner 2026-11-21: Kathairos-style white pill + navy SUBMIT, underlined label; the pill hangs 15px left so the
           email text and label share the tagline's edge. No logo (nav + big wordmark already show it) — demo castslate-footer-subscribe-nologo-demo.html opt 2. */}
       {state==="done"?(
         <div className="sf-signup-ok" role="status"><em aria-hidden="true">✓</em><div><b>Check your inbox to confirm.</b><span>We sent a link to {sentTo}.</span></div></div>
       ):(<>
         <form onSubmit={submit} noValidate>
-          <input id="sf-signup-email" type="email" inputMode="email" autoComplete="email" placeholder="name@email.com" aria-label="Your email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="error")setState("idle");}} disabled={state==="sending"}/>
+          <input type="email" inputMode="email" autoComplete="email" placeholder="name@email.com" aria-label="Your email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="error")setState("idle");}} disabled={state==="sending"}/>
           <input className="sf-hp" type="text" name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e=>setHp(e.target.value)}/>
           <button type="submit" disabled={state==="sending"}>{state==="sending"?"Sending…":"Submit"}</button>
         </form>
         {state==="error"&&<p className="sf-signup-err" role="alert">{err}</p>}
-        <label className="sf-signup-under" htmlFor="sf-signup-email">Subscribe for updates</label>
+        {variant==="page"
+          ?<p className="nlp-fine">Free. Unsubscribe with one click. We'll email you a link to confirm. <a href="/privacy" onClick={e=>{if(!onNavigate||e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;e.preventDefault();onNavigate("privacy");}}>Privacy</a></p>
+          :<a className="sf-signup-under" href="/newsletter" onClick={e=>{if(!onNavigate||e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;e.preventDefault();onNavigate("newsletter");}}>Subscribe for updates</a>}
       </>)}
     </div>
+  );
+}
+// /newsletter (owner 2026-11-21, demo castslate-newsletter-page-demo.html; the footer "Subscribe for updates" label opens it,
+// like kathairos.com/newsletter-signup). Same double opt-in form as the footer (FooterSignup variant="page"), plus a
+// preview of three castings that are open right now, shown as the email people will get.
+function NewsletterPage({onNavigate,onViewCasting}){
+  const [rows,setRows]=useState(null);
+  useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const {data}=await window.sb.from("castings")
+          .select("id,title,type,location,pay,status,published,expires_at,deadline,featured,created_at,roles(name,gender,age_range)")
+          .eq("published",true).in("status",["open","active","published"])
+          .order("created_at",{ascending:false}).limit(12);
+        if(!alive)return;
+        const now=Date.now();
+        setRows((data||[]).filter(c=>(!c.expires_at||new Date(c.expires_at).getTime()>now)&&(!c.deadline||new Date(c.deadline).getTime()>now)&&Array.isArray(c.roles)&&c.roles.length).slice(0,3));
+      }catch(_){if(alive)setRows([]);}
+    })();
+    return()=>{alive=false;};
+  },[]);
+  const shortPay=p=>{if(!p)return"";const t=String(p).split(/[.;(]/)[0].trim();return t.length>34?t.slice(0,33).trim()+"…":t;};
+  const open=(e,c)=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;e.preventDefault();onViewCasting&&onViewCasting({id:c.id});};
+  return(
+    <div className="page"><div className="nlp">
+      <section className="nlp-hero">
+        <div className="nlp-copy">
+          <div className="nlp-eb">Casting calls by email</div>
+          <h1>New roles, straight to your inbox.</h1>
+          <p className="nlp-lead">Now and then we send a short list of open casting calls: films, TV, theater and commercials, with the roles and what they pay. Plus occasional CastSlate news.</p>
+          <FooterSignup onNavigate={onNavigate} variant="page"/>
+        </div>
+        <div className="nlp-prev">
+          <div className="nlp-prev-h"><b>What lands in your inbox</b><span className="nlp-live">Open right now</span></div>
+          <div className="nlp-stack"><div className="nlp-mail">
+            <div className="nlp-mail-top"><span className="nlp-mi"><LogoMark/></span><div><b>CastSlate</b>Fresh casting calls for you</div><span className="nlp-when">Today</span></div>
+            {rows===null
+              ?<div className="nlp-casts"><div className="nlp-skel"/><div className="nlp-skel"/><div className="nlp-skel"/></div>
+              :rows.length===0
+                ?<div className="nlp-casts"><div className="nlp-cast"><div className="nlp-m">New casting calls are added every week.</div></div></div>
+                :<div className="nlp-casts">{rows.map(c=>{const ro=c.roles[0];return(
+                  <div className="nlp-cast" key={c.id}>
+                    <div className="nlp-k">{c.type}</div>
+                    <h3>{c.title}</h3>
+                    <div className="nlp-m">{c.location}{c.pay?" · "+shortPay(c.pay):""}</div>
+                    <a className="nlp-role" href="/browse-castings" onClick={e=>open(e,c)}><span><b>{ro.name}</b><span>{[ro.gender,String(ro.age_range||"").replace("-","–")].filter(Boolean).join(" · ")}</span></span><Tri/></a>
+                  </div>);})}</div>}
+          </div></div>
+        </div>
+      </section>
+      <section className="nlp-get">
+        <div><em>01</em><b>No expired listings</b><p>Every casting is checked right before we send, so you never chase a role that already closed.</p></div>
+        <div><em>02</em><b>The details up front</b><p>Role, age range, location and pay in every listing, so you know in seconds if it fits.</p></div>
+        <div><em>03</em><b>Your inbox, your call</b><p>Occasional emails, not daily blasts. One click unsubscribes you, any time.</p></div>
+      </section>
+    </div><Footer onNavigate={onNavigate}/></div>
   );
 }
 // false = the flat card with its CSS drop (owner, 2026-11-16). true would bring the WebGL megaminx back.
@@ -10102,7 +10216,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           <div className="site-footer-brand">
             <p className="site-footer-blurb">{t('footer.blurb')}</p>
             {/* Casting-calls signup: signed-out visitors only; sits under the tagline on every size (owner 2026-11-21, option 2). */}
-            {typeof window!=="undefined"&&window.__SC_SIGNED_IN===false&&<FooterSignup/>}
+            {typeof window!=="undefined"&&window.__SC_SIGNED_IN===false&&<FooterSignup onNavigate={onNavigate}/>}
           </div>
           <div className="sf-col sf-talent">
             <h4 className="site-footer-heading">{t('footer.talent')}</h4>
@@ -61318,6 +61432,7 @@ const PAGE_PATH={
   "casting-directory":"/casting-directory",
   "school-directory":"/school-directory",
   "first-frame":"/first-frame",
+  "newsletter":"/newsletter",
   "actor-business-card":"/actor-business-card",
   "success":"/success",
   "unsubscribed":"/unsubscribed",
@@ -61350,6 +61465,7 @@ const PAGE_SEO={
   "agency-directory":{title:"Talent Agency & Management Directory — 650+ Agencies in LA & NYC",desc:"CastSlate's Premium directory of 650+ talent agencies and management companies across Los Angeles, Beverly Hills and New York. Office addresses, websites, SAG-AFTRA franchised status, company size, and how each one takes submissions."},
   "casting-directory":{title:"Casting Companies Directory — Active Casting Offices in LA & NYC",desc:"CastSlate's Premium directory of active casting offices, re-checked by hand every month, in Los Angeles and New York: each office's own submission policy, website and mailing address, with the offices that accept headshots listed first."},
   "school-directory":{title:"Acting & Film School Directory — Acting Schools, Studios & Film Programs in LA & NYC",desc:"Free to browse: every active acting school, studio, conservatory and film program in Los Angeles and New York, checked by hand, with the techniques and classes each one teaches. A free account unlocks one school in each city; Premium unlocks them all."},
+  "newsletter":{title:"Casting Calls by Email: Get New Roles in Your Inbox | CastSlate",desc:"Get open casting calls by email from CastSlate: film, TV, theater and commercial roles with age range, location and pay. Occasional emails, one-click unsubscribe."},
   "first-frame":{title:"First Frame: Hand-Picked Headshot Photographers in NYC & LA | CastSlate",desc:"First Frame is CastSlate's hand-picked list of 78 active actor-headshot photographers in New York and Los Angeles, reviewed by our team. CastSlate earns nothing from it: no commission, no referral fees and no paid placements."},
   "actor-business-card":{title:"Actor Business Card | CastSlate",desc:"Create your personalized actor business card with your headshot, casting details, and a unique QR code linking directly to your CastSlate profile. Download an A4 print-ready sheet."},
   "login":{title:"Sign In | CastSlate",desc:"Sign in to your CastSlate account to browse castings, manage your profile, and submit to roles."},
@@ -63285,6 +63401,7 @@ function App(){
         {page==="casting-directory"&&<CastingDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
         {page==="school-directory"&&<SchoolDirectoryPage onNavigate={navigate} session={session}/>}
         {page==="first-frame"&&<FirstFramePage onNavigate={navigate}/>}
+        {page==="newsletter"&&<NewsletterPage onNavigate={navigate} onViewCasting={(c)=>handleViewCasting(c,"newsletter")}/>}
         {page==="studios"&&<StudiosPage onNavigate={navigate}/>}
         {page==="api-info"&&<ApiPage onNavigate={navigate}/>}
         {page==="terms"&&<TermsPage onNavigate={navigate}/>}

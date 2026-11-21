@@ -122,6 +122,10 @@
             "destination": "/first-frame.html"
         },
         {
+            "source": "/newsletter",
+            "destination": "/newsletter.html"
+        },
+        {
             "source": "/login",
             "destination": "/login.html"
         },
