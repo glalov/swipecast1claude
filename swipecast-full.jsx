@@ -5260,21 +5260,21 @@ body.fbsp-open #castoria-root{display:none!important;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:0;max-width:300px;}
 /* Footer casting-calls signup (owner 2026-11-13, round 3: compact, sage field, lower right). */
-.sf-signup{width:100%;max-width:310px;min-width:0;font-family:inherit;}
-.sf-signup h5{margin:0 0 8px;font-size:13px;font-weight:600;color:#F3EBE0;letter-spacing:normal;}
-/* Pill with the button inside its right end (owner 2026-11-13, Stripe-style; matches the Español pill). */
+.sf-signup{width:100%;max-width:400px;min-width:0;font-family:inherit;}
+.sf-signup-logo{display:flex;align-items:center;gap:10px;margin:0 0 18px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:25px;letter-spacing:-0.5px;line-height:1;color:#F3EBE0;}
+.sf-signup-i{flex:none;width:38px;height:38px;border-radius:9px;background:#F3EBE0;color:#0E0C0B;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.sf-signup-i svg{transform:scale(1.08);transform-origin:50% 50%;}
+.sf-signup-i svg path{stroke:currentColor;stroke-width:1.1;stroke-linejoin:round;}
 .sf-signup form{position:relative;display:block;}
-.sf-signup input{display:block;width:100%;min-width:0;height:40px;padding:0 116px 0 16px;border-radius:999px;font:inherit;font-size:13.5px;outline:none;color:#F3EBE0;background:rgba(51,130,106,.20);border:1px solid rgba(91,190,150,.38);transition:border-color .18s ease,background-color .18s ease;}
-.sf-signup input::placeholder{color:#9DBFAF;}
-.sf-signup input:focus{border-color:#5BBE96;background:rgba(51,130,106,.28);}
+.sf-signup input{display:block;width:100%;min-width:0;height:60px;padding:0 140px 0 20px;border-radius:999px;font:inherit;font-size:16px;outline:none;color:#1A1A2E;background:#fff;border:4px solid #fff;}
+.sf-signup input::placeholder{color:#8A8B99;}
 .sf-signup input.sf-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
-.sf-signup button{position:absolute;right:4px;top:4px;height:32px;padding:0 14px 0 15px;border-radius:999px;border:0;background:#33826A;color:#fff;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
-.sf-signup button:hover{background:#276551;}
+.sf-signup button{position:absolute;right:6px;top:6px;bottom:6px;padding:0 26px;border-radius:999px;border:0;background:#1A1A2E;color:#fff;font-family:inherit;font-weight:500;font-size:14px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
+.sf-signup button:hover{background:#2A2A44;}
 .sf-signup button:disabled{opacity:.7;cursor:default;}
-.sf-signup button i{width:0;height:0;border-left:5px solid #fff;border-top:3.8px solid transparent;border-bottom:3.8px solid transparent;}
-.sf-signup p{margin:8px 0 0;font-size:11.5px;line-height:1.5;color:#8C8276;}
-.sf-signup p a{color:#A99F93;text-decoration:underline;text-underline-offset:2px;}
-.sf-signup p.sf-signup-err{color:#F0A08F;margin-top:6px;}
+.sf-signup-under{display:inline-block;margin-top:18px;font-size:12.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:#F3EBE0;border-bottom:1px solid currentColor;padding-bottom:3px;cursor:pointer;}
+.sf-signup p.sf-signup-err{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#F0A08F;}
+@media(max-width:900px){.sf-signup input{height:56px;padding-right:128px;}.sf-signup button{padding:0 20px;font-size:13px;}}
 .sf-signup-ok{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:9px;background:rgba(51,130,106,.16);border:1px solid rgba(91,224,176,.28);color:#F3EBE0;font-size:13.5px;line-height:1.45;}
 .sf-signup-ok b{display:block;font-weight:600;}
 .sf-signup-ok span{color:#B8AEA2;font-size:12.5px;overflow-wrap:anywhere;}
@@ -5285,11 +5285,11 @@ body.fbsp-open #castoria-root{display:none!important;}
   .site-footer-grid>.sf-industry{grid-column:3;grid-row:1;}
   .site-footer-grid>.sf-company{grid-column:4;grid-row:1;}
   .site-footer-grid>.sf-support{grid-column:5;grid-row:1;}
-  .site-footer-grid>.sf-signup{grid-column:4/6;grid-row:1;align-self:end;justify-self:start;position:relative;z-index:1;}
+  .site-footer-grid>.sf-signup{grid-column:4/6;grid-row:1;align-self:end;justify-self:stretch;position:relative;z-index:1;}
   /* Company/Support share row 1 with the box: keep them their natural height so they never sit over (and swallow clicks on) the Subscribe button. */
   .site-footer-grid>.sf-company,.site-footer-grid>.sf-support{align-self:start;}
 }
-@media (max-width:900px){.site-footer-grid>.sf-signup{grid-column:1/-1;margin-top:-10px;max-width:360px;}}
+@media (max-width:900px){.site-footer-grid>.sf-signup{grid-column:1/-1;margin-top:-10px;max-width:400px;}}
 .nl-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:300;display:flex;align-items:flex-start;gap:12px;width:max-content;max-width:calc(100vw - 32px);padding:14px 14px 14px 16px;border-radius:12px;background:#241F19;color:#F3EBE0;box-shadow:0 12px 40px rgba(0,0,0,.28);font-family:'DM Sans',sans-serif;animation:nlToastIn .35s ease both;}
 .nl-toast em{flex:none;width:22px;height:22px;border-radius:50%;background:#33826A;display:grid;place-items:center;color:#fff;font-style:normal;font-size:13px;font-weight:800;margin-top:1px;}
 .nl-toast b{display:block;font-size:15px;font-weight:700;}
@@ -9820,17 +9820,19 @@ function FooterSignup(){
   };
   return(
     <div className="sf-signup">
-      <h5>New casting calls, by email</h5>
+      {/* Owner 2026-11-21 (demo A, castslate-footer-subscribe-kathairos-demos.html): Kathairos-style lockup —
+          real logo tile + "CastSlate", big white pill with navy SUBMIT inside, underlined label below. */}
+      <div className="sf-signup-logo" aria-hidden="true"><span className="sf-signup-i"><LogoMark/></span>CastSlate</div>
       {state==="done"?(
         <div className="sf-signup-ok" role="status"><em aria-hidden="true">✓</em><div><b>Check your inbox to confirm.</b><span>We sent a link to {sentTo}.</span></div></div>
       ):(<>
         <form onSubmit={submit} noValidate>
-          <input type="email" inputMode="email" autoComplete="email" placeholder="Your email" aria-label="Your email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="error")setState("idle");}} disabled={state==="sending"}/>
+          <input id="sf-signup-email" type="email" inputMode="email" autoComplete="email" placeholder="name@email.com" aria-label="Your email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="error")setState("idle");}} disabled={state==="sending"}/>
           <input className="sf-hp" type="text" name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e=>setHp(e.target.value)}/>
-          <button type="submit" disabled={state==="sending"}>{state==="sending"?"Sending…":<>Subscribe<i aria-hidden="true"/></>}</button>
+          <button type="submit" disabled={state==="sending"}>{state==="sending"?"Sending…":"Submit"}</button>
         </form>
         {state==="error"&&<p className="sf-signup-err" role="alert">{err}</p>}
-        <p>Occasional casting calls and CastSlate news. Unsubscribe with one click. <a href="/privacy" target="_blank" rel="noopener">Privacy</a></p>
+        <label className="sf-signup-under" htmlFor="sf-signup-email">Subscribe for casting calls</label>
       </>)}
     </div>
   );
