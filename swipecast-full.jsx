@@ -5261,10 +5261,6 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:0;max-width:300px;}
 /* Footer casting-calls signup (owner 2026-11-13, round 3: compact, sage field, lower right). */
 .sf-signup{width:100%;max-width:352px;min-width:0;font-family:inherit;}
-.sf-signup-logo{display:flex;align-items:center;gap:9px;margin:0 0 30px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:23px;letter-spacing:-0.5px;line-height:1;color:#F3EBE0;}
-.sf-signup-i{flex:none;width:34px;height:34px;border-radius:8px;background:#F3EBE0;color:#0E0C0B;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-.sf-signup-i svg{transform:scale(1.08);transform-origin:50% 50%;}
-.sf-signup-i svg path{stroke:currentColor;stroke-width:1.1;stroke-linejoin:round;}
 .sf-signup form{position:relative;display:block;width:352px;max-width:calc(100% + 15px);margin-left:-15px;}
 .sf-signup input{display:block;width:100%;min-width:0;height:56px;padding:0 122px 0 11px;border-radius:999px;font:inherit;font-size:15px;outline:none;color:#1A1A2E;background:#fff;border:4px solid #fff;}
 .sf-signup input::placeholder{color:#8A8B99;}
@@ -5285,11 +5281,11 @@ body.fbsp-open #castoria-root{display:none!important;}
   .site-footer-grid>.sf-industry{grid-column:3;grid-row:1;}
   .site-footer-grid>.sf-company{grid-column:4;grid-row:1;}
   .site-footer-grid>.sf-support{grid-column:5;grid-row:1;}
-  .site-footer-grid>.sf-signup{grid-column:4/6;grid-row:1;align-self:end;justify-self:stretch;position:relative;z-index:1;}
   /* Company/Support share row 1 with the box: keep them their natural height so they never sit over (and swallow clicks on) the Subscribe button. */
   .site-footer-grid>.sf-company,.site-footer-grid>.sf-support{align-self:start;}
 }
-@media (max-width:900px){.site-footer-grid>.sf-signup{grid-column:1/-1;margin-top:-10px;max-width:352px;}}
+.site-footer-brand .sf-signup{margin-top:46px;}
+@media (max-width:900px){.site-footer-brand .sf-signup{margin-top:28px;}}
 .nl-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:300;display:flex;align-items:flex-start;gap:12px;width:max-content;max-width:calc(100vw - 32px);padding:14px 14px 14px 16px;border-radius:12px;background:#241F19;color:#F3EBE0;box-shadow:0 12px 40px rgba(0,0,0,.28);font-family:'DM Sans',sans-serif;animation:nlToastIn .35s ease both;}
 .nl-toast em{flex:none;width:22px;height:22px;border-radius:50%;background:#33826A;display:grid;place-items:center;color:#fff;font-style:normal;font-size:13px;font-weight:800;margin-top:1px;}
 .nl-toast b{display:block;font-size:15px;font-weight:700;}
@@ -9820,10 +9816,8 @@ function FooterSignup(){
   };
   return(
     <div className="sf-signup">
-      {/* Owner 2026-11-21 (demo A, castslate-footer-subscribe-kathairos-demos.html): Kathairos-style lockup —
-          real logo tile + "CastSlate", white pill with navy SUBMIT inside, underlined label below.
-          Fixed 11-21 (castslate-footer-subscribe-a-fix-demo.html): 352x56 pill hangs 15px left so logo, email text and label share one edge. */}
-      <div className="sf-signup-logo" aria-hidden="true"><span className="sf-signup-i"><LogoMark/></span>CastSlate</div>
+      {/* Owner 2026-11-21: Kathairos-style white pill + navy SUBMIT, underlined label; the pill hangs 15px left so the
+          email text and label share the tagline's edge. No logo (nav + big wordmark already show it) — demo castslate-footer-subscribe-nologo-demo.html opt 2. */}
       {state==="done"?(
         <div className="sf-signup-ok" role="status"><em aria-hidden="true">✓</em><div><b>Check your inbox to confirm.</b><span>We sent a link to {sentTo}.</span></div></div>
       ):(<>
@@ -10104,10 +10098,9 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
               bottom is the footer's one brand mark, and the small logo sat right under the nav logo when scrolled down. */}
           <div className="site-footer-brand">
             <p className="site-footer-blurb">{t('footer.blurb')}</p>
+            {/* Casting-calls signup: signed-out visitors only; sits under the tagline on every size (owner 2026-11-21, option 2). */}
+            {typeof window!=="undefined"&&window.__SC_SIGNED_IN===false&&<FooterSignup/>}
           </div>
-          {/* Casting-calls signup (owner 2026-11-13, demo castslate-footer-email-signup-demo.html round 3):
-              signed-out visitors only; desktop = lower right under Company/Support, phones = under the tagline. */}
-          {typeof window!=="undefined"&&window.__SC_SIGNED_IN===false&&<FooterSignup/>}
           <div className="sf-col sf-talent">
             <h4 className="site-footer-heading">{t('footer.talent')}</h4>
             <L to="register-talent">{t('footer.createProfile')}</L>
