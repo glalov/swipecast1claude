@@ -5284,6 +5284,8 @@ body.fbsp-open #castoria-root{display:none!important;}
   /* Company/Support share row 1 with the box: keep them their natural height so they never sit over (and swallow clicks on) the Subscribe button. */
   .site-footer-grid>.sf-company,.site-footer-grid>.sf-support{align-self:start;}
 }
+/* min-width:0 so the pill shrinks to the tagline column instead of stretching the grid and pushing the link columns right (owner 2026-11-21). */
+.site-footer-brand{min-width:0;}
 .site-footer-brand .sf-signup{margin-top:46px;}
 @media (max-width:900px){.site-footer-brand .sf-signup{margin-top:28px;}}
 .nl-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:300;display:flex;align-items:flex-start;gap:12px;width:max-content;max-width:calc(100vw - 32px);padding:14px 14px 14px 16px;border-radius:12px;background:#241F19;color:#F3EBE0;box-shadow:0 12px 40px rgba(0,0,0,.28);font-family:'DM Sans',sans-serif;animation:nlToastIn .35s ease both;}
