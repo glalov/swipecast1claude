@@ -31303,25 +31303,27 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
       </div>
     </div>}
 
-    {/* ───────── THE GUARANTEE ───────── */}
+    {/* ───────── THE GUARANTEE ─────────
+         Wording C (owner 2026-11-22, demo castslate-guarantee-wording-demo.html): promises HOW review works, not an
+         outcome ("gets seen. Period." / "must decide" contradicted the Terms). Teal-only shield and rules. */}
     <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"57px auto 0",padding:"0 24px"}}>
       <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
         {/* colorful glow blobs */}
         <span className="guarantee-glow-left" style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,139,127,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
         <span className="guarantee-glow-right" style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.20),transparent 70%)",bottom:-100,right:-40,pointerEvents:"none"}}/>
         <div className="guarantee-badge" style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5CA092,#3B6F65)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,139,127,.6)"}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z"/><path d="M9 12l2 2 4-4"/></svg>
-          THE CASTSLATE GUARANTEE
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          HOW CASTSLATE WORKS
         </div>
-        <h3 className="guarantee-title" style={{position:"relative",fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:"clamp(30px,4.8vw,48px)",letterSpacing:-0.5,lineHeight:1.08,margin:0}}>Your headshot gets <span style={{background:"linear-gradient(90deg,var(--teal),var(--amber))",WebkitBackgroundClip:"text",backgroundClip:"text",color:"transparent"}}>seen.</span> Period.</h3>
+        <h3 className="guarantee-title" style={{position:"relative",fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:"clamp(30px,4.8vw,48px)",letterSpacing:-0.5,lineHeight:1.08,margin:0}}>Not one face <span style={{color:"var(--teal)"}}>in eighty.</span></h3>
         <div className="guarantee-rule" style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,139,127,0) 0%,rgba(79,139,127,.55) 100%)"}}/>
           <span style={{flexShrink:0,display:"inline-flex"}}>
-            <svg width="40" height="40" viewBox="0 0 24 24"><defs><linearGradient id="guarantee-shield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4F8B7F"/><stop offset="1" stopColor="#E8902A"/></linearGradient></defs><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="url(#guarantee-shield)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <svg width="40" height="40" viewBox="0 0 24 24"><defs><linearGradient id="guarantee-shield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#5CA092"/><stop offset="1" stopColor="#3B6F65"/></linearGradient></defs><path d="M12 2 4 5v6c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V5l-8-3Z" fill="url(#guarantee-shield)"/><path d="M9 12l2 2 4-4" fill="none" stroke="#fff" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </span>
-          <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(232,144,42,.55) 0%,rgba(232,144,42,0) 100%)"}}/>
+          <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,139,127,.55) 0%,rgba(79,139,127,0) 100%)"}}/>
         </div>
-        <p className="guarantee-copy" style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>On legacy platforms, your submission is one face in a grid of 80. Directors scan in seconds. On CastSlate, every submission is <strong style={{color:"var(--teal)"}}>full-screen</strong>. The CD <strong style={{color:"var(--t1)"}}>must</strong> decide: pass or callback. No grids. No skipping. Your shot, actually taken.</p>
+        <p className="guarantee-copy" style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>Elsewhere, your submission is a thumbnail in a grid that directors scan in seconds. On CastSlate, every submission opens <strong style={{color:"var(--teal)"}}>full-screen, one at a time</strong>, with your whole profile in one view. Built so every submission gets a real look.</p>
       </div>
     </div>
 
