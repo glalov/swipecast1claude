@@ -2995,17 +2995,18 @@ body.fbsp-open #castoria-root{display:none!important;}
 @media(max-width:900px){.site-footer-brand .logo .logo-i{width:40px;height:40px;}}
 .site-footer-blurb{color:#F3EBE0;font-size:18px;font-weight:500;line-height:22.5px;margin-top:0;max-width:300px;}
 /* Footer casting-calls signup (owner 2026-11-13, round 3: compact, sage field, lower right). */
-.sf-signup{width:100%;max-width:352px;min-width:0;font-family:inherit;}
-.sf-signup form{position:relative;display:block;width:352px;max-width:calc(100% + 15px);margin-left:-15px;}
-.sf-signup input{display:block;width:100%;min-width:0;height:56px;padding:0 122px 0 11px;border-radius:999px;font:inherit;font-size:15px;outline:none;color:#1A1A2E;background:#fff;border:4px solid #fff;}
+.sf-signup{width:100%;max-width:315px;min-width:0;font-family:inherit;}
+/* 315x48 since 2026-11-21 (owner, demo castslate-footer-pill-size-demo.html): right edge lines up with the end of the tagline. */
+.sf-signup form{position:relative;display:block;width:315px;max-width:calc(100% + 15px);margin-left:-15px;}
+.sf-signup input{display:block;width:100%;min-width:0;height:48px;padding:0 104px 0 12px;border-radius:999px;font:inherit;font-size:14px;outline:none;color:#1A1A2E;background:#fff;border:3px solid #fff;}
 .sf-signup input::placeholder{color:#8A8B99;}
 .sf-signup input.sf-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
-.sf-signup button{position:absolute;right:6px;top:6px;bottom:6px;width:110px;padding:0;border-radius:999px;border:0;background:#1A1A2E;color:#fff;font-family:inherit;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
+.sf-signup button{position:absolute;right:5px;top:5px;bottom:5px;width:92px;padding:0;border-radius:999px;border:0;background:#1A1A2E;color:#fff;font-family:inherit;font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
 .sf-signup button:hover{background:#2A2A44;}
 .sf-signup button:disabled{opacity:.7;cursor:default;}
-.sf-signup-under{display:inline-block;text-decoration:none;margin-top:16px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#F3EBE0;border-bottom:1px solid currentColor;padding-bottom:2px;cursor:pointer;}
+.sf-signup-under{display:inline-block;text-decoration:none;margin-top:14px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#F3EBE0;border-bottom:1px solid currentColor;padding-bottom:2px;cursor:pointer;}
 .sf-signup p.sf-signup-err{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#F0A08F;}
-@media(max-width:900px){.sf-signup form{margin-left:-12px;max-width:calc(100% + 12px);}.sf-signup input{padding-left:8px;}}
+@media(max-width:900px){.sf-signup form{margin-left:-12px;max-width:calc(100% + 12px);}.sf-signup input{padding-left:9px;}}
 .sf-signup-ok{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:9px;background:rgba(51,130,106,.16);border:1px solid rgba(91,224,176,.28);color:#F3EBE0;font-size:13.5px;line-height:1.45;}
 .sf-signup-ok b{display:block;font-weight:600;}
 .sf-signup-ok span{color:#B8AEA2;font-size:12.5px;overflow-wrap:anywhere;}
@@ -3030,9 +3031,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 .nlp-lead{font-size:18px;line-height:1.55;color:#433B32;margin:0 0 32px;max-width:470px;}
 .sf-signup.sf-signup-page{max-width:440px;}
 .sf-signup-page form{width:100%;max-width:100%;margin-left:0;}
-.sf-signup-page input{height:60px;padding:0 140px 0 22px;border:1px solid #D9D2C5;box-shadow:0 8px 24px rgba(26,26,46,.06);}
+.sf-signup-page input{height:60px;padding:0 140px 0 22px;font-size:15px;border:1px solid #D9D2C5;box-shadow:0 8px 24px rgba(26,26,46,.06);}
 .sf-signup-page input:focus{border-color:#1A1A2E;}
-.sf-signup-page button{width:118px;font-size:13.5px;}
+.sf-signup-page button{top:6px;right:6px;bottom:6px;width:118px;font-size:13.5px;}
 .sf-signup-page .nlp-fine{margin:14px 0 0 4px;font-size:13px;line-height:1.5;color:#6E655B;}
 .sf-signup-page .nlp-fine a{color:inherit;text-decoration:underline;text-underline-offset:2px;}
 .sf-signup-page p.sf-signup-err{color:#B5452F;}
