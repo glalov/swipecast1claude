@@ -8712,6 +8712,7 @@ function YearlyPromoStripe({myProfile,isLoggedIn,onPickPlan}){
 //     "Go Premium" (membership). Premium members, CDs and admins never see it,
 //     and it disappears the moment an account turns premium. The × hides it
 //     for the rest of the browser session.
+const BJS_ON=false;
 function BrowseJoinStripe({page,session,myProfile,authReady,onNavigate}){
   const [off,setOff]=useState(()=>{try{return sessionStorage.getItem("cs_bjs_off")==="1";}catch(_){return false;}});
   if(page!=="search"||off||!authReady)return null;
@@ -63133,7 +63134,9 @@ function App(){
       {/* Free-tier talent see this red banner above the nav until they
           activate. Hidden for CDs/admins/producers/studios and once active. */}
       <ActivateMembershipBanner myProfile={myProfile} session={session} page={page} onNavigate={navigate}/>
-      <BrowseJoinStripe page={page} session={session} myProfile={myProfile} authReady={authReady} onNavigate={navigate}/>
+      {/* Removed from Browse 2026-11-21 (owner): read as a promo bar, off-palette, repeated Join Free + "Updated live";
+          photo was also an unlicensed iStock preview. Component kept; flip BJS_ON to bring it back. */}
+      {BJS_ON&&<BrowseJoinStripe page={page} session={session} myProfile={myProfile} authReady={authReady} onNavigate={navigate}/>}
       <nav className={"nav"+(navScrolled?" scrolled":"")}
         onPointerEnter={e=>{if(e.pointerType!=="mouse"||window.innerWidth<=900)return;clearTimeout(window.__navHoverT);navCardEdges();e.currentTarget.setAttribute("data-hov","");}}
         onPointerLeave={e=>{if(e.pointerType!=="mouse")return;clearTimeout(window.__navHoverT);const nv=e.currentTarget;window.__navHoverT=setTimeout(()=>nv.removeAttribute("data-hov"),120);}}>
