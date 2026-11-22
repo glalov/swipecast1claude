@@ -30298,6 +30298,7 @@ function csArmLoopVideo(v){
 }
 
 const HOME_SHOW_JOURNEY=false;
+const HOME_SHOW_TESTIMONIALS=false;
 // The two big landing clips ("From submission to set", For Casting Directors).
 // They start downloading ~1s after the page opens (after the reel has a head
 // start) or as soon as they come within 3000px, whichever is first, so they are
@@ -31406,7 +31407,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     </div>
 
     {/* ───────── TESTIMONIALS ───────── */}
-    <section style={{padding:"60px 40px 40px",maxWidth:1200,margin:"0 auto"}}>
+    {/* Removed from the homepage 2026-11-22 (owner): small effect here, and real member stories belong on Pricing/Membership. Flip HOME_SHOW_TESTIMONIALS to bring it back. */}
+    {HOME_SHOW_TESTIMONIALS&&<section style={{padding:"60px 40px 40px",maxWidth:1200,margin:"0 auto"}}>
       <div className="section-label">What people are saying</div>
       <div className="section-title" style={{marginBottom:40}}>From actors and casting directors using CastSlate.</div>
       {/* Layout "C · Editorial" (owner 2026-10-21): one quote leads as a large card; the
@@ -31435,7 +31437,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             </figure>))}
           </div>
         </div>);})()}
-    </section>
+    </section>}
 
     {/* ───────── Home CTA card (warm teal block; full plans live on /pricing) ───────── */}
     <section ref={homeCtaRef} className="home-cta home-cta-construct">
