@@ -30248,6 +30248,7 @@ function csArmLoopVideo(v){
   };
 }
 
+const HOME_SHOW_JOURNEY=false;
 // The two big landing clips ("From submission to set", For Casting Directors).
 // They start downloading ~1s after the page opens (after the reel has a head
 // start) or as soon as they come within 3000px, whichever is first, so they are
@@ -31216,7 +31217,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     {/* <LandingStats/> removed 2026-11-16 (owner): pastel counting stat cards not needed */}
 
     {/* ───────── CINEMATIC FEATURE CARD ───────── */}
-    <div className="cinema-feature">
+    {/* "From submission to set" hidden 2026-11-21 (owner, demo castslate-homepage-trim-demo.html): it repeated the hero
+        and the guarantee. Kept in code; flip HOME_SHOW_JOURNEY to bring it back. */}
+    {HOME_SHOW_JOURNEY&&<div className="cinema-feature">
       <div className="cinema-feature-inner">
         <div className="cinema-feature-img">
           <BufferedLoopVideo src="/assets/video/actor-journey-set-v3c.mp4" poster="/assets/video/actor-journey-set-poster-v3.jpg" aria-label="Actors on a film set as the clapperboard marks the take, with the camera and boom mic rolling"/>
@@ -31238,7 +31241,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           </div>
         </div>
       </div>
-    </div>
+    </div>}
 
     {/* ───────── THE GUARANTEE ───────── */}
     <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"57px auto 0",padding:"0 24px"}}>
