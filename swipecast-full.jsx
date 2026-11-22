@@ -155,7 +155,7 @@ const TRANSLATIONS = {
     'reg.cd.createAccount':'Create Account','reg.cd.creating':'Creating Account…',
     // Search
     'search.title':'Browse Castings','search.allTypes':'All Types','search.allLocations':'All Locations',
-    'search.allGenders':'All Genders','search.allEthnicities':'All Ethnicities','search.allUnion':'All Unions','search.typeShort':'Type','search.locationShort':'Location','search.unionShort':'Union','search.callsPosted':'{n} casting calls posted','search.rolesOpen':'{n} roles open right now','search.updatedLive':'Updated live','search.callsIn':'Casting calls in {city}','search.callsPlain':'Casting calls','search.noExact':'No exact matches open right now. Here are the closest open roles.','search.closeMore':'More open roles close to what you picked','search.matches':'Matches','search.closedTag':'Closed','search.similar':'See similar roles','search.past':'See past castings','search.backOpen':'Back to open roles','search.showingShort':'Showing {from}–{to}',
+    'search.allGenders':'All Genders','search.allEthnicities':'All Ethnicities','search.allUnion':'All Unions','search.typeShort':'Type','search.locationShort':'Location','search.unionShort':'Union','search.callsPosted':'{n} casting calls posted','search.rolesOpen':'{n} roles open right now','search.updatedLive':'Updated live','search.titleMain':'Casting Calls','search.callsIn':'Casting calls in {city}','search.callsPlain':'Casting calls','search.noExact':'No exact matches open right now. Here are the closest open roles.','search.closeMore':'More open roles close to what you picked','search.matches':'Matches','search.closedTag':'Closed','search.similar':'See similar roles','search.past':'See past castings','search.backOpen':'Back to open roles','search.showingShort':'Showing {from}–{to}',
     'search.filterType':'Type','search.filterLocation':'Location','search.filterGender':'Gender',
     'search.filterEthnicity':'Ethnicity','search.filterUnion':'Union',
     'search.noResults':'No castings match your filters.','search.clearFilters':'Clear filters',
@@ -407,7 +407,7 @@ const TRANSLATIONS = {
     'reg.cd.createAccount':'Crear cuenta','reg.cd.creating':'Creando cuenta…',
     // Search
     'search.title':'Convocatorias de casting','search.allTypes':'Todos los tipos','search.allLocations':'Todas las ciudades',
-    'search.allGenders':'Todos los géneros','search.allEthnicities':'Todos los orígenes','search.allUnion':'Todos los sindicatos','search.typeShort':'Tipo','search.locationShort':'Ubicación','search.unionShort':'Sindicato','search.callsPosted':'{n} convocatorias publicadas','search.rolesOpen':'{n} papeles abiertos ahora','search.updatedLive':'Actualizado en vivo','search.callsIn':'Convocatorias en {city}','search.callsPlain':'Convocatorias','search.noExact':'No hay coincidencias exactas abiertas ahora. Estos son los papeles abiertos más cercanos.','search.closeMore':'Más papeles abiertos cercanos a lo que elegiste','search.matches':'Coincide','search.closedTag':'Cerrada','search.similar':'Ver papeles similares','search.past':'Ver convocatorias pasadas','search.backOpen':'Volver a los papeles abiertos','search.showingShort':'Mostrando {from}–{to}',
+    'search.allGenders':'Todos los géneros','search.allEthnicities':'Todos los orígenes','search.allUnion':'Todos los sindicatos','search.typeShort':'Tipo','search.locationShort':'Ubicación','search.unionShort':'Sindicato','search.callsPosted':'{n} convocatorias publicadas','search.rolesOpen':'{n} papeles abiertos ahora','search.updatedLive':'Actualizado en vivo','search.titleMain':'Convocatorias de casting','search.callsIn':'Convocatorias en {city}','search.callsPlain':'Convocatorias','search.noExact':'No hay coincidencias exactas abiertas ahora. Estos son los papeles abiertos más cercanos.','search.closeMore':'Más papeles abiertos cercanos a lo que elegiste','search.matches':'Coincide','search.closedTag':'Cerrada','search.similar':'Ver papeles similares','search.past':'Ver convocatorias pasadas','search.backOpen':'Volver a los papeles abiertos','search.showingShort':'Mostrando {from}–{to}',
     'search.filterType':'Tipo','search.filterLocation':'Ubicación','search.filterGender':'Género',
     'search.filterEthnicity':'Origen étnico','search.filterUnion':'Sindicato',
     'search.noResults':'Ninguna convocatoria coincide con tus filtros.','search.clearFilters':'Borrar filtros',
@@ -3247,7 +3247,9 @@ html.pl-body-editorial .app>main{background:#FFFFFF;}
 .cb-empty{color:var(--t3);font-size:13px;text-align:center;padding:40px 20px;font-style:italic;}
 .brw-h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:38px;letter-spacing:-.6px;line-height:1.1;margin:0 0 16px;color:var(--t1);}
 .brw-h1:has(+ .brw-live){margin-bottom:6px;}
-.brw-live{display:flex;align-items:center;gap:8px;margin:0 0 16px;font-size:13.5px;color:#6E655B;}
+/* Heading = stable "Casting Calls" (Google uses it as the search title); the live count sits on this line (owner 2026-11-22). */
+.brw-live{display:flex;align-items:center;gap:8px;margin:0 0 16px;font-size:15px;color:#6E655B;}
+.brw-live b{font-weight:700;color:#1A1A2E;}
 .brw-live::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:#33826A;box-shadow:0 0 0 4px rgba(51,130,106,.15);}
 .brw-bar{display:flex;align-items:stretch;background:#FFFFFF;border:1px solid var(--bdr);border-radius:14px;box-shadow:0 2px 8px rgba(26,26,46,.06);padding:6px;min-height:62px;margin-bottom:20px;box-sizing:border-box;}
 .brw-q{flex:1 1 300px;min-width:0;display:flex;align-items:center;gap:10px;padding:0 14px;cursor:text;}
@@ -20198,8 +20200,8 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   return(<div className="page page-wide page-browse">
     {landingKey
       ?<div className="section-label">{landingKey?<>{landingDef(landingKey)?.label||t('search.title')}<a href="/browse-castings" onClick={e=>{e.preventDefault();onNavigate&&onNavigate("search");}} style={{marginLeft:12,fontWeight:600,letterSpacing:0,textTransform:"none",color:"var(--teal)",textDecoration:"underline",textUnderlineOffset:"3px"}}>See all castings</a></>:null}</div>
-      :<h1 className="brw-h1">{loading&&fc.length===0?t('search.title'):hasDrop?(f.location?t('search.callsIn').replace('{city}',f.location):t('search.callsPlain')):q?t('search.callsPlain'):openRoles>=30?t('search.rolesOpen').replace('{n}',openRoles):t('search.callsPlain')}</h1>}
-    {!landingKey&&!(loading&&fc.length===0)&&!hasDrop&&!q&&openRoles>=30&&<div className="brw-live">{t('search.updatedLive')}</div>}
+      :<h1 className="brw-h1">{loading&&fc.length===0?t('search.title'):hasDrop?(f.location?t('search.callsIn').replace('{city}',f.location):t('search.callsPlain')):q?t('search.callsPlain'):t('search.titleMain')}</h1>}
+    {!landingKey&&!(loading&&fc.length===0)&&!hasDrop&&!q&&openRoles>=30&&<div className="brw-live"><b>{t('search.rolesOpen').replace('{n}',openRoles)}</b><span>· {t('search.updatedLive')}</span></div>}
     {/* One bar for search and filters (owner, 2026-11-08). */}
     <div className="brw-bar">
       <label className="brw-q"><i className="ti ti-search" aria-hidden="true"/><input placeholder={t('search.placeholderCastings')} value={q} onChange={e=>setQ(e.target.value)}/></label>
