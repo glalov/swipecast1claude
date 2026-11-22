@@ -848,19 +848,46 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
        startup failure, never a stray error on an otherwise-healthy load.
        30s grace is generous for slow mobile networks; a fast boot clears it
        within a couple hundred ms. */
+    /* SLOW WIFI (2026-11-21): on ~0.5 Mbit/s app.js alone takes ~35-55s, so the old fixed 30s check showed
+       "Something went wrong" on a healthy load that was simply still downloading (and it stayed up after the
+       site appeared). Now: while app.js is still on its way (no finished resource entry yet) and the browser
+       is online, keep waiting (up to 3 min) and say "Slow connection, still loading…". Once app.js has
+       arrived, allow 20s more to start. If the app mounts after the error screen was shown, hide it again. */
     (function(){{
-      var DEADLINE = Date.now() + 30000;
-      (function poll(){{
-        if(window.__CS_REACT_MOUNTED) return;
+      var T0=Date.now(), HARD=T0+180000, slowShown=false, appDoneAt=0, crashed=false;
+      function appArrived(){{
+        try{{var es=performance.getEntriesByType('resource');for(var i=0;i<es.length;i++){{if(/\/app\.js/.test(es[i].name)&&es[i].responseEnd>0)return true;}}}}catch(e){{}}
+        return false;
+      }}
+      function mounted(){{
+        if(window.__CS_REACT_MOUNTED) return true;
         var root=document.getElementById('root');
-        if(root && root.childElementCount>0){{ window.__CS_REACT_MOUNTED=true; return; }}
-        if(Date.now()>=DEADLINE){{
-          var elapsed=Math.round((Date.now()-window.__CS_LOADING_STARTED)/1000);
-          var errList=window.__SC_ERR.map(function(e){{return e.msg;}}).join('\\n');
-          csShowCrash('App did not start within '+elapsed+'s.\\n'+(errList||'No JS errors captured — likely a network issue.'));
+        if(root && root.childElementCount>0){{ window.__CS_REACT_MOUNTED=true; return true; }}
+        return false;
+      }}
+      (function poll(){{
+        if(mounted()){{
+          if(crashed){{ var er=document.getElementById('cs-error'); if(er) er.style.display='none'; }}
           return;
         }}
-        setTimeout(poll, 400);
+        var now=Date.now();
+        if(!appDoneAt && appArrived()) appDoneAt=now;
+        if(!crashed){{
+          var online=(navigator.onLine!==false);
+          var fail = appDoneAt ? (now-appDoneAt>20000 && now-T0>30000) : (now>=HARD || (!online && now-T0>30000));
+          if(!fail && !appDoneAt && !slowShown && now-T0>12000){{
+            slowShown=true;
+            var lb=document.querySelector('#cs-loading .label'); if(lb) lb.setAttribute('data-t','Slow connection, still loading…');
+          }}
+          if(fail){{
+            crashed=true;
+            var elapsed=Math.round((now-window.__CS_LOADING_STARTED)/1000);
+            var errList=window.__SC_ERR.map(function(e){{return e.msg;}}).join('\\n');
+            csShowCrash('App did not start within '+elapsed+'s.\\n'+(errList||'No JS errors captured — likely a network issue.'));
+          }}
+        }}
+        if(crashed && now-T0>480000) return;
+        setTimeout(poll, crashed?1000:400);
       }})();
     }})();
   </script>
