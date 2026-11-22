@@ -4205,8 +4205,12 @@ html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
 .nav-av-pic{position:relative;}
 .nav-av-pic img{width:100%;height:100%;object-fit:cover;display:block;}
 .nav-av-pic.big{width:46px;height:46px;font-size:17px;}
-html .nav-ddm.nav-acct{grid-template-columns:1.15fr 1fr 1fr;}
-html .nav-ddm.nav-acct.two{grid-template-columns:1.15fr 1fr;}
+/* Equal thirds like Directories / Manager Mode so the dividers stay put between menus (owner 2026-11-21). */
+html .nav-ddm.nav-acct,html .nav-ddm.nav-acct.two{grid-template-columns:repeat(3,minmax(0,1fr));}
+html .nav-ddm.nav-acct.two .acct-col:last-child{grid-column:span 2;}
+.nav-acct .acct-sep-who{margin:22px 0 14px;}
+html .nav-ddm.nav-acct .acct-col button.acct-out-q{display:inline-flex;flex-direction:row;align-items:center;gap:8px;padding:2px 0;font-family:inherit;font-size:14px;font-weight:700;color:#3A322A;cursor:pointer;}
+html .nav-ddm.nav-acct .acct-col button.acct-out-q:hover{color:#B3412F;}
 .nav-acct .acct-sep{height:1px;background:#EFE8DA;margin:4px 0 12px;}
 .nav-acct .acct-col{padding:0 30px;border-left:1px solid #EFE8DA;min-width:0;}
 .nav-acct .acct-col:first-child{border-left:0;}
@@ -63191,6 +63195,9 @@ function App(){
                   <div className="acct-col">
                     <div className="ddx-lbl">{navT('nav.acctSignedIn')}</div>
                     <div className="acct-who"><Av big/><div><b>{myProfile?.display_name||first}</b><small>{plan}</small></div></div>
+                    {/* Owner 2026-11-21 (demo castslate-account-menu-demo.html): Sign out is a quiet link under your name, not a red headline. */}
+                    <div className="acct-sep acct-sep-who" aria-hidden="true"/>
+                    <button role="menuitem" className="acct-out-q" onClick={()=>{setAcctOpen(false);signOut();}}><Ico n="logout" s={16}/>{navT('nav.signOut')}</button>
                   </div>
                   {/* Owner 2026-11-13: no links that repeat the bar (Dashboard / My Profile live there). "Your profile" holds
                       talent shortcuts the bar doesn't have — Manager Mode only shows the SALES page for the card and events.
@@ -63205,8 +63212,6 @@ function App(){
                     <div className="ddx-lbl">{navT('nav.acctAccount')}</div>
                     <button role="menuitem" onClick={()=>goSettings("account")}><b>{navT('nav.acctSettings')}</b><small>{navT('nav.acctSettingsDesc')}</small></button>
                     <button role="menuitem" onClick={()=>goSettings("subscription")}><b>{navT('nav.acctMembership')}</b><small>{navT('nav.acctMembershipDesc')}</small></button>
-                    <div className="acct-sep" aria-hidden="true"/>
-                    <button role="menuitem" className="acct-out" onClick={()=>{setAcctOpen(false);signOut();}}><b>{navT('nav.signOut')}</b><small>{navT('nav.acctSignOutDesc')}</small></button>
                   </div>
                 </div>}
               </span>;})()}
