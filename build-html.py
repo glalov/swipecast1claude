@@ -599,11 +599,24 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
            the 3 MB clip was starving app.js and the photos (page 20s -> 13s, main photo
            35s -> 26s in testing). iPhone/Mac Safari and every fast or unknown connection
            start it right here, exactly as before. (2026-10-20, owner-approved) */
-        var csC=navigator.connection,csSlow=false;
-        try{{csSlow=!!(csC&&/Android/i.test(navigator.userAgent||"")&&(csC.saveData||/^(slow-2g|2g|3g)$/.test(csC.effectiveType||"")||(typeof csC.downlink==="number"&&csC.downlink>0&&csC.downlink<2)));}}catch(e){{}}
+        /* SLOW-MODE (2026-11-21): the banner clip needs ~1.7 Mbit/s and is 6 MB. On a weak connection
+           (any device) it froze for good once the rest of the page started loading, and it slowed app.js
+           down by more than half (0.5 Mbit/s: page at 57s). So: decide when the HTML has arrived, from how
+           fast it came (plus navigator.connection where it exists). Slow -> the banner keeps its still and
+           only starts if, after the page has loaded, app.js proves the line can carry it (>=2.5 Mbit/s). */
+        var csC=navigator.connection,csConnSlow=false;
+        try{{csConnSlow=!!(csC&&(csC.saveData||/^(slow-2g|2g|3g)$/.test(csC.effectiveType||"")||(/Android/i.test(navigator.userAgent||"")&&typeof csC.downlink==="number"&&csC.downlink>0&&csC.downlink<2)));}}catch(e){{}}
+        var csKbps=function(re){{var best=0;try{{performance.getEntriesByType("navigation").concat(performance.getEntriesByType("resource")).forEach(function(e){{if(re&&!re.test(e.name))return;var ms=e.responseEnd-e.responseStart;if(e.transferSize>8000&&ms>15){{var k=e.transferSize*8/ms;if(k>best)best=k;}}}});}}catch(e){{}}return best;}};
         var csGo=function(){{if(v.getAttribute("src"))return;v.src=pick();try{{var q=v.play();if(q&&q.catch)q.catch(function(){{}});}}catch(e){{}}}};
-        if(csSlow){{window.__csMoonWait=true;window.addEventListener("cs:hero-ready",csGo);window.addEventListener("load",csGo);setTimeout(csGo,25000);}}
-        else v.src=pick();
+        var csDecide=function(){{
+          var k=csKbps(null),slow=csConnSlow||(k>0&&k<2500);
+          window.__csSlowNet=slow;
+          if(!slow){{csGo();return;}}
+          window.__csMoonWait=true;
+          window.addEventListener("load",function(){{setTimeout(function(){{var a=csKbps(/app\.js/);if(a>=2500)csGo();}},1500);}});
+        }};
+        if(document.readyState!=="loading")csDecide();
+        else document.addEventListener("readystatechange",function f(){{if(document.readyState!=="loading"){{document.removeEventListener("readystatechange",f);csDecide();}}}});
         var h=document.createElement("div");
         h.id="cs-moon-hold";h.setAttribute("aria-hidden","true");
         h.style.cssText="position:fixed;left:0;top:0;width:4px;height:2px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;";

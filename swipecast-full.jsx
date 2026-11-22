@@ -10876,10 +10876,13 @@ function csAuthSize(){ try{ const w=window.innerWidth<=560?window.innerWidth:460
 // .cs-ffmac): the video replaces the matching still in one step and tab clicks cut cleanly.
 const csIsFirefoxMac=(function(){ try{ const u=navigator.userAgent||''; return /Firefox\//.test(u)&&/Macintosh/.test(u); }catch(_){ return false; } })();
 try{ if(csIsFirefoxMac) document.documentElement.classList.add('cs-ffmac'); }catch(_){}
+// SLOW-MODE (2026-11-21): set by the page shell when the HTML itself arrived slowly (weak wifi / one bar).
+function csSlowNet(){ try{ return window.__csSlowNet===true; }catch(_){ return false; } }
 function csAuthPoster(C){ return C.base+csAuthSize()+((csIsWebKitEngine||csIsFirefoxMac)?'-poster.jpg':'-poster-srgb.jpg'); }
 (function(){ try{
   const pre=function(){ ['mirror','fog'].forEach(function(k){ const i=new Image(); i.decoding='async'; i.src=csAuthPoster(CS_AUTH_CLIPS[k]); }); };
   if(/^\/(login|register-talent|auth-gate)/.test(location.pathname)) pre();
+  else if(csSlowNet()) {} // slow line: the sign-in popup's stills load when it opens
   else {
     // Sign-up still on page load (Join is the common next click), the log-in one on idle.
     const m=function(){ const i=new Image(); i.decoding='async'; i.src=csAuthPoster(CS_AUTH_CLIPS.mirror); };
@@ -29574,6 +29577,9 @@ const LANDING_SWIPE_DEMO=[
   {id:2,name:"Evan Calder",age:46,gender:"Male",height:"6'1\"",pos:"center 5%",img:"/assets/landing/deck-evan-calder.jpg",skills:["Improv","Yale Drama MFA","Basketball"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
 ];
+// SLOW-MODE (2026-11-21): on a slow line the 12 deck photos (1.8 MB) starved everything else. Use 600px copies
+// (assets/landing/slow/, 0.5 MB in total); they look the same at card size.
+try{ if(csSlowNet()) LANDING_SWIPE_DEMO.forEach(function(d){ if(d.img&&d.img.indexOf('/assets/landing/')===0&&d.img.indexOf('/slow/')<0) d.img=d.img.replace('/assets/landing/','/assets/landing/slow/'); }); }catch(_){}
 // Plays the entrance once per page load. Module-level so it survives in-app
 // navigation (Home → other page → Home doesn't replay), but resets on a real
 // reload / address-bar entry / new tab — exactly when the logo splash runs too.
@@ -29596,7 +29602,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
   // with the 11 behind it (Safari on a busy connection showed it blank ~12s). Fallback
   // 4s, 15s on slow Android. In-app return visits (intro already seen) skip the wait.
   const [backOk,setBackOk]=useState(()=>{try{return !!window.__csHeroReady||swipeIntroSeen;}catch(_){return true;}});
-  React.useEffect(()=>{if(backOk)return;const ok=()=>setBackOk(true);window.addEventListener("cs:hero-ready",ok);const t=setTimeout(ok,window.__csMoonWait?15000:4000);return()=>{window.removeEventListener("cs:hero-ready",ok);clearTimeout(t);};},[backOk]);
+  React.useEffect(()=>{if(backOk)return;const ok=()=>setBackOk(true);const ev=csSlowNet()?"cs:reel-ready":"cs:hero-ready";if(csSlowNet()&&window.__csReelReady){ok();return;}window.addEventListener(ev,ok);const t=setTimeout(ok,csSlowNet()?40000:window.__csMoonWait?15000:4000);return()=>{window.removeEventListener(ev,ok);clearTimeout(t);};},[backOk]); // slow line: the cards behind wait for the reel
   const [superFly,setSuperFly]=useState(false);
   const dragging=useRef(false);
   const startX=useRef(0);
@@ -29640,7 +29646,7 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
     try{
       const warm=(d,pri)=>new Promise(res=>{const im=new Image();im.decoding="async";try{im.fetchPriority=pri;}catch(_){}im.onload=im.onerror=()=>res();im.src=d.img;if(im.decode)im.decode().catch(()=>{});});
       const front=demo[0];
-      const rest=()=>demo.slice(1).forEach(d=>warm(d,"low"));
+      const rest=()=>{if(csSlowNet()&&!window.__csReelReady){const f=()=>{window.removeEventListener("cs:reel-ready",f);demo.slice(1).forEach(d=>warm(d,"low"));};window.addEventListener("cs:reel-ready",f);setTimeout(f,40000);return;}demo.slice(1).forEach(d=>warm(d,"low"));};
       if(front){let fired=false;const go=()=>{if(!fired){fired=true;rest();}};warm(front,"high").then(()=>{try{window.__csHeroReady=true;window.dispatchEvent(new Event("cs:hero-ready"));}catch(_){}go();});setTimeout(go,window.__csMoonWait?15000:4000);}else rest();
     }catch(e){}
     let started=false,endTm,poll,safety,lead;
@@ -29832,7 +29838,7 @@ function NewsSection({onNavigate}){
   const InternalCard=(a)=>(
     <button key={a.slug} className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>
       <div className="news-thumb">
-        {a.image_url&&<CsImg src={a.image_url} w={640} eager={true} onGone={()=>dropBroken(a.slug)}/>}
+        {a.image_url&&<CsImg src={a.image_url} w={640} eager={!csSlowNet()} onGone={()=>dropBroken(a.slug)}/>}
         <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
       </div>
       <div className="news-body">
@@ -29849,7 +29855,7 @@ function NewsSection({onNavigate}){
     return (
       <a key={a.slug} className="news-card" href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">
         <div className="news-thumb">
-          {img&&<CsImg src={img} w={640} eager={true} referrerPolicy="no-referrer" onGone={()=>dropBroken(a.slug)}/>}
+          {img&&<CsImg src={img} w={640} eager={!csSlowNet()} referrerPolicy="no-referrer" onGone={()=>dropBroken(a.slug)}/>}
           <span className="news-cat" style={{background:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</span>
         </div>
         <div className="news-body">
@@ -30015,13 +30021,16 @@ const FORMAT_ICONS={
 const CS_VID_LITE_KBPS=5000;
 let csVidMode=null;
 function csMeasureKbps(){
+  let bestSize=0;
   // Body download speed of the biggest uncached transfers so far (the page
   // itself, app.js). bytes*8/ms = kbit/s. Cached files report transferSize 0.
   let best=0;
   try{
     performance.getEntriesByType('navigation').concat(performance.getEntriesByType('resource')).forEach(function(e){
+      // SLOW-MODE: judge by the BIGGEST download (app.js), not the fastest one. A mid-size file that arrives
+      // in one burst (the HTML) can read as 20+ Mbit/s on a 0.5 Mbit/s line and switched the whole page to HD.
       const ms=e.responseEnd-e.responseStart;
-      if(e.transferSize>60000&&ms>20){ const k=e.transferSize*8/ms; if(k>best) best=k; }
+      if(e.transferSize>60000&&ms>20&&e.transferSize>bestSize){ bestSize=e.transferSize; best=e.transferSize*8/ms; }
     });
   }catch(_){}
   return best;
@@ -30033,9 +30042,14 @@ function csVideoMode(){
   try{ if(!m){ const st=sessionStorage.getItem('cs_vid_mode'); if(st==='lite') m='lite'; } }catch(_){}
   const c=navigator.connection;
   if(!m&&c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) m='lite';
+  // SLOW-MODE: the page shell already measured the HTML download (window.__csSlowNet), so lite is known from the first clip.
+  try{ if(!m&&window.__csSlowNet===true) m='lite'; }catch(_){}
   if(!m){ const k=csMeasureKbps(); if(k>0) m=k<CS_VID_LITE_KBPS?'lite':'hd'; }
   if(!m&&c&&typeof c.downlink==='number'&&c.downlink>0) m=c.downlink*1000<CS_VID_LITE_KBPS?'lite':'hd';
   csVidMode=m||'hd';
+  // SLOW-MODE safety net: the shell judged the line fast enough and started the 6 MB banner, but app.js says
+  // otherwise. If the banner isn't actually playing yet, drop it back to its still so it stops eating the line.
+  try{ if(csVidMode==='lite'){ const mv=window.__csMoonVid; if(mv&&mv.getAttribute('src')&&mv.readyState<3){ mv.removeAttribute('src'); mv.load(); window.__csMoonWait=true; } } }catch(_){}
   return csVidMode;
 }
 // Full-quality clip stalled anyway (wifi got worse, or we guessed wrong):
@@ -30335,8 +30349,8 @@ function HomeEcho({onNavigate}){
     // film: loads only as the section gets close; portrait cut on phones
     let vio=null;
     if(vid){vid.addEventListener('playing',()=>{const p=r.querySelector('.he-poster');if(p)p.style.visibility='hidden';},{once:true});
-      const go=()=>{if(!vid.src){vid.src=mobile()?vid.dataset.msrc:vid.dataset.src;vid.preload='auto';}try{vid.play().catch(()=>{});}catch(_){}};
-      try{vio=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){go();}else{try{vid.pause();}catch(_){}}},{rootMargin:'1200px 0px'});vio.observe(r);}catch(_){go();}}
+      const go=()=>{if(!vid.src){const u=mobile()?vid.dataset.msrc:vid.dataset.src;vid.src=csVideoMode()==='lite'?csLiteUrl(u):u;vid.preload='auto';}try{vid.play().catch(()=>{});}catch(_){}};
+      try{vio=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){go();}else{try{vid.pause();}catch(_){}}},{rootMargin:csSlowNet()?'200px 0px':'1200px 0px'});vio.observe(r);}catch(_){go();}}
     const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),seg=(p,a,b)=>clamp((p-a)/(b-a),0,1),ease=t=>t*t*(3-2*t);
     // FLY (default since 2026-11-15, owner): instead of fading the cream, the camera flies into a letter — the cream stays
     // solid, the stroke grows until the film fills the screen, then the line appears.
@@ -30556,8 +30570,8 @@ function HomeEcho({onNavigate}){
     <section ref={ref} className="he" aria-label="Your shot">
       <div className="he-stage">
         <div className="he-box">
-          <img className="he-poster" src="/assets/video/actor-journey-set-hd-poster.jpg" alt=""/>
-          <video muted playsInline loop preload="none" poster="/assets/video/actor-journey-set-hd-poster.jpg" aria-hidden="true" data-src="/assets/video/actor-journey-set-hd.mp4" data-msrc="/assets/video/actor-journey-set-m.mp4"/>
+          <img className="he-poster" src="/assets/video/actor-journey-set-hd-poster.jpg" alt="" loading={csSlowNet()?"lazy":undefined}/>
+          <video muted playsInline loop preload="none" poster={csSlowNet()?undefined:"/assets/video/actor-journey-set-hd-poster.jpg"} aria-hidden="true" data-src="/assets/video/actor-journey-set-hd.mp4" data-msrc="/assets/video/actor-journey-set-m.mp4"/>
           <div className="he-shade"/>
           <div className="he-covers" aria-hidden="true"><canvas className="he-cover"/><canvas className="he-cover" style={{opacity:0}}/></div>
           <div className="he-after">
@@ -30657,7 +30671,7 @@ function FormatReel(){
     const offs=vids.map(csArmLoopVideo);
     const n=FORMAT_CARDS.length, timers=[], unhooks=[];
     let gone=false, begun=false, nearIo=null;
-    const urlOf=function(v){ return csVidMode==='lite'?csLiteUrl(v.dataset.src):v.dataset.src; };
+    const urlOf=function(v){ return csVideoMode()==='lite'?csLiteUrl(v.dataset.src):v.dataset.src; };
     const setSrc=function(v){ csQueueStart(function(){ if(gone) return; const u=urlOf(v); if(v.getAttribute('src')===u) return; v.preload='auto'; v.setAttribute('src',u); try{ v.load(); }catch(_){} }); };
     // Lite clips play PROGRESSIVELY, straight from the network. They are tiny
     // (66-210 kbit/s each, ~1 Mbit/s for all seven), so each starts moving
@@ -30695,6 +30709,7 @@ function FormatReel(){
     const begin=function(){
       if(hold){ pend=true; return; }
       if(begun||gone) return; begun=true;
+      csVideoMode(); // decide lite/HD now, before any clip gets a src
       if(nearIo){ nearIo.disconnect(); nearIo=null; }
       // Cards load ONE AFTER ANOTHER in row order (2026-10-20): each next clip starts once
       // the previous one can play (or after 1.5s). All 7 at once on a weak connection meant
@@ -30718,13 +30733,19 @@ function FormatReel(){
         timers.push(setTimeout(nextRest,600));
       }
       else{
+      // SLOW-MODE (2026-11-21): one clip at a time, the cards you can see first, and the next one only
+      // once this one can play to the end without stopping (canplaythrough; 20s safety). At 0.5 Mbit/s the
+      // old "next after canplay or 1.5s" had all seven downloading together and 12 of 15 cards frozen.
+      const W3=window.innerWidth,mid=W3/2;
+      const order=vids.slice(0,n).map(function(v){ const r=v.getBoundingClientRect(); const on=r.right>0&&r.left<W3; return {v:v,on:on,d:Math.abs((r.left+r.right)/2-mid)}; })
+        .sort(function(a,b){ return (b.on-a.on)||(a.d-b.d); }).map(function(x){ return x.v; });
       let k=0;
       const nextCard=function(){
-        if(gone||k>=n) return;
-        const v=vids[k++]; let moved=false;
-        const on=function(){ if(moved) return; moved=true; v.removeEventListener('canplay',on); nextCard(); };
-        v.addEventListener('canplay',on); unhooks.push(function(){ v.removeEventListener('canplay',on); });
-        timers.push(setTimeout(on,1500));
+        if(gone||k>=order.length) return;
+        const v=order[k++]; let moved=false;
+        const on=function(){ if(moved) return; moved=true; v.removeEventListener('canplaythrough',on); nextCard(); };
+        v.addEventListener('canplaythrough',on); unhooks.push(function(){ v.removeEventListener('canplaythrough',on); });
+        timers.push(setTimeout(on,20000));
         setSrc(v);
       };
       nextCard();
@@ -30735,7 +30756,7 @@ function FormatReel(){
         if(dup.getBoundingClientRect().left<window.innerWidth+200){ go(); return; }
         orig.addEventListener('canplaythrough',go);
         unhooks.push(function(){ orig.removeEventListener('canplaythrough',go); });
-        timers.push(setTimeout(go,12000)); // safety net if canplaythrough never fires
+        timers.push(setTimeout(go,csVidMode==='lite'?60000:12000)); // safety net if canplaythrough never fires (slow-mode: much later, so copies don't share the line)
       });
     };
     begin();
@@ -30750,7 +30771,7 @@ function FormatReel(){
       if(firsts.every(function(v){ return v.readyState>=4; })){ window.__csReelReady=true; try{ window.dispatchEvent(new Event('cs:reel-ready')); }catch(_){} }
     };
     firsts.forEach(function(v){ v.addEventListener('canplaythrough',checkReady); unhooks.push(function(){ v.removeEventListener('canplaythrough',checkReady); }); });
-    timers.push(setTimeout(function(){ if(!window.__csReelReady){ window.__csReelReady=true; try{ window.dispatchEvent(new Event('cs:reel-ready')); }catch(_){} } },8000));
+    timers.push(setTimeout(function(){ if(!window.__csReelReady){ window.__csReelReady=true; try{ window.dispatchEvent(new Event('cs:reel-ready')); }catch(_){} } },csVidMode==='lite'?45000:8000));
     checkReady();
     return function(){ gone=true; if(nearIo) nearIo.disconnect(); csVidQueueStop(); window.removeEventListener('cs:vid-lite',liteAll); offs.forEach(function(f){ f(); }); unhooks.forEach(function(f){ f(); }); timers.forEach(clearTimeout); };
   },[]);
@@ -62686,6 +62707,7 @@ function App(){
       // Contact page map: warm it too, so an in-app visit to /contact paints it with the page.
       try{const im=new Image();im.decoding="async";im.src=CT_MAP_IMG;}catch(e){}
     };
+    if(csSlowNet()) return; // slow line: logos and the contact map load when their pages open
     const ric=typeof requestIdleCallback!=="undefined"
       ? requestIdleCallback(warm,{timeout:4000})
       : setTimeout(warm,2000);
