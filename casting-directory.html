@@ -168,7 +168,7 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20261122-053147"/>
+  <link rel="preload" as="script" href="/app.js?v=20261122-063238"/>
   <link rel="preload" as="image" href="/logos/netflix.svg"/>
   <link rel="preload" as="image" href="/logos/hbo.svg"/>
   <link rel="preload" as="image" href="/logos/appletv.svg"/>
@@ -180,15 +180,15 @@
   <link rel="preload" as="image" href="/assets/cdx-cards/cdx-card-3.jpg"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20261122-053147 -->
-  <meta name="build-version" content="20261122-053147"/>
+  <!-- BUILD: 20261122-063238 -->
+  <meta name="build-version" content="20261122-063238"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20261122-053147";
+        var B="20261122-063238";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -413,7 +413,7 @@
         var csKbps=function(re){var best=0;try{performance.getEntriesByType("navigation").concat(performance.getEntriesByType("resource")).forEach(function(e){if(re&&!re.test(e.name))return;var ms=e.responseEnd-e.responseStart;if(e.transferSize>8000&&ms>15){var k=e.transferSize*8/ms;if(k>best)best=k;}});}catch(e){}return best;};
         var csGo=function(){if(v.getAttribute("src"))return;v.src=pick();try{var q=v.play();if(q&&q.catch)q.catch(function(){});}catch(e){}};
         var csDecide=function(){
-          var k=csKbps(null),slow=csConnSlow||(k>0&&k<2500);
+          var k=csKbps(null),slow=csConnSlow||(k>0&&k<1000); /* tiny HTML reads low on ANY line; only a very low reading counts */
           window.__csSlowNet=slow;
           if(!slow){csGo();return;}
           window.__csMoonWait=true;
@@ -749,7 +749,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20261122-053147"
+        "/app.js?v=20261122-063238"
       ];
       function step(){
         var it=STEPS.shift();
@@ -790,7 +790,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20261122-053147';
+      s.src='/castoria.js?v=20261122-063238';
       s.async=true;
       document.body.appendChild(s);
     }

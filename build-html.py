@@ -609,7 +609,7 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
         var csKbps=function(re){{var best=0;try{{performance.getEntriesByType("navigation").concat(performance.getEntriesByType("resource")).forEach(function(e){{if(re&&!re.test(e.name))return;var ms=e.responseEnd-e.responseStart;if(e.transferSize>8000&&ms>15){{var k=e.transferSize*8/ms;if(k>best)best=k;}}}});}}catch(e){{}}return best;}};
         var csGo=function(){{if(v.getAttribute("src"))return;v.src=pick();try{{var q=v.play();if(q&&q.catch)q.catch(function(){{}});}}catch(e){{}}}};
         var csDecide=function(){{
-          var k=csKbps(null),slow=csConnSlow||(k>0&&k<2500);
+          var k=csKbps(null),slow=csConnSlow||(k>0&&k<1000); /* tiny HTML reads low on ANY line; only a very low reading counts */
           window.__csSlowNet=slow;
           if(!slow){{csGo();return;}}
           window.__csMoonWait=true;

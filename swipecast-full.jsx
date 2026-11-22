@@ -10877,7 +10877,20 @@ function csAuthSize(){ try{ const w=window.innerWidth<=560?window.innerWidth:460
 const csIsFirefoxMac=(function(){ try{ const u=navigator.userAgent||''; return /Firefox\//.test(u)&&/Macintosh/.test(u); }catch(_){ return false; } })();
 try{ if(csIsFirefoxMac) document.documentElement.classList.add('cs-ffmac'); }catch(_){}
 // SLOW-MODE (2026-11-21): set by the page shell when the HTML itself arrived slowly (weak wifi / one bar).
-function csSlowNet(){ try{ return window.__csSlowNet===true; }catch(_){ return false; } }
+// Judged by app.js (1.4 MB, a reliable speed reading), not by the tiny HTML: small files arrive slowly at the
+// start of ANY connection, so the HTML alone flagged good wifi as slow and served blurry clips (owner, 2026-11-22).
+// Falls back to the shell's early guess only if app.js has no timing entry.
+let csSlowCache,csLineK;
+// Measured line speed in kbit/s from app.js (0 = no reading, e.g. app.js came from cache).
+function csLineKbps(){ if(csLineK===undefined){ csSlowNet(); } return csLineK||0; }
+function csSlowNet(){
+  if(csSlowCache!==undefined) return csSlowCache;
+  let size=0,kbps=0;
+  try{ performance.getEntriesByType('resource').forEach(function(e){ if(/\.(mp4|webm|m4v)(\?|$)/i.test(e.name)) return; const ms=e.responseEnd-e.responseStart; const big=/\/app\.js/.test(e.name)?1e12:e.transferSize; if(e.transferSize>60000&&ms>20&&big>size){ size=big; kbps=e.transferSize*8/ms; } }); }catch(_){} // app.js first; never videos (they stream slowly on purpose)
+  if(size>0){ csLineK=kbps; csSlowCache=kbps<2500; return csSlowCache; }
+  // no reading yet: don't cache, ask again next time
+  try{ return window.__csSlowNet===true; }catch(_){ return false; }
+}
 function csAuthPoster(C){ return C.base+csAuthSize()+((csIsWebKitEngine||csIsFirefoxMac)?'-poster.jpg':'-poster-srgb.jpg'); }
 (function(){ try{
   const pre=function(){ ['mirror','fog'].forEach(function(k){ const i=new Image(); i.decoding='async'; i.src=csAuthPoster(CS_AUTH_CLIPS[k]); }); };
@@ -30030,7 +30043,9 @@ function csMeasureKbps(){
       // SLOW-MODE: judge by the BIGGEST download (app.js), not the fastest one. A mid-size file that arrives
       // in one burst (the HTML) can read as 20+ Mbit/s on a 0.5 Mbit/s line and switched the whole page to HD.
       const ms=e.responseEnd-e.responseStart;
-      if(e.transferSize>60000&&ms>20&&e.transferSize>bestSize){ bestSize=e.transferSize; best=e.transferSize*8/ms; }
+      if(/\.(mp4|webm|m4v)(\?|$)/i.test(e.name)) return;
+      const big=/\/app\.js/.test(e.name)?1e12:e.transferSize;
+      if(e.transferSize>60000&&ms>20&&big>bestSize){ bestSize=big; best=e.transferSize*8/ms; }
     });
   }catch(_){}
   return best;
@@ -30043,8 +30058,8 @@ function csVideoMode(){
   const c=navigator.connection;
   if(!m&&c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||''))) m='lite';
   // SLOW-MODE: the page shell already measured the HTML download (window.__csSlowNet), so lite is known from the first clip.
-  try{ if(!m&&window.__csSlowNet===true) m='lite'; }catch(_){}
   if(!m){ const k=csMeasureKbps(); if(k>0) m=k<CS_VID_LITE_KBPS?'lite':'hd'; }
+  try{ if(!m&&window.__csSlowNet===true) m='lite'; }catch(_){} // no reliable reading yet: use the shell's early guess
   if(!m&&c&&typeof c.downlink==='number'&&c.downlink>0) m=c.downlink*1000<CS_VID_LITE_KBPS?'lite':'hd';
   csVidMode=m||'hd';
   // SLOW-MODE safety net: the shell judged the line fast enough and started the 6 MB banner, but app.js says
@@ -30349,7 +30364,10 @@ function HomeEcho({onNavigate}){
     // film: loads only as the section gets close; portrait cut on phones
     let vio=null;
     if(vid){vid.addEventListener('playing',()=>{const p=r.querySelector('.he-poster');if(p)p.style.visibility='hidden';},{once:true});
-      const go=()=>{if(!vid.src){const u=mobile()?vid.dataset.msrc:vid.dataset.src;vid.src=csVideoMode()==='lite'?csLiteUrl(u):u;vid.preload='auto';}try{vid.play().catch(()=>{});}catch(_){}};
+      const go=()=>{if(!vid.src){const u=mobile()?vid.dataset.msrc:vid.dataset.src;const k=csLineKbps(),early=(function(){try{return window.__csSlowNet===true;}catch(_){return false;}})();
+        // Film quality by line speed (owner 2026-11-22: the small copy looked blurry): full HD normally, 720p below
+        // 2.5 Mbit/s, the small copy only on a one-bar line (<1 Mbit/s, or the shell's early guess with no reading).
+        vid.src=((k>0&&k<1000)||(k===0&&early))?csLiteUrl(u):(k>0&&k<2500)?u.replace('/assets/video/','/assets/video/mid/'):u;vid.preload='auto';}try{vid.play().catch(()=>{});}catch(_){}};
       try{vio=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){go();}else{try{vid.pause();}catch(_){}}},{rootMargin:csSlowNet()?'200px 0px':'1200px 0px'});vio.observe(r);}catch(_){go();}}
     const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),seg=(p,a,b)=>clamp((p-a)/(b-a),0,1),ease=t=>t*t*(3-2*t);
     // FLY (default since 2026-11-15, owner): instead of fading the cream, the camera flies into a letter — the cream stays
