@@ -38866,14 +38866,19 @@ const ACG = (()=>{
   const AGE_HARD_LOCK=/\b(grandmother|grandfather|grandma|grandpa|granddaughter|grandson|retired|retiree|elderly|widow|widower|pension|emeritus|decades|matriarch|patriarch|thirty years|forty years|fifty years|veteran of|great-aunt|great-uncle)\b/i;
   const AGE_SOFT_LOCK=/\b(mother|father|mom|dad|parent|principal|judge|chief|surgeon|professor|senator|founder|owner|captain|superintendent|director of)\b/i;
   const AGE_DOWN={senior:"mature",mature:"midCareer",midCareer:"adult",adult:"youngAdult",youngAdult:"youngAdult",teen:"teen",child:"child"};
-  function youngerGroup(group,slot){
-    if(group==="child"||group==="teen"||(slot&&slot._lock))return group;
+  const R27_AGE_LOCK=/\b(\w+-)?(twenty|thirty|forty|fifty|sixty)[\w-]* (years|winters|summers|seasons)\b|\b\d{2} years\b|\b(retired|career|decades|lifetime|all (his|her) life|since before|old-timer|veteran|widowed|grown children|teenage (son|daughter)|kids in college)\b/i;
+  function youngerGroup(group,slot,premise){
+    if(group==="child"||group==="teen")return group;
+    if(/^(senior|mature)$/.test(group)&&/\b(nursing home|retire|elderly|senior center|hospice|old folks|widow|pension)/i.test(String(premise||"")))return group;
     const blob=`${(slot&&slot.s)||""} ${(slot&&slot.x)||""}`;
-    if(AGE_HARD_LOCK.test(blob))return group;
-    if(AGE_SOFT_LOCK.test(blob))return Math.random()<0.42?(AGE_DOWN[group]||group):group;
+    if(AGE_HARD_LOCK.test(blob)||R27_AGE_LOCK.test(blob))return group;
+    // Round 27 (owner): most parts 18-25, then 25-35. Locked seeds slide too,
+    // unless the character is written as plainly older.
+    if(AGE_SOFT_LOCK.test(blob))return Math.random()<0.5?(AGE_DOWN[group]||group):group;
     let g=group;
-    if(Math.random()<0.66)g=AGE_DOWN[g]||g;
-    if(Math.random()<0.38)g=AGE_DOWN[g]||g;
+    if(Math.random()<(slot&&slot._lock?0.6:0.85))g=AGE_DOWN[g]||g;
+    if(Math.random()<(slot&&slot._lock?0.35:0.6))g=AGE_DOWN[g]||g;
+    if(Math.random()<0.35)g=AGE_DOWN[g]||g;
     return g;
   }
   // Specific ethnicities are drawn from the site's own profile list so a
@@ -40561,7 +40566,7 @@ const ACG = (()=>{
         _frameBase:frameIdx,
         _frameSlot:i,
         gender:genders[i],
-        age_range:seedAge(youngerGroup(s.a||"adult",s),usedAges,sketchAge(s.x),h,res),
+        age_range:seedAge(youngerGroup(s.a||"adult",s,seed&&seed.p),usedAges,sketchAge(s.x),h,res),
         // v4: "Any ethnicity" unless the story makes it matter.
         ethnicity:OPEN_ETHNICITY,
         pay:noFee?pick(["Copy, credit and meals","Unpaid — copy, credit and meals","No fee. Copy, credit, meals"]):rolePayString(amount,rank,track,type,days),
@@ -43280,6 +43285,261 @@ const ACG = (()=>{
          {s:"the station engineer",r:"Supporting",a:"senior",g:"M",x:"Was on shift the night of the blackout. Knows what was switched off."}]}
   ];
   R23_SEEDS.forEach(s=>{s._r23=true;(s.c||[]).forEach(z=>{z._lock=true;});if(!FILM_SEEDS.some(x=>x.k===s.k))FILM_SEEDS.push(s);});
+  // ── Round 27 (2026-11-22): owner asked for more gripping stories with young
+  // casts (most parts 18-25, then 25-35). Each premise has a hook in the first
+  // line and a turn that raises the stakes. Written to the round-23 seed rules.
+  const R27_SEEDS=[
+    {k:"r27-rideshare-same-fare",era:"now",genre:"thriller",tracks:["film","tv"],ttl:["Fourth Pickup","Same Address","Rated Five Stars"],
+      p:"a rideshare driver gets the same passenger four nights in a row, each time from a different city",
+      h:"the passenger knows the driver's real name, which is not on the app",h2:"on the fifth night the passenger books the ride for the driver instead",
+      w:["a rideshare car at night","a gas station on a highway","a parking lot behind a diner"],
+      c:[{s:"the driver",r:"Lead",a:"youngAdult",g:"F",x:"Drives nights to pay for nursing school. Polite to everyone and trusts nobody. Keeps the doors locked until she sees a face."},
+         {s:"the passenger",r:"Lead",a:"adult",g:"M",x:"Soft voice, good manners, always sits behind the driver. Talks about small things as if he has known her for a long time."},
+         {s:"the dispatcher",r:"Supporting",a:"youngAdult",g:"M",x:"Answers the driver's calls from a desk across town. Jokes a lot and checks the logs when nobody asks."}]},
+    {k:"r27-group-chat-ghost",era:"now",genre:"horror",tracks:["film","tv"],ttl:["Seen by Five","Typing","Group of Six"],
+      p:"five college friends keep getting messages in their group chat from a sixth member nobody remembers adding",
+      h:"the sixth member's photos are taken from inside their dorm while they sleep",h2:"a yearbook from their first semester shows six of them",
+      w:["a college dorm room","a campus library at night","a diner near campus"],
+      c:[{s:"the roommate",r:"Lead",a:"youngAdult",g:"F",x:"Organized, funny, first to screenshot everything. Treats the chat like a joke until her own photo shows up."},
+         {s:"the quiet friend",r:"Lead",a:"youngAdult",g:"M",x:"Barely posts. Turns out to remember more about that first semester than anybody else does."},
+         {s:"the transfer student",r:"Supporting",a:"youngAdult",g:"F",x:"New this year and eager to fit in. Asks the obvious questions nobody wants to answer."},
+         {s:"the resident advisor",r:"Supporting",a:"adult",g:"M",x:"Tired, kind, three weeks from graduating. Has seen pranks before and says so too quickly."}]},
+    {k:"r27-heist-wedding-band",era:"now",genre:"crime comedy",tracks:["film","tv"],ttl:["Last Dance","Cover Band","Plus One"],
+      p:"a broke wedding band plans to rob the reception they are hired to play",
+      h:"the bride is planning to rob her own wedding the same night",h2:"the groom's family hired a second band as a backup and they want in",
+      w:["a hotel ballroom","a loading dock behind a hotel","a cramped rehearsal space"],
+      c:[{s:"the singer",r:"Lead",a:"adult",g:"F",x:"Great voice, worse luck. Talks the band into the plan between songs and believes every word of it."},
+         {s:"the drummer",r:"Lead",a:"youngAdult",g:"M",x:"Nervous, honest, keeps perfect time. Writes the plan on a set list so nobody else can read it."},
+         {s:"the bride",r:"Lead",a:"adult",g:"F",x:"Smiling in every photo and counting exits the whole night. Better at this than anyone in the band."},
+         {s:"the wedding planner",r:"Supporting",a:"adult",g:"M",x:"Runs the night on a headset and a clipboard. Notices everything and wants a cut."}]},
+    {k:"r27-memory-clinic-intern",era:"near future",genre:"science fiction thriller",tracks:["film","tv"],ttl:["Delete Tuesday","Clean Slate","Intake"],
+      p:"an intern at a clinic that removes single bad memories finds her own name on the waiting list",
+      h:"the appointment was booked by her, a week from now, and paid in cash",h2:"the memory she asked to lose is of something she has not done yet",
+      w:["a bright private clinic","an intern's shared apartment","a late night subway platform"],
+      c:[{s:"the intern",r:"Lead",a:"youngAdult",g:"F",x:"Smart, broke, first in her family to finish college. Follows rules until the rules point at her."},
+         {s:"the clinic doctor",r:"Lead",a:"adult",g:"M",x:"Calm, charming, very good at the procedure. Never answers a question with a straight yes."},
+         {s:"the patient",r:"Supporting",a:"youngAdult",g:"M",x:"Has been in four times and cannot say why. Recognizes the intern from somewhere he should not."}]},
+    {k:"r27-dating-show-fake",era:"now",genre:"dark comedy",tracks:["tv","film"],ttl:["Final Rose","Edited","Couple Goals"],
+      p:"two contestants on a dating show fake a romance to win the prize and then actually fall for each other",
+      h:"the producers have known all along and are cutting the finale to expose them",h2:"the prize money turns out to be a loan they have to pay back",
+      w:["a rented mansion with a pool","a confessional booth with a camera","a cheap motel off a highway"],
+      c:[{s:"the reality contestant",r:"Lead",a:"youngAdult",g:"F",x:"Came for the money to pay a medical bill. Plays sweet for the cameras and is sharper off them."},
+         {s:"the fitness instructor",r:"Lead",a:"adult",g:"M",x:"Abs, smile, catchphrase. Underneath is a shy guy who reads poetry and hates being filmed."},
+         {s:"the producer",r:"Supporting",a:"adult",g:"F",x:"Friendly in the room and ruthless in the edit. Sees the fake romance first and lets it run."}]},
+    {k:"r27-lifeguard-lake-rule",era:"now",genre:"horror",tracks:["film"],ttl:["Swim Test","No Night Swimming","Buoy Line"],
+      p:"a summer camp lifeguard learns why the lake is closed after sundown when a counselor swims out anyway",
+      h:"the counselor comes back to shore and nobody can find the one who went in",h2:"the camp director has kept a list of every summer it happened",
+      w:["a summer camp by a lake","a lifeguard chair on a dock","a cabin with bunk beds"],
+      c:[{s:"the lifeguard",r:"Lead",a:"youngAdult",g:"F",x:"Strong swimmer, first summer on the staff. Takes the rules seriously and is mocked for it until sundown."},
+         {s:"the counselor",r:"Lead",a:"youngAdult",g:"M",x:"Loud, popular, dares everyone. Comes back from the water quieter and polite in a way that is wrong."},
+         {s:"the camp director",r:"Supporting",a:"mature",g:"M",x:"Has run the camp forever. Locks the boathouse every night and never explains why."}]},
+    {k:"r27-tutor-two-students",era:"now",genre:"thriller",tracks:["film","stage"],ttl:["Private Lessons","The Answer Key","Grade A"],
+      p:"a college student tutoring two rich freshmen for the same final realizes one of them is taking it for the other",
+      h:"the parents offer the tutor a year of rent to stay quiet",h2:"the exam room camera shows the tutor sitting the test",
+      w:["a huge apartment with a view","a study room in a library","a coffee shop near campus"],
+      c:[{s:"the tutor",r:"Lead",a:"youngAdult",g:"M",x:"Scholarship kid, very good at math, bad at saying no. Needs the money more than he lets anyone see."},
+         {s:"the older student",r:"Lead",a:"youngAdult",g:"F",x:"Bored, clever, already knows every answer. Treats the tutor like staff until she needs a favor."},
+         {s:"the younger student",r:"Supporting",a:"youngAdult",g:"M",x:"Sweet, anxious, about to fail everything. Asks the tutor for help with a very different problem."}]},
+    {k:"r27-sublet-previous-tenant",era:"now",genre:"mystery thriller",tracks:["film","tv"],ttl:["Sublet","Previous Tenant","Lease Ends Friday"],
+      p:"a young woman sublets a cheap room and keeps getting packages for the last tenant, who never moved out",
+      h:"the last tenant is still living in the walls of the building and knows her schedule",h2:"the packages start arriving with her own name on them",
+      w:["a cheap sublet room","an old building's basement","a mailroom in a big apartment building"],
+      c:[{s:"the subletter",r:"Lead",a:"youngAdult",g:"F",x:"New to the city with two suitcases and a barista job. Curious, stubborn, opens one package too many."},
+         {s:"the super",r:"Supporting",a:"adult",g:"M",x:"Fixes anything and answers nothing. Has a ring of keys for rooms that are not on the plans."},
+         {s:"the neighbor across the hall",r:"Supporting",a:"youngAdult",g:"F",x:"Chatty, nosy, works from bed all day. Has heard footsteps for months and was waiting for someone to ask."}]},
+    {k:"r27-esports-coach",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Respawn","Last Match","Ranked"],
+      p:"a washed-up gamer at twenty-four is hired to coach a college esports team about to be cut",
+      h:"his best player is the kid who beat him in the match that ended his career",h2:"the dean bets the team's budget on one live tournament",
+      w:["a college computer lab","a gaming arena with bright screens","a fast food place after midnight"],
+      c:[{s:"the coach",r:"Lead",a:"youngAdult",g:"M",x:"Was famous online for a year and has been hiding since. Funny, proud, lives in a friend's basement."},
+         {s:"the star player",r:"Lead",a:"youngAdult",g:"F",x:"Quiet, ruthless, never looks up from the screen. Respects nobody until someone beats her once."},
+         {s:"the team captain",r:"Supporting",a:"youngAdult",g:"M",x:"Talks too much and holds the team together. Cares about the club more than winning."},
+         {s:"the dean",r:"Supporting",a:"mature",g:"F",x:"Cuts budgets for a living and secretly watches every match. Makes deals she should not make."}]},
+    {k:"r27-voicemail-future",era:"now",genre:"science fiction romance",tracks:["film","stage"],ttl:["Leave a Message","Call Me Back","Inbox"],
+      p:"a young man starts getting voicemails from a woman who says she is his wife, ten years from now",
+      h:"he meets her in person and she is engaged to someone else",h2:"the messages warn him not to answer her first call",
+      w:["a small studio apartment","a crowded bar on a Friday night","a bench in a city park"],
+      c:[{s:"the young man",r:"Lead",a:"youngAdult",g:"M",x:"Works nights at a print shop and talks to nobody. Saves every voicemail and listens to them in order."},
+         {s:"the woman from the voicemails",r:"Lead",a:"youngAdult",g:"F",x:"Bright, funny, impatient. She has never seen this guy before and makes fun of a jacket the first time they meet."},
+         {s:"the best friend",r:"Supporting",a:"adult",g:"M",x:"Thinks it is a scam and helps anyway. Says the thing everyone in the audience is thinking."}]},
+    {k:"r27-influencer-house-fire",era:"now",genre:"thriller",tracks:["film","tv"],ttl:["Content House","Going Live","Followers Only"],
+      p:"six influencers in a shared content house go live during a fire alarm and one of them does not come out",
+      h:"the livestream shows the missing one was locked in from outside",h2:"every one of them deleted a video from that night before the police arrived",
+      w:["a big rented house in the hills","a filming room with ring lights","a police station interview room"],
+      c:[{s:"the house manager",r:"Lead",a:"youngAdult",g:"F",x:"Runs the schedules, the brand deals and the group chat. Knows every password and is the first suspect."},
+         {s:"the comedian",r:"Lead",a:"youngAdult",g:"M",x:"Biggest following in the house and the most afraid of losing it. Jokes through every interview."},
+         {s:"the detective",r:"Supporting",a:"adult",g:"F",x:"Does not care about followers and says so. Watches the livestream frame by frame until the edit shows."}]},
+    {k:"r27-thrift-dress",era:"now",genre:"horror",tracks:["film"],ttl:["Final Sale","As Is","Size Six"],
+      p:"a fashion student buys a dress at a thrift store and every person who wears it loses a day",
+      h:"the dress was donated by a model who has been missing since its last photo shoot",h2:"her runway show is on the night the dress has been counting toward",
+      w:["a thrift store in an old church","a fashion school studio","a backstage room at a runway show"],
+      c:[{s:"the fashion student",r:"Lead",a:"youngAdult",g:"F",x:"Talented, broke, desperate to win the senior show. Wears the dress once to see how it moves."},
+         {s:"the model",r:"Lead",a:"youngAdult",g:"F",x:"Agrees to walk for free as a favor. Cannot account for a Tuesday and laughs it off."},
+         {s:"the thrift store clerk",r:"Supporting",a:"adult",g:"M",x:"Tags everything by hand and remembers every donor. Refuses to take that dress back."}]},
+    {k:"r27-food-truck-turf",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Corner Spot","Taco War","Last Order"],
+      p:"two rival food trucks fight over the best corner in the city until a parking ticket forces them to share it",
+      h:"the owners have to swap trucks for a week to pass a health inspection",h2:"a big chain wants to buy the corner from the city",
+      w:["a food truck on a busy corner","a city parking office","a rooftop party at night"],
+      c:[{s:"the taco truck owner",r:"Lead",a:"adult",g:"F",x:"Grew up cooking in a family restaurant and treats every taco like a promise. Fast, loud and very funny."},
+         {s:"the dumpling truck owner",r:"Lead",a:"adult",g:"M",x:"Former finance guy who quit to cook. Precise, competitive, secretly lonely."},
+         {s:"the parking officer",r:"Supporting",a:"youngAdult",g:"F",x:"Writes tickets by the book and eats from both trucks every day. Plays them against each other for fun."}]},
+    {k:"r27-blind-date-hostage",era:"now",genre:"thriller comedy",tracks:["film","stage"],ttl:["Second Date","Table for Two","Check Please"],
+      p:"a blind date at a quiet restaurant goes wrong when the restaurant is taken over by robbers",
+      h:"one of the daters is an undercover cop and the other is the robbers' inside man",h2:"the robbers only want one thing from the safe and it belongs to the waiter",
+      w:["a quiet Italian restaurant","a walk-in freezer","a back alley with a getaway car"],
+      c:[{s:"the first date",r:"Lead",a:"adult",g:"F",x:"Overprepared, early, has a list of topics on her phone. Turns out to be very calm under pressure."},
+         {s:"the second date",r:"Lead",a:"adult",g:"M",x:"Late, charming, keeps checking his watch. Knows more about the floor plan than a customer should."},
+         {s:"the waiter",r:"Supporting",a:"youngAdult",g:"M",x:"Actor, student, terrible waiter. Ends up running the room when nobody else will."}]},
+    {k:"r27-podcast-cold-case",era:"now",genre:"mystery",tracks:["tv","film"],ttl:["Episode Nine","Cold Open","Subscribe"],
+      p:"two college podcasters reopen a small-town disappearance and the missing girl calls in to the show",
+      h:"the caller knows details only the two hosts have discussed off the air",h2:"the town sheriff asks them to stop and pays for the next episode",
+      w:["a college radio studio","a diner in a small town","a motel room full of notes"],
+      c:[{s:"the host",r:"Lead",a:"youngAdult",g:"F",x:"Ambitious, quick, already planning the book deal. Treats the case like a story until the call comes in."},
+         {s:"the producer",r:"Lead",a:"youngAdult",g:"M",x:"Does the sound, the research and the worrying. Grew up two towns over and never mentioned it."},
+         {s:"the sheriff",r:"Supporting",a:"mature",g:"M",x:"Polite, patient and very careful with his words. Has kept the file on his desk for nine winters."}]},
+    {k:"r27-bodega-cat-witness",era:"now",genre:"crime comedy",tracks:["film","tv","stage"],ttl:["Witness","Night Shift Cat","Under the Counter"],
+      p:"the overnight clerk at a corner store is the only witness to a robbery he slept through",
+      h:"the store camera caught him waking up and helping the robbers carry boxes",h2:"the robbers come back the next night to ask for a job",
+      w:["a corner store at night","a police precinct waiting area","a fire escape above the street"],
+      c:[{s:"the overnight clerk",r:"Lead",a:"youngAdult",g:"M",x:"Studies for the bar exam behind the counter and falls asleep on the textbook. Kind, funny, very bad at lying."},
+         {s:"the detective",r:"Lead",a:"adult",g:"F",x:"New to the precinct and determined to close something. Thinks the clerk is either brilliant or the dumbest man alive."},
+         {s:"the store owner",r:"Supporting",a:"mature",g:"M",x:"Trusts the clerk like family and blames the cat. Keeps cash in places nobody would ever look."}]},
+    {k:"r27-twin-swap-audition",era:"now",genre:"drama",tracks:["film","stage"],ttl:["Callback","The Other One","Understudy"],
+      p:"identical twin actors audition for the same lead and only one of them gets a callback",
+      h:"the one who did not get it goes to the callback anyway and books the role",h2:"the director chose the one who stayed home and does not know it",
+      w:["a crowded audition hallway","a shared studio apartment","a rehearsal room with a piano"],
+      c:[{s:"the older twin",r:"Lead",a:"youngAdult",g:"F",x:"The disciplined one, up at six, never misses a class. Has been second to her sister her whole life."},
+         {s:"the younger twin",r:"Lead",a:"youngAdult",g:"F",x:"The natural one, late to everything, loved by every room. Does not know how much her sister wants this."},
+         {s:"the director",r:"Supporting",a:"adult",g:"M",x:"Brilliant and cold in the room. Believes he can always tell when an actor is lying."}]},
+    {k:"r27-delivery-rider-map",era:"now",genre:"thriller",tracks:["film","tv"],ttl:["Last Drop","Route 9","Contactless"],
+      p:"a food delivery rider keeps getting orders sent to an address that was demolished last year",
+      h:"someone at the empty lot tips a thousand dollars and asks for him by name",h2:"the other riders who took that order all quit the same week",
+      w:["a delivery bike in traffic","an empty lot behind a fence","a busy kitchen at a takeout spot"],
+      c:[{s:"the delivery rider",r:"Lead",a:"youngAdult",g:"M",x:"Saving every dollar for a music course. Fast, careful, does not take risks until the money gets serious."},
+         {s:"the cook",r:"Supporting",a:"adult",g:"F",x:"Packs the orders and talks the most. Has worked at the takeout spot long enough to know which addresses to refuse."},
+         {s:"the other rider",r:"Supporting",a:"youngAdult",g:"F",x:"Rides faster than anyone in the borough. Took the order once and will not talk about it."}]},
+    {k:"r27-roommate-wanted-ad",era:"now",genre:"psychological thriller",tracks:["film","stage"],ttl:["Roommate Wanted","Split the Rent","House Rules"],
+      p:"a young nurse answers a roommate ad and the new roommate starts becoming her, one habit at a time",
+      h:"her coworkers start calling the roommate by her name and seem happier",h2:"the roommate has done this before, in three other apartments, with three other names",
+      w:["a two-bedroom apartment","a hospital break area","a laundromat at night"],
+      c:[{s:"the nurse",r:"Lead",a:"youngAdult",g:"F",x:"Works twelve-hour shifts and has no time for friends. Grateful for the company until her clothes go missing."},
+         {s:"the roommate",r:"Lead",a:"youngAdult",g:"F",x:"Warm, tidy, a great cook, studies people closely. Copies small things first, like the way she laughs."},
+         {s:"the coworker",r:"Supporting",a:"adult",g:"M",x:"Charge nurse with a dry sense of humor. Notices the change first and decides he prefers it."}]},
+    {k:"r27-prom-limo-loop",era:"now",genre:"comedy",tracks:["film"],ttl:["Prom Night Again","Corsage","After Party"],
+      p:"four seniors keep reliving the same prom night until they figure out whose night they ruined",
+      h:"the night they ruined belongs to the limo driver",h2:"one of them decides she likes living in the loop and stops trying",
+      w:["a rented limo","a school gym decorated for prom","an all-night diner"],
+      c:[{s:"the class president",r:"Lead",a:"youngAdult",g:"F",x:"Planned the whole night down to the minute and hates every surprise. Starts taking notes on each loop."},
+         {s:"the class clown",r:"Lead",a:"youngAdult",g:"M",x:"Treats the first ten loops as a gift. Gets scared when the jokes stop working."},
+         {s:"the limo driver",r:"Supporting",a:"adult",g:"M",x:"Drives prom nights every spring and has seen everything. Has his own reason for wanting tonight to end."}]},
+    {k:"r27-stand-up-heckler",era:"now",genre:"drama comedy",tracks:["film","stage","tv"],ttl:["Open Mic","Tight Five","Heckler"],
+      p:"a young comic is followed from club to club by a heckler who knows every one of her jokes before she says them",
+      h:"the heckler is writing the jokes first and selling them to a famous comic",h2:"she has to bomb on purpose to prove the jokes are hers",
+      w:["a basement comedy club","a crowded subway car","a writers' room in an office tower"],
+      c:[{s:"the comic",r:"Lead",a:"youngAdult",g:"F",x:"Funny, fearless on stage and a mess off it. Writes in a notebook she never lets out of her sight."},
+         {s:"the heckler",r:"Lead",a:"adult",g:"M",x:"Sits in the front row, polite, always alone. Laughs a second before everyone else."},
+         {s:"the club booker",r:"Supporting",a:"adult",g:"F",x:"Books the late shows and has no patience for drama. Watches the comic get better every time she is pushed."}]},
+    {k:"r27-language-app-voice",era:"near future",genre:"science fiction drama",tracks:["film","tv","stage"],ttl:["Fluent","Lesson Ten","Repeat After Me"],
+      p:"a young widower learning his late wife's language on an app realizes the teacher's voice is hers",
+      h:"the company built the voice from her old videos without asking",h2:"the app starts teaching him words she never used",
+      w:["a small apartment full of boxes","a tech company lobby","a bakery in the wife's old neighborhood"],
+      c:[{s:"the widower",r:"Lead",a:"adult",g:"M",x:"Twenty-nine and lost. Practices the lessons every night so he can talk to her family at a wedding next month."},
+         {s:"the app engineer",r:"Lead",a:"youngAdult",g:"F",x:"Built the voice system and is proud of it. She starts to doubt the work after the widower's first visit."},
+         {s:"the bakery owner",r:"Supporting",a:"youngAdult",g:"F",x:"Knew the widower before the funeral and speaks slowly and kindly. She hears the app once and goes pale."}]},
+    {k:"r27-moving-day-body",era:"now",genre:"dark comedy",tracks:["film","stage"],ttl:["Heavy Lifting","Two Men and a Couch","Fragile"],
+      p:"two college movers find something alive inside a locked trunk on the last job of the day",
+      h:"the client wants it delivered anyway and doubles the tip",h2:"the thing in the trunk asks them to drive somewhere else",
+      w:["a moving truck","a big old house in the suburbs","a storage unit at night"],
+      c:[{s:"the first mover",r:"Lead",a:"youngAdult",g:"M",x:"Pre-med, careful, wants to finish the job and go to sleep. Asks too many questions at the worst time."},
+         {s:"the second mover",r:"Lead",a:"youngAdult",g:"M",x:"Loves the job, sings while lifting, never reads a contract. Opens the trunk because it was rude not to."},
+         {s:"the client",r:"Supporting",a:"adult",g:"F",x:"Very polite, very rich and in a hurry. Pays in cash and gives directions without a street name."}]},
+    {k:"r27-closing-shift-mall",era:"now",genre:"horror",tracks:["film"],ttl:["Closing Shift","Mall Hours","Gate Down"],
+      p:"three young workers on the closing shift at a dying mall get locked in with the last customer",
+      h:"the security footage shows the customer has been in the mall since it opened in the eighties",h2:"the store gates open one by one in a pattern only the manager understands",
+      w:["an empty shopping mall at night","a food court with chairs on tables","a security office full of screens"],
+      c:[{s:"the pretzel stand worker",r:"Lead",a:"youngAdult",g:"F",x:"Closes up faster than anyone and is always first out the door. Sees the customer before anyone else does."},
+         {s:"the shoe store worker",r:"Lead",a:"youngAdult",g:"M",x:"Nineteen, bored, flirts with everyone on the radio. Grows up very fast in one night."},
+         {s:"the mall security guard",r:"Supporting",a:"adult",g:"M",x:"Works nights for the quiet. Has written down the customer's description in a notebook many times."}]},
+    {k:"r27-roller-rink-derby",era:"now",genre:"sports comedy",tracks:["film","tv"],ttl:["Jam","Track Rash","Derby Night"],
+      p:"a failing roller derby team recruits a figure skater who just got kicked off her college team",
+      h:"the skater's old coach is now coaching their rivals",h2:"the rink is being sold the night of the championship",
+      w:["a roller rink with bright lights","a locker area with lockers","a parking lot after a bout"],
+      c:[{s:"the figure skater",r:"Lead",a:"youngAdult",g:"F",x:"Perfect form, no friends, has never been hit in her life. Learns to fall and loves it."},
+         {s:"the team captain",r:"Lead",a:"adult",g:"F",x:"Loud, warm, works two jobs and runs the team like a family. Needs one more win to keep the rink alive."},
+         {s:"the rink owner",r:"Supporting",a:"mature",g:"M",x:"Sold popcorn there for decades. Will sell the rink if he must and hates himself for it."}]},
+    {k:"r27-genealogy-match",era:"now",genre:"mystery drama",tracks:["film","tv","stage"],ttl:["Close Match","Shared Percent","Unknown Relative"],
+      p:"a young woman's DNA test matches her to a stranger who has been searching for a daughter he lost",
+      h:"her mother says the test is wrong and burns the kit",h2:"the stranger's daughter disappeared one year before she was born",
+      w:["a coffee shop by a train station","a small house in a quiet suburb","a records office in an old courthouse"],
+      c:[{s:"the young woman",r:"Lead",a:"youngAdult",g:"F",x:"Took the test as a birthday joke. Funny, steady, starts lying to protect everyone at once."},
+         {s:"the stranger",r:"Lead",a:"mature",g:"M",x:"Has searched for twenty-five winters with the same photo. Gentle and terrified of being wrong again."},
+         {s:"the mother",r:"Supporting",a:"mature",g:"F",x:"Raised her daughter alone and never talks about the year before she was born. Will do anything to stop the meeting."}]},
+    {k:"r27-tattoo-apprentice",era:"now",genre:"drama",tracks:["film","tv","stage"],ttl:["Apprentice","Fresh Ink","Flash"],
+      p:"a tattoo apprentice is asked to cover a client's old gang tattoo and recognizes it from her brother's arm",
+      h:"the client is the man her brother went to prison protecting",h2:"the shop owner wants the client's money more than the truth",
+      w:["a small tattoo shop","a prison visiting room","a rooftop at night"],
+      c:[{s:"the apprentice",r:"Lead",a:"youngAdult",g:"F",x:"Draws all day and sleeps in the shop when she can. Steady hands, short temper, loyal to a fault."},
+         {s:"the client",r:"Lead",a:"adult",g:"M",x:"Polite, clean, works in an office now. Wants the old life gone from his skin and from his record."},
+         {s:"the inmate",r:"Supporting",a:"adult",g:"M",x:"Three years into a sentence and still funny on the phone. Asks the apprentice to finish the cover anyway."},
+         {s:"the shop owner",r:"Supporting",a:"adult",g:"M",x:"Taught the apprentice everything and charges her rent for the chair. Cares, but cares about money first."}]},
+    {k:"r27-overnight-radio-caller",era:"now",genre:"thriller",tracks:["film","stage"],ttl:["Dead Air","Line Three","Request Line"],
+      p:"a college radio host on the overnight shift takes a call from someone describing a crime as it happens",
+      h:"the address the caller gives is the radio station",h2:"the caller asks for the same song every night at the same minute",
+      w:["a college radio booth","an empty campus at night","a parking lot outside the station"],
+      c:[{s:"the radio host",r:"Lead",a:"youngAdult",g:"M",x:"Loves vinyl, hates mornings, has eleven regular listeners. Keeps the caller talking because nobody else will."},
+         {s:"the caller",r:"Lead",a:"adult",g:"F",x:"Heard for most of the story, seen at the very end. Calm, specific, polite in a way that frightens."},
+         {s:"the station manager",r:"Supporting",a:"youngAdult",g:"F",x:"Senior student who runs the station on no budget. Thinks the host is pulling a stunt for ratings."}]},
+    {k:"r27-wedding-crashers-sisters",era:"now",genre:"comedy",tracks:["film","tv"],ttl:["Uninvited","Open Bar","Seating Chart"],
+      p:"two broke sisters crash weddings for free food until they crash the wedding of the man who left one of them at the altar",
+      h:"the groom recognizes them during the toast and asks them to stay",h2:"the bride hired them on purpose to see what he would do",
+      w:["a big wedding hall","a hotel bathroom","a diner at two in the morning"],
+      c:[{s:"the older sister",r:"Lead",a:"adult",g:"F",x:"Plans every crash like a mission and always has a fake name ready. Was the one left at the altar."},
+         {s:"the younger sister",r:"Lead",a:"youngAdult",g:"F",x:"Here for the cake and the dancing. Has always secretly liked the groom."},
+         {s:"the groom",r:"Supporting",a:"adult",g:"M",x:"Charming, nervous, very sorry about the past. Has a speech ready for the older sister and has had it ready for a while."}]},
+    {k:"r27-subway-busker-song",era:"now",genre:"drama romance",tracks:["film","stage"],ttl:["Platform Song","Downtown Local","Busker"],
+      p:"a subway busker writes a song about a stranger who stops to listen every morning and it goes viral",
+      h:"the stranger hears it online and stops coming",h2:"a label wants the song but not the busker",
+      w:["a subway platform at rush hour","a tiny shared apartment","a recording studio in an old building"],
+      c:[{s:"the busker",r:"Lead",a:"youngAdult",g:"M",x:"Plays guitar for rent money and lives on hope and coffee. Must sing and play live; the songs have to be real."},
+         {s:"the stranger",r:"Lead",a:"youngAdult",g:"F",x:"Commutes at seven sharp and never smiles before work. Listens every morning and never drops a dollar."},
+         {s:"the label scout",r:"Supporting",a:"adult",g:"F",x:"Smart, honest about the business and kind about it. She offers a deal that would change everything except the busker."}]},
+    {k:"r27-escape-room-real",era:"now",genre:"thriller",tracks:["film","tv"],ttl:["Sixty Minutes","Clue Two","Exit Code"],
+      p:"five coworkers at a team-building escape room realize the clues are about something they did last year",
+      h:"the game master is the intern they all blamed",h2:"the timer is real and so is the lock",
+      w:["an escape room in a strip mall","an office break area","a parking garage"],
+      c:[{s:"the team leader",r:"Lead",a:"adult",g:"F",x:"Booked the outing to fix morale and has the most to hide. Takes charge of every puzzle."},
+         {s:"the new hire",r:"Lead",a:"youngAdult",g:"M",x:"Started two weeks ago and knows nothing. The only one who can solve the clues honestly."},
+         {s:"the game master",r:"Supporting",a:"youngAdult",g:"F",x:"Voice on a speaker, then a face on a screen. Patient, cheerful and very sure of the ending."}]},
+    {k:"r27-pageant-coach",era:"now",genre:"dark comedy",tracks:["film","tv","stage"],ttl:["Crowned","Talent Portion","Miss County"],
+      p:"a former pageant queen coaches a small-town contestant who only entered to win the scholarship money",
+      h:"the coach's old rival is a judge and holds a grudge",h2:"the contestant's talent is exposing the pageant on stage",
+      w:["a small-town high school auditorium","a motel room with a mirror","a hair salon on a main street"],
+      c:[{s:"the pageant coach",r:"Lead",a:"adult",g:"F",x:"Won the crown at nineteen and has been coaching ever since. Sharp, glamorous, a little sad."},
+         {s:"the contestant",r:"Lead",a:"youngAdult",g:"F",x:"Wants to study engineering and hates heels. Learns to smile for money and is good at it."},
+         {s:"the judge",r:"Supporting",a:"adult",g:"F",x:"The coach's old rival, still perfect in every photo. Says lovely things that cut deep."}]},
+    {k:"r27-night-museum-guard",era:"now",genre:"mystery",tracks:["film","stage","tv"],ttl:["Gallery Nine","After Hours","Do Not Touch"],
+      p:"a museum night guard notices one painting changes slightly every night and only he can see it",
+      h:"the changes are a message about a theft that has not happened yet",h2:"the curator asks him to stop writing reports about it",
+      w:["a museum gallery at night","a guard booth with screens","a small apartment above a laundromat"],
+      c:[{s:"the night guard",r:"Lead",a:"youngAdult",g:"M",x:"Art school dropout who took the job to be near the paintings. Draws the changes in a sketchbook every night."},
+         {s:"the curator",r:"Lead",a:"adult",g:"F",x:"Brilliant, busy, has spent her career on one artist. Is kinder to the guard than anyone expects."},
+         {s:"the day guard",r:"Supporting",a:"adult",g:"M",x:"Trains the night guard and laughs at the sketchbook. Leaves a gallery door open twice in one week."}]},
+    {k:"r27-fake-psychic-hotline",era:"now",genre:"comedy",tracks:["film","tv","stage"],ttl:["Line Is Open","Call Now","The Reading"],
+      p:"a broke drama student takes a job at a psychic hotline and her made-up readings start coming true",
+      h:"a caller asks her to predict a lottery number and it hits",h2:"the hotline owner starts selling her calls at triple the price",
+      w:["a small hotline office with headsets","a drama school classroom","a laundromat"],
+      c:[{s:"the drama student",r:"Lead",a:"youngAdult",g:"F",x:"Great at accents, bad at rent. Treats every call like an audition and is very convincing."},
+         {s:"the hotline owner",r:"Lead",a:"adult",g:"M",x:"Runs the line from a desk covered in candles and invoices. Believes in nothing except a good script."},
+         {s:"the regular caller",r:"Supporting",a:"youngAdult",g:"M",x:"Calls every night at eleven with a new question. Starts to fall for the voice on the line."}]},
+    {k:"r27-surf-shack-storm",era:"now",genre:"drama thriller",tracks:["film"],ttl:["Offshore","Last Wave","Small Craft Warning"],
+      p:"a young lifeguard and her ex are trapped in a beach shack during a storm with a stranger who washed up",
+      h:"the stranger's boat was carrying something the coast guard is looking for",h2:"the ex knew the stranger was coming",
+      w:["a beach shack on stilts","an empty boardwalk in a storm","a coast guard station"],
+      c:[{s:"the lifeguard",r:"Lead",a:"youngAdult",g:"F",x:"Grew up on this beach and can read the water better than anyone. Stubborn, brave, still angry about the breakup."},
+         {s:"the ex",r:"Lead",a:"youngAdult",g:"M",x:"Charming, unreliable, owes money to the wrong people. Came back to town a week ago and told nobody."},
+         {s:"the stranger",r:"Supporting",a:"adult",g:"M",x:"Soaked, polite, speaks very little English. Keeps one hand on a waterproof bag the whole night."}]}
+  ];
+  R27_SEEDS.forEach(s=>{s._r27=true;if(!FILM_SEEDS.some(x=>x.k===s.k))FILM_SEEDS.push(s);});
   const R23_TYPES=/^(Short Film|Student Film|Feature Film|Independent Film|Experimental Film|Theater|Off-Broadway Theater|Off-Off-Broadway Theater|TV Series|Streaming Series|Limited Series|Miniseries|TV Pilot|Web Series)$/;
   function r23Left(h,res){return R23_SEEDS.filter(s=>!h.traits.has(clean("seed "+s.k))&&!res.traits.has(clean("seed "+s.k))&&!(res._seedFails&&res._seedFails[s.k]>=3));}
 
@@ -45854,6 +46114,7 @@ const ACG = (()=>{
       const k=typeof row==="string"?row:(row&&row.key)||"";
       if(!k)return;
       if(k.indexOf("skel|")===0){skelRows.push({key:k,row:typeof row==="string"?null:row});return;}
+      if(k.indexOf("s27|")===0){(h.r27Sigs=h.r27Sigs||new Set()).add(k.slice(4));return;}
       if(/^seed r(9|9b|10) /.test(k)&&row&&row.created_at)composedSeedRows.push(row);
       // Round 14: a premise is told once, ever. Only its wording is windowed.
       if(/^seed /.test(k)){addUsed(h.traits,k);return;}
@@ -46000,6 +46261,7 @@ const ACG = (()=>{
      h.r21Fmts=newest.slice(0,6).map(c=>r21FmtOf(c.roles,c.type)).filter(Boolean);
      h.r25Tags=newest.slice(0,4).map(c=>c.tagline).filter(Boolean);
      h.r26Fam=newest.slice(0,14).map(c=>r26Family(c.synopsis)).filter(Boolean);
+     h.r27Heads=[];newest.slice(0,12).forEach(c=>v3Sentences(c.synopsis).slice(1).forEach(x=>h.r27Heads.push(clean(x).replace(/\b(one|two|three|four|five|six|\d+)\b/g,"#").split(" ").slice(0,3).join(" "))));
      h.r26Len=newest.slice(0,6).map(c=>r26LenOf(c.synopsis));
      h.r26SynSk=[];newest.slice(0,30).forEach(c=>v3Sentences(c.synopsis).slice(1).forEach(x=>h.r26SynSk.push(r26Sk(x))));
      h.r26PaySk=newest.slice(0,80).map(c=>c.pay?r26Sk(c.pay):"").filter(Boolean);
@@ -46343,8 +46605,8 @@ const ACG = (()=>{
     if(!list.length&&!res._allowRevive){res._allowRevive=true;res._deadTypes.clear();list=V3_TYPES.slice();}
     if(!list.length)return null;
     // Round 23: the new premises go first, in the formats they were written for.
-    {const left=r23Left(h,res);
-      if(left.length){const ok=list.filter(t=>R23_TYPES.test(t)&&V3_TYPE[t]&&left.some(s=>(s.tracks||[]).indexOf(V3_TYPE[t].track)>-1));if(ok.length)list=ok;}}
+    // Round 27 (owner 2026-11-22): the round-23 gate (film/series/stage only
+    // while new premises were left) is gone; every type in the menu rotates.
     // Round 5: a weighted quota per 100 listings, not an even rotation.
     return R8_ON?r8PickType(h,res,list):v7PickType(h,res,list);
   }
@@ -47853,7 +48115,7 @@ const ACG = (()=>{
     if(!/^(a|an|the|two|three|four|five|six|one|some|his|her|their)\b/i.test(np)&&!plural)np=v3Aa(np);
     return np;
   }
-  const R16_TAG_MARKS=["at its center","carries this","Everything in this","the heart of our","one rough stretch","What would you do as","Ever thought about","Story first","takes center stage","Join the cast of","front and center","This one has","ever rooted for","told as","Filming soon","On deck","belongs to","Set work on","Trouble finds","big problem for","Life gets complicated","over their head","Nothing goes to plan","what happens next","Set almost entirely","Most of this","Step inside","Pull up a chair","We're taking this","Natural on camera","Real people wanted","friendly types","Lights up soon","Be the face of","in front of a lens","in the works","to make and need","easy to work with","friendly crew","fresh faces","Next up for","Shooting ","Steady set work","Long days, good people","needs you on set","Behind the scenes of","Get on set with","at the story's center","Voices wanted","Got a voice","natural reads needed","Step up to the mic"];
+  const R16_TAG_MARKS=["gets in way too deep","at its center","carries this","Everything in this","the heart of our","one rough stretch","What would you do as","Ever thought about","Story first","takes center stage","Join the cast of","front and center","This one has","ever rooted for","told as","Filming soon","On deck","belongs to","Set work on","Trouble finds","big problem for","Life gets complicated","over their head","Nothing goes to plan","what happens next","Set almost entirely","Most of this","Step inside","Pull up a chair","We're taking this","Natural on camera","Real people wanted","friendly types","Lights up soon","Be the face of","in front of a lens","in the works","to make and need","easy to work with","friendly crew","fresh faces","Next up for","Shooting ","Steady set work","Long days, good people","needs you on set","Behind the scenes of","Get on set with","at the story's center","Voices wanted","Got a voice","natural reads needed","Step up to the mic"];
   function r16TagMark(t){const x=String(t||"");return R16_TAG_MARKS.find(m=>x.indexOf(m)>-1)||"";}
   function r25TagFamily(t){const x=String(t||"");
     if(/ in (this|our) [^.,]+\.$/i.test(x))return "inthis";
@@ -47943,7 +48205,7 @@ const ACG = (()=>{
   // Round 25: a skill is only asked for when the character does it NOW.
   // "Retired bus driver" printed "Evelyn needs real driving" on a kitchen volunteer.
   function r25NoPast(t){return String(t||"").replace(/\b(retired|former|ex-|one-time|onetime|used to be an?|was once an?|once an?|was an?)\s*([\w-]+\s+){0,2}?[\w-]+(er|or|ist|ian|man|woman)\b/gi," ");}
-  const V7_SKILLS=[[/\bbox(er|ers|ing)\b|\bboxing\b|\bring\b.*\bfight/i,"boxing"],[/\bswim(mer|mers|ming)?\b|\bpool\b/i,"swimming"],[/\bdriv(er|ers|ing)\b|\bstunt driv/i,"driving"],[/\bpian(o|ist)\b/i,"piano"],[/\bguitar/i,"guitar"],[/\bviolin/i,"violin"],[/\bdrum(s|mer)?\b/i,"drumming"],[/\bsing(er|ers|ing)?\b|\bchoir\b/i,"singing"],[/\bdanc(e|er|ers|ing)\b/i,"dance"],[/\bskat(e|er|ers|ing)\b/i,"skating"],[/\bstand-up\b|\bcomedian\b/i,"stand-up timing"],[/\bjuggl/i,"juggling"],[/\bclimb(er|ers|ing)\b/i,"climbing"],[/\bbarber\b|\bhaircut/i,"barbering"],[/\bchef\b|\bcook(s|ing)?\b/i,"kitchen work"],[/\bhorse|riding\b/i,"horse riding"]];
+  const V7_SKILLS=[[/\bbox(er|ers|ing)\b|\bboxing\b|\bring\b.*\bfight/i,"boxing"],[/\bswim(mer|mers|ming)?\b/i,"swimming"],[/\bdriv(er|ers|ing)\b|\bstunt driv/i,"driving"],[/\bpian(o|ist)\b/i,"piano"],[/\bguitar/i,"guitar"],[/\bviolin/i,"violin"],[/\bdrum(s|mer)?\b/i,"drumming"],[/\bsing(er|ers|ing)?\b|\bchoir\b/i,"singing"],[/\bdanc(e|er|ers|ing)\b/i,"dance"],[/\bskat(e|er|ers|ing)\b/i,"skating"],[/\bstand-up\b|\bcomedian\b/i,"stand-up timing"],[/\bjuggl/i,"juggling"],[/\bclimb(er|ers|ing)\b/i,"climbing"],[/\bbarber\b|\bhaircut/i,"barbering"],[/\bchef\b|\bcook(s|ing)?\b/i,"kitchen work"],[/\bhorse|riding\b/i,"horse riding"]];
   function v7Skill(named){
     for(const [re,label] of V7_SKILLS){
       const hits=named.filter(r=>!r._group&&re.test(r25NoPast(`${r._slot||""} ${r.description||""}`))).length;
@@ -50314,6 +50576,7 @@ const ACG = (()=>{
     student:["It's a thesis film with a faculty advisor watching over it.","The crew is all students, with a teacher on call.","The school covers equipment and insurance.","This is a second-year project and it screens at the spring showcase.","The director has worked with outside actors before and keeps in touch about cuts.","Everything is planned around actors' days, not the gear.","We keep days to twelve hours or less.","You'll get a copy of the finished film."],
     feature:["The money is raised and the shoot is scheduled.","It's a first feature from a team with several shorts behind it.","The plan is festivals first, then a sale.","Most of the crew worked on the director's last film.","It's built around a handful of locations and a tight cast.","The script went through two rounds of readings.","The director's last film found distribution.","Days are planned around the actors as much as possible."],
     series:["All of it is written.","We shoot a few episodes at a time.","The plan is to release it online and pitch a second season.","Episodes are short and the days are kept humane.","Scripts go out once you're cast.","It's made to be watched on a phone.","The team has made a series together before."],
+    pilot:["The pilot script is finished and the rest of the season is outlined.","This is the episode we take to buyers.","If the pilot goes, the main cast comes with it.","We're shooting one episode, properly, on a small budget.","The pilot is the proof; we know where the season goes."],
     stage:["This is its first full production.","The playwright will be in the room for the first week.","The space is small, so the acting has to be close and honest.","It's about ninety minutes with no intermission.","Reviewers are invited during the run.","The company has been making new work in this space for years.","Rehearsals are built around people with day jobs.","The script changed a lot in workshop and is now locked."]
   };
   const R26_WANT=["We're open to every look and background; the read matters most.","We want actors who are good at listening.","No big credits needed, just honest work.","We'd love people who are comfortable with silence.","Newer actors are very welcome.","We care more about the person than the résumé.","If the story speaks to you, send a tape.","We want it to feel lived-in, not performed.","Bring yourself; we'll build the rest together.","Real ages and real faces, please.","Local actors are a big plus.","We're looking for people who like working as a team."];
@@ -50377,16 +50640,40 @@ const ACG = (()=>{
     const S=open.slice();
     const lowIn=(a,b)=>String(a).toLowerCase().indexOf(String(b).toLowerCase())>-1;
     const addTurn=()=>{if(turn&&!lowIn(S.join(" "),turn))S.push(`${capFirst(turn)}.`);};
-    const B=R26_ABOUT[stage?"stage":type==="Student Film"?"student":/^(Feature Film|Independent Film)$/.test(type)?"feature":/series|pilot/i.test(type)?"series":"short"]||R26_ABOUT.short;
+    const B=R26_ABOUT[stage?"stage":type==="Student Film"?"student":/^(Feature Film|Independent Film)$/.test(type)?"feature":/pilot/i.test(type)?"pilot":/series/i.test(type)?"series":"short"]||R26_ABOUT.short;
     const tone=()=>cgShuffle(((R26_TONE[G]||[]).concat(R21_TONE[G]||[])).slice()).find(fresh);
     const about=n=>cgShuffle(B.slice()).filter(fresh).slice(0,n);
     const world=()=>(X.world||[]).map(w=>String(w).trim()).filter(w=>/[.!?]$/.test(w)&&w.split(/\s+/).length<=30&&!/^(A|An)\s/.test(w)).find(fresh);
-    const castLine=()=>people.length>=2?[`${capFirst(v3Words(Math.min(people.length,3)))} parts carry it: ${list(people.slice(0,3))}.`,`The cast is small: ${list(people.slice(0,3))}.`,`It's built around ${list(people.slice(0,3))}.`].find(fresh):null;
+    const c3=people.slice(0,3),Lc=list(c3);
+    const castLine=()=>people.length>=2?cgShuffle([`${capFirst(v3Words(c3.length))} parts carry it: ${Lc}.`,`The cast is small: ${Lc}.`,`It's built around ${Lc}.`,`Everything rests on ${Lc}.`,`On screen it's mostly ${Lc}.`.replace("On screen",stage?"On stage":"On screen"),`We need ${Lc}, and the chemistry between them.`,`The parts that matter most: ${Lc}.`,`You'd be playing opposite ${Lc.replace(/^(a|an) /,"$1 ")}.`.replace("You'd be playing opposite","Most scenes pair up"),`Small cast, big parts: ${Lc}.`]).find(fresh):null;
     const want=()=>cgShuffle(R26_WANT.slice()).find(fresh);
-    if(len==="short"||X.revived)addTurn();
-    if(len==="mid"){addTurn();[cgShuffle([tone,world,castLine])[0]()].forEach(x=>x&&S.push(x));}
-    if(len==="long"){addTurn();[world(),tone()].concat(about(1)).forEach(x=>x&&S.push(x));if(S.length<5){const c=castLine();if(c)S.push(c);}}
-    if(len==="xl"){addTurn();[world(),castLine(),tone()].concat(about(2),[want()]).forEach(x=>x&&S.push(x));}
+    // Round 27 (owner): no summary may reuse a STRUCTURE. A structure is the
+    // opening family, the order of the parts after it, and the length. It is
+    // remembered for good (casting_generator_seen "s27|"), so it never repeats.
+    if(X.revived&&len==="tiny")len="short";
+    const pieces={turn:()=>turn&&!lowIn(S.join(" "),turn)?`${capFirst(turn)}.`:null,world,tone,cast:castLine,want,about:()=>about(1)[0]};
+    const sizes={tiny:[0,0],short:[1,1],mid:[2,3],long:[3,4],xl:[5,6]};
+    const sigUsed=sig=>(h&&h.r27Sigs&&h.r27Sigs.has(sig))||(res&&res._r27Sigs&&res._r27Sigs.has(sig));
+    // Sentence openings (first three words) are not reused within 12 listings.
+    const recentHeads=new Set(((res&&res._r27Heads)||[]).concat((h&&h.r27Heads)||[]).slice(0,120));
+    const head3=x=>clean(x).replace(/\b(one|two|three|four|five|six|\d+)\b/g,"#").split(" ").slice(0,3).join(" ");
+    let best=null;
+    for(let tries=0;tries<60&&!best;tries++){
+      const L=tries<30?len:pick(Object.keys(sizes).filter(k=>k!=="tiny"||!X.revived));
+      const [lo,hi]=sizes[L];const n=rand(lo,hi,1);
+      let ids=cgShuffle(Object.keys(pieces));
+      if((X.revived||L!=="tiny")&&ids.indexOf("turn")>-1&&Math.random()<0.7){ids=["turn"].concat(ids.filter(x=>x!=="turn"));}
+      const out=[],got=[];
+      for(const id of ids){if(got.length>=n)break;const t=pieces[id]();if(!t||out.indexOf(t)>-1)continue;if(recentHeads.has(head3(t)))continue;out.push(t);got.push(id);}
+      if(X.revived&&got.indexOf("turn")<0)continue;
+      const sig=`${fam}:${got.join(">")}:${got.length}`;
+      if(sigUsed(sig))continue;
+      best={out,sig,L};
+    }
+    if(!best)best={out:[pieces.turn()].filter(Boolean),sig:`${fam}:x${Date.now()%100000}`,L:len};
+    best.out.forEach(x=>S.push(x));
+    item._r27Sig=best.sig;
+    if(res){(res._r27Sigs=res._r27Sigs||new Set()).add(best.sig);res._r27Heads=(res._r27Heads||[]).concat(best.out.map(head3));}
     const text=S.map(x=>String(x).replace(/\s{2,}/g," ").trim()).filter(Boolean).join(" ").replace(/\b(a|an) (oldest|youngest|eldest|only|last|first|same|middle) /g,"the $2 ");
     item.synopsis=text;item._r26Fam=fam;
     if(res){(res._r26Fam=res._r26Fam||[]).unshift(fam);(res._r26Len=res._r26Len||[]).unshift(r26LenOf(text));res._r26SynSk=(res._r26SynSk||[]).concat(v3Sentences(text).slice(1).map(r26Sk));}
@@ -50535,7 +50822,45 @@ const ACG = (()=>{
     else if(!stage&&Math.random()<0.35&&dir&&wrt===""){item.crew_credits=`Director: ${dir} · Casting: ${item.casting_director_name||dir}`;}
     if(res)(res._r26Co=res._r26Co||[]).unshift(shape(o));
   }
+  // ── Round 27: believable non-union money, and padding that fits the place ──
+  // Owner: non-union work never pays an inflated number. Day-rate ceilings by
+  // kind of job, from the New York board: students ~$150, shorts and web
+  // ~$250, indie features and indie series ~$300, ads ~$500; stage ~$500/week.
+  const R27_DAY_CAP=[[/^Student Film$/,150],[/^(Short Film|Experimental Film|Proof of Concept|Pitch Trailer|Sizzle Reel|Music Video|Dance Project|Performance Art|Web Series|Vertical Series|Pilot Presentation)$/,250],[/^(Feature Film|Independent Film|TV Series|Streaming Series|TV Pilot|Limited Series|Miniseries|Documentary|Reality \/ Docu-Series|Lifestyle \/ Unscripted|Hosting \/ Presenter)$/,300],[/^(Podcast \/ Audio Drama|Animation|Video Game|Voiceover|Motion Capture)$/,300],[/./,500]];
+  function r27CapPay(item){
+    if(!/^Non-Union$/i.test(String(item.union_status||"")))return;
+    const type=String(item.type||""),stage=item._creatorKind==="stage";
+    const roles=item._roles||[];
+    const rows=roles.map(r=>({r,x:parseRoleRate(r.pay)})).filter(o=>o.x&&(o.x.rate_unit==="day"||o.x.rate_unit==="week"));
+    if(!rows.length)return;
+    const unit=rows[0].x.rate_unit;
+    const cap=unit==="week"?(stage?500:900):R27_DAY_CAP.find(([re])=>re.test(type))[1];
+    const top=Math.max(...rows.map(o=>o.x.rate_amount));
+    if(top<=cap)return;
+    const f=cap/top;
+    rows.forEach(o=>{
+      const v=Math.max(50,Math.round(o.x.rate_amount*f/25)*25);
+      o.r.pay=String(o.r.pay).replace(/\$\s*[\d,]+(?:\.\d+)?/,"$"+v);
+      if(o.r.rate_amount!=null)o.r.rate_amount=v;
+    });
+    // The pay sentence is rebuilt from the new rates (r26Pay) or cleared.
+    item.pay=null;
+  }
+  const R27_HOMEY=/\b(apartment|house|home|bedroom|cabin|studio apartment|sublet|trailer|houseboat|loft|attic|basement apartment)\b/i;
+  const R27_PUBLIC_PAD=/\b(customers?|shoppers|security guard|front desk|receptionist|waiting room|workers on the floor|diners|patrons|passengers|guests at|crowd at)\b/i;
+  function r27FitPadding(item){
+    const loc=`${item.shoot_location||""} ${item._r8Venue||""}`;
+    const roles=item._roles||[];
+    roles.forEach(r=>{r.description=String(r.description||"").replace(/(night shift[^.]*?) on the late shift/i,"$1").replace(/(late shift[^.]*?) on the night shift/i,"$1");});
+    if(!R27_HOMEY.test(loc)||/\b(store|shop|office|hotel|bar|diner|restaurant|clinic|hospital|school|station|museum|mall|lobby)\b/i.test(loc))return;
+    const drop=roles.filter(r=>/^(Background|Day Player)$/.test(r.role_type||"")&&R27_PUBLIC_PAD.test(`${r.name||""} ${r.description||""}`)&&!R27_PUBLIC_PAD.test(String(item.synopsis||"")));
+    if(!drop.length||drop.length>=roles.length-1)return;
+    item._roles=roles.filter(r=>drop.indexOf(r)<0);
+    const names=drop.map(r=>String(r.name||"").replace(/\s*\(Background\)$/,"").toLowerCase()).filter(Boolean);
+    item.submission_requirements=v3Sentences(item.submission_requirements).filter(x=>!names.some(n=>x.toLowerCase().indexOf(n)>-1)).join(" ");
+  }
   function r26Voice(item,h,res){
+    try{r27FitPadding(item);r27CapPay(item);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('r27 '+e);}
     try{r26Synopsis(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('syn '+e);}
     try{r26Pay(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('pay '+e);}
     try{r26Sched(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('sched '+e);}
@@ -51650,8 +51975,9 @@ const ACG = (()=>{
       // Hand-written premises are the better writing, so they go first; the
       // composed ones only fill in once the bank has nothing unused left.
       const preferred=(spaced.length?spaced:choices).filter(z=>!z._r9);
-      const r23First=choices.filter(z=>z._r23);
-      const seed=pick(r23First.length?r23First:preferred.length?preferred:(spaced.length?spaced:choices));
+      const r23First=choices.filter(z=>z._r23||z._r27);
+      const r27First=choices.filter(z=>z._r27);
+      const seed=pick(r27First.length&&Math.random()<0.75?r27First:r23First.length?r23First:preferred.length?preferred:(spaced.length?spaced:choices));
       const brief=v3IsBrief(seed);
       const own=[seed.h,seed.h2].filter(Boolean);
       res._tagFail=res._tagFail||new Set();
@@ -52080,6 +52406,7 @@ const ACG = (()=>{
     // Round 3: the pay box wording, whole and sentence by sentence.
     // Round 5: every prose sentence shape is retired for good.
     v7ShapeKeys(item).forEach(k=>rows.push({key:"shape|"+k,kind:"sentence_shape"}));
+    if(item._r27Sig)rows.push({key:"s27|"+item._r27Sig,kind:"sentence_shape"});
     if(item._v8)rows.push({key:"v8|"+(item._projectId||Date.now().toString(36)),kind:"persona",meta:item._v8});
     if(item.pay&&!R8_ON){rows.push({key:"pay|"+v5PayKey(item.pay),kind:"pay_text"});v3Sentences(item.pay).map(v5PayKey).filter(x=>x.split(" ").length>=5).forEach(x=>rows.push({key:"pay|s "+x,kind:"pay_text"}));}
     {const nb=R8_ON?r8NoteBody(item.schedule_note):item.schedule_note;v3Sentences(nb).map(v3NormSched).filter(k=>k.split(" ").length>=3).concat(nb?["note "+v3NormSched(nb)]:[]).forEach(k=>rows.push({key:"sched|"+k,kind:"schedule_note"}));}
