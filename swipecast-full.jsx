@@ -46261,6 +46261,9 @@ const ACG = (()=>{
      h.r21Fmts=newest.slice(0,6).map(c=>r21FmtOf(c.roles,c.type)).filter(Boolean);
      h.r25Tags=newest.slice(0,4).map(c=>c.tagline).filter(Boolean);
      h.r26Fam=newest.slice(0,14).map(c=>r26Family(c.synopsis)).filter(Boolean);
+     h.r30Open={pay:newest.slice(0,10).map(c=>r30Head(c.pay)).filter(Boolean),sched:newest.slice(0,10).map(c=>r30Head(c.schedule_note)).filter(Boolean),sub:newest.slice(0,10).map(c=>r30Head(c.submission_requirements)).filter(Boolean)};
+     h.r30Sub=newest.slice(0,40).map(c=>c.submission_requirements||"");
+     h.r30G=[];newest.slice(0,40).forEach(c=>[c.synopsis,c.schedule_note,c.pay,c.submission_requirements].concat((c.roles||[]).map(r=>r&&r.description)).forEach(t=>r30Grams(t).forEach(g=>{if(!R30_GRAM_OK.test(g))h.r30G.push(g);})));
      h.r29PaySk=[];newest.slice(0,40).forEach(c=>v3Sentences(c.pay).forEach(x=>h.r29PaySk.push(r26Sk(x))));
      h.r29Tops=newest.slice(0,12).map(c=>Math.max(0,...((c.roles||[]).map(r=>{const x=parseRoleRate(r&&r.pay);return x?x.rate_amount:0;})))).filter(Boolean);
      h.r29Blank=newest.slice(0,3).map(c=>!c.pay);
@@ -48723,7 +48726,7 @@ const ACG = (()=>{
   }
   function r21PickFmt(c){
     const res=c.res||{},h=c.h||{};
-    const recent=(res._r21Fmts||[]).concat(h.r21Fmts||[]).slice(0,2);
+    const recent=(res._r21Fmts||[]).concat(h.r21Fmts||[]).slice(0,4);
     const pool=R21_FMTS.filter(f=>recent.indexOf(f.id)<0);
     const total=pool.reduce((a,f)=>a+f.w,0);let x=Math.random()*total;
     for(const f of pool){x-=f.w;if(x<=0)return f.id;}
@@ -50359,6 +50362,7 @@ const ACG = (()=>{
     r26Voice(item,h,res);
     r25Teach(item,h,res);
     r29NoQuestions(item);
+    try{r30SubVary(item,h,res);r30PhraseGate(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('r30 '+e);}
     item._lines=splitLines(item.synopsis).concat([item.tagline],roles.map(r=>r.description)).filter(Boolean);
   }
   // ── Round 24: varied role labels (owner, 2026-11-19) ─────────────────────
@@ -50824,7 +50828,7 @@ const ACG = (()=>{
       core.push(pick(patt));
       if(!dated)core.unshift(`${pick(["Dates","Shoot dates","The exact days","The calendar","Our dates","Final dates"])} ${pick(["aren't locked yet","are still being set","land soon","come with the offer","get confirmed after callbacks","are TBD for now","firm up shortly","follow casting","will be shared once we cast","depend on the location"])}${pick([".",", but it's soon.",", likely in the next few weeks.","; we'll share them first thing."])}`);
       // Owner (round 29): a pattern line may never repeat, so each has a composed twin.
-      core.push(`${(x=>x?x+W(D):capFirst(W(D)))(pick(["","Plan on ","We need ","It's ","Book ","Count on ","Set aside "]))} ${pick(["shoot days","days on set","working days","days of filming","filming days"])}${({consecutive:pick([" in a row"," back to back",", straight through"]),weekends:pick([" across weekends",", Saturdays and Sundays"]),saturdays:pick([", all on Saturdays"," on Saturdays only"]),spread:pick([" with gaps between them",", spaced out"]),weekdays:pick([", weekdays only",", Monday to Friday"]),sixday:pick([" on six-day weeks",", Sundays off"]),one:"",flex1:pick([", the exact day set with you",""])})[m]||""}.`);
+      if(D>1)core.push(`${(x=>x?x+W(D):capFirst(W(D)))(pick(["","Plan on ","We need ","It's ","Book ","Count on ","Set aside "]))} ${pick(["shoot days","days on set","working days","days of filming","filming days"])}${({consecutive:pick([" in a row"," back to back",", straight through"]),weekends:pick([" across weekends",", Saturdays and Sundays"]),saturdays:pick([", all on Saturdays"," on Saturdays only"]),spread:pick([" with gaps between them",", spaced out"]),weekdays:pick([", weekdays only",", Monday to Friday"]),sixday:pick([" on six-day weeks",", Sundays off"]),one:"",flex1:pick([", the exact day set with you",""])})[m]||""}.`);
     }
     const C=(a,b,c)=>`${pick(a)} ${pick(b)}${c?pick(c):"."}`;
     const extra=[
@@ -50838,11 +50842,12 @@ const ACG = (()=>{
     ];
     const want=mode==="tiny"?1:mode==="short"?rand(1,2,1):mode==="mid"?rand(2,3,1):rand(4,5,1);
     const S=[];
-    cgShuffle(core.slice()).forEach(x=>{if(S.length<want&&fresh(x))S.push(x);});
+    const modeWord=x=>(String(x).match(/sundays off|six-day|six days|weekends?|saturdays?|in a row|back to back|weekdays|monday to friday|spaced|gaps|not in a row|one day|single day/i)||[""])[0].toLowerCase().replace(/s$/,"");
+    cgShuffle(core.slice()).forEach(x=>{const mw=modeWord(x);if(S.length<want&&fresh(x)&&(S.length||r30HeadFree("sched",x,h,res))&&!(mw&&S.some(y=>modeWord(y)===mw||(/six|sunday/.test(mw)&&/six|sunday/.test(modeWord(y))))))S.push(x);});
     cgShuffle(extra.slice()).forEach(f=>{if(S.length>=want)return;const x=f();if(x&&fresh(x))S.push(x);});
     const note=S.join(" ").replace(/\s{2,}/g," ").trim();
     if(!note){item.schedule_note=null;item._r26NoSched=true;if(res)(res._r26SchedMode=res._r26SchedMode||[]).unshift("none");return;}
-    item.schedule_note=note;item._r26NoSched=false;
+    item.schedule_note=note;item._r26NoSched=false;r30HeadTake("sched",note,res);
     if(res){(res._r26SchedMode=res._r26SchedMode||[]).unshift(mode);res._r26SchedSk=(res._r26SchedSk||[]).concat(S.map(r26Sk));}
   }
   // ── Who posts it: not every indie filmmaker has a company ───────────────
@@ -50941,6 +50946,9 @@ const ACG = (()=>{
     item.pay=null;item._r29Top=target;
     if(res)(res._r29Tops=res._r29Tops||[]).unshift(target);
   }
+  function r30Head(t){return clean(String(t||"")).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#").split(" ").slice(0,3).join(" ");}
+  function r30HeadFree(field,t,h,res){const k=r30Head(t);if(!k)return true;const rec=((res&&res._r30Open&&res._r30Open[field])||[]).concat((h&&h.r30Open&&h.r30Open[field])||[]).slice(0,10);return rec.indexOf(k)<0;}
+  function r30HeadTake(field,t,res){if(!res||!t)return;res._r30Open=res._r30Open||{};(res._r30Open[field]=res._r30Open[field]||[]).unshift(r30Head(t));}
   function r29Pay(item,h,res){
     const type=String(item.type||""),u=String(item.union_status||"");
     if(/Showcase|AEA|Equity/i.test(u))return; // stage union wording is set by the contract
@@ -50968,7 +50976,7 @@ const ACG = (()=>{
     if(!rr.length){
       const leadIns=["No pay","Unpaid","No fee","Not a paid job","Volunteer","Passion project, no pay","Unpaid for everyone, crew included","No budget for fees","It's unpaid","We can't pay on this one","Zero budget","No money on this one"];
       const joins=[": you get ",". You get ",". What you get: ",", but there's ",". In return, ",", though you'll get ",". Instead: ",". Everyone gets "];
-      for(let i=0;i<40&&!S.length;i++){const t=`${pick(leadIns)}${pick(joins)}${joinL(nouns(rand(1,3,1),true))}.`.replace(/: you get ([a-z])/,": you get $1");if(fresh(t))S=[t];}
+      for(let i=0;i<60&&!S.length;i++){const t=`${pick(leadIns)}${pick(joins)}${joinL(nouns(rand(1,3,1),true))}.`.replace(/: you get ([a-z])/,": you get $1");if(fresh(t)&&(i>=45||r30HeadFree("pay",t,h,res)))S=[t];}
       if(!S.length)return;
     }else{
       const amts=rr.map(o=>o.x.rate_amount),top=Math.max(...amts),low=Math.min(...amts);
@@ -50981,9 +50989,9 @@ const ACG = (()=>{
       const heads=same?[
         p=>`${A}${p}.`,p=>`${A}${p} for everyone.`,p=>`Everyone gets ${A}${p}.`,p=>`${A}${p}, same for every part.`,p=>`Flat across the cast: ${A}${p}.`,p=>`One rate: ${A}${p}.`,p=>`Each part pays ${A}${p}.`,p=>`It's ${A}${p}, whatever the part.`,p=>`${A}${p} per performer.`,p=>`Rate is ${A}${p}.`,p=>`We're paying ${A}${p}.`,p=>`${A}${p}, guaranteed once you're booked.`]
       :[
-        p=>`${L}–${A}${p}.`,p=>`${L} to ${A}${p}, by part.`,p=>`Leads ${A}${p}; other parts ${L}.`,p=>`Up to ${A}${p} (leads), ${L} for the rest.`,p=>`From ${L}${p} up to ${A}.`,p=>`Biggest parts ${A}${p}, smallest ${L}.`,p=>`${A}${p} at the top, ${L} at the bottom.`,p=>`Pay by part, ${L}–${A}${p}.`,p=>`Between ${L} and ${A}${p}, depending on the role.`,p=>`Rates are listed on each part: ${L} to ${A}${p}.`,p=>`Lead rate ${A}${p}; supporting ${L}.`,p=>`It ranges ${L}–${A}${p}.`];
+        p=>`${L}–${A}${p}.`,p=>`${L} to ${A}${p}, by part.`,p=>`Leads ${A}${p}; other parts ${L}.`,p=>`Up to ${A}${p} (leads), ${L} for the rest.`,p=>`From ${L} up to ${A}${p}.`,p=>`Biggest parts ${A}${p}, smallest ${L}.`,p=>`${A}${p} at the top, ${L} at the bottom.`,p=>`Pay by part, ${L}–${A}${p}.`,p=>`Between ${L} and ${A}${p}, depending on the role.`,p=>`Rates are listed on each part: ${L} to ${A}${p}.`,p=>`Lead rate ${A}${p}; supporting ${L}.`,p=>`It ranges ${L}–${A}${p}.`];
       let head=null;
-      for(let i=0;i<40&&!head;i++){const t=pick(heads)(pick(pers));if(fresh(t))head=t;}
+      for(let i=0;i<60&&!head;i++){const t=pick(heads)(pick(pers));if(fresh(t)&&(i>=45||r30HeadFree("pay",t,h,res)))head=t;}
       if(!head)return;
       S=[head];
       const want=rand(0,2,1);
@@ -50993,7 +51001,7 @@ const ACG = (()=>{
       if(res)(res._r29Blank=res._r29Blank||[]).unshift(false);
     }
     const out=S.join(" ").replace(/\s{2,}/g," ").trim();
-    item.pay=out;
+    item.pay=out;r30HeadTake("pay",out,res);
     if(res)res._r29PaySk=(res._r29PaySk||[]).concat(v3Sentences(out).map(r26Sk));
   }
   // No question sentences in the summary, the tagline or the roles (owner).
@@ -51003,6 +51011,69 @@ const ACG = (()=>{
     if(k.length&&k.length<S.length)item.synopsis=k.join(" ").replace(/^([a-z])/,m=>m.toUpperCase());
     (item._roles||[]).forEach(r=>{const D=v3Sentences(r.description);const keep=D.filter(x=>!/\?$/.test(x.trim())&&!/^Then this is yours/i.test(x));if(keep.length&&keep.length<D.length)r.description=keep.join(" ");});
     ["schedule_note","pay"].forEach(f=>{if(item[f]){const D=v3Sentences(item[f]);const keep=D.filter(x=>!/\?$/.test(x.trim()));if(keep.length<D.length)item[f]=keep.join(" ")||null;}});
+  }
+  // ── Round 30 (2026-11-22): owner — every draft must read as if it was never
+  // written before and never will be again. Two passes run last:
+  //  1. r30SubVary: the submission box re-voices its stock phrases ("a headshot
+  //     that looks like you now", "a reel or a link to recent footage",
+  //     "a self-tape of up to 90 seconds"…), picking wording no recent listing used.
+  //  2. r30PhraseGate: any added (non-story) sentence in the summary, the roles,
+  //     the schedule or the pay that shares a five-word run with the last 40
+  //     listings is dropped, as long as the field keeps enough to read well.
+  const R30_SUB_ALTS=[
+    [/\ba headshot that looks like you now\b/gi,["a current headshot","one recent photo","a clear, recent headshot","a headshot from this year","two recent photos","a photo that looks like you today","your most recent headshot","a recent picture (a phone photo is fine)"]],
+    [/\ba (current|recent) headshot\b/gi,["a headshot","a recent photo","one current picture","a clear headshot","your latest headshot"]],
+    [/\ba reel or a link to recent footage\b/gi,["a reel","a link to recent work","any footage you have","a clip of something you've been in","your reel, if you have one","a link to a scene you're proud of","a short clip of recent work"]],
+    [/\bany recent footage\b/gi,["any clip of your work","a footage link if you have one","something we can watch you in","a short sample of recent work"]],
+    [/\ba self-tape of up to 90 seconds\b/gi,["a short self-tape","a one-minute tape","a 90-second tape","a quick tape of any scene","a minute of self-tape","a tape of a short monologue"]],
+    [/\ba short self-tape\b/gi,["a quick self-tape","a brief tape","a one-minute self-tape","a short tape of any scene"]],
+    [/\bself-tape \(90 sec max\)/gi,["self-tape (one minute)","a short tape","90-second tape","a quick self-tape"]],
+    [/\ba short list of credits\b/gi,["a few credits","your résumé","a list of past work","credits, if you have any","a short résumé"]],
+    [/\bPhone self-tapes are fine\.|A self-tape shot on a phone is fine\.|Phone-shot tapes are completely fine\./g,["A phone tape is fine.","Shoot it on your phone; that's fine.","No studio needed for the tape.","Your phone camera is plenty.",""]],
+    [/^Please send (us )?/,["Send ","To apply, send ","For consideration, send ","Reply with ","Submit ","We'd like to see ","Start with "]],
+    [/^(What to send|Materials|Submit|Required|What we need|To submit|Send):\s*/,["Send ","To apply: ","Please include ","Submissions: ","Needed: ","Bring us ","Apply with "]],
+    [/^(If this sounds like you, send|To throw your hat in, send|To be considered, send)\s+/,["Send ","If you're interested, send ","If it fits, send ","Throw your name in with ","Apply with ","To read for it, send ","Get in touch with ","Start by sending "]],
+    [/^(Submissions should include|All we need is|Please include|We'd love to see)\s+/,["Send ","Apply with ","For a look, send ","Reply with ","To be seen, send ","Please share "]]
+  ];
+  function r30SubVary(item,h,res){
+    let t=String(item.submission_requirements||"");if(!t)return;
+    // "The home cook also sends your résumé" -> "a résumé"
+    t=t.replace(/\b(sends?|needs?|also send[s]?) your (résumé|reel)\b/g,"$1 a $2");
+    const recent=((res&&res._r30Sub)||[]).concat((h&&h.r30Sub)||[]).slice(0,40).join(" \n ").toLowerCase();
+    R30_SUB_ALTS.forEach(([re,alts])=>{
+      t=t.replace(re,(m)=>{
+        const opts=cgShuffle(alts.slice());
+        const lead=/^\^/.test(re.source);
+        const pickA=opts.find(a=>a&&(lead?r30HeadFree("sub",a+" x y",h,res):recent.indexOf(a.toLowerCase().trim())<0))||opts.find(a=>a&&recent.indexOf(a.toLowerCase().trim())<0)||opts[0];
+        const keepCap=/^[A-Z]/.test(m)&&pickA;
+        return keepCap?pickA.charAt(0).toUpperCase()+pickA.slice(1):pickA;
+      });
+    });
+    t=t.replace(/\s{2,}/g," ").replace(/\s+\./g,".").trim();
+    item.submission_requirements=t;r30HeadTake("sub",t,res);
+    if(res)(res._r30Sub=res._r30Sub||[]).unshift(t);
+  }
+  function r30Grams(t){
+    const out=[];
+    v3Sentences(t).forEach(sn=>{const w=clean(sn).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#").split(" ").filter(Boolean);
+      if(w.length<5){if(w.length>=3)out.push("s: "+w.join(" "));return;}
+      for(let i=0;i+5<=w.length;i++)out.push(w.slice(i,i+5).join(" "));});
+    return out;
+  }
+  const R30_GRAM_OK=/^(the |a |and |of |to |in )|(the |a |of |and )$/;
+  function r30PhraseGate(item,h,res){
+    const hist=new Set((h&&h.r30G)||[]);((res&&res._r30G)||[]).forEach(g=>hist.add(g));
+    const labels=(item._roles||[]).map(r=>clean(String(r._slot||r.name||"").replace(/^(the|a|an)\s+/i,""))).filter(Boolean);
+    const seedP=clean((item._r26&&item._r26.seed&&item._r26.seed.p)||""),turnT=clean((item._r26&&item._r26.turn)||"");
+    const stale=s=>{const c=clean(s);if(seedP&&c.indexOf(seedP.slice(0,40))>-1)return false;if(turnT&&c.indexOf(turnT.slice(0,30))>-1)return false;
+      return r30Grams(s).some(g=>!R30_GRAM_OK.test(g)&&hist.has(g)&&!labels.some(l=>l&&g.indexOf(l)>-1));};
+    const trim=(text,keepFirst,minLeft)=>{const S=v3Sentences(text);if(S.length<=minLeft)return text;const out=[];S.forEach((x,i)=>{if((keepFirst&&i===0)||!stale(x)||out.length+(S.length-i)<=minLeft)out.push(x);});return out.join(" ");};
+    item.synopsis=trim(item.synopsis,true,1);
+    (item._roles||[]).forEach(r=>{if(!/background/i.test(r.role_type||""))r.description=trim(r.description,true,2);});
+    if(item.schedule_note)item.schedule_note=trim(item.schedule_note,false,0)||null;
+    if(item.submission_requirements)item.submission_requirements=trim(item.submission_requirements,true,1);
+    const add=[item.synopsis,item.schedule_note,item.pay,item.submission_requirements].concat((item._roles||[]).map(r=>r.description));
+    if(res){res._r30G=res._r30G||[];add.forEach(t=>r30Grams(t).forEach(g=>{if(!R30_GRAM_OK.test(g))res._r30G.push(g);}));}
   }
   function r26Voice(item,h,res){
     try{r27FitPadding(item);r27CapPay(item);r29Amounts(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('r27 '+e);}
@@ -51116,8 +51187,8 @@ const ACG = (()=>{
   // batch or within the last ten listings, which also holds Casting/Seeking
   // to two in ten and the Logline/Synopsis label to one in ten. Whatever the
   // shape, the first two sentences say what the project is and what it's about.
-  const R11_OPEN_KEYS=["casting","seeking","label","story","formatplace","production","people","role","inthis","titlefirst","coming","wanted"];
-  const R11_OPEN_WINDOW=10;
+  const R11_OPEN_KEYS=["casting","seeking","label","story","formatplace","production","people","role","inthis","titlefirst","coming","wanted","team","pipeB","needB","quick","partsB"];
+  const R11_OPEN_WINDOW=14;
   function r11OpenShape(syn){
     const t=String(syn||"").trim(),s1=(v3Sentences(t)[0]||t);
     if(/^Casting\b/.test(t))return "casting";
@@ -51189,6 +51260,12 @@ const ACG = (()=>{
         role:()=>[`We're looking for ${who} for ${art}.`],
         titlefirst:null,inthis:null,
         coming:()=>[`Production starts soon on ${art}${where}.`,`Open roles: ${who}.`],
+        // Round 30: more ways an ad gets announced (self-posted ad voices).
+        team:()=>[`${pick(["Hi! We're a small creative team shooting","Hello from a tiny production team making","Hey! Our little crew is shooting"])} ${art}${where}.`,abOk?`It's about ${ab}.`:`We need ${who}.`],
+        pipeB:()=>[`Casting call | ${capFirst(`${dc}${fmt}`)} | ${capFirst(who)}.`].concat(abOk?[`${capFirst(ab)}.`]:[]),
+        needB:()=>[`${pick(["Need","In need of","On the hunt for","Searching for"])} ${who} for ${art}${where}.`].concat(abOk?[`The idea: ${ab}.`]:[]),
+        quick:()=>[`${pick(["Quick shoot coming up","Short shoot on the calendar","Small shoot, soon","On the books","Next up for us"])}: ${art}${where}.`,abOk?`${capFirst(ab)}.`:`Open roles: ${who}.`],
+        partsB:()=>[`Parts open on ${art}: ${who}.`].concat(abOk?[`It shows ${ab}.`]:[]),
         wanted:()=>[R12_A_OPEN.test(capFirst(who))?`Wanted for ${art}: ${who}.`:`${capFirst(who)} wanted for ${art}.`]
       };
       const order=cgShuffle(R11_OPEN_KEYS.filter(k=>B[k]&&B[k]()));
