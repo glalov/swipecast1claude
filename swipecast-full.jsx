@@ -42794,7 +42794,7 @@ const ACG = (()=>{
       p:"a city marshal has to evict the high school coach who kept him out of jail",
       h:"the coach has known for a month and has been waiting for him by name",h2:"the trophies are the only thing the landlord wants left behind",
       w:["a ground-floor apartment","an apartment building hallway","a marshal's car"],
-      c:[{s:"the marshal",r:"Lead",a:"midCareer",g:"M",x:"Does forty of these a month and sleeps fine. Not this one. Former athlete gone soft."},
+      c:[{s:"the marshal",r:"Lead",a:"midCareer",g:"M",x:"Does forty of these a month and sleeps fine, but this one is different. Former athlete gone soft."},
          {s:"the coach",r:"Lead",a:"senior",g:"M",x:"Still gives orders from a chair. Makes him run the eviction like a drill. Proud to the last box."},
          {s:"the landlord's agent",r:"Supporting",a:"adult",g:"F",x:"Young, on a call, counting the hours on the notice."}]},
     {k:"r23-prison-mailroom",era:"now",genre:"drama",tracks:["film","tv"],ttl:["Opened for Inspection","Mail Call","Return to Sender"],
@@ -46263,7 +46263,7 @@ const ACG = (()=>{
      h.r26Fam=newest.slice(0,14).map(c=>r26Family(c.synopsis)).filter(Boolean);
      h.r30Open={pay:newest.slice(0,10).map(c=>r30Head(c.pay)).filter(Boolean),sched:newest.slice(0,10).map(c=>r30Head(c.schedule_note)).filter(Boolean),sub:newest.slice(0,10).map(c=>r30Head(c.submission_requirements)).filter(Boolean)};
      h.r30Sub=newest.slice(0,40).map(c=>c.submission_requirements||"");
-     h.r30G=[];newest.slice(0,40).forEach(c=>[c.synopsis,c.schedule_note,c.pay,c.submission_requirements].concat((c.roles||[]).map(r=>r&&r.description)).forEach(t=>r30Grams(t).forEach(g=>{if(!R30_GRAM_OK.test(g))h.r30G.push(g);})));
+     h.r30G=[];newest.slice(0,40).forEach(c=>{const MK=r30Mask(c.roles);[c.synopsis,c.schedule_note,c.pay,c.submission_requirements].concat((c.roles||[]).map(r=>r&&r.description)).forEach(t=>r30Grams(t,MK).forEach(g=>{if(!R30_GRAM_OK.test(g))h.r30G.push(g);}));});
      h.r29PaySk=[];newest.slice(0,40).forEach(c=>v3Sentences(c.pay).forEach(x=>h.r29PaySk.push(r26Sk(x))));
      h.r29Tops=newest.slice(0,12).map(c=>Math.max(0,...((c.roles||[]).map(r=>{const x=parseRoleRate(r&&r.pay);return x?x.rate_amount:0;})))).filter(Boolean);
      h.r29Blank=newest.slice(0,3).map(c=>!c.pay);
@@ -48570,7 +48570,7 @@ const ACG = (()=>{
       dialogue:()=>low?[`${F} is nearly wordless; the part is all in the looks.`,`Very little dialogue for ${F}.`,`${F} has almost no lines.`,`Few lines: ${F} is mostly seen, not heard.`]:talk?[`A lot of the dialogue belongs to ${F}.`,`${F} talks more than anyone else in the ${c.noun}.`,`Expect long speeches for ${F}.`,`${F} does most of the talking.`]:null,
       onday:()=>{const t=c.stage?(lead?"every rehearsal and every performance":"the scenes you're in, plus notes sessions"):c.sessions?(lead?"most of the recording time":"a short session with the director"):days===1?"one day, a handful of setups":lead?"most setups on most days":`${units(days)}, a few scenes each`;
         return [`For ${F}, expect ${t}.`,`${capFirst(c.stage?"in the room":c.sessions?"in the booth":"on set")}: ${t}.`,`Plan on ${t}.`,`${F}'s schedule: ${t}.`];},
-      notline:()=>V8_HARD_TRAITS.test(all)?[`Not a villain: ${F} has reasons.`,`${F} isn't the bad guy, just hard to be around.`,`Not a villain, even when ${F} is at their worst.`.replace(" at their worst"," difficult"),`Hard, but never a cartoon.`]:V8_FUNNY.test(all)?[`${F} is funny, but not only comic relief.`,`Not just the joke in the room.`,`Funny, but ${F} is not the clown.`]:null,
+      notline:()=>false&&V8_HARD_TRAITS.test(all)?[`Not a villain: ${F} has reasons.`,`${F} isn't the bad guy, just hard to be around.`,`Not a villain, even when ${F} is at their worst.`.replace(" at their worst"," difficult"),`Hard, but never a cartoon.`]:V8_FUNNY.test(all)?[`${F} is funny, but not only comic relief.`,`Not just the joke in the room.`,`Funny, but ${F} is not the clown.`]:null,
       skill:()=>skill?[`${F} needs real ${skill}.`,`Real ${skill} is required for ${F}.`,`Must have real ${skill} experience.`,`The ${skill} has to be real, not faked.`]:null,
       // Round 11: on stage plan.days counts rehearsals AND performances, so a
       // number here contradicted the listing ("all 23 performances" on a run
@@ -48578,7 +48578,7 @@ const ACG = (()=>{
       days:()=>c.stage?(lead||days>=total?[`${F} is in every performance.`,`Block out every rehearsal and every performance.`,`${F} is called for every performance of the run.`]:null):total>1&&days>=total?(total===2?[`${F} is needed both ${unit}s.`,`Block out both ${unit}s.`]:[`${F} is needed all ${units(total)}.`,`Block out all ${units(total)}.`,`${F} works every one of the ${units(total)}.`]):total>1?[`${F} works ${v3Words(days)} of the ${units(total)}.`,`${capFirst(c.sessions?"booked":"on set")} for ${v3Words(days)} of the ${units(total)}.`,`For ${F}, that's ${units(days)} out of ${units(total)}.`]:null,
       contrast:()=>{if(!P)return null;const a=v8Adjs(sk.join(" "))[0],b=v8Adjs((c.partnerSk||[]).join(" "))[0];if(!a||!b||a===b)return null;
         return [`Where ${PF} is ${b}, ${F} is ${a}.`,`${PF} is ${b}; ${F} is ${a}.`,`Next to ${PF}, who is ${b}, ${F} reads as ${a}.`];},
-      camera:()=>screen&&lead?[`The camera spends a lot of time on ${F}'s face.`,`Expect close-ups on ${F} in the quiet scenes.`,`The camera often stays on ${F} while others talk.`,`${F}'s reactions carry many of the shots.`]:null,
+      camera:()=>screen&&lead?[`The camera spends a lot of time on ${F}'s face.`,`The quiet scenes stay close on ${F}.`,`The camera often stays on ${F} while others talk.`,`${F}'s reactions carry many of the shots.`]:null,
       lookingfor:()=>{return null;const a=v8Adjs(sk.join(" "));if(a.length<2)return null;
         return [`We're looking for someone who can be ${a[0]} and ${a[1]} at once.`,`We want an actor who is ${a[0]} without losing ${a[1]}.`.replace(/losing (\w+)/,(m,w)=>`being ${w}`),`We'd love someone ${a[0]} and ${a[1]}.`,`${c.voice==="i"?"I'm":"We're"} after someone ${a[0]}, with a ${a[1]} side.`];},
       question:()=>{return null;const q=low?"hold a scene with almost no lines":skill?`do real ${skill}`:/comedy/.test(G)?"be funny without winking at the audience":null;
@@ -48599,7 +48599,7 @@ const ACG = (()=>{
       // "know the X's world / what a X's day looks like" lines are retired.
       prep:()=>false&&/^[a-z-]+( [a-z-]+)?$/.test(lab)&&!/\b(one|who|that|other|new|old|young|older|younger|first|second)\b/.test(lab)?[`Before the read, think about what ${v3Aa(lab)} notices first.`]:null,
       sharewith:()=>P&&!lead?[`Most of ${F}'s scenes are with ${PF}, the ${PL}.`,`${F} mostly plays against ${PF} (the ${PL}).`,`You'll be working opposite ${PF}, the ${PL}, most of the time.`,`Chemistry with whoever plays ${PF} matters.`]:null,
-      partner:()=>P&&lead?[`${F}'s scenes are almost all with ${PF}, the ${PL}.`,`${PF}, the ${PL}, is the person ${F} deals with most.`,`The story keeps putting ${F} and ${PF} together.`,`${F} and ${PF} (the ${PL}) share most of the story.`,`Callbacks will pair ${F} with ${PF}.`,`Nearly every scene has ${PF} as the other half.`]:null
+      partner:()=>P&&lead?[`${F}'s scenes are almost all with ${PF}, the ${PL}.`,`The story keeps putting ${F} and ${PF} together.`,`${F} and ${PF} (the ${PL}) share most of the story.`,`Callbacks will pair ${F} with ${PF}.`,`Nearly every scene has ${PF} as the other half.`]:null
     })[move];
     const o=opts&&opts();
     return o&&o.length?o:null;
@@ -50417,7 +50417,7 @@ const ACG = (()=>{
       const ref=poss?sl:("the "+sl.replace(/^the\s+/i,"")).toLowerCase();
       const full=String(r._person),first=firstOf(r);
       const fix=t=>String(t||"").replace(new RegExp("\\b("+esc(full)+"|"+esc(first)+")(['’]s)?\\b","g"),(m0,nm,ps,off,str)=>{
-        const before=str.slice(0,off);const start=!before.trim()||/[.!?:\n]\s*$/.test(before);
+        const before=str.slice(0,off);const start=!before.trim()||/[.!?\n]\s*$/.test(before);
         const out=ref+(ps||"");return start?out.charAt(0).toUpperCase()+out.slice(1):out;})
         // Round 25: "Hank, the rodeo clown," became "the rodeo clown, the rodeo clown,".
         .replace(new RegExp("\\b("+esc(ref)+"),? (?:\\(|— )?"+esc(ref)+"\\)?,?","gi"),"$1");
@@ -50956,27 +50956,29 @@ const ACG = (()=>{
     const roles=(item._roles||[]).filter(r=>!/background/i.test(r.role_type||""));
     const rr=roles.map(r=>({r,x:parseRoleRate(r.pay),ep:/episode/i.test(r.pay||"")})).filter(o=>o.x);
     const usedSk=new Set(((res&&res._r29PaySk)||[]).concat((h&&h.r29PaySk)||[]));
+    const gHist=new Set(((h&&h.r30G)||[]).concat((res&&res._r30G)||[]));
     const fresh=x=>x&&v3Sentences(x).every(z=>!usedSk.has(r26Sk(z)));
+    const gFresh=x=>r30Grams(x).every(g=>R30_GRAM_OK.test(g)||!gHist.has(g));
     const oneDay=Math.max(1,...(item._roles||[]).map(r=>+r.est_days||1))<=1;
     const sag=/SAG/i.test(u);
     // Parts of a pay box. Each sentence is built from pieces, then checked.
     const methods=["direct deposit","check","Venmo","Zelle","bank transfer","PayPal"];
     const whens=oneDay?["on the day","before you leave set","at wrap","within a week","by the end of the week","within ten days"]:stage?["every Friday of the run","weekly","at the end of each week","at closing","in two halves, at opening and at closing"]:["within two weeks of wrap","the week after wrap","once the shoot wraps","within 30 days","at the end of each shoot week","within ten business days"];
     const payFrames=[(m,w)=>`Paid by ${m} ${w}.`,(m,w)=>`Payment goes out by ${m} ${w}.`,(m,w)=>`${capFirst(m)}, ${w}.`,(m,w)=>`You'll get paid ${w}, by ${m}.`,(m,w)=>`We pay by ${m}, ${w}.`,(m,w)=>`Money arrives ${w} (${m}).`,(m,w)=>`${capFirst(w)}, by ${m}.`,(m,w)=>`Paperwork on the first day; ${m} ${w}.`];
-    const timingLine=()=>{for(let i=0;i<24;i++){const t=pick(payFrames)(pick(methods),pick(whens)).replace(/\bby Venmo\b/,"through Venmo");if(fresh(t))return t;}return null;};
+    const timingLine=()=>{for(let i=0;i<24;i++){const t=pick(payFrames)(pick(methods),pick(whens)).replace(/\bby Venmo\b/,"through Venmo");if(fresh(t)&&gFresh(t))return t;}return null;};
     const food=stage?["coffee and snacks at every call","snacks at rehearsal","a cast dinner after opening","pizza on tech night"]:["meals on set","lunch every day","snacks and lunch","food on set","a proper lunch break","breakfast and lunch","a hot meal on long days","coffee all day"];
     const groups=stage?[food,["reimbursed travel to rehearsal","subway fare","a MetroCard for the run"],["program credit","archival video of the show","two comp tickets","a program bio"],["paid rehearsals","paid tech days"]]
       :[food,["reimbursed travel","subway fare","parking","a ride from the train station","gas money"],["a copy of the finished film","footage for your reel","your scenes cut for your reel","a link to the final cut"],["an IMDb credit","screen credit","credit"],["paid rehearsal","overtime after ten hours","a paid fitting"]];
     const nouns=(n,free)=>cgShuffle(groups.filter(g=>!free||!/paid|overtime/.test(g.join(" "))).slice()).slice(0,n).map(g=>pick(g));
     const joinL=xs=>xs.length<=1?(xs[0]||""):xs.length===2?xs[0]+pick([" and "," plus "])+xs[1]:xs.slice(0,-1).join(", ")+pick([", and "," and "," plus "])+xs[xs.length-1];
     const perkFrames=[xs=>`${capFirst(joinL(xs))} too.`,xs=>`Also: ${joinL(xs)}.`,xs=>`You also get ${joinL(xs)}.`,xs=>`Plus ${joinL(xs)}.`,xs=>`Extras: ${joinL(xs)}.`,xs=>`On top of the rate, ${joinL(xs)}.`,xs=>`Along with it, ${joinL(xs)}.`,xs=>`${capFirst(joinL(xs))} included.`];
-    const perkLine=()=>{for(let i=0;i<24;i++){const t=pick(perkFrames)(nouns(rand(1,3,1)));if(fresh(t))return t;}return null;};
+    const perkLine=()=>{for(let i=0;i<30;i++){const t=pick(perkFrames)(nouns(rand(1,3,1)));if(fresh(t)&&gFresh(t))return t;}return null;};
     const unionLine=()=>{if(!sag)return null;for(let i=0;i<12;i++){const t=pick([`Under the ${u} agreement.`,`${u} terms apply.`,`Booked on ${u}.`,`This falls under ${u}.`,`${u}; union members welcome.`,`Contract: ${u}.`]);if(fresh(t))return t;}return null;};
     let S=[];
     if(!rr.length){
       const leadIns=["No pay","Unpaid","No fee","Not a paid job","Volunteer","Passion project, no pay","Unpaid for everyone, crew included","No budget for fees","It's unpaid","We can't pay on this one","Zero budget","No money on this one"];
       const joins=[": you get ",". You get ",". What you get: ",", but there's ",". In return, ",", though you'll get ",". Instead: ",". Everyone gets "];
-      for(let i=0;i<60&&!S.length;i++){const t=`${pick(leadIns)}${pick(joins)}${joinL(nouns(rand(1,3,1),true))}.`.replace(/: you get ([a-z])/,": you get $1");if(fresh(t)&&(i>=45||r30HeadFree("pay",t,h,res)))S=[t];}
+      for(let i=0;i<60&&!S.length;i++){const t=`${pick(leadIns)}${pick(joins)}${joinL(nouns(rand(1,3,1),true))}.`.replace(/: you get ([a-z])/,": you get $1");if(fresh(t)&&(i>=30||gFresh(t))&&(i>=45||r30HeadFree("pay",t,h,res)))S=[t];}
       if(!S.length)return;
     }else{
       const amts=rr.map(o=>o.x.rate_amount),top=Math.max(...amts),low=Math.min(...amts);
@@ -51023,12 +51025,14 @@ const ACG = (()=>{
   const R30_SUB_ALTS=[
     [/\ba headshot that looks like you now\b/gi,["a current headshot","one recent photo","a clear, recent headshot","a headshot from this year","two recent photos","a photo that looks like you today","your most recent headshot","a recent picture (a phone photo is fine)"]],
     [/\ba (current|recent) headshot\b/gi,["a headshot","a recent photo","one current picture","a clear headshot","your latest headshot"]],
-    [/\ba reel or a link to recent footage\b/gi,["a reel","a link to recent work","any footage you have","a clip of something you've been in","your reel, if you have one","a link to a scene you're proud of","a short clip of recent work"]],
-    [/\bany recent footage\b/gi,["any clip of your work","a footage link if you have one","something we can watch you in","a short sample of recent work"]],
-    [/\ba self-tape of up to 90 seconds\b/gi,["a short self-tape","a one-minute tape","a 90-second tape","a quick tape of any scene","a minute of self-tape","a tape of a short monologue"]],
-    [/\ba short self-tape\b/gi,["a quick self-tape","a brief tape","a one-minute self-tape","a short tape of any scene"]],
+    [/\ba reel or a link to recent footage\b/gi,["a reel","a link to recent work","any footage you have","a clip of something you've been in","your reel if you have one","a link to a scene you're proud of","a short clip of recent work"]],
+    [/\bany recent footage\b/gi,["any clip of your work","a footage link if you have one","something we can watch you in","a short sample of recent work","a link to past work","a clip from a recent project","any scene you've filmed","a short reel"]],
+    [/\ba self-tape of up to 90 seconds\b|\ba one-minute self-tape\b|\ba 90-second self-tape\b/gi,["a short self-tape","a quick self-tape","a brief tape","a 60-second tape","a tape of any short scene","a minute of you on camera","a phone video of a short monologue","a short scene on tape","a self-recorded scene","a slate and one scene","a tape of something you love performing","a short monologue on video"]],
+    [/\ba short self-tape\b/gi,["a short self-tape","a quick self-tape","a brief tape","a 60-second tape","a tape of any short scene","a minute of you on camera","a phone video of a short monologue","a short scene on tape","a self-recorded scene","a slate and one scene","a tape of something you love performing","a short monologue on video"]],
+    [/\byour résumé\b/gi,["your résumé","a résumé","a short résumé","a list of credits","your acting history","a few past roles","a credits list","whatever résumé you have"]],
+    [/\ba full-length photo\b/gi,["a full-length photo","a full-body picture","a head-to-toe photo","one standing photo"]],
     [/\bself-tape \(90 sec max\)/gi,["self-tape (one minute)","a short tape","90-second tape","a quick self-tape"]],
-    [/\ba short list of credits\b/gi,["a few credits","your résumé","a list of past work","credits, if you have any","a short résumé"]],
+    [/\ba short list of credits\b/gi,["a few credits","your résumé","a list of past work","any credits you have","a short résumé"]],
     [/\bPhone self-tapes are fine\.|A self-tape shot on a phone is fine\.|Phone-shot tapes are completely fine\./g,["A phone tape is fine.","Shoot it on your phone; that's fine.","No studio needed for the tape.","Your phone camera is plenty.",""]],
     [/^Please send (us )?/,["Send ","To apply, send ","For consideration, send ","Reply with ","Submit ","We'd like to see ","Start with "]],
     [/^(What to send|Materials|Submit|Required|What we need|To submit|Send):\s*/,["Send ","To apply: ","Please include ","Submissions: ","Needed: ","Bring us ","Apply with "]],
@@ -51037,6 +51041,7 @@ const ACG = (()=>{
   ];
   function r30SubVary(item,h,res){
     let t=String(item.submission_requirements||"");if(!t)return;
+    if(!/series|pilot|season|episod/i.test(`${item.type||""} ${item.synopsis||""}`))t=v3Sentences(t).filter(x=>!/\bseries\b/i.test(x)).join(" ");
     // "The home cook also sends your résumé" -> "a résumé"
     t=t.replace(/\b(sends?|needs?|also send[s]?) your (résumé|reel)\b/g,"$1 a $2");
     const recent=((res&&res._r30Sub)||[]).concat((h&&h.r30Sub)||[]).slice(0,40).join(" \n ").toLowerCase();
@@ -51053,9 +51058,10 @@ const ACG = (()=>{
     item.submission_requirements=t;r30HeadTake("sub",t,res);
     if(res)(res._r30Sub=res._r30Sub||[]).unshift(t);
   }
-  function r30Grams(t){
+  function r30Mask(roles){const m=new Set();(roles||[]).forEach(r=>{[r&&r.name,r&&r._person,r&&r._slot].forEach(v=>String(v||"").toLowerCase().replace(/[^a-z' ]/g," ").split(/\s+/).forEach(w=>{if(w.length>2&&!/^(the|and|for|who|with|from|one|two|other)$/.test(w))m.add(w);}));});return m;}
+  function r30Grams(t,mask){
     const out=[];
-    v3Sentences(t).forEach(sn=>{const w=clean(sn).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#").split(" ").filter(Boolean);
+    v3Sentences(t).forEach(sn=>{const w=clean(sn).split(" ").map(x=>mask&&mask.has(x)?"n":x).join(" ").replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#").split(" ").filter(Boolean);
       if(w.length<5){if(w.length>=3)out.push("s: "+w.join(" "));return;}
       for(let i=0;i+5<=w.length;i++)out.push(w.slice(i,i+5).join(" "));});
     return out;
@@ -51063,17 +51069,17 @@ const ACG = (()=>{
   const R30_GRAM_OK=/^(the |a |and |of |to |in )|(the |a |of |and )$/;
   function r30PhraseGate(item,h,res){
     const hist=new Set((h&&h.r30G)||[]);((res&&res._r30G)||[]).forEach(g=>hist.add(g));
-    const labels=(item._roles||[]).map(r=>clean(String(r._slot||r.name||"").replace(/^(the|a|an)\s+/i,""))).filter(Boolean);
+    const labels=[];const MK=r30Mask(item._roles);
     const seedP=clean((item._r26&&item._r26.seed&&item._r26.seed.p)||""),turnT=clean((item._r26&&item._r26.turn)||"");
     const stale=s=>{const c=clean(s);if(seedP&&c.indexOf(seedP.slice(0,40))>-1)return false;if(turnT&&c.indexOf(turnT.slice(0,30))>-1)return false;
-      return r30Grams(s).some(g=>!R30_GRAM_OK.test(g)&&hist.has(g)&&!labels.some(l=>l&&g.indexOf(l)>-1));};
+      return r30Grams(s,MK).some(g=>!R30_GRAM_OK.test(g)&&hist.has(g)&&g.split(" ").filter(x=>x==="n").length<3);};
     const trim=(text,keepFirst,minLeft)=>{const S=v3Sentences(text);if(S.length<=minLeft)return text;const out=[];S.forEach((x,i)=>{if((keepFirst&&i===0)||!stale(x)||out.length+(S.length-i)<=minLeft)out.push(x);});return out.join(" ");};
     item.synopsis=trim(item.synopsis,true,1);
     (item._roles||[]).forEach(r=>{if(!/background/i.test(r.role_type||""))r.description=trim(r.description,true,2);});
     if(item.schedule_note)item.schedule_note=trim(item.schedule_note,false,0)||null;
     if(item.submission_requirements)item.submission_requirements=trim(item.submission_requirements,true,1);
     const add=[item.synopsis,item.schedule_note,item.pay,item.submission_requirements].concat((item._roles||[]).map(r=>r.description));
-    if(res){res._r30G=res._r30G||[];add.forEach(t=>r30Grams(t).forEach(g=>{if(!R30_GRAM_OK.test(g))res._r30G.push(g);}));}
+    if(res){res._r30G=res._r30G||[];add.forEach(t=>r30Grams(t,MK).forEach(g=>{if(!R30_GRAM_OK.test(g))res._r30G.push(g);}));}
   }
   function r26Voice(item,h,res){
     try{r27FitPadding(item);r27CapPay(item);r29Amounts(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('r27 '+e);}
@@ -51262,9 +51268,9 @@ const ACG = (()=>{
         coming:()=>[`Production starts soon on ${art}${where}.`,`Open roles: ${who}.`],
         // Round 30: more ways an ad gets announced (self-posted ad voices).
         team:()=>[`${pick(["Hi! We're a small creative team shooting","Hello from a tiny production team making","Hey! Our little crew is shooting"])} ${art}${where}.`,abOk?`It's about ${ab}.`:`We need ${who}.`],
-        pipeB:()=>[`Casting call | ${capFirst(`${dc}${fmt}`)} | ${capFirst(who)}.`].concat(abOk?[`${capFirst(ab)}.`]:[]),
+        pipeB:()=>[`Casting call | ${capFirst(`${dc}${fmt}`)} | ${(n=>`${capFirst(v3Words(n))} ${n===1?"part":"parts"}`)(Math.max(1,roles.filter(r=>!/background/i.test(r.role_type||"")).length))}.`].concat(abOk?[`${capFirst(ab)}.`]:[]),
         needB:()=>[`${pick(["Need","In need of","On the hunt for","Searching for"])} ${who} for ${art}${where}.`].concat(abOk?[`The idea: ${ab}.`]:[]),
-        quick:()=>[`${pick(["Quick shoot coming up","Short shoot on the calendar","Small shoot, soon","On the books","Next up for us"])}: ${art}${where}.`,abOk?`${capFirst(ab)}.`:`Open roles: ${who}.`],
+        quick:()=>[`${pick(fam==="audio"||/Voiceover|Podcast|Animation/.test(type)?["Short session on the calendar","Booth time coming up","On the books","Next up for us"]:["Quick shoot coming up","Short shoot on the calendar","Small shoot, soon","On the books","Next up for us"])}: ${art}${where}.`,abOk?`${capFirst(ab)}.`:`Open roles: ${who}.`],
         partsB:()=>[`Parts open on ${art}: ${who}.`].concat(abOk?[`It shows ${ab}.`]:[]),
         wanted:()=>[R12_A_OPEN.test(capFirst(who))?`Wanted for ${art}: ${who}.`:`${capFirst(who)} wanted for ${art}.`]
       };
