@@ -38866,7 +38866,7 @@ const ACG = (()=>{
   const AGE_HARD_LOCK=/\b(grandmother|grandfather|grandma|grandpa|granddaughter|grandson|retired|retiree|elderly|widow|widower|pension|emeritus|decades|matriarch|patriarch|thirty years|forty years|fifty years|veteran of|great-aunt|great-uncle)\b/i;
   const AGE_SOFT_LOCK=/\b(mother|father|mom|dad|parent|principal|judge|chief|surgeon|professor|senator|founder|owner|captain|superintendent|director of)\b/i;
   const AGE_DOWN={senior:"mature",mature:"midCareer",midCareer:"adult",adult:"youngAdult",youngAdult:"youngAdult",teen:"teen",child:"child"};
-  const R27_AGE_LOCK=/\b(\w+-)?(twenty|thirty|forty|fifty|sixty)[\w-]* (years|winters|summers|seasons)\b|\b\d{2} years\b|\b(retired|career|decades|lifetime|all (his|her) life|since before|old-timer|veteran|widowed|grown children|teenage (son|daughter)|kids in college)\b/i;
+  const R27_AGE_LOCK=/\b(\w+-)?(twenty|thirty|forty|fifty|sixty)[\w-]* (years|winters|summers|seasons)\b|\b\d{2} years\b|\b(retired|career|decades|lifetime|all (his|her) life|since before|old-timer|veteran|widowed|grown children|teenage (son|daughter)|kids in college|ever since|for years|long-serving|longtime|old hand|seen it all|has run|has worked .* since)\b/i;
   function youngerGroup(group,slot,premise){
     if(group==="child"||group==="teen")return group;
     if(/^(senior|mature)$/.test(group)&&/\b(nursing home|retire|elderly|senior center|hospice|old folks|widow|pension)/i.test(String(premise||"")))return group;
@@ -45580,7 +45580,7 @@ const ACG = (()=>{
   // health center front desk" is a clinic; "the break room of a bus depot" is
   // a bus depot. A phrase that is only a room, with no venue in it, is dropped
   // so another place (or the generic one) is used instead.
-  const V7_SUB_ROOM=/(front desk|reception desk|reception area|reception|break room|breakroom|locker room|changing room|green room|waiting room|waiting area|dressing room|storage room|store room|supply closet|back office|back room|staff room|staff kitchen|utility room|janitor'?s? closet|rest ?room|bathroom|stairwell|hallway|corridor|parking lot|parking lot|loading dock|lobby|foyer|mezzanine|counter|kitchen|basement|rooftop|roof|entrance|doorway|driveway|porch|stoop|aisle|balcony|cubicle|break area|ticket window|drive-through window)/i;
+  const V7_SUB_ROOM=/(guard booth|ticket booth|front desk|reception desk|reception area|reception|break room|breakroom|locker room|changing room|green room|waiting room|waiting area|dressing room|storage room|store room|supply closet|back office|back room|staff room|staff kitchen|utility room|janitor'?s? closet|rest ?room|bathroom|stairwell|hallway|corridor|parking lot|parking lot|loading dock|lobby|foyer|mezzanine|counter|kitchen|basement|rooftop|roof|entrance|doorway|driveway|porch|stoop|aisle|balcony|cubicle|break area|ticket window|drive-through window)/i;
   function v7MainPlace(phrase){
     let s=String(phrase||"").trim();
     if(!s)return "";
@@ -46271,6 +46271,7 @@ const ACG = (()=>{
      h.r26Co=[];
      h.r25Recent=newest.slice(0,12);
      h.r21Locs=newest.slice(0,6).map(c=>r21LocStyle(c.shoot_location)).filter(Boolean);
+     h.r28LocShapes=newest.slice(0,10).map(c=>r28LocShape(c.shoot_location)).filter(Boolean);
      h.r24LocHeads=newest.slice(0,6).map(c=>String(c.shoot_location||"").replace(/^(a|an)\s+/i,"").trim().split(/[\s,]+/)[0].toLowerCase()).filter(Boolean);
      h.r16Opens={};newest.slice(0,60).forEach(c=>(c.roles||[]).forEach(r=>{const k=r16OpenId(r&&r.description,r&&r.name);if(k)h.r16Opens[k]=(h.r16Opens[k]||0)+1;}));}
     h.v5=h.v5||{};h.v5.warmth={};
@@ -50265,7 +50266,11 @@ const ACG = (()=>{
     if(/^(NYC|New York City|Greater |North Jersey)|( area| and nearby)$/.test(s))return "loose";
     return /, [A-Z]{2}$/.test(s)&&s.split(",").length===2&&/^(The Bronx|Brooklyn|Queens|Manhattan|Staten Island)/.test(s)?"borough":"areaOnly";
   }
-  const R21_LOC_W={full:14,venueArea:14,areaVenue:12,areaOnly:16,borough:10,venueCity:12,tba:8,around:6,loose:8};
+  const R21_LOC_W={full:8,venueArea:7,areaVenue:7,areaOnly:9,borough:6,venueCity:7,tba:6,around:5,loose:6,onloc:6,dash:6,near:5,boroColon:5,hoodBoro:6,booked:5,inside:5,mostly:4,split:4,cityFirst:6,shooting:6,zip:3};
+  // Round 28: the STRUCTURE of a Where line ("X in X", "X, X (X)", "X — X"),
+  // with every content word masked, so no structure repeats within 10 listings.
+  function r28LocShape(v){const KEEP=/^(in|on|at|near|around|and|inside|mostly|interiors|exteriors|location|tba|shooting|address|shared|once|booked|exact|to|be|confirmed|the|area|nearby|sent|with|call|sheet)$/i;
+    return String(v||"").split(/(\s+|[,;:()—])/).map(t=>/^\s+$/.test(t)||t===""?"":/^[,;:()—]$/.test(t)?t:KEEP.test(t)?t.toLowerCase():"X").join(" ").replace(/(X\s*)+/g,"X ").replace(/\s+/g," ").trim();}
   // Owner 2026-11-19: Where lines all opened "A cabin…", "A sheriff's office…". No leading article,
   // and a new line may not open with the same first word as any of the last six listings.
   const r24NoArt=v=>{const t=String(v||"").replace(/^(a|an)\s+/i,"").replace(/\.$/,"");return t?t.charAt(0).toUpperCase()+t.slice(1):t;};
@@ -50283,6 +50288,7 @@ const ACG = (()=>{
     const areaLine=area.indexOf(",")>-1?area:/^the /.test(area)?`${area}, ${R21_REGION_IN[cityShort]?st:cityShort}`:`${area}, ${st}`;
     const inBig=nyc?`in ${boro||"New York City"}`:(R21_REGION_IN[cityShort]||`in ${cityShort}`);
     const fixed=/theater|stage|playhouse|studio|booth/i.test(venue)||item._creatorKind==="stage";
+    const stageNo=item._creatorKind==="stage";
     const days=+item._shootDays||1;
     const mk={
       full:()=>nyc?`${venue}, ${area}`:`${venue}, ${area} (${city})`,
@@ -50293,17 +50299,31 @@ const ACG = (()=>{
       venueCity:()=>`${venue} ${inBig}`,
       tba:()=>{const X=nyc&&boro?capFirst(boro):capFirst(areaLine);return pick([`Location TBA, ${X}`,`${X} (exact address sent with the call sheet)`,`${X}; exact location to be confirmed`]);},
       around:()=>days>=2?`In and around ${areaLine}`:null,
-      loose:()=>nyc?pick(["New York City","NYC"].concat(boro?[`${capFirst(boro)} and nearby`]:[])):pick(R21_LOOSE[cityShort]||[`${cityShort} area`])
+      loose:()=>nyc?pick(["New York City","NYC"].concat(boro?[`${capFirst(boro)} and nearby`]:[])):pick(R21_LOOSE[cityShort]||[`${cityShort} area`]),
+      // Round 28: more ways to say where, learned from how people write their own ads.
+      onloc:()=>`On location in ${area.replace(/, [A-Z]{2}$/,"")}`,
+      dash:()=>`${capFirst(areaLine)} — ${venueLow}`,
+      near:()=>nyc&&hood?`${venue} near ${hood}`:null,
+      boroColon:()=>nyc&&boro?`${capFirst(boro)}: ${venueLow}, ${hood}`:null,
+      hoodBoro:()=>nyc&&boro?`${hood} (${capFirst(boro)})`:null,
+      booked:()=>`${capFirst(areaLine)}; address shared once you're booked`,
+      inside:()=>fixed?null:`Inside ${v3Aa(venueLow).replace(/^an? /,m=>m)}, ${area.replace(/, [A-Z]{2}$/,"")}`,
+      mostly:()=>days>=2&&!fixed?`Mostly at ${v3Aa(venueLow)}, ${area.replace(/, [A-Z]{2}$/,"")}`:null,
+      split:()=>days>=3&&!fixed?`Interiors at ${v3Aa(venueLow)}; exteriors around ${hood||area}`:null,
+      cityFirst:()=>`${nyc?(boro?capFirst(boro):"New York"):cityShort} — ${venueLow} in ${hood||area}`,
+      shooting:()=>stageNo?null:`Shooting in ${hood||area}${nyc&&boro?`, ${capFirst(boro)}`:""}`,
+      zip:()=>nyc?`${capFirst(boro||"Manhattan")}, near the ${pick(["subway","train","ferry"])}`:null
     };
-    const recent=((res&&res._r21Locs)||[]).concat((h&&h.r21Locs)||[]).slice(0,2);
-    let pool=Object.keys(R21_LOC_W).filter(k=>recent.indexOf(k)<0&&(!fixed||/^(full|venueArea|areaVenue|venueCity)$/.test(k)));
-    if(!pool.length)pool=["full","venueArea","areaVenue","venueCity"];
-    for(let i=0;i<8;i++){
+    const recent=((res&&res._r21Locs)||[]).concat((h&&h.r21Locs)||[]).slice(0,10);
+    const recentShapes=((res&&res._r28LocShapes)||[]).concat((h&&h.r28LocShapes)||[]).slice(0,10);
+    let pool=Object.keys(R21_LOC_W).filter(k=>recent.indexOf(k)<0&&(!fixed||/^(full|venueArea|areaVenue|venueCity|dash|near|boroColon|booked|cityFirst)$/.test(k)));
+    if(!pool.length)pool=["full","venueArea","areaVenue","venueCity","dash","cityFirst"];
+    for(let i=0;i<20;i++){
       const total=pool.reduce((a,k)=>a+R21_LOC_W[k],0);let x=Math.random()*total,k=pool[0];
       for(const q of pool){x-=R21_LOC_W[q];if(x<=0){k=q;break;}}
       const v0=mk[k](),v=v0&&r24NoArt(v0);
       const heads=((res&&res._r24LocHeads)||[]).concat((h&&h.r24LocHeads)||[]).slice(0,6);
-      if(v&&heads.indexOf(r24Head(v))<0){item.shoot_location=v;item._r21Loc=k;if(res){(res._r21Locs=res._r21Locs||[]).unshift(k);(res._r24LocHeads=res._r24LocHeads||[]).unshift(r24Head(v));}return;}
+      if(v&&heads.indexOf(r24Head(v))<0&&recentShapes.indexOf(r28LocShape(v))<0){item.shoot_location=v;item._r21Loc=k;if(res){(res._r21Locs=res._r21Locs||[]).unshift(k);(res._r24LocHeads=res._r24LocHeads||[]).unshift(r24Head(v));(res._r28LocShapes=res._r28LocShapes||[]).unshift(r28LocShape(v));}return;}
       pool=pool.filter(q=>q!==k);if(!pool.length)break;
     }
     // Every style collided: keep the venue line but never with an article.
@@ -50394,6 +50414,14 @@ const ACG = (()=>{
         .replace(new RegExp("\\b("+esc(ref)+"),? (?:\\(|— )?"+esc(ref)+"\\)?,?","gi"),"$1");
       ["tagline","synopsis","schedule_note","submission_requirements"].forEach(f=>{if(item[f])item[f]=fix(item[f]);});
       roles.forEach(o=>{if(o!==r)o.description=fix(o.description);});
+      // Round 28 (owner): a part shown as "Lifeguard" never names itself in
+      // its own text ("Morgan deals with..."). Its own description says
+      // "the lifeguard" too, and identity lines that would now read
+      // "The lifeguard is the lifeguard" are dropped.
+      {const own=fix(String(r.description||"").replace(new RegExp("^"+esc(first.toUpperCase())+"(?: "+esc(String(full).split(/\s+/).slice(1).join(" ").toUpperCase())+")?:\\s*","")," "));
+       const L=esc(ref.replace(/^the\s+/i,""));
+       const kept=v3Sentences(own.trim()).filter(x=>!new RegExp("^(?:the |our )?"+L+" is (?:the |our )?"+L+"\\.?$","i").test(x)&&!new RegExp("^(?:meet|seeking|casting|this is|the part:|you'd play|needed:) (?:the )?"+L+"\\.?$","i").test(x));
+       r.description=kept.join(" ").replace(/^([a-z])/,m=>m.toUpperCase())||r.description;}
       used.add(lab.toLowerCase());
       r.name=lab;r._r24Label=true;changed++;
     });
@@ -50579,9 +50607,9 @@ const ACG = (()=>{
     pilot:["The pilot script is finished and the rest of the season is outlined.","This is the episode we take to buyers.","If the pilot goes, the main cast comes with it.","We're shooting one episode, properly, on a small budget.","The pilot is the proof; we know where the season goes."],
     stage:["This is its first full production.","The playwright will be in the room for the first week.","The space is small, so the acting has to be close and honest.","It's about ninety minutes with no intermission.","Reviewers are invited during the run.","The company has been making new work in this space for years.","Rehearsals are built around people with day jobs.","The script changed a lot in workshop and is now locked."]
   };
-  const R26_WANT=["We're open to every look and background; the read matters most.","We want actors who are good at listening.","No big credits needed, just honest work.","We'd love people who are comfortable with silence.","Newer actors are very welcome.","We care more about the person than the résumé.","If the story speaks to you, send a tape.","We want it to feel lived-in, not performed.","Bring yourself; we'll build the rest together.","Real ages and real faces, please.","Local actors are a big plus.","We're looking for people who like working as a team."];
+  const R26_WANT=["Newcomers are welcome; we'll guide you on set.","No experience needed for the smaller parts.","We want natural people more than polished ones.","Real faces and real voices, please; nothing too actor-y.","It's a friendly, low-pressure set.","If it sounds like your kind of thing, reach out.","We're open to every look and background; the read matters most.","We want actors who are good at listening.","No big credits needed, just honest work.","We'd love people who are comfortable with silence.","Newer actors are very welcome.","We care more about the person than the résumé.","If the story speaks to you, send a tape.","We want it to feel lived-in, not performed.","Bring yourself; we'll build the rest together.","Real ages and real faces, please.","Local actors are a big plus.","We're looking for people who like working as a team."];
   function r26Family(t){const x=String(t||"").trim();
-    const F=[["when",/^When /],["setin",/^Set in /],["caps",/^[A-Z0-9'’]{3,}(?: [A-Z0-9'’]{2,})* is /],["label",/^(Logline|Story|Premise|The pitch|In one line|What it's about|The setup|Short version|The idea):/],["genre",/^[A-Z][a-z-]+(?:, [a-z-]+)?(?: [a-z-]+)* (?:\d|short|student|feature|independent|play|web|TV|series|experimental|stage)[^:]*: /],["place",/^[A-Z][^.,]{2,30}, (present day|now|this winter|today|the \d{4}s)\./],["wrote",/^(Written and directed by|Directed by) /],["we",/^We're (making|shooting|staging) /],["heart",/^At the heart of /],["storyof",/^This is a story about how /],["seek",/^Seeking /],["now",/^Now casting /],["simple",/the idea is simple:/],["turnfirst",/ that's where .* is headed\./],["premiere",/^(World premiere|New play)/],["title",/^'[^']+' (follows|is|asks|tells)/],["casting",/^Casting /],["inthis",/^In '/]];
+    const F=[["when",/^When /],["setin",/^Set in /],["caps",/^[A-Z0-9'’]{3,}(?: [A-Z0-9'’]{2,})* is /],["label",/^(Logline|Story|Premise|The pitch|In one line|What it's about|The setup|Short version|The idea):/],["genre",/^[A-Z][a-z-]+(?:, [a-z-]+)?(?: [a-z-]+)* (?:\d|short|student|feature|independent|play|web|TV|series|experimental|stage)[^:]*: /],["place",/^[A-Z][^.,]{2,30}, (present day|now|this winter|today|the \d{4}s)\./],["wrote",/^(Written and directed by|Directed by) /],["we",/^We're (making|shooting|staging) /],["heart",/^At the heart of /],["storyof",/^This is a story about how /],["seek",/^Seeking /],["now",/^Now casting /],["simple",/the idea is simple:/],["turnfirst",/ that's where .* is headed\./],["premiere",/^(World premiere|New play)/],["hey",/^Hey everyone!/],["hi",/^Hi! I'm /],["hello",/^Hello! We're casting/],["pipe",/^Casting call \| /],["plain",/^It's a pretty simple story:/],["lookfor",/^Looking for actors for /],["selffunded",/self-funded .* here's the idea:/],["title",/^'[^']+' (follows|is|asks|tells)/],["casting",/^Casting /],["inthis",/^In '/]];
     for(const [k,re] of F)if(re.test(x))return k;return "";}
   function r26Synopsis(item,h,res){
     const X=item._r26;if(!X||!X.seed)return;
@@ -50624,7 +50652,16 @@ const ACG = (()=>{
       seek:()=>nAct>=2&&nAct<=12?[`Seeking ${v3Words(nAct)} actors for ${T?T+", ":""}${art} in which ${p}.`]:null,
       now:()=>T?[`Now casting ${T}, ${art}${where}.`,`${P}.`]:null,
       simple:()=>[`${T?T+" is":"It's"} ${art}, and the idea is simple: ${p}.`],
-      premiere:()=>stage&&T?[`${pick(["World premiere","New play"])}: ${T}, ${art} in which ${p}.`]:null
+      premiere:()=>stage&&T?[`${pick(["World premiere","New play"])}: ${T}, ${art} in which ${p}.`]:null,
+      // Round 28: voices people use in their own ads (studied on a board of
+      // ~280 self-posted New York gigs). Written fresh, nothing copied.
+      hey:()=>[`Hey everyone! We're a small group of ${stage?"theater makers":"filmmakers"} in ${town||"New York"} putting together ${art}${T?` called ${T}`:""}.`,`${P}.`],
+      hi:()=>dir?[`Hi! I'm ${dir.trim()}, ${pick(["a director","a writer-director","an independent filmmaker"]).replace("filmmaker",stage?"theater maker":"filmmaker")} ${town?`based in ${town}`:"based in New York"}, casting ${T?T+", ":""}${art}.`,`The story: ${p}.`]:null,
+      hello:()=>[`Hello! We're casting ${art}${where}, and here's what it's about: ${p}.`],
+      pipe:()=>nAct>=1&&nAct<=8?[`Casting call | ${capFirst(stripArticle(lenPh))} | ${capFirst(v3Words(nAct))} speaking ${nAct===1?"part":"parts"}.`,`${P}.`]:null,
+      plain:()=>[`It's a pretty simple story: ${p}.`].concat(T?[`${T} is ${art}${where}.`]:[]),
+      lookfor:()=>[`Looking for actors for ${T?T+", ":""}${art}${where}.`,`${P}.`],
+      selffunded:()=>X.paid===false||Math.random()<0.5?[`${T?T+" is":"This is"} a small, self-funded ${stripArticle(lenPh)}, and here's the idea: ${p}.`]:null
     };
     const recentF=((res&&res._r26Fam)||[]).concat((h&&h.r26Fam)||[]).slice(0,14);
     const keys=cgShuffle(Object.keys(fams));
@@ -50701,7 +50738,7 @@ const ACG = (()=>{
       if(!rr.length){
         mode=r26Weighted({terse:0.45,line:0.4,warm:0.15},r26Ban(recentMode.filter(m=>/^u/.test(m)).map(m=>m.slice(1)),3));
         const perks=pickN(1,rand(1,3,1));
-        const lead=pick(mode==="terse"?["No pay.","Unpaid.","No fee.","Not paid.","Unpaid project."]:["This one is unpaid","It's unpaid","There's no fee on this one","Nobody on this is paid, crew included","It's a no-budget project, so it's unpaid","Unpaid, but we take care of people"]);
+        const lead=pick(mode==="terse"?["No pay.","Unpaid.","No fee.","Not paid.","Unpaid project.","Unpaid / volunteer.","Passion project, no pay."]:["This one is unpaid","It's unpaid","There's no fee on this one","Nobody on this is paid, crew included","It's a no-budget project, so it's unpaid","Unpaid, but we take care of people","It's a passion project, so there's no pay","No pay for this one, being upfront","We're self-funding this, so it's unpaid"]);
         if(mode==="terse")out=`${lead} ${capFirst(perks.join(pick([", "," / ","; "])))}.`;
         else if(mode==="line")out=`${lead}${pick([". You get ",": you get ","; what you get is ",". In return: "])}${joinL(perks)}.`;
         else out=`${lead}. ${pick(["We'll make sure you have","Everyone gets","We promise","What we can offer:"])} ${joinL(perks)}${pick(["."," — and our thanks.",", and a real thank-you."])}`;
@@ -50716,7 +50753,8 @@ const ACG = (()=>{
         if(mode==="blank"){out="";break;}
         if(mode==="terse"){
           const xs=nouns(rand(0,2,1));
-          out=pick([`${R}${xs.length?". "+capFirst(xs.join(", "))+".":"."}`,`${R}${xs.length?" + "+xs.join(" + "):""}.`,`Day rate: ${R}${xs.length?"; "+xs.join("; "):""}.`.replace("Day rate","Rate"),`See roles. ${low===top?A:`${L} to ${A}`}${per}${xs.length?", "+xs[0]:""}.`,`${R}, ${pick(["guaranteed","non-negotiable","firm","per performer"])}${xs.length?". "+capFirst(xs[0])+".":"."}`]);
+          const days1=Math.max(...(item._roles||[]).map(r=>+r.est_days||1))<=1;
+          out=pick([`${R}${xs.length?". "+capFirst(xs.join(", "))+".":"."}`,`${R}, paid by ${pick(["Venmo or Zelle","direct deposit","check"])} within ${pick(["7","10","14","15"])} days${xs.length?", plus "+xs[0]:""}.`,`Pay: ${R} (about ${pick(["8","9","10"])} hours a day)${xs.length?". "+capFirst(xs[0])+".":"."}`,`${R} + ${(xs.length?xs:["meals"]).join(" + ")}.`,days1?`Paid same day: ${A}${low===top?"":" for the biggest part"}.`:`${R}, paid the Friday after wrap.`,`${R}${xs.length?" + "+xs.join(" + "):""}.`,`Day rate: ${R}${xs.length?"; "+xs.join("; "):""}.`.replace("Day rate","Rate"),`See roles. ${low===top?A:`${L} to ${A}`}${per}${xs.length?", "+xs[0]:""}.`,`${R}, ${pick(["guaranteed","non-negotiable","firm","per performer"])}${xs.length?". "+capFirst(xs[0])+".":"."}`]);
         }else if(mode==="line"){
           const xs=nouns(rand(1,2,1));
           const head=low===top?pick([`Everyone gets ${A}${per}`,`It pays ${A}${per} for every part`,`${A}${per} across the board`,`The rate is ${A}${per}, same for everyone`]):pick([`The leads get ${A}${per} and smaller parts ${L}`,`Pay goes from ${L} up to ${A}${per}`,`${A}${per} for the biggest parts, ${L} for the smallest`,`Somewhere between ${L} and ${A}${per}, depending on the part`,`Rates are set by part: up to ${A}${per}`]);
@@ -50770,12 +50808,12 @@ const ACG = (()=>{
       const m=plan.mode||"consecutive";
       const span=dated?Math.round((ed-sd)/864e5)+1:0;
       const patt={
-        one:[`One day${sw?`, a ${sw}`:""}.`,`It's a one-day shoot.`,`Single shoot day${sw?` (${sw})`:""}.`,`Just one day, start to wrap.`],
+        one:[`One day${sw?`, a ${sw}`:""}.`,`It's a one-day shoot.`,`Single shoot day${sw?` (${sw})`:""}.`,`Just one day, start to wrap.`,`When: ${sw||"one day"}, roughly ${pick(["9 AM to 5 PM","10 AM to 6 PM","8 AM to 4 PM"])}, with breaks.`,`Duration: 1 day (about ${pick(["6","8","10"])} hours).`,`${sw?sw+", ":""}one day only, around ${pick(["six","eight","ten"])} hours.`],
         flex1:[`One day; we'll lock which one with you.`,`A single day inside the window, set once you're booked.`],
         saturdays:[`Saturdays only.`,`${capFirst(W(D))} Saturdays.`,`We only shoot on Saturdays.`],
         weekends:[`Weekends only.`,`Saturdays and Sundays.`,`${capFirst(W(D))} weekend days.`,`It's a weekend shoot.`],
         spread:[`${capFirst(W(D))} days, not in a row.`,`The days are spread out across the window.`,`${capFirst(W(D))} separate days with breaks between them.`],
-        consecutive:[exact?`${capFirst(W(D))} days in a row.`:`Back-to-back days.`,exact?`${capFirst(W(D))} straight days${sw?`, ${sw} to ${ew}`:""}.`:`${sw?`${sw} to ${ew}, straight through.`:"Straight through, no gaps."}`,exact?`${capFirst(W(D))}-day shoot.`:`One block, no days off in the middle.`],
+        consecutive:[exact?`Duration: ${D} days in a row, about ${pick(["8","10"])} hours each.`:`Several days in a row, about ten hours each.`,exact?`${capFirst(W(D))} days in a row.`:`Back-to-back days.`,exact?`${capFirst(W(D))} straight days${sw?`, ${sw} to ${ew}`:""}.`:`${sw?`${sw} to ${ew}, straight through.`:"Straight through, no gaps."}`,exact?`${capFirst(W(D))}-day shoot.`:`One block, no days off in the middle.`],
         weekdays:[`Weekdays only.`,`Monday to Friday, no weekends.`,`Monday-to-Friday weeks${span>9?`, roughly ${W(Math.max(2,Math.round(span/7)))} in all`:""}.`],
         sixday:[`Six-day weeks, Sundays off.`,`We shoot six days a week.`,`Sundays are off; every other day is a shoot day.`]
       }[m]||[`${capFirst(W(D))} days.`];
