@@ -46264,6 +46264,8 @@ const ACG = (()=>{
      h.r30Open={pay:newest.slice(0,10).map(c=>r30Head(c.pay)).filter(Boolean),sched:newest.slice(0,10).map(c=>r30Head(c.schedule_note)).filter(Boolean),sub:newest.slice(0,10).map(c=>r30Head(c.submission_requirements)).filter(Boolean)};
      h.r30Sub=newest.slice(0,40).map(c=>c.submission_requirements||"");
      h.r30G=[];newest.slice(0,40).forEach(c=>{const MK=r30Mask(c.roles);[c.synopsis,c.schedule_note,c.pay,c.submission_requirements].concat((c.roles||[]).map(r=>r&&r.description)).forEach(t=>r30Grams(t,MK).forEach(g=>{if(!R30_GRAM_OK.test(g))h.r30G.push(g);}));});
+     h.r33Tier=newest.slice(0,2).map(c=>{const ps=(c.roles||[]).map(r=>String(r&&r.pay||""));return ps.every(x=>/^unpaid/i.test(x))?"unpaid":ps.every(x=>/^deferred/i.test(x))?"deferred":ps.some(x=>/stipend/i.test(x))?"stipend":ps.some(x=>/not specified/i.test(x))?"ns":"low";});
+     h.r33Held=newest.slice(0,3).map(c=>/(keeping the story|plot details stay|give the plot away|callback sides|story when we talk|script goes to the actors|share the script with the shortlist|twist we're keeping|story with them)/i.test(String(c.synopsis||"")));
      h.r29PaySk=[];newest.slice(0,40).forEach(c=>v3Sentences(c.pay).forEach(x=>h.r29PaySk.push(r26Sk(x))));
      h.r29Tops=newest.slice(0,12).map(c=>Math.max(0,...((c.roles||[]).map(r=>{const x=parseRoleRate(r&&r.pay);return x?x.rate_amount:0;})))).filter(Boolean);
      h.r29Blank=newest.slice(0,3).map(c=>!c.pay);
@@ -50929,7 +50931,8 @@ const ACG = (()=>{
     if(!rows.length)return;
     const top=Math.max(...rows.map(o=>o.x.rate_amount));
     const flat=rows[0].x.rate_unit==="flat";
-    const [lo,hi]=R29_TOP[r29Kind(type,stage)];
+    if(item._r33Tier==="stipend")return;
+    const [lo,hi]=item._r33Range||R29_TOP[r29Kind(type,stage)];
     const days=Math.max(1,...(item._roles||[]).map(r=>+r.est_days||1));
     const recent=new Set(((res&&res._r29Tops)||[]).concat((h&&h.r29Tops)||[]).slice(0,12));
     let target=0;
@@ -50958,6 +50961,9 @@ const ACG = (()=>{
     const stage=item._creatorKind==="stage";
     const roles=(item._roles||[]).filter(r=>!/background/i.test(r.role_type||""));
     const rr=roles.map(r=>({r,x:parseRoleRate(r.pay),ep:/episode/i.test(r.pay||"")})).filter(o=>o.x);
+    if(!rr.length&&roles.length&&roles.every(r=>/^deferred/i.test(r.pay||""))){
+      for(let i=0;i<30;i++){const t=`${pick(R33_DEFERRED)}. ${capFirst(pick(["meals","lunch","credit","footage for your reel","a copy of the film"]))} ${pick(["now","in the meantime","on the day","either way"])}.`;if(v3Sentences(t).every(z=>!new Set(((res&&res._r29PaySk)||[]).concat((h&&h.r29PaySk)||[])).has(r26Sk(z)))){item.pay=t;if(res)res._r29PaySk=(res._r29PaySk||[]).concat(v3Sentences(t).map(r26Sk));return;}}
+      item.pay=pick(R33_DEFERRED)+".";return;}
     if(!rr.length&&roles.some(r=>/not specified|tbd|tbc|negotiable/i.test(r.pay||""))){item.pay=pick(["Rate to be confirmed with the client.","Pay gets set once the client signs off.","The rate comes with the booking.","Pay is still being finalized.","Fee to be confirmed before you're booked.",null]);return;}
     const usedSk=new Set(((res&&res._r29PaySk)||[]).concat((h&&h.r29PaySk)||[]));
     const gHist=new Set(((h&&h.r30G)||[]).concat((res&&res._r30G)||[]));
@@ -50992,7 +50998,8 @@ const ACG = (()=>{
       // Blank happens: the parts list their own rates.
       const recentBlank=((res&&res._r29Blank)||[]).concat((h&&h.r29Blank)||[]).slice(0,3);
       if(!sag&&recentBlank.indexOf(true)<0&&Math.random()<0.2){item.pay=null;if(res)(res._r29Blank=res._r29Blank||[]).unshift(true);return;}
-      const heads=same?[
+      const stip=item._r33Tier==="stipend";
+      const heads=stip?[p=>`Small stipend: ${A}${same?"":" for leads, "+L+" for other parts"}.`,p=>`${A} stipend${same?" per performer":" (leads); "+L+" for the rest"}.`,p=>`Stipend only: ${A}${same?"":" to "+L}.`,p=>`There's a ${A} stipend${same?"":" for the leads"} to cover the day.`,p=>`${A} to cover travel and time${same?"":"; "+L+" for smaller parts"}.`,p=>`It's mostly a passion project; there's a ${A} stipend${same?"":" at most"}.`]:same?[
         p=>`${A}${p}.`,p=>`${A}${p} for everyone.`,p=>`Everyone gets ${A}${p}.`,p=>`${A}${p}, same for every part.`,p=>`Flat across the cast: ${A}${p}.`,p=>`One rate: ${A}${p}.`,p=>`Each part pays ${A}${p}.`,p=>`It's ${A}${p}, whatever the part.`,p=>`${A}${p} per performer.`,p=>`Rate is ${A}${p}.`,p=>`We're paying ${A}${p}.`,p=>`${A}${p}, guaranteed once you're booked.`]
       :[
         p=>`${L}–${A}${p}.`,p=>`${L} to ${A}${p}, by part.`,p=>`Leads ${A}${p}; other parts ${L}.`,p=>`Up to ${A}${p} (leads), ${L} for the rest.`,p=>`From ${L} up to ${A}${p}.`,p=>`Biggest parts ${A}${p}, smallest ${L}.`,p=>`${A}${p} at the top, ${L} at the bottom.`,p=>`Pay by part, ${L}–${A}${p}.`,p=>`Between ${L} and ${A}${p}, depending on the role.`,p=>`Rates are listed on each part: ${L} to ${A}${p}.`,p=>`Lead rate ${A}${p}; supporting ${L}.`,p=>`It ranges ${L}–${A}${p}.`];
@@ -51079,7 +51086,7 @@ const ACG = (()=>{
       // Round 32: the sentence that says what an ad shows is the point of the summary.
       if(/^(The (spot|ad|video|shoot|campaign|recording|event|series|piece|film) (shows|centers on|is about|follows)|It's (a|an) |It shows |The idea:|Synopsis:)/.test(s))return false;
       return r30Grams(s,MK).some(g=>!R30_GRAM_OK.test(g)&&hist.has(g)&&g.split(" ").filter(x=>x==="n").length<3);};
-    const trim=(text,keepFirst,minLeft)=>{const S=v3Sentences(text);if(S.length<=minLeft)return text;const out=[];S.forEach((x,i)=>{if((keepFirst&&i===0)||!stale(x)||out.length+(S.length-i)<=minLeft)out.push(x);});return out.join(" ");};
+    const trim=(text,keepFirst,minLeft)=>{const S=v3Sentences(text);if(S.length<=minLeft)return text;const out=[];const short0=S[0]&&S[0].split(/\s+/).length<=3;S.forEach((x,i)=>{if((keepFirst&&(i===0||(i===1&&short0)))||!stale(x)||out.length+(S.length-i)<=minLeft)out.push(x);});return out.join(" ");};
     item.synopsis=trim(item.synopsis,true,Math.min(2,v3Sentences(item.synopsis).length));
     (item._roles||[]).forEach(r=>{if(!/background/i.test(r.role_type||""))r.description=trim(r.description,true,2);});
     if(item.schedule_note)item.schedule_note=trim(item.schedule_note,false,0)||null;
@@ -51087,9 +51094,85 @@ const ACG = (()=>{
     const add=[item.synopsis,item.schedule_note,item.pay,item.submission_requirements].concat((item._roles||[]).map(r=>r.description));
     if(res){res._r30G=res._r30G||[];add.forEach(t=>r30Grams(t,MK).forEach(g=>{if(!R30_GRAM_OK.test(g))res._r30G.push(g);}));}
   }
+  // ── Round 33 (2026-11-22): owner — non-union work mostly does not pay a day
+  // rate. It offers nothing, a small stipend, deferred pay, or copy / credit /
+  // meals / footage. And most creators don't spell out their story. ──────────
+  const R33_TIERS={
+    student:{unpaid:0.62,stipend:0.18,low:0.12,deferred:0,ns:0.08},
+    short:{unpaid:0.45,deferred:0.12,stipend:0.15,low:0.22,ns:0.06},
+    feature:{unpaid:0.28,deferred:0.17,stipend:0.1,low:0.35,ns:0.1},
+    stage:{unpaid:0.45,stipend:0.35,low:0.15,ns:0.05},
+    audio:{unpaid:0.3,stipend:0.2,low:0.4,ns:0.1},
+    ad:{unpaid:0.12,stipend:0.1,low:0.48,mid:0.25,ns:0.05}
+  };
+  const R33_LOW={student:[50,100],short:[50,150],feature:[75,200],stage:[100,250],audio:[75,200],ad:[100,250]};
+  function r33PayTier(item,h,res){
+    if(!/^Non-Union$/i.test(String(item.union_status||"")))return;
+    const type=String(item.type||""),stage=item._creatorKind==="stage";
+    const kind=r29Kind(type,stage);
+    const W=R33_TIERS[kind];
+    const recent=((res&&res._r33Tier)||[]).concat((h&&h.r33Tier)||[]).slice(0,2);
+    const ban=new Set(recent.length===2&&recent[0]===recent[1]?[recent[0]]:[]);
+    const tier=r26Weighted(W,ban);
+    item._r33Tier=tier;if(res)(res._r33Tier=res._r33Tier||[]).unshift(tier);
+    const roles=item._roles||[];
+    const setPay=(r,txt,amt,unit)=>{r.pay=txt;if("rate_amount" in r)r.rate_amount=amt==null?null:amt;if("rate_unit" in r)r.rate_unit=unit||null;};
+    const lead=r=>/^(Lead|Principal|Host|Models)$/i.test(r.role_type||"");
+    if(tier==="unpaid"){roles.forEach(r=>setPay(r,"Unpaid",null,null));item.pay=null;return;}
+    if(tier==="deferred"){roles.forEach(r=>setPay(r,"Deferred",null,null));item.pay=null;return;}
+    if(tier==="ns"){roles.forEach(r=>setPay(r,"Not specified",null,null));item.pay=null;return;}
+    if(tier==="stipend"){
+      const base=stage?pick([100,150,200,250,300]):pick([25,40,50,60,75,100]);
+      roles.forEach(r=>{const v=/background/i.test(r.role_type||"")?Math.max(20,Math.round(base*0.5/5)*5):lead(r)?base:Math.max(20,Math.round(base*0.8/5)*5);setPay(r,`$${v} stipend`,v,"flat");});
+      item.pay=null;return;
+    }
+    // low / mid: a believable day (or week, on stage) rate.
+    item._r33Range=tier==="mid"?[250,400]:R33_LOW[kind];
+  }
+  const R33_DEFERRED=["Deferred pay: everyone is paid from the first sale, if it sells","Pay is deferred until the film finds a buyer","Deferred, with a share of any sale split across the cast","No money up front; deferred pay comes out of any distribution deal","Deferred pay, written into a short agreement before the shoot"];
+  // A summary that keeps the plot back, the way many creators post.
+  const R33_HOLD=["The full story goes out with callback sides.","We'd rather not give the plot away here.","More about the story when we talk.","The script goes to the actors we call back.","Plot details stay quiet until callbacks.","We'll share the script with the shortlist.","There's a twist we're keeping to ourselves for now.","Sides come with the callback, and the story with them."];
+  function r33Withhold(item,h,res){
+    const X=item._r26;if(!X||!X.seed||X.revived)return;
+    const type=String(item.type||"");
+    if(V7_FN.test(type)||r8Kind(type)!=="narr")return;
+    const recent=((res&&res._r33Held)||[]).concat((h&&h.r33Held)||[]).slice(0,3);
+    if(recent.filter(Boolean).length>=2||Math.random()>0.42){if(res)(res._r33Held=res._r33Held||[]).unshift(false);return;}
+    const usedSk=new Set(((res&&res._r26SynSk)||[]).concat((h&&h.r26SynSk)||[]));
+    const fresh=x=>x&&!usedSk.has(r26Sk(x));
+    const roles=(item._roles||[]).filter(r=>/^(Lead|Supporting)$/.test(r.role_type||""));
+    const slot=r=>stripArticle(String(r&&r._slot||"")).toLowerCase();
+    const okSlot=x=>x&&x.split(/\s+/).length<=3&&!/['’]|\b(who|that|one|other)\b/.test(x);
+    const a=roles.map(slot).filter(okSlot);
+    const aa=w=>((/^[aeio]/i.test(w)||/^u(?!ni|se|su)/i.test(w))?"an ":"a ")+w;
+    const lenPh=String(X.lenPh||v5Noun(type)||"film").trim(),noun=stripArticle(lenPh);
+    const G=(v3Genre(X.seed)||"").split(" ").slice(-1)[0].toLowerCase();
+    const adj=pick((R26_GENRE_ADJ[G]||["Small","Quiet"]));
+    const venue=stripArticle(String(((X.seed.w||[])[0])||"").replace(/\s+(on|at|in) (a|an|the) (\w+ )?(night|morning|evening|afternoon|day)$/i,""));
+    const bare=item._r8Bare?`'${item._r8Bare}'`:"";
+    const tone=cgShuffle(((R26_TONE[G]||[]).concat(R21_TONE[G]||[])).slice()).find(fresh);
+    const hold=cgShuffle(R33_HOLD.slice()).find(fresh);
+    const shapes=[
+      ()=>a.length>=2?[`${adj} ${noun} about ${aa(a[0])} and ${aa(a[1])}.`,hold]:null,
+      ()=>a.length>=1&&venue?[`${bare?bare+" is":"It's"} ${v7Art("a "+noun)} set mostly in ${aa(venue)}, built around ${aa(a[0])}.`,tone||hold]:null,
+      ()=>[`${bare?bare+" is":"This is"} ${v7Art("a "+adj.toLowerCase()+" "+noun)}${a.length>=2?` with ${v3Words(Math.min(a.length,4))} main parts`:""}.`,hold,tone].filter(Boolean),
+      ()=>venue?[`One ${venue.split(/\s+/).slice(-1)[0]}, ${v3Words(Math.max(2,Math.min(a.length,4)))} people, and something none of them will say out loud.`,hold]:null,
+      ()=>[`We're keeping the story close for now.`,`What we can say: it's ${v7Art("a "+noun)}${a.length?` centered on ${aa(a[0])}`:""}${tone?`, and ${v5LowerFirst(tone).replace(/\.$/,"")}`:""}.`]
+    ];
+    const order=cgShuffle(shapes.map((f,i)=>i));
+    for(const i of order){
+      const S=shapes[i]();if(!S)continue;
+      const t=S.filter(Boolean).join(" ").replace(/\s{2,}/g," ").trim();
+      if(/^(A|An)\s/.test(t)||!v3Sentences(t).every(fresh))continue;
+      item.synopsis=t;item._r27Sig=`held${i}:${Date.now().toString(36).slice(-4)}`;item._r33Held=true;
+      if(res){(res._r33Held=res._r33Held||[]).unshift(true);res._r26SynSk=(res._r26SynSk||[]).concat(v3Sentences(t).map(r26Sk));}
+      return;
+    }
+    if(res)(res._r33Held=res._r33Held||[]).unshift(false);
+  }
   function r26Voice(item,h,res){
-    try{r27FitPadding(item);r27CapPay(item);r29Amounts(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('r27 '+e);}
-    try{r26Synopsis(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('syn '+e);}
+    try{r27FitPadding(item);r33PayTier(item,h,res);r27CapPay(item);r29Amounts(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('r27 '+e);}
+    try{r26Synopsis(item,h,res);r33Withhold(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('syn '+e);}
     try{r29Pay(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('pay '+e);}
     try{r26Sched(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('sched '+e);}
     try{r26Company(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('co '+e);}
