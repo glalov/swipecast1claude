@@ -45999,6 +45999,14 @@ const ACG = (()=>{
      h.r22Unpaid=new Set(newest.slice(0,14).map(c=>r22UnpaidKey(c.pay)).filter(Boolean));
      h.r21Fmts=newest.slice(0,6).map(c=>r21FmtOf(c.roles,c.type)).filter(Boolean);
      h.r25Tags=newest.slice(0,4).map(c=>c.tagline).filter(Boolean);
+     h.r26Fam=newest.slice(0,14).map(c=>r26Family(c.synopsis)).filter(Boolean);
+     h.r26Len=newest.slice(0,6).map(c=>r26LenOf(c.synopsis));
+     h.r26SynSk=[];newest.slice(0,30).forEach(c=>v3Sentences(c.synopsis).slice(1).forEach(x=>h.r26SynSk.push(r26Sk(x))));
+     h.r26PaySk=newest.slice(0,80).map(c=>c.pay?r26Sk(c.pay):"").filter(Boolean);
+     h.r26PayMode=newest.slice(0,6).map(c=>!c.pay?"blank":/^(No pay|Unpaid|No fee|Not paid)/.test(c.pay)?"uterse":c.pay.length<60?"terse":"line");
+     h.r26SchedMode=newest.slice(0,6).map(c=>!c.schedule_note?"none":r26LenOf(c.schedule_note));
+     h.r26SchedSk=[];newest.slice(0,40).forEach(c=>v3Sentences(c.schedule_note).forEach(x=>h.r26SchedSk.push(r26Sk(x))));
+     h.r26Co=[];
      h.r25Recent=newest.slice(0,12);
      h.r21Locs=newest.slice(0,6).map(c=>r21LocStyle(c.shoot_location)).filter(Boolean);
      h.r24LocHeads=newest.slice(0,6).map(c=>String(c.shoot_location||"").replace(/^(a|an)\s+/i,"").trim().split(/[\s,]+/)[0].toLowerCase()).filter(Boolean);
@@ -50062,6 +50070,7 @@ const ACG = (()=>{
     }
     r21Where(item,h,res);
     r24Labels(item,res);
+    r26Voice(item,h,res);
     r25Teach(item,h,res);
     item._lines=splitLines(item.synopsis).concat([item.tagline],roles.map(r=>r.description)).filter(Boolean);
   }
@@ -50252,7 +50261,7 @@ const ACG = (()=>{
      if(drop>-1){ss.splice(drop,1);item.schedule_note=ss.join(" ");}
      else if(trim>-1){const m=ss[trim].match(/^([^;,]*\bTB[DCA]\b)/);if(m){ss[trim]=m[1].replace(/[.\s]+$/,"")+".";item.schedule_note=ss.join(" ");}}}
     // 12. A schedule note that says nothing about the schedule ("Any questions are always fine once you're booked.") gets the window.
-    if(!R25_SKED.test(String(item.schedule_note||""))&&item.shoot_start&&item.shoot_end&&!stage){
+    if(item._r26NoSched===undefined&&!R25_SKED.test(String(item.schedule_note||""))&&item.shoot_start&&item.shoot_end&&!stage){
       const a=new Date(item.shoot_start+"T12:00:00Z"),b=new Date(item.shoot_end+"T12:00:00Z");
       const n=Math.round((b-a)/864e5)+1;
       if(n>=1&&n<=60){
@@ -50268,6 +50277,269 @@ const ACG = (()=>{
       (res._r25Syn=res._r25Syn||[]).unshift(item.synopsis);
       (res._r25Sub=res._r25Sub||[]).unshift(item.submission_requirements||"");
     }
+  }
+  // ── Round 26 (2026-11-22): owner's request after reading the board ──────
+  // "Summaries are all the same length and start the same way; the pay box
+  // reads the same every time; schedule notes are always the same style; not
+  // everyone has a company." Studied ~500 live New York breakdowns: story
+  // text runs from nothing to two long paragraphs, the pay line is usually a
+  // terse fragment ("$150/day. Copy, credit."), notes range from a single
+  // line to a long logistics paragraph, and most shorts and indie features
+  // list no company at all (student films list the program). This pass runs
+  // last (r21Final), rebuilds those four fields from the listing's own facts,
+  // and keeps every shape out of recent listings. Nothing here is copied from
+  // any breakdown; it is written fresh in the generator's plain style.
+  const R26_LEN_W={tiny:0.14,short:0.22,mid:0.26,long:0.24,xl:0.14};
+  function r26LenOf(t){const S=v3Sentences(t);const w=String(t||"").split(/\s+/).filter(Boolean).length;
+    return S.length<=1?(w<=26?"tiny":"short"):S.length===2?"short":S.length<=4?"mid":S.length<=7?"long":"xl";}
+  function r26Weighted(W,ban){const ks=Object.keys(W).filter(k=>!ban.has(k));const pool=ks.length?ks:Object.keys(W);const tot=pool.reduce((a,k)=>a+W[k],0);let x=Math.random()*tot;for(const k of pool){x-=W[k];if(x<=0)return k;}return pool[0];}
+  function r26Ban(recent,maxIn5){const ban=new Set();if(recent[0])ban.add(recent[0]);const c={};recent.slice(0,5).forEach(k=>{c[k]=(c[k]||0)+1;});Object.keys(c).forEach(k=>{if(c[k]>=maxIn5)ban.add(k);});return ban;}
+  // A sentence with its numbers and names taken out, for "same shape" checks.
+  function r26Sk(s){return clean(String(s).replace(/\$[\d,.]+/g," amt ").replace(/\b[A-Z][a-z]+\b/g,m=>/^(The|A|An|We|Our|It|This|No|Not|Unpaid|One|Two|Three|Plan|Shoot|Dates|Rehearsals|Calls|Every|Most|All|You|Pay|Day|Flat|See|Each|If|Expect|Weekends|Weekdays|Evenings|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$/.test(m)?m:" nm ")).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\b/g,"#");}
+  const R26_GENRE_ADJ={thriller:["Slow-burn","Tense, small-scale","Quiet, tense","Character-driven"],drama:["Quiet","Small, honest","Character-driven","Low-key"],comedy:["Dry","Offbeat","Deadpan","Warm, odd little"],horror:["Slow, creeping","Low-key","Small-scale"],"sci-fi":["Grounded, low-budget","Small-scale","Lo-fi"],romance:["Tender","Bittersweet","Gentle"],crime:["Street-level","Gritty, small-scale"],mystery:["Small-town","Low-key"],family:["Warm","Gentle"],period:["Small-scale period","Quiet period"],western:["Dusty, small-scale"],sports:["Scrappy"],musical:["Small, scrappy"],fantasy:["Low-budget","Small-scale"]};
+  const R26_TONE={
+    thriller:["Most of the tension sits in what nobody says.","It's tense but never loud.","The scares are small and very real.","Nobody in it is a hero; they're just stuck.","It plays almost in real time.","Think tight rooms and long looks."],
+    drama:["It's quiet, and the acting has to be small.","Nothing big happens on screen; everything happens to the people.","It's sad in places and funny in others.","Nobody gives a speech.","The camera stays close and patient.","It should feel like real life, slightly turned up."],
+    comedy:["The jokes come from people taking themselves seriously.","It's funny without anyone winking at the camera.","Think awkward silences more than punchlines.","The humor is gentle and a little sad.","Everyone in it is sincere, which is why it's funny.","It moves fast and lands softly."],
+    horror:["Very little blood; a lot of dread.","The fear builds slowly.","It's scary because it's ordinary.","What you don't see does most of the work."],
+    "sci-fi":["The strange part is played completely straight.","No big effects; the idea does the work.","It feels like the real world with one thing wrong."],
+    romance:["The romance is quiet and earned.","It's warm, a little awkward and very human."],
+    crime:["It's a crime story about the people at the edges.","Almost no violence on screen; the pressure is the point."],
+    mystery:["The mystery is small, human and solvable."],
+    family:["It's a family story with real edges."],
+    period:["The period is in the details, not the speeches."]
+  };
+  const R26_ABOUT={
+    short:["The script is done and we're casting now.","Most of it is shot in one location.","It's planned for the festival circuit next year.","The director also wrote it and will edit it.","We rehearse on video before the shoot.","Small crew, real care, no shortcuts with actors.","This is a short version of a feature the team is writing.","The crew has made two shorts together.","We'd rather do three good takes than ten rushed ones.","There's room to play once we're on set.","It's the director's first film outside school.","We'll share the finished cut with everyone in it."],
+    student:["It's a thesis film with a faculty advisor watching over it.","The crew is all students, with a teacher on call.","The school covers equipment and insurance.","This is a second-year project and it screens at the spring showcase.","The director has worked with outside actors before and keeps in touch about cuts.","Everything is planned around actors' days, not the gear.","We keep days to twelve hours or less.","You'll get a copy of the finished film."],
+    feature:["The money is raised and the shoot is scheduled.","It's a first feature from a team with several shorts behind it.","The plan is festivals first, then a sale.","Most of the crew worked on the director's last film.","It's built around a handful of locations and a tight cast.","The script went through two rounds of readings.","The director's last film found distribution.","Days are planned around the actors as much as possible."],
+    series:["All of it is written.","We shoot a few episodes at a time.","The plan is to release it online and pitch a second season.","Episodes are short and the days are kept humane.","Scripts go out once you're cast.","It's made to be watched on a phone.","The team has made a series together before."],
+    stage:["This is its first full production.","The playwright will be in the room for the first week.","The space is small, so the acting has to be close and honest.","It's about ninety minutes with no intermission.","Reviewers are invited during the run.","The company has been making new work in this space for years.","Rehearsals are built around people with day jobs.","The script changed a lot in workshop and is now locked."]
+  };
+  const R26_WANT=["We're open to every look and background; the read matters most.","We want actors who are good at listening.","No big credits needed, just honest work.","We'd love people who are comfortable with silence.","Newer actors are very welcome.","We care more about the person than the résumé.","If the story speaks to you, send a tape.","We want it to feel lived-in, not performed.","Bring yourself; we'll build the rest together.","Real ages and real faces, please.","Local actors are a big plus.","We're looking for people who like working as a team."];
+  function r26Family(t){const x=String(t||"").trim();
+    const F=[["when",/^When /],["setin",/^Set in /],["caps",/^[A-Z0-9'’]{3,}(?: [A-Z0-9'’]{2,})* is /],["label",/^(Logline|Story|Premise|The pitch|In one line|What it's about|The setup|Short version|The idea):/],["genre",/^[A-Z][a-z-]+(?:, [a-z-]+)?(?: [a-z-]+)* (?:\d|short|student|feature|independent|play|web|TV|series|experimental|stage)[^:]*: /],["place",/^[A-Z][^.,]{2,30}, (present day|now|this winter|today|the \d{4}s)\./],["wrote",/^(Written and directed by|Directed by) /],["we",/^We're (making|shooting|staging) /],["heart",/^At the heart of /],["storyof",/^This is a story about how /],["seek",/^Seeking /],["now",/^Now casting /],["simple",/the idea is simple:/],["turnfirst",/ that's where .* is headed\./],["premiere",/^(World premiere|New play)/],["title",/^'[^']+' (follows|is|asks|tells)/],["casting",/^Casting /],["inthis",/^In '/]];
+    for(const [k,re] of F)if(re.test(x))return k;return "";}
+  function r26Synopsis(item,h,res){
+    const X=item._r26;if(!X||!X.seed)return;
+    const type=String(item.type||"");
+    if(V7_FN.test(type)||r8Kind(type)!=="narr")return;
+    const seed=X.seed,premise=String(seed.p||"").replace(/[.]+$/,"").trim();
+    if(!premise||!/^(a|an|the|two|three|four|five|six|seven|eight|nine|ten|[a-z])/.test(premise))return;
+    const turn=String(X.turn||"").replace(/[.]+$/,"").trim();
+    const P=capFirst(premise),p=premise;
+    const bare=item._r8Bare||"",T=bare?`'${bare}'`:"",TC=bare?bare.toUpperCase():"";
+    const lenPh=String(X.lenPh||v5Noun(type)||"film").trim();
+    const art=v7Art(`a ${lenPh}`);
+    const stage=item._creatorKind==="stage";
+    const town=String(X.town||"").trim();
+    const G=(v3Genre(seed)||"").split(" ").slice(-1)[0].toLowerCase();
+    const crew=String(item.crew_credits||"");
+    const dir=(crew.match(/(?:^|· )(?:Writer\/Director|Director): ([^·]+)/)||[])[1];
+    const wrt=(crew.match(/(?:^|· )Writer: ([^·]+)/)||[])[1];
+    const people=(item._roles||[]).filter(r=>!r._group&&!/background/i.test(r.role_type||"")).map(r=>stripArticle(String(r._slot||"")).toLowerCase()).filter(x=>x&&x.split(/\s+/).length<=3&&!/['’]|\b(one|who|that|other)\b/.test(x));
+    const leadR=(item._roles||[]).find(r=>/^Lead$/.test(r.role_type||""));
+    const leadSlot=leadR?stripArticle(String(leadR._slot||"")).toLowerCase():"";
+    const leadOk=leadSlot&&leadSlot.split(/\s+/).length<=3&&!/['’]|\b(one|who|that|other)\b/.test(leadSlot)&&!R24_VAGUE.test(leadSlot);
+    const turnOk=turn&&turnIsPastEvent(turn)&&!/^(he|she|they|it|his|her|their|its)\b/i.test(turn);
+    const nAct=(item._roles||[]).filter(r=>!/background/i.test(r.role_type||"")).length;
+    const where=town?(stage?` opening in ${town}`:` shooting in ${town}`):"";
+    const aa=w=>((/^[aeio]/i.test(w)||/^u(?!ni|se|su|ra|ro|ti|te|ku)/i.test(w))?"an ":"a ")+w;
+    const list=xs=>xs.length===1?aa(xs[0]):xs.slice(0,-1).map(aa).join(", ")+" and "+aa(xs[xs.length-1]);
+    const era=seed.era&&/\d{4}s|\d{4}/.test(seed.era)?(String(seed.era).match(/\d{4}s?/)||[])[0]:"";
+    const fams={
+      when:()=>turnOk?[`When ${p}, ${turn}.`,T?`${T} is ${art}${where}.`:`It's ${art}${where}.`]:null,
+      setin:()=>town?[`Set in ${town}, ${T||"this "+lenPh} ${pick(["follows what happens when","is about what happens when","asks what happens when"])} ${p}.`]:null,
+      caps:()=>TC&&TC.length<=34?[`${TC} is ${art} in which ${p}.`]:null,
+      label:()=>[`${pick(["Logline","Story","Premise","The pitch","In one line","What it's about","The setup","The idea"])}: ${P}.`].concat(T?[`${T} is ${art}${where}.`]:[]),
+      genre:()=>{const a=(R26_GENRE_ADJ[G]||["Small","Quiet"]);const ph=stripArticle(lenPh);return [`${pick(a)} ${ph}${where}: ${p}.`];},
+      place:()=>town&&!stage?[`${town}, ${era?`the ${era.replace(/s?$/,"s")}`:pick(["present day","now","this winter","today"])}.`,`${P}.`]:null,
+      wrote:()=>dir&&T?[`${wrt&&wrt.trim()!==dir.trim()?"Directed by":"Written and directed by"} ${dir.trim()}, ${T} is ${art} in which ${p}.`]:null,
+      we:()=>[`We're ${stage?"staging":pick(["making","shooting"])} ${art}${town?` in ${town}`:""}, and here's the story: ${p}.`],
+      heart:()=>leadOk?[`At the heart of ${T||"this "+lenPh} is ${v3Aa(leadSlot)}.`,`${P}.`]:null,
+      storyof:()=>[`This is a story about how ${p}.`,T?`${T} is ${art}.`:`It's ${art}${where}.`],
+      seek:()=>nAct>=2&&nAct<=12?[`Seeking ${v3Words(nAct)} actors for ${T?T+", ":""}${art} in which ${p}.`]:null,
+      now:()=>T?[`Now casting ${T}, ${art}${where}.`,`${P}.`]:null,
+      simple:()=>[`${T?T+" is":"It's"} ${art}, and the idea is simple: ${p}.`],
+      premiere:()=>stage&&T?[`${pick(["World premiere","New play"])}: ${T}, ${art} in which ${p}.`]:null
+    };
+    const recentF=((res&&res._r26Fam)||[]).concat((h&&h.r26Fam)||[]).slice(0,14);
+    const keys=cgShuffle(Object.keys(fams));
+    const order=keys.filter(k=>recentF.indexOf(k)<0).concat(keys.filter(k=>recentF.indexOf(k)>-1).sort((a,b)=>recentF.indexOf(b)-recentF.indexOf(a)));
+    let fam="",open=null;
+    for(const k of order){const o=fams[k]();if(!o)continue;if(o.some(s=>s.split(/\s+/).length>44))continue;if(/^(A|An)\s/.test(o[0]))continue;fam=k;open=o;break;}
+    if(!open)return;
+    const lenRecent=((res&&res._r26Len)||[]).concat((h&&h.r26Len)||[]);
+    let len=r26Weighted(R26_LEN_W,r26Ban(lenRecent,2));
+    if(X.revived&&len==="tiny")len="short";
+    const used=new Set(((res&&res._r26SynSk)||[]).concat((h&&h.r26SynSk)||[]));
+    const fresh=x=>x&&!v3SentUsed(v3SentKey(x),h,res)&&!used.has(r26Sk(x));
+    const S=open.slice();
+    const lowIn=(a,b)=>String(a).toLowerCase().indexOf(String(b).toLowerCase())>-1;
+    const addTurn=()=>{if(turn&&!lowIn(S.join(" "),turn))S.push(`${capFirst(turn)}.`);};
+    const B=R26_ABOUT[stage?"stage":type==="Student Film"?"student":/^(Feature Film|Independent Film)$/.test(type)?"feature":/series|pilot/i.test(type)?"series":"short"]||R26_ABOUT.short;
+    const tone=()=>cgShuffle(((R26_TONE[G]||[]).concat(R21_TONE[G]||[])).slice()).find(fresh);
+    const about=n=>cgShuffle(B.slice()).filter(fresh).slice(0,n);
+    const world=()=>(X.world||[]).map(w=>String(w).trim()).filter(w=>/[.!?]$/.test(w)&&w.split(/\s+/).length<=30&&!/^(A|An)\s/.test(w)).find(fresh);
+    const castLine=()=>people.length>=2?[`${capFirst(v3Words(Math.min(people.length,3)))} parts carry it: ${list(people.slice(0,3))}.`,`The cast is small: ${list(people.slice(0,3))}.`,`It's built around ${list(people.slice(0,3))}.`].find(fresh):null;
+    const want=()=>cgShuffle(R26_WANT.slice()).find(fresh);
+    if(len==="short"||X.revived)addTurn();
+    if(len==="mid"){addTurn();[cgShuffle([tone,world,castLine])[0]()].forEach(x=>x&&S.push(x));}
+    if(len==="long"){addTurn();[world(),tone()].concat(about(1)).forEach(x=>x&&S.push(x));if(S.length<5){const c=castLine();if(c)S.push(c);}}
+    if(len==="xl"){addTurn();[world(),castLine(),tone()].concat(about(2),[want()]).forEach(x=>x&&S.push(x));}
+    const text=S.map(x=>String(x).replace(/\s{2,}/g," ").trim()).filter(Boolean).join(" ").replace(/\b(a|an) (oldest|youngest|eldest|only|last|first|same|middle) /g,"the $2 ");
+    item.synopsis=text;item._r26Fam=fam;
+    if(res){(res._r26Fam=res._r26Fam||[]).unshift(fam);(res._r26Len=res._r26Len||[]).unshift(r26LenOf(text));res._r26SynSk=(res._r26SynSk||[]).concat(v3Sentences(text).slice(1).map(r26Sk));}
+  }
+  // ── Pay box ──────────────────────────────────────────────────────────────
+  function r26Pay(item,h,res){
+    const type=String(item.type||""),u=String(item.union_status||"");
+    if(V7_FN.test(type)||!/^Non-Union$/i.test(u))return;
+    const roles=(item._roles||[]).filter(r=>!/background/i.test(r.role_type||""));
+    const rr=roles.map(r=>({r,x:parseRoleRate(r.pay),ep:/episode/i.test(r.pay||"")})).filter(o=>o.x);
+    const stage=item._creatorKind==="stage";
+    const recentSk=new Set(((res&&res._r26PaySk)||[]).concat((h&&h.r26PaySk)||[]).slice(0,80));
+    const recentMode=((res&&res._r26PayMode)||[]).concat((h&&h.r26PayMode)||[]);
+    const food=stage?["coffee and snacks at every call","snacks at rehearsal","a cast dinner after opening"]:["meals on set","lunch every day","snacks and lunch","food on set","a real lunch break","craft services all day"];
+    const timing=stage?["Paid weekly.","Checks go out every Friday.","Paid by check at closing.","Paid at the end of the run."]:["Paid within two weeks of wrap.","Payment lands within 14 days.","Paid by direct deposit after wrap.","Paid at the end of each day.","Paid the Friday after the shoot.","Paid by check at wrap.","Invoices are paid net 15."];
+    const nounGroups=stage?[food,["reimbursed travel to rehearsal","subway fare"],["program credit","archival video of the show","two comp tickets"],["paid rehearsals"]]
+      :[food,["reimbursed travel","subway fare","parking","a ride from the train station"],["a copy of the finished film","footage for your reel"],["an IMDb credit","credit"],["paid rehearsal","overtime after ten hours"]];
+    const nouns=n=>cgShuffle(nounGroups.slice()).slice(0,n).map(g=>pick(g));
+    const freeGroups=stage?[["program credit","a program bio"],["archival video","a recording of the show"],["comp tickets for friends","two comps a night"],["coffee and snacks at every call","a cast party"],["reimbursed travel to rehearsal","subway fare"]]
+      :[["credit","an IMDb credit","screen credit"],["footage for your reel","your scenes cut for your reel"],["a copy of the finished film","a link to the final cut","a festival screening invite"],["meals","lunch on set","snacks all day","food on set"],["subway fare","reimbursed travel"]];
+    const pickN=(a,n)=>a===null?[]:cgShuffle(freeGroups.slice()).slice(0,n).map(g=>pick(g));
+    const joinL=xs=>xs.length<=1?(xs[0]||""):xs.length===2?xs[0]+pick([" and "," plus "])+xs[1]:xs.slice(0,-1).join(", ")+pick([", and "," and "," plus "])+xs[xs.length-1];
+    let out=null,mode="";
+    for(let tries=0;tries<60&&!out;tries++){
+      if(!rr.length){
+        mode=r26Weighted({terse:0.45,line:0.4,warm:0.15},r26Ban(recentMode.filter(m=>/^u/.test(m)).map(m=>m.slice(1)),3));
+        const perks=pickN(1,rand(1,3,1));
+        const lead=pick(mode==="terse"?["No pay.","Unpaid.","No fee.","Not paid.","Unpaid project."]:["This one is unpaid","It's unpaid","There's no fee on this one","Nobody on this is paid, crew included","It's a no-budget project, so it's unpaid","Unpaid, but we take care of people"]);
+        if(mode==="terse")out=`${lead} ${capFirst(perks.join(pick([", "," / ","; "])))}.`;
+        else if(mode==="line")out=`${lead}${pick([". You get ",": you get ","; what you get is ",". In return: "])}${joinL(perks)}.`;
+        else out=`${lead}. ${pick(["We'll make sure you have","Everyone gets","We promise","What we can offer:"])} ${joinL(perks)}${pick(["."," — and our thanks.",", and a real thank-you."])}`;
+        mode="u"+mode;
+      }else{
+        const amts=rr.map(o=>o.x.rate_amount),top=Math.max(...amts),low=Math.min(...amts);
+        const unit=rr.every(o=>o.ep)?"episode":rr[0].x.rate_unit;
+        const per={day:pick(["/day"," a day"," per day"]),week:pick(["/week"," a week"," per week"]),hour:pick(["/hour"," an hour"]),flat:pick([" flat"," for the job"," total"]),episode:pick([" per episode","/episode"])}[unit]||"/day";
+        const A=r8Amt(top),L=r8Amt(low);
+        const R=low===top?`${A}${per}`:`${L}–${A}${per}`;
+        mode=r26Weighted({blank:0.2,terse:0.32,line:0.3,detail:0.18},r26Ban(recentMode.filter(m=>!/^u/.test(m)),2));
+        if(mode==="blank"){out="";break;}
+        if(mode==="terse"){
+          const xs=nouns(rand(0,2,1));
+          out=pick([`${R}${xs.length?". "+capFirst(xs.join(", "))+".":"."}`,`${R}${xs.length?" + "+xs.join(" + "):""}.`,`Day rate: ${R}${xs.length?"; "+xs.join("; "):""}.`.replace("Day rate","Rate"),`See roles. ${low===top?A:`${L} to ${A}`}${per}${xs.length?", "+xs[0]:""}.`,`${R}, ${pick(["guaranteed","non-negotiable","firm","per performer"])}${xs.length?". "+capFirst(xs[0])+".":"."}`]);
+        }else if(mode==="line"){
+          const xs=nouns(rand(1,2,1));
+          const head=low===top?pick([`Everyone gets ${A}${per}`,`It pays ${A}${per} for every part`,`${A}${per} across the board`,`The rate is ${A}${per}, same for everyone`]):pick([`The leads get ${A}${per} and smaller parts ${L}`,`Pay goes from ${L} up to ${A}${per}`,`${A}${per} for the biggest parts, ${L} for the smallest`,`Somewhere between ${L} and ${A}${per}, depending on the part`,`Rates are set by part: up to ${A}${per}`]);
+          out=`${head}${pick([", with ",", plus ",". You also get ",". Also: "])}${joinL(xs)}.${Math.random()<0.4?" "+pick(timing):""}`;
+        }else{
+          const xs=nouns(rand(1,3,1));
+          const head=pick([`Small budget, and we put most of it into the cast: ${R}.`,`We pay ${R}.`,`${R}. That's what we can do on this budget, and we'd rather be upfront.`,`Here's the money: ${R}.`,`Pay is ${R}, and it's guaranteed once you're booked.`,`Every part is paid: ${R}.`]);
+          out=`${head} ${pick(["On top of that:","There's also","Plus"])} ${joinL(xs)}. ${pick(timing)}`;
+        }
+      }
+      if(out===null)continue;
+      out=out.replace(/\s{2,}/g," ").replace(/\.\./g,".").trim();
+      if(out&&recentSk.has(r26Sk(out))){out=null;continue;}
+      if(out&&h&&h.payKeys&&h.payKeys.has(v5PayKey(out))){out=null;continue;}
+    }
+    if(out===null)return;
+    item.pay=out||null;item._r26PayMode=mode;
+    if(res){(res._r26PayMode=res._r26PayMode||[]).unshift(mode);if(out)(res._r26PaySk=res._r26PaySk||[]).unshift(r26Sk(out));}
+  }
+  // ── Schedule note ────────────────────────────────────────────────────────
+  const R26_SCHED_W={none:0.15,tiny:0.25,short:0.28,mid:0.22,long:0.10};
+  function r26Sched(item,h,res){
+    const type=String(item.type||"");
+    if(V7_FN.test(type))return;
+    const plan=(item._v5&&item._v5.plan)||{};
+    if(plan.read)return;
+    const stage=!!plan.stage;
+    const roles=(item._roles||[]).filter(r=>!/background/i.test(r.role_type||""));
+    const maxD=Math.max(1,...roles.map(r=>+r.est_days||1));
+    const D=+plan.days||maxD;
+    const dated=!!(item.shoot_start&&item.shoot_end);
+    const WD=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const sd=dated?new Date(item.shoot_start+"T12:00:00Z"):null,ed=dated?new Date(item.shoot_end+"T12:00:00Z"):null;
+    const sw=sd?WD[sd.getUTCDay()]:"",ew=ed?WD[ed.getUTCDay()]:"";
+    const W=n=>n<=12?v3Words(n):String(n);
+    const minors=roles.some(r=>{const m=String(r.age_range||"").match(/^(\d+)/);return m&&+m[1]<18;});
+    const local=/^Local/.test(String(item.talent_scope||""));
+    const recentMode=((res&&res._r26SchedMode)||[]).concat((h&&h.r26SchedMode)||[]);
+    const usedSk=new Set(((res&&res._r26SchedSk)||[]).concat((h&&h.r26SchedSk)||[]).slice(0,160));
+    const fresh=x=>x&&!usedSk.has(r26Sk(x));
+    const mode=r26Weighted(R26_SCHED_W,r26Ban(recentMode,2));
+    if(mode==="none"){item.schedule_note=null;item._r26NoSched=true;if(res)(res._r26SchedMode=res._r26SchedMode||[]).unshift(mode);return;}
+    const exact=D===maxD;
+    const core=[];
+    if(stage){
+      const wk=+plan.weeks||0,pf=+plan.perfs||0;
+      if(wk)core.push(pick([`${capFirst(W(wk))} weeks of rehearsal${plan.evening?", evenings":""}, then we open.`,`Rehearsals run ${W(wk)} weeks${plan.evening?", weeknight evenings":""}.`,`We rehearse ${W(wk)} weeks before tech.`,`${capFirst(W(wk))}-week rehearsal period${plan.evening?", all evenings":""}.`]));
+      if(pf)core.push(pick([`${capFirst(W(pf))} performances.`,`The run is ${W(pf)} shows.`,`${capFirst(W(pf))} shows in all, mostly ${pick(["Thursday to Sunday","weekends","evenings"])}.`,`We perform ${W(pf)} times.`]));
+      core.push(pick(["Tech is the last weekend before opening.","Expect two long tech days right before we open.","Off book by the end of week two, please.","We build the calendar around people's day jobs.","You'll get the full calendar at callbacks.","Every performance is required."]));
+    }else{
+      const m=plan.mode||"consecutive";
+      const span=dated?Math.round((ed-sd)/864e5)+1:0;
+      const patt={
+        one:[`One day${sw?`, a ${sw}`:""}.`,`It's a one-day shoot.`,`Single shoot day${sw?` (${sw})`:""}.`,`Just one day, start to wrap.`],
+        flex1:[`One day; we'll lock which one with you.`,`A single day inside the window, set once you're booked.`],
+        saturdays:[`Saturdays only.`,`${capFirst(W(D))} Saturdays.`,`We only shoot on Saturdays.`],
+        weekends:[`Weekends only.`,`Saturdays and Sundays.`,`${capFirst(W(D))} weekend days.`,`It's a weekend shoot.`],
+        spread:[`${capFirst(W(D))} days, not in a row.`,`The days are spread out across the window.`,`${capFirst(W(D))} separate days with breaks between them.`],
+        consecutive:[exact?`${capFirst(W(D))} days in a row.`:`Back-to-back days.`,exact?`${capFirst(W(D))} straight days${sw?`, ${sw} to ${ew}`:""}.`:`${sw?`${sw} to ${ew}, straight through.`:"Straight through, no gaps."}`,exact?`${capFirst(W(D))}-day shoot.`:`One block, no days off in the middle.`],
+        weekdays:[`Weekdays only.`,`Monday to Friday, no weekends.`,`Monday-to-Friday weeks${span>9?`, roughly ${W(Math.max(2,Math.round(span/7)))} in all`:""}.`],
+        sixday:[`Six-day weeks, Sundays off.`,`We shoot six days a week.`,`Sundays are off; every other day is a shoot day.`]
+      }[m]||[`${capFirst(W(D))} days.`];
+      core.push(pick(patt));
+      if(!dated)core.unshift(pick(["Dates aren't locked yet.","Dates TBD.","Exact dates are still moving.","We're still setting the dates.","Dates to come; the window is soon."]));
+    }
+    const extra=[
+      ()=>plan.leadRehearse?pick(["The leads rehearse one day before we start.","One rehearsal day for the leads first.","There's a rehearsal before the first shoot day."]):null,
+      ()=>stage?null:pick(["Calls are early, usually 7am.","Expect 12-hour days at the most.","Most days start around 8.","Call times come the night before.","Some days run into the evening.","We keep days to ten hours where we can.","There may be one night shoot."]),
+      ()=>pick(["Please list any conflicts when you submit.","Conflicts aren't a deal-breaker; just tell us.","The dates are firm, so check your calendar first.","We'll work around a conflict if we know early.","If you can't make a day, say so up front."]),
+      ()=>local?pick([`You'll need to get yourself to set each day.`,`Local actors only; there's no travel or housing.`,`We can't cover travel, so please be close by.`,`Easy to reach by subway.`,`Self-report to set.`]):null,
+      ()=>stage?null:pick(["There's one fitting a few days before.","Bring a few of your own clothes for wardrobe.","Wardrobe is mostly your own clothes; we'll check in first.","A short fitting call happens the week before."]),
+      ()=>minors?pick(["Young actors work outside school hours.","Kids' days are kept short, with a parent or guardian on set.","Minors are scheduled around school."]):null
+    ];
+    const want=mode==="tiny"?1:mode==="short"?rand(1,2,1):mode==="mid"?rand(2,3,1):rand(4,5,1);
+    const S=[];
+    core.forEach(x=>{if(S.length<want&&fresh(x))S.push(x);});
+    if(!S.length&&core[0])S.push(core[0]);
+    cgShuffle(extra.slice()).forEach(f=>{if(S.length>=want)return;const x=f();if(x&&fresh(x))S.push(x);});
+    const note=S.join(" ").replace(/\s{2,}/g," ").trim();
+    if(!note)return;
+    item.schedule_note=note;item._r26NoSched=false;
+    if(res){(res._r26SchedMode=res._r26SchedMode||[]).unshift(mode);res._r26SchedSk=(res._r26SchedSk||[]).concat(S.map(r26Sk));}
+  }
+  // ── Who posts it: not every indie filmmaker has a company ───────────────
+  const R26_NOCO_P={"Short Film":0.6,"Independent Film":0.55,"Feature Film":0.35,"Experimental Film":0.6,"Proof of Concept":0.55,"Web Series":0.5,"Vertical Series":0.4,"TV Pilot":0.25,"Student Film":0.3,"Theater":0.3,"Off-Off-Broadway Theater":0.4};
+  function r26Company(item,h,res){
+    const type=String(item.type||"");
+    const pr=R26_NOCO_P[type];if(!pr||Math.random()>=pr)return;
+    const crew=String(item.crew_credits||"");
+    const get=k=>((crew.match(new RegExp("(?:^|· )"+k+": ([^·]+)"))||[])[1]||"").trim();
+    const dir=get("Director"),wrt=get("Writer"),prd=get("Producer");
+    const stage=item._creatorKind==="stage";
+    const N=stage?(wrt||dir||prd):(dir||wrt||prd);if(!N)return;
+    const opts=type==="Student Film"?[`Thesis film by ${N}`,`${N}, film student`,`${N} (student director)`,`Class project — ${N}`,`${N}'s graduate film`]
+      :stage?[`Produced by the playwright, ${N}`,`${N} (self-producing)`,`An independent production by ${N}`,`${N} and an ensemble of actors`,`Self-produced — ${N}`]
+      :[`${N}`,`${N} (writer/director)`,`Independent — ${N}`,`Self-produced by ${N}`,`${N}, independent filmmaker`,`No company yet — ${N}, director`,`${N} and a small crew`];
+    const recent=((res&&res._r26Co)||[]).concat((h&&h.r26Co)||[]).slice(0,3);
+    const shape=x=>x.replace(N,"N");
+    const o=cgShuffle(opts).find(x=>recent.indexOf(shape(x))<0)||opts[0];
+    item.prod=o;item.posted_by_label=o;item._r26NoCo=true;
+    // A one-person team often casts it too.
+    if(!stage&&Math.random()<0.45&&dir&&!wrt){item.crew_credits=`Writer/Director: ${dir}${prd&&prd!==dir?` · Producer: ${prd}`:""} · Casting: ${dir}`;item.casting_director_name=dir;}
+    else if(!stage&&Math.random()<0.35&&dir&&wrt===""){item.crew_credits=`Director: ${dir} · Casting: ${item.casting_director_name||dir}`;}
+    if(res)(res._r26Co=res._r26Co||[]).unshift(shape(o));
+  }
+  function r26Voice(item,h,res){
+    try{r26Synopsis(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('syn '+e);}
+    try{r26Pay(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('pay '+e);}
+    try{r26Sched(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('sched '+e);}
+    try{r26Company(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('co '+e);}
   }
   // ── Round 13 validators ──────────────────────────────────────────────────
   const R13_FEW=/\b(steps in once|in one scene|one scene only|just two scenes|two scenes\b|appears only at the very end|last (three|few) seconds|a one-day part|just one day for|is in one day only)\b/i;
@@ -50465,7 +50737,7 @@ const ACG = (()=>{
       chosen.forEach(x=>S.push(x));
     }else{
       const lenPh=kind==="job"?String(c.jobBase||"feature film"):c.untitled?String(title.t).replace(/\s*\([^)]*\)$/,"").toLowerCase().replace(/^untitled /,"untitled ").replace(/\brom-com\b/,"rom-com").replace(/\btv\b/g,"TV").replace(/\boff-off-broadway\b/g,"Off-Off-Broadway").replace(/\boff-broadway\b/g,"Off-Broadway"):r8Length(type,seed);
-      const art=v7Art(`a ${lenPh}`);
+      const art=v7Art(`a ${lenPh}`);S._lenPh=lenPh;
       const premise=String(kind==="docu"?(seed.about||seed.p):seed.p||seed.about||"").replace(/[.]+$/,"");
       const turn=String(c.turn||"").replace(/[.]+$/,"");
       const lead=kind==="docu"?(type==="Documentary"?"reenactment roles":who):kind==="job"?String(c.jobWho||who):who;
@@ -50514,7 +50786,7 @@ const ACG = (()=>{
     if(states)S.push(states);
     const text=S.map(x=>String(x).replace(/\s{2,}/g," ").replace(/,'(\s*[.?])/g,"'$1").trim()).join(" ");
     const n=v3Sentences(text).filter(x=>!/^\w+ states:/.test(x)).length;
-    return {text,verb:shape,len:n<=1?"one":n<=3?"mid":"long",states:!!states};
+    return {text,verb:shape,len:n<=1?"one":n<=3?"mid":"long",states:!!states,lenPh:S._lenPh||""};
   }
 
   // ── 3. Role names and role types ─────────────────────────────────────────
@@ -50562,7 +50834,7 @@ const ACG = (()=>{
     const titled=needFull.filter(r=>r21Title(r._slot));
     const anyDupe=ppl.some(r=>dupe(r));
     const chosenFull=!anyDupe&&titled.length&&Math.random()<0.5?titled[0]:null;
-    const allFull=!chosenFull&&ppl.length>=2&&(anyDupe||Math.random()<0.1);
+    const allFull=!chosenFull&&ppl.length>=2&&(anyDupe||Math.random()<0.32);
     if(allFull){ppl.forEach(r=>{r._person=String(r.name);r._r8Full=true;r._r21AllFull=true;});return;}
     // Round 10 item 4i: "Gavin, Shop Assistant" only when every part in the
     // listing reads that way.
@@ -51668,7 +51940,7 @@ const ACG = (()=>{
       if(!title){why('no title');continue;}
       // Round 8: board title and house-style summary.
       const kind8=r8Kind(type);
-      let T8=null;
+      let T8=null,r26Ctx=null;
       if(R8_ON){
         // Only a real product category names brand work; a venue noun ("court")
         // counts only when it is a business.
@@ -51678,6 +51950,7 @@ const ACG = (()=>{
         const S8=r8Summary({brief,kind:kind8,type,fam,roles:named,seed,persona,title:T8,untitled:!!T8.untitled,fmtLow:T8.fmtLow,descCat:T8.descCat,usage,medium,turn:tt,revived,world:worldUse.filter(z=>z.kind!=="char").map(z=>z.text),place:r8Place(city,area),unit:plan.stage?"performance":plan.sessions?"session":"shoot day",jobWho:fam==="job"?(T.labels[0]||""):"",jobBase:ctx.base},h,res);
         if(!S8){why('r8 summary');continue;}
         synopsis=S8.text;T8.verb=S8.verb;T8.len=S8.len;
+        r26Ctx={seed,turn:tt,revived:!!revived,lenPh:S8.lenPh,world:worldUse.filter(z=>z.kind!=="char").map(z=>z.text),town:String(r8Place(city,area)||"").split(",")[0].trim().replace(/^Bronx$/,"the Bronx")};
         synBucketUsed=S8.len==="one"?"short":S8.len==="long"?"long":"medium";
       }
       // Round 5: the tagline is a practical headline — format, hook, who is
@@ -51760,7 +52033,7 @@ const ACG = (()=>{
       if(V7_FN.test(type)){item._fnOldNames=v7FnNaming(item,named);item._lines=splitLines(item.synopsis).concat([item.tagline],named.map(r=>r.description)).filter(Boolean);}
       if(R8_ON){
         r8Finish(item,{type,fam,named,PAY,band:bandActual,key:r8Key,plan,city,area,medium},h,res);
-        item._r8Verb=T8.verb;item._r8Len=T8.len;item._r8Bare=T8.bare||null;item._r8Untitled=!!T8.untitled;item._r8Stems=seedTitleStems(seed);
+        item._r8Verb=T8.verb;item._r8Len=T8.len;item._r8Bare=T8.bare||null;item._r26=r26Ctx;item._r8Untitled=!!T8.untitled;item._r8Stems=seedTitleStems(seed);
         item._lines=splitLines(item.synopsis).concat([item.tagline],named.map(r=>r.description)).filter(Boolean);
       }
       // Round 9 item 6k: one minors note on the listing, not one per role.
@@ -53526,7 +53799,7 @@ const ACG = (()=>{
     const pool=v4PoolStatus(h);
     if(res._nameShortage&&out.length<count)pool.low=true;
     out._pool=pool;
-    if(typeof window!=="undefined")window.__acgLastRun={pool,attempts,why:res._why||{},rejected:res._rejected||0,rejectLog:(res._rejectLog||[]).slice(-40),stopped:res._nullWhy||null,dead:[...(res._deadTypes||[])]};
+    if(typeof window!=="undefined")window.__acgLastRun={r26Err:(res._r26Err||[]).slice(0,5),pool,attempts,why:res._why||{},rejected:res._rejected||0,rejectLog:(res._rejectLog||[]).slice(-40),stopped:res._nullWhy||null,dead:[...(res._deadTypes||[])]};
     return out;
   }
   // The keys a saved listing retires for good. Written to the database so the
