@@ -46264,6 +46264,7 @@ const ACG = (()=>{
      h.r30Open={pay:newest.slice(0,10).map(c=>r30Head(c.pay)).filter(Boolean),sched:newest.slice(0,10).map(c=>r30Head(c.schedule_note)).filter(Boolean),sub:newest.slice(0,10).map(c=>r30Head(c.submission_requirements)).filter(Boolean)};
      h.r30Sub=newest.slice(0,40).map(c=>c.submission_requirements||"");
      h.r30G=[];newest.slice(0,40).forEach(c=>{const MK=r30Mask(c.roles);[c.synopsis,c.schedule_note,c.pay,c.submission_requirements].concat((c.roles||[]).map(r=>r&&r.description)).forEach(t=>r30Grams(t,MK).forEach(g=>{if(!R30_GRAM_OK.test(g))h.r30G.push(g);}));});
+     h.r34Forms=newest.slice(0,8).filter(c=>/untitled|unnamed|title tba|title to come|no title|working title pending|^indie |^low-budget /i.test(String(c.title||""))).map(c=>r34Key(c.title));
      h.r33Tier=newest.slice(0,2).map(c=>{const ps=(c.roles||[]).map(r=>String(r&&r.pay||""));return ps.every(x=>/^unpaid/i.test(x))?"unpaid":ps.every(x=>/^deferred/i.test(x))?"deferred":ps.some(x=>/stipend/i.test(x))?"stipend":ps.some(x=>/not specified/i.test(x))?"ns":"low";});
      h.r33Held=newest.slice(0,3).map(c=>/(keeping the story|plot details stay|give the plot away|callback sides|story when we talk|script goes to the actors|share the script with the shortlist|twist we're keeping|story with them)/i.test(String(c.synopsis||"")));
      h.r29PaySk=[];newest.slice(0,40).forEach(c=>v3Sentences(c.pay).forEach(x=>h.r29PaySk.push(r26Sk(x))));
@@ -49566,19 +49567,28 @@ const ACG = (()=>{
   };
   const R8_GENRE_TITLE={drama:"Drama",comedy:"Comedy",thriller:"Thriller",horror:"Horror","romantic comedy":"Rom-Com",romance:"Romance",crime:"Crime",mystery:"Mystery","family drama":"Family Drama",period:"Period",sports:"Sports",western:"Western","science fiction":"Sci-Fi","sci-fi":"Sci-Fi",action:"Action",adventure:"Adventure"};
   function r8Genre(seed){const g=v3Genre(seed);return R8_GENRE_TITLE[g]||titleCase(g.split(" ").slice(-1)[0]);}
+  function r34Key(t){return String(t||"").split(/(\s+|[,()—])/).map(w=>/^(Untitled|Unnamed|Indie|Low-Budget|Title|TBA|to|Come|Project|No|Yet|Working|Pending|Thesis|New|Play|World|Premiere|Grad|School|Second-Year|Film|\(|\)|,|—)$/.test(w)||/^\s+$/.test(w)?w:"X").join("").replace(/(X\s*)+X/g,"X");}
   function r8QuotedTitle(c,h,res){
     const {type,stem,seed,city}=c;
     const bare=String(stem||"").split(" — ")[0].replace(/['"‘’“”]$/,"").replace(/^['"‘’“”]/,"").trim();
     const fmt=R8_NARR_FMT[type]||capFirst(v5Noun(type));
     const kind=r8Kind(type);
     const opts=[];
-    // About 15% of narrative listings carry a plain "Untitled" label.
-    if(kind==="narr"&&!/^(Music Video|Dance Project|Performance Art|Motion Capture|Video Game)$/.test(type)&&Math.random()<0.16){
+    // Round 34 (owner): most indie filmmakers haven't named the project yet.
+    // Shorts, student and web work are usually untitled; features often; plays
+    // rarely. Many ways to say it, none reused while a fresh one is left.
+    const R34_Px={"Short Film":0.55,"Student Film":0.6,"Experimental Film":0.55,"Proof of Concept":0.5,"Pitch Trailer":0.5,"Sizzle Reel":0.5,"Web Series":0.5,"Vertical Series":0.45,"Pilot Presentation":0.4,"Feature Film":0.45,"Independent Film":0.5,"TV Pilot":0.35,"TV Series":0.3,"Streaming Series":0.3,"Limited Series":0.3,"Miniseries":0.3,"Theater":0.2,"Off-Broadway Theater":0.12,"Off-Off-Broadway Theater":0.25,"Workshop / Staged Reading":0.3,"Table Read":0.35,"Podcast / Audio Drama":0.3,"Animation":0.35};
+    if(kind==="narr"&&!/^(Music Video|Dance Project|Performance Art|Motion Capture|Video Game)$/.test(type)&&Math.random()<0.15){
       const g=r8Genre(seed);
-      const short={"Short Film":"Short","Student Film":"Student Short","Feature Film":"Feature Film","Independent Film":"Indie Feature"}[type]||fmt;
-      opts.push({t:pick([`Untitled ${g} ${short}`,`Untitled ${short} ${g}`]),untitled:true});
-      opts.push({t:`Untitled ${g} ${short} (${city.short==="NYC"?"New York":city.short})`,untitled:true});
-    }
+      const short={"Short Film":"Short","Student Film":"Student Short","Feature Film":"Feature Film","Independent Film":"Indie Feature","Experimental Film":"Experimental Short","Web Series":"Web Series","Vertical Series":"Vertical Series","TV Pilot":"Pilot","Theater":"Play","Off-Off-Broadway Theater":"Play","Off-Broadway Theater":"Play","Workshop / Staged Reading":"Staged Reading","Table Read":"Table Read","Podcast / Audio Drama":"Audio Drama"}[type]||fmt;
+      const cityN=city.short==="NYC"?pick(["New York","NYC","Brooklyn","Queens","Bronx","Harlem"]):city.short;
+      const forms=[`Untitled ${g} ${short}`,`Untitled ${short} ${g}`,`Untitled ${g} ${short} (${cityN})`,`${short} (Untitled)`,`Untitled ${cityN} ${short}`,`${g} ${short}, Title TBA`,`Unnamed ${g} ${short}`,`${g} ${short} — Title to Come`,`Untitled ${short} Project`,`Indie ${g} ${short}`,`Low-Budget ${g} ${short}`,`${cityN} ${g} ${short}`,`Untitled ${g} Project (${short})`,`${short}, No Title Yet`,`${g} ${short} (Working Title Pending)`]
+        .concat(type==="Student Film"?["Untitled Thesis Film","Untitled Second-Year Short",`Thesis ${g} Short, Untitled`,`Grad School ${g} Short`]:[])
+        .concat(/Theater|Play|Reading/.test(type)?["Untitled New Play",`New ${g} Play (Title TBA)`,`Untitled ${g} Play, World Premiere`]:[]);
+      const recentF=((res&&res._r34Forms)||[]).concat((h&&h.r34Forms)||[]).slice(0,8);
+      const formKey=r34Key;
+      cgShuffle(forms).sort((a,b)=>(recentF.indexOf(formKey(a))>-1)-(recentF.indexOf(formKey(b))>-1)).forEach(t=>opts.push({t,untitled:true,_fk:formKey(t)}));
+    }else if(bare&&kind==="narr"&&Math.random()<0.12)opts.push({t:`'${bare}' (Working Title)`,bare});
     if(bare){
       if(kind==="job")opts.push({t:`'${bare},' ${fmt}`,bare});
       else if(kind==="docu"&&Math.random()<0.6){
@@ -49589,7 +49599,9 @@ const ACG = (()=>{
       opts.push({t:`'${bare}'`,bare});
       opts.push({t:`'${bare},' ${fmt}`,bare});
     }
-    return opts.find(o=>r8Fresh(o.t,h,res))||null;
+    const got=opts.find(o=>r8Fresh(o.t,h,res))||null;
+    if(got&&got._fk&&res)(res._r34Forms=res._r34Forms||[]).unshift(got._fk);
+    return got;
   }
 
   // ── 2. The summary ───────────────────────────────────────────────────────
@@ -51170,9 +51182,33 @@ const ACG = (()=>{
     }
     if(res)(res._r33Held=res._r33Held||[]).unshift(false);
   }
+  // Round 34: decided last, after the checks, so untitled drafts are not
+  // thrown away more often than named ones.
+  const R34_P={"Short Film":0.55,"Student Film":0.6,"Experimental Film":0.55,"Proof of Concept":0.5,"Pitch Trailer":0.5,"Sizzle Reel":0.5,"Web Series":0.5,"Vertical Series":0.45,"Pilot Presentation":0.4,"Feature Film":0.45,"Independent Film":0.5,"TV Pilot":0.35,"TV Series":0.3,"Streaming Series":0.3,"Limited Series":0.3,"Miniseries":0.3,"Theater":0.2,"Off-Broadway Theater":0.12,"Off-Off-Broadway Theater":0.25,"Workshop / Staged Reading":0.3,"Table Read":0.35,"Podcast / Audio Drama":0.3,"Animation":0.35};
+  function r34Untitle(item,h,res){
+    const type=String(item.type||""),bare=item._r8Bare;
+    if(!bare||r8Kind(type)!=="narr"||R34_P[type]==null)return;
+    // aim at the target share: the build already left ~15% untitled
+    if(Math.random()>=Math.min(0.85,R34_P[type]+0.1))return;
+    const seed=item._r26&&item._r26.seed;const g=seed?r8Genre(seed):"Drama";
+    const short={"Short Film":"Short","Student Film":"Student Short","Feature Film":"Feature Film","Independent Film":"Indie Feature","Experimental Film":"Experimental Short","Web Series":"Web Series","Vertical Series":"Vertical Series","TV Pilot":"Pilot","TV Series":"Series","Streaming Series":"Series","Limited Series":"Limited Series","Miniseries":"Miniseries","Theater":"Play","Off-Off-Broadway Theater":"Play","Off-Broadway Theater":"Play","Workshop / Staged Reading":"Staged Reading","Table Read":"Table Read","Podcast / Audio Drama":"Audio Drama","Animation":"Animated Short","Proof of Concept":"Proof of Concept","Pitch Trailer":"Pitch Trailer","Sizzle Reel":"Sizzle Reel","Pilot Presentation":"Pilot Presentation"}[type]||type;
+    const loc=String(item.location||"");const cityN=/^New York/.test(loc)?pick(["New York","NYC","Brooklyn","Queens","Bronx","Harlem"]):loc.split(",")[0].replace("San Francisco Bay Area","Bay Area");
+    const forms=[`Untitled ${g} ${short}`,`Untitled ${short} ${g}`,`Untitled ${g} ${short} (${cityN})`,`${short} (Untitled)`,`Untitled ${cityN} ${short}`,`${g} ${short}, Title TBA`,`Unnamed ${g} ${short}`,`${g} ${short} — Title to Come`,`Untitled ${short} Project`,`Indie ${g} ${short}`,`Low-Budget ${g} ${short}`,`${cityN} ${g} ${short}`,`Untitled ${g} Project (${short})`,`${short}, No Title Yet`,`${g} ${short} (Working Title Pending)`]
+      .concat(type==="Student Film"?["Untitled Thesis Film","Untitled Second-Year Short",`Thesis ${g} Short, Untitled`,`Grad School ${g} Short`]:[])
+      .concat(/Theater/.test(type)?["Untitled New Play",`New ${g} Play (Title TBA)`,`Untitled ${g} Play, World Premiere`]:[]);
+    const recentF=((res&&res._r34Forms)||[]).concat((h&&h.r34Forms)||[]).slice(0,8);
+    const t=cgShuffle(forms.filter(x=>!/\bIndie\b.*\bIndie\b|Low-Budget .*Indie/.test(x))).find(x=>recentF.indexOf(r34Key(x))<0&&r8Fresh(x,h,res));
+    if(!t)return;
+    const q=`'${bare}'`,esc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    const sub=item._creatorKind==="stage"?"the play":/series|pilot/i.test(type)?"the show":"the film";
+    ["tagline","submission_requirements","schedule_note","pay"].forEach(f=>{if(item[f])item[f]=String(item[f]).replace(new RegExp(esc(q)+",?","g"),sub);});
+    (item._roles||[]).forEach(r=>{r.description=String(r.description||"").replace(new RegExp(esc(q)+",?","g"),sub);});
+    item.title=t;item._r8Bare=null;item._r8Untitled=true;
+    if(res){(res._r34Forms=res._r34Forms||[]).unshift(r34Key(t));res.titles&&res.titles.add(clean(t));}
+  }
   function r26Voice(item,h,res){
     try{r27FitPadding(item);r33PayTier(item,h,res);r27CapPay(item);r29Amounts(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('r27 '+e);}
-    try{r26Synopsis(item,h,res);r33Withhold(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('syn '+e);}
+    try{r34Untitle(item,h,res);r26Synopsis(item,h,res);r33Withhold(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('syn '+e);}
     try{r29Pay(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('pay '+e);}
     try{r26Sched(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('sched '+e);}
     try{r26Company(item,h,res);}catch(e){if(res)(res._r26Err=res._r26Err||[]).push('co '+e);}
@@ -51378,7 +51414,7 @@ const ACG = (()=>{
       if(len==="long"&&chosen.length<2)len="mid";
       chosen.forEach(x=>S.push(x));
     }else{
-      const lenPh=kind==="job"?String(c.jobBase||"feature film"):c.untitled?String(title.t).replace(/\s*\([^)]*\)$/,"").toLowerCase().replace(/^untitled /,"untitled ").replace(/\brom-com\b/,"rom-com").replace(/\btv\b/g,"TV").replace(/\boff-off-broadway\b/g,"Off-Off-Broadway").replace(/\boff-broadway\b/g,"Off-Broadway"):r8Length(type,seed);
+      const lenPh=kind==="job"?String(c.jobBase||"feature film"):c.untitled&&/^Untitled [^(,—]+$/.test(String(title.t))?String(title.t).replace(/\s*\([^)]*\)$/,"").toLowerCase().replace(/^untitled /,"untitled ").replace(/\brom-com\b/,"rom-com").replace(/\btv\b/g,"TV").replace(/\boff-off-broadway\b/g,"Off-Off-Broadway").replace(/\boff-broadway\b/g,"Off-Broadway"):r8Length(type,seed);
       const art=v7Art(`a ${lenPh}`);S._lenPh=lenPh;
       const premise=String(kind==="docu"?(seed.about||seed.p):seed.p||seed.about||"").replace(/[.]+$/,"");
       const turn=String(c.turn||"").replace(/[.]+$/,"");
