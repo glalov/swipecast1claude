@@ -700,6 +700,9 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .pp-uni.pl-acc-gold .pp-act .btn-p{color:#1A1A2E!important;}
 .pp-act-hint{margin:2px 0 0;font-size:12px;line-height:1.45;color:var(--t3);text-align:center;}
 .pl-cinematic .pp-act{border-color:transparent;box-shadow:none;}
+/* 2026-11-24 owner: secondary buttons (Request Self-Tape / Message / Save) were navy #1A1A2E on the dark panel, nearly invisible. Cream text + light outline on Cinematic. */
+.pl-cinematic .pp-act .btn-s{color:#F4F1EC!important;border-color:rgba(244,241,236,.34)!important;background:transparent!important;}
+.pl-cinematic .pp-act .btn-s:hover{border-color:rgba(244,241,236,.6)!important;background:rgba(244,241,236,.07)!important;}
 .pp-sb h3{margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--bdr);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
 .pp-sb-links a{display:flex;align-items:center;gap:10px;padding:7px 0;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:var(--t1);text-decoration:none;}
 .pp-sb-links a:hover{color:var(--pl-acc,#33826A);}
