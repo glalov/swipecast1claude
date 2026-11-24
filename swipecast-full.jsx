@@ -29589,7 +29589,7 @@ const LANDING_SWIPE_DEMO=[
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"/assets/landing/deck-marisol-veyra.jpg",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
-  {id:2,name:"Rafael Alcázar",age:46,gender:"Male",height:"6'0\"",pos:"center 30%",img:"/assets/landing/rafael-alcazar.jpg",skills:["Film & TV","Bilingual Spanish","Boxing"]},
+  {id:2,name:"Rafael Alcázar",age:46,gender:"Male",height:"6'0\"",pos:"center 55%",img:"/assets/landing/rafael-alcazar.jpg",skills:["Film & TV","Bilingual Spanish","Boxing"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
 ];
 // SLOW-MODE (2026-11-21): on a slow line the 12 deck photos (1.8 MB) starved everything else. Use 600px copies
