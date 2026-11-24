@@ -29578,7 +29578,7 @@ const LANDING_SWIPE_DEMO=[
   // the whole frame and read as changed lighting).
   // v4 (2026-09-25, owner's pick of three) = v3 with a +10% face-only midtone lift
   // (gamma .85 through a feathered ellipse on the face); background, hair, blazer untouched.
-  {id:22,name:"Nayara Haddad",age:29,gender:"Female",height:"5'11\"",pos:"61% 11%",zoom:1.95,img:"/assets/landing/nayara-haddad-v4.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
+  {id:22,name:"Yasmin Vale",age:26,gender:"Female",height:"5'7\"",pos:"center 35%",img:"/assets/landing/yasmin-vale.jpg",skills:["Crying on Cue","Singing","Weapons Training"]},
   {id:19,name:"Malik Jensen",age:22,gender:"Male",height:"6'0\"",pos:"center 18%",img:"/assets/landing/deck-malik-jensen.jpg",skills:["Music Video","Indie","Dance"]},
   // Kira's photo URL carries NO h=/fit=crop: the owner framed her against the
   // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
