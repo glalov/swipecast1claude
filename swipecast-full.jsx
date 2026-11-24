@@ -29567,7 +29567,7 @@ const LANDING_SWIPE_DEMO=[
   // keep their 2026-10-31 order. (Earlier advice was Otis third; the owner chose him as the opener.)
   {id:8,name:"Otis Langford",age:62,gender:"Male",height:"6'3\"",pos:"center 35%",img:"/assets/landing/otis-langford.jpg",skills:["Military Background","Bass Vocals","Character Work"]},
   {id:20,name:"Killian Whitmore",age:30,gender:"Male",height:"6'0\"",pos:"center 52%",img:"/assets/landing/killian-whitmore.jpg",skills:["Drama","Screen Acting","Stage Combat"]},
-  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"/assets/landing/deck-zara-banks.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
+  {id:21,name:"Simone Laurent",age:25,gender:"Female",height:"5'7\"",pos:"center 22%",img:"/assets/landing/simone-laurent.jpg",skills:["Film & TV","Shakespearean Performance","Dance"]},
   // Nayara (led the deck 2026-09-24 to 2026-10-30). Framed by the owner in the
   // fitter (castslate-nayara-fit-tool.html) against the ORIGINAL 4:5 photo:
   // object-position 61% 11% + scale 1.95 with the origin at the same point
@@ -29584,7 +29584,7 @@ const LANDING_SWIPE_DEMO=[
   // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
   // the shot before object-position ever ran, throwing the crop away. w=1200 keeps
   // the 3:2 source at retina size (86KB). Photo: Pexels #4668550 by Vlada Karpovich.
-  {id:21,name:"Simone Laurent",age:25,gender:"Female",height:"5'7\"",pos:"center 22%",img:"/assets/landing/simone-laurent.jpg",skills:["Film & TV","Shakespearean Performance","Dance"]},
+  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"/assets/landing/deck-zara-banks.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
   {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik-v2.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
