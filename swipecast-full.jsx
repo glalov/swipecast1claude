@@ -29965,7 +29965,7 @@ function NewsArchivePage({onNavigate}){
   useEffect(()=>{if(!jumpTo)return;const el=document.getElementById("nar-m-"+jumpTo);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});setJumpTo(null);},[jumpTo,shown]);
   const list=(items||[]).filter(a=>cat==="All"||a.category===cat);
   const counts={All:(items||[]).length};(items||[]).forEach(a=>{counts[a.category]=(counts[a.category]||0)+1;});
-  const cats=["All","Film","Actors","Casting","Theater","Industry"].filter(k=>counts[k]);
+  const cats=["All","Film","Actors","Casting","Theater","Industry"].filter(k=>k==="All"||counts[k]>=5); // a one-story chip looks broken
   const months=[];list.forEach((a,i)=>{const m=String(a.written_at||"").slice(0,7);if(m&&!months.find(x=>x[0]===m))months.push([m,i]);});
   const monLabel=m=>new Date(m+"-15T12:00:00Z").toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"});
   const vis=list.slice(0,shown);
