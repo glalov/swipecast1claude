@@ -9348,6 +9348,34 @@ function cookieOptedOut(cat){
     return p[cat]===false;
   }catch(_){return false;}
 }
+// ── Signup source (owner 2026-11-25): remember where this browser FIRST arrived from (stays on the
+// device, nothing is sent), then attach it once when a brand-new member first signs in. Sign-in
+// round trips (Google, Stripe) and our own pages never count as a source. Honors the analytics opt-out.
+const CS_FT_KEY="cs_first_touch";
+(function csCaptureFirstTouch(){
+  try{
+    if(typeof window==="undefined")return;
+    const ref=document.referrer||"";let host="";try{host=ref?new URL(ref).hostname:"";}catch(_){}
+    if(/(^|\.)castslate\.com$|^accounts\.google\.|checkout\.stripe\.com|billing\.stripe\.com/.test(host))return;
+    const prev=JSON.parse(localStorage.getItem(CS_FT_KEY)||"null");
+    if(prev&&Date.now()-prev.at<60*86400000)return; // first touch wins for 60 days
+    const q=new URLSearchParams(location.search);const utm={};
+    ["utm_source","utm_medium","utm_campaign"].forEach(k=>{const v=q.get(k);if(v)utm[k]=v.slice(0,80);});
+    localStorage.setItem(CS_FT_KEY,JSON.stringify({ref:ref.slice(0,300),landing:(location.pathname+location.search).slice(0,300),utm,at:Date.now()}));
+  }catch(_){}
+})();
+function csSendSignupSource(profile){
+  try{
+    if(!profile||!profile.id||!profile.created_at)return;
+    if(Date.now()-new Date(profile.created_at).getTime()>3*86400000)return;
+    if(cookieOptedOut("analytics"))return;
+    const sentKey="cs_ft_sent_"+profile.id;
+    if(localStorage.getItem(sentKey))return;
+    const ft=JSON.parse(localStorage.getItem(CS_FT_KEY)||"null")||{ref:"",landing:location.pathname,utm:{},at:Date.now()};
+    localStorage.setItem(sentKey,"1");
+    window.sb.rpc("record_signup_source",{p_referrer:ft.ref||"",p_landing:ft.landing||"",p_utm:ft.utm||{},p_first_seen:new Date(ft.at||Date.now()).toISOString()}).then(()=>{},()=>{});
+  }catch(_){}
+}
 function writeCookiePrefs(p){
   try{localStorage.setItem(COOKIE_PREF_KEY,JSON.stringify({...p,savedAt:new Date().toISOString()}));}catch(_){}
 }
@@ -63205,6 +63233,7 @@ function App(){
           }else{data={...data,public_slug:base};}
         }catch(_){}
       }
+      csSendSignupSource(data);
       setMyProfile(data||null);return data||null;
     }catch(e){
       _dbg().loginStep="profile-fetch-threw";_dbg().lastError="loadProfile threw: "+(e?.message||String(e));

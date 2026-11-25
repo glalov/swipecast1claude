@@ -1,0 +1,4 @@
+-- Applied 2026-11-25 via Supabase MCP (migration "signup_sources"): table public.signup_sources
+-- (user_id pk, source, referrer_host, landing, utm, first_seen_at, created_at), RLS on,
+-- service_role grants only, and SECURITY DEFINER rpc public.record_signup_source(text,text,jsonb,timestamptz)
+-- executable by authenticated; saves once per new member (account < 3 days old).
