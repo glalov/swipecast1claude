@@ -439,7 +439,7 @@ const SOURCES: Source[] = [
       const t = (when.match(/(\d{1,2}:\d{2})\s*$/) || [])[1];
       const ev = await detail(m[1], { city: NY, venue: "Film Forum", area: "Greenwich Village", marquee: "FILM FORUM" }, ctx, { datesFrom: "og" });
       out.push({ title: guest ? `${film}: ${guest}` : film, url: m[1], city: NY, venue: "Film Forum", area: "Greenwich Village", marquee: "FILM FORUM",
-        dates: dates.slice(0, 1), time: t ? t + " PM" : undefined, desc: guest ? `${film}, ${guest.charAt(0).toLowerCase() + guest.slice(1)}.` : (ev?.desc || ""), image: ev?.image || null, tags: "in person" });
+        dates: dates.slice(0, 1), time: t ? t + (Number(t.split(":")[0]) >= 10 && Number(t.split(":")[0]) < 12 ? " AM" : " PM") : undefined, desc: guest ? `${film}, ${guest.charAt(0).toLowerCase() + guest.slice(1)}.` : (ev?.desc || ""), image: ev?.image || null, tags: "in person" });
     }
     return out;
   } },
