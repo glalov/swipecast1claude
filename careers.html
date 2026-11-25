@@ -79,17 +79,18 @@
   <meta property="og:title" content="Careers at CastSlate"/>
   <meta property="og:description" content="Join the team building the future of casting. Open roles at CastSlate."/>
   <meta property="og:url" content="https://www.castslate.com/careers"/>
-  <meta property="og:image" content="https://www.castslate.com/og-card.png"/>
-  <meta property="og:image:secure_url" content="https://www.castslate.com/og-card.png"/>
-  <meta property="og:image:type" content="image/png"/>
+  <!-- Share image (owner 2026-11-25): on-set photo with an open clapper. Google crops it to a small square, which a text card could not survive. -->
+  <meta property="og:image" content="https://www.castslate.com/assets/og/castslate-on-set.jpg"/>
+  <meta property="og:image:secure_url" content="https://www.castslate.com/assets/og/castslate-on-set.jpg"/>
+  <meta property="og:image:type" content="image/jpeg"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:image:alt" content="CastSlate — Open casting calls for actors"/>
+  <meta property="og:image:alt" content="Actors on a film set with an open clapperboard — CastSlate casting calls"/>
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="Careers at CastSlate"/>
   <meta name="twitter:description" content="Join the team building the future of casting. Open roles at CastSlate."/>
-  <meta name="twitter:image" content="https://www.castslate.com/og-card.png"/>
+  <meta name="twitter:image" content="https://www.castslate.com/assets/og/castslate-on-set.jpg"/>
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico?v=6" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=6"/>
@@ -168,18 +169,18 @@
   <link rel="preload" as="script" href="/vendor/react.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/react-dom.production.min.js"/>
   <link rel="preload" as="script" href="/vendor/supabase.min.js"/>
-  <link rel="preload" as="script" href="/app.js?v=20261125-194008"/>
+  <link rel="preload" as="script" href="/app.js?v=20261125-195858"/>
   <!-- QR codes generated via api.qrserver.com — no JS library needed -->
 
-  <!-- BUILD: 20261125-194008 -->
-  <meta name="build-version" content="20261125-194008"/>
+  <!-- BUILD: 20261125-195858 -->
+  <meta name="build-version" content="20261125-195858"/>
   <script>
     /* Force reload when a new deploy lands (build version changed in localStorage).
        BFCache restore is handled by the React onPageShow handler — do NOT hard-reload
        here, as that restarts the full auth cycle and causes "random logout" flicker. */
     (function(){
       try{
-        var B="20261125-194008";
+        var B="20261125-195858";
         var prev=localStorage.getItem("sc_bv");
         localStorage.setItem("sc_bv",B);
         if(prev&&prev!==B){
@@ -740,7 +741,7 @@
         "/vendor/react-dom.production.min.js",
         "/vendor/supabase.min.js",
         "INIT",
-        "/app.js?v=20261125-194008"
+        "/app.js?v=20261125-195858"
       ];
       function step(){
         var it=STEPS.shift();
@@ -781,7 +782,7 @@
     function load(){
       if(fired||window.__CS_CASTORIA_OFF)return; fired=true;
       var s=document.createElement('script');
-      s.src='/castoria.js?v=20261125-194008';
+      s.src='/castoria.js?v=20261125-195858';
       s.async=true;
       document.body.appendChild(s);
     }

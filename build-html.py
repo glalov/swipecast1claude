@@ -325,17 +325,18 @@ def render_page(title, desc, canonical, extra_preload="", seo_more="", head_ld="
   <meta property="og:title" content="{title}"/>
   <meta property="og:description" content="{desc}"/>
   <meta property="og:url" content="{canonical}"/>
-  <meta property="og:image" content="https://www.castslate.com/og-card.png"/>
-  <meta property="og:image:secure_url" content="https://www.castslate.com/og-card.png"/>
-  <meta property="og:image:type" content="image/png"/>
+  <!-- Share image (owner 2026-11-25): on-set photo with an open clapper. Google crops it to a small square, which a text card could not survive. -->
+  <meta property="og:image" content="https://www.castslate.com/assets/og/castslate-on-set.jpg"/>
+  <meta property="og:image:secure_url" content="https://www.castslate.com/assets/og/castslate-on-set.jpg"/>
+  <meta property="og:image:type" content="image/jpeg"/>
   <meta property="og:image:width" content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:image:alt" content="CastSlate — Open casting calls for actors"/>
+  <meta property="og:image:alt" content="Actors on a film set with an open clapperboard — CastSlate casting calls"/>
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image"/>
   <meta name="twitter:title" content="{title}"/>
   <meta name="twitter:description" content="{desc}"/>
-  <meta name="twitter:image" content="https://www.castslate.com/og-card.png"/>
+  <meta name="twitter:image" content="https://www.castslate.com/assets/og/castslate-on-set.jpg"/>
   <!-- Favicon -->
   <link rel="icon" href="/favicon.ico?v=6" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=6"/>
