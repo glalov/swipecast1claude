@@ -12,6 +12,8 @@
 //
 // POST {secret, action: "run" | "status"}; secret = app_secrets.seo_agent_secret.
 // Search Console access = app_secrets.gsc_service_account (service-account JSON).
+// Since 2026-11-25 it uses NO AI: page ideas and title tests come from fixed rules
+// (idea(), TITLE_VARIANTS). action:"dry" previews a run without writing or emailing.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -24,7 +26,6 @@ const REPORT_TO = "officecasting01@gmail.com";
 const INDEXNOW_KEY = "a6124d7bc19f64d5eba71e5868b9a59a";
 const NYC_KEY = /(^|-)(nyc|new-?york|ny|manhattan|brooklyn|queens|bronx|staten-island)(-|$)/;
 const BUILTIN = ["new-york", "film", "student-films", "short-films", "commercials", "tv-and-streaming", "non-union", "sag-aftra", "theater"];
-const GEMINI_MODELS = ["gemini-flash-latest", "gemini-3.5-flash", "gemini-flash-lite-latest"];
 const MAX_NEW_PAGES = 2;
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json" } });
 const day = (d: Date) => d.toISOString().slice(0, 10);
@@ -94,53 +95,58 @@ async function gscQuery(token: string, dims: string[], start: string, end: strin
   return d.rows || [];
 }
 
-// ── Gemini ────────────────────────────────────────────────────────────────────
-async function gemini(key: string, system: string, prompt: string, search = false): Promise<unknown> {
-  // Google Search grounding can't be combined with JSON mode, so in search mode
-  // the JSON is pulled out of the text instead.
-  const body = JSON.stringify({
-    system_instruction: { parts: [{ text: system }] },
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.4, maxOutputTokens: 4096, ...(search ? {} : { responseMimeType: "application/json" }) },
-    ...(search ? { tools: [{ google_search: {} }] } : {}),
-  });
-  for (const model of GEMINI_MODELS) {
-    try {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
-        { method: "POST", headers: { "Content-Type": "application/json" }, body });
-      if (!r.ok) { console.error("[seo] gemini", model, r.status); continue; }
-      const d = await r.json();
-      const text = (d?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join("");
-      const clean = text.replace(/```json|```/g, "").trim();
-      try { return JSON.parse(clean); } catch { /* try the outermost {...} */ }
-      const a = clean.indexOf("{"), b = clean.lastIndexOf("}");
-      if (a >= 0 && b > a) { try { return JSON.parse(clean.slice(a, b + 1)); } catch { /* next */ } }
-    } catch (e) { console.error("[seo] gemini fail", model, String(e)); }
-  }
-  return null;
+// ── rule-based page ideas (no AI since 2026-11-25: Gemini credits ran out, owner on a budget) ──
+// A real search is turned into a page only when its words map cleanly onto casting fields:
+// a city (never New York — one NYC page), a project type, union status, or a role kind.
+const TYPE_MAP: [RegExp, string, string][] = [
+  [/student/, "student", "Student film"], [/short film|shorts\b/, "short", "Short film"], [/commercial/, "commercial", "Commercial"],
+  [/theat|musical|broadway|stage play/, "theat|musical|stage", "Theater"], [/web series|tv|television|series|streaming/, "tv|series|web|stream", "TV & series"],
+  [/feature/, "feature", "Feature film"], [/music video/, "music video", "Music video"], [/indie|independent/, "indie|independent", "Indie film"],
+];
+const TEXT_MAP: [RegExp, string, string][] = [
+  [/extra|background/, "extra|background", "Background & extras"], [/voice ?over|voice acting/, "voice", "Voice-over"],
+  [/model/, "model", "Modeling"], [/kid|child|teen|youth|minor/, "kid|child|teen|youth|minor", "Kids & teens"],
+];
+const UNION_MAP: [RegExp, string, string][] = [[/non[- ]?union/, "non", "Non-union"], [/\bsag\b|sag-aftra|union/, "sag", "SAG-AFTRA"]];
+const LA_Q = /\b(los angeles|l\.?a\.?|hollywood|burbank|santa monica|long beach)\b/;
+function slugify(s: string) { return s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+function idea(q: string, cities: string[]): { key: string; label: string; title: string; description: string; rules: Rules } | null {
+  const l = q.toLowerCase();
+  if (/castslate|backstage|actors access|nycastings|casting networks/.test(l)) return null;
+  if (/\b(nyc|new york|manhattan|brooklyn|queens|bronx|staten island)\b/.test(l)) return null; // one NYC page
+  let city: string | null = null;
+  if (LA_Q.test(l) && cities.includes("Los Angeles")) city = "Los Angeles";
+  else for (const c of cities) if (c !== "New York" && c.length > 3 && l.includes(c.toLowerCase())) { city = c; break; }
+  const t = TYPE_MAP.find(([re]) => re.test(l)), x = TEXT_MAP.find(([re]) => re.test(l)), u = UNION_MAP.find(([re]) => re.test(l));
+  const rules: Rules = { city, type_re: t ? t[1] : null, text_re: x ? x[1] : null, union_re: u ? u[1] : null };
+  const parts = [u?.[2], t?.[2] || x?.[2]].filter(Boolean) as string[];
+  // A single type or union with no city is already a built-in page (/film, /theater, /non-union...).
+  if (!city && !x && (parts.length < 2)) return null;
+  if (!city && !t && !x && !u) return null;
+  const what = parts.length ? parts.join(" ") : "Acting";
+  const label = `${what} casting calls${city ? " in " + city : ""}`;
+  let title = `${what} Casting Calls${city ? " in " + city : ""} | CastSlate`;
+  if (title.length > 60) title = `${what} Casting Calls | CastSlate`;
+  const description = `Open ${what.toLowerCase()} casting calls${city ? " in " + city : ""}, updated daily. Create a free profile and submit to roles that fit you.`.slice(0, 155);
+  return { key: slugify([city, ...parts].filter(Boolean).join(" ") || "acting").slice(0, 60), label: label.charAt(0).toUpperCase() + label.slice(1), title, description, rules };
 }
-
-const PAGE_SYSTEM = `You design landing pages for CastSlate, a casting-call website, based on real Google searches.
-Each page lists live casting calls that match simple rules. Return JSON: {"pages":[...]} with at most 4 objects:
-{"key":"lowercase-hyphen-slug","label":"short page heading","title":"<= 60 chars, ends with | CastSlate","description":"<= 155 chars, honest, inviting","city":"canonical city or null","type_re":"regex or null","union_re":"regex or null","text_re":"regex or null","source_query":"the search it targets"}
-Rules: only propose pages for searches by people looking for acting work/castings/auditions. city must be exactly one of the canonical cities given, or null.
-type_re matches the casting type field (values listed), union_re the union field, text_re the title+tagline. Keep regexes simple (alternation of words).
-Never promise anything untrue (no "paid" unless the rule only matches paid work, no numbers). Do not duplicate an existing page.
-New York City is covered by ONE page (new-york). Never propose a page for New York / NYC or any borough, in any form.`;
-const TITLE_SYSTEM = `You rewrite one search-result title and description for a CastSlate casting-calls landing page to earn more clicks from people searching for it.
-Return JSON {"title":"<= 60 chars, ends with | CastSlate","description":"<= 155 chars"}. Honest, specific, no clickbait, no numbers you can't know, no emojis.`;
+// Seed searches when Search Console is unavailable: common actor searches outside NYC.
+const SEED_QUERIES = ["casting calls los angeles", "student film casting los angeles", "auditions los angeles", "non union casting calls los angeles",
+  "commercial casting calls los angeles", "background extras casting", "voice over auditions", "kids casting calls", "sag-aftra student film casting",
+  "non union short film casting", "theater auditions los angeles", "web series casting calls"];
+// Title tests without AI: honest alternative wordings, tried in turn.
+const TITLE_VARIANTS = [
+  (l: string) => `${l} — Apply Today | CastSlate`,
+  (l: string) => `${l}: New Roles Daily | CastSlate`,
+  (l: string) => `Open ${l} | CastSlate`,
+];
 
 // ── run ───────────────────────────────────────────────────────────────────────
 // deno-lint-ignore no-explicit-any
-async function run(sb: any) {
+async function run(sb: any, dry = false) {
   const notes: string[] = [];
-  let key: string | null = null;
-  try { const { data } = await sb.rpc("news_get_gemini_key"); if (typeof data === "string" && data) key = data; } catch { /* */ }
-  if (!key) return { notes: ["No Gemini key — nothing done."], impressions: 0, clicks: 0, created: [], retitled: [] };
-
-  // Real Search Console numbers when connected; otherwise ("no-key mode") Gemini's
-  // Google Search finds what actors commonly search for, and the same page-creation
-  // pipeline runs on those. Title tests need real click data, so they wait for the key.
+  // Real Search Console numbers when connected; otherwise a fixed list of common actor
+  // searches. Title tests need real click data, so they only run with Search Console.
   const { data: saRow } = await sb.from("app_secrets").select("value").eq("key", "gsc_service_account").maybeSingle();
   let queries: Row[] = [], pages: Row[] = [];
   let impressions = 0, clicks = 0;
@@ -155,16 +161,12 @@ async function run(sb: any) {
     impressions = pages.reduce((a, r) => a + r.impressions, 0); clicks = pages.reduce((a, r) => a + r.clicks, 0);
     const wkStart = new Date(end.getTime() - 6 * 86400000);
     const week = await gscQuery(token, ["page"], day(wkStart), day(end), 1000);
-    if (week.length) {
+    if (week.length && !dry) {
       await sb.from("seo_page_stats").upsert(week.map((r) => ({ page: r.keys[0], week_start: day(wkStart), impressions: r.impressions, clicks: r.clicks, position: Math.round(r.position * 10) / 10 })), { onConflict: "page,week_start" });
     }
   } else {
-    notes.push("Running without Search Console data (no key) — search ideas come from Google Search via Gemini.");
-    const out = await gemini(key, "You research what people type into Google when looking for acting work. Use Google Search. Reply with ONLY JSON.",
-      `Find 30 specific, real Google search phrases that actors in the United States (especially New York City) use to find casting calls, auditions or acting jobs — e.g. by city/borough, project type (student film, short film, commercial, theater, web series), union status, age group or role type. Return {"queries":["...", ...]} — lowercase phrases only.`, true) as { queries?: string[] } | null;
-    queries = (out?.queries || []).filter((q) => typeof q === "string" && q.length < 90).slice(0, 40)
-      .map((q) => ({ keys: [q.toLowerCase().trim()], clicks: 0, impressions: 5, ctr: 0, position: 0 }));
-    if (!queries.length) notes.push("Google Search via Gemini returned no ideas this week.");
+    notes.push("Running without Search Console data — using common actor searches instead.");
+    queries = SEED_QUERIES.map((q) => ({ keys: [q], clicks: 0, impressions: 5, ctr: 0, position: 0 }));
   }
 
   // live castings (same definition of live as Browse / api/landing.js)
@@ -184,21 +186,15 @@ async function run(sb: any) {
     .sort((a, b) => b.impressions - a.impressions).slice(0, 40);
   if (cand.length && live.length) {
     const cities = [...new Set(live.map((c) => canonCity(c.location)).filter(Boolean))];
-    const types = [...new Set(live.map((c) => c.type).filter(Boolean))];
-    const unions = [...new Set(live.map((c) => c.union_status).filter(Boolean))];
-    const prompt = `Searches (query — impressions, clicks, avg position):
-${cand.map((q) => `${q.keys[0]} — ${q.impressions}, ${q.clicks}, ${q.position.toFixed(1)}`).join("\n")}
-
-Existing page keys (do not duplicate): ${[...existingKeys].join(", ")}
-Canonical cities with live castings: ${cities.join(", ")}
-Casting types in use: ${types.join(" | ")}
-Union values in use: ${unions.join(" | ")}`;
-    const out = await gemini(key, PAGE_SYSTEM, prompt) as { pages?: Record<string, string | null>[] } | null;
-    for (const p of out?.pages || []) {
+    const seen = new Set<string>();
+    const ideas = cand.map((q) => ({ q: q.keys[0], i: idea(q.keys[0], cities) })).filter((x) => x.i && !seen.has(x.i.key) && seen.add(x.i.key));
+    const sameRules = (a: Rules, b: Rules) => ["city", "type_re", "union_re", "text_re"].every((f) => ((a as Record<string, unknown>)[f] || null) === ((b as Record<string, unknown>)[f] || null));
+    for (const { q, i: p } of ideas as { q: string; i: NonNullable<ReturnType<typeof idea>> }[]) {
       if (created.length >= MAX_NEW_PAGES) break;
-      const k = String(p.key || "").toLowerCase().trim();
+      const k = p.key;
       if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(k) || k.length < 3 || k.length > 60 || existingKeys.has(k)) continue;
-      const rules: Rules = { city: p.city || null, type_re: p.type_re || null, union_re: p.union_re || null, text_re: p.text_re || null };
+      const rules: Rules = p.rules;
+      if ((existing || []).some((e: Rules) => sameRules(e, rules))) continue;
       if (rules.city && !cities.includes(rules.city)) continue;
       // NYC look-alike pages split Google's signal and pushed /casting-calls/new-york from
       // page 1 to page 4 (Sep 26 → Oct 10, 2026). New York has exactly one page; api/landing.js
@@ -210,7 +206,8 @@ Union values in use: ${unions.join(" | ")}`;
       if (n < 3) continue;
       const title = String(p.title || "").slice(0, 70), label = String(p.label || "").slice(0, 60), desc = String(p.description || "").slice(0, 170);
       if (!title || !label || !desc) continue;
-      const { error } = await sb.from("seo_landing_pages").insert({ key: k, label, title, description: desc, ...rules, source_query: String(p.source_query || "").slice(0, 200) });
+      if (dry) { created.push(k + " (dry, " + n + " live)"); existingKeys.add(k); continue; }
+      const { error } = await sb.from("seo_landing_pages").insert({ key: k, label, title, description: desc, ...rules, source_query: q.slice(0, 200) });
       if (!error) { created.push(k); existingKeys.add(k); }
     }
   }
@@ -218,7 +215,7 @@ Union values in use: ${unions.join(" | ")}`;
   // ── 2. retitle the agent's own pages: seen but rarely clicked ─────────────
   const retitled: string[] = [];
   const byPage = new Map(pages.map((r) => [r.keys[0].replace(/\/$/, ""), r]));
-  for (const p of existing || []) {
+  for (const p of (dry ? [] : existing || [])) {
     if (!p.active || p.created_by !== "seo-agent") continue;
     const url = `${ORIGIN}/casting-calls/${p.key}`;
     const stat = byPage.get(url);
@@ -241,8 +238,9 @@ Union values in use: ${unions.join(" | ")}`;
     if (!stat || ageWeeks < 4 || stat.impressions < 50 || stat.ctr >= 0.015) continue;
     if (changedAt && Date.now() - changedAt < 28 * 86400000) continue;
     if (retitled.length >= 2) break;
-    const out = await gemini(key, TITLE_SYSTEM, `Current title: ${p.title}\nCurrent description: ${p.description}\nPage lists casting calls for: ${p.label}\nTarget search: ${p.source_query || p.label}\nLast 28 days: ${stat.impressions} impressions, ${stat.clicks} clicks, average position ${stat.position.toFixed(1)}.`) as { title?: string; description?: string } | null;
-    const t = String(out?.title || "").slice(0, 70), d = String(out?.description || "").slice(0, 170);
+    const variants = TITLE_VARIANTS.map((f) => f(p.label)).filter((v) => v.length <= 62 && v !== p.title);
+    const t = variants[(p.key.length + (p.title || "").length) % Math.max(1, variants.length)] || "";
+    const d = String(p.description || "").slice(0, 170);
     if (!t || !d || t === p.title) continue;
     await sb.from("seo_landing_pages").update({ prev_title: p.title, prev_description: p.description, title: t, description: d, title_changed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("key", p.key);
     retitled.push(p.key);
@@ -250,7 +248,7 @@ Union values in use: ${unions.join(" | ")}`;
 
   // ── 3. tell Bing & co about new / changed pages ───────────────────────────
   const urls = [...created, ...retitled].map((k) => `${ORIGIN}/casting-calls/${k}`);
-  if (urls.length) {
+  if (urls.length && !dry) {
     await fetch("https://api.indexnow.org/indexnow", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ host: "www.castslate.com", key: INDEXNOW_KEY, keyLocation: `${ORIGIN}/${INDEXNOW_KEY}.txt`, urlList: urls }) }).catch(() => {});
   }
@@ -291,7 +289,8 @@ Deno.serve(async (req) => {
       const { data: pages } = await sb.from("seo_landing_pages").select("key,title,active,created_at");
       return json({ ok: true, search_console_connected: !!gsc, agent_pages: pages || [] });
     }
-    if (body.action !== "run") return json({ error: "Unknown action" }, 400);
+    if (body.action !== "run" && body.action !== "dry") return json({ error: "Unknown action" }, 400);
+    if (body.action === "dry") { const r = await run(sb, true); return json({ ok: true, dry: true, impressions: r.impressions, clicks: r.clicks, would_create: r.created, notes: r.notes, top_queries: (r.queries || []).slice(0, 15).map((q) => q.keys[0]) }); }
     const r = await run(sb);
     await sb.from("seo_agent_runs").insert({ impressions: r.impressions, clicks: r.clicks, pages_created: r.created.length, titles_changed: r.retitled.length, notes: r.notes.join(" | ") || null });
     if (body.report !== false) await report(r);
