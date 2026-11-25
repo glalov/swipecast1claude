@@ -327,8 +327,6 @@ async function detail(url: string, base: Omit<Cand, "title" | "url" | "dates">, 
   } else {
     const text = opts.datesFrom === "page" ? clean(h).slice(0, 60000) : desc;
     dates = textDates(text, ctx.today);
-    // Showtime pickers often carry machine dates (Roxy: data-date="2026-11-27").
-    if (opts.datesFrom === "page" && !dates.length) dates = [...new Set([...h.matchAll(/(?:data-date|datetime)=["'](\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]))].sort();
     time = timeIn(text);
   }
   dates = dates.filter((d) => d >= ctx.today && d <= ctx.horizon);
@@ -402,26 +400,24 @@ const SOURCES: Source[] = [
   { id: "laemmle", city: LA, run: async (ctx) => {
     const urls = await links("https://www.laemmle.com/qa-events", /laemmle\.com\/film\/[a-z0-9-]+$/i, 25);
     const got = await pool(urls, 5, (u) => detail(u, { city: LA, venue: "Laemmle Theatres", area: "Los Angeles", marquee: "LAEMMLE", tags: "Q&A" }, ctx, { datesFrom: "page" }));
-    return got.filter(Boolean).map((c) => {
-      // Prefer dates written next to the Q&A mention; a film's whole run is not the event.
-      const low = clean(c!.html);
-      const near = [...low.matchAll(/.{0,160}(?:q\s*&\s*a|in person|conversation|discussion|panel).{0,160}/gi)].map((m) => m[0]).join(" ");
-      const d = textDates(near, ctx.today).filter((x) => x >= ctx.today && x <= ctx.horizon);
-      return { ...c!, dates: d.length ? d.slice(0, 4) : c!.dates.slice(0, 1) };
-    });
+    // Each film page has an exact line: "Q&A In Person Mon, Nov 30 · 7:15 PM · Glendale".
+    const out: Cand[] = [];
+    for (const c of got) {
+      if (!c) continue;
+      const text = clean(c.html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " "));
+      const hits = [...text.matchAll(/(Q&A|Panel|Discussion|Conversation|Introduction|In Person)[^·]{0,40}?((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), [A-Z][a-z]{2} \d{1,2}) · (\d{1,2}:\d{2} [AP]M) · ([A-Za-z .'-]{3,40}?)(?= [A-Z][a-z]|$)/g)];
+      const dates = [...new Set(hits.flatMap((m) => textDates(m[2], ctx.today)))].filter((d) => d >= ctx.today && d <= ctx.horizon).sort();
+      if (!dates.length) continue;
+      const theatre = hits[0][4].trim();
+      out.push({ ...c, dates: dates.slice(0, 3), time: dates.length === 1 ? hits[0][3] : undefined, venue: `Laemmle ${theatre}`.replace(/Laemmle Laemmle/, "Laemmle"), area: theatre === "Monica Film Center" ? "Santa Monica" : theatre === "NoHo 7" ? "North Hollywood" : theatre === "Town Center 5" ? "Encino" : theatre === "Newhall" ? "Santa Clarita" : theatre === "Royal" ? "West LA" : theatre });
+    }
+    return out;
   } },
   // IFC Center: each film page's share text opens with the special date ("Thu Dec 17: Sneak preview + Q&A …").
   { id: "ifc-center", city: NY, run: async (ctx) => {
     const urls = await links("https://www.ifccenter.com/", /ifccenter\.com\/films\/[a-z0-9-]+\/?$/i, 45);
     const got = await pool(urls, 6, (u) => detail(u, { city: NY, venue: "IFC Center", area: "Greenwich Village", marquee: "IFC" }, ctx, { datesFrom: "og" }));
     return got.filter((c) => c && RELEVANT.test(c.desc || "")) as Cand[];
-  } },
-  // Roxy Cinema: special screenings are titled "… + Q&A".
-  { id: "roxy", city: NY, run: async (ctx) => {
-    const urls = await links("https://www.roxycinemanewyork.com/", /roxycinemanewyork\.com\/screenings\/[a-z0-9-]+\/?$/i, 60);
-    const pick = urls.filter((u) => /-qa\/?$|q-and-a|conversation|premiere|in-person|intro/i.test(u)).slice(0, 20);
-    const got = await pool(pick, 5, (u) => detail(u, { city: NY, venue: "Roxy Cinema", area: "Tribeca", marquee: "ROXY" }, ctx, { datesFrom: "page" }));
-    return got.filter(Boolean).map((c) => ({ ...c!, dates: c!.dates.slice(0, 3) }));
   } },
   // SVA Theatre: festivals and showcases rent the house; keep the film ones.
   { id: "sva-theatre", city: NY, run: async (ctx) => {
