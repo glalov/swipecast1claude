@@ -4222,8 +4222,9 @@ html .nav-ddm.nav-mm button.nav-mm-cta:hover{background:none;color:#33826A;}
 html .nav-ddm.nav-acct,html .nav-ddm.nav-acct.two{grid-template-columns:repeat(3,minmax(0,1fr));}
 html .nav-ddm.nav-acct.two .acct-col:last-child{grid-column:span 2;}
 .nav-acct .acct-sep-who{margin:22px 0 14px;}
-html .nav-ddm.nav-acct .acct-col button.acct-out-q{display:inline-flex;flex-direction:row;align-items:center;gap:8px;padding:2px 0;font-family:inherit;font-size:14px;font-weight:700;color:#3A322A;cursor:pointer;}
-html .nav-ddm.nav-acct .acct-col button.acct-out-q:hover{color:#B3412F;}
+html .nav-ddm.nav-acct .acct-col button.acct-out-q{display:inline-flex;flex-direction:row;align-items:center;gap:8px;padding:2px 0;font-family:inherit;font-size:14px;font-weight:500;color:#766C62;cursor:pointer;transition:color .18s ease;}
+/* 2026-11-24 owner (signout-placement-demo.html option B): Sign out stays put but goes quiet, soft grey like the "Signed in as" label (a touch darker for readability), navy on hover. */
+html .nav-ddm.nav-acct .acct-col button.acct-out-q:hover{color:#1A1A2E;}
 .nav-acct .acct-sep{height:1px;background:#EFE8DA;margin:4px 0 12px;}
 .nav-acct .acct-col{padding:0 30px;border-left:1px solid #EFE8DA;min-width:0;}
 .nav-acct .acct-col:first-child{border-left:0;}
