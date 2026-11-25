@@ -482,6 +482,8 @@ async function cardPick(sb: ReturnType<typeof createClient>, force: boolean) {
       return { picked: art, tried, passed: passed.map((x) => x.e.title + " (" + x.face + ")") };
     } catch (_) { tried.push(e.title + ": upload error"); }
   }
+  // Gemini down or out of credits: don't record "none" for the month, so tomorrow's run tries again.
+  if (tried.some((t) => t.includes("vision error"))) return { picked: null, tried, retry: "vision unavailable, will retry next run" };
   const none = { month, url: null, none: true, picked_at: new Date().toISOString() };
   await sb.from("site_settings").update({ events_card_art: none }).eq("id", 1);
   return { picked: null, tried };
