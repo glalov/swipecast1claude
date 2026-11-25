@@ -405,14 +405,22 @@ async function artCheck(sb: ReturnType<typeof createClient>) {
 // Dashboard Industry Events card header (owner, 2026-11-17, demo on the talent dashboard).
 // Once a month, look at this month's event photos and keep ONE that survives a wide crop:
 // shape check first (wide, sharp), then Gemini looks at it (real photo or film still, no
-// designed text/logo/poster, faces inside a ~2.2:1 strip) and gives the focus point.
+// designed text/logo/poster, a clearly visible face inside a ~2.2:1 strip), gives the focus
+// point and a face score; the best face wins. Re-picks when the chosen event ends (2026-11-25).
 // The winner is COPIED into our own storage so the card never hotlinks or breaks.
 // Nothing passes -> url null, and the card shows the owner's licensed marquee photo.
 async function cardPick(sb: ReturnType<typeof createClient>, force: boolean) {
   const month = nyToday().slice(0, 7);
   const { data: ss } = await sb.from("site_settings").select("events_card_art").eq("id", 1).maybeSingle();
-  const cur = (ss as { events_card_art?: { month?: string } } | null)?.events_card_art;
-  if (!force && cur?.month === month) return { skipped: "already picked this month", current: cur };
+  const cur = (ss as { events_card_art?: { month?: string; event_id?: string } } | null)?.events_card_art;
+  // Owner 2026-11-25: keep this month's photo only while its event is still ahead. Once that
+  // event ends (or is unpublished), pick again from what's still coming this month.
+  if (!force && cur?.month === month) {
+    if (!cur.event_id) return { skipped: "already picked this month", current: cur };
+    const { data: ev } = await sb.from("film_events").select("ends_on,status").eq("id", cur.event_id).maybeSingle();
+    const evr = ev as { ends_on?: string; status?: string } | null;
+    if (evr && evr.status === "published" && String(evr.ends_on || "") >= nyToday()) return { skipped: "current pick still upcoming", current: cur };
+  }
   const { data: gk } = await sb.rpc("news_get_gemini_key");
   const key = typeof gk === "string" ? gk : "";
   if (!key) return { error: "no key" };
@@ -426,8 +434,15 @@ async function cardPick(sb: ReturnType<typeof createClient>, force: boolean) {
   const rows = ((data || []) as { id: string; title: string; image_url: string; starts_on: string; featured_rank: number | null }[])
     .sort((a, b) => ((a.featured_rank ?? 99) - (b.featured_rank ?? 99)) || String(a.starts_on).localeCompare(String(b.starts_on)));
   const tried: string[] = [];
-  const prompt = 'This image will be the header of a small card on a website. It will be cropped to a wide strip about 2.2 times wider than it is tall, with a white title over the bottom-left. Say ok:true ONLY if ALL of these hold: it is a real photograph or a film still (NOT a poster, flyer, logo, banner, graphic, collage, illustration or screenshot); it has NO designed text, titles, logos or dates in it; it is not mostly blank or one flat colour; and its main subject (faces above all) stays fully inside a 2.2:1 crop. Also give the point the crop should centre on, as percentages from the left (x) and top (y). Reply with only JSON: {"ok":true,"x":50,"y":40} or {"ok":false}.';
+  const prompt = 'This image will be the header of a small card on a website. It will be cropped to a wide strip about 2.2 times wider than it is tall, with a white title over the bottom-left. Say ok:true ONLY if ALL of these hold: it is a real photograph or a film still (NOT a poster, flyer, logo, banner, graphic, collage, illustration or screenshot); it has NO designed text, titles, logos or dates in it; it is not mostly blank or one flat colour; and its main subject stays fully inside a 2.2:1 crop; AND it shows at least one person whose face is clearly visible, facing the camera or in profile, and large enough to read on a small card (NOT crowds seen from behind, NOT tiny faces in the distance, NOT empty venues, screens, streets or objects). Also give the point the crop should centre on, as percentages from the left (x) and top (y), and a "face" score from 1 to 10 for how large, clear and appealing the main face is. Reply with only JSON: {"ok":true,"x":50,"y":40,"face":7} or {"ok":false}.';
+  // Owner 2026-11-25: faces required, and the strongest face wins. Look at every candidate,
+  // keep the passes, then copy only the winner into storage.
+  const passed: { e: { id: string; title: string }; bytes: Uint8Array; mime: string; pos: string; face: number }[] = [];
+  const t0 = Date.now();
   for (const e of rows.slice(0, 25)) {
+    // Every candidate now gets a vision call (no stop at the first pass), so stay well inside the
+    // edge wall clock, and stop early once an excellent face is in hand.
+    if (Date.now() - t0 > 90000 || passed.some((x) => x.face >= 9)) break;
     try {
       const r = await fetch(e.image_url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(15000) });
       const mime = (r.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
@@ -448,15 +463,22 @@ async function cardPick(sb: ReturnType<typeof createClient>, force: boolean) {
       if (!/"ok"\s*:\s*true/i.test(out)) { tried.push(e.title + ": rejected"); continue; }
       const num = (k: string, def: number) => { const m = out.match(new RegExp('"' + k + '"\\s*:\\s*(\\d+(?:\\.\\d+)?)')); const v = m ? parseFloat(m[1]) : def; return Math.max(0, Math.min(100, Math.round(v))); };
       const pos = `${num("x", 50)}% ${num("y", 40)}%`;
+      passed.push({ e, bytes, mime, pos, face: num("face", 5) });
+      passed.sort((a, b) => b.face - a.face); // stable: equal faces keep featured_rank / date order
+      passed.length = Math.min(passed.length, 3); // hold at most 3 images in memory
+    } catch (_) { tried.push(e.title + ": error"); }
+  }
+  for (const { e, bytes, mime, pos, face } of passed) {
+    try {
       const ext = mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg";
       const path = `events-card/${month}-${slug(e.title)}.${ext}`;
       const up = await sb.storage.from("news-media").upload(path, bytes, { contentType: mime, upsert: true, cacheControl: "31536000" });
       if (up.error) { tried.push(e.title + ": upload failed"); continue; }
       const url = sb.storage.from("news-media").getPublicUrl(path).data.publicUrl;
-      const art = { month, url, pos, event_id: e.id, title: e.title, picked_at: new Date().toISOString() };
+      const art = { month, url, pos, face, event_id: e.id, title: e.title, picked_at: new Date().toISOString() };
       await sb.from("site_settings").update({ events_card_art: art }).eq("id", 1);
-      return { picked: art, tried };
-    } catch (_) { tried.push(e.title + ": error"); }
+      return { picked: art, tried, passed: passed.map((x) => x.e.title + " (" + x.face + ")") };
+    } catch (_) { tried.push(e.title + ": upload error"); }
   }
   const none = { month, url: null, none: true, picked_at: new Date().toISOString() };
   await sb.from("site_settings").update({ events_card_art: none }).eq("id", 1);
