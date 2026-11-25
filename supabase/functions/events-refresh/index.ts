@@ -409,7 +409,7 @@ const SOURCES: Source[] = [
       const dates = [...new Set(hits.flatMap((m) => textDates(m[2], ctx.today)))].filter((d) => d >= ctx.today && d <= ctx.horizon).sort();
       if (!dates.length) continue;
       const theatre = hits[0][4].trim();
-      out.push({ ...c, dates: dates.slice(0, 3), time: dates.length === 1 ? hits[0][3] : undefined, venue: `Laemmle ${theatre}`.replace(/Laemmle Laemmle/, "Laemmle"), area: theatre === "Monica Film Center" ? "Santa Monica" : theatre === "NoHo 7" ? "North Hollywood" : theatre === "Town Center 5" ? "Encino" : theatre === "Newhall" ? "Santa Clarita" : theatre === "Royal" ? "West LA" : theatre });
+      out.push({ ...c, dates: dates.slice(0, 3), time: dates.length === 1 ? hits[0][3] : undefined, venue: (/^Monica/.test(theatre) ? "Laemmle Monica Film Center" : `Laemmle ${theatre}`).replace(/Laemmle Laemmle/, "Laemmle"), area: /^Monica/.test(theatre) ? "Santa Monica" : theatre === "NoHo 7" ? "North Hollywood" : theatre === "Town Center 5" ? "Encino" : theatre === "Newhall" ? "Santa Clarita" : theatre === "Royal" ? "West LA" : theatre });
     }
     return out;
   } },
@@ -439,7 +439,7 @@ const SOURCES: Source[] = [
       const t = (when.match(/(\d{1,2}:\d{2})\s*$/) || [])[1];
       const ev = await detail(m[1], { city: NY, venue: "Film Forum", area: "Greenwich Village", marquee: "FILM FORUM" }, ctx, { datesFrom: "og" });
       out.push({ title: guest ? `${film}: ${guest}` : film, url: m[1], city: NY, venue: "Film Forum", area: "Greenwich Village", marquee: "FILM FORUM",
-        dates: dates.slice(0, 1), time: t ? t + (Number(t.split(":")[0]) >= 10 && Number(t.split(":")[0]) < 12 ? " AM" : " PM") : undefined, desc: guest ? `${film}, ${guest.charAt(0).toLowerCase() + guest.slice(1)}.` : (ev?.desc || ""), image: ev?.image || null, tags: "in person" });
+        dates: dates.slice(0, 1), time: t ? t + (Number(t.split(":")[0]) >= 10 && Number(t.split(":")[0]) < 12 ? " AM" : " PM") : undefined, desc: guest ? `${guest.replace(/\.$/, "")}.` : (ev?.desc || ""), image: ev?.image || null, tags: "in person" });
     }
     return out;
   } },
