@@ -425,15 +425,23 @@ const SOURCES: Source[] = [
     const got = await pool(urls, 5, (u) => detail(u, { city: NY, venue: "SVA Theatre", area: "Chelsea", marquee: "SVA" }, ctx, { datesFrom: "page" }));
     return got.filter((c) => c && FILMY.test(c.title + " " + (c.desc || ""))).map((c) => ({ ...c!, dates: c!.dates.slice(0, 3) }));
   } },
-  // Film Forum: repertory house; only pages that mention a guest in person.
+  // Film Forum: its "Upcoming Events" box lists every guest appearance with the exact day and time.
   { id: "film-forum", city: NY, run: async (ctx) => {
-    const urls = await links("https://filmforum.org/", /filmforum\.org\/(?:film|events\/event)\/[a-z0-9-]+\/?$/i, 40);
-    const got = await pool(urls, 5, (u) => detail(u, { city: NY, venue: "Film Forum", area: "Greenwich Village", marquee: "FILM FORUM" }, ctx, { datesFrom: "page" }));
-    return got.filter((c) => c && /in person|q\s*&\s*a|conversation|introduc/i.test(clean(c.html).slice(0, 40000))).map((c) => {
-      const near = [...clean(c!.html).matchAll(/.{0,140}(?:in person|q\s*&\s*a|conversation|introduc).{0,140}/gi)].map((m) => m[0]).join(" ");
-      const d = textDates(near, ctx.today).filter((x) => x >= ctx.today && x <= ctx.horizon);
-      return { ...c!, dates: d.slice(0, 3) };
-    });
+    const p = await fetchText("https://filmforum.org/");
+    if (!p.ok) return [];
+    const box = p.html.slice(p.html.indexOf("Upcoming Events"), p.html.indexOf("Get Email News"));
+    const out: Cand[] = [];
+    for (const m of box.matchAll(/<h5[^>]*>\s*<a href="([^"]+)">([\s\S]*?)<\/a>\s*<\/h5>[\s\S]*?<p>([\s\S]*?)<\/p>/g)) {
+      const [film, guest = ""] = m[2].split(/<br\s*\/?>/i).map(clean);
+      const when = clean(m[3]);
+      const dates = textDates(when, ctx.today).filter((d) => d >= ctx.today && d <= ctx.horizon);
+      if (!dates.length) continue;
+      const t = (when.match(/(\d{1,2}:\d{2})\s*$/) || [])[1];
+      const ev = await detail(m[1], { city: NY, venue: "Film Forum", area: "Greenwich Village", marquee: "FILM FORUM" }, ctx, { datesFrom: "og" });
+      out.push({ title: guest ? `${film}: ${guest}` : film, url: m[1], city: NY, venue: "Film Forum", area: "Greenwich Village", marquee: "FILM FORUM",
+        dates: dates.slice(0, 1), time: t ? t + " PM" : undefined, desc: guest ? `${film}, ${guest.charAt(0).toLowerCase() + guest.slice(1)}.` : (ev?.desc || ""), image: ev?.image || null, tags: "in person" });
+    }
+    return out;
   } },
   // Symphony Space: film festivals and screenings among its shows.
   { id: "symphony-space", city: NY, run: async (ctx) => {
