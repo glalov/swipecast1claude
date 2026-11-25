@@ -44,6 +44,13 @@
 // the edge wall-clock limit (no mid-run kill => no risk of a message without its log =>
 // no duplicates). The daily drain cron re-runs to pick up the rest until all are done.
 //
+// WRITTEN AHEAD (owner 2026-11-25, no paid Gemini): POST {secret, action:"prepare", days?:10}
+// queues one manager_note_drafts row per member whose note day falls in the next `days`
+// days — the month's facts, the code-chosen theme and the writing rules. A weekly scheduled
+// Claude task (desktop app, owner's plan) writes `content` for each row. On the member's day
+// the send below uses that written note; only if there is none does it try Gemini/Claude API,
+// and if those fail too the member is deferred (never a template).
+//
 // verify_jwt=false; caller must POST {secret} (pg_cron) or an admin/super_admin Bearer JWT.
 // TEST MODE:  POST {secret, only_talent_id} — process just that talent, bypass gates, return `sample`.
 // DRY RUN:    POST {secret, dry_run:true, limit?:n} — generate but DO NOT write; return preview.
@@ -328,8 +335,22 @@ async function generateNote(geminiKey: string | null, input: {
   stats: Stats; theme: { id: string; brief: string };
   appTitles: string[]; decisionTitles: string[]; savedTitles: string[]; matchingTitles: string[];
 }): Promise<Record<string, string> | null> {
+  const factsStr = JSON.stringify(buildFacts(input), null, 2);
+  let parsed = geminiKey ? await callGemini(geminiKey, factsStr) : null;
+  let out = normalize(parsed);
+  if (!out) { parsed = await callClaude(factsStr); out = normalize(parsed); }
+  return out;
+}
+
+type NoteInput = {
+  // deno-lint-ignore no-explicit-any
+  t: any; flags: ReturnType<typeof profileFlags>; changes: string[];
+  stats: Stats; theme: { id: string; brief: string };
+  appTitles: string[]; decisionTitles: string[]; savedTitles: string[]; matchingTitles: string[];
+};
+function buildFacts(input: NoteInput) {
   const { t, flags, changes, stats, theme, appTitles, decisionTitles, savedTitles, matchingTitles } = input;
-  const facts = {
+  return {
     name: t.display_name || "the actor",
     // Settled before the model is called. It writes; it does not choose.
     this_months_theme: { id: theme.id, write_about: theme.brief },
@@ -358,11 +379,85 @@ async function generateNote(geminiKey: string | null, input: {
     // writes about it, and commenting on a paying member's absence reads as a reproach.
     months_on_platform: stats.monthsActive,
   };
-  const factsStr = JSON.stringify(facts, null, 2);
-  let parsed = geminiKey ? await callGemini(geminiKey, factsStr) : null;
-  let out = normalize(parsed);
-  if (!out) { parsed = await callClaude(factsStr); out = normalize(parsed); }
-  return out;
+}
+
+// The member's note day within the next `days` days (anniversary rule, same as the send).
+function nextNoteDay(createdAt: string | null, days: number): Date | null {
+  if (!createdAt) return null;
+  const c = new Date(createdAt);
+  if (isNaN(c.getTime())) return null;
+  for (let i = 0; i <= days; i++) {
+    const d = new Date(Date.now() + i * 86400000);
+    const dim = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+    if (d.getUTCDate() === Math.min(c.getUTCDate(), dim)) return d;
+  }
+  return null;
+}
+
+// The month's real facts + the code-chosen theme for one member (shared by send and prepare).
+// deno-lint-ignore no-explicit-any
+async function gather(admin: any, t: any, period: string, monthAgoIso: string): Promise<NoteInput> {
+  const flags = profileFlags(t);
+
+  const { data: lastLog } = await admin.from("weekly_checkin_logs").select("profile_snapshot").eq("talent_id", t.id).order("week_start", { ascending: false }).limit(1).maybeSingle();
+  const changes = changedSince(lastLog?.profile_snapshot || null, flags);
+
+  // ── the month's real numbers ────────────────────────────────────────────
+  const { data: apps } = await admin.from("applications")
+    .select("status,created_at,audition_at,reviewed_at,casting_id,castings(title)").eq("talent_id", t.id)
+    .order("created_at", { ascending: false }).limit(60);
+  const appsArr = apps || [];
+  const thisMonthApps = appsArr.filter((a) => a.created_at >= monthAgoIso);
+  // deno-lint-ignore no-explicit-any
+  const appTitles = thisMonthApps.map((a: any) => a?.castings?.title).filter(Boolean) as string[];
+  const decided = appsArr.filter((a) => a.reviewed_at && a.reviewed_at >= monthAgoIso && a.status !== "pending");
+  // deno-lint-ignore no-explicit-any
+  const decisionTitles = decided.map((a: any) => a?.castings?.title).filter(Boolean) as string[];
+  const shortlists = decided.filter((a) => a.status === "selected").length;
+  const holds = decided.filter((a) => a.status === "hold").length;
+  const upcomingAuditions = appsArr.filter((a) => a.audition_at && new Date(a.audition_at) > new Date()).length;
+  const appliedCastingIds = new Set(appsArr.map((a) => a.casting_id).filter(Boolean));
+
+  // Saved but never submitted — a real, actionable gap, and one that genuinely
+  // differs from month to month.
+  const { data: saved } = await admin.from("saved_castings")
+    .select("casting_id,castings(title,deadline,status)").eq("user_id", t.id).limit(60);
+  const in14 = new Date(Date.now() + 14 * 86400000);
+  // deno-lint-ignore no-explicit-any
+  const savedOpenRows = (saved || []).filter((r: any) =>
+    r?.castings && r.castings.status === "open" && !appliedCastingIds.has(r.casting_id) &&
+    (!r.castings.deadline || new Date(r.castings.deadline) >= new Date()));
+  // deno-lint-ignore no-explicit-any
+  const savedTitles = savedOpenRows.map((r: any) => r.castings.title).filter(Boolean) as string[];
+  // deno-lint-ignore no-explicit-any
+  const savedClosingSoon = savedOpenRows.filter((r: any) => r.castings.deadline && new Date(r.castings.deadline) <= in14).length;
+
+  const { data: newCastings } = await admin.from("castings").select("title,location").eq("status", "open").gte("created_at", monthAgoIso).limit(120);
+  const locKey = (t.location || "").toLowerCase().split(",")[0].trim();
+  const matching = (newCastings || []).filter((c) => !locKey || (c.location || "").toLowerCase().includes(locKey));
+  const matchingTitles = matching.map((c) => c.title).filter(Boolean) as string[];
+
+  const missing: string[] = [];
+  if (!flags.hasHeadshot) missing.push("headshot");
+  if (!flags.hasReel) missing.push("reel or video clip");
+  if (!flags.hasResume) missing.push("resume");
+  if (!flags.hasBio) missing.push("bio");
+  if (!flags.hasSkills) missing.push("skills");
+  const monthsActive = t.created_at
+    ? Math.max(1, Math.floor((Date.now() - new Date(t.created_at).getTime()) / (30 * 86400000))) : 1;
+
+  const stats: Stats = {
+    submissions: thisMonthApps.length, decisions: decided.length, shortlists, holds,
+    auditions: upcomingAuditions, savedOpen: savedOpenRows.length, savedClosingSoon,
+    newMatching: matching.length, missing, monthsActive,
+  };
+
+  // ── theme, chosen HERE and not by the model ─────────────────────────────
+  const { data: pastThemes } = await admin.from("weekly_checkin_logs")
+    .select("theme").eq("talent_id", t.id).order("week_start", { ascending: false }).limit(6);
+  const recentThemes = (pastThemes || []).map((r) => r.theme).filter(Boolean) as string[];
+  const theme = pickTheme(stats, recentThemes, t.id + period);
+  return { t, flags, changes, stats, theme, appTitles, decisionTitles, savedTitles, matchingTitles };
 }
 
 serve(async (req) => {
@@ -390,6 +485,38 @@ serve(async (req) => {
       }
     }
     if (!authorized) return json({ error: "unauthorized" }, 401);
+
+    // ── PREPARE: queue next-10-days members for the scheduled writer (no AI here) ──
+    if (body?.action === "prepare") {
+      const days = (typeof body?.days === "number" && body.days > 0) ? Math.min(31, Math.floor(body.days)) : 10;
+      const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+      const { data: ss } = await admin.from("site_settings").select("checkin_enabled,checkin_paused_user_ids").eq("id", 1).maybeSingle();
+      if (ss && ss.checkin_enabled === false) return json({ skipped: true, reason: "disabled" });
+      const paused = new Set(Array.isArray(ss?.checkin_paused_user_ids) ? ss.checkin_paused_user_ids : []);
+      const { data: members } = await admin.from("profiles")
+        .select("id,display_name,headshot_url,bio,skills,resume_url,reel_url,video_links,additional_photos,union_status,location,created_at")
+        .eq("user_type", "talent").eq("membership_status", "active").eq("account_status", "active").neq("banned", true).neq("suspended", true).limit(5000);
+      const { data: drafts } = await admin.from("manager_note_drafts").select("talent_id,period");
+      const have = new Set((drafts || []).map((d) => d.talent_id + "|" + d.period));
+      const { data: logs } = await admin.from("weekly_checkin_logs").select("talent_id,week_start").gte("week_start", new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10));
+      const queued: string[] = [], skipped: string[] = [];
+      for (const t of members || []) {
+        if (paused.has(t.id)) continue;
+        const d = nextNoteDay(t.created_at, days);
+        if (!d) continue;
+        const per = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-01`;
+        if (have.has(t.id + "|" + per)) continue;
+        // Same 28-day floor the send enforces: no draft for someone who cannot be sent to.
+        const floor = new Date(d.getTime() - 28 * 86400000).toISOString().slice(0, 10);
+        if ((logs || []).some((l) => l.talent_id === t.id && (l.week_start === per || l.week_start >= floor))) { skipped.push(t.display_name || t.id); continue; }
+        const input = await gather(admin, t, per, monthAgo);
+        const { error } = await admin.from("manager_note_drafts").insert({
+          talent_id: t.id, period: per, send_on: d.toISOString().slice(0, 10), theme: input.theme.id, facts: buildFacts(input), rules: SYSTEM_PROMPT,
+        });
+        if (!error) queued.push(`${t.display_name || t.id} (${d.toISOString().slice(0, 10)}, ${input.theme.id})`);
+      }
+      return json({ ok: true, action: "prepare", days, queued, skipped_floor: skipped });
+    }
 
     const onlyId = (typeof body?.only_talent_id === "string" && body.only_talent_id) ? body.only_talent_id : null;
     const dryRun = body?.dry_run === true;
@@ -456,70 +583,14 @@ serve(async (req) => {
     const preview: any[] = [];
     for (let i = 0; i < eligible.length; i++) {
       const t = eligible[i];
-      const flags = profileFlags(t);
+      const input = await gather(admin, t, period, monthAgoIso);
+      const { theme } = input;
 
-      const { data: lastLog } = await admin.from("weekly_checkin_logs").select("profile_snapshot").eq("talent_id", t.id).order("week_start", { ascending: false }).limit(1).maybeSingle();
-      const changes = changedSince(lastLog?.profile_snapshot || null, flags);
-
-      // ── the month's real numbers ────────────────────────────────────────────
-      const { data: apps } = await admin.from("applications")
-        .select("status,created_at,audition_at,reviewed_at,casting_id,castings(title)").eq("talent_id", t.id)
-        .order("created_at", { ascending: false }).limit(60);
-      const appsArr = apps || [];
-      const thisMonthApps = appsArr.filter((a) => a.created_at >= monthAgoIso);
-      // deno-lint-ignore no-explicit-any
-      const appTitles = thisMonthApps.map((a: any) => a?.castings?.title).filter(Boolean) as string[];
-      const decided = appsArr.filter((a) => a.reviewed_at && a.reviewed_at >= monthAgoIso && a.status !== "pending");
-      // deno-lint-ignore no-explicit-any
-      const decisionTitles = decided.map((a: any) => a?.castings?.title).filter(Boolean) as string[];
-      const shortlists = decided.filter((a) => a.status === "selected").length;
-      const holds = decided.filter((a) => a.status === "hold").length;
-      const upcomingAuditions = appsArr.filter((a) => a.audition_at && new Date(a.audition_at) > new Date()).length;
-      const appliedCastingIds = new Set(appsArr.map((a) => a.casting_id).filter(Boolean));
-
-      // Saved but never submitted — a real, actionable gap, and one that genuinely
-      // differs from month to month.
-      const { data: saved } = await admin.from("saved_castings")
-        .select("casting_id,castings(title,deadline,status)").eq("user_id", t.id).limit(60);
-      const in14 = new Date(Date.now() + 14 * 86400000);
-      // deno-lint-ignore no-explicit-any
-      const savedOpenRows = (saved || []).filter((r: any) =>
-        r?.castings && r.castings.status === "open" && !appliedCastingIds.has(r.casting_id) &&
-        (!r.castings.deadline || new Date(r.castings.deadline) >= new Date()));
-      // deno-lint-ignore no-explicit-any
-      const savedTitles = savedOpenRows.map((r: any) => r.castings.title).filter(Boolean) as string[];
-      // deno-lint-ignore no-explicit-any
-      const savedClosingSoon = savedOpenRows.filter((r: any) => r.castings.deadline && new Date(r.castings.deadline) <= in14).length;
-
-      const { data: newCastings } = await admin.from("castings").select("title,location").eq("status", "open").gte("created_at", monthAgoIso).limit(120);
-      const locKey = (t.location || "").toLowerCase().split(",")[0].trim();
-      const matching = (newCastings || []).filter((c) => !locKey || (c.location || "").toLowerCase().includes(locKey));
-      const matchingTitles = matching.map((c) => c.title).filter(Boolean) as string[];
-
-      const missing: string[] = [];
-      if (!flags.hasHeadshot) missing.push("headshot");
-      if (!flags.hasReel) missing.push("reel or video clip");
-      if (!flags.hasResume) missing.push("resume");
-      if (!flags.hasBio) missing.push("bio");
-      if (!flags.hasSkills) missing.push("skills");
-      const monthsActive = t.created_at
-        ? Math.max(1, Math.floor((Date.now() - new Date(t.created_at).getTime()) / (30 * 86400000))) : 1;
-
-      const stats: Stats = {
-        submissions: thisMonthApps.length, decisions: decided.length, shortlists, holds,
-        auditions: upcomingAuditions, savedOpen: savedOpenRows.length, savedClosingSoon,
-        newMatching: matching.length, missing, monthsActive,
-      };
-
-      // ── theme, chosen HERE and not by the model ─────────────────────────────
-      const { data: pastThemes } = await admin.from("weekly_checkin_logs")
-        .select("theme").eq("talent_id", t.id).order("week_start", { ascending: false }).limit(6);
-      const recentThemes = (pastThemes || []).map((r) => r.theme).filter(Boolean) as string[];
-      const theme = pickTheme(stats, recentThemes, t.id + period);
-
-      const content = await generateNote(geminiKey, {
-        t, flags, changes, stats, theme, appTitles, decisionTitles, savedTitles, matchingTitles,
-      });
+      // A note written ahead by the scheduled writer wins; the API is only a fallback.
+      const { data: draft } = await admin.from("manager_note_drafts").select("id,content,theme").eq("talent_id", t.id).eq("period", period).eq("status", "written").maybeSingle();
+      const fromDraft = draft?.content ? normalize(draft.content) : null;
+      const content = fromDraft || await generateNote(geminiKey, input);
+      const themeId = fromDraft ? draft!.theme : theme.id;
 
       // NO FALLBACK: if the AI didn't produce a real grounded note, skip this talent so
       // a later run / the drain cron retries them. They never get a generic note.
@@ -536,7 +607,8 @@ serve(async (req) => {
         .insert({ from_id: senderId, to_id: t.id, body: JSON.stringify(content), message_type: "weekly_actor_checkin", checkin_week: period })
         .select("id").single();
       if (msgErr) { console.error("[checkin] insert msg failed", t.id, msgErr.message); deferred++; ai--; continue; }
-      await admin.from("weekly_checkin_logs").insert({ talent_id: t.id, message_id: msg.id, week_start: period, status: "sent", task_action: content.cta_action || null, theme: theme.id, profile_snapshot: flags });
+      await admin.from("weekly_checkin_logs").insert({ talent_id: t.id, message_id: msg.id, week_start: period, status: "sent", task_action: content.cta_action || null, theme: themeId, profile_snapshot: input.flags });
+      if (fromDraft && draft?.id) await admin.from("manager_note_drafts").update({ status: "sent", used_at: new Date().toISOString() }).eq("id", draft.id);
       sent++;
 
       // Fire the premium check-in email nudge (non-fatal). The type string stays
