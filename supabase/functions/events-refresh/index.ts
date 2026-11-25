@@ -306,7 +306,7 @@ async function detail(url: string, base: Omit<Cand, "title" | "url" | "dates">, 
   if (!p.ok || !p.html) return null;
   const h = p.html;
   const ld = ldEvents(h).filter((e) => typeof e.startDate === "string" && /^\d{4}-\d{2}-\d{2}/.test(String(e.startDate)));
-  const ogTitle = meta(h, "og:title").replace(/\s*[|–—-]\s*(?:Showtimes.*|IFC Center|American Cinematheque|Laemmle.*|Roxy Cinema.*|SVA Theatre.*|Eventbrite|Symphony Space.*|Film Forum)\s*$/i, "").replace(/^IFC Center\s*-\s*/i, "");
+  const ogTitle = meta(h, "og:title").replace(/\s*[|–—-]\s*(?:Showtimes.*|IFC Center|American Cinematheque|Laemmle.*|Roxy Cinema.*|SVA Theatre.*|Eventbrite|Symphony Space.*|Film Forum)\s*$/i, "").replace(/^IFC Center\s*-\s*/i, "").replace(/^Film Forum\s*·\s*/i, "");
   const desc = meta(h, "og:description") || meta(h, "description");
   let dates: string[] = [], time: string | undefined, online = false, image: string | null = null, venue = base.venue, area = base.area;
   if (ld.length && opts.datesFrom !== "og") {
@@ -327,6 +327,8 @@ async function detail(url: string, base: Omit<Cand, "title" | "url" | "dates">, 
   } else {
     const text = opts.datesFrom === "page" ? clean(h).slice(0, 60000) : desc;
     dates = textDates(text, ctx.today);
+    // Showtime pickers often carry machine dates (Roxy: data-date="2026-11-27").
+    if (opts.datesFrom === "page" && !dates.length) dates = [...new Set([...h.matchAll(/(?:data-date|datetime)=["'](\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]))].sort();
     time = timeIn(text);
   }
   dates = dates.filter((d) => d >= ctx.today && d <= ctx.horizon);
@@ -377,7 +379,7 @@ const SOURCES: Source[] = [
         const img = ((y.og_image as { url?: string }[]) || [])[0]?.url || null;
         const types = ((e.event_type as number[]) || []);
         const tags = [types.includes(62) ? "Q&A" : "", types.includes(169) ? "premiere" : "", types.includes(101) ? "panel" : "", types.includes(120) ? "shorts" : "", types.some((t) => [191, 133, 99, 118].includes(t)) ? "sneak preview" : "", types.includes(196) ? "talk" : ""].filter(Boolean).join(" ");
-        out.push({ title: clean((e.title as { rendered?: string })?.rendered || ""), url: link, city: LA, venue, area, marquee: "CINEMATHEQUE", dates: [iso], desc: clean(String(y.og_description || y.description || "")), image: img, tags });
+        out.push({ title: clean((e.title as { rendered?: string })?.rendered || ""), url: link, city: LA, venue, area, marquee: "CINEMATHEQUE", dates: [iso], desc: clean(String(y.og_description || y.description || "")) || (types.includes(62) ? "Screening followed by a Q&A with the filmmakers." : types.includes(101) ? "Screening with a panel conversation." : types.includes(169) ? "Premiere screening at the American Cinematheque." : ""), image: img, tags });
       }
       if (arr.length < 100) break;
     }
@@ -463,7 +465,7 @@ function categoryOf(text: string): string {
   if (/workshop|master ?class|class\b|intensive|seminar|bootcamp|audition/.test(t)) return "workshop";
   if (/networking|mixer|meet[- ]?up|happy hour/.test(t)) return "networking";
   if (/student|thesis|graduate|nyu|usc|afi|nyfa|school/.test(t)) return "school";
-  if (/award|gala|honors/.test(t)) return "awards";
+  if (/awards? (?:night|ceremony|show|gala)|\bgala\b/.test(t)) return "awards";
   if (/shorts|short film/.test(t)) return "shorts";
   if (/festival|fest\b/.test(t)) return "festival";
   return "screening";
@@ -481,7 +483,7 @@ const WHY: Record<string, string> = {
 };
 // One plain sentence from the organiser's own description; a Q&A line wins when there is one.
 function whyFrom(desc: string, cat: string): string {
-  const s = (desc || "").replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter((x) => x.length > 25 && x.length < 230 && !/https?:|ticket|\$\d|buy now|click|subscribe/i.test(x));
+  const s = (desc || "").replace(/^Eventbrite\s*-\s*/i, "").replace(/[\u2700-\u27BF\u{1F300}-\u{1FAFF}*#]+/gu, " ").replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter((x) => x.length > 25 && x.length < 230 && x.split(/\s+/).length >= 5 && x !== x.toUpperCase() && !/https?:|ticket|\$\d|buy now|click|subscribe|presents film festival/i.test(x));
   const live = s.find((x) => /\bq\s*&\s*a\b|in person|conversation|discussion|panel|filmmaker|director/i.test(x));
   const pick = (live || s[0] || "").replace(/!+/g, ".");
   return pick ? pick.slice(0, 230) : WHY[cat];
@@ -524,6 +526,9 @@ async function scanRun(sb: ReturnType<typeof createClient>, opts: { only?: strin
       if (!title || !c.url || !c.dates.length) { skipped.push(`${s.id}: ${title || c.url} (no upcoming date)`); continue; }
       if (c.online || SKIP.test(title)) { skipped.push(`${s.id}: ${title} (online/off-topic)`); continue; }
       if (!RELEVANT.test(blob)) { skipped.push(`${s.id}: ${title} (no live element)`); continue; }
+      // One listing = one event window: drop dates more than two weeks after the first.
+      c.dates = c.dates.filter((d) => d <= addDays(c.dates[0], 14));
+      if (c.area && c.area === c.area.toUpperCase()) c.area = c.area.toLowerCase().replace(/\b[a-z]/g, (x) => x.toUpperCase());
       const starts = c.dates[0], ends = c.dates[c.dates.length - 1];
       const ekey = `${slug(title)}-${starts.slice(0, 7)}`;
       if (knownKeys.has(ekey) || knownUrls.has(normUrl(c.url)) || knownNames.has(normTitle(title))) continue;
