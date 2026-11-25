@@ -42,6 +42,7 @@ const STATIC_PAGES = [
   { loc: "/casting-directory", changefreq: "monthly", priority: "0.9", lastmod: "2026-10-08" }, // launched 2026-10-04, re-checked monthly
   { loc: "/first-frame", changefreq: "monthly", priority: "0.7", lastmod: "2026-11-13" }, // launched 2026-11-13
   { loc: "/news", changefreq: "daily", priority: "0.7", lastmod: "2026-11-25" }, // news archive launched 2026-11-25
+  { loc: "/events", changefreq: "daily", priority: "0.7", lastmod: "2026-11-25" }, // Industry Events (live since 2026-11-08); was missing from the sitemap
   { loc: "/newsletter", changefreq: "monthly", priority: "0.6", lastmod: "2026-11-21" }, // launched 2026-11-21
   { loc: "/school-directory", changefreq: "monthly", priority: "0.8", lastmod: "2026-10-11" }, // launched 2026-10-11, free to browse
   { loc: "/login", changefreq: "monthly", priority: "0.5" },
