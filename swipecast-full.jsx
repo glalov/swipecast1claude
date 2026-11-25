@@ -97,7 +97,7 @@ const TRANSLATIONS = {
     'footer.actorToolkit':'Actor Toolkit',
     'footer.managerMode':'Manager Mode',
     'footer.forStudios':'For Studios','footer.apiAccess':'API Access',
-    'footer.about':'About','footer.blog':'Blog','footer.careers':'Careers','footer.contact':'Contact',
+    'footer.about':'About','footer.news':'Industry News','footer.blog':'Blog','footer.careers':'Careers','footer.contact':'Contact',
     'footer.faq':'FAQ','footer.helpCenter':'Help Center','footer.terms':'Terms of Service',
     'footer.privacy':'Privacy Policy','footer.accessibility':'Accessibility',
     'footer.fairCasting':'Fair Casting & Inclusion',
@@ -349,7 +349,7 @@ const TRANSLATIONS = {
     'footer.payTalent':'Pagar Talento',
     'footer.actorToolkit':'Kit del Actor',
     'footer.forStudios':'Para estudios','footer.apiAccess':'Acceso API',
-    'footer.about':'Acerca de','footer.blog':'Blog','footer.careers':'Empleos','footer.contact':'Contacto',
+    'footer.about':'Acerca de','footer.news':'Noticias de la industria','footer.blog':'Blog','footer.careers':'Empleos','footer.contact':'Contacto',
     'footer.faq':'Preguntas frecuentes','footer.helpCenter':'Centro de ayuda','footer.terms':'Términos de uso',
     'footer.privacy':'Política de privacidad','footer.accessibility':'Accesibilidad',
     'footer.fairCasting':'Casting justo e inclusión',
@@ -10332,6 +10332,7 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
           <div className="sf-col sf-company">
             <h4 className="site-footer-heading">{t('footer.company')}</h4>
             <L to="about">{t('footer.about')}</L>
+            <L to="news">{t('footer.news')}</L>
             <L to="blog">{t('footer.blog')}</L>
             <L to="careers">{t('footer.careers')}</L>
             <L to="contact">{t('footer.contact')}</L>
