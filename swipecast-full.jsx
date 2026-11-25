@@ -29936,6 +29936,25 @@ function NewsSection({onNavigate}){
 // News archive /news (owner 2026-11-25): every published story, newest first, grouped by month,
 // 20 at a time, category chips + "Jump to" months. Reads in pages of 1000 (PostgREST row cap).
 const NAR_PAGE=20;
+// Same event from two outlets (Deadline + Variety on the same death, casting, review...): hide the
+// older copy. Names in the headlines, within 2 days. Tuned on all 970 headlines (2026-11-25):
+// 3+ shared names covering 60%+ of the shorter headline, or 2 that cover all of it.
+const NAR_STOP=new Set("The A An And Of In On At To For With From By As Is Are Its After Over New Film Films Movie TV Series Season First Trailer Review Exclusive Studio Studios Festival Awards Award Show Star Stars Cast Casting Director Directors Netflix HBO Disney Amazon Apple Hollywood Broadway Says Sets Gets Lands Joins Will How Why What Who Up Out Back Off Into Than Dies Dead Was Were Has Have Had Be Been Box Office Weekend Year Years Old Best Top World Premiere Wins Win Takes Debut Debuts Release Releases Date Deal Talks Book Books Return Returns Final Last Next Two Three One Day Night Not No Your You Our All More Most About This That These Those Her His Their Him She He They It We Big Inside Watch Live Here Now Get Make Makes Made Set Story Stories Life Love Home Man Woman Women Men Girl Boy Family House Black White Red Blue Green Part Chapter Comedy Drama Horror Thriller Documentary Doc Musical Play Theater Theatre Stage Music Album Song Songs Video Pictures Media Entertainment News Report Reports Update Original Officially Official Small Short Long Feature Features Special Episode Episodes Shows Network Streaming Streamer Global Million Billion Oscars Oscar Emmy Emmys Tony Tonys Selects International Critics Saying Actor Actress Producer Filmmaker".split(" "));
+function narNames(t){const out=new Set();String(t||"").replace(/[\u2019']s\b/g,"").split(/\s+/).forEach(w=>{w=w.replace(/[^A-Za-z0-9\u00C0-\u00FF'-]/g,"");if(w.length>=3&&/^[A-Z\u00C0-\u00DD]/.test(w)&&!NAR_STOP.has(w))out.add(w.toLowerCase());});return out;}
+function narDedupe(list){
+  const kept=[];
+  for(const a of list){
+    const A=narNames(a.original_headline||a.headline),ta=new Date(a.written_at).getTime();
+    const dup=A.size>0&&kept.some(k=>{
+      if(Math.abs(k._t-ta)>2*86400000)return false;
+      let n=0;A.forEach(x=>{if(k._n.has(x))n++;});
+      const r=n/Math.min(A.size,k._n.size);
+      return (n>=3&&r>=0.6)||(n>=2&&r>=1);
+    });
+    if(!dup)kept.push(Object.assign({},a,{_n:A,_t:ta}));
+  }
+  return kept;
+}
 function NewsArchivePage({onNavigate}){
   const[items,setItems]=useState(null);
   const[cat,setCat]=useState("All");
@@ -29956,7 +29975,7 @@ function NewsArchivePage({onNavigate}){
           if(!data||data.length<1000)break;
         }
         const seen=new Set();
-        const list=all.filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;});
+        const list=narDedupe(all.filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;}));
         if(alive)setItems(list);
       }catch(_){if(alive)setItems([]);}
     })();
@@ -29985,7 +30004,7 @@ function NewsArchivePage({onNavigate}){
   return(<div><div className="page nar-page">
     <div className="nar-lab">CastSlate News</div>
     <h1>Industry news</h1>
-    <p className="nar-lead">What's happening in film, TV and theater, from the trades actors read. Every story links to its original source.</p>
+    <p className="nar-lead">What's happening in film, TV and theater, from the trades actors read.</p>
     {items===null&&<CastSlateLoader size="inline" text="Loading news…"/>}
     {items&&items.length===0&&<p className="nar-lead">No news to show right now.</p>}
     {items&&items.length>0&&<>
