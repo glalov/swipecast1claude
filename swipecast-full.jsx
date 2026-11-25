@@ -6269,7 +6269,7 @@ a.news-card{text-decoration:none;color:inherit;}
 .news-source-box a{color:var(--acc);font-weight:600;text-decoration:none;font-size:15px;}
 .news-source-box a:hover{text-decoration:underline;}
 /* News archive /news (owner 2026-11-25, demo news-archive-demo.html): every story since June, by month. */
-.nar-page{max-width:900px;margin:0 auto;padding:8px 0 64px;}
+.nar-page{max-width:1200px;margin:0 auto;padding:8px 0 64px;}
 .nar-lab{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t1);margin-bottom:8px;}
 .nar-page h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(28px,3.6vw,40px);letter-spacing:-.6px;line-height:1.12;margin:0 0 10px;}
 .nar-lead{font-size:16px;line-height:1.55;color:var(--t2);max-width:640px;margin:0 0 24px;}
@@ -6281,7 +6281,7 @@ a.news-card{text-decoration:none;color:inherit;}
 .nar-jump{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:14px 0 0;font-size:13px;color:var(--t3);}
 .nar-jump button{font:600 13px 'DM Sans',sans-serif;background:none;border:0;padding:4px 0;color:var(--t2);cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(26,26,46,.25);}
 .nar-jump button:hover{text-decoration-color:var(--t1);}
-.nar-mon{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:24px;margin:42px 0 4px;padding-bottom:12px;border-bottom:1px solid var(--bdr);scroll-margin-top:110px;}
+.nar-mon{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:24px;margin:40px 0 18px;padding-bottom:12px;border-bottom:1px solid var(--bdr);scroll-margin-top:110px;}
 .nar-row{display:grid;grid-template-columns:176px minmax(0,1fr);gap:22px;padding:20px 0;border:0;border-bottom:1px solid var(--bdr);background:none;width:100%;text-align:left;text-decoration:none;color:inherit;align-items:center;cursor:pointer;font:inherit;}
 .nar-row.noimg{grid-template-columns:minmax(0,1fr);}
 .nar-th{aspect-ratio:16/10;border-radius:8px;overflow:hidden;background:var(--s2);}
@@ -6292,6 +6292,10 @@ a.news-card{text-decoration:none;color:inherit;}
 .nar-meta{font-size:13px;color:var(--t3);}
 .nar-more{display:flex;justify-content:center;margin-top:34px;}
 .nar-end{text-align:center;color:var(--t3);font-size:13.5px;margin-top:30px;}
+/* Grid version (owner 2026-11-25, news-grid-demo.html): homepage .news-card cards; no photo -> category-colour panel. */
+.nar-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Fraunces,Georgia,serif;font-size:26px;color:rgba(255,255,255,.9);}
+.nar-page .news-thumb img{position:relative;z-index:1;}
+.nar-page .news-cat{z-index:2;}
 .news-all{display:flex;justify-content:center;margin-top:-6px;}
 @media(max-width:640px){.nar-row{grid-template-columns:96px minmax(0,1fr);gap:14px;padding:16px 0;}.nar-row h3{font-size:16.5px;margin:4px 0 6px;}.nar-mon{font-size:20px;margin-top:32px;}}
 .news-disclaimer{margin-top:15px;font-size:12px;color:var(--t3);line-height:1.6;font-style:italic;}
@@ -29935,7 +29939,7 @@ function NewsSection({onNavigate}){
 
 // News archive /news (owner 2026-11-25): every published story, newest first, grouped by month,
 // 20 at a time, category chips + "Jump to" months. Reads in pages of 1000 (PostgREST row cap).
-const NAR_PAGE=20;
+const NAR_PAGE=24; // whole rows of 4
 // Same event from two outlets (Deadline + Variety on the same death, casting, review...): hide the
 // older copy. Names in the headlines, within 2 days. Tuned on all 970 headlines (2026-11-25):
 // 3+ shared names covering 60%+ of the shorter headline, or 2 that cover all of it.
@@ -29960,7 +29964,6 @@ function NewsArchivePage({onNavigate}){
   const[cat,setCat]=useState("All");
   const[shown,setShown]=useState(NAR_PAGE);
   const[bad,setBad]=useState(()=>new Set());
-  const[jumpTo,setJumpTo]=useState(null);
   useEffect(()=>{
     let alive=true;
     (async()=>{
@@ -29981,24 +29984,30 @@ function NewsArchivePage({onNavigate}){
     })();
     return()=>{alive=false;};
   },[]);
-  useEffect(()=>{if(!jumpTo)return;const el=document.getElementById("nar-m-"+jumpTo);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});setJumpTo(null);},[jumpTo,shown]);
   const list=(items||[]).filter(a=>cat==="All"||a.category===cat);
   const counts={All:(items||[]).length};(items||[]).forEach(a=>{counts[a.category]=(counts[a.category]||0)+1;});
   const cats=["All","Film","Actors","Casting","Theater","Industry"].filter(k=>k==="All"||counts[k]>=5); // a one-story chip looks broken
   const months=[];list.forEach((a,i)=>{const m=String(a.written_at||"").slice(0,7);if(m&&!months.find(x=>x[0]===m))months.push([m,i]);});
   const monLabel=m=>new Date(m+"-15T12:00:00Z").toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"});
   const vis=list.slice(0,shown);
-  const rows=[];let last="";
+  const rows=[];let cur="",buf=[];
+  const flush=()=>{if(buf.length)rows.push(<div key={"g"+cur} className="news-grid">{buf}</div>);buf=[];};
   vis.forEach(a=>{
     const m=String(a.written_at||"").slice(0,7);
-    if(m!==last){rows.push(<h2 key={"m"+m} id={"nar-m-"+m} className="nar-mon">{monLabel(m)}</h2>);last=m;}
-    const img=a.original_image_url||a.image_url;const head=a.original_headline||a.headline;const hasImg=img&&!bad.has(a.slug);
-    const inner=<>{hasImg&&<div className="nar-th"><CsImg src={img} w={320} referrerPolicy="no-referrer" onGone={()=>setBad(prev=>{const n=new Set(prev);n.add(a.slug);return n;})}/></div>}
-      <div><div className="nar-cat" style={{color:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</div><h3>{head}</h3><div className="nar-meta">{a.source_name?a.source_name+" \u2197 \u00b7 ":""}{newsDate(a.written_at)}</div></div></>;
-    rows.push(a.source_url
-      ?<a key={a.slug} className={"nar-row"+(hasImg?"":" noimg")} href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">{inner}</a>
-      :<button key={a.slug} type="button" className={"nar-row"+(hasImg?"":" noimg")} onClick={()=>onNavigate("news-article",{slug:a.slug})}>{inner}</button>);
+    if(m!==cur){flush();cur=m;rows.push(<h2 key={"m"+m} className="nar-mon">{monLabel(m)}</h2>);}
+    const img=a.original_image_url||a.image_url;const head=a.original_headline||a.headline;const col=NEWS_CATS[a.category]||"#5C7A5C";
+    const inner=<>
+      <div className="news-thumb" style={{background:col}}>
+        <span className="nar-ph" aria-hidden="true">{a.category}</span>
+        {img&&!bad.has(a.slug)&&<CsImg src={img} w={640} referrerPolicy="no-referrer" onGone={()=>setBad(prev=>{const n=new Set(prev);n.add(a.slug);return n;})}/>}
+        <span className="news-cat" style={{background:col}}>{a.category}</span>
+      </div>
+      <div className="news-body"><h3>{head}</h3><div className="news-meta">{a.source_name&&<span className="news-src">{a.source_name} ↗</span>}<span>{newsDate(a.written_at)}</span></div></div></>;
+    buf.push(a.source_url
+      ?<a key={a.slug} className="news-card" href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">{inner}</a>
+      :<button key={a.slug} type="button" className="news-card" onClick={()=>onNavigate("news-article",{slug:a.slug})}>{inner}</button>);
   });
+  flush();
   const done=shown>=list.length;
   const first=months.length?monLabel(months[months.length-1][0]):"";
   return(<div><div className="page nar-page">
@@ -30009,7 +30018,6 @@ function NewsArchivePage({onNavigate}){
     {items&&items.length===0&&<p className="nar-lead">No news to show right now.</p>}
     {items&&items.length>0&&<>
       <div className="nar-chips">{cats.map(k=><button key={k} type="button" className={k===cat?"on":""} onClick={()=>{setCat(k);setShown(NAR_PAGE);}}>{k==="All"?"All news":k}<small>{counts[k]}</small></button>)}</div>
-      {months.length>1&&<div className="nar-jump">Jump to:{months.map(([m,i])=><button key={m} type="button" onClick={()=>{setShown(s=>Math.max(s,i+NAR_PAGE));setJumpTo(m);}}>{new Date(m+"-15T12:00:00Z").toLocaleDateString("en-US",{month:"long",timeZone:"UTC"})}</button>)}</div>}
       {rows}
       {!done&&<div className="nar-more"><button type="button" className="btn-s" onClick={()=>setShown(s=>s+NAR_PAGE)}>Show older news</button></div>}
       {done&&list.length>0&&<p className="nar-end">You've reached the start of CastSlate News ({first}).</p>}
