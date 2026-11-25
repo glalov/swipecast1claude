@@ -452,12 +452,14 @@ async function cardPick(sb: ReturnType<typeof createClient>, force: boolean) {
       if (!sz || sz.w < 1000 || sz.w / sz.h < 1.6 || bytes.length > 4000000) { tried.push(e.title + ": shape " + (sz ? sz.w + "x" + sz.h : "?")); continue; }
       let bin = "";
       for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
-      const g = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`, {
+      const ask = (m: string) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${encodeURIComponent(key)}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }, { inline_data: { mime_type: mime, data: btoa(bin) } }] }], generationConfig: { temperature: 0 } }),
         signal: AbortSignal.timeout(45000),
       });
-      if (!g.ok) { tried.push(e.title + ": vision error"); continue; }
+      let g = await ask(model);
+      if (!g.ok && model !== "gemini-flash-latest") g = await ask("gemini-flash-latest"); // newest model can refuse images
+      if (!g.ok) { tried.push(e.title + ": vision error " + g.status + " " + (await g.text()).slice(0, 120).replace(/\s+/g, " ")); continue; }
       const d = await g.json();
       const out = (d?.candidates?.[0]?.content?.parts || []).map((p: { text?: string }) => p.text || "").join(" ");
       if (!/"ok"\s*:\s*true/i.test(out)) { tried.push(e.title + ": rejected"); continue; }
