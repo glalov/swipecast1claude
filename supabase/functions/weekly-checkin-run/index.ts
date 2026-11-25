@@ -564,11 +564,15 @@ serve(async (req) => {
     // MONTHLY, on each actor's own anniversary day. The cron runs daily and most
     // actors are skipped on any given day — that is intended, and it is what spreads
     // the sends across the month instead of firing them all on the 1st.
+    // A note written late (the writer's Mac was off on the day) still goes out this month.
+    const { data: late } = await admin.from("manager_note_drafts").select("talent_id")
+      .eq("status", "written").eq("period", period).lte("send_on", new Date().toISOString().slice(0, 10));
+    const lateSet = new Set((late || []).map((r) => r.talent_id));
     let eligible = (talents || []).filter((t) => {
       if (onlyId) return true;
       if (recentSet.has(t.id)) return false;
       if (pausedIds.has(t.id)) return false;
-      if (!ignoreAnniversary && !isAnniversaryToday(t.created_at)) return false;
+      if (!ignoreAnniversary && !isAnniversaryToday(t.created_at) && !lateSet.has(t.id)) return false;
       return true;
     });
     // Bound per-invocation work so we always finish under the wall-clock limit.
