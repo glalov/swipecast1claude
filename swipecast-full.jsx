@@ -6296,6 +6296,10 @@ a.news-card{text-decoration:none;color:inherit;}
 .nar-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Fraunces,Georgia,serif;font-size:26px;color:rgba(255,255,255,.9);}
 .nar-page .news-thumb img{position:relative;z-index:1;}
 .nar-page .news-cat{z-index:2;}
+.news-head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;}
+.news-all-btn{flex:none;display:inline-flex;align-items:center;gap:9px;font:700 14.5px 'DM Sans',sans-serif;padding:12px 22px;min-height:44px;border-radius:9px;border:0;background:#1A1A2E;color:#fff;cursor:pointer;white-space:nowrap;transition:background-color .18s ease;}
+.news-all-btn:hover{background:#2A2A44;}
+@media(max-width:760px){.news-head-row{flex-direction:column;align-items:flex-start;gap:14px;}}
 .news-all{display:flex;justify-content:center;margin-top:-6px;}
 @media(max-width:640px){.nar-row{grid-template-columns:96px minmax(0,1fr);gap:14px;padding:16px 0;}.nar-row h3{font-size:16.5px;margin:4px 0 6px;}.nar-mon{font-size:20px;margin-top:32px;}}
 .news-disclaimer{margin-top:15px;font-size:12px;color:var(--t3);line-height:1.6;font-style:italic;}
@@ -29923,15 +29927,17 @@ function NewsSection({onNavigate}){
       <div style={{maxWidth:1200,margin:"0 auto",padding:"0 32px"}}>
         {blocks.map(b=>(
           <div className="news-block" key={b.label}>
-            <div className="news-block-head">
-              {b.lead?<h2>{b.label}</h2>:<h3>{b.label}</h3>}
-              <p className="news-block-desc">{b.desc}</p>
+            <div className={"news-block-head"+(b.lead?" news-head-row":"")}>
+              <div>
+                {b.lead?<h2>{b.label}</h2>:<h3>{b.label}</h3>}
+                <p className="news-block-desc">{b.desc}</p>
+              </div>
+              {/* Owner 2026-11-25 (see-all-news-options-demo.html): top right of the news, filled navy. */}
+              {b.lead&&<button type="button" className="news-all-btn" onClick={()=>onNavigate("news")}>See All News <Tri/></button>}
             </div>
             <div className="news-grid">{b.cards.map(a=>renderCard(a))}</div>
           </div>
         ))}
-        {/* Owner 2026-11-25 (see-all-news-demo.html option A): one calm button under the news. */}
-        <div className="news-all"><button type="button" className="btn-s" onClick={()=>onNavigate("news")}>See All News <Tri/></button></div>
       </div>
     </section>
   );
