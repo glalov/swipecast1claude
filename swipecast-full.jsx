@@ -6268,6 +6268,32 @@ a.news-card{text-decoration:none;color:inherit;}
 .news-source-box .news-source-lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--t3);margin-bottom:7px;}
 .news-source-box a{color:var(--acc);font-weight:600;text-decoration:none;font-size:15px;}
 .news-source-box a:hover{text-decoration:underline;}
+/* News archive /news (owner 2026-11-25, demo news-archive-demo.html): every story since June, by month. */
+.nar-page{max-width:900px;margin:0 auto;padding:8px 0 64px;}
+.nar-lab{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t1);margin-bottom:8px;}
+.nar-page h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(28px,3.6vw,40px);letter-spacing:-.6px;line-height:1.12;margin:0 0 10px;}
+.nar-lead{font-size:16px;line-height:1.55;color:var(--t2);max-width:640px;margin:0 0 24px;}
+.nar-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.nar-chips button{font:600 13.5px 'DM Sans',sans-serif;padding:8px 14px;border-radius:999px;border:1px solid var(--bdr);background:#fff;color:var(--t2);cursor:pointer;display:inline-flex;gap:7px;align-items:center;}
+.nar-chips button small{font-weight:500;color:var(--t3);opacity:.8;}
+.nar-chips button.on{background:#1A1A2E;border-color:#1A1A2E;color:#fff;}
+.nar-chips button.on small{color:rgba(255,255,255,.72);opacity:1;}
+.nar-jump{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:14px 0 0;font-size:13px;color:var(--t3);}
+.nar-jump button{font:600 13px 'DM Sans',sans-serif;background:none;border:0;padding:4px 0;color:var(--t2);cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(26,26,46,.25);}
+.nar-jump button:hover{text-decoration-color:var(--t1);}
+.nar-mon{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:24px;margin:42px 0 4px;padding-bottom:12px;border-bottom:1px solid var(--bdr);scroll-margin-top:110px;}
+.nar-row{display:grid;grid-template-columns:176px minmax(0,1fr);gap:22px;padding:20px 0;border:0;border-bottom:1px solid var(--bdr);background:none;width:100%;text-align:left;text-decoration:none;color:inherit;align-items:center;cursor:pointer;font:inherit;}
+.nar-row.noimg{grid-template-columns:minmax(0,1fr);}
+.nar-th{aspect-ratio:16/10;border-radius:8px;overflow:hidden;background:var(--s2);}
+.nar-th img{width:100%;height:100%;object-fit:cover;display:block;}
+.nar-cat{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
+.nar-row h3{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:20px;line-height:1.3;margin:6px 0 8px;letter-spacing:-.2px;color:var(--t1);}
+.nar-row:hover h3{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px;}
+.nar-meta{font-size:13px;color:var(--t3);}
+.nar-more{display:flex;justify-content:center;margin-top:34px;}
+.nar-end{text-align:center;color:var(--t3);font-size:13.5px;margin-top:30px;}
+.news-all{display:flex;justify-content:center;margin-top:-6px;}
+@media(max-width:640px){.nar-row{grid-template-columns:96px minmax(0,1fr);gap:14px;padding:16px 0;}.nar-row h3{font-size:16.5px;margin:4px 0 6px;}.nar-mon{font-size:20px;margin-top:32px;}}
 .news-disclaimer{margin-top:15px;font-size:12px;color:var(--t3);line-height:1.6;font-style:italic;}
 @media (max-width:980px){.news-grid{grid-template-columns:repeat(2,1fr);gap:16px;}}
 @media (max-width:620px){.news-grid{grid-template-columns:repeat(2,1fr);gap:12px;}.news-sec{padding:42px 0 46px;}.news-block{margin-bottom:32px;}}
@@ -22886,8 +22912,7 @@ function DashNews({onNavigate,maxRows=3}){
   const shown=(items||[]).filter(a=>!bad.has(a.slug)).slice(0,maxRows);
   if(!shown.length)return null;
   const drop=slug=>setBad(prev=>{const n=new Set(prev);n.add(slug);return n;});
-  // The full list lives on the main page: go there and bring it into view.
-  const seeAll=()=>{onNavigate("home");let n=0;const t=setInterval(()=>{const el=document.querySelector(".news-sec");if(el||++n>40){clearInterval(t);if(el)el.scrollIntoView({block:"start"});}},150);};
+  const seeAll=()=>onNavigate("news"); // the /news archive (owner 2026-11-25)
   const body=a=>{const img=a.original_image_url||a.image_url;return(<>
     {img&&<CsImg src={img} w={320} eager={true} referrerPolicy="no-referrer" onGone={()=>drop(a.slug)}/>}
     <div><small style={{color:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</small><b>{a.original_headline||a.headline}</b><span>{a.source_name?a.source_name+" ↗ · ":""}{newsDate(a.written_at)}</span></div>
@@ -29901,9 +29926,76 @@ function NewsSection({onNavigate}){
             <div className="news-grid">{b.cards.map(a=>renderCard(a))}</div>
           </div>
         ))}
+        {/* Owner 2026-11-25 (see-all-news-demo.html option A): one calm button under the news. */}
+        <div className="news-all"><button type="button" className="btn-s" onClick={()=>onNavigate("news")}>See All News <Tri/></button></div>
       </div>
     </section>
   );
+}
+
+// News archive /news (owner 2026-11-25): every published story, newest first, grouped by month,
+// 20 at a time, category chips + "Jump to" months. Reads in pages of 1000 (PostgREST row cap).
+const NAR_PAGE=20;
+function NewsArchivePage({onNavigate}){
+  const[items,setItems]=useState(null);
+  const[cat,setCat]=useState("All");
+  const[shown,setShown]=useState(NAR_PAGE);
+  const[bad,setBad]=useState(()=>new Set());
+  const[jumpTo,setJumpTo]=useState(null);
+  useEffect(()=>{
+    let alive=true;
+    (async()=>{
+      try{
+        const all=[];
+        for(let from=0;from<20000;from+=1000){
+          const{data,error}=await window.sb.from("news_articles")
+            .select("slug,headline,category,image_url,source_name,source_url,original_headline,original_image_url,written_at")
+            .eq("published",true).eq("status","published").order("written_at",{ascending:false}).range(from,from+999);
+          if(error)throw error;
+          all.push(...(data||[]));
+          if(!data||data.length<1000)break;
+        }
+        const seen=new Set();
+        const list=all.filter(a=>{const k=a.source_url||a.slug;if(seen.has(k))return false;seen.add(k);return true;});
+        if(alive)setItems(list);
+      }catch(_){if(alive)setItems([]);}
+    })();
+    return()=>{alive=false;};
+  },[]);
+  useEffect(()=>{if(!jumpTo)return;const el=document.getElementById("nar-m-"+jumpTo);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});setJumpTo(null);},[jumpTo,shown]);
+  const list=(items||[]).filter(a=>cat==="All"||a.category===cat);
+  const counts={All:(items||[]).length};(items||[]).forEach(a=>{counts[a.category]=(counts[a.category]||0)+1;});
+  const cats=["All","Film","Actors","Casting","Theater","Industry"].filter(k=>counts[k]);
+  const months=[];list.forEach((a,i)=>{const m=String(a.written_at||"").slice(0,7);if(m&&!months.find(x=>x[0]===m))months.push([m,i]);});
+  const monLabel=m=>new Date(m+"-15T12:00:00Z").toLocaleDateString("en-US",{month:"long",year:"numeric",timeZone:"UTC"});
+  const vis=list.slice(0,shown);
+  const rows=[];let last="";
+  vis.forEach(a=>{
+    const m=String(a.written_at||"").slice(0,7);
+    if(m!==last){rows.push(<h2 key={"m"+m} id={"nar-m-"+m} className="nar-mon">{monLabel(m)}</h2>);last=m;}
+    const img=a.original_image_url||a.image_url;const head=a.original_headline||a.headline;const hasImg=img&&!bad.has(a.slug);
+    const inner=<>{hasImg&&<div className="nar-th"><CsImg src={img} w={320} referrerPolicy="no-referrer" onGone={()=>setBad(prev=>{const n=new Set(prev);n.add(a.slug);return n;})}/></div>}
+      <div><div className="nar-cat" style={{color:NEWS_CATS[a.category]||"#5C7A5C"}}>{a.category}</div><h3>{head}</h3><div className="nar-meta">{a.source_name?a.source_name+" \u2197 \u00b7 ":""}{newsDate(a.written_at)}</div></div></>;
+    rows.push(a.source_url
+      ?<a key={a.slug} className={"nar-row"+(hasImg?"":" noimg")} href={a.source_url} target="_blank" rel="noopener noreferrer nofollow">{inner}</a>
+      :<button key={a.slug} type="button" className={"nar-row"+(hasImg?"":" noimg")} onClick={()=>onNavigate("news-article",{slug:a.slug})}>{inner}</button>);
+  });
+  const done=shown>=list.length;
+  const first=months.length?monLabel(months[months.length-1][0]):"";
+  return(<div><div className="page nar-page">
+    <div className="nar-lab">CastSlate News</div>
+    <h1>Industry news</h1>
+    <p className="nar-lead">What's happening in film, TV and theater, from the trades actors read. Every story links to its original source.</p>
+    {items===null&&<CastSlateLoader size="inline" text="Loading news…"/>}
+    {items&&items.length===0&&<p className="nar-lead">No news to show right now.</p>}
+    {items&&items.length>0&&<>
+      <div className="nar-chips">{cats.map(k=><button key={k} type="button" className={k===cat?"on":""} onClick={()=>{setCat(k);setShown(NAR_PAGE);}}>{k==="All"?"All news":k}<small>{counts[k]}</small></button>)}</div>
+      {months.length>1&&<div className="nar-jump">Jump to:{months.map(([m,i])=><button key={m} type="button" onClick={()=>{setShown(s=>Math.max(s,i+NAR_PAGE));setJumpTo(m);}}>{new Date(m+"-15T12:00:00Z").toLocaleDateString("en-US",{month:"long",timeZone:"UTC"})}</button>)}</div>}
+      {rows}
+      {!done&&<div className="nar-more"><button type="button" className="btn-s" onClick={()=>setShown(s=>s+NAR_PAGE)}>Show older news</button></div>}
+      {done&&list.length>0&&<p className="nar-end">You've reached the start of CastSlate News ({first}).</p>}
+    </>}
+  </div><Footer onNavigate={onNavigate}/></div>);
 }
 
 // Full article page (/news/<slug>). Fetches by slug so it survives a refresh.
@@ -62619,6 +62711,7 @@ const PAGE_PATH={
   "actor-toolkit":"/actor-toolkit",
   "manager-mode":"/manager-mode",
   "events":"/events",
+  "news":"/news",
   "tapelink":"/tapelink",
   "agency-directory":"/agency-directory",
   "casting-directory":"/casting-directory",
@@ -62651,6 +62744,7 @@ const PAGE_SEO={
   "privacy":{title:"Privacy Policy | CastSlate",desc:"CastSlate Privacy Policy — how we collect, use, and protect your personal information."},
   "fair-casting":{title:"Fair Casting & Inclusion | CastSlate",desc:"CastSlate has zero tolerance for discrimination and harassment. How role requirements work, how your personal details stay private, and how to report a problem."},
   "studios":{title:"For Studios & Production Companies | CastSlate",desc:"CastSlate for studios and production companies. Post castings, review talent, and hire fast."},
+  "news":{title:"Film, TV & Theater News for Actors | CastSlate",desc:"Industry news for actors from the trades: film, TV, theater and casting headlines, updated daily and archived by month."},
   "events":{title:"Industry Events for Actors in New York and Los Angeles | CastSlate",desc:"Film festivals, screenings, panels and mixers in New York and Los Angeles, curated every month to help actors and filmmakers meet in person."},
   "manager-mode":{title:"Manager Mode — Career Check-ins for Actors | CastSlate",desc:"CastSlate Manager Mode is a premium monthly career check-in that helps actors improve their profiles, understand casting lanes, and receive one focused task each month to become more castable."},
   "tapelink":{title:"TapeLink: Self-Tape Auditions Built Into Casting",desc:"TapeLink is CastSlate's built-in self-tape workflow. Casting directors attach sides, set self-tape instructions and take limits, and receive actor tapes through the same role page. Actors practice, record, and submit without leaving the platform."},
@@ -64600,6 +64694,7 @@ function App(){
         {page==="pricing"&&<PricingPage session={session} myProfile={myProfile} onNavigate={navigate} onPickPlan={(k)=>{setSelectedPlan(k);navigate("plan-summary");}} onViewCasting={(c)=>handleViewCasting(c,"pricing")}/>}
         {page==="manager-mode"&&<ManagerModePage onNavigate={navigate} session={session} myProfile={myProfile}/>}
         {page==="events"&&<IndustryEventsPage onNavigate={navigate} session={session} myProfile={myProfile}/>}
+        {page==="news"&&<NewsArchivePage onNavigate={navigate}/>}
         {page==="tapelink"&&<TapeLinkPage onNavigate={navigate}/>}
         {page==="agency-directory"&&<AgencyDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}
         {page==="casting-directory"&&<CastingDirectoryPage onNavigate={navigate} isPremium={typeof window!=="undefined"&&window.__SC_PREMIUM===true}/>}

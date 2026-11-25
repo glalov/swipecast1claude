@@ -102,6 +102,10 @@
             "destination": "/events.html"
         },
         {
+            "source": "/news",
+            "destination": "/news.html"
+        },
+        {
             "source": "/tapelink",
             "destination": "/tapelink.html"
         },
