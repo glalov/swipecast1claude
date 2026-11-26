@@ -7288,7 +7288,12 @@ html,body{overflow-x:hidden;overflow-x:clip;}
    natural ratio (width:100%/height:auto) — never cropped, no bars. Copy right. */
 .hiw-card-img{line-height:0;}
 .hiw-card-img img{width:100%;height:auto;display:block;border-radius:14px;}
-.hiw-card-img video{width:100%;aspect-ratio:16/9;height:auto;display:block;border-radius:18px;object-fit:cover;background:var(--s3);box-shadow:0 18px 44px -26px rgba(26,26,46,.45);}
+.hiw-card-img video{width:100%;aspect-ratio:16/9;height:auto;display:block;border-radius:0;object-fit:cover;background:var(--s3);}
+/* Corner hairline fix (owner 2026-11-26): ONE rounded edge. The .slv-wrap clips the video at 18px and carries the shadow;
+   the video itself is square-cornered (a 14px wrapper + 18px video let the poster peek through as dark corner slivers).
+   The shadow sits on .hiw-card-img (a mask on .slv-wrap would cut it off); translateZ(0) + the mask keep Safari's clip crisp. */
+.hiw-card-img{border-radius:18px;box-shadow:0 18px 44px -26px rgba(26,26,46,.45);}
+.hiw-card-img .slv-wrap{border-radius:18px;transform:translateZ(0);-webkit-mask-image:-webkit-radial-gradient(white,black);}
 /* Owner 2026-11-26 (cd-video-card-demo Option B): no white card; video ~20% bigger (1240 section, 2.75fr), copy column unchanged. */
 .hiw-card-body{padding:6px clamp(4px,1vw,14px) 6px 0;display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
