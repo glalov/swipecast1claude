@@ -7520,8 +7520,23 @@ button:disabled:hover .cs-tri{transform:none;}
 .lh-him>img{height:calc((100% - var(--lh-text)) * 1.15);object-position:center bottom;}
 .lh-him .lh-fade{position:absolute;left:0;right:0;top:calc((100% - var(--lh-text)) * 1.15 - 90px);height:91px;background:linear-gradient(180deg,rgba(5,11,17,0) 0%,#050B11 100%);}
 /* Industry/CD signup: teal info panel (left side of the split card) */
-.cd-panel{position:relative;overflow:hidden;background:linear-gradient(160deg,#5CA092 0%,#4F8B7F 48%,#3B6F65 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
+.cd-panel{position:relative;overflow:hidden;background:linear-gradient(170deg,#1B1714 0%,#100D0B 100%);color:#fff;padding:clamp(32px,3.5vw,46px);display:flex;flex-direction:column;justify-content:center;}
 @media(max-width:820px){.cd-panel{padding:30px 24px;}}
+/* Post a Job review-screen glimpse (owner 2026-11-26, Option E): one straight card, quiet Pass/Shortlist, portrait photo. */
+.cdp-rv{position:relative;border:1px solid rgba(243,235,224,.14);border-radius:14px;overflow:hidden;background:#1F1A16;margin:0 0 22px;box-shadow:0 24px 50px -24px rgba(0,0,0,.8);}
+.cdp-rv-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:10.5px;letter-spacing:.08em;color:rgba(243,235,224,.62);border-bottom:1px solid rgba(243,235,224,.1);white-space:nowrap;min-width:0;}
+.cdp-rv-proj{font-weight:700;color:#F3EBE0;letter-spacing:.14em;}
+.cdp-rv-n{margin-left:auto;}
+.cdp-rv-row{display:flex;align-items:stretch;}
+.cdp-rv-ph{flex:none;width:128px;height:160px;background-size:cover;background-position:center 30%;background-color:#2a241f;}
+.cdp-rv-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:3px;padding:12px 16px;font-family:'DM Sans',sans-serif;}
+.cdp-rv-info b{font-size:14.5px;color:#F3EBE0;}
+.cdp-rv-info small{font-size:11.5px;color:rgba(243,235,224,.6);}
+.cdp-rv-sk{margin-top:4px;line-height:1.4;}
+.cdp-rv-btns{display:flex;gap:6px;margin-top:12px;}
+.cdp-rv-btns span{font-size:11.5px;font-weight:600;padding:7px 11px;border-radius:8px;border:1px solid rgba(243,235,224,.28);color:#F3EBE0;}
+.cdp-rv-btns .cdp-rv-sl{background:#F3EBE0;color:#1A1A2E;border-color:#F3EBE0;}
+@media(max-width:380px){.cdp-rv-bar span:nth-child(2){display:none;}.cdp-rv-ph{width:108px;height:140px;}}
 @keyframes mv-slide-left{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mv-slide-right{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
 .mv-in-left{animation:mv-slide-left 0.22s ease}
@@ -10893,16 +10908,23 @@ function RegisterCD({onNavigate}){
   if(done)return(<div className="page" style={{maxWidth:680,margin:"0 auto"}}><ConfirmEmailCard email={f.email} finalStep="Post a casting" line="Your casting account is ready. Confirm, log in, and post your first casting." resentOk={resentOk} err={err} cooldown={resendCooldown} onResend={resendConfirmation} onLogin={()=>onNavigate("login")} backLabel="Home" onBack={()=>onNavigate("home")}/><Footer onNavigate={onNavigate}/></div>);
   return(
     <div className="page"><div className="login-shell"><div className="login-split">
-      {/* LEFT: teal info panel */}
+      {/* LEFT: dark info panel with a glimpse of the review screen (owner 2026-11-26, postjob-photo-demo Option E).
+          Fictional project "The Night Desk" (owner's pick), real landing-deck headshot. */}
       <div className="cd-panel">
-        <span style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.30),transparent 70%)",top:-90,right:-50,pointerEvents:"none"}}/>
+        <div className="cdp-rv" aria-hidden="true">
+          <div className="cdp-rv-bar"><span className="cdp-rv-proj">THE NIGHT DESK</span><span>Role: Daniel · Lead</span><span className="cdp-rv-n">12 of 48</span></div>
+          <div className="cdp-rv-row">
+            <div className="cdp-rv-ph" style={{backgroundImage:"url(/assets/landing/killian-whitmore.jpg)"}}/>
+            <div className="cdp-rv-info"><b>Killian Whitmore</b><small>30 · 6'0"</small><small className="cdp-rv-sk">Drama · Screen Acting · Stage Combat</small><div className="cdp-rv-btns"><span>Pass</span><span className="cdp-rv-sl">Shortlist</span></div></div>
+          </div>
+        </div>
         <div style={{position:"relative"}}>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,letterSpacing:1.4,textTransform:"uppercase",color:"#FFD79A",marginBottom:10}}>For industry</div>
+          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:700,letterSpacing:1.4,textTransform:"uppercase",color:"#E8C27E",marginBottom:10}}>For industry</div>
           <h2 style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:"clamp(24px,2.6vw,30px)",letterSpacing:-0.8,lineHeight:1.12,margin:"0 0 8px"}}>Post castings,<br/>find great talent.</h2>
           <p style={{fontSize:13.5,lineHeight:1.55,color:"rgba(255,255,255,.86)",margin:"0 0 22px"}}>Industry accounts are free to create. Post your first casting and go live after a quick admin review.</p>
-          <div style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.22)",borderRadius:14,padding:18,backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><b style={{fontFamily:"'DM Sans',sans-serif",fontSize:15}}>Industry Account</b><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:16,color:"#FFD79A",letterSpacing:0.5}}>FREE</span></div>
-            {["Post castings for free","Swipe-based talent review","Advanced talent filters","Verified industry badge"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:"rgba(255,255,255,.92)",marginBottom:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFD79A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
+          <div style={{background:"rgba(243,235,224,.05)",border:"1px solid rgba(243,235,224,.14)",borderRadius:14,padding:18,backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><b style={{fontFamily:"'DM Sans',sans-serif",fontSize:15}}>Industry Account</b><span style={{fontFamily:"'DM Sans',sans-serif",fontWeight:800,fontSize:16,color:"#E8C27E",letterSpacing:0.5}}>FREE</span></div>
+            {["Post castings for free","Swipe-based talent review","Advanced talent filters","Verified industry badge"].map(b=><div key={b} style={{display:"flex",alignItems:"center",gap:8,fontSize:13,color:"rgba(255,255,255,.92)",marginBottom:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E8C27E" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>{b}</div>)}
           </div>
           <p style={{margin:"16px 0 0",fontSize:12,color:"rgba(255,255,255,.7)",fontStyle:"italic"}}>No membership fee required for industry accounts.</p>
         </div>
