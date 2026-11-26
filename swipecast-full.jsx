@@ -11378,23 +11378,24 @@ function ResetPasswordPage({onNavigate,session}){
 // PAGE: ABOUT
 // ═══════════════════════════════════════════
 function AboutPage({onNavigate}){
-  // Example QR Talent Card: a static copy of ActorCardPreview's business-card front in the default
-  // Terracotta colour (values from ABC_CARD_COLORS). Kira Vance is the landing deck's demo actor; the QR opens castslate.com.
-  const chip=t=><span key={t} style={{fontSize:8,fontWeight:600,padding:"2px 7px",borderRadius:4,background:"#8A4A3C",color:"#F5F1EC",border:"1px solid #9C5A4B",whiteSpace:"nowrap",flexShrink:0}}>{t}</span>;
+  // Example QR Talent Card: a static copy of ActorCardPreview's business-card front in Deep Teal (values from
+  // ABC_CARD_COLORS 'deep-teal'; owner 2026-11-26, about-card-color-demo — was Terracotta + Kira Vance).
+  // "Jordan Ellis" is a fictional name for Pexels 8801041 (owner's pick); the QR opens castslate.com.
+  const chip=t=><span key={t} style={{fontSize:8,fontWeight:600,padding:"2px 7px",borderRadius:4,background:"#1C5A53",color:"#F5F1EC",border:"1px solid #2A6C64",whiteSpace:"nowrap",flexShrink:0}}>{t}</span>;
   const exampleCard=(<figure className="abt-card-fig" aria-hidden="true">
-    <div style={{background:"#7A3B2E",border:"1.5px solid #8C4A3D",borderRadius:10,overflow:"hidden",boxShadow:"0 8px 40px rgba(26,26,46,0.15)",display:"flex",width:"100%",maxWidth:390,aspectRatio:"1050 / 600",position:"relative"}}>
-      <div style={{position:"absolute",top:0,left:0,right:0,height:5,background:"#F3ECE1",zIndex:2}}/>
-      <div style={{width:"34%",flexShrink:0,position:"relative",marginTop:5,overflow:"hidden",background:"#E8E8F2"}}><div style={{position:"absolute",inset:0,backgroundImage:"url(/assets/landing/deck-kira-vance.jpg)",backgroundSize:"cover",backgroundPosition:"72% 30%"}}/></div>
+    <div style={{background:"#134A44",border:"1.5px solid #22574F",borderRadius:10,overflow:"hidden",boxShadow:"0 8px 40px rgba(26,26,46,0.15)",display:"flex",width:"100%",maxWidth:390,aspectRatio:"1050 / 600",position:"relative"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:5,background:"#D6AE5C",zIndex:2}}/>
+      <div style={{width:"34%",flexShrink:0,position:"relative",marginTop:5,overflow:"hidden",background:"#E8E8F2"}}><div style={{position:"absolute",inset:0,backgroundImage:"url(/assets/landing/jordan-ellis.jpg)",backgroundSize:"cover",backgroundPosition:"center 30%"}}/></div>
       <div style={{flex:1,padding:"16px 14px 12px",display:"flex",flexDirection:"column",minWidth:0,marginTop:5,overflow:"hidden"}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7}}><div style={{width:19,height:19,background:"#F3ECE1",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#7A3B2E"}}><LogoMark/></div><span style={{fontSize:9,fontWeight:800,color:"#F3ECE1",letterSpacing:1.5}}>CASTSLATE</span></div>
-        <div style={{fontWeight:800,fontSize:17,color:"#FFFFFF",letterSpacing:-0.5,lineHeight:1.15,marginBottom:3,whiteSpace:"nowrap"}}>Kira Vance</div>
-        <div style={{fontSize:11,color:"#F6D9C9",marginBottom:3,fontWeight:600}}>Actor</div>
-        <div style={{fontSize:10,color:"#E0B7AA",marginBottom:3}}>Los Angeles, CA</div>
-        <div style={{display:"flex",gap:4,flexWrap:"nowrap",marginBottom:3,overflow:"hidden"}}>{["Method Acting","Improv","Stage Combat"].map(chip)}</div>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7}}><div style={{width:19,height:19,background:"#F3ECE1",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#134A44"}}><LogoMark/></div><span style={{fontSize:9,fontWeight:800,color:"#F3ECE1",letterSpacing:1.5}}>CASTSLATE</span></div>
+        <div style={{fontWeight:800,fontSize:17,color:"#FFFFFF",letterSpacing:-0.5,lineHeight:1.15,marginBottom:3,whiteSpace:"nowrap"}}>Jordan Ellis</div>
+        <div style={{fontSize:11,color:"#E6CFA0",marginBottom:3,fontWeight:600}}>Actor</div>
+        <div style={{fontSize:10,color:"#9FC2BB",marginBottom:3}}>New York, NY</div>
+        <div style={{display:"flex",gap:4,flexWrap:"nowrap",marginBottom:3,overflow:"hidden"}}>{["Commercial","Comedy","Improv"].map(chip)}</div>
         <div style={{flex:"1 1 auto",minHeight:0}}/>
-        <div style={{borderTop:"1px solid #8C4A3D",paddingTop:5,display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:8}}>
-          <div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:"#E0B7AA",lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:"#FFFFFF",lineHeight:1.3,whiteSpace:"nowrap"}}>kira-vance</div></div>
-          <div style={{flexShrink:0,textAlign:"center"}}><img src="/assets/legal/about-card-qr.png" alt="" width="46" height="46" loading="lazy" style={{width:46,height:46,display:"block",borderRadius:4,background:"#fff",padding:3,boxSizing:"border-box"}}/><div style={{fontSize:6,color:"#E0B7AA",letterSpacing:0.3,marginTop:2,whiteSpace:"nowrap"}}>SCAN TO VIEW</div></div>
+        <div style={{borderTop:"1px solid #22574F",paddingTop:5,display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:8}}>
+          <div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:"#9FC2BB",lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:"#FFFFFF",lineHeight:1.3,whiteSpace:"nowrap"}}>jordan-ellis</div></div>
+          <div style={{flexShrink:0,textAlign:"center"}}><img src="/assets/legal/about-card-qr.png" alt="" width="46" height="46" loading="lazy" style={{width:46,height:46,display:"block",borderRadius:4,background:"#fff",padding:3,boxSizing:"border-box"}}/><div style={{fontSize:6,color:"#9FC2BB",letterSpacing:0.3,marginTop:2,whiteSpace:"nowrap"}}>SCAN TO VIEW</div></div>
         </div>
       </div>
     </div>
