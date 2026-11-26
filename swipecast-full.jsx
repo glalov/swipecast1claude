@@ -11549,6 +11549,7 @@ const FAQ_CATEGORIES=[
     {q:"What's your stance on cookies and tracking?",a:"Necessary cookies (login, session, security) are always on. Analytics and marketing cookies are off by default and you can manage them anytime via the 'Cookie Preferences' link in the footer."}
   ]}
 ];
+// /faq Help Center (owner 2026-11-26): question lists match the homepage FAQ: divider lines, smooth fold (FaqShell), all closed.
 function FaqPage({onNavigate}){
   const [activeCat,setActiveCat]=useState(FAQ_CATEGORIES[0].id);
   const [openItem,setOpenItem]=useState(-1);
@@ -11573,16 +11574,16 @@ function FaqPage({onNavigate}){
       <div style={{maxWidth:760,margin:"0 auto"}}>
         <div style={{fontSize:13,color:"var(--t3)",marginBottom:14,fontWeight:600}}>{matches.length} result{matches.length===1?"":"s"} for "{search}"</div>
         {matches.length===0?<div className="card" style={{padding:32,textAlign:"center"}}><p style={{color:"var(--t3)",fontSize:14}}>No FAQs match your search. Try fewer words, or <span style={{color:"var(--acc)",cursor:"pointer",fontWeight:600}} onClick={()=>onNavigate("contact")}>contact us</span> directly.</p></div>:
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {matches.map((it,i)=><div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenItem(openItem===i?-1:i)}>
-              <div style={{padding:"18px 22px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
+          <div className="faq-lines">
+            {matches.map((it,i)=><div key={i} className="faq-row" onClick={()=>setOpenItem(openItem===i?-1:i)}>
+              <div className="faq-q">
                 <div style={{minWidth:0}}>
                   <div style={{fontSize:10,fontWeight:700,letterSpacing:1.2,textTransform:"uppercase",color:"var(--t3)",marginBottom:4}}>{it._cat}</div>
-                  <h4 style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{it.q}</h4>
+                  <h4>{it.q}</h4>
                 </div>
-                <span style={{fontSize:22,color:"var(--acc)",transform:openItem===i?"rotate(45deg)":"none",transition:"transform .2s",fontWeight:300,flexShrink:0}}>+</span>
+                <span style={{fontSize:22,color:"var(--acc)",transform:openItem===i?"rotate(45deg)":"none",transition:"transform .32s cubic-bezier(.4,0,.2,1)",fontWeight:300,flexShrink:0}}>+</span>
               </div>
-              {openItem===i&&<div style={{padding:"0 22px 20px",color:"var(--t2)",fontSize:14,lineHeight:1.7,borderTop:"1px solid var(--bdr)",paddingTop:14,whiteSpace:"pre-line"}}>{it.a}</div>}
+              <FaqShell open={openItem===i}><div className="faq-a" style={{fontSize:14,lineHeight:1.7,whiteSpace:"pre-line"}}>{it.a}</div></FaqShell>
             </div>)}
           </div>
         }
@@ -11601,13 +11602,13 @@ function FaqPage({onNavigate}){
         {/* Active category Q&A */}
         <div style={{maxWidth:760,margin:"0 auto"}}>
           <h2 style={{fontSize:24,fontWeight:800,letterSpacing:"-0.6px",marginBottom:16,display:"flex",alignItems:"center",gap:10}}><Ico n={cat.icon} s={24}/>{cat.label}</h2>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {cat.items.map((it,i)=><div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenItem(openItem===i?-1:i)}>
-              <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
-                <h4 style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{it.q}</h4>
-                <span style={{fontSize:22,color:"var(--acc)",transform:openItem===i?"rotate(45deg)":"none",transition:"transform .2s",fontWeight:300,flexShrink:0}}>+</span>
+          <div className="faq-lines">
+            {cat.items.map((it,i)=><div key={cat.id+"-"+i} className="faq-row" onClick={()=>setOpenItem(openItem===i?-1:i)}>
+              <div className="faq-q">
+                <h4>{it.q}</h4>
+                <span style={{fontSize:22,color:"var(--acc)",transform:openItem===i?"rotate(45deg)":"none",transition:"transform .32s cubic-bezier(.4,0,.2,1)",fontWeight:300,flexShrink:0}}>+</span>
               </div>
-              {openItem===i&&<div style={{padding:"0 24px 22px",color:"var(--t2)",fontSize:14,lineHeight:1.75,borderTop:"1px solid var(--bdr)",paddingTop:16,whiteSpace:"pre-line"}}>{it.a}</div>}
+              <FaqShell open={openItem===i}><div className="faq-a" style={{fontSize:14,lineHeight:1.75,whiteSpace:"pre-line"}}>{it.a}</div></FaqShell>
             </div>)}
           </div>
         </div>
