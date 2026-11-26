@@ -6071,6 +6071,12 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fcs-arrow:disabled{opacity:0.45;cursor:not-allowed;}
 .fcs-arrow.prev{left:14px;}
 .fcs-arrow.next{right:14px;}
+/* Owner 2026-11-26 (Option B, featured-arrows-demo): play-triangle in a bold navy ring like the nav outline buttons; fills navy on hover. */
+.fcs-arrow{border:2px solid var(--t1);box-shadow:none;}
+.fcs-arrow:hover{background:var(--t1);border-color:var(--t1);color:#fff;}
+.fcs-arrow .cs-tri{display:block;width:13px;height:15px;}
+.fcs-arrow.next .cs-tri{margin-left:3px;}
+.fcs-arrow.prev .cs-tri{transform:scaleX(-1);margin-right:3px;}
 .fcs-dots{display:flex;justify-content:center;gap:7px;margin-top:22px;flex-wrap:wrap;}
 .fcs-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);border:none;padding:0;cursor:pointer;transition:width .25s ease,background .25s ease;}
 .fcs-dot.active{width:32px;border-radius:5px;background:var(--acc);}
@@ -29475,7 +29481,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         and CSS transitions on the track + per-card transform/opacity produce a
         smooth slide. Side cards remain clickable to jump straight to them. */}
     <div className="fcs-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();prev();}}>‹</button>}
+      {castings.length>1&&<button className="fcs-arrow prev" aria-label="Previous casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();prev();}}><Tri/></button>}
       <div className="fcs-viewport">
       <div className="fcs-track" ref={trackRef} style={{transform:`translate3d(${trackOffset}px,0,0)`,gap:`${gap}px`}}>
         {castings.map((sc,i)=>{
@@ -29562,7 +29568,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
         })}
       </div>
       </div>
-      {castings.length>1&&<button className="fcs-arrow next" aria-label="Next casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();next();}}>›</button>}
+      {castings.length>1&&<button className="fcs-arrow next" aria-label="Next casting" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onClick={(e)=>{e.stopPropagation();next();}}><Tri/></button>}
     </div>
 
     {castings.length>1&&<div className="fcs-dots" role="tablist" aria-label="Casting navigation">
