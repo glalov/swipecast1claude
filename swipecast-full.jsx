@@ -29455,7 +29455,8 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
   const itemStep=cardWidth+gap;
   const trackOffset=isMobileVpw?-(idx*itemStep):((stageWidth/2)-(cardWidth/2)-(idx*itemStep));
   return(<section className="fcs-section" ref={sectionRef}>
-    <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap"}}>
+    {/* Owner 2026-11-26 (Option A, featured-align-demo): heading + Browse all share the centre card's edges on desktop. */}
+    <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap",...(isMobileVpw?{}:{maxWidth:cardWidth,marginLeft:"auto",marginRight:"auto"})}}>
       <div style={{flex:1,minWidth:0}}>
         <div className="section-label">Featured Castings</div>
         <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Roles that are actually casting right now.</h2>
