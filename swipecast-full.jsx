@@ -31461,7 +31461,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
   const [wlEmail,setWlEmail]=useState("");
   const [wlRole,setWlRole]=useState("talent");
   const [wlDone,setWlDone]=useState(false);
-  const [openFaq,setOpenFaq]=useState(0);
+  const [openFaq,setOpenFaq]=useState(-1); // owner 2026-11-26: all FAQ answers start closed
   const [wlBusy,setWlBusy]=useState(false);
   const [wlErr,setWlErr]=useState("");
   // Waitlist goes to Formspree (free tier = 50 submissions/mo). Swap to a real email-service endpoint once traffic scales past that.
