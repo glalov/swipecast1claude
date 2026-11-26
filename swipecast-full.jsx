@@ -10909,13 +10909,13 @@ function RegisterCD({onNavigate}){
   return(
     <div className="page"><div className="login-shell"><div className="login-split">
       {/* LEFT: dark info panel with a glimpse of the review screen (owner 2026-11-26, postjob-photo-demo Option E).
-          Fictional project "The Night Desk" (owner's pick), real landing-deck headshot. */}
+          Fictional project "The Night Desk" (owner's pick). Headshot: Pexels 41042539 (B&W, owner's pick 11-26), fictional name Kian Navari. */}
       <div className="cd-panel">
         <div className="cdp-rv" aria-hidden="true">
           <div className="cdp-rv-bar"><span className="cdp-rv-proj">THE NIGHT DESK</span><span>Role: Daniel · Lead</span><span className="cdp-rv-n">12 of 48</span></div>
           <div className="cdp-rv-row">
-            <div className="cdp-rv-ph" style={{backgroundImage:"url(/assets/landing/killian-whitmore.jpg)"}}/>
-            <div className="cdp-rv-info"><b>Killian Whitmore</b><small>30 · 6'0"</small><small className="cdp-rv-sk">Drama · Screen Acting · Stage Combat</small><div className="cdp-rv-btns"><span>Pass</span><span className="cdp-rv-sl">Shortlist</span></div></div>
+            <div className="cdp-rv-ph" style={{backgroundImage:"url(/assets/landing/kian-navari.jpg)"}}/>
+            <div className="cdp-rv-info"><b>Kian Navari</b><small>32 · 5'11"</small><small className="cdp-rv-sk">Drama · Screen Acting · Stunts</small><div className="cdp-rv-btns"><span>Pass</span><span className="cdp-rv-sl">Shortlist</span></div></div>
           </div>
         </div>
         <div style={{position:"relative"}}>
