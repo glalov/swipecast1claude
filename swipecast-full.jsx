@@ -6253,6 +6253,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 @media (prefers-reduced-motion: reduce){.fmt-track{animation:none;}}
 /* ─── Latest Industry News (landing section: 3 blocks × 4 cards) ─── */
 .news-sec{border-top:1px solid var(--bdr);padding:54px 0 58px;}
+/* Phones (owner 2026-11-26): the FAQ above already ends with its own divider, so no second line here. */
+@media (max-width:768px){.news-sec{border-top:none;padding-top:18px!important;}}
 .news-block{margin-bottom:42px;}
 .news-block:last-child{margin-bottom:0;}
 .news-block-head{margin-bottom:18px;border-bottom:1px solid var(--bdr);padding-bottom:12px;}
@@ -7371,7 +7373,10 @@ button:disabled:hover .cs-tri{transform:none;}
 .home-cta-outline:hover{background:#fff;color:var(--teal);}
 .home-cta-blob{position:absolute;border-radius:50%;pointer-events:none;}
 /* Homepage FAQ (owner 2026-11-26): smooth fold (see FaqShell) and bullets/numbers aligned with the answer text. */
-.faq-shell{overflow:hidden;transition:height .32s cubic-bezier(.4,0,.2,1),opacity .28s ease;}
+/* iPhone text shimmer fix (owner 2026-11-26): no opacity fade (Safari re-rasterises fading text, then snaps back);
+   the answer is revealed by the height clip only, and the list keeps one font-smoothing mode throughout. */
+.faq-shell{overflow:hidden;transition:height .32s cubic-bezier(.4,0,.2,1);}
+.faq-lines{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
 .fq-new ul,.fq-new ol{padding-left:20px;margin:6px 0 8px;}
 .fq-new li{margin:2px 0;}
 /* Homepage FAQ as divider lines, no boxes (owner 2026-11-26, faq-style-demo Option 2). */
@@ -31365,16 +31370,16 @@ function FaqShell({open,children}){
   useLayoutEffect(()=>{
     const el=ref.current; if(!el)return;
     const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(first.current||reduce){first.current=false;el.style.height=open?'auto':'0px';el.style.opacity=open?'1':'0';return;}
+    if(first.current||reduce){first.current=false;el.style.height=open?'auto':'0px';return;}
     const from=el.getBoundingClientRect().height;
     el.style.height='auto'; const to=open?el.scrollHeight:0;
     el.style.height=from+'px'; void el.offsetHeight;
-    el.style.height=to+'px'; el.style.opacity=open?'1':'0';
-    const done=e=>{if(e.target!==el||e.propertyName!=='height')return;el.removeEventListener('transitionend',done);if(open)el.style.height='auto';};
+    el.style.willChange='height'; el.style.height=to+'px';
+    const done=e=>{if(e.target!==el||e.propertyName!=='height')return;el.removeEventListener('transitionend',done);el.style.willChange='';if(open)el.style.height='auto';};
     el.addEventListener('transitionend',done);
     return()=>el.removeEventListener('transitionend',done);
   },[open]);
-  return <div ref={ref} className="faq-shell" aria-hidden={!open} style={{height:0,opacity:0}}>{children}</div>;
+  return <div ref={ref} className="faq-shell" aria-hidden={!open} style={{height:0}}>{children}</div>;
 }
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
   const tr=useT();
