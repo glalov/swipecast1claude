@@ -7391,6 +7391,17 @@ button:disabled:hover .cs-tri{transform:none;}
 .faq-q{padding:22px 4px;display:flex;justify-content:space-between;align-items:center;gap:16px;}
 .faq-q h4{font-size:16px;font-weight:700;color:var(--t1);margin:0;}
 .faq-a{padding:0 4px 22px;color:var(--t2);}
+/* NYC page chips + Q&A (owner 2026-11-26). */
+.nyc-chips{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 22px;}
+.nyc-chip{font:600 13.5px 'DM Sans',sans-serif;padding:8px 15px;border-radius:999px;border:1px solid var(--bdr);background:#fff;color:var(--t2);cursor:pointer;transition:background .15s,border-color .15s,color .15s;}
+.nyc-chip:hover{border-color:#1A1A2E;}
+.nyc-chip.on{background:#1A1A2E;border-color:#1A1A2E;color:#fff;}
+.nyc-qa>h2{max-width:820px;margin-left:auto;margin-right:auto;}
+.nyc-qa .faq-lines{max-width:820px;margin:0 auto;}
+.nyc-qa .faq-q h3{font-size:16px;font-weight:700;color:var(--t1);margin:0;font-family:'DM Sans',sans-serif;letter-spacing:0;}
+.nyc-qa .faq-a p{margin:0 0 10px;font-size:15px;line-height:1.65;}
+.nyc-qa-pl{font-size:22px;color:var(--acc);font-weight:300;flex-shrink:0;transition:transform .32s cubic-bezier(.4,0,.2,1);}
+@media(max-width:600px){.nyc-chips{flex-wrap:nowrap;overflow-x:auto;margin-left:-16px;margin-right:-16px;padding:0 16px 4px;scrollbar-width:none;}.nyc-chips::-webkit-scrollbar{display:none;}.nyc-chip{flex:none;}}
 .home-cta-blob.b1{width:520px;height:520px;background:radial-gradient(circle,rgba(232,144,42,.30),transparent 70%);top:-140px;right:-60px;}
 .home-cta-blob.b2{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-110px;left:-40px;}
 .home-cta-construct{overflow:hidden;}
@@ -19600,15 +19611,44 @@ function openNycLanding(onNavigate){
     window.dispatchEvent(new Event("cs:landing"));
   }catch(_){}
 }
+// NYC page Q&A (owner 2026-11-26): replaces the 6-card guide grid + numbered steps with ONE folding list
+// in the homepage FAQ style, written to answer the real NYC searches (film, commercial, theater, extras, paid,
+// no experience, kids, free, this week, Netflix...). Never add separate NYC pages (see Oct 20 split).
+// KEEP IN SYNC with NYC_QA in api/landing.js. [question, answer, optional link href, link text]
+const NYC_QA=[["How do I find film auditions in NYC?", "Most New York film roles, from student shorts to indie features, are cast by submission: you send a headshot and résumé, then a self-tape if they ask. Tap Film above to see the film castings open right now. Student films from NYU, Columbia, The New School, SVA and Brooklyn College cast all year and are the quickest way to build credits.", "/casting-calls/student-films", "Student film casting calls"],
+  ["Where are commercial auditions in NYC posted?", "Commercial casting moves fast: roles often post and close within days, and the first round is usually a self-tape. Tap Commercial above for open commercial roles and apply soon after one appears. Many commercials are SAG-AFTRA, but non-union spots are posted too."],
+  ["How do Broadway and theater auditions work in NYC?", "Most Broadway and Off-Broadway casting runs through casting offices and agents, but Actors' Equity also holds open calls: Equity Principal Auditions (EPAs) and Equity Chorus Calls (ECCs), where non-Equity actors are often seen if time allows. Smaller theater, Off-Off-Broadway shows and readings post breakdowns too. Tap Theater above for open theater roles."],
+  ["How do extras get cast in New York?", "Background (extras) work is booked for specific shoot dates, so casting looks for people who are free on the day. Have recent photos ready, know your sizes, and check each listing's date, location and pay before you apply."],
+  ["Are there paid acting jobs in NYC?", "Yes. Union work follows SAG-AFTRA or Actors' Equity rates, indie and non-union jobs set their own day rate or flat fee, and many student films are unpaid or pay a small fee. Listings show the pay when the production includes it, so check it before you apply."],
+  ["Can I audition in NYC with no experience?", "Yes. Plenty of New York listings welcome newcomers, especially student films, short films and indie projects. Start there to earn credits and reel footage, keep your headshot current, and apply only to roles you genuinely fit."],
+  ["Can kids and teens audition in NYC?", "Yes, with a parent or legal guardian managing the account. Roles for young performers say so in the breakdown, and child performers in New York need a Child Performer Permit from the New York State Department of Labor before they work. A parent or guardian should be at every audition and on set."],
+  ["Are there free casting calls in NYC?", "Creating a CastSlate profile is free, and real casting directors never charge you to audition. Be wary of anyone who asks for money, bank details or your Social Security number before you're booked, or makes paid photos or classes a condition of casting."],
+  ["What auditions are happening in NYC this week?", "Tap Closing this week above to see New York roles whose submission deadline falls in the next seven days. New castings post every day, so check back often and apply early: breakdowns fill quickly."],
+  ["How do Netflix and streaming shows cast in New York?", "Streaming series cast through established casting offices, which mostly work with agents and managers rather than open calls. The realistic path is building credits, getting representation and knowing which offices cast in New York.", "/casting-directory", "Casting office directory"],
+  ["How does casting work in New York?", "A casting director posts a breakdown: the project, the roles and who they want. You submit a headshot, résumé and a reel or self-tape, and the shortlist gets a callback or audition. SAG-AFTRA covers film, TV and commercials; Actors' Equity covers stage work."],
+  ["How do I get auditions in New York?", "Get your basics ready, start with student and indie films, submit early and only when you fit, and treat the self-tape as the audition. Go to theater open calls in Midtown, and once you have a few credits and a reel, look for an agent or manager.", "/agency-directory", "Talent agency directory"],
+  ["What should I have ready before I submit?", "A current headshot that looks like you today, a one-page résumé, a short reel or slate if you have one, and a simple self-tape setup: a plain background, light facing you and clear sound."],
+  ["Where do New York productions shoot?", "On location across all five boroughs and at studios like Silvercup, Kaufman Astoria and Wildflower Studios in Astoria, Queens, and Steiner in Brooklyn. Many New York listings also film just across the river in New Jersey."]];
+function NycChips({f,setF,wk,setWk}){
+  const chips=[["All",()=>{setF(x=>({...x,type:"",union:""}));setWk(false);},!f.type&&!f.union&&!wk],
+    ["Film",()=>setF(x=>({...x,type:x.type==="Film"?"":"Film"})),f.type==="Film"],
+    ["TV",()=>setF(x=>({...x,type:x.type==="TV"?"":"TV"})),f.type==="TV"],
+    ["Commercial",()=>setF(x=>({...x,type:x.type==="Commercial"?"":"Commercial"})),f.type==="Commercial"],
+    ["Theater",()=>setF(x=>({...x,type:x.type==="Theater"?"":"Theater"})),f.type==="Theater"],
+    ["Non-union",()=>setF(x=>({...x,union:x.union==="Non-Union"?"":"Non-Union"})),f.union==="Non-Union"],
+    ["Closing this week",()=>setWk(v=>!v),wk]];
+  return <div className="nyc-chips" role="group" aria-label="Filter New York castings">{chips.map(([l,fn,on])=><button key={l} type="button" className={"nyc-chip"+(on?" on":"")} aria-pressed={on} onClick={fn}>{l}</button>)}</div>;
+}
 function NycGuide({isLoggedIn,onNavigate}){
-  // Closing call to action, "C · Editorial" (owner 2026-10-22): signed-out visitors
-  // only — a member already has a profile, and "Browse castings" there pointed at
-  // the listings they had just read. Centred serif line, sign-up button, log-in link.
+  // Closing call to action, "C · Editorial" (owner 2026-10-22): signed-out visitors only.
   const go=(e,to)=>{e.preventDefault();if(typeof onNavigate==="function")onNavigate(to);};
-  return(<section className="nyc-guide" aria-labelledby="nyc-guide-h">
+  const [open,setOpen]=useState(-1);
+  return(<section className="nyc-guide nyc-qa" aria-labelledby="nyc-guide-h">
     <h2 id="nyc-guide-h">How to find casting calls in New York City</h2>
-    <div className="nyc-guide-grid">{NYC_GUIDE.map(([h,p])=><div key={h} className="nyc-guide-item"><h3>{h}</h3><p>{p}</p></div>)}</div>
-    {!isLoggedIn&&<NycSteps onNavigate={onNavigate}/>}
+    <div className="faq-lines">{NYC_QA.map(([q,a,href,text],i)=><div key={q} className="faq-row" onClick={e=>{if(e.target.closest("a"))return;setOpen(open===i?-1:i);}}>
+      <div className="faq-q"><h3>{q}</h3><span className="nyc-qa-pl" style={{transform:open===i?"rotate(45deg)":"none"}}>+</span></div>
+      <FaqShell open={open===i}><div className="faq-a"><p>{a}</p>{href&&<GuideLink href={href} text={text} onNavigate={onNavigate}/>}</div></FaqShell>
+    </div>)}</div>
     {!isLoggedIn&&<div className="nyc-guide-close">
       <h3 className="ngc-h">Your next role is on this page.</h3>
       <p>{NYC_GUIDE_CLOSE}</p>
@@ -19941,6 +19981,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   const [mode,setMode]=useState("castings"); // always open castings, talent directory removed
   const [q,setQ]=useState("");
   const [f,setF]=useState({gender:"",ethnicity:"",location:"",union:"",type:"",castingType:""});
+  const [wk,setWk]=useState(false); // NYC chips: roles closing within 7 days
   // TODO(casting-filter): castingType filter — when set, load user_ids from
   // talent_casting_fit_dna where casting_type = f.castingType and intersect with talent results.
   // Data is already stored; filtering just needs a join or secondary query here.
@@ -20307,7 +20348,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
   if(f.location&&!locCounts[f.location])locOptions.push([f.location,0]);
   const ft=allTalent.filter(t=>{if(q&&!t.name.toLowerCase().includes(q.toLowerCase())&&!t.skills.join(" ").toLowerCase().includes(q.toLowerCase()))return false;if(f.gender&&t.gender!==f.gender)return false;if(f.ethnicity&&!t.ethnicity.toLowerCase().includes(f.ethnicity.toLowerCase()))return false;if(f.location&&!t.location.toLowerCase().includes(f.location.toLowerCase()))return false;if(f.union&&!String(t.union||"").split("/").map(x=>x.trim()).includes(f.union))return false;if(castingTypeIds!==null&&!castingTypeIds.has(t.id))return false;return true;});
   const landingKey=urlToLandingKey();
-  let fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(landingKey&&!landingMatches(c,landingKey))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&canonCastingCity(c.location)!==f.location)return false;if(f.union&&!(c.union||"").includes(f.union))return false;return true;})
+  let fc=allCastings.filter(c=>{if(castingIsScheduled(c))return false;if(landingKey&&!landingMatches(c,landingKey))return false;if(q&&!c.title.toLowerCase().includes(q.toLowerCase())&&!(c.desc||"").toLowerCase().includes(q.toLowerCase()))return false;if(f.type&&!castingTypeMatches(c.type,f.type))return false;if(f.location&&canonCastingCity(c.location)!==f.location)return false;if(f.union&&!(c.union||"").includes(f.union))return false;if(wk){const d=Date.parse(c.deadline);if(!d||d<Date.now()-864e5||d>Date.now()+7*864e5)return false;}return true;})
     // Closed castings sink to the bottom so live, applicable roles lead.
     // Bucket order: live/open first, expired next, archived/filled last.
     .sort((a,b)=>(castingSortBucket(a)-castingSortBucket(b))||(castingFeaturedRank(a)-castingFeaturedRank(b))||castingRecencyCompare(a,b));
@@ -20354,6 +20395,7 @@ function SearchPage({onViewProfile,userType,onNavigate,onViewCasting,isLoggedIn,
       <div className="brw-f"><select aria-label="Union" value={f.union} onChange={e=>setF(x=>({...x,union:e.target.value}))}><option value="">{brwPhone?t('search.unionShort'):t('search.allUnion')}</option><option value="SAG-AFTRA">SAG-AFTRA</option><option value="AEA">AEA</option><option value="Non-Union">Non-Union</option></select></div>
       <button className="brw-go">{t('search.searchBtn')}</button>
     </div>
+    {landingKey==="new-york"&&<NycChips f={f} setF={setF} wk={wk} setWk={setWk}/>}
     <>
       {/* Full-height loading placeholder — only during initial load (no cached data).
           Keeps the footer pinned to the bottom so it never flashes upward. */}
