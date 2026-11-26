@@ -6169,12 +6169,15 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .scale-tagline .st-logos{display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,34px);flex-wrap:nowrap;}
 .scale-tagline .st-lg{display:block;width:auto;height:clamp(28px,6.2vw,66px);}
 .scale-tagline .st-ldot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--t3);opacity:.7;}
+/* Owner 2026-11-25 (Option A): optical balance. A24 is narrow + thin-stroked, so it gets more height; NEON a touch less. */
+.scale-tagline .st-lg-a24{height:calc(clamp(28px,6.2vw,66px) * 1.22);}
+.scale-tagline .st-lg-neon{height:calc(clamp(28px,6.2vw,66px) * .92);}
 /* Owner 2026-11-19: more air around the logos on desktop (16px looked squeezed); phones stay 16px. */
 .scale-tagline .st-lead{margin-bottom:28px;}
 .scale-tagline .st-logos + .st-trail{margin-top:28px;}
 @media (max-width:768px){.scale-tagline .st-lead{margin-bottom:16px;}.scale-tagline .st-logos + .st-trail{margin-top:16px;}}
 /* Phones: the names fill one line (they are ~7.8x as wide as tall), so ~41px on a 375px phone instead of a fixed 34px. */
-@media (max-width:768px){.scale-tagline .st-lg{height:min(48px,calc((100vw - 104px) / 9.9));}.scale-tagline .st-logos{gap:10px;}}
+@media (max-width:768px){.scale-tagline .st-lg{height:min(48px,calc((100vw - 104px) / 10.1));}.scale-tagline .st-lg-a24{height:calc(min(48px,calc((100vw - 104px) / 10.1)) * 1.22);}.scale-tagline .st-lg-neon{height:calc(min(48px,calc((100vw - 104px) / 10.1)) * .92);}.scale-tagline .st-logos{gap:10px;}}
 @media (max-width:768px){.scale-tagline{padding:36px 20px 0;}.scale-tagline .st-names{font-size:clamp(32px,calc((100vw - 48px) / 8.1),60px);white-space:nowrap;}}
 @media (prefers-reduced-motion:reduce){.scale-tagline .st-lead,.scale-tagline .st-trail,.scale-tagline .st-names span{opacity:1!important;transform:none!important;transition:none!important;}.scale-tagline.st-in .st-a24,.scale-tagline.st-in .st-neon,.scale-tagline.st-in .st-netflix,.scale-tagline.st-in .st-neon::after,.scale-tagline.st-in .st-netflix::after{animation:none!important;}}
 /* ─── Casting Across Every Format — premium video-card carousel ─── */
@@ -31427,7 +31430,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             <span className="st-ldot" aria-hidden="true"/>
             <img className="st-lg st-lg-netflix" src="/assets/studios/netflix.png" alt="" width="353" height="92" decoding="async"/>
           </div>
-          <span className="st-trail">-level projects</span>
+          <span className="st-trail">level projects</span>
         </div>
       )}
     </div>
