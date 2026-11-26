@@ -5449,6 +5449,11 @@ a.site-footer-link{text-decoration:none;}
 .footer-lang-pill:hover{border-color:rgba(243,235,224,.4);color:#F3EBE0;}
 .footer-lang-pill svg{flex-shrink:0;width:14px;height:14px;}
 .footer-flag-es{position:relative;overflow:hidden;flex:0 0 auto;width:24px;height:17px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);background:linear-gradient(180deg,#c61f32 0 25%,#f4c13d 25% 75%,#c61f32 75% 100%);}
+.site-footer-plain-links .footer-lang-link{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:500;color:#F3EBE0;background:none;border:0;padding:0;cursor:pointer;text-underline-offset:3px;text-decoration-thickness:1px;-webkit-tap-highlight-color:transparent;}
+.site-footer-plain-links .footer-lang-link:hover{text-decoration:underline;}
+.footer-lang-link svg{flex-shrink:0;width:15px;height:15px;}
+.footer-lang-sep{width:1px;height:16px;background:rgba(243,235,224,.22);margin:0 -6px;}
+@media (max-width:600px){.footer-lang-sep{display:none;}}
 /* ─── Cookie consent panel — "Amber Block": a cinematic bottom drawer that rises
       from the bottom edge on a dark espresso ground with a giant Anton headline.
       Committed single (dark) look on purpose — reads the same in light + dark. */
@@ -10371,20 +10376,20 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
               <button className="footer-cookie-link" type="button" onClick={openCookies}>{t('footer.cookiePrefs')}</button>
               <a className="footer-privacy-choices" href="/privacy-choices" target="_blank" rel="noopener" title={t('footer.privacyChoices')+' (opens in a new window)'}>{t('footer.privacyChoices')}
                 <svg viewBox="0 0 30 14" aria-hidden="true"><rect x=".5" y=".5" width="29" height="13" rx="6.5" fill="#fff" stroke="#0066FF"/><path d="M7 .5h9.5L13 13.5H7a6.5 6.5 0 0 1 0-13z" fill="#0066FF"/><path d="M5.2 7.2l1.8 1.8 3.4-3.6" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M19.6 4.6l4.4 4.8M24 4.6l-4.4 4.8" stroke="#0066FF" strokeWidth="1.4" strokeLinecap="round"/></svg></a>
+              {/* Owner 2026-11-26 (Option A, footer-lang-demo): globe + language as the last link in the legal row; no Spain flag (flags = countries, not languages). */}
+              <span className="footer-lang-sep" aria-hidden="true"/>
+              <button
+                className="footer-lang-link"
+                type="button"
+                onClick={()=>setLang(l=>l==='en'?'es':'en')}
+                aria-label={lang==='en'?'Switch to Spanish':'Switch to English'}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                {t('footer.switchLang')}
+              </button>
             </div>
-            <button
-              className="footer-lang-pill"
-              type="button"
-              onClick={()=>setLang(l=>l==='en'?'es':'en')}
-              aria-label={lang==='en'?'Switch to Spanish':'Switch to English'}>
-              {lang==='en'
-                ? <span className="footer-flag-es" aria-hidden="true"></span>
-                : <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                  </svg>}
-              {t('footer.switchLang')}
-            </button>
           </div>
         </div>
       </div>
