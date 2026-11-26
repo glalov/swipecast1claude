@@ -7370,6 +7370,10 @@ button:disabled:hover .cs-tri{transform:none;}
 .home-cta-outline{border-radius:11px;padding:10px 20px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;background:transparent;border:1.5px solid rgba(255,255,255,.55);color:#fff;transition:all .18s;}
 .home-cta-outline:hover{background:#fff;color:var(--teal);}
 .home-cta-blob{position:absolute;border-radius:50%;pointer-events:none;}
+/* Homepage FAQ (owner 2026-11-26): smooth fold (see FaqShell) and bullets/numbers aligned with the answer text. */
+.faq-shell{overflow:hidden;transition:height .32s cubic-bezier(.4,0,.2,1),opacity .28s ease;}
+.fq-new ul,.fq-new ol{padding-left:20px;margin:6px 0 8px;}
+.fq-new li{margin:2px 0;}
 .home-cta-blob.b1{width:520px;height:520px;background:radial-gradient(circle,rgba(232,144,42,.30),transparent 70%);top:-140px;right:-60px;}
 .home-cta-blob.b2{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-110px;left:-40px;}
 .home-cta-construct{overflow:hidden;}
@@ -31346,6 +31350,25 @@ function AgencyDirectoryStripe({onNavigate,isPremium=false}){
 // ═══════════════════════════════════════════
 // LANDING PAGE
 // ═══════════════════════════════════════════
+// Homepage FAQ answer (owner 2026-11-26, faq-smooth-demo): the open answer folds shut WHILE the clicked one
+// unfolds (0.32s, both at once). Measured-height animation, not grid-template-rows, so older iPhone Safari
+// animates too. Reduced-motion users get the instant open/close.
+function FaqShell({open,children}){
+  const ref=useRef(null),first=useRef(true);
+  useLayoutEffect(()=>{
+    const el=ref.current; if(!el)return;
+    const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(first.current||reduce){first.current=false;el.style.height=open?'auto':'0px';el.style.opacity=open?'1':'0';return;}
+    const from=el.getBoundingClientRect().height;
+    el.style.height='auto'; const to=open?el.scrollHeight:0;
+    el.style.height=from+'px'; void el.offsetHeight;
+    el.style.height=to+'px'; el.style.opacity=open?'1':'0';
+    const done=e=>{if(e.target!==el||e.propertyName!=='height')return;el.removeEventListener('transitionend',done);if(open)el.style.height='auto';};
+    el.addEventListener('transitionend',done);
+    return()=>el.removeEventListener('transitionend',done);
+  },[open]);
+  return <div ref={ref} className="faq-shell" aria-hidden={!open} style={{height:0,opacity:0}}>{children}</div>;
+}
 function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,myProfile=null}){
   const tr=useT();
   // Tagline-under-marquee visibility. Defaults ON; admins flip it via Admin → Toggles,
@@ -31702,9 +31725,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
             <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
               <h4 style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{f.q}</h4>
-              <span style={{fontSize:22,color:"var(--acc)",transform:openFaq===i?"rotate(45deg)":"none",transition:"transform .2s",fontWeight:300}}>+</span>
+              <span style={{fontSize:22,color:"var(--acc)",transform:openFaq===i?"rotate(45deg)":"none",transition:"transform .32s cubic-bezier(.4,0,.2,1)",fontWeight:300}}>+</span>
             </div>
-            {openFaq===i&&<div style={{padding:"0 24px 20px",color:"var(--t2)",borderTop:"1px solid var(--bdr)",paddingTop:18}}>{f.a}</div>}
+            <FaqShell open={openFaq===i}><div style={{padding:"0 24px 20px",color:"var(--t2)",borderTop:"1px solid var(--bdr)",paddingTop:18}}>{f.a}</div></FaqShell>
           </div>
         )}
       </div>
