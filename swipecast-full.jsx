@@ -5998,7 +5998,8 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
    entire track — twelve cards, roughly 14,000px wide — re-composited every frame
    of every slide. That was the stutter. Clipping here bounds the masked layer to
    one stage width. .fcs-stage keeps its own overflow for the iPad clip. */
-.fcs-viewport{overflow:hidden;
+/* 2026-11-26: 10px room above/below (cancelled by the negative margin) so the Browse-style card shadow under the card is not clipped. */
+.fcs-viewport{overflow:hidden;padding:10px 0;margin:-10px 0;
               -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
               mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);}
 .fcs-track{display:flex;align-items:stretch;will-change:transform;transition:transform .55s cubic-bezier(.4,0,.2,1);}
