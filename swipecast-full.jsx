@@ -9998,7 +9998,7 @@ function FooterSignup({onNavigate,variant="footer"}={}){
         {state==="error"&&<p className="sf-signup-err" role="alert">{err}</p>}
         {variant==="page"
           ?<p className="nlp-fine">Free. Unsubscribe with one click. We'll email you a link to confirm. <a href="/privacy" onClick={e=>{if(!onNavigate||e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;e.preventDefault();onNavigate("privacy");}}>Privacy</a></p>
-          :<a className="sf-signup-under" href="/newsletter" onClick={e=>{if(!onNavigate||e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;e.preventDefault();onNavigate("newsletter");}}>Subscribe for updates</a>}
+          :<a className="sf-signup-under" href="/newsletter" onClick={e=>{if(!onNavigate||e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;e.preventDefault();onNavigate("newsletter");}}>See a sample email</a>}
       </>)}
     </div>
   );
