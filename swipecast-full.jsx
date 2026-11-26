@@ -31152,7 +31152,7 @@ const ADX_SLIDE_MS=9000; // 13s felt slow (owner, 2026-10-13)
 const ADX_SLIDES=[
   {tab:"Agencies",eyebrow:"Premium — Agency & Management Directory",num:ADX_TOTAL,plus:true,
    cap:"Agencies & managers · Los Angeles + New York",
-   h:["Learn in an afternoon","what took everyone else","a decade."],
+   h:["Learn in an afternoon","what took everyone else","years."],
    lede:"For every company: the mailing address, the website, the division to write to, how big they are, and whether they take unsolicited mail at all — plus the ones charging a fee, flagged so you walk away.",
    meta:["354 agencies","309 management companies","Re-checked every few months"],fields:ADX_FIELDS,to:null},
   {tab:"Casting",eyebrow:"Premium — Casting Companies Directory",num:131,plus:false,
