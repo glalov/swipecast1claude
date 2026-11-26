@@ -11378,24 +11378,25 @@ function ResetPasswordPage({onNavigate,session}){
 // PAGE: ABOUT
 // ═══════════════════════════════════════════
 function AboutPage({onNavigate}){
-  // Example QR Talent Card: a static copy of ActorCardPreview's business-card front in Deep Teal (values from
-  // ABC_CARD_COLORS 'deep-teal'; owner 2026-11-26, about-card-color-demo — was Terracotta + Kira Vance).
-  // "Jordan Ellis" is a fictional name for Pexels 8801041 (owner's pick); the QR opens castslate.com.
-  const chip=t=><span key={t} style={{fontSize:8,fontWeight:600,padding:"2px 7px",borderRadius:4,background:"#1C5A53",color:"#F5F1EC",border:"1px solid #2A6C64",whiteSpace:"nowrap",flexShrink:0}}>{t}</span>;
+  // Example QR Talent Card: a static copy of ActorCardPreview's business-card front in Terracotta (values from
+  // ABC_CARD_COLORS 'terracotta'). Owner 2026-11-26 (about-card-lucas-demo): "Lucas Brandt" is a fictional name
+  // for Pexels 31660397 (real actor-headshot proportions); was Kira Vance, then briefly Jordan Ellis on Deep Teal
+  // (Jordan moved to the landing deck). The QR opens castslate.com.
+  const chip=t=><span key={t} style={{fontSize:8,fontWeight:600,padding:"2px 7px",borderRadius:4,background:"#8A4A3C",color:"#F5F1EC",border:"1px solid #9C5A4B",whiteSpace:"nowrap",flexShrink:0}}>{t}</span>;
   const exampleCard=(<figure className="abt-card-fig" aria-hidden="true">
-    <div style={{background:"#134A44",border:"1.5px solid #22574F",borderRadius:10,overflow:"hidden",boxShadow:"0 8px 40px rgba(26,26,46,0.15)",display:"flex",width:"100%",maxWidth:390,aspectRatio:"1050 / 600",position:"relative"}}>
-      <div style={{position:"absolute",top:0,left:0,right:0,height:5,background:"#D6AE5C",zIndex:2}}/>
-      <div style={{width:"34%",flexShrink:0,position:"relative",marginTop:5,overflow:"hidden",background:"#E8E8F2"}}><div style={{position:"absolute",inset:0,backgroundImage:"url(/assets/landing/jordan-ellis.jpg)",backgroundSize:"cover",backgroundPosition:"center 30%"}}/></div>
+    <div style={{background:"#7A3B2E",border:"1.5px solid #8C4A3D",borderRadius:10,overflow:"hidden",boxShadow:"0 8px 40px rgba(26,26,46,0.15)",display:"flex",width:"100%",maxWidth:390,aspectRatio:"1050 / 600",position:"relative"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:5,background:"#F3ECE1",zIndex:2}}/>
+      <div style={{width:"34%",flexShrink:0,position:"relative",marginTop:5,overflow:"hidden",background:"#E8E8F2"}}><div style={{position:"absolute",inset:0,backgroundImage:"url(/assets/landing/lucas-brandt.jpg)",backgroundSize:"cover",backgroundPosition:"center 30%"}}/></div>
       <div style={{flex:1,padding:"16px 14px 12px",display:"flex",flexDirection:"column",minWidth:0,marginTop:5,overflow:"hidden"}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7}}><div style={{width:19,height:19,background:"#F3ECE1",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#134A44"}}><LogoMark/></div><span style={{fontSize:9,fontWeight:800,color:"#F3ECE1",letterSpacing:1.5}}>CASTSLATE</span></div>
-        <div style={{fontWeight:800,fontSize:17,color:"#FFFFFF",letterSpacing:-0.5,lineHeight:1.15,marginBottom:3,whiteSpace:"nowrap"}}>Jordan Ellis</div>
-        <div style={{fontSize:11,color:"#E6CFA0",marginBottom:3,fontWeight:600}}>Actor</div>
-        <div style={{fontSize:10,color:"#9FC2BB",marginBottom:3}}>New York, NY</div>
-        <div style={{display:"flex",gap:4,flexWrap:"nowrap",marginBottom:3,overflow:"hidden"}}>{["Commercial","Comedy","Improv"].map(chip)}</div>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:7}}><div style={{width:19,height:19,background:"#F3ECE1",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#7A3B2E"}}><LogoMark/></div><span style={{fontSize:9,fontWeight:800,color:"#F3ECE1",letterSpacing:1.5}}>CASTSLATE</span></div>
+        <div style={{fontWeight:800,fontSize:17,color:"#FFFFFF",letterSpacing:-0.5,lineHeight:1.15,marginBottom:3,whiteSpace:"nowrap"}}>Lucas Brandt</div>
+        <div style={{fontSize:11,color:"#F6D9C9",marginBottom:3,fontWeight:600}}>Actor</div>
+        <div style={{fontSize:10,color:"#E0B7AA",marginBottom:3}}>Los Angeles, CA</div>
+        <div style={{display:"flex",gap:4,flexWrap:"nowrap",marginBottom:3,overflow:"hidden"}}>{["Drama","Film & TV","Stage Combat"].map(chip)}</div>
         <div style={{flex:"1 1 auto",minHeight:0}}/>
-        <div style={{borderTop:"1px solid #22574F",paddingTop:5,display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:8}}>
-          <div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:"#9FC2BB",lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:"#FFFFFF",lineHeight:1.3,whiteSpace:"nowrap"}}>jordan-ellis</div></div>
-          <div style={{flexShrink:0,textAlign:"center"}}><img src="/assets/legal/about-card-qr.png" alt="" width="46" height="46" loading="lazy" style={{width:46,height:46,display:"block",borderRadius:4,background:"#fff",padding:3,boxSizing:"border-box"}}/><div style={{fontSize:6,color:"#9FC2BB",letterSpacing:0.3,marginTop:2,whiteSpace:"nowrap"}}>SCAN TO VIEW</div></div>
+        <div style={{borderTop:"1px solid #8C4A3D",paddingTop:5,display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:8}}>
+          <div style={{minWidth:0,flex:1}}><div style={{fontSize:8,color:"#E0B7AA",lineHeight:1.4}}>castslate.com/talent/</div><div style={{fontSize:10,fontWeight:700,color:"#FFFFFF",lineHeight:1.3,whiteSpace:"nowrap"}}>lucas-brandt</div></div>
+          <div style={{flexShrink:0,textAlign:"center"}}><img src="/assets/legal/about-card-qr.png" alt="" width="46" height="46" loading="lazy" style={{width:46,height:46,display:"block",borderRadius:4,background:"#fff",padding:3,boxSizing:"border-box"}}/><div style={{fontSize:6,color:"#E0B7AA",letterSpacing:0.3,marginTop:2,whiteSpace:"nowrap"}}>SCAN TO VIEW</div></div>
         </div>
       </div>
     </div>
@@ -29705,7 +29706,9 @@ const LANDING_SWIPE_DEMO=[
   // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
   // the shot before object-position ever ran, throwing the crop away. w=1200 keeps
   // the 3:2 source at retina size (86KB). Photo: Pexels #4668550 by Vlada Karpovich.
-  {id:13,name:"Zara Banks",age:27,gender:"Female",height:"5'7\"",pos:"center 8%",img:"/assets/landing/deck-zara-banks.jpg",skills:["Drama Training","Voiceover","Stage Combat"]},
+  // Owner 2026-11-26: Zara Banks (not smiling) replaced by "Jordan Ellis" (fictional name, Pexels 8801041, warm smile;
+  // the deck had almost no smiles). Zara's files are kept in assets/landing.
+  {id:13,name:"Jordan Ellis",age:29,gender:"Male",height:"5'11\"",pos:"center 12%",img:"/assets/landing/jordan-ellis.jpg",skills:["Commercial","Comedy","Improv"]},
   {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik-v2.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
