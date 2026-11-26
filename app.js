@@ -3997,6 +3997,9 @@ a.news-card{text-decoration:none;color:inherit;}
 .news-source-box a:hover{text-decoration:underline;}
 /* News archive /news (owner 2026-11-25, demo news-archive-demo.html): every story since June, by month. */
 .nar-page{max-width:1200px;margin:0 auto;padding:8px 0 64px;}
+/* 2026-11-26 owner bug: padding 0 above cancelled .page side padding, so on phones/tablets the news text and cards touched both screen edges. Desktop (>=1280) unchanged. */
+@media (max-width:1279px){.nar-page{padding-left:40px;padding-right:40px;}}
+@media (max-width:900px){.nar-page{padding-left:16px;padding-right:16px;}}
 .nar-lab{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--t1);margin-bottom:8px;}
 .nar-page h1{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:clamp(28px,3.6vw,40px);letter-spacing:-.6px;line-height:1.12;margin:0 0 10px;}
 .nar-lead{font-size:16px;line-height:1.55;color:var(--t2);max-width:640px;margin:0 0 24px;}
