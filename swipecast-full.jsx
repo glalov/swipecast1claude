@@ -7281,14 +7281,15 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 }
 
 /* ── Landing: How It Works card (Mandy-style: image left, text right) ── */
-.hiw-card{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
+.hiw-card{max-width:1240px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
 /* 280px copy floor — see the matching note on .cinema-feature-inner. */
-.hiw-card-inner{background:#fff;border:1px solid var(--bdr);border-radius:22px;box-shadow:0 12px 38px -22px rgba(26,26,46,.24),0 2px 8px rgba(26,26,46,.04);padding:clamp(16px,2.4vw,26px);display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
+.hiw-card-inner{padding:10px 0;display:grid;grid-template-columns:minmax(0,2.75fr) minmax(290px,1fr);gap:clamp(22px,3.2vw,44px);align-items:center;}
 /* Backstage-style long card: full photo inset on the LEFT with rounded corners,
    natural ratio (width:100%/height:auto) — never cropped, no bars. Copy right. */
 .hiw-card-img{line-height:0;}
 .hiw-card-img img{width:100%;height:auto;display:block;border-radius:14px;}
-.hiw-card-img video{width:100%;aspect-ratio:16/9;height:auto;display:block;border-radius:14px;object-fit:cover;background:var(--s3);}
+.hiw-card-img video{width:100%;aspect-ratio:16/9;height:auto;display:block;border-radius:18px;object-fit:cover;background:var(--s3);box-shadow:0 18px 44px -26px rgba(26,26,46,.45);}
+/* Owner 2026-11-26 (cd-video-card-demo Option B): no white card; video ~20% bigger (1240 section, 2.75fr), copy column unchanged. */
 .hiw-card-body{padding:6px clamp(4px,1vw,14px) 6px 0;display:flex;flex-direction:column;justify-content:center;gap:14px;}
 .hiw-card-steps{display:flex;flex-direction:column;gap:10px;margin:4px 0;}
 .hiw-card-step{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--t2);line-height:1.5;}
@@ -7299,7 +7300,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
   .hiw-card-body{padding:4px 6px 8px;}
 }
 @media(max-width:720px){
-  .hiw-card-inner{gap:18px;padding:14px;}
+  .hiw-card-inner{gap:18px;padding:6px 0;}
   .hiw-card{margin-bottom:48px;}
 }
 
