@@ -3790,8 +3790,11 @@ main{overflow-x:clip;transition:transform .5s cubic-bezier(.3,.7,.25,1);}
 .fcs-row-more .b5-rname{color:var(--teal-dk);}
 @media(max-width:767px){.fcs-rows{padding:14px 16px 16px;}}
 .fcs-count{font-size:11px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;font-weight:700;white-space:nowrap;}
-.fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:0 1px 10px rgba(26,26,46,0.05);}
-.fcs-card-center:hover{transform:scale(1.004) translateY(-1px);box-shadow:-12px 10px 30px -16px rgba(26,26,46,0.09),12px 10px 30px -16px rgba(26,26,46,0.09),0 14px 32px -18px rgba(26,26,46,0.08);border-color:var(--bdr);}
+/* Owner 2026-11-26: centre card matches the Browse card exactly (same rest shadow, shadow-only hover, no lift). */
+.fcs-card-center{opacity:1;filter:none;transform:scale(1);z-index:2;box-shadow:2px 3px 3px -2px rgba(26,26,46,.42),1px 1px 0 rgba(26,26,46,.06);}
+/* Centre and side cards share this rest shadow, so a slide never changes it; only hover does, fading like Browse (.25s). */
+.fcs-card-center{transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1),box-shadow .25s ease;}
+.fcs-card-center:hover{transform:scale(1);box-shadow:0 6px 22px -8px rgba(26,26,46,.16),0 1px 2px rgba(26,26,46,.05);border-color:var(--bdr);}
 .fcs-card-side{opacity:0.5;filter:saturate(.75);transform:scale(.955);}
 .fcs-card-side:hover{opacity:0.78;filter:none;transform:scale(.975);}
 .fcs-card-far{opacity:0.26;}
