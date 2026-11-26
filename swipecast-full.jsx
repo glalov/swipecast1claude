@@ -89,7 +89,7 @@ const TRANSLATIONS = {
     // Footer
     'footer.backToTop':'Back to top',
     'footer.blurb':'The casting platform for working actors. Built so every submission gets a real look.',
-    'footer.talent':'Talent','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
+    'footer.talent':'Talent','footer.directories':'Directories','footer.industry':'Industry','footer.company':'Company','footer.support':'Support',
     'footer.createProfile':'Create Profile','footer.browse':'Browse Castings','footer.classes':'Classes',
     'footer.resources':'Resources','footer.events':'Industry Events','footer.successStories':'Success Stories',
     'footer.postCasting':'Post a Casting','footer.pricing':'Pricing','footer.manageMembership':'Manage membership',
@@ -342,7 +342,7 @@ const TRANSLATIONS = {
     // Footer
     'footer.backToTop':'Volver arriba',
     'footer.blurb':'La plataforma de casting para actores que trabajan. Diseñada para que cada postulación reciba una mirada real.',
-    'footer.talent':'Talento','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
+    'footer.talent':'Talento','footer.directories':'Directorios','footer.industry':'Industria','footer.company':'Empresa','footer.support':'Soporte',
     'footer.createProfile':'Crear perfil','footer.browse':'Convocatorias','footer.classes':'Clases',
     'footer.resources':'Recursos','footer.events':'Eventos de la industria','footer.successStories':'Historias de éxito',
     'footer.postCasting':'Publicar convocatoria','footer.pricing':'Precios','footer.manageMembership':'Gestionar membresía',
@@ -5299,11 +5299,11 @@ body.fbsp-open #castoria-root{display:none!important;}
 @media (min-width:901px){
   .site-footer-grid>.site-footer-brand{grid-column:1;grid-row:1;}
   .site-footer-grid>.sf-talent{grid-column:2;grid-row:1;}
-  .site-footer-grid>.sf-industry{grid-column:3;grid-row:1;}
-  .site-footer-grid>.sf-company{grid-column:4;grid-row:1;}
-  .site-footer-grid>.sf-support{grid-column:5;grid-row:1;}
+  .site-footer-grid>.sf-dirs{grid-column:3;grid-row:1;}
+  .site-footer-grid>.sf-industry{grid-column:4;grid-row:1;}
+  .site-footer-grid>.sf-company{grid-column:5;grid-row:1;}
   /* Company/Support share row 1 with the box: keep them their natural height so they never sit over (and swallow clicks on) the Subscribe button. */
-  .site-footer-grid>.sf-company,.site-footer-grid>.sf-support{align-self:start;}
+  .site-footer-grid>.sf-dirs,.site-footer-grid>.sf-industry,.site-footer-grid>.sf-company{align-self:start;}
 }
 /* min-width:0 so the pill shrinks to the tagline column instead of stretching the grid and pushing the link columns right (owner 2026-11-21). */
 .site-footer-brand{min-width:0;}
@@ -5420,7 +5420,11 @@ a.site-footer-link{text-decoration:none;}
 /* Cube pages (owner 2026-11-12, "Tight + letters closer"): only as much room as the cube
    needs (was 126px), and the big letters pulled up into the empty top of their own box,
    so scrolled to the bottom on a laptop the footer starts right at the menu's bottom edge. */
-.site-footer.has-b2t .site-footer-social-row{margin-top:50px;}
+/* 2026-11-26: social row now sits under the tagline (left); the cube parks in .site-footer-b2t-dock above the divider. */
+.site-footer-brand .site-footer-social-row{justify-content:flex-start;padding:22px 0 0;}
+.site-footer-b2t-dock{height:18px;}
+.site-footer.has-b2t .site-footer-b2t-dock{height:130px;}
+@media(max-width:640px){.site-footer.has-b2t .site-footer-b2t-dock{height:110px;}}
 /* pull scales with the letters' size: -64px on desktop, ~-12px on a phone (the empty band
    above the letters is ~30% of their box, so it shrinks with screen width) */
 .site-footer.has-b2t .site-footer-wm{margin-top:max(-64px,calc(12px - 6.3vw));}
@@ -5611,7 +5615,7 @@ a.site-footer-link{text-decoration:none;}
   .site-footer-grid{grid-template-columns:1fr;gap:28px;}
   /* Mobile: centered stack — Facebook, then © line, then Privacy/Terms/Contact,
      then the Cookie + language badges, all centered under one another. */
-  .site-footer-social-row{justify-content:center;}
+  .site-footer-brand .site-footer-social-row{justify-content:flex-start;}
   .site-footer-bottom{flex-direction:column;align-items:center;text-align:center;}
   .site-footer-bottom-links{width:100%;align-items:center;flex-direction:row;justify-content:center;margin-left:0;gap:12px;}
   .site-footer-plain-links{flex-basis:100%;justify-content:center;gap:12px 16px;}
@@ -10279,6 +10283,9 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
   React.useEffect(()=>{
     if(!backToTop)return;
     const setRest=()=>{try{
+      const dock=document.querySelector('.site-footer-b2t-dock');
+      if(dock){const r=dock.getBoundingClientRect();const docH=document.documentElement.scrollHeight;
+        document.documentElement.style.setProperty('--b2t-rest',Math.round(docH-(r.bottom+window.scrollY))+22+'px');return;}
       const b=document.querySelector('.site-footer-social-row')||document.querySelector('.site-footer-bottom');
       if(!b)return;
       // Distance from the very bottom of the page up to the TOP of the social row.
@@ -10324,6 +10331,10 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <p className="site-footer-blurb">{t('footer.blurb')}</p>
             {/* Casting-calls signup: signed-out visitors only; sits under the tagline on every size (owner 2026-11-21, option 2). */}
             {typeof window!=="undefined"&&window.__SC_SIGNED_IN===false&&<FooterSignup onNavigate={onNavigate}/>}
+            {/* Social icons under the tagline (owner 2026-11-26). Add more <Social> icons here as accounts are created. */}
+            <div className="site-footer-social-row">
+              <Social label="Facebook" href="https://www.facebook.com/people/CastSlate/61590920810941/" d="M22 12.07C22 6.51 17.52 2 12 2S2 6.51 2 12.07c0 5.02 3.66 9.18 8.44 9.93v-7.02H7.9v-2.91h2.54V9.84c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34V22c4.78-.75 8.44-4.91 8.44-9.93Z"/>
+            </div>
           </div>
           <div className="sf-col sf-talent">
             <h4 className="site-footer-heading">{t('footer.talent')}</h4>
@@ -10333,10 +10344,14 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="actor-toolkit">{t('footer.actorToolkit')}</L>
             <L to="manager-mode">{t('footer.managerMode')}</L>
             <L to="first-frame">First Frame</L>
+            {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
+          </div>
+          {/* Owner 2026-11-26 (footer-fixes-demo): own Directories column so the columns end level (7/5/5/6). */}
+          <div className="sf-col sf-dirs">
+            <h4 className="site-footer-heading">{t('footer.directories')}</h4>
             <L to="agency-directory">Agencies Directory</L>
             <L to="casting-directory">Casting Directory</L>
             <L to="school-directory">School Directory</L>
-            {(typeof window==="undefined"||window.__SC_CLASSES_ON!==false)&&<L to="classes">{t('footer.classes')}</L>}
             <L to="events">{t('footer.events')}</L>
             <L to="resources">{t('footer.resources')}</L>
           </div>
@@ -10356,20 +10371,13 @@ function Footer({onNavigate,noSpacer,backToTop=false}){
             <L to="news">{t('footer.news')}</L>
             <L to="blog">{t('footer.blog')}</L>
             <L to="careers">{t('footer.careers')}</L>
+            <L to="faq">{t('footer.faq')}</L>
             <L to="contact">{t('footer.contact')}</L>
           </div>
-          <div className="sf-col sf-support">
-            <h4 className="site-footer-heading">{t('footer.support')}</h4>
-            <L to="faq">{t('footer.faq')}</L>
-            <L to="contact">{t('footer.helpCenter')}</L>
-            <L to="contact">{t('footer.accessibility')}</L>
-          </div>
         </div>
-        {/* Social row — Facebook is live. Add more <Social> icons here as real
-            accounts are created (Instagram/X/LinkedIn paths kept in git history). */}
-        <div className="site-footer-social-row">
-          <Social label="Facebook" href="https://www.facebook.com/people/CastSlate/61590920810941/" d="M22 12.07C22 6.51 17.52 2 12 2S2 6.51 2 12.07c0 5.02 3.66 9.18 8.44 9.93v-7.02H7.9v-2.91h2.54V9.84c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.78l-.44 2.91h-2.34V22c4.78-.75 8.44-4.91 8.44-9.93Z"/>
-        </div>
+        {/* Landing spot for the Back-to-top cube (owner 2026-11-26): Facebook moved under the tagline, so this
+            empty band is sized to the cube on cube pages; the cube parks inside it, clear of every link. */}
+        <div className="site-footer-b2t-dock" aria-hidden="true"/>
         <div className="site-footer-bottom">
           <span>{t('footer.copyright').replace('{year}', year)}</span>
           <span className="site-footer-tm">{t('footer.trademarks')}</span>
