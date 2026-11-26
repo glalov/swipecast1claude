@@ -31471,11 +31471,9 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     {/* ───────── THE GUARANTEE ─────────
          Wording C (owner 2026-11-22, demo castslate-guarantee-wording-demo.html): promises HOW review works, not an
          outcome ("gets seen. Period." / "must decide" contradicted the Terms). Teal-only shield and rules. */}
-    <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"57px auto 0",padding:"0 24px"}}>
-      <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",background:"#fff",border:"1px solid var(--bdr)",borderRadius:24,padding:"clamp(36px,5vw,60px) clamp(24px,5vw,52px)",textAlign:"center",boxShadow:"0 24px 60px -36px rgba(26,26,46,.35),0 2px 8px rgba(26,26,46,.05)"}}>
-        {/* colorful glow blobs */}
-        <span className="guarantee-glow-left" style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(79,139,127,.22),transparent 70%)",top:-110,left:-50,pointerEvents:"none"}}/>
-        <span className="guarantee-glow-right" style={{position:"absolute",width:280,height:280,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,144,42,.20),transparent 70%)",bottom:-100,right:-40,pointerEvents:"none"}}/>
+    <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"72px auto 0",padding:"0 24px"}}>
+      <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",padding:"24px clamp(24px,5vw,52px)",textAlign:"center"}}>
+        {/* Owner 2026-11-26 (Option A, demo guarantee-card-demo): no card, no glow blobs; statement sits on cream so casting cards stay the only white boxes. Fonts unchanged. */}
         <div className="guarantee-badge" style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5CA092,#3B6F65)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,139,127,.6)"}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
           HOW CASTSLATE WORKS
