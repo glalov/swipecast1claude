@@ -7374,6 +7374,12 @@ button:disabled:hover .cs-tri{transform:none;}
 .faq-shell{overflow:hidden;transition:height .32s cubic-bezier(.4,0,.2,1),opacity .28s ease;}
 .fq-new ul,.fq-new ol{padding-left:20px;margin:6px 0 8px;}
 .fq-new li{margin:2px 0;}
+/* Homepage FAQ as divider lines, no boxes (owner 2026-11-26, faq-style-demo Option 2). */
+.faq-lines{display:flex;flex-direction:column;border-top:1px solid #D9D0BE;}
+.faq-row{border-bottom:1px solid #D9D0BE;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.faq-q{padding:22px 4px;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.faq-q h4{font-size:16px;font-weight:700;color:var(--t1);margin:0;}
+.faq-a{padding:0 4px 22px;color:var(--t2);}
 .home-cta-blob.b1{width:520px;height:520px;background:radial-gradient(circle,rgba(232,144,42,.30),transparent 70%);top:-140px;right:-60px;}
 .home-cta-blob.b2{width:400px;height:400px;background:radial-gradient(circle,rgba(255,255,255,.14),transparent 70%);bottom:-110px;left:-40px;}
 .home-cta-construct{overflow:hidden;}
@@ -31701,7 +31707,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <section style={{padding:"40px 40px 60px",maxWidth:800,margin:"0 auto"}}>
       <div className="section-label" style={{textAlign:"center"}}>FAQ</div>
       <div className="section-title" style={{textAlign:"center",marginBottom:32}}>Everything you want to know.</div>
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+      <div className="faq-lines">
         {[
           {q:"How much does CastSlate cost for actors?",a:<div className="fq-new">
             <p><b>Free to start.</b> Your first headshot and first casting submission are free.</p>
@@ -31722,12 +31728,12 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             <ol className="fq-steps"><li><b>Create a free profile</b> with your headshot and details.</li><li><b>Browse open castings</b> and filter by role, location and union status.</li><li><b>Apply</b> to the roles that fit. Your first submission is free.</li></ol>
             <p>Casting directors review every submission individually. For plans and what Premium includes, see the first question above.</p></div>}
         ].map((f,i)=>
-          <div key={i} className="card" style={{padding:0,cursor:"pointer"}} onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
-            <div style={{padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16}}>
-              <h4 style={{fontSize:15,fontWeight:700,color:"var(--t1)"}}>{f.q}</h4>
+          <div key={i} className="faq-row" onClick={()=>setOpenFaq(openFaq===i?-1:i)}>
+            <div className="faq-q">
+              <h4>{f.q}</h4>
               <span style={{fontSize:22,color:"var(--acc)",transform:openFaq===i?"rotate(45deg)":"none",transition:"transform .32s cubic-bezier(.4,0,.2,1)",fontWeight:300}}>+</span>
             </div>
-            <FaqShell open={openFaq===i}><div style={{padding:"0 24px 20px",color:"var(--t2)",borderTop:"1px solid var(--bdr)",paddingTop:18}}>{f.a}</div></FaqShell>
+            <FaqShell open={openFaq===i}><div className="faq-a">{f.a}</div></FaqShell>
           </div>
         )}
       </div>
