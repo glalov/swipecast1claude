@@ -29706,13 +29706,15 @@ const LANDING_SWIPE_DEMO=[
   // ORIGINAL 3:2 photo in the fitter, and Pexels' server-side crop would re-frame
   // the shot before object-position ever ran, throwing the crop away. w=1200 keeps
   // the 3:2 source at retina size (86KB). Photo: Pexels #4668550 by Vlada Karpovich.
-  // Owner 2026-11-26: Zara Banks (not smiling) replaced by "Jordan Ellis" (fictional name, Pexels 8801041, warm smile;
-  // the deck had almost no smiles). Zara's files are kept in assets/landing.
-  {id:13,name:"Jordan Ellis",age:29,gender:"Male",height:"5'11\"",pos:"center 12%",img:"/assets/landing/jordan-ellis.jpg",skills:["Commercial","Comedy","Improv"]},
   {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik-v2.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
   {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"4% 25%",img:"/assets/landing/deck-marisol-veyra.jpg",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
+  // Owner 2026-11-26: Zara Banks (not smiling) replaced by "Jordan Ellis" (fictional name, Pexels 8801041, warm smile;
+  // the deck had almost no smiles). Zara's files are kept in assets/landing. Moved to card 10 (after Marisol)
+  // so he is not right after Malik. jordan-ellis-deck.jpg = 600x750 head-and-shoulders crop matching the deck
+  // (new file name on purpose: an earlier tight About-card crop used jordan-ellis.jpg and browsers cache a day).
+  {id:13,name:"Jordan Ellis",age:29,gender:"Male",height:"5'11\"",pos:"center 20%",img:"/assets/landing/jordan-ellis-deck.jpg",skills:["Commercial","Comedy","Improv"]},
   {id:2,name:"Rafael Alcázar",age:46,gender:"Male",height:"6'0\"",pos:"center 55%",img:"/assets/landing/rafael-alcazar.jpg",skills:["Film & TV","Bilingual Spanish","Boxing"]},
   {id:11,name:"Olivia Sterling",age:26,gender:"Female",height:"5'11\"",pos:"center 22%",img:"/assets/landing/olivia-sterling.jpg",skills:["Action","Commercial","Improv"]},
 ];
