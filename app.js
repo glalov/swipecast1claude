@@ -3012,6 +3012,11 @@ body.fbsp-open #castoria-root{display:none!important;}
 .sf-signup input.sf-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
 .sf-signup button{position:absolute;right:5px;top:5px;bottom:5px;width:92px;padding:0;border-radius:999px;border:0;background:#1A1A2E;color:#fff;font-family:inherit;font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;cursor:pointer;transition:background-color .18s ease;}
 .sf-signup button:hover{background:#2A2A44;}
+/* Footer only (owner 2026-11-26, footer-pill-dark-demo Option B): dark field + thin cream outline + brand-teal SUBMIT, so the pill sits in the footer instead of glowing over it. /newsletter keeps the white pill. */
+.site-footer .sf-signup input{background:transparent;border:1px solid rgba(243,235,224,.32);color:#F3EBE0;}
+.site-footer .sf-signup input::placeholder{color:rgba(243,235,224,.5);}
+.site-footer .sf-signup button{background:#33826A;color:#fff;top:6px;bottom:6px;right:6px;}
+.site-footer .sf-signup button:hover{background:#276551;}
 .sf-signup button:disabled{opacity:.7;cursor:default;}
 .sf-signup-under{display:inline-block;text-decoration:none;margin-top:14px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#F3EBE0;border-bottom:1px solid currentColor;padding-bottom:2px;cursor:pointer;}
 .sf-signup p.sf-signup-err{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#F0A08F;}
