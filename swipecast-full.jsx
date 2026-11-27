@@ -31751,7 +31751,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
         {/* Owner 2026-11-26: flat brand teal #33826A (no shade: white small text stays AA-readable), glow blobs removed; fonts unchanged. */}
         <p className="home-cta-eyebrow"><span className="dot"/>For actors</p>
         <h2>Built for working actors.</h2>
-        <p className="home-cta-lede">Build your profile, submit to real roles, and get reviewed one actor at a time. Free to start.</p>
+        <p className="home-cta-lede">Build your profile, submit to roles casting right now, and get reviewed one actor at a time. Free to start.</p>
         <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
         <div className="home-cta-sub">
           <div className="txt"><b>For Casting Directors</b><span>Post a project and review submissions for free</span></div>
