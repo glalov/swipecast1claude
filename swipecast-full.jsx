@@ -31691,7 +31691,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
             video that extra height became uneven white space above/below it (57px vs 75px).
             Keep any future wording short enough to wrap at 2 lines in a ~280px column. */}
             Review one actor at a time.</h2>
-          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,margin:0}}>Instead of burying actors in crowded thumbnail grids, CastSlate presents each profile clearly — headshots, credits, skills, resume, and reels organized for faster decisions.</p>
+          <p style={{color:"var(--t2)",fontSize:14,lineHeight:1.7,margin:0}}>Instead of burying actors in crowded thumbnail grids, CastSlate presents each profile clearly — headshots, credits, skills, résumé, and reels organized for faster decisions.</p>
           <div className="hiw-card-steps">
             {/* Step labels stay short enough to hold ONE line at the narrowest desktop
                 copy column (280px at 1001-1100px). "Shortlist and message faster." wrapped
