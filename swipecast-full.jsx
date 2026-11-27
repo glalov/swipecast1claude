@@ -10543,7 +10543,7 @@ function AgreeLine({onNavigate,btn,google=true,adult=true,style,quiet}){
   // quiet: one short grey line, no bold button names (owner 2026-10-30, Backstage-style talent forms).
   if(quiet){const Q=(to,txt)=><span onClick={()=>onNavigate&&onNavigate(to)} style={{color:"inherit",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:2}}>{txt}</span>;
     return <p style={{textAlign:"center",color:"#8A8278",fontSize:12,lineHeight:1.5,margin:"12px 0 0",...style}}>By {quiet==="start"?"signing up":"creating an account"} you agree to our {Q("terms","Terms")} and {Q("privacy","Privacy Policy")}{adult?" and confirm you're 18 or older":""}.</p>;}
-  const L=(to,txt)=><span onClick={()=>onNavigate&&onNavigate(to)} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>{txt}</span>;
+  const L=(to,txt)=><span onClick={()=>onNavigate&&onNavigate(to)} style={{color:"var(--t1)",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:2}}>{txt}</span>;
   const B=(t)=><b style={{color:"var(--t1)",fontWeight:700}}>{t}</b>;
   return <p style={{textAlign:"center",color:"var(--t3)",fontSize:12.5,lineHeight:1.55,margin:"14px 0 0",...style}}>By clicking {btn?B(btn):null}{btn&&google?" or ":null}{google?B("Continue with Google"):null}, you agree to CastSlate's {L("terms","Terms of Service")} and {L("privacy","Privacy Policy")}{adult?", and confirm you're at least 18":""}.</p>;
 }
@@ -10745,7 +10745,7 @@ function RegisterTalent({onNavigate}){
           {/* Agreement under the button, naming both ways in (owner 2026-10-26: same place and wording as the CD form). */}
           <AgreeLine onNavigate={onNavigate} quiet/>
           </>}
-          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--t1)",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:2,fontWeight:600}}>Log in</span></p>
         </div></div>
       </div></div>
       <Footer onNavigate={onNavigate}/>
@@ -10979,7 +10979,7 @@ function RegisterCD({onNavigate}){
           <div className="form-group"><label className="label">{tr('reg.cd.website')}</label><input className="input" placeholder="https://" value={f.website} onChange={e=>up("website",e.target.value)}/></div>
           <button className="btn-p auth-main" style={{width:"100%",marginTop:8}} onClick={submit} disabled={loading}>{loading?tr('reg.cd.creating'):tr('reg.cd.createAccount')}</button>
           <AgreeLine onNavigate={onNavigate} btn={tr('reg.cd.createAccount')}/>
-          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>onNavigate("login")} style={{color:"var(--t1)",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:2,fontWeight:600}}>Log in</span></p>
         </div></div>
       </div></div>
       <Footer onNavigate={onNavigate}/>
@@ -15219,7 +15219,7 @@ function AuthGate({pending,onComplete,onNavigate,onCancel,embedded}){
           <AgreeLine onNavigate={onNavigate} quiet/>
           </>}
 
-          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--blu)",cursor:"pointer",textDecoration:"underline"}}>Log in</span></p>
+          <p style={{textAlign:"center",color:"var(--t3)",fontSize:12,marginTop:20}}>Already have an account? <span onClick={()=>{setMode("login");setErr("");}} style={{color:"var(--t1)",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:2,fontWeight:600}}>Log in</span></p>
         </>:<>
           <h2 style={{fontSize:28,fontWeight:800,letterSpacing:-1,marginBottom:28}}>Welcome back</h2>
           <p style={{color:"var(--t2)",fontSize:14,marginBottom:24}}>{c?"Log in to continue your application.":"Log in to your CastSlate account."}</p>
