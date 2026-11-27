@@ -76,7 +76,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
 .nav .logo-i.logo-2s{animation:none;}
 /* Owner 2026-11-17: the logo spins ONCE as the page loads, then only when hovered. No endless loop. */
 @keyframes cs-logo-spin{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
-.nav .logo:hover .logo-i:not(.logo-2s){animation:cs-logo-spin-h .9s cubic-bezier(.6,0,.3,1) 1;} /* own keyframe name so every new hover restarts it; a 0->360 transition is a no-op (same matrix) */
+/* nav logo hover animation removed 2026-11-26 (owner: logo stays still) */
 @keyframes cs-logo-spin-h{0%{transform:rotateY(0deg);}100%{transform:rotateY(360deg);}}
 @media (max-width:768px){.nav .logo-i{width:40px;height:40px;}}
 .nav-join-mobile{display:none;}
@@ -92,7 +92,7 @@ h1,h2,h3,h4{font-family:'DM Sans',sans-serif;letter-spacing:-0.5px;}
    the curtain starts falling (and on every other intro exit path), so it can never stay stuck white. */
 html.cs-lf-go .nav .logo-i.logo-2s{transform:none;animation:cs-logo-turnover .9s cubic-bezier(.6,0,.3,1) .45s 1 backwards;}
 .logo-i.logo-2s .lf-card{position:absolute;inset:0;border-radius:inherit;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.6,0,.3,1);}
-.nav .logo:hover .logo-i.logo-2s .lf-card{transform:rotateY(180deg);}
+/* nav logo hover animation removed 2026-11-26 (owner: logo stays still) */
 .logo-i.logo-2s .lf-card>span{position:absolute;inset:0;border-radius:inherit;display:flex;align-items:center;justify-content:center;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;}
 .logo-i.logo-2s .lf-a{background:var(--acc);color:#fff;}
 .logo-i.logo-2s .lf-b{background:#fff;color:var(--acc);box-shadow:inset 0 0 0 1.5px var(--acc);transform:rotateY(180deg);}
