@@ -31627,7 +31627,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           </span>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,139,127,.55) 0%,rgba(79,139,127,0) 100%)"}}/>
         </div>
-        <p className="guarantee-copy" style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>Elsewhere, your submission is a thumbnail in a grid that directors scan in seconds. On CastSlate, every submission opens <strong style={{color:"var(--teal)"}}>full-screen, one at a time</strong>, with your whole profile in one view. Built so every submission gets a real look.</p>
+        <p className="guarantee-copy" style={{position:"relative",color:"var(--t2)",fontSize:"clamp(15px,1.7vw,17.5px)",lineHeight:1.65,maxWidth:660,margin:"0 auto"}}>Elsewhere, your submission is a thumbnail in a grid that directors scan in seconds. On CastSlate, every submission opens <strong style={{color:"var(--teal)"}}>full-screen, one at a time</strong>, with your whole profile in one view.</p>
       </div>
     </div>
 
