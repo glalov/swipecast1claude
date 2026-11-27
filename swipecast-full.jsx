@@ -5293,6 +5293,9 @@ body.fbsp-open #castoria-root{display:none!important;}
 .site-footer .sf-signup input::placeholder{color:rgba(243,235,224,.5);}
 .site-footer .sf-signup button{background:#33826A;color:#fff;top:6px;bottom:6px;right:6px;}
 .site-footer .sf-signup button:hover{background:#276551;}
+/* "Send me roles" (owner 2026-11-26) is wider than "Submit". */
+.sf-signup button{width:auto;padding:0 16px;}
+.sf-signup input{padding-right:150px;}
 .sf-signup button:disabled{opacity:.7;cursor:default;}
 .sf-signup-under{display:inline-block;text-decoration:none;margin-top:14px;font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#F3EBE0;border-bottom:1px solid currentColor;padding-bottom:2px;cursor:pointer;}
 .sf-signup p.sf-signup-err{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#F0A08F;}
@@ -10046,7 +10049,7 @@ function FooterSignup({onNavigate,variant="footer"}={}){
         <form onSubmit={submit} noValidate>
           <input type="email" inputMode="email" autoComplete="email" placeholder="name@email.com" aria-label="Your email" value={email} onChange={e=>{setEmail(e.target.value);if(state==="error")setState("idle");}} disabled={state==="sending"}/>
           <input className="sf-hp" type="text" name="company_website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e=>setHp(e.target.value)}/>
-          <button type="submit" disabled={state==="sending"}>{state==="sending"?"Sending…":"Submit"}</button>
+          <button type="submit" disabled={state==="sending"}>{state==="sending"?"Sending…":"Send me roles"}</button>
         </form>
         {state==="error"&&<p className="sf-signup-err" role="alert">{err}</p>}
         {variant==="page"
