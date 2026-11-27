@@ -29570,7 +29570,7 @@ function FeaturedCastingsSlider({onViewCasting,onNavigate,castingsVersion=0}){
     <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:12,marginBottom:18,flexWrap:"wrap",...(isMobileVpw?{}:{maxWidth:cardWidth,marginLeft:"auto",marginRight:"auto"})}}>
       <div style={{flex:1,minWidth:0}}>
         <div className="section-label">Featured Castings</div>
-        <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Roles that are actually casting right now.</h2>
+        <h2 style={{fontWeight:800,fontSize:isMobileVpw?22:30,letterSpacing:-1,margin:0,lineHeight:1.2,wordBreak:"break-word"}}>Roles open right now.</h2>
         {!isMobileVpw&&<p style={{color:"var(--t2)",fontSize:13,marginTop:6}}>Updated live — same listings as Browse Castings. Tap any card to view full role breakdown and apply.</p>}
       </div>
       {onNavigate&&<button className="btn-teal" style={{flexShrink:0,padding:"11px 22px",fontSize:14}} onClick={()=>onNavigate("search")}>Browse all <Tri/></button>}
