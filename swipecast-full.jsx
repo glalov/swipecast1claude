@@ -7313,7 +7313,8 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .home-cta{max-width:1900px;margin:0 auto;padding:clamp(40px,6vw,56px) clamp(16px,4vw,40px);}
 .lh-site{max-width:1100px;margin:0 auto 48px;padding:0 clamp(16px,4vw,40px);}
 .lh-site-inner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,4vw,48px);align-items:center;}
-.lh-site-eyebrow{font-weight:800;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--teal);margin:0 0 10px;}
+/* Section labels unified 2026-11-26 (owner): DM Sans 700 12px, 1.5px, uppercase; navy on cream, #E8C27E gold on teal/dark; no pills/dots/icons. */
+.lh-site-eyebrow{font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);margin:0 0 10px;}
 .lh-site h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(30px,4vw,44px);letter-spacing:-0.5px;line-height:1.08;margin:0 0 14px;color:var(--t1);}
 .lh-site-lede{font-size:16px;line-height:1.65;color:var(--t2);margin:0 0 18px;}
 .lh-site-ck{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 20px;font-size:15px;font-weight:600;color:var(--t1);}
@@ -7355,7 +7356,7 @@ html,body{overflow-x:hidden;overflow-x:clip;}
 .lh-gk-reel{background:#1A1A2E;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
 @media(max-width:900px){.lh-site-inner{grid-template-columns:minmax(0,1fr);}.lh-site-bens{grid-template-columns:minmax(0,1fr);grid-auto-rows:1fr;gap:20px;}}
 .home-cta-inner{position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,7.5vw,96px) clamp(32px,7vw,88px);text-align:center;background:#33826A;color:#fff;box-shadow:0 26px 60px -34px rgba(26,26,46,.45);}
-.home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#FFE6C2;position:relative;}
+.home-cta-eyebrow{font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 16px;display:inline-flex;align-items:center;gap:8px;color:#E8C27E;position:relative;}
 .home-cta-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);}
 .home-cta-inner h2{font-family:'Source Serif 4',serif;font-weight:700;font-size:clamp(36px,6vw,64px);letter-spacing:-0.5px;line-height:1.05;margin:0 0 16px;color:#fff;position:relative;}
 .home-cta-lede{font-size:clamp(17px,2vw,21px);line-height:1.6;max-width:740px;margin:0 auto 30px;color:rgba(255,255,255,.86);position:relative;}
@@ -31615,10 +31616,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <div ref={guaranteeRef} className="guarantee-construct" style={{maxWidth:880,margin:"72px auto 0",padding:"0 24px"}}>
       <div className="guarantee-card-construct" style={{position:"relative",overflow:"hidden",padding:"24px clamp(24px,5vw,52px)",textAlign:"center"}}>
         {/* Owner 2026-11-26 (Option A, demo guarantee-card-demo): no card, no glow blobs; statement sits on cream so casting cards stay the only white boxes. Fonts unchanged. */}
-        <div className="guarantee-badge" style={{position:"relative",display:"inline-flex",alignItems:"center",gap:7,background:"linear-gradient(135deg,#5CA092,#3B6F65)",color:"#fff",fontSize:10.5,fontWeight:800,letterSpacing:1.5,padding:"6px 14px",borderRadius:100,marginBottom:22,fontFamily:"'DM Sans',sans-serif",boxShadow:"0 8px 18px -8px rgba(79,139,127,.6)"}}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
-          HOW CASTSLATE WORKS
-        </div>
+        <div className="guarantee-badge" style={{position:"relative",fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,letterSpacing:1.5,textTransform:"uppercase",color:"var(--acc)",marginBottom:18}}>How CastSlate works</div>
         <h3 className="guarantee-title" style={{position:"relative",fontFamily:"'Source Serif 4',serif",fontWeight:700,fontSize:"clamp(30px,4.8vw,48px)",letterSpacing:-0.5,lineHeight:1.08,margin:0}}>Not one face <span style={{color:"var(--teal)"}}>in eighty.</span></h3>
         <div className="guarantee-rule" style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:14,maxWidth:520,margin:"26px auto 24px"}}>
           <span style={{flex:1,height:2,borderRadius:2,background:"linear-gradient(90deg,rgba(79,139,127,0) 0%,rgba(79,139,127,.55) 100%)"}}/>
@@ -31685,7 +31683,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           <BufferedLoopVideo src="/assets/video/casting-director-set-v4c.mp4" poster="/assets/video/casting-director-set-poster-v4.jpg" aria-label="Behind-the-scenes footage from a real film set: a camera operator filming two actors in a scene beside a small plane" onError={e=>{e.currentTarget.style.display="none";e.currentTarget.parentNode.style.background="var(--s3)";}}/>
         </div>
         <div className="hiw-card-body">
-          <p style={{fontSize:10,letterSpacing:1.8,textTransform:"uppercase",color:"var(--acc)",fontWeight:700,margin:0,fontFamily:"'DM Sans',sans-serif"}}>For Casting Directors</p>
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,letterSpacing:1.5,textTransform:"uppercase",color:"var(--acc)",margin:0}}>For Casting Directors</p>
           <h2 style={{fontWeight:800,fontSize:"clamp(22px,2.8vw,30px)",letterSpacing:-0.8,lineHeight:1.15,margin:0}}>{/* Kept to 2 lines on purpose: a 3rd line makes this
             card ~35px taller than the actor-journey card, and since the grid centres the
             video that extra height became uneven white space above/below it (57px vs 75px).
@@ -31749,7 +31747,7 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
     <section ref={homeCtaRef} className="home-cta home-cta-construct">
       <div className="home-cta-inner">
         {/* Owner 2026-11-26: flat brand teal #33826A (no shade: white small text stays AA-readable), glow blobs removed; fonts unchanged. */}
-        <p className="home-cta-eyebrow"><span className="dot"/>For actors</p>
+        <p className="home-cta-eyebrow">For actors</p>
         <h2>Built for working actors.</h2>
         <p className="home-cta-lede">Build your profile, submit to roles casting right now, and get reviewed one actor at a time. Free to start.</p>
         <button className="home-cta-primary" onClick={()=>onNavigate("register-talent")}>Create My Free Profile <Tri/></button>
@@ -31812,8 +31810,8 @@ function Landing({onNavigate,onViewCasting,castingsVersion=0,isLoggedIn=false,my
           dark section below. Text colours were checked at 4.5:1 across the whole copy column. */}
       <div style={{maxWidth:1100,margin:"0 auto",position:"relative",display:"flex",alignItems:"center",gap:"clamp(32px,5vw,72px)",flexWrap:"wrap"}}>
         <div style={{flex:"1 1 320px",minWidth:280}}>
-          <p style={{display:"inline-flex",alignItems:"center",gap:8,fontSize:11.5,fontWeight:700,letterSpacing:1.6,textTransform:"uppercase",color:"#FFE6C2",margin:"0 0 16px"}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:"#F0B860",boxShadow:"0 0 10px #F0B860"}}/>New — Manager Mode
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontWeight:700,fontSize:12,letterSpacing:1.5,textTransform:"uppercase",color:"#E8C27E",margin:"0 0 16px"}}>
+            New — Manager Mode
           </p>
           <h2 style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:"clamp(30px,4vw,46px)",lineHeight:1.12,letterSpacing:-0.1,marginBottom:16,color:"#fff"}}>CastSlate becomes your <span style={{background:"linear-gradient(transparent 64%,rgba(240,184,96,0.40) 64%)"}}>talent manager</span> before you have a talent manager.</h2>
           <p style={{fontSize:"clamp(15px,1.8vw,18px)",lineHeight:1.65,color:"rgba(255,255,255,0.9)",marginBottom:28,maxWidth:520}}>A private career check-in in your inbox, once a month. One focused task. Profile improvement guidance. Casting lane suggestions. Designed to help you become more castable — week by week.</p>
