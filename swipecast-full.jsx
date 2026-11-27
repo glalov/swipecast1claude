@@ -29968,7 +29968,8 @@ function LandingSwipe({onNavigate,ctaTo="register-talent",ctaLabel="Create your 
         <span className="sw-hint-text">Swipe or tap to review talent</span>
         <span className="sw-hint-text-mobile">Swipe the card or tap below</span>
       </div>
-      <div style={{fontSize:11,color:"var(--t3)",margin:"0 0 10px",letterSpacing:.5}}>{idx+1} / {total}</div>
+      {/* Owner 2026-11-26: "Example profiles" so visitors know the stock-photo cards (fictional names) are a demo. */}
+      <div style={{fontSize:11,color:"var(--t3)",margin:"0 0 10px",letterSpacing:.5}}>{idx+1} / {total} · Example profiles</div>
       <div className="swipe-btns">
         <div className="sw-btn-wrap">
           <button className="sw-btn pass" title="Pass" disabled={animating} onClick={()=>advance(-1)}><Ico n="x" s={24}/></button>
