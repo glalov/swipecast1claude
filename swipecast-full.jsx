@@ -64649,7 +64649,7 @@ function App(){
           <span className={"nav-dd"+(page==="manager-mode"?" act":"")+(mmOpen?" open":"")} role="button" tabIndex={0}
             onClick={()=>{setMmOpen(false);navigate("manager-mode");}}
             onKeyDown={e=>{if(e.key==="Enter"){setMmOpen(false);navigate("manager-mode");}}}
-            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>{setDirOpen(false);setJoinOpen(false);setAcctOpen(false);setMmOpen(true);},150);}}}
+            onPointerEnter={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);clearTimeout(dirTimer.current);const sw=()=>{setDirOpen(false);setJoinOpen(false);setAcctOpen(false);setMmOpen(true);};/* Apple-style (owner 2026-11-26): if another menu is already open, switch instantly so the card never collapses between menus */if(dirOpen||joinOpen||acctOpen)sw();else mmTimer.current=setTimeout(sw,150);}}}
             onPointerLeave={e=>{if(e.pointerType==="mouse"){clearTimeout(mmTimer.current);mmTimer.current=setTimeout(()=>setMmOpen(false),180);}}}>
             {navT('nav.managerMode')}<span className="nav-dd-tri" aria-hidden="true"><Tri/></span>
             {mmOpen&&<div className="nav-ddm nav-mm" role="menu" onClick={e=>e.stopPropagation()}>
