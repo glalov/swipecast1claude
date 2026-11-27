@@ -29773,10 +29773,11 @@ const LANDING_SWIPE_DEMO=[
   {id:3,name:"Alexander Dravik",age:28,gender:"Male",height:"6'0\"",pos:"center 38%",img:"/assets/landing/alexander-dravik-v2.jpg",skills:["Drama","Film & TV","Screen Acting"]},
   {id:6,name:"Lidia Kovalenko",age:65,gender:"Female",height:"5'6\"",pos:"center 30%",img:"/assets/landing/lidia-kovalenko.jpg",skills:["Indie Film","Drama","Guitar"]},
   {id:14,name:"Kevin Tanaka",age:30,gender:"Male",height:"5'10\"",pos:"41% 64%",zoom:1.05,img:"/assets/landing/deck-kevin-tanaka.jpg",skills:["Film & TV","Japanese Fluent","Physical Theater"]},
-  // Owner 2026-11-26: new Marisol photo (Pexels 37719868, straight-on studio headshot); new file name on purpose (browser cache).
-  {id:1,name:"Marisol Veyra",age:28,gender:"Female",height:"5'6\"",pos:"center 20%",img:"/assets/landing/marisol-veyra-v2.jpg",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
+  // Owner 2026-11-26: card 9 "Marisol Veyra" became "Valeria Montes" (fictional name; Pexels 37719868, straight-on studio
+  // headshot). New person = new name (stock models never keep the old card's name). File name kept as marisol-veyra-v2.jpg.
+  {id:1,name:"Valeria Montes",age:26,gender:"Female",height:"5'6\"",pos:"center 20%",img:"/assets/landing/marisol-veyra-v2.jpg",skills:["Meisner Trained","Fluent Spanish","Stage Combat"]},
   // Owner 2026-11-26: Zara Banks (not smiling) replaced by "Jordan Ellis" (fictional name, Pexels 8801041, warm smile;
-  // the deck had almost no smiles). Zara's files are kept in assets/landing. Moved to card 10 (after Marisol)
+  // the deck had almost no smiles). Zara's files are kept in assets/landing. Moved to card 10 (after Valeria, ex-Marisol)
   // so he is not right after Malik. jordan-ellis-deck.jpg = 600x750 head-and-shoulders crop matching the deck
   // (new file name on purpose: an earlier tight About-card crop used jordan-ellis.jpg and browsers cache a day).
   {id:13,name:"Jordan Ellis",age:29,gender:"Male",height:"5'11\"",pos:"center 20%",img:"/assets/landing/jordan-ellis-deck.jpg",skills:["Commercial","Comedy","Improv"]},
